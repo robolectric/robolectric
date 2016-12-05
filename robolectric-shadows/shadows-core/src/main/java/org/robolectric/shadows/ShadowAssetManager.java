@@ -70,7 +70,7 @@ public final class ShadowAssetManager {
   @RealObject
   AssetManager realObject;
 
-  private void convertAndFill(AttributeResource attribute, TypedValue outValue, String qualifiers, boolean resolveRefs) {
+  private void convertAndFill(ResourceValue attribute, TypedValue outValue, String qualifiers, boolean resolveRefs) {
     if (attribute.isNull()) {
       outValue.type = TypedValue.TYPE_NULL;
       outValue.data = TypedValue.DATA_NULL_UNDEFINED;
@@ -152,7 +152,7 @@ public final class ShadowAssetManager {
           outValue.string = dereferencedRef.asString();
           return;
         } else if (dereferencedRef.getData() instanceof String) {
-          attribute = new AttributeResource(attribute.resName, dereferencedRef.asString(), resName.packageName);
+          attribute = new ResourceValue(attribute.resName, dereferencedRef.asString(), resName.packageName);
           if (attribute.isResourceReference()) {
             continue;
           }
@@ -289,7 +289,7 @@ public final class ShadowAssetManager {
     ResName resName = resourceIndex.getResName(ident);
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
-    AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
+    ResourceValue attrValue = themeStyleSet.getAttrValue(resName);
     while(attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = attrValue.getStyleReference();
       if (attrValue.resName.equals(attrResName)) {
@@ -631,7 +631,7 @@ public final class ShadowAssetManager {
   private ResName resolveResource(TypedResource value, String qualifiers, ResName resName) {
     while (value != null && value.isReference()) {
       String s = value.asString();
-      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
+      if (ResourceValue.isNull(s) || ResourceValue.isEmpty(s)) {
         value = null;
       } else {
         String refStr = s.substring(1).replace("+", "");
@@ -646,7 +646,7 @@ public final class ShadowAssetManager {
   private TypedResource resolveResourceValue(TypedResource value, String qualifiers, ResName resName) {
     while (value != null && value.isReference()) {
       String s = value.asString();
-      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
+      if (ResourceValue.isNull(s) || ResourceValue.isEmpty(s)) {
         value = null;
       } else {
         String refStr = s.substring(1).replace("+", "");
@@ -681,10 +681,10 @@ public final class ShadowAssetManager {
       ResName defStyleName = getResName(defStyleAttr);
 
       // Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
-      AttributeResource defStyleAttribute = themeStyleSet.getAttrValue(defStyleName);
+      ResourceValue defStyleAttribute = themeStyleSet.getAttrValue(defStyleName);
       if (defStyleAttribute != null) {
         while (defStyleAttribute.isStyleReference()) {
-          AttributeResource other = themeStyleSet.getAttrValue(defStyleAttribute.getStyleReference());
+          ResourceValue other = themeStyleSet.getAttrValue(defStyleAttribute.getStyleReference());
           if (other == null) {
             throw new RuntimeException("couldn't dereference " + defStyleAttribute);
           }
@@ -701,7 +701,7 @@ public final class ShadowAssetManager {
     if (set != null && set.getStyleAttribute() != 0) {
       ResName styleAttributeResName = getResName(set.getStyleAttribute());
       while (styleAttributeResName.type.equals("attr")) {
-        AttributeResource attrValue = themeStyleSet.getAttrValue(styleAttributeResName);
+        ResourceValue attrValue = themeStyleSet.getAttrValue(styleAttributeResName);
         if (attrValue == null) {
           throw new RuntimeException(
                   "no value for " + styleAttributeResName.getFullyQualifiedName()
@@ -719,7 +719,7 @@ public final class ShadowAssetManager {
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, themeStyleSet);
+        ResourceValue attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, themeStyleSet);
         if (attributeValue != null) {
           if (attributeValue.isStyleReference()) {
             resName = themeStyleSet.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
@@ -731,7 +731,7 @@ public final class ShadowAssetManager {
       defStyleFromRes = resolveStyle(resName, themeStyleSet);
     }
 
-    AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, themeStyleSet);
+    ResourceValue attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, themeStyleSet);
     while (attribute != null && attribute.isStyleReference()) {
       ResName otherAttrName = attribute.getStyleReference();
       if (attribute.resName.equals(otherAttrName)) {
@@ -740,12 +740,12 @@ public final class ShadowAssetManager {
       }
       ResName resName = resourceLoader.getResourceIndex().getResName(resId);
 
-      AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
+      ResourceValue otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
         strictError("no such attr %s in %s while resolving value for %s", attribute.value, themeStyleSet, resName.getFullyQualifiedName());
         attribute = null;
       } else {
-        attribute = new AttributeResource(resName, otherAttr.value, otherAttr.contextPackageName);
+        attribute = new ResourceValue(resName, otherAttr.value, otherAttr.contextPackageName);
       }
     }
 
@@ -804,18 +804,17 @@ public final class ShadowAssetManager {
     return typedArray;
   }
 
-  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @NotNull Style themeStyleSet) {
+  private ResourceValue findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @NotNull Style themeStyleSet) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
           String defaultPackageName = ResourceIds.isFrameworkResource(resId) ? "android" : RuntimeEnvironment.application.getPackageName();
           ResName resName = ResName.qualifyResName(attributeSet.getAttributeName(i), defaultPackageName, "attr");
           Integer referenceResId = null;
-          if (AttributeResource.isResourceReference(attributeSet.getAttributeValue(i))) {
+          if (ResourceValue.isResourceReference(attributeSet.getAttributeValue(i))) {
             referenceResId = attributeSet.getAttributeResourceValue(i, -1);
           }
-
-          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!", referenceResId);
+          return new ResourceValue(resName, attributeSet.getAttributeValue(i), "fixme!!!", referenceResId);
         }
       }
     }
@@ -824,7 +823,7 @@ public final class ShadowAssetManager {
     if (attrName == null) return null;
 
     if (styleAttrStyle != null) {
-      AttributeResource attribute = styleAttrStyle.getAttrValue(attrName);
+      ResourceValue attribute = styleAttrStyle.getAttrValue(attrName);
       if (attribute != null) {
         return attribute;
       }
@@ -832,14 +831,14 @@ public final class ShadowAssetManager {
 
     // else if attr in defStyleFromAttr, use its value
     if (defStyleFromAttr != null) {
-      AttributeResource attribute = defStyleFromAttr.getAttrValue(attrName);
+      ResourceValue attribute = defStyleFromAttr.getAttrValue(attrName);
       if (attribute != null) {
         return attribute;
       }
     }
 
     if (defStyleFromRes != null) {
-      AttributeResource attribute = defStyleFromRes.getAttrValue(attrName);
+      ResourceValue attribute = defStyleFromRes.getAttrValue(attrName);
       if (attribute != null) {
         return attribute;
       }

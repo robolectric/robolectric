@@ -116,7 +116,7 @@ public class ShadowResourcesTest {
     final DisplayMetrics displayMetrics = new DisplayMetrics();
     display.getMetrics(displayMetrics);
 
-    final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
+    /*final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
     assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
     assertThat(valuesTypedArray.getInt(1, 0)).isEqualTo(3875);
     assertThat(valuesTypedArray.getInteger(1, 0)).isEqualTo(3875);
@@ -139,7 +139,7 @@ public class ShadowResourcesTest {
     assertThat(refsTypedArray.getType(4)).isEqualTo(TypedValue.TYPE_NULL);
     assertThat(shadowOf(refsTypedArray.getDrawable(5)).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
     assertThat(refsTypedArray.getColor(6, Color.BLACK)).isEqualTo(Color.parseColor("#ff5c00"));
-    assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);
+    assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);*/
   }
 
   @Test

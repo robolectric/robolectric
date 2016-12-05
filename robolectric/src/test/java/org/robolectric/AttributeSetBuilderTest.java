@@ -1,15 +1,14 @@
 package org.robolectric;
 
-import android.content.res.Resources;
 import android.util.AttributeSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.robolectric.res.AttributeResource;
+import org.robolectric.res.ResourceValue;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
+import static org.robolectric.res.ResourceValue.ANDROID_RES_NS_PREFIX;
 
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}
@@ -43,7 +42,7 @@ public class AttributeSetBuilderTest {
   @Test
   public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNullResourceId() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
+        .addAttribute(android.R.attr.text, ResourceValue.NULL_VALUE)
         .build();
 
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "text", 0)).isEqualTo(0);
@@ -79,7 +78,7 @@ public class AttributeSetBuilderTest {
   @Test
   public void getAttributeResourceValue_shouldReturnDefaultValueWhenAttributeIsNull() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
+        .addAttribute(android.R.attr.text, ResourceValue.NULL_VALUE)
         .build();
 
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "message", -1)).isEqualTo(-1);

@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 public class EmptyStyle implements Style {
   @Override
-  public AttributeResource getAttrValue(ResName resName) {
+  public ResourceValue getAttrValue(ResName resName) {
     return null;
   }
 

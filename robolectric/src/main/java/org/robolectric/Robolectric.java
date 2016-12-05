@@ -11,7 +11,7 @@ import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.res.AttributeResource;
+import org.robolectric.res.ResourceValue;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.XmlResourceParserImpl;
