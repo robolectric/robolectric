@@ -35,6 +35,7 @@ public class PackageResourceLoader extends XResourceLoader {
         new ValueResourceLoader(data, "/resources/color", "color", ResType.COLOR),
         new ValueResourceLoader(data, "/resources/drawable", "drawable", ResType.DRAWABLE),
         new ValueResourceLoader(data, "/resources/item[@type='color']", "color", ResType.COLOR),
+        new ValueResourceLoader(data, "/resources/item[@type='drawable']", "drawable", ResType.DRAWABLE),
         new ValueResourceLoader(data, "/resources/dimen", "dimen", ResType.DIMEN),
         new ValueResourceLoader(data, "/resources/item[@type='dimen']", "dimen", ResType.DIMEN),
         new ValueResourceLoader(data, "/resources/integer", "integer", ResType.INTEGER),

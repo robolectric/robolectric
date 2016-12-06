@@ -13,6 +13,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.EmptyResourceLoader;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
@@ -41,14 +44,16 @@ public class ParallelUniverseTest {
     pu.setSdkConfig(new SdkConfig(18));
   }
 
-  private void setUpApplicationStateDefaults() {
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "package"), getDefaultConfig());
+  private void setUpApplicationState(Config defaultConfig) {
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(),
+        new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null))),
+        new AndroidManifest(null, null, null, "package"), defaultConfig);
   }
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
     RuntimeEnvironment.setMasterScheduler(null);
-    setUpApplicationStateDefaults();
+    setUpApplicationState(getDefaultConfig());
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isNotNull()
         .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
@@ -59,7 +64,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
     RoboSettings.setUseGlobalScheduler(true);
     try {
-      setUpApplicationStateDefaults();
+      setUpApplicationState(getDefaultConfig());
       final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
       assertThat(shadowApplication.getBackgroundThreadScheduler())
           .isSameAs(shadowApplication.getForegroundThreadScheduler())
@@ -71,7 +76,7 @@ public class ParallelUniverseTest {
 
   @Test
   public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
-    setUpApplicationStateDefaults();
+    setUpApplicationState(getDefaultConfig());
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     assertThat(shadowApplication.getBackgroundThreadScheduler())
         .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
@@ -80,7 +85,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsMainThread() {
     RuntimeEnvironment.setMainThread(new Thread());
-    setUpApplicationStateDefaults();
+    setUpApplicationState(getDefaultConfig());
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();
   }
 
@@ -97,7 +102,7 @@ public class ParallelUniverseTest {
     Thread t = new Thread() {
       @Override
       public void run() {
-        setUpApplicationStateDefaults();
+        setUpApplicationState(getDefaultConfig());
         res.set(RuntimeEnvironment.isMainThread());
       }
     };
@@ -116,7 +121,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
+    setUpApplicationState(c);
     assertThat(getQualifiersfromSystemResources()).contains("v18");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v18");
   }
@@ -125,7 +130,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
     String givenQualifiers = "land-v17";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
+    setUpApplicationState(c);
     assertThat(getQualifiersfromSystemResources()).contains("land-v17");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
   }
@@ -134,7 +139,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
+    setUpApplicationState(c);
     assertThat(getQualifiersfromSystemResources()).contains("large-land-v18");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v18");
   }

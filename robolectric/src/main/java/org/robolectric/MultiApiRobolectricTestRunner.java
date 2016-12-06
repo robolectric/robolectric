@@ -1,7 +1,6 @@
 package org.robolectric;
 
-import android.os.Build;
-
+import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Runner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
@@ -12,8 +11,11 @@ import org.robolectric.manifest.AndroidManifest;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A test runner for Robolectric that will run a test against multiple API versions.
@@ -111,15 +113,32 @@ public class MultiApiRobolectricTestRunner extends Suite {
    * Only called reflectively. Do not use programmatically.
    */
   public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
+    this(klass, SdkConfig.getSupportedApis(), System.getProperties());
+  }
+
+  MultiApiRobolectricTestRunner(Class<?> klass, Set<Integer> supportedApis, Properties properties) throws Throwable {
     super(klass, Collections.<Runner>emptyList());
 
-    for (Integer integer : getSupportedApis()) {
+    for (Integer integer : new TreeSet<>(filterSupportedApis(supportedApis, properties))) {
       runners.add(createTestRunner(integer));
     }
    }
 
-  protected Set<Integer> getSupportedApis() {
-    return SdkConfig.getSupportedApis();
+  @NotNull
+  private static Set<Integer> filterSupportedApis(Set<Integer> supportedApis, Properties properties) {
+    String overrideSupportedApis = properties.getProperty("robolectric.enabledApis");
+    if (overrideSupportedApis == null || overrideSupportedApis.isEmpty()) {
+      return supportedApis;
+    } else {
+      Set<Integer> filteredApis = new HashSet<>();
+      for (String s : overrideSupportedApis.split(",")) {
+        int apiLevel = Integer.parseInt(s);
+        if (supportedApis.contains(apiLevel)) {
+          filteredApis.add(apiLevel);
+        }
+      }
+      return filteredApis;
+    }
   }
 
   protected TestRunnerForApiVersion createTestRunner(Integer integer) throws InitializationError {

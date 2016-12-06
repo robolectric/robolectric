@@ -58,18 +58,18 @@ public class RoutingResourceLoader extends ResourceLoader {
   }
 
   private ResourceLoader pickFor(ResName resName) {
-    if (resName == null) return new NullResourceLoader();
+    if (resName == null) return new EmptyResourceLoader();
     return pickFor(resName.packageName);
   }
 
   private ResourceLoader pickFor(String namespace) {
     if (namespace.equals("android.internal")) {
-      return new NullResourceLoader();
+      return new EmptyResourceLoader();
     }
     ResourceLoader resourceLoader = resourceLoaders.get(namespace);
     if (resourceLoader == null) {
       resourceLoader = whichProvidesFor(namespace);
-      return (resourceLoader != null) ? resourceLoader : new NullResourceLoader();
+      return (resourceLoader != null) ? resourceLoader : new EmptyResourceLoader();
     }
     return resourceLoader;
   }
@@ -81,19 +81,6 @@ public class RoutingResourceLoader extends ResourceLoader {
       }
     }
     return null;
-  }
-
-  private static class NullResourceLoader extends XResourceLoader {
-    public NullResourceLoader() {
-      super(null);
-    }
-
-    @Override void doInitialize() {
-    }
-
-    @Override public boolean providesFor(String namespace) {
-      return true;
-    }
   }
 
   @Override

@@ -109,6 +109,22 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
+  public void removeNetwork() throws Exception {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.networkId = 123;
+    wifiManager.addNetwork(wifiConfiguration);
+
+    List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+    assertThat(list.size()).isEqualTo(1);
+
+
+    wifiManager.removeNetwork(0);
+
+    list = wifiManager.getConfiguredNetworks();
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
   public void updateNetwork_shouldRejectNullandNewConfigs() throws Exception {
     WifiConfiguration config = new WifiConfiguration();
     config.networkId = -1;

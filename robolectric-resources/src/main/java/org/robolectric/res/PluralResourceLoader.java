@@ -19,12 +19,12 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
       String quantity = item.getAttrValue("quantity");
       rules.add(new Plural(quantity, value));
     }
-    resBunch.put("plurals", name, new PluralRules(rules, ResType.CHAR_SEQUENCE), xmlContext);
+    resBunch.put("plurals", name, new PluralRules(rules, ResType.CHAR_SEQUENCE, xmlContext));
   }
 
   public static class PluralRules extends TypedResource<List<Plural>> {
-    public PluralRules(List<Plural> data, ResType resType) {
-      super(data, resType);
+    public PluralRules(List<Plural> data, ResType resType, XmlContext xmlContext) {
+      super(data, resType, xmlContext);
     }
 
     public Plural find(int quantity) {

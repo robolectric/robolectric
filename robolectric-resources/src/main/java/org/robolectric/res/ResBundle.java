@@ -3,36 +3,37 @@ package org.robolectric.res;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ResBundle<T> {
-
-
-  private final ResMap<T> valuesMap = new ResMap<>();
-  private final ResMap<List<T>> valuesArrayMap = new ResMap<>();
+public class ResBundle {
+  private final ResMap valuesMap = new ResMap();
   private String overrideNamespace;
 
-  public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
+  public void put(String attrType, String name, TypedResource value) {
+    XmlLoader.XmlContext xmlContext = value.getXmlContext();
     ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
-    List<Value<T>> values = valuesMap.find(resName);
-    values.add(new Value<>(xmlContext.getQualifiers(), value));
-    Collections.sort(values);
+    List<TypedResource> values = valuesMap.find(resName);
+    values.add(value);
+
+    // todo: should sort once we're fully populated, not now
+    Collections.sort(values, new Comparator<TypedResource>() {
+      @Override
+      public int compare(TypedResource o1, TypedResource o2) {
+        return o1.getQualifiers().compareTo(o2.getQualifiers());
+      }
+    });
   }
 
-  public T get(ResName resName, String qualifiers) {
-    Value<T> value = getValue(resName, qualifiers);
-    return value == null ? null : value.value;
+  public TypedResource get(ResName resName, String qualifiers) {
+    List<TypedResource> typedResources = valuesMap.find(maybeOverride(resName));
+    return pick(typedResources, qualifiers);
   }
 
-  public Value<T> getValue(ResName resName, String qualifiers) {
-    List<Value<T>> values = valuesMap.find(maybeOverride(resName));
-    return values != null ? pick(values, qualifiers) : null;
-  }
-
-  public static <T> Value<T> pick(List<Value<T>> values, String qualifiersStr) {
-    final int count = values.size();
+  public static TypedResource pick(List<TypedResource> typedResources, String qualifiersStr) {
+    final int count = typedResources.size();
     if (count == 0) return null;
 
     // This should really follow the android algorithm specified at:
@@ -49,23 +50,22 @@ public class ResBundle<T> {
 
     Qualifiers toMatch = Qualifiers.parse(qualifiersStr);
 
-    Qualifiers bestMatchQualifiers = null;
-    Value<T> bestMatch = null;
-
-    List<Value<T>> passesRequirements = new ArrayList<>();
-    for (Value<T> value : values) {
-      Qualifiers qualifiers = Qualifiers.parse(value.qualifiers);
+    List<TypedResource> passesRequirements = new ArrayList<>();
+    for (TypedResource candidate : typedResources) {
+      Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
       if (qualifiers.passesRequirements(toMatch)) {
-        passesRequirements.add(value);
+        passesRequirements.add(candidate);
       }
     }
 
-    for (Value<T> value : passesRequirements) {
-      Qualifiers qualifiers = Qualifiers.parse(value.qualifiers);
+    Qualifiers bestMatchQualifiers = null;
+    TypedResource bestMatch = null;
+    for (TypedResource candidate : passesRequirements) {
+      Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
       if (qualifiers.matches(toMatch)) {
         if (bestMatchQualifiers == null || qualifiers.isBetterThan(bestMatchQualifiers, toMatch)) {
           bestMatchQualifiers = qualifiers;
-          bestMatch =  value;
+          bestMatch =  candidate;
         }
       }
     }
@@ -79,12 +79,11 @@ public class ResBundle<T> {
   }
 
   public int size() {
-    return valuesMap.size() + valuesArrayMap.size();
+    return valuesMap.size();
   }
 
   public void makeImmutable() {
     valuesMap.makeImmutable();
-    valuesArrayMap.makeImmutable();
   }
 
   public void overrideNamespace(String overrideNamespace) {
@@ -100,26 +99,25 @@ public class ResBundle<T> {
     return overrideNamespace == null ? resName : new ResName(overrideNamespace, resName.type, resName.name);
   }
 
-  public void mergeLibraryStyle(ResBundle<T> fromResBundle, String packageName) {
+  public void mergeLibraryStyle(ResBundle fromResBundle, String packageName) {
     valuesMap.merge(packageName, fromResBundle.valuesMap);
-    valuesArrayMap.merge(packageName, fromResBundle.valuesArrayMap);
   }
 
   public void receive(ResourceLoader.Visitor visitor) {
-    for (final Map.Entry<ResName, List<Value<T>>> entry : valuesMap.map.entrySet()) {
-      visitor.visit(entry.getKey(), new AbstractList<T>() {
-        List<Value<T>> value;
+    for (final Map.Entry<ResName, List<TypedResource>> entry : valuesMap.map.entrySet()) {
+      visitor.visit(entry.getKey(), new AbstractList<TypedResource>() {
+        List<TypedResource> typedResources;
 
         @Override
-        public T get(int index) {
-          if (value == null) value = entry.getValue();
-          return value.get(index).getValue();
+        public TypedResource get(int index) {
+          if (typedResources == null) typedResources = entry.getValue();
+          return typedResources.get(index);
         }
 
         @Override
         public int size() {
-          if (value == null) value = entry.getValue();
-          return value.size();
+          if (typedResources == null) typedResources = entry.getValue();
+          return typedResources.size();
         }
       });
     }
@@ -159,22 +157,22 @@ public class ResBundle<T> {
     }
   }
 
-  private static class ResMap<T> {
-    private final Map<ResName, List<Value<T>>> map = new HashMap<>();
+  private static class ResMap {
+    private final Map<ResName, List<TypedResource>> map = new HashMap<>();
     private boolean immutable;
 
-    public List<Value<T>> find(ResName resName) {
-      List<Value<T>> values = map.get(resName);
+    public List<TypedResource> find(ResName resName) {
+      List<TypedResource> values = map.get(resName);
       if (values == null) map.put(resName, values = new ArrayList<>());
       return values;
     }
 
-    private void merge(String packageName, ResMap<T> sourceMap) {
+    private void merge(String packageName, ResMap sourceMap) {
       if (immutable) {
         throw new IllegalStateException("immutable!");
       }
 
-      for (Map.Entry<ResName, List<Value<T>>> entry : sourceMap.map.entrySet()) {
+      for (Map.Entry<ResName, List<TypedResource>> entry : sourceMap.map.entrySet()) {
         ResName resName = entry.getKey().withPackageName(packageName);
         find(resName).addAll(entry.getValue());
       }

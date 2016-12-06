@@ -24,6 +24,7 @@ public class ShadowEnvironment {
   private static String externalStorageState = Environment.MEDIA_REMOVED;
   private static final Map<File, Boolean> STORAGE_EMULATED = new HashMap<>();
   private static final Map<File, Boolean> STORAGE_REMOVABLE = new HashMap<>();
+  private static boolean sIsExternalStorageEmulated;
 
   static Path EXTERNAL_CACHE_DIR;
   static Path EXTERNAL_FILES_DIR;
@@ -40,6 +41,15 @@ public class ShadowEnvironment {
    */
   public static void setExternalStorageState(String externalStorageState) {
     ShadowEnvironment.externalStorageState = externalStorageState;
+  }
+
+  /**
+   * Non-Android accessor. Sets the return value of {@link #isExternalStorageEmulated()}.
+   *
+   * @param emulated Value to return from {@link #isExternalStorageEmulated()}.
+   */
+  public static void setIsExternalStorageEmulated(boolean emulated) {
+    ShadowEnvironment.sIsExternalStorageEmulated = emulated;
   }
 
   @Implementation
@@ -71,6 +81,8 @@ public class ShadowEnvironment {
 
     STORAGE_EMULATED.clear();
     STORAGE_REMOVABLE.clear();
+
+    sIsExternalStorageEmulated = false;
   }
 
   private static boolean exists(Path path) {
@@ -103,6 +115,11 @@ public class ShadowEnvironment {
   public static boolean isExternalStorageEmulated(File path) {
     final Boolean emulated = STORAGE_EMULATED.get(path);
     return emulated != null ? emulated : false;
+  }
+
+  @Implementation
+  public static boolean isExternalStorageEmulated() {
+    return sIsExternalStorageEmulated;
   }
 
   /**

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +61,20 @@ public class PropertiesDependencyResolverTest {
     assertThat(urls).containsExactly(
         new URL("file:///path/3")
     );
+  }
+
+  @Test
+  public void whenDelegateIsNull_shouldGiveGoodMessage() throws Exception {
+    DependencyResolver resolver = new PropertiesDependencyResolver(
+        propsFile("nothing: interesting"), null);
+
+    DependencyJar dependencyJar =  new DependencyJar("com.group", "example", "1.3", null);
+    try {
+      resolver.getLocalArtifactUrls(dependencyJar);
+      fail("should have failed");
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no artifacts found for " + dependencyJar);
+    }
   }
 
   //////////////////

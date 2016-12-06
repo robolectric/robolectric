@@ -31,7 +31,10 @@ public @interface Config {
    * See <a href="https://bugs.openjdk.java.net/browse/JDK-8013485">JDK-8013485</a>.
    */
   String NONE = "--none";
-  String DEFAULT_MANIFEST = "--default";
+  String DEFAULT_VALUE_STRING = "--default";
+  int DEFAULT_VALUE_INT = -1;
+
+  String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
   String DEFAULT_PACKAGE_NAME = "";
   String DEFAULT_ABI_SPLIT = "";
   String DEFAULT_QUALIFIERS = "";
@@ -64,7 +67,7 @@ public @interface Config {
    *
    * @return The Android manifest file to load.
    */
-  String manifest() default DEFAULT_MANIFEST;
+  String manifest() default DEFAULT_VALUE_STRING;
 
   /**
    * Reference to the BuildConfig class created by the Gradle build system.
@@ -179,7 +182,7 @@ public @interface Config {
           parseIntArrayProperty(properties.getProperty("sdk", "")),
           Integer.parseInt(properties.getProperty("minSdk", "-1")),
           Integer.parseInt(properties.getProperty("maxSdk", "-1")),
-          properties.getProperty("manifest", DEFAULT_MANIFEST),
+          properties.getProperty("manifest", DEFAULT_VALUE_STRING),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
           properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
           properties.getProperty("abiSplit", DEFAULT_ABI_SPLIT),
@@ -271,9 +274,9 @@ public @interface Config {
 
     public Implementation(Config baseConfig, Config overlayConfig) {
       this.sdk = pickSdk(baseConfig.sdk(), overlayConfig.sdk(), new int[0]);
-      this.minSdk = pick(baseConfig.minSdk(), overlayConfig.minSdk(), -1);
-      this.maxSdk = pick(baseConfig.maxSdk(), overlayConfig.maxSdk(), -1);
-      this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT_MANIFEST);
+      this.minSdk = pick(baseConfig.minSdk(), overlayConfig.minSdk(), DEFAULT_VALUE_INT);
+      this.maxSdk = pick(baseConfig.maxSdk(), overlayConfig.maxSdk(), DEFAULT_VALUE_INT);
+      this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT_VALUE_STRING);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
       this.abiSplit = pick(baseConfig.abiSplit(), overlayConfig.abiSplit(), "");
@@ -393,7 +396,7 @@ public @interface Config {
     private int[] sdk = new int[0];
     private int minSdk = -1;
     private int maxSdk = -1;
-    private String manifest = Config.DEFAULT_MANIFEST;
+    private String manifest = Config.DEFAULT_VALUE_STRING;
     private String qualifiers = Config.DEFAULT_QUALIFIERS;
     private String packageName = Config.DEFAULT_PACKAGE_NAME;
     private String abiSplit = Config.DEFAULT_ABI_SPLIT;
@@ -479,6 +482,17 @@ public @interface Config {
     public Builder setConstants(Class<?> constants) {
       this.constants = constants;
       return this;
+    }
+
+    /**
+     * This returns actual default values where they exist, in the sense that we could use
+     * the values, rather than markers like <code>-1</code> or <code>--default</code>.
+     */
+    public static Builder defaults() {
+      return new Builder()
+          .setManifest(DEFAULT_MANIFEST_NAME)
+          .setResourceDir(DEFAULT_RES_FOLDER)
+          .setAssetDir(DEFAULT_ASSET_FOLDER);
     }
 
     public Implementation build() {

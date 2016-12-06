@@ -2,6 +2,8 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,10 +18,29 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.*;
-import org.robolectric.internal.bytecode.*;
-import org.robolectric.internal.dependency.*;
+import org.robolectric.internal.GradleManifestFactory;
+import org.robolectric.internal.InstrumentingClassLoaderFactory;
+import org.robolectric.internal.ManifestFactory;
+import org.robolectric.internal.ManifestIdentifier;
+import org.robolectric.internal.MavenManifestFactory;
+import org.robolectric.internal.ParallelUniverse;
+import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.internal.bytecode.InvokeDynamic;
+import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.internal.bytecode.ShadowInvalidator;
+import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.dependency.CachedDependencyResolver;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.dependency.LocalDependencyResolver;
+import org.robolectric.internal.dependency.MavenDependencyResolver;
+import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
@@ -32,13 +53,24 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.Pair;
 import org.robolectric.util.ReflectionHelpers;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.google.common.collect.Lists.reverse;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
@@ -46,8 +78,9 @@ import java.util.*;
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
-  private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersCache = new HashMap<>();
+  private static final Map<AndroidManifest, ResourceLoader> appResourceLoaderCache = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
+  private static ResourceLoader compiletimeSdkResourceLoader;
 
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -57,6 +90,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
+  private final Map<String, Config> packageConfigCache = new LinkedHashMap<String, Config>() {
+    @Override
+    protected boolean removeEldestEntry(Map.Entry eldest) {
+      return size() > 10;
+    }
+  };
 
   /**
    * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
@@ -179,6 +218,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  /**
+   * Returns the ResourceLoader for the compile time SDK.
+   */
+  @NotNull
+  private static ResourceLoader getCompiletimeSdkResourceLoader() {
+    if (compiletimeSdkResourceLoader == null) {
+      compiletimeSdkResourceLoader = new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null)));
+    }
+    return compiletimeSdkResourceLoader;
+  }
+
   protected boolean shouldRunApiVersion(Config config) {
     return true;
   }
@@ -220,8 +270,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             }
             assureTestLifecycle(sdkEnvironment);
 
-            parallelUniverseInterface.resetStaticState(config);
             parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
+            parallelUniverseInterface.resetStaticState(config);
 
             int sdkVersion = pickSdkVersion(config, appManifest);
             Class<?> androidBuildVersionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
@@ -230,10 +280,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
             ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
-            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, systemResourceLoader, appManifest, config);
+            ResourceLoader appResourceLoader = getAppResourceLoader(appManifest);
+            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, systemResourceLoader, appResourceLoader, appManifest, config);
             testLifecycle.beforeTest(bootstrappedMethod);
           } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
           }
 
@@ -250,12 +300,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 internalAfterTest(bootstrappedMethod);
               } finally {
                 parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
-                // todo: is this really needed?
-                Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
               }
             }
           }
         } finally {
+          Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
           parallelUniverseInterface = null;
         }
       }
@@ -311,58 +360,107 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public Config getConfig(Method method) {
-    Config config = new Config.Builder().build();
-
-    Config globalConfig = buildGlobalConfig();
-    if (globalConfig != null) {
-      config = new Config.Implementation(config, globalConfig);
-    }
-
-    Config methodClassConfig = method.getDeclaringClass().getAnnotation(Config.class);
-    if (methodClassConfig != null) {
-      config = new Config.Implementation(config, methodClassConfig);
-    }
-
-    ArrayList<Class> testClassHierarchy = new ArrayList<>();
     Class testClass = getTestClass().getJavaClass();
 
-    while (testClass != null) {
-      testClassHierarchy.add(0, testClass);
-      testClass = testClass.getSuperclass();
+    Config config = Config.Builder.defaults().build();
+
+    Config globalConfig = cachedPackageConfig(""); // global config
+    config = override(config, globalConfig);
+
+    for (String packageName : reverse(packagesFor(testClass))) {
+      Config packageConfig = cachedPackageConfig(packageName);
+      config = override(config, packageConfig);
     }
 
-    for (Class clazz : testClassHierarchy) {
+    for (Class clazz : reverse(parentClassesFor(testClass))) {
       Config classConfig = (Config) clazz.getAnnotation(Config.class);
-      if (classConfig != null) {
-        config = new Config.Implementation(config, classConfig);
-      }
+      config = override(config, classConfig);
     }
 
     Config methodConfig = method.getAnnotation(Config.class);
-    if (methodConfig != null) {
-      config = new Config.Implementation(config, methodConfig);
-    }
+    config = override(config, methodConfig);
 
     return config;
   }
 
+  @NotNull
+  private List<String> packagesFor(Class<?> javaClass) {
+    String testPackageName = javaClass.getPackage().getName();
+    List<String> packageHierarchy = new ArrayList<>();
+    while (!testPackageName.isEmpty()) {
+      packageHierarchy.add(testPackageName);
+      int lastDot = testPackageName.lastIndexOf('.');
+      testPackageName = lastDot > 1 ? testPackageName.substring(0, lastDot) : "";
+    }
+    return packageHierarchy;
+  }
+
+  @NotNull
+  private List<Class> parentClassesFor(Class testClass) {
+    List<Class> testClassHierarchy = new ArrayList<>();
+    while (testClass != null && !testClass.equals(Object.class)) {
+      testClassHierarchy.add(testClass);
+      testClass = testClass.getSuperclass();
+    }
+    return testClassHierarchy;
+  }
+
+  private Config override(Config config, Config classConfig) {
+    return classConfig != null ? new Config.Implementation(config, classConfig) : config;
+  }
+
+  @Nullable
+  private Config cachedPackageConfig(String packageName) {
+    synchronized (packageConfigCache) {
+      Config config = packageConfigCache.get(packageName);
+      if (config == null && !packageConfigCache.containsKey(packageName)) {
+        config = packageName.isEmpty() ? buildGlobalConfig() : buildPackageConfig(packageName);
+        packageConfigCache.put(packageName, config);
+      }
+      return config;
+    }
+  }
+
   /**
-   * Generate the global {@link Config}. More specific test class and test method configurations
+   * Generate the global {@link Config}.
+   *
+   * More specific packages, test classes, and test method configurations
    * will override values provided here.
    *
-   * The default implementation uses properties provided by {@link #getConfigProperties()}.
+   * The default implementation uses properties provided by {@link #getConfigProperties(String)}.
    *
    * The returned object is likely to be reused for many tests.
    *
-   * @return global {@link Config} object
+   * @return global {@link Config} object.
    */
   protected Config buildGlobalConfig() {
-    return Config.Implementation.fromProperties(getConfigProperties());
+    return Config.Implementation.fromProperties(getConfigProperties(""));
   }
 
-  protected Properties getConfigProperties() {
-    ClassLoader classLoader = getClass().getClassLoader();
-    try (InputStream resourceAsStream = classLoader.getResourceAsStream(CONFIG_PROPERTIES)) {
+  /**
+   * Generate {@link Config} for the specified package.
+   *
+   * More specific packages, test classes, and test method configurations
+   * will override values provided here.
+   *
+   * The default implementation uses properties provided by {@link #getConfigProperties(String)}.
+   *
+   * The returned object is likely to be reused for many tests.
+   *
+   * @param packageName The name of the package, or empty string (<code>""</code>) for the top level package.
+   * @return {@link Config} object for the specified package.
+   */
+  @Nullable
+  private Config buildPackageConfig(String packageName) {
+    return Config.Implementation.fromProperties(getConfigProperties(packageName));
+  }
+
+  /**
+   * Return a {@link Properties} file for the given package name, or <code>null</code> if none is available.
+   */
+  protected Properties getConfigProperties(String packageName) {
+    String resourceName = packageName.replace('.', '/') + "/" + CONFIG_PROPERTIES;
+    try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
       if (resourceAsStream == null) return null;
       Properties properties = new Properties();
       properties.load(resourceAsStream);
@@ -370,6 +468,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  // visible for testing
+  InputStream getResourceAsStream(String resourceName) {
+    return getClass().getClassLoader().getResourceAsStream(resourceName);
   }
 
   protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
@@ -413,7 +516,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
+  ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
     ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
     try {
       Class<?> clazz = robolectricClassLoader.loadClass(ParallelUniverse.class.getName());
@@ -443,12 +546,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
   }
 
-  public final ResourceLoader getAppResourceLoader(SdkConfig sdkConfig, ResourceLoader systemResourceLoader, final AndroidManifest appManifest) {
-    Pair<AndroidManifest, SdkConfig> androidManifestSdkConfigPair = new Pair<>(appManifest, sdkConfig);
-    ResourceLoader resourceLoader = resourceLoadersCache.get(androidManifestSdkConfigPair);
+  private final ResourceLoader getAppResourceLoader(final AndroidManifest appManifest) {
+    ResourceLoader resourceLoader = appResourceLoaderCache.get(appManifest);
     if (resourceLoader == null) {
       Map<String, ResourceLoader> resourceLoaders = new HashMap<>();
-      resourceLoaders.put("android", systemResourceLoader);
+      resourceLoaders.put("android", getCompiletimeSdkResourceLoader());
 
       List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
       for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
@@ -457,7 +559,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       resourceLoaders.put(appManifest.getPackageName(), new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders));
 
       resourceLoader = new RoutingResourceLoader(resourceLoaders);
-      resourceLoadersCache.put(androidManifestSdkConfigPair, resourceLoader);
+      appResourceLoaderCache.put(appManifest, resourceLoader);
     }
     return resourceLoader;
   }

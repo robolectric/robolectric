@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.util.TypedValue;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.*;
 import org.robolectric.util.Logger;
 import org.robolectric.util.Util;
@@ -9,119 +10,11 @@ import org.robolectric.util.Util;
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;
 
-  synchronized private static int getNextStringCookie() {
+  synchronized static int getNextStringCookie() {
     return nextStringCookie++;
   }
 
-  public static void convertAndFill(AttributeResource attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, boolean resolveRefs) {
-    if (attribute == null || attribute.isNull() || attribute.isEmpty()) {
-      outValue.type = TypedValue.TYPE_NULL;
-      if (attribute != null && attribute.isEmpty()) {
-        outValue.data = TypedValue.DATA_NULL_EMPTY;
-      } else {
-        outValue.data = TypedValue.DATA_NULL_UNDEFINED;
-      }
-      return;
-    }
-
-    TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
-    if (attrTypeData == null) {
-      return;
-    }
-
-    AttrData attrData = (AttrData) attrTypeData.getData();
-    // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
-    outValue.assetCookie = getNextStringCookie();
-
-    // TODO: Handle resource and style references
-    if (attribute.isStyleReference()) {
-      return;
-    }
-
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
-    while (attribute.isResourceReference()) {
-      ResName resName = attribute.getResourceReference();
-      Integer resourceId = resourceIndex.getResourceId(resName);
-      if (resourceId == null) {
-        throw new Resources.NotFoundException("unknown resource " + resName);
-      }
-      outValue.type = TypedValue.TYPE_REFERENCE;
-      outValue.resourceId = resourceId;
-      TypedResource dereferencedRef = resourceLoader.getValue(resName, qualifiers);
-
-      if (dereferencedRef == null) {
-        Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
-
-        if (resName.type.equals("id")) {
-          return;
-        } else if (resName.type.equals("layout")) {
-          return; // resourceId is good enough, right?
-        } else if (resName.type.equals("dimen")) {
-          return;
-        } else if (resName.type.equals("transition")) {
-          return;
-        } else if (resName.type.equals("interpolator")) {
-          return;
-        } else if (resName.type.equals("menu")) {
-          return;
-        } else if (resName.type.equals("raw")) {
-          return;
-        } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
-          // wtf. color and drawable references reference are all kinds of stupid.
-          TypedResource drawableResource = resourceLoader.getValue(resName, qualifiers);
-          if (drawableResource == null) {
-            throw new Resources.NotFoundException("can't find file for " + resName);
-          } else {
-            outValue.type = TypedValue.TYPE_STRING;
-            outValue.data = 0;
-            outValue.assetCookie = getNextStringCookie();
-            outValue.string = (CharSequence) drawableResource.getData();
-            return;
-          }
-        } else {
-          throw new RuntimeException("huh? " + resName);
-        }
-      } else {
-        if (dereferencedRef.isFile()) {
-          outValue.type = TypedValue.TYPE_STRING;
-          outValue.data = 0;
-          outValue.assetCookie = getNextStringCookie();
-          outValue.string = dereferencedRef.asString();
-          return;
-        } else if (dereferencedRef.getData() instanceof String) {
-          attribute = new AttributeResource(attribute.resName, dereferencedRef.asString(), resName.packageName);
-          if (attribute.isResourceReference()) {
-            continue;
-          }
-          if (resolveRefs) {
-            getConverter(dereferencedRef.getResType()).fillTypedValue(attribute.value, outValue);
-            return;
-          }
-        }
-      }
-      break;
-    }
-
-    if (attribute.isNull()) {
-      outValue.type = TypedValue.TYPE_NULL;
-      return;
-    }
-
-    String format = attrData.getFormat();
-    String[] types = format.split("\\|");
-    for (String type : types) {
-      if ("reference".equals(type)) continue; // already handled above
-      Converter converter = getConverterFor(attrData, type);
-
-      if (converter != null) {
-        if (converter.fillTypedValue(attribute.value, outValue)) {
-          return;
-        }
-      }
-    }
-  }
-
-  private static Converter getConverterFor(AttrData attrData, String type) {
+  static Converter getConverterFor(AttrData attrData, String type) {
     switch (type) {
       case "enum":
         return new EnumConverter(attrData);
@@ -240,6 +133,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
         typedValue.data = ResourceHelper.getColor(data);
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (NumberFormatException nfe) {
         return false;
@@ -279,6 +173,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_HEX;
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (NumberFormatException nfe) {
         return false;
@@ -321,6 +216,7 @@ public class Converter<T> {
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_BOOLEAN;
       typedValue.assetCookie = 0;
+      typedValue.string = null;
 
       if ("true".equalsIgnoreCase(data)) {
         typedValue.data = 1;
@@ -369,6 +265,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_HEX;
         typedValue.data = findValueFor(data);
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (Exception e) {
         return false;
@@ -392,6 +289,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_HEX;
         typedValue.data = flags;
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (Exception e) {
         return false;

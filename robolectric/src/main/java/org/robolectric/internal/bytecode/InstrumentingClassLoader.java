@@ -673,8 +673,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
           case INVOKESTATIC:
             /* falls through */
-          case INVOKEDYNAMIC:
-            /* falls through */
           case INVOKEINTERFACE:
             /* falls through */
           case INVOKESPECIAL:
@@ -687,6 +685,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
             } else if (shouldIntercept(targetMethod)) {
               interceptInvokeVirtualMethod(instructions, targetMethod);
             }
+            break;
+
+          case INVOKEDYNAMIC:
+            /* no unusual behavior */
             break;
 
           default:

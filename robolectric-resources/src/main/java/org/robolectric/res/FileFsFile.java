@@ -87,7 +87,11 @@ public class FileFsFile implements FsFile {
   public FsFile join(String... pathParts) {
     File f = file;
     for (String pathPart : pathParts) {
-      f = new File(f, pathPart);
+      for (String part : pathPart.split(File.separator)) {
+        if (!part.equals(".")) {
+          f = new File(f, part);
+        }
+      }
     }
 
     return Fs.newFile(f);
@@ -163,16 +167,19 @@ public class FileFsFile implements FsFile {
    * Construct an FileFsFile from a series of path components. Path components that are
    * null or empty string will be ignored.
    *
-   * @param part Array of path components.
+   * @param paths Array of path components.
    * @return New FileFsFile.
    */
-  public static FileFsFile from(String... part) {
+  public static FileFsFile from(String... paths) {
     final StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < part.length; i++) {
-      if (part[i] != null && part[i].length() > 0) {
-        sb.append(part[i]);
-        if (i < part.length - 1) {
-          sb.append(File.separator);
+    for (String path : paths) {
+      if (path != null && path.length() > 0) {
+        for (String part : path.split(File.separator)) {
+          boolean first = sb.length() == 0;
+          if ((part.length() > 0 || first) && (first || !part.equals("."))) {
+            if (!first || part.length() == 0) sb.append(File.separator);
+            sb.append(part);
+          }
         }
       }
     }

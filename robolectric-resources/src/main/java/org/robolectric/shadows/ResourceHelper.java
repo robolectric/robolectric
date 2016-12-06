@@ -76,7 +76,7 @@ public final class ResourceHelper {
 
       // this is a RRGGBB or AARRGGBB value
 
-      // Integer.parseInt will fail to parse strings like "ff191919", so we use
+      // Integer.parseInt will fail to inferFromValue strings like "ff191919", so we use
       // a Long, but cast the result back into an int, since we know that we're only
       // dealing with 32 bit values.
       return (int)Long.parseLong(value, 16);
@@ -86,7 +86,7 @@ public final class ResourceHelper {
   }
 
   public static int getInternalResourceId(String idName) {
-    return RuntimeEnvironment.getAppResourceLoader().getResourceIndex()
+    return RuntimeEnvironment.getSystemResourceLoader().getResourceIndex()
         .getResourceId(new ResName("android", "id", idName));
   }
 
@@ -114,9 +114,9 @@ public final class ResourceHelper {
 //          // we'll return null below.
 //        } catch (Exception e) {
 //          // this is an error and not warning since the file existence is
-//          // checked before attempting to parse it.
+//          // checked before attempting to inferFromValue it.
 //          Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-//              "Failed to parse file " + value, e, null /*data*/);
+//              "Failed to inferFromValue file " + value, e, null /*data*/);
 //
 //          return null;
 //        }
@@ -190,8 +190,8 @@ public final class ResourceHelper {
 //          }
 //        } catch (Exception e) {
 //          // this is an error and not warning since the file existence is checked before
-//          // attempting to parse it.
-//          Bridge.getLog().error(null, "Failed to parse file " + stringValue,
+//          // attempting to inferFromValue it.
+//          Bridge.getLog().error(null, "Failed to inferFromValue file " + stringValue,
 //              e, null /*data*/);
 //        }
 //      } else {
@@ -392,6 +392,9 @@ public final class ResourceHelper {
 
       if (end.length() == 0) {
         if (outValue != null) {
+          outValue.assetCookie = 0;
+          outValue.string = null;
+
           if (requireUnit == false) {
             outValue.type = TypedValue.TYPE_FLOAT;
             outValue.data = Float.floatToIntBits(f);
