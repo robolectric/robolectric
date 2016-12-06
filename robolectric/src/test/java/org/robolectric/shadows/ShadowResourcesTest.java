@@ -22,6 +22,7 @@ import java.io.InputStream;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -700,6 +701,24 @@ public class ShadowResourcesTest {
     } catch (Resources.NotFoundException e) {
       assertThat(e.getMessage()).contains("org.robolectric:id/ungulate");
     }
+  }
+
+  // config_defaultWindowFeatureOptionsPanel was introduced in API 22.
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void getIdentifierShouldReturnIdFromAppResourcesIfExistsInRuntimeFrameworkResources() throws Exception {
+    int identifier = resources.getIdentifier("config_defaultWindowFeatureOptionsPanel", "bool", "android");
+    assertThat(identifier).isNotEqualTo(0);
+    resources.getBoolean(identifier); // Should not throw Resources.NotFoundException
+  }
+
+  // config_defaultWindowFeatureOptionsPanel was introduced in API 22.
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void getIdentifierShouldReturnIdFromSystemResourcesIfExistsInRuntimeFrameworkkResources() throws Exception {
+    int identifier = Resources.getSystem().getIdentifier("config_defaultWindowFeatureOptionsPanel", "bool", "android");
+    assertThat(identifier).isNotEqualTo(0);
+    resources.getBoolean(identifier); // Should not throw Resources.NotFoundException
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

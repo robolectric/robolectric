@@ -122,6 +122,12 @@ public class ShadowThemeTest {
     assertThat(value1.coerceToString()).isEqualTo(value2.coerceToString());
   }
 
+  @Test
+  public void resolveAttribute_shouldReturnFalseForUnknownIds() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    assertThat(theme.resolveAttribute(12345678, new TypedValue(), true)).isFalse();
+  }
+
   @Test public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric_ImplicitChild, true);

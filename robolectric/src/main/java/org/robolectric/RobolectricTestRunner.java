@@ -50,7 +50,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.Logger;
-import org.robolectric.util.Pair;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;

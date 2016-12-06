@@ -281,6 +281,9 @@ public final class ShadowAssetManager {
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
     ResourceIndex resourceIndex = getResourceLoader(ident).getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
+    if (resName == null) {
+      return false;
+    }
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
