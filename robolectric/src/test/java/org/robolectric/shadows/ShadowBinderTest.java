@@ -57,7 +57,7 @@ public class ShadowBinderTest {
       reply.readException();
       fail();  // Expect thrown
     } catch (SecurityException e) {
-      assertThat(e.getMessage).isEqualTo("Halt! Who goes there?");
+      assertThat(e.getMessage()).isEqualTo("Halt! Who goes there?");
     }
   }
 
