@@ -48,7 +48,7 @@ public class ShadowBinderTest {
   }
 
   @Test
-  public void transactCallsOnTransact() throws Exception {
+  public void thrownExceptionIsParceled() throws Exception {
     TestThrowingBinder testThrowingBinder = new TestThrowingBinder();
     Parcel data = Parcel.obtain();
     Parcel reply = Parcel.obtain();
