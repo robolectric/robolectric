@@ -28,7 +28,7 @@ public class ShadowBinder {
 
    boolean result;
    try {
-     result = super.transact(code, data, reply, flags);
+     result = new ShadowBinderBridge(realObject).onTransact(code, data, reply, flags);
    } catch (Exception e) {
      result = true;
      if (reply != null) {
