@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -23,6 +24,7 @@ public class ShadowBinderTest {
     assertThat(testBinder.data).isSameAs(data);
     assertThat(testBinder.reply).isSameAs(reply);
     assertThat(testBinder.flags).isEqualTo(3);
+    reply.readException();
     assertThat(reply.readString()).isEqualTo("Hello Robolectric");
   }
 
@@ -39,8 +41,31 @@ public class ShadowBinderTest {
       this.reply = reply;
       this.flags = flags;
       String string = data.readString();
+      reply.writeNoException();
       reply.writeString(string);
       return true;
+    }
+  }
+
+  @Test
+  public void transactCallsOnTransact() throws Exception {
+    TestThrowingBinder testThrowingBinder = new TestThrowingBinder();
+    Parcel data = Parcel.obtain();
+    Parcel reply = Parcel.obtain();
+    testThrowingBinder.transact(2, data, reply, 3);
+    try {
+      reply.readException();
+      fail();  // Expect thrown
+    } catch (SecurityException e) {
+      assertThat(e.getMessage).isEqualTo("Halt! Who goes there?");
+    }
+  }
+
+  static class TestThrowingBinder extends Binder {
+
+    @Override
+    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+      throw new SecurityException("Halt! Who goes there?");
     }
   }
 
