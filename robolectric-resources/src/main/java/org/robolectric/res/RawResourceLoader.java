@@ -17,7 +17,7 @@ public class RawResourceLoader {
           String fileBaseName = file.getBaseName();
           rawResourceFiles.put("raw", fileBaseName,
               new TypedResource<>(file, ResType.FILE,
-                  new XmlLoader.XmlContext(resourcePath.getPackageName(), file)));
+                  new XmlContext(resourcePath.getPackageName(), file)));
         }
       }
     }

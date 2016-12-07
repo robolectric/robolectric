@@ -13,7 +13,7 @@ public class ResBundle {
   private String overrideNamespace;
 
   public void put(String attrType, String name, TypedResource value) {
-    XmlLoader.XmlContext xmlContext = value.getXmlContext();
+    XmlContext xmlContext = value.getXmlContext();
     ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
     List<TypedResource> values = valuesMap.find(resName);
     values.add(value);

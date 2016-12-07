@@ -2,7 +2,6 @@ package org.robolectric.res;
 
 import android.content.res.XmlResourceParser;
 import org.robolectric.res.builder.XmlBlock;
-import org.w3c.dom.Document;
 
 /**
  * Loader for xml property files.

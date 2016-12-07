@@ -181,7 +181,7 @@ public class ResBundleTest {
 
   @NotNull
   private static TypedResource<String> createStringTypedResource(String str, String qualifiers) {
-    XmlLoader.XmlContext mockXmlContext = mock(XmlLoader.XmlContext.class);
+    XmlContext mockXmlContext = mock(XmlContext.class);
     when(mockXmlContext.getQualifiers()).thenReturn(qualifiers);
     return new TypedResource<>(str, ResType.CHAR_SEQUENCE, mockXmlContext);
   }
