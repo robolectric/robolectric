@@ -29,15 +29,11 @@ import org.robolectric.fakes.RoboSensorManager;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceExtractor;
 import org.robolectric.test.TemporaryFolder;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestBroadcastReceiver;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.List;
 
@@ -159,7 +155,7 @@ public class ShadowApplicationTest {
   public void bindServiceShouldCallOnServiceConnectedWithDefaultValues() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    Binder expectedBinder = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinder = new Binder();
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isEqualTo(expectedComponentName);
@@ -181,7 +177,7 @@ public class ShadowApplicationTest {
   public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
     ShadowLooper.pauseMainLooper();
     ComponentName expectedComponentName = new ComponentName("", "");
-    Binder expectedBinder = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
 
@@ -201,7 +197,7 @@ public class ShadowApplicationTest {
   public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    Binder expectedBinder = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
     RuntimeEnvironment.application.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
@@ -217,7 +213,7 @@ public class ShadowApplicationTest {
   public void unbindServiceAddsEntryToUnboundServicesCollection() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    Binder expectedBinder = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
@@ -232,7 +228,7 @@ public class ShadowApplicationTest {
     ShadowLooper.pauseMainLooper();
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    Binder expectedBinder = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("refuseToBind");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
@@ -248,10 +244,10 @@ public class ShadowApplicationTest {
   public void bindServiceWithMultipleIntentsMapping() {
     TestService service = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
-    Binder expectedBinderOne = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinderOne = new Binder();
     Intent expectedIntentOne = new Intent("expected_one");
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
-    Binder expectedBinderTwo = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -268,10 +264,10 @@ public class ShadowApplicationTest {
   public void bindServiceWithMultipleIntentsMappingWithDefault() {
     TestService service = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
-    Binder expectedBinderOne = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinderOne = new Binder();
     Intent expectedIntentOne = new Intent("expected_one");
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
-    Binder expectedBinderTwo = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -291,11 +287,11 @@ public class ShadowApplicationTest {
   public void unbindServiceWithMultipleIntentsMapping() {
     TestService serviceOne = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
-    Binder expectedBinderOne = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinderOne = new Binder();
     Intent expectedIntentOne = new Intent("expected_one");
     TestService serviceTwo = new TestService();
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
-    Binder expectedBinderTwo = ReflectionHelpers.newInstance(Binder.class);
+    Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
