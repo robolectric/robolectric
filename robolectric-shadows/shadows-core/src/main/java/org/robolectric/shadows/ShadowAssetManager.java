@@ -103,8 +103,13 @@ public final class ShadowAssetManager {
         throw new Resources.NotFoundException("unknown resource " + resName);
       }
       outValue.type = TypedValue.TYPE_REFERENCE;
-      outValue.resourceId = resourceId;
+      if (!resolveRefs) {
+          // Just return the resourceId if resolveRefs is false.
+          outValue.data = resourceId;
+          return;
+      }
 
+      outValue.resourceId = resourceId;
       TypedResource dereferencedRef = getResourceLoader(resName).getValue(resName, qualifiers);
 
       if (dereferencedRef == null) {
@@ -285,8 +290,12 @@ public final class ShadowAssetManager {
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
-    while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
-      ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
+    while(attrValue != null && attrValue.isStyleReference()) {
+      ResName attrResName = attrValue.getStyleReference();
+      if (attrValue.resName.equals(attrResName)) {
+          Logger.info("huh... circular reference for %s?", attrResName.getFullyQualifiedName());
+          return false;
+      }
       attrValue = themeStyleSet.getAttrValue(attrResName);
     }
     if (attrValue != null) {
