@@ -127,7 +127,7 @@ public class RobolectricTest {
   @Test
   public void clickOn_shouldCallClickListener() throws Exception {
     View view = new View(RuntimeEnvironment.application);
-    shadowOf(view).setMyParent(ReflectionHelpers.newInstance(ViewParent.class));
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     TestOnClickListener testOnClickListener = new TestOnClickListener();
     view.setOnClickListener(testOnClickListener);
     ShadowView.clickOn(view);
