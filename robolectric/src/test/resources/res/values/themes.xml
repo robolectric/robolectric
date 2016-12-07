@@ -24,6 +24,7 @@
     <item name="typeface">custom_font</item>
     <item name="string1">string 1 from Theme.AnotherTheme</item>
     <item name="string2">string 2 from Theme.AnotherTheme</item>
+    <item name="android:colorPrimary">@color/white</item>
   </style>
 
   <style name="Theme.ThirdTheme" parent="@style/Theme.Robolectric">

@@ -17,8 +17,10 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
@@ -120,6 +122,15 @@ public class ShadowThemeTest {
     assertThat(value1.resourceId).isEqualTo(R.layout.activity_main);
     assertThat(value2.resourceId).isEqualTo(R.layout.activity_main);
     assertThat(value1.coerceToString()).isEqualTo(value2.coerceToString());
+  }
+
+  @Test
+  public void resolveAttribute_shouldResolveIdAgainstCorrectSdk() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TypedValue value1 = new TypedValue();
+    // colorPrimary didn't exist until Lollipop, but it should still be resolvable using the compile-time SDK
+    assertThat(activity.getTheme().resolveAttribute(android.R.attr.colorPrimary, value1, true)).isTrue();
+    assertThat(value1.resourceId).isEqualTo(R.color.white);
   }
 
   @Test public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {
@@ -318,13 +329,6 @@ public class ShadowThemeTest {
     assertThat(typedArray.hasValue(1)).isTrue(); // layout_height
   }
 
-  public static class TestActivity extends Activity {
-    @Override protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.styles_button_layout);
-    }
-  }
-
   @Test
   public void themesShouldBeApplyableAcrossResources() throws Exception {
     Resources.Theme themeFromSystem = Resources.getSystem().newTheme();
@@ -377,16 +381,25 @@ public class ShadowThemeTest {
     assertThat(typedArray.getDimensionPixelSize(0, -1)).isEqualTo(15);
   }
 
-  public static class TestActivityWithAnotherTheme extends TestActivity {
-  }
-
-  public static class TestActivityWithAThirdTheme extends TestActivity {
-  }
-
   @Test public void shouldApplyFromStyleAttribute() throws Exception {
     TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
     View button = activity.findViewById(R.id.button);
     assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
+  }
+
+  ///////////////////////////
+
+  public static class TestActivity extends Activity {
+    @Override protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      setContentView(R.layout.styles_button_layout);
+    }
+  }
+
+  public static class TestActivityWithAnotherTheme extends TestActivity {
+  }
+
+  public static class TestActivityWithAThirdTheme extends TestActivity {
   }
 
   public static class TestWithStyleAttrActivity extends Activity {

@@ -280,10 +280,8 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = getResourceLoader(ident).getResourceIndex();
-    ResName resName = resourceIndex.getResName(ident);
-
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
+    ResName resName = resourceLoader.getResourceIndex().getResName(ident);
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
     while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
