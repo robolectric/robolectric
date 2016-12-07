@@ -281,7 +281,7 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
-    ResName resName = resourceLoader.getResourceIndex().getResName(ident);
+    ResName resName = getResName(ident);
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
     while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
@@ -494,7 +494,7 @@ public final class ShadowAssetManager {
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
-    return new StyleResolver(resourceLoader, shadowOf(AssetManager.getSystem()).getResourceLoader(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
+    return new StyleResolver(resourceLoader, getSystemResourceLoader(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
   private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
@@ -520,18 +520,22 @@ public final class ShadowAssetManager {
     return value;
   }
 
+  private ResourceLoader getSystemResourceLoader() {
+    return shadowOf(AssetManager.getSystem()).getResourceLoader();
+  }
+
   /**
    * Returns either the Application's ResourceLoader or the Framework's ResourceLoader based on the package type of the resId
    */
   ResourceLoader getResourceLoader(int resId) {
-    return ResourceIds.isFrameworkResource(resId) ? shadowOf(AssetManager.getSystem()).getResourceLoader() : this.resourceLoader;
+    return ResourceIds.isFrameworkResource(resId) ? getSystemResourceLoader() : this.resourceLoader;
   }
 
   /**
    * Returns either the Application's ResourceLoader or the Framework's ResourceLoader based on the package of the ResName
    */
   private ResourceLoader getResourceLoader(ResName resName) {
-    return "android".equals(resName.packageName) ? shadowOf(AssetManager.getSystem()).getResourceLoader() : this.resourceLoader;
+    return "android".equals(resName.packageName) ? getSystemResourceLoader() : this.resourceLoader;
   }
 
   TypedResource resolve(TypedResource value, String qualifiers, int resId) {
@@ -784,8 +788,10 @@ public final class ShadowAssetManager {
   }
 
   @NotNull private ResName getResName(int id) {
-    ResourceLoader resourceLoader = getResourceLoader(id);
     ResName resName = resourceLoader.getResourceIndex().getResName(id);
+    if (resName == null) {
+      resName = getSystemResourceLoader().getResourceIndex().getResName(id);
+    }
     if (resName == null) {
       List<String> packages = new ArrayList<>(resourceLoader.getResourceIndex().getPackages());
       Collections.sort(packages);
