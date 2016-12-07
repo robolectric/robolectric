@@ -1,14 +1,13 @@
 package org.robolectric.annotation.processing.generator;
 
 import com.google.common.base.Joiner;
-import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.processing.ResetterMethod;
 import org.robolectric.annotation.processing.RobolectricModel;
 import org.robolectric.annotation.processing.RobolectricProcessor;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -140,10 +139,9 @@ public class ShadowProviderGenerator extends Generator {
     }
 
     writer.println("  public void reset() {");
-    for (Map.Entry<TypeElement, ExecutableElement> entry : model.getResetters().entrySet()) {
-      Implements annotation = entry.getKey().getAnnotation(Implements.class);
-      int minSdk = annotation.minSdk();
-      int maxSdk = annotation.maxSdk();
+    for (ResetterMethod resetterMethod : model.getResetterMethods()) {
+      int minSdk = resetterMethod.minSdk;
+      int maxSdk = resetterMethod.maxSdk;
       String ifClause;
       if (minSdk != -1 && maxSdk != -1) {
         ifClause = "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= " + minSdk +
@@ -155,7 +153,7 @@ public class ShadowProviderGenerator extends Generator {
       } else {
         ifClause = "";
       }
-      writer.println("    " + ifClause + model.getReferentFor(entry.getKey()) + "." + entry.getValue().getSimpleName() + "();");
+      writer.println("    " + ifClause + resetterMethod.getClassName() + "." + resetterMethod.methodName + "();");
     }
     writer.println("  }");
     writer.println();

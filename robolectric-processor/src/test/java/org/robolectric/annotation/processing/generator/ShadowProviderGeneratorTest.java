@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.processing.ResetterMethod;
 import org.robolectric.annotation.processing.RobolectricModel;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -12,7 +13,8 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
@@ -33,12 +35,12 @@ public class ShadowProviderGeneratorTest {
 
   @Test
   public void resettersAreOnlyCalledIfSdkMatches() throws Exception {
-    HashMap<TypeElement, ExecutableElement> resetters = new HashMap<>();
+    List<ResetterMethod> resetters = new ArrayList<>();
 
-    resetters.put(type("ShadowThing", 19, 20), element("reset19To20"));
-    resetters.put(type("ShadowThing", -1, 18), element("resetMax18"));
-    resetters.put(type("ShadowThing", 21, -1), element("resetMin21"));
-    when(model.getResetters()).thenReturn(resetters);
+    resetters.add(new ResetterMethod(type("ShadowThing", 19, 20), element("reset19To20"), parent.getAnnotation(Implements.class).minSdk(), parent.getAnnotation(Implements.class).maxSdk()));
+    resetters.add(new ResetterMethod(type("ShadowThing", -1, 18), element("resetMax18"), parent.getAnnotation(Implements.class).minSdk(), parent.getAnnotation(Implements.class).maxSdk()));
+    resetters.add(new ResetterMethod(type("ShadowThing", 21, -1), element("resetMin21"), parent.getAnnotation(Implements.class).minSdk(), parent.getAnnotation(Implements.class).maxSdk()));
+    when(model.getResetterMethods()).thenReturn(resetters);
 
     generator.generate("the.package", new PrintWriter(writer));
 
@@ -49,6 +51,9 @@ public class ShadowProviderGeneratorTest {
 
   private TypeElement type(String shadowClassName, int minSdk, int maxSdk) {
     TypeElement shadowType = mock(TypeElement.class);
+    Name name = mock(Name.class);
+    when(name.toString()).thenReturn(shadowClassName);
+    when(shadowType.getQualifiedName()).thenReturn(name);
     when(model.getReferentFor(shadowType)).thenReturn(shadowClassName);
     Implements implAnnotation = mock(Implements.class);
     when(implAnnotation.minSdk()).thenReturn(minSdk);

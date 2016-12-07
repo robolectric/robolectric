@@ -75,7 +75,7 @@ public class RobolectricModel {
   private TreeMap<TypeElement,TypeElement> shadowTypes = newTreeMap(fqComparator);
   private TreeMap<String, String> extraShadowTypes = newTreeMap();
   private TreeSet<String> imports = newTreeSet();
-  private TreeMap<TypeElement,ExecutableElement> resetterMap = newTreeMap(comparator);
+  private List<ResetterMethod> resetterMethods = newArrayList();
 
   private static class FQComparator implements Comparator<TypeElement> {
     @Override
@@ -297,11 +297,12 @@ public class RobolectricModel {
   }
 
   public void addResetter(TypeElement parent, ExecutableElement elem) {
-    resetterMap.put(parent, elem);
+    Implements implAnnotation = parent.getAnnotation(Implements.class);
+    resetterMethods.add(new ResetterMethod(parent, elem, implAnnotation.minSdk(), implAnnotation.maxSdk()));
   }
 
-  public Map<TypeElement, ExecutableElement> getResetters() {
-    return resetterMap;
+  public List<ResetterMethod> getResetterMethods() {
+    return resetterMethods;
   }
 
   public Set<String> getImports() {
@@ -320,7 +321,13 @@ public class RobolectricModel {
     return Maps.filterEntries(shadowTypes, new Predicate<Entry<TypeElement, TypeElement>>() {
       @Override
       public boolean apply(Entry<TypeElement, TypeElement> entry) {
-        return resetterMap.containsKey(entry.getKey());
+        Name simpleName = entry.getKey().getSimpleName();
+        for (ResetterMethod resetterMethod : resetterMethods) {
+          if (resetterMethod.getClassName().equals(simpleName.toString())) {
+            return true;
+          }
+        }
+        return false;
       }
     });
   }
@@ -367,7 +374,7 @@ public class RobolectricModel {
   public String getReferentFor(TypeElement type) {
     return referentMap.get(type);
   }
-  
+
   private TypeVisitor<String,Void> findReferent = new SimpleTypeVisitor6<String,Void>() {
     @Override
     public String visitDeclared(DeclaredType t, Void p) {
