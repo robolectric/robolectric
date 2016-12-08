@@ -21,6 +21,7 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.w3c.dom.Document;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -362,7 +363,13 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    return ResourceParser.create(fileName, "fixme", "fixme", null);
+    FsFile fsFile = Fs.fileFromPath(fileName);
+    Document document = XmlLoader.parse(fsFile);
+    if (document == null) {
+      throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
+    }
+    XmlBlock block = XmlBlock.create(fileName, "fixme");
+    return ResourceParser.from(block, "fixme", null);
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {

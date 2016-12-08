@@ -1,5 +1,11 @@
 package org.robolectric.res.builder;
 
+import android.content.res.Resources;
+import org.jetbrains.annotations.NotNull;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.XmlContext;
+import org.robolectric.res.XmlLoader;
 import org.w3c.dom.Document;
 
 /**
@@ -11,8 +17,22 @@ public class XmlBlock {
   private final String filename;
   private final String packageName;
 
-  public static XmlBlock create(Document document, String file, String packageName) {
+  public static XmlBlock create(String file, String packageName) {
+    FsFile fsFile = Fs.fileFromPath(file);
+    if (!fsFile.exists()) {
+      throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
+    }
+    Document document = XmlLoader.parse(fsFile);
     return new XmlBlock(document, file, packageName);
+  }
+
+  @NotNull
+  public static XmlBlock create(FsFile fsFile, XmlContext xmlContext) {
+    if (!fsFile.exists()) {
+      throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
+    }
+    Document document = XmlLoader.parse(fsFile);
+    return new XmlBlock(document, fsFile.getPath(), xmlContext.packageName);
   }
 
   public Document getDocument() {

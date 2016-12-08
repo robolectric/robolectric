@@ -1,10 +1,30 @@
 package org.robolectric.res;
 
 import org.junit.Test;
-import static org.robolectric.util.TestUtil.*;
-import static org.assertj.core.api.Assertions.*;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.util.Statistics;
+
+import java.net.URL;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.gradleAppResources;
+import static org.robolectric.util.TestUtil.resourcesBaseDir;
+import static org.robolectric.util.TestUtil.testResources;
 
 public class PackageResourceLoaderTest {
+  @Test
+  public void perf_sys() throws Exception {
+    FsFile jarFsFile = Fs.fileFromPath("jar:/usr/local/google/home/christianw/.m2/repository/org/robolectric/android-all/7.0.0_r1-robolectric-0/android-all-7.0.0_r1-robolectric-0.jar!/res");
+    final ResourcePath resourcePath = new ResourcePath(android.R.class, "android", jarFsFile, resourcesBaseDir());
+
+    new Statistics.Runner(new Runnable() {
+      @Override
+      public void run() {
+        new PackageResourceLoader(resourcePath).doInitialize();
+      }
+    }).run(10);
+  }
 
   @Test
   public void shouldLoadDrawableXmlResources() throws Exception {

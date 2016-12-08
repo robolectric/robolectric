@@ -52,15 +52,15 @@ public class PackageResourceLoader extends XResourceLoader {
         new StyleResourceLoader(data)
     );
 
-    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlBlockLoader(xmlDocuments, "layout"));
-    documentLoader.load("menu", new OpaqueFileLoader(data, "menu"), new XmlBlockLoader(xmlDocuments, "menu"));
-    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable", ResType.DRAWABLE), new XmlBlockLoader(xmlDocuments, "drawable"));
-    documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlBlockLoader(xmlDocuments, "anim"));
-    documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlBlockLoader(xmlDocuments, "animator"));
-    documentLoader.load("color", new ColorResourceLoader(data), new XmlBlockLoader(xmlDocuments, "color"));
-    documentLoader.load("xml", new OpaqueFileLoader(data, "xml"), new XmlBlockLoader(xmlDocuments, "xml"));
-    documentLoader.load("transition", new OpaqueFileLoader(data, "transition"), new XmlBlockLoader(xmlDocuments, "transition"));
-    documentLoader.load("interpolator", new OpaqueFileLoader(data, "interpolator"), new XmlBlockLoader(xmlDocuments, "interpolator"));
+    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"));
+    documentLoader.load("menu", new OpaqueFileLoader(data, "menu"));
+    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable", ResType.DRAWABLE));
+    documentLoader.load("anim", new OpaqueFileLoader(data, "anim"));
+    documentLoader.load("animator", new OpaqueFileLoader(data, "animator"));
+    documentLoader.load("color", new ColorResourceLoader(data));
+    documentLoader.load("xml", new OpaqueFileLoader(data, "xml"));
+    documentLoader.load("transition", new OpaqueFileLoader(data, "transition"));
+    documentLoader.load("interpolator", new OpaqueFileLoader(data, "interpolator"));
 
     new DrawableResourceLoader(data).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);

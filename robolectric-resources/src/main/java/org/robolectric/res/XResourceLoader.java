@@ -9,7 +9,6 @@ import java.io.InputStream;
 // TODO: Give me a better name
 abstract class XResourceLoader extends ResourceLoader {
   final ResBunch data = new ResBunch();
-  final ResBundle xmlDocuments = new ResBundle();
   final ResBundle rawResources = new ResBundle();
   
   private final ResourceIndex resourceIndex;
@@ -32,7 +31,6 @@ abstract class XResourceLoader extends ResourceLoader {
   private void makeImmutable() {
     data.makeImmutable();
 
-    xmlDocuments.makeImmutable();
     rawResources.makeImmutable();
   }
 
@@ -44,8 +42,14 @@ abstract class XResourceLoader extends ResourceLoader {
   @Override
   public XmlBlock getXml(ResName resName, String qualifiers) {
     initialize();
-    TypedResource typedResource = xmlDocuments.get(resName, qualifiers);
-    return typedResource == null ? null : (XmlBlock) typedResource.getData();
+    TypedResource typedResource = data.get(resName, qualifiers);
+    if (typedResource instanceof FileTypedResource) {
+      FileTypedResource fileTypedResource = (FileTypedResource) typedResource;
+      if (fileTypedResource.getFsFile().getPath().endsWith("xml")) {
+        return XmlBlock.create(fileTypedResource.getFsFile(), fileTypedResource.getXmlContext());
+      }
+    }
+    return null;
   }
 
   @Override

@@ -37,8 +37,7 @@ import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
 /**
- * Test class for {@link XmlBlockLoader} and its inner
- * class {@link XmlResourceParserImpl}. The tests verify
+ * Test class for {@link XmlResourceParserImpl}. The tests verify
  * that this implementation will behave exactly as
  * the android implementation.
  *
@@ -57,12 +56,12 @@ public class XmlResourceParserImplTest {
 
   @Before
   public void setUp() throws Exception {
-    ResBundle resBundle = new ResBundle();
-    XmlBlockLoader xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
-    new DocumentLoader(testResources()).load("xml", xmlBlockLoader);
+    ResBunch resBunch = new ResBunch();
+    new DocumentLoader(testResources()).load("xml", new OpaqueFileLoader(resBunch, "xml"));
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
-    XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();
+    FileTypedResource typedResource = (FileTypedResource) resBunch.get(resName, "");
+    XmlBlock xmlBlock = XmlBlock.create(typedResource.getFsFile(), typedResource.getXmlContext());
     ResourceIndex resourceIndex = new ResourceExtractor(testResources());
     resourceLoader = mock(ResourceLoader.class);
     when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);

@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 import com.ximpleware.VTDNav;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -19,14 +20,11 @@ public abstract class XmlLoader {
     documentBuilderFactory.setIgnoringElementContentWhitespace(true);
   }
 
-  private DocumentBuilder documentBuilder;
-
-  synchronized public Document parse(FsFile xmlFile) {
+  @NotNull
+  static public Document parse(FsFile xmlFile) {
     InputStream inputStream = null;
     try {
-      if (documentBuilder == null) {
-        documentBuilder = documentBuilderFactory.newDocumentBuilder();
-      }
+      DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
       inputStream = xmlFile.getInputStream();
       return documentBuilder.parse(inputStream);
     } catch (ParserConfigurationException | IOException | SAXException e) {
