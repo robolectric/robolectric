@@ -6,11 +6,11 @@ import java.util.regex.Pattern;
 public class XmlContext {
   public static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
 
-  public final String packageName;
+  public final ResourcePath resourcePath;
   private final FsFile xmlFile;
 
-  public XmlContext(String packageName, FsFile xmlFile) {
-    this.packageName = packageName;
+  public XmlContext(ResourcePath resourcePath, FsFile xmlFile) {
+    this.resourcePath = resourcePath;
     this.xmlFile = xmlFile;
   }
 
@@ -37,7 +37,7 @@ public class XmlContext {
 
   @Override public String toString() {
     return "XmlContext{" +
-        "packageName='" + packageName + '\'' +
+        "resourcePath='" + resourcePath + '\'' +
         ", xmlFile=" + xmlFile +
         '}';
   }

@@ -63,7 +63,7 @@ public class DrawableResourceLoader {
           isNinePatch = false;
         }
 
-        XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), f);
+        XmlContext fakeXmlContext = new XmlContext(resourcePath, f);
         resBunch.put(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
       }
     }

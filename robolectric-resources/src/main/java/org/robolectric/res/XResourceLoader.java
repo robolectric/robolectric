@@ -46,7 +46,8 @@ abstract class XResourceLoader extends ResourceLoader {
     if (typedResource instanceof FileTypedResource) {
       FileTypedResource fileTypedResource = (FileTypedResource) typedResource;
       if (fileTypedResource.getFsFile().getPath().endsWith("xml")) {
-        return XmlBlock.create(fileTypedResource.getFsFile(), fileTypedResource.getXmlContext());
+        return XmlBlock.create(fileTypedResource.getFsFile(),
+            fileTypedResource.getXmlContext().resourcePath.getPackageName());
       }
     }
     return null;

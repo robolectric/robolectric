@@ -11,13 +11,13 @@ public class DocumentLoader {
     }
   };
 
+  private final ResourcePath resourcePath;
   private final FsFile resourceBase;
-  private final String packageName;
   private final VTDGen vtdGen;
 
   public DocumentLoader(ResourcePath resourcePath) {
+    this.resourcePath = resourcePath;
     this.resourceBase = resourcePath.getResourceBase();
-    this.packageName = resourcePath.getPackageName();
     vtdGen = new VTDGen();
   }
 
@@ -43,8 +43,9 @@ public class DocumentLoader {
 
   private void loadResourceXmlFile(FsFile fsFile, XmlLoader... xmlLoaders) throws Exception {
     VTDNav vtdNav = parse(fsFile);
+    XmlContext xmlContext = new XmlContext(resourcePath, fsFile);
     for (XmlLoader xmlLoader : xmlLoaders) {
-      xmlLoader.processResourceXml(fsFile, vtdNav, packageName);
+      xmlLoader.processResourceXml(vtdNav, xmlContext);
     }
   }
 

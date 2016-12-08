@@ -16,7 +16,7 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
     this.expression = expression;
   }
 
-  @Override protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+  @Override protected void processResourceXml(XmlNode xmlNode, XmlContext xmlContext) throws Exception {
     for (XmlNode node : xmlNode.selectByXpath(expression)) {
       String name = node.getAttrValue("name");
       processNode(name, node, xmlContext);

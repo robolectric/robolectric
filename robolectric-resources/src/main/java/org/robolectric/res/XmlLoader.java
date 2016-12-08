@@ -38,10 +38,10 @@ public abstract class XmlLoader {
     }
   }
 
-  protected void processResourceXml(FsFile xmlFile, VTDNav vtdNav, String packageName) throws Exception {
-    processResourceXml(xmlFile, new XpathResourceXmlLoader.XmlNode(vtdNav), new XmlContext(packageName, xmlFile));
+  protected void processResourceXml(VTDNav vtdNav, XmlContext xmlContext) throws Exception {
+    processResourceXml(new XpathResourceXmlLoader.XmlNode(vtdNav), xmlContext);
   }
 
-  protected abstract void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception;
+  protected abstract void processResourceXml(XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception;
 
 }

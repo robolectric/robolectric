@@ -22,14 +22,15 @@ public class StyleResourceLoader extends XpathResourceXmlLoader {
     }
 
     String styleNameWithUnderscores = underscorize(styleName);
-    StyleData styleData = new StyleData(xmlContext.packageName, styleNameWithUnderscores, underscorize(styleParent));
+    String packageName = xmlContext.resourcePath.getPackageName();
+    StyleData styleData = new StyleData(packageName, styleNameWithUnderscores, underscorize(styleParent));
 
     for (XmlNode item : xmlNode.selectElements("item")) {
       String attrName = item.getAttrValue("name");
       String value = item.getTextContent();
 
-      ResName attrResName = ResName.qualifyResName(attrName, xmlContext.packageName, "attr");
-      styleData.add(attrResName, new AttributeResource(attrResName, value, xmlContext.packageName));
+      ResName attrResName = ResName.qualifyResName(attrName, packageName, "attr");
+      styleData.add(attrResName, new AttributeResource(attrResName, value, packageName));
     }
 
     data.put("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE, xmlContext));

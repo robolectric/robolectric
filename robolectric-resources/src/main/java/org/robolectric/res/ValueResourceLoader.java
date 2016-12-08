@@ -15,8 +15,8 @@ public class ValueResourceLoader extends XpathResourceXmlLoader {
   }
 
   @Override
-  protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
-    super.processResourceXml(xmlFile, xmlNode, xmlContext);
+  protected void processResourceXml(XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    super.processResourceXml(xmlNode, xmlContext);
 
 //    if (arraysToo) {
 //      for (XmlNode arrayNode : xmlNode.selectByXpath("/resources/" + attrType + "-array")) {

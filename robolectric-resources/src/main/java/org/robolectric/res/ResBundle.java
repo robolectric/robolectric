@@ -14,7 +14,7 @@ public class ResBundle {
 
   public void put(String attrType, String name, TypedResource value) {
     XmlContext xmlContext = value.getXmlContext();
-    ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
+    ResName resName = new ResName(maybeOverride(xmlContext.resourcePath.getPackageName()), attrType, name);
     List<TypedResource> values = valuesMap.find(resName);
     values.add(value);
 

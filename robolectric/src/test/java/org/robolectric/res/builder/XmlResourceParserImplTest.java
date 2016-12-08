@@ -61,7 +61,8 @@ public class XmlResourceParserImplTest {
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     FileTypedResource typedResource = (FileTypedResource) resBunch.get(resName, "");
-    XmlBlock xmlBlock = XmlBlock.create(typedResource.getFsFile(), typedResource.getXmlContext());
+    XmlBlock xmlBlock = XmlBlock.create(typedResource.getFsFile(),
+        typedResource.getXmlContext().resourcePath.getPackageName());
     ResourceIndex resourceIndex = new ResourceExtractor(testResources());
     resourceLoader = mock(ResourceLoader.class);
     when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);

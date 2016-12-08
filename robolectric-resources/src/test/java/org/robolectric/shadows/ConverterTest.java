@@ -14,7 +14,8 @@ public class ConverterTest {
 
   @Before
   public void setUp() throws Exception {
-    xmlContext = new XmlContext("", Fs.newFile(new File("res/values/foo.xml")));
+    xmlContext = new XmlContext(new ResourcePath(null, "", null, null),
+        Fs.newFile(new File("res/values/foo.xml")));
   }
 
   @Test
