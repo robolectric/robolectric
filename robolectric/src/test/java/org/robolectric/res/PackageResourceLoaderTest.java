@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.dependency.DependencyResolver;
@@ -13,7 +14,7 @@ import static org.robolectric.util.TestUtil.resourcesBaseDir;
 import static org.robolectric.util.TestUtil.testResources;
 
 public class PackageResourceLoaderTest {
-  @Test
+  @Ignore @Test
   public void perf_sys() throws Exception {
     FsFile jarFsFile = Fs.fileFromPath("jar:/usr/local/google/home/christianw/.m2/repository/org/robolectric/android-all/7.0.0_r1-robolectric-0/android-all-7.0.0_r1-robolectric-0.jar!/res");
     final ResourcePath resourcePath = new ResourcePath(android.R.class, "android", jarFsFile, resourcesBaseDir());
