@@ -18,9 +18,11 @@
   <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
     <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
     <item name="logoWidth">?attr/averageSheepWidth</item>
-    <item name="logoHeight">42dp</item>
+    <item name="logoHeight">@dimen/test_dp_dimen</item>
     <item name="averageSheepWidth">42px</item>
     <item name="animalStyle">@style/Gastropod</item>
+    <item name="isSugary">?attr/isSugary</item>
+    <item name="styleReference">?android:attr/buttonStyle</item>
     <item name="typeface">custom_font</item>
     <item name="string1">string 1 from Theme.AnotherTheme</item>
     <item name="string2">string 2 from Theme.AnotherTheme</item>
