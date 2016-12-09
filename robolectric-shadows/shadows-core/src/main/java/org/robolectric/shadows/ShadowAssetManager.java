@@ -18,7 +18,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -616,10 +615,8 @@ public final class ShadowAssetManager {
       }
     }
 
-    int styleAttribute = set == null ? 0 : set.getStyleAttribute();
-    if (styleAttribute != 0) {
-      ResName styleAttributeResName = getResName(styleAttribute, set);
-
+    if (set != null && set.getStyleAttribute() != 0) {
+      ResName styleAttributeResName = getResName(set.getStyleAttribute());
       while (styleAttributeResName.type.equals("attr")) {
         AttributeResource attrValue = themeStyleSet.getAttrValue(styleAttributeResName);
         if (attrValue == null) {
@@ -773,16 +770,6 @@ public final class ShadowAssetManager {
 
     // else if attr in theme, use its value
     return themeStyleSet.getAttrValue(attrName);
-  }
-
-  private ResName getResName(int resId, AttributeSet set) {
-    ResName styleAttributeResName;
-    if (set instanceof XmlResourceParserImpl) {
-      styleAttributeResName = ((XmlResourceParserImpl) set).getResName(resId);
-    } else {
-      styleAttributeResName = getResName(resId);
-    }
-    return styleAttributeResName;
   }
 
   @NotNull private ResName getResName(int id) {
