@@ -8,6 +8,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -120,6 +122,22 @@ public class ShadowCanvas {
 
   @Implementation
   public void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
+    describeBitmap(bitmap, paint);
+
+    StringBuilder descriptionBuilder = new StringBuilder();
+    if (dst != null) {
+      descriptionBuilder.append(" at (").append(dst.left).append(",").append(dst.top)
+          .append(") with height=").append(dst.height()).append(" and width=").append(dst.width());
+    }
+
+    if (src != null) {
+      descriptionBuilder.append( " taken from ").append(src.toString());
+    }
+    appendDescription(descriptionBuilder.toString());
+  }
+
+  @Implementation
+  public void drawBitmap(Bitmap bitmap, Rect src, RectF dst, Paint paint) {
     describeBitmap(bitmap, paint);
 
     StringBuilder descriptionBuilder = new StringBuilder();
