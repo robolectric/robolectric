@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.content.Context;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +13,8 @@ import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -92,5 +96,33 @@ public class ShadowNotificationManagerTest {
     assertEquals(0, shadowOf(notificationManager).size());
     assertNull(shadowOf(notificationManager).getNotification(null, 1));
     assertNull(shadowOf(notificationManager).getNotification(null, 31));
+  }
+
+  @Test
+  public void testGetActiveNotifications() throws Exception {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+      // This API was added in M.
+      return;
+    }
+    notificationManager.notify(1, notification1);
+    notificationManager.notify(31, notification2);
+
+    StatusBarNotification[] statusBarNotifications =
+        shadowOf(notificationManager).getActiveNotifications();
+    assertEquals(2, statusBarNotifications.length);
+    boolean hasNotification1 = false;
+    boolean hasNotification2 = false;
+    for (StatusBarNotification notification : statusBarNotifications) {
+      if (notification.getId() == 1) {
+        hasNotification1 = true;
+        assertEquals(notification1, notification.getNotification());
+      } else if (notification.getId() == 31) {
+        hasNotification2 = true;
+        assertEquals(notification2, notification.getNotification());
+      } else {
+        fail("Unexpected notification id " + notification.getId());
+      }
+    }
+    assertTrue(hasNotification1 && hasNotification2);
   }
 }
