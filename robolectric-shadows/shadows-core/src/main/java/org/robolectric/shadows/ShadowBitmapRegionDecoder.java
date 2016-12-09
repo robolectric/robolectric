@@ -14,6 +14,9 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
 /**
  * Shadow for {@code android.graphics.BitmapRegionDecoder}.
  */
@@ -46,12 +49,12 @@ public class ShadowBitmapRegionDecoder {
   }
 
   private static BitmapRegionDecoder newInstance() {
-#if ($api < 21)
-    return ReflectionHelpers.callConstructor(BitmapRegionDecoder.class,
-        new ReflectionHelpers.ClassParameter<>(int.class, 0));
-#else
+    if (getApiLevel() >= LOLLIPOP) {
       return ReflectionHelpers.callConstructor(BitmapRegionDecoder.class,
           new ReflectionHelpers.ClassParameter<>(long.class, 0L));
-#end
+    } else {
+      return ReflectionHelpers.callConstructor(BitmapRegionDecoder.class,
+          new ReflectionHelpers.ClassParameter<>(int.class, 0));
+    }
   }
 }
