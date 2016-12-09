@@ -15,6 +15,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
@@ -45,8 +46,9 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationState(Config defaultConfig) {
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(),
-        new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null))),
+    ResourceLoader sdkResourceLoader = new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null)));
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), sdkResourceLoader, RuntimeEnvironment.getSystemResourceLoader(),
+        new EmptyResourceLoader("package", new ResourceExtractor(new ResourcePath(org.robolectric.R.class, "package", null, null))),
         new AndroidManifest(null, null, null, "package"), defaultConfig);
   }
 
