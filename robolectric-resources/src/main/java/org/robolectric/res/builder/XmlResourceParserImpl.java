@@ -823,8 +823,4 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     }
     return false;
   }
-
-  public ResName getResName(int resId) {
-    return resourceLoader.getResourceIndex().getResName(resId);
-  }
 }
