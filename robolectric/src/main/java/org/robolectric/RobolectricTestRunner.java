@@ -281,7 +281,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
             ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
             ResourceLoader appResourceLoader = getAppResourceLoader(appManifest);
-            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, systemResourceLoader, appResourceLoader, appManifest, config);
+
+            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, getCompiletimeSdkResourceLoader(), systemResourceLoader, appResourceLoader, appManifest, config);
             testLifecycle.beforeTest(bootstrappedMethod);
           } catch (Exception e) {
             throw new RuntimeException(e);
@@ -549,16 +550,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private final ResourceLoader getAppResourceLoader(final AndroidManifest appManifest) {
     ResourceLoader resourceLoader = appResourceLoaderCache.get(appManifest);
     if (resourceLoader == null) {
-      Map<String, ResourceLoader> resourceLoaders = new HashMap<>();
-      resourceLoaders.put("android", getCompiletimeSdkResourceLoader());
-
       List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
       for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
         appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
       }
-      resourceLoaders.put(appManifest.getPackageName(), new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders));
-
-      resourceLoader = new RoutingResourceLoader(resourceLoaders);
+      resourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
       appResourceLoaderCache.put(appManifest, resourceLoader);
     }
     return resourceLoader;
