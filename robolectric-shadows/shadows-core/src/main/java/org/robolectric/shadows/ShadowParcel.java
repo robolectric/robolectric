@@ -324,7 +324,7 @@ public class ShadowParcel {
     nativeWriteInterfaceToken((long) nativePtr, interfaceName);
   }
 
-  @Implementation(maxSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP)
   public static void nativeWriteInterfaceToken(long nativePtr, String interfaceName) {
     // Write StrictMode.ThreadPolicy bits (assume 0 for test).
     nativeWriteInt(nativePtr, 0);
@@ -337,7 +337,7 @@ public class ShadowParcel {
     nativeEnforceInterface((long) nativePtr, interfaceName);
   }
 
-  @Implementation(maxSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP)
   public static void nativeEnforceInterface(long nativePtr, String interfaceName) {
     // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
     nativeReadInt(nativePtr);
