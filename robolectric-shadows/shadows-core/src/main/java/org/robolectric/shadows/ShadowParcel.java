@@ -45,23 +45,6 @@ public class ShadowParcel {
     nativeWriteByteArray(nativePtr.longValue(), b, offset, len);
   }
 
-  @Implementation
-  public void writeInterfaceToken(String interfaceName) {
-    // Write StrictMode.ThreadPolicy bits (assume 0 for test).
-    realObject.writeInt(0);
-    realObject.writeString(interfaceName);
-  }
-
-  @Implementation
-  public void enforceInterface(String interfaceName) {
-    // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
-    realObject.readInt();
-    String actualInterfaceName = realObject.readString();
-    if (!Objects.equals(interfaceName, actualInterfaceName)) {
-      throw new SecurityException("Binder invocation to an incorrect interface");
-    }
-  }
-
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static int nativeDataSize(int nativePtr) {
@@ -333,6 +316,35 @@ public class ShadowParcel {
     ByteBuffer thisByteBuffer = NATIVE_PTR_TO_PARCEL.get(thisNativePtr);
     ByteBuffer otherByteBuffer = NATIVE_PTR_TO_PARCEL.get(otherNativePtr);
     thisByteBuffer.appendFrom(otherByteBuffer, offset, length);
+  }
+  
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static void nativeWriteInterfaceToken(int nativePtr, String interfaceName) {
+    nativeWriteInterfaceToken((long) nativePtr, interfaceName);
+  }
+
+  @Implementation(maxSdk = LOLLIPOP)
+  public static void nativeWriteInterfaceToken(long nativePtr, String interfaceName) {
+    // Write StrictMode.ThreadPolicy bits (assume 0 for test).
+    nativeWriteInt(nativePtr, 0);
+    nativeWriteString(nativePtr, interfaceName);
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static void nativeEnforceInterface(int nativePtr, String interfaceName) {
+    nativeEnforceInterface((long) nativePtr, interfaceName);
+  }
+
+  @Implementation(maxSdk = LOLLIPOP)
+  public static void nativeEnforceInterface(long nativePtr, String interfaceName) {
+    // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
+    nativeReadInt(nativePtr);
+    String actualInterfaceName = nativeReadString(nativePtr);
+    if (!Objects.equals(interfaceName, actualInterfaceName)) {
+      throw new SecurityException("Binder invocation to an incorrect interface");
+    }
   }
 
   private static class ByteBuffer {
