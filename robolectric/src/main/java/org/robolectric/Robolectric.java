@@ -128,7 +128,7 @@ public class Robolectric {
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
     }
-    return new AttributeSetBuilder(document, RuntimeEnvironment.getAppResourceLoader());
+    return new AttributeSetBuilder(document, RuntimeEnvironment.getCompiletimeResourceLoader());
   }
 
   public static class AttributeSetBuilder {

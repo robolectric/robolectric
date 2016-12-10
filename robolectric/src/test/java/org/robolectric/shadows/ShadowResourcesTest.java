@@ -483,7 +483,7 @@ public class ShadowResourcesTest {
 
     theme.resolveAttribute(android.R.attr.windowBackground, out, false);
     assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(out.resourceId).isEqualTo(android.R.color.black);
+    assertThat(out.data).isEqualTo(android.R.color.black);
   }
 
   @Test

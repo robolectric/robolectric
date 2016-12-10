@@ -95,16 +95,22 @@ public final class ShadowAssetManager {
       if (attribute.getReferenceResId() != null) {
         resourceId = attribute.getReferenceResId();
       } else {
-        resourceId = getResourceLoader(resName).getResourceIndex().getResourceId(resName);
+        resourceId = resourceLoader.getResourceIndex().getResourceId(resName);
       }
 
       if (resourceId == null) {
         throw new Resources.NotFoundException("unknown resource " + resName);
       }
       outValue.type = TypedValue.TYPE_REFERENCE;
+      if (!resolveRefs) {
+          // Just return the resourceId if resolveRefs is false.
+          outValue.data = resourceId;
+          return;
+      }
+
       outValue.resourceId = resourceId;
 
-      TypedResource dereferencedRef = getResourceLoader(resName).getValue(resName, qualifiers);
+      TypedResource dereferencedRef = resourceLoader.getValue(resName, qualifiers);
 
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
@@ -125,7 +131,7 @@ public final class ShadowAssetManager {
           return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
-          TypedResource drawableResource = getResourceLoader(resName).getValue(resName, qualifiers);
+          TypedResource drawableResource = resourceLoader.getValue(resName, qualifiers);
           if (drawableResource == null) {
             throw new Resources.NotFoundException("can't find file for " + resName);
           } else {
@@ -164,7 +170,7 @@ public final class ShadowAssetManager {
       return;
     }
 
-    TypedResource attrTypeData = getResourceLoader(attribute.resName).getValue(attribute.resName, qualifiers);
+    TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
     if (attrTypeData != null) {
       AttrData attrData = (AttrData) attrTypeData.getData();
       String format = attrData.getFormat();
@@ -233,11 +239,11 @@ public final class ShadowAssetManager {
 
     // If the resource does not exist then return 0, otherwise ResourceIndex.getResourceId() will generate a placeholder.
     if (!ResName.ID_TYPE.equals(resName.type)
-        && !getResourceLoader(resName).hasValue(resName, RuntimeEnvironment.getQualifiers())) {
+        && !resourceLoader.hasValue(resName, RuntimeEnvironment.getQualifiers())) {
       return 0;
     }
 
-    Integer resourceId = getResourceLoader(resName).getResourceIndex().getResourceId(resName);
+    Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resName);
     return resourceId == null ? 0 : resourceId;
   }
 
@@ -279,13 +285,17 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = getResourceLoader(ident).getResourceIndex();
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
-    while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
-      ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
+    while(attrValue != null && attrValue.isStyleReference()) {
+      ResName attrResName = attrValue.getStyleReference();
+      if (attrValue.resName.equals(attrResName)) {
+          Logger.info("huh... circular reference for %s?", attrResName.getFullyQualifiedName());
+          return false;
+      }
       attrValue = themeStyleSet.getAttrValue(attrResName);
     }
     if (attrValue != null) {
@@ -329,8 +339,6 @@ public final class ShadowAssetManager {
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
 
-    ResourceLoader resourceLoader = getResourceLoader(resName);
-
     final FileTypedResource typedResource =
         (FileTypedResource) resourceLoader.getValue(resName, RuntimeEnvironment.getQualifiers());
 
@@ -372,7 +380,7 @@ public final class ShadowAssetManager {
     }
     resName = resolvedResName;
 
-    ResourceLoader resourceLoader = getResourceLoader(resId);
+    ResourceLoader resourceLoader = ResourceIds.isFrameworkResource(resId) ? RuntimeEnvironment.getSystemResourceLoader() : RuntimeEnvironment.getCompiletimeResourceLoader();
     XmlBlock block = resourceLoader.getXml(resName, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
@@ -484,12 +492,11 @@ public final class ShadowAssetManager {
   /////////////////////////
 
   Style resolveStyle(int resId, Style themeStyleSet) {
-    ShadowAssetManager shadowAssetManager = ResourceIds.isFrameworkResource(resId) ? shadowOf(AssetManager.getSystem()) : this;
-    return shadowAssetManager.resolveStyle(getResName(resId), themeStyleSet);
+    return resolveStyle(getResName(resId), themeStyleSet);
   }
 
   private Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
-    TypedResource themeStyleResource = getResourceLoader(themeStyleName).getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
+    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
     if (themeStyleSet == null) {
@@ -499,8 +506,6 @@ public final class ShadowAssetManager {
   }
 
   private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
-    ResourceLoader resourceLoader = getResourceLoader(resId);
-
     TypedResource value = resourceLoader.getValue(resId, qualifiers);
     if (resolveRefs) {
       value = resolve(value, qualifiers, resId);
@@ -521,26 +526,12 @@ public final class ShadowAssetManager {
     return value;
   }
 
-  /**
-   * Returns either the Application's ResourceLoader or the Framework's ResourceLoader based on the package type of the resId
-   */
-  ResourceLoader getResourceLoader(int resId) {
-    return ResourceIds.isFrameworkResource(resId) ? shadowOf(AssetManager.getSystem()).getResourceLoader() : this.resourceLoader;
-  }
-
-  /**
-   * Returns either the Application's ResourceLoader or the Framework's ResourceLoader based on the package of the ResName
-   */
-  private ResourceLoader getResourceLoader(ResName resName) {
-    return "android".equals(resName.packageName) ? shadowOf(AssetManager.getSystem()).getResourceLoader() : this.resourceLoader;
-  }
-
   TypedResource resolve(TypedResource value, String qualifiers, int resId) {
     return resolveResourceValue(value, qualifiers, resId);
   }
 
   public ResName resolveResName(ResName resName, String qualifiers) {
-    TypedResource value = getResourceLoader(resName).getValue(resName, qualifiers);
+    TypedResource value = resourceLoader.getValue(resName, qualifiers);
     return resolveResource(value, qualifiers, resName);
   }
 
@@ -553,7 +544,7 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = getResourceLoader(resName).getValue(resName, qualifiers);
+        value = resourceLoader.getValue(resName, qualifiers);
       }
     }
 
@@ -568,7 +559,7 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = getResourceLoader(resName).getValue(resName, qualifiers);
+        value = resourceLoader.getValue(resName, qualifiers);
       }
     }
 
@@ -655,7 +646,7 @@ public final class ShadowAssetManager {
         Logger.info("huh... circular reference for %s?", attribute.resName.getFullyQualifiedName());
         return null;
       }
-      ResName resName = getResourceLoader(resId).getResourceIndex().getResName(resId);
+      ResName resName = resourceLoader.getResourceIndex().getResName(resId);
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
@@ -725,24 +716,18 @@ public final class ShadowAssetManager {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
-          // TODO: If there is a match in the XML then we should get the resource name from the XML rather than look it up from the app resource loader.
-          ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+          String defaultPackageName = ResourceIds.isFrameworkResource(resId) ? "android" : RuntimeEnvironment.application.getPackageName();
+          ResName resName = ResName.qualifyResName(attributeSet.getAttributeName(i), defaultPackageName, "attr");
           Integer referenceResId = null;
           if (AttributeResource.isResourceReference(attributeSet.getAttributeValue(i))) {
             referenceResId = attributeSet.getAttributeResourceValue(i, -1);
           }
 
-          if (resName == null) {
-            // We're looking for an attribute that doesn't yet exist at this SDK level just pass it back blindly and
-            // assume the user knows what they're doing with it.
-            resName = ResName.qualifyResName(attributeSet.getAttributeName(i), null, "attr");
-          }
           return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!", referenceResId);
         }
       }
     }
 
-    ResourceLoader resourceLoader = getResourceLoader(resId);
     ResName attrName = resourceLoader.getResourceIndex().getResName(resId);
     if (attrName == null) return null;
 
@@ -773,7 +758,6 @@ public final class ShadowAssetManager {
   }
 
   @NotNull private ResName getResName(int id) {
-    ResourceLoader resourceLoader = getResourceLoader(id);
     ResName resName = resourceLoader.getResourceIndex().getResName(id);
     if (resName == null) {
       List<String> packages = new ArrayList<>(resourceLoader.getResourceIndex().getPackages());
