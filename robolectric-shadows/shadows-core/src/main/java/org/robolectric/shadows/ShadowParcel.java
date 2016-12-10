@@ -57,7 +57,7 @@ public class ShadowParcel {
     // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
     realObject.readInt();
     String actualInterfaceName = realObject.readString();
-    if (!Objects.equal(interfaceName, actualInterfaceName)) {
+    if (!Objects.equals(interfaceName, actualInterfaceName)) {
       throw new SecurityException("Binder invocation to an incorrect interface");
     }
   }
