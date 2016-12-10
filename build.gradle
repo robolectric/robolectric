@@ -29,6 +29,13 @@ allprojects {
     // it's weird that compileOnly deps aren't included for test compilation; fix that:
     project.sourceSets {
         test.compileClasspath += project.configurations.compileOnly
+
+        generated {
+            java {
+                srcDirs = ["build/classes/main"]
+                include "**/*.java"
+            }
+        }
     }
 
     apply plugin: "signing"
@@ -36,10 +43,13 @@ allprojects {
 
     task sourcesJar(type: Jar, dependsOn: classes) {
         classifier "sources"
-        from sourceSets.main.allJava
+        from sourceSets.main.allSource, sourceSets.generated.allSource
     }
 
-    javadoc.failOnError = false
+    javadoc {
+        source += sourceSets.generated.allSource
+        failOnError = false
+    }
 
     task javadocJar(type: Jar, dependsOn: javadoc) {
         classifier "javadoc"
