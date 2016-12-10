@@ -555,8 +555,8 @@ public class ShadowParcelTest {
   }
   
   @Test
-  public void testWriteAndEnforceInCompatibleInterface() {
-    parcel.writeInterfaceToken("com.example.IMyInterface");
+  public void testWriteAndEnforceIncompatibleInterface() {
+    parcel.writeInterfaceToken("com.example.Derp");
     parcel.setDataPosition(0);
     try {
       parcel.enforceInterface("com.example.IMyInterface");
