@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,23 @@ public class ShadowParcel {
     }
     Number nativePtr = ReflectionHelpers.getField(realObject, "mNativePtr");
     nativeWriteByteArray(nativePtr.longValue(), b, offset, len);
+  }
+
+  @Implementation
+  public void writeInterfaceToken(String interfaceName) {
+    // Write StrictMode.ThreadPolicy bits (assume 0 for test).
+    writeInt(0);
+    writeString(interfaceName);
+  }
+
+  @Implementation
+  public void enforceInterface(String interfaceName) {
+    // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
+    readInt();
+    String actualInterfaceName = readString();
+    if (!Objects.equal(interfaceName, actualInterfaceName)) {
+      throw new SecurityException("Binder invocation to an incorrect interface");
+    }
   }
 
   @HiddenApi
