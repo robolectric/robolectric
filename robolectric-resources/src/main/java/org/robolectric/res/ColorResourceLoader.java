@@ -12,7 +12,7 @@ public class ColorResourceLoader extends XpathResourceXmlLoader {
 
   @Override
   protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) throws XPathExpressionException {
-    TypedResource value = new FileTypedResource(xmlContext.getXmlFile(), ResType.COLOR_STATE_LIST);
-    data.put("color", xmlContext.getXmlFile().getBaseName(), value, xmlContext);
+    TypedResource value = new FileTypedResource(xmlContext.getXmlFile(), ResType.COLOR_STATE_LIST, xmlContext);
+    data.put("color", xmlContext.getXmlFile().getBaseName(), value);
   }
 }

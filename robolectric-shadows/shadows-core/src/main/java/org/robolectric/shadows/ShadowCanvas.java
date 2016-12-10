@@ -138,7 +138,7 @@ public class ShadowCanvas {
   public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
     describeBitmap(bitmap, paint);
 
-    appendDescription(" transformed by matrix");
+    appendDescription(" transformed by " + shadowOf(matrix).getDescription());
   }
 
   @Implementation

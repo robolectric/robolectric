@@ -61,4 +61,21 @@ public class RoboSensorManager extends SensorManager {
   protected boolean injectSensorDataImpl(Sensor sensor, float[] values, int accuracy, long timestamp) {
     return false;
   }
+
+  @Override
+  protected void registerDynamicSensorCallbackImpl(
+            DynamicSensorCallback callback, Handler handler) {
+
+  }
+
+  @Override
+  protected void unregisterDynamicSensorCallbackImpl(
+          DynamicSensorCallback callback) {
+
+  }
+
+  @Override
+  protected List<Sensor> getFullDynamicSensorList() {
+    return null;
+  }
 }

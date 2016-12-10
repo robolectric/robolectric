@@ -10,7 +10,6 @@ import org.robolectric.annotation.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 
@@ -33,8 +32,19 @@ public class ShadowAlarmManager {
     internalSet(type, triggerAtTime, 0L, operation);
   }
 
+  @Implementation(minSdk = KITKAT)
+  public void setWindow(
+          int type, long windowStartMillis, long windowLengthMillis, PendingIntent operation) {
+    internalSet(type, windowStartMillis, 0L, operation);
+  }
+
   @Implementation(minSdk = M)
   public void setAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
+    internalSet(type, triggerAtTime, 0L, operation);
+  }
+
+  @Implementation(minSdk = M)
+  public void setExactAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation);
   }
 

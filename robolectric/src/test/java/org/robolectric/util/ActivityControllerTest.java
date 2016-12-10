@@ -228,7 +228,15 @@ public class ActivityControllerTest {
     final float newFontScale = config.fontScale *= 2;
     
     controller.configurationChange(config);
-    transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    transcript.assertEventsInclude(
+        "onPause",
+        "onStop",
+        "onDestroy",
+        "onCreate",
+        "onStart",
+        "onRestoreInstanceState",
+        "onPostCreate",
+        "onResume");
     assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
   

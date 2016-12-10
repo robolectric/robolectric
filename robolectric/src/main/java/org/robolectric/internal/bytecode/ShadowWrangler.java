@@ -48,7 +48,7 @@ public class ShadowWrangler implements ClassHandler {
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
   private static final boolean STRIP_SHADOW_STACK_TRACES = true;
   private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false, -1, -1);
-  private static final Object NO_SHADOW = new Object();
+  static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
   private int apiLevel;
@@ -492,11 +492,11 @@ public class ShadowWrangler implements ClassHandler {
   private String getShadowClassName(Class<?> cl) {
     Class clazz = cl;
     ShadowConfig shadowConfig = null;
-    while (shadowConfig == null && clazz != null) {
+    while ((shadowConfig == null || !shadowConfig.supportsSdk(apiLevel)) && clazz != null) {
       shadowConfig = getShadowConfig(clazz);
       clazz = clazz.getSuperclass();
     }
-    return shadowConfig == null || !shadowConfig.supportsSdk(apiLevel) ? null : shadowConfig.shadowClassName;
+    return shadowConfig == null ? null : shadowConfig.shadowClassName;
   }
 
   private void injectRealObjectOn(Object shadow, Class<?> shadowClass, Object instance) {

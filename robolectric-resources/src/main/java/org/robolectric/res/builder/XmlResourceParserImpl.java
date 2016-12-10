@@ -806,10 +806,6 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     return name;
   }
 
-  public ResourceLoader getResourceLoader() {
-    return resourceLoader;
-  }
-
   /**
    * Tell is a given feature is supported by android.
    *

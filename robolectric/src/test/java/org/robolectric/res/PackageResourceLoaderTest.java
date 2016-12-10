@@ -27,6 +27,16 @@ public class PackageResourceLoaderTest {
   }
 
   @Test
+  public void shouldLoadDrawableBitmapResourcesDefinedByItemTag() throws Exception {
+    PackageResourceLoader loader = new PackageResourceLoader(testResources());
+    TypedResource value = loader.getValue(new ResName("org.robolectric", "drawable", "example_item_drawable"), "");
+    assertThat(value).isNotNull();
+    assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
+    assertThat(value.isReference()).isTrue();
+    assertThat((String) value.getData()).isEqualTo("@drawable/an_image");
+  }
+
+  @Test
   public void shouldLoadResourcesFromGradleOutputDirectories() {
     PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
     TypedResource value = loader.getValue(org.robolectric.gradleapp.R.string.from_gradle_output, "");

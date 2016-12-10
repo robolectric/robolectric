@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -233,9 +234,20 @@ public class ShadowLocationManager {
       providerListeners = new ArrayList<>();
       locationListeners.put(provider, providerListeners);
     }
+    removeDuplicates(listener, providerListeners);
     providerListeners.add(new ListenerRegistration(provider,
         minTime, minDistance, copyOf(getLastKnownLocation(provider)), listener));
 
+  }
+
+  private void removeDuplicates(LocationListener listener,
+      List<ListenerRegistration> providerListeners) {
+    final Iterator<ListenerRegistration> iterator = providerListeners.iterator();
+    while (iterator.hasNext()) {
+      if (iterator.next().listener.equals(listener)) {
+        iterator.remove();
+      }
+    }
   }
 
   @Implementation

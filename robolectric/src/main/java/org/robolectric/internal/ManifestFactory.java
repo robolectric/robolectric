@@ -1,7 +1,6 @@
 package org.robolectric.internal;
 
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.manifest.AndroidManifest;
 
 /**
@@ -15,8 +14,6 @@ import org.robolectric.manifest.AndroidManifest;
  * </ul>
  */
 public interface ManifestFactory {
-  String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
-
   ManifestIdentifier identify(Config config);
 
   AndroidManifest create(ManifestIdentifier manifestIdentifier);

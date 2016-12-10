@@ -9,6 +9,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.gradleapp.BuildConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
+import org.robolectric.res.FsFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +22,7 @@ public class GradleManifestFactoryTest {
   @Rule
   public ExpectedException exception = ExpectedException.none();
   private GradleManifestFactory factory;
+  private Config.Builder configBuilder;
 
   @Before
   public void setup() {
@@ -31,6 +33,8 @@ public class GradleManifestFactoryTest {
     FileFsFile.from("custom_build", "intermediates", "res").getFile().mkdirs();
     FileFsFile.from("custom_build", "intermediates", "assets").getFile().mkdirs();
     FileFsFile.from("custom_build", "intermediates", "manifests").getFile().mkdirs();
+    
+    configBuilder = Config.Builder.defaults();
     factory = new GradleManifestFactory();
   }
 
@@ -48,14 +52,28 @@ public class GradleManifestFactoryTest {
   }
 
   @Test
+  public void getAppManifest_withOverriddenConfigManifest_shouldCreateManifest() throws Exception {
+    final AndroidManifest manifest = createManifest(
+        configBuilder.setConstants(BuildConfig.class)
+            .setManifest("TestAndroidManifest.xml")
+            .build());
+
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(
+        getClass().getClassLoader().getResource("TestAndroidManifest.xml").getPath());
+    assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/assets/flavor1/type1"));
+  }
+
+  @Test
   public void getAppManifest_forApplications_shouldCreateManifest() throws Exception {
     final AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfig.class).build());
+        configBuilder.setConstants(BuildConfig.class).build());
 
     assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -65,12 +83,12 @@ public class GradleManifestFactoryTest {
     delete(FileFsFile.from("build", "intermediates", "manifests", "full").getFile());
 
     final AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfig.class).build());
+        configBuilder.setConstants(BuildConfig.class).build());
 
     assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/res"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/assets"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/bundles/flavor1/type1/res"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/bundles/flavor1/type1/assets"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -81,55 +99,55 @@ public class GradleManifestFactoryTest {
     FileFsFile.from("build", "intermediates", "manifests", "aapt").getFile().mkdirs();
 
     final AndroidManifest manifest = createManifest(
-            new Config.Builder().setConstants(BuildConfig.class).build());
+            configBuilder.setConstants(BuildConfig.class).build());
 
     assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/res"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/assets"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/aapt/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/bundles/flavor1/type1/res"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/bundles/flavor1/type1/assets"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/manifests/aapt/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
   public void getAppManifest_shouldCreateManifestWithMethodOverrides() throws Exception {
     final AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfigOverride.class).build());
+        configBuilder.setConstants(BuildConfigOverride.class).build());
 
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor2/type2"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor2/type2"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor2/type2/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/res/flavor2/type2"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/assets/flavor2/type2"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/manifests/full/flavor2/type2/AndroidManifest.xml"));
   }
 
   @Test
   public void getAppManifest_withBuildDirOverride_shouldCreateManifest() throws Exception {
     final AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfig.class).setBuildDir("custom_build").build());
+        configBuilder.setConstants(BuildConfig.class).setBuildDir("custom_build").build());
 
     assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("custom_build/intermediates/res/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("custom_build/intermediates/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("custom_build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("custom_build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("custom_build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("custom_build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
   public void getAppManifest_withPackageNameOverride_shouldCreateManifest() throws Exception {
     final AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfig.class).setPackageName("fake.package.name").build());
+        configBuilder.setConstants(BuildConfig.class).setPackageName("fake.package.name").build());
 
     assertThat(manifest.getPackageName()).isEqualTo("fake.package.name");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
   public void getAppManifest_withAbiSplitOverride_shouldCreateManifest() throws Exception {
     final AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfig.class).setAbiSplit("armeabi").build());
+        configBuilder.setConstants(BuildConfig.class).setAbiSplit("armeabi").build());
 
     assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/armeabi/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/manifests/full/flavor1/armeabi/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -137,12 +155,12 @@ public class GradleManifestFactoryTest {
     FileFsFile.from("build", "intermediates", "res", "merged").getFile().mkdirs();
 
     final AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfig.class).setPackageName("fake.package.name").build());
+        configBuilder.setConstants(BuildConfig.class).setPackageName("fake.package.name").build());
 
     assertThat(manifest.getPackageName()).isEqualTo("fake.package.name");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/merged/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/res/merged/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -156,8 +174,18 @@ public class GradleManifestFactoryTest {
     newFile(manifestFile, "<manifest package=\"something\"/>");
 
     AndroidManifest manifest = createManifest(
-        new Config.Builder().setConstants(BuildConfig.class).build());
+        configBuilder.setConstants(BuildConfig.class).build());
     assertThat(manifest.getRClass().getPackage().getName()).isEqualTo("org.robolectric.gradleapp");
+  }
+
+  @Test public void identify() throws Exception {
+    ManifestIdentifier manifestIdentifier = factory.identify(
+        configBuilder.setConstants(BuildConfig.class).build());
+    
+    assertThat(manifestIdentifier.getManifestFile().toString())
+        .isEqualTo("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml");
+    assertThat(manifestIdentifier.getResDir().toString())
+        .isEqualTo("build/intermediates/res/flavor1/type1");
   }
 
   ////////////////////////////////
@@ -166,8 +194,8 @@ public class GradleManifestFactoryTest {
     return factory.create(factory.identify(config));
   }
 
-  private static String convertPath(String path) {
-    return path.replace('/', File.separatorChar);
+  private static FsFile file(String path) {
+    return FileFsFile.from(path);
   }
 
   private void delete(File file) {

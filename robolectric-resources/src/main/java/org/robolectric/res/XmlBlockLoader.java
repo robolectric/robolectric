@@ -13,9 +13,9 @@ import org.w3c.dom.Document;
  */
 public class XmlBlockLoader extends XmlLoader {
   private final String attrType;
-  private final ResBundle<XmlBlock> resBundle;
+  private final ResBundle resBundle;
 
-  public XmlBlockLoader(ResBundle<XmlBlock> resBundle, String attrType) {
+  public XmlBlockLoader(ResBundle resBundle, String attrType) {
     this.attrType = attrType;
     this.resBundle = resBundle;
   }
@@ -23,6 +23,6 @@ public class XmlBlockLoader extends XmlLoader {
   @Override
   protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
     XmlBlock block = XmlBlock.create(parse(xmlFile), xmlFile.getPath(), xmlContext.packageName);
-    resBundle.put(attrType, xmlFile.getBaseName(), block, xmlContext);
+    resBundle.put(attrType, xmlFile.getBaseName(), new TypedResource<>(block, null, xmlContext));
   }
 }

@@ -7,7 +7,7 @@ public class RawResourceLoader {
     this.resourcePath = resourcePath;
   }
 
-  public void loadTo(ResBundle<FsFile> rawResourceFiles) {
+  public void loadTo(ResBundle rawResourceFiles) {
     FsFile rawDir = resourcePath.getResourceBase().join("raw");
 
     if (rawDir != null) {
@@ -15,7 +15,9 @@ public class RawResourceLoader {
       if (files != null) {
         for (FsFile file : files) {
           String fileBaseName = file.getBaseName();
-          rawResourceFiles.put("raw", fileBaseName, file, new XmlLoader.XmlContext(resourcePath.getPackageName(), file));
+          rawResourceFiles.put("raw", fileBaseName,
+              new TypedResource<>(file, ResType.FILE,
+                  new XmlLoader.XmlContext(resourcePath.getPackageName(), file)));
         }
       }
     }

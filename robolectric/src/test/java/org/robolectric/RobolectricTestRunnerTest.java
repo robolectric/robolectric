@@ -1,25 +1,31 @@
 package org.robolectric;
 
 import android.app.Application;
-
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.internal.TextListener;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
+import org.robolectric.internal.ParallelUniverse;
+import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Properties;
+import java.util.List;
+import java.util.Map;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RobolectricTestRunnerTest {
@@ -38,10 +44,10 @@ public class RobolectricTestRunnerTest {
   @Test
   public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() throws Exception {
     assertConfig(configFor(Test2.class, "withoutAnnotation"),
-        new int[0], "--default", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0], "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test2.class, "withDefaultsAnnotation"),
-        new int[0], "--default", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0], "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
         new int[] {9}, "furf", TestFakeApp.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, new String[]{"com.example.method2"}, new String[]{"libs/method"}, BuildConfigConstants.class);
@@ -86,19 +92,18 @@ public class RobolectricTestRunnerTest {
   @Test
   public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test4.class, "withoutAnnotation"),
-        new int[0],  "--default", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0],  "AndroidManifest.xml", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test4.class, "withDefaultsAnnotation"),
-        new int[0],  "--default", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0],  "AndroidManifest.xml", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test4.class, "withOverrideAnnotation"),
         new int[] {9}, "furf", TestFakeApp.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, new String[]{"com.example.method2"}, new String[]{"libs/method"}, BuildConfigConstants.class);
   }
 
   @Test
-  public void shouldLoadDefaultsFromPropertiesFile() throws Exception {
-    Properties properties = properties(
-        "sdk: 432\n" +
+  public void shouldLoadDefaultsFromGlobalPropertiesFile() throws Exception {
+    String properties = "sdk: 432\n" +
             "manifest: --none\n" +
             "qualifiers: from-properties-file\n" +
             "resourceDir: from/properties/file/res\n" +
@@ -108,40 +113,114 @@ public class RobolectricTestRunnerTest {
             "packageName: com.example.test\n" +
             "instrumentedPackages: com.example.test1, com.example.test2\n" +
             "libraries: libs/test, libs/test2\n" +
-            "constants: org.robolectric.RobolectricTestRunnerTest$BuildConfigConstants3");
+            "constants: org.robolectric.RobolectricTestRunnerTest$BuildConfigConstants3";
 
-    assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
+    assertConfig(configFor(Test2.class, "withoutAnnotation", of("/robolectric.properties", properties)),
         new int[] {432}, "--none", TestFakeApp.class, "com.example.test", "from-properties-file", "from/properties/file/res", "from/properties/file/assets", new Class[] {ShadowView.class, ShadowViewGroup.class}, new String[]{"com.example.test1", "com.example.test2"}, new String[]{"libs/test", "libs/test2"}, BuildConfigConstants3.class);
   }
 
   @Test
-  public void withEmptyShadowList_shouldLoadDefaultsFromPropertiesFile() throws Exception {
-    Properties properties = properties("shadows:");
-    assertConfig(configFor(Test2.class, "withoutAnnotation", properties), new int[0],  "--default", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
+  public void shouldMergeConfigFromTestClassPackageProperties() throws Exception {
+    assertConfig(configFor(Test2.class, "withoutAnnotation", of("org/robolectric/robolectric.properties", "sdk: 432\n")),
+        new int[] {432}, "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
   }
 
-  private Config configFor(Class<?> testClass, String methodName, final Properties configProperties) throws InitializationError {
-    Method info;
-    try {
-      info = testClass.getMethod(methodName);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
+  @Test
+  public void shouldMergeConfigUpPackageHierarchy() throws Exception {
+    assertConfig(configFor(Test2.class, "withoutAnnotation",
+        of(
+            "org/robolectric/robolectric.properties", "qualifiers: from-org-robolectric\nlibraries: FromOrgRobolectric\n",
+            "org/robolectric.properties", "sdk: 123\nqualifiers: from-org\nlibraries: FromOrg\n",
+            "/robolectric.properties", "sdk: 456\nqualifiers: from-top-level\nlibraries: FromTopLevel\n"
+            )
+        ),
+        new int[] {123}, "AndroidManifest.xml", Application.class, "", "from-org-robolectric", "res", "assets", new Class[] {}, new String[]{},
+        new String[]{"FromOrgRobolectric", "FromOrg", "FromTopLevel"}, null);
+  }
+
+  @Test
+  public void withEmptyShadowList_shouldLoadDefaultsFromGlobalPropertiesFile() throws Exception {
+    assertConfig(configFor(Test2.class, "withoutAnnotation", of("/robolectric.properties", "shadows:")),
+        new int[0],  "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
+  }
+
+  @Test
+  public void failureInResetterDoesntBreakAllTests() throws Exception {
+    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithTwoMethods.class) {
+      @Override
+      ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
+        ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
+        try {
+          Class<?> clazz = robolectricClassLoader.loadClass(MyParallelUniverse.class.getName());
+          Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);
+          Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor(RobolectricTestRunner.class);
+          return constructor.newInstance(this);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+    RunNotifier notifier = new RunNotifier();
+    final List<String> failures = new ArrayList<>();
+    notifier.addListener(new RunListener() {
+      @Override
+      public void testFailure(Failure failure) throws Exception {
+        failures.add(failure.getMessage());
+      }
+    });
+    runner.run(notifier);
+    assertThat(failures).containsExactly(
+        "java.lang.RuntimeException: fake error in resetStaticState",
+        "java.lang.RuntimeException: fake error in resetStaticState"
+    );
+  }
+
+  /////////////////////////////
+
+  public static class MyParallelUniverse extends ParallelUniverse {
+    public MyParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
+      super(robolectricTestRunner);
     }
+
+    @Override
+    public void resetStaticState(Config config) {
+      throw new RuntimeException("fake error in resetStaticState");
+    }
+  }
+
+  @Ignore
+  public static class TestWithTwoMethods {
+    @Test
+    public void first() throws Exception {
+    }
+
+    @Test
+    public void second() throws Exception {
+    }
+  }
+
+  private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties) throws InitializationError {
+    Method info = getMethod(testClass, methodName);
     return new RobolectricTestRunner(testClass) {
-      @Override protected Properties getConfigProperties() {
-        return configProperties;
+      @Override
+      InputStream getResourceAsStream(String resourceName) {
+        String properties = configProperties.get(resourceName);
+        return properties == null ? null : new ByteArrayInputStream(properties.getBytes());
       }
     }.getConfig(info);
   }
 
   private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
-    Method info;
+    Method info = getMethod(testClass, methodName);
+    return new RobolectricTestRunner(testClass).getConfig(info);
+  }
+
+  private Method getMethod(Class<?> testClass, String methodName) {
     try {
-      info = testClass.getMethod(methodName);
+      return testClass.getMethod(methodName);
     } catch (NoSuchMethodException e) {
       throw new RuntimeException(e);
     }
-    return new RobolectricTestRunner(testClass).getConfig(info);
   }
 
   private void assertConfig(Config config, int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, String[] instrumentedPackages, String[] libraries, Class<?> constants) {
@@ -266,12 +345,5 @@ public class RobolectricTestRunnerTest {
         "instrumentedPackages" + Arrays.toString(sortedInstrumentedPackages) + "\n" +
         "libraries=" + Arrays.toString(sortedLibraries) + "\n" +
         "constants=" + constants;
-  }
-
-  private Properties properties(String s) throws IOException {
-    StringReader reader = new StringReader(s);
-    Properties properties = new Properties();
-    properties.load(reader);
-    return properties;
   }
 }

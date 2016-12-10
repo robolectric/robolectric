@@ -11,6 +11,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import static android.os.Build.VERSION_CODES.N;
+
 /**
  * Shadow for {@link android.graphics.Paint}.
  */
@@ -44,6 +46,11 @@ public class ShadowPaint {
     this.flags = flags;
     antiAlias = (flags & Paint.ANTI_ALIAS_FLAG) == Paint.ANTI_ALIAS_FLAG;
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(int.class, flags));
+  }
+
+  @Implementation(minSdk = N)
+  public static long nInit() {
+    return 1;
   }
 
   @Implementation

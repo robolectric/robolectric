@@ -19,7 +19,9 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -30,8 +32,8 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
@@ -183,11 +185,19 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void query_shouldReturnTheCursorThatWasSet() throws Exception {
+  public void whenCursorHasBeenSet_query_shouldReturnTheCursor() throws Exception {
     assertThat(shadowContentResolver.query(null, null, null, null, null)).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
     assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
+  }
+
+  @Test
+  public void whenCursorHasBeenSet_queryWithCancellationSignal_shouldReturnTheCursor() throws Exception {
+    assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isNull();
+    BaseCursor cursor = new BaseCursor();
+    shadowContentResolver.setCursor(cursor);
+    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isSameAs(cursor);
   }
 
   @Test
@@ -606,7 +616,7 @@ public class ShadowContentResolverTest {
   @Test
   public void shouldRegisterContentObservers() throws Exception {
     TestContentObserver co = new TestContentObserver(null);
-    ShadowContentResolver scr = Shadows.shadowOf(contentResolver);
+    ShadowContentResolver scr = shadowOf(contentResolver);
 
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
 
@@ -652,7 +662,7 @@ public class ShadowContentResolverTest {
   @Test
   public void shouldUnregisterContentObservers() throws Exception {
     TestContentObserver co = new TestContentObserver(null);
-    ShadowContentResolver scr = Shadows.shadowOf(contentResolver);
+    ShadowContentResolver scr = shadowOf(contentResolver);
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isSameAs((ContentObserver) co);
 

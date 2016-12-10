@@ -39,6 +39,8 @@ public class ShadowActivityThread {
           } catch (PackageManager.NameNotFoundException e) {
             return null;
           }
+        } else if (method.getName().equals("notifyPackageUse")) {
+          return null;
         }
         throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
       }

@@ -7,11 +7,13 @@ import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.internal.Shadow.directlyOn;
 
@@ -27,9 +29,13 @@ public class ShadowClipboardManager {
 
   @Implementation
   public void setPrimaryClip(ClipData clip) {
-    if (getApiLevel() >= JELLY_BEAN_MR2) {
+    if (getApiLevel() >= N) {
       if (clip != null) {
-        clip.prepareToLeaveProcess();
+        clip.prepareToLeaveProcess(true);
+      }
+    } else if (getApiLevel() >= JELLY_BEAN_MR2) {
+      if (clip != null) {
+        ReflectionHelpers.callInstanceMethod(ClipData.class, clip, "prepareToLeaveProcess");
       }
     }
 

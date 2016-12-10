@@ -56,6 +56,34 @@ public class ShadowJobSchedulerTest {
   }
 
   @Test
+  public void cancelSingleJob() {
+    jobScheduler.schedule(new JobInfo.Builder(99,
+          new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+          .setPeriodic(1000)
+          .build());
+
+    assertThat(jobScheduler.getAllPendingJobs()).isNotEmpty();
+
+    jobScheduler.cancel(99);
+
+    assertThat(jobScheduler.getAllPendingJobs()).isEmpty();
+  }
+
+  @Test
+  public void cancelNonExistentJob() {
+    jobScheduler.schedule(new JobInfo.Builder(99,
+          new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+          .setPeriodic(1000)
+          .build());
+
+    assertThat(jobScheduler.getAllPendingJobs()).isNotEmpty();
+
+    jobScheduler.cancel(33);
+
+    assertThat(jobScheduler.getAllPendingJobs()).isNotEmpty();
+  }
+
+  @Test
   public void schedule_success() {
     int result = jobScheduler.schedule(new JobInfo.Builder(99,
         new ComponentName(RuntimeEnvironment.application, "component_class_name"))

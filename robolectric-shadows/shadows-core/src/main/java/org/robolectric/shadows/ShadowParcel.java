@@ -33,6 +33,7 @@ import static org.robolectric.RuntimeEnvironment.castNativePtr;
 public class ShadowParcel {
   @RealObject private Parcel realObject;
   private static final Map<Long, ByteBuffer> NATIVE_PTR_TO_PARCEL = new LinkedHashMap<>();
+  private static long nextNativePtr = 1; // this needs to start above 0, which is a magic number to Parcel
 
   @Implementation
   public void writeByteArray(byte[] b, int offset, int len) {
@@ -271,15 +272,10 @@ public class ShadowParcel {
   }
 
   @Implementation @HiddenApi
-  public static Number nativeCreate() {
-    // todo: yikes, perf:
-    // Pick a native ptr that hasn't been used.
-    long/*ptr*/ nativePtrUsed = 0;
-    while (NATIVE_PTR_TO_PARCEL.containsKey(nativePtrUsed)) {
-      nativePtrUsed++;
-    }
-    NATIVE_PTR_TO_PARCEL.put(nativePtrUsed, new ByteBuffer());
-    return castNativePtr(nativePtrUsed);
+  synchronized public static Number nativeCreate() {
+    long nativePtr = nextNativePtr++;
+    NATIVE_PTR_TO_PARCEL.put(nativePtr, new ByteBuffer());
+    return castNativePtr(nativePtr);
   }
 
   @HiddenApi

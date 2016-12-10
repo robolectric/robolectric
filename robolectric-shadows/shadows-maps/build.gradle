@@ -8,13 +8,22 @@ dependencies {
     compile project(":robolectric")
     compile project(":robolectric-shadows/shadows-core")
 
-    provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly AndroidSdk.MAX_SDK.coordinates
     compile "com.ibm.icu:icu4j:53.1"
 
-    provided "com.google.android.maps:maps:23_r1"
+    compileOnly "com.google.android.maps:maps:23_r1"
 
     testCompile "junit:junit:4.8.2"
     testCompile "org.hamcrest:hamcrest-core:1.3"
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile "org.mockito:mockito-core:1.8.0"
+    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
+    testRuntime "com.google.android.maps:maps:23_r1"
+}
+
+// change local artifact name to match dependencies
+install {
+    repositories.mavenInstaller {
+        pom.artifactId = 'shadows-maps'
+    }
 }

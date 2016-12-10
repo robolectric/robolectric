@@ -18,8 +18,7 @@ public class MavenManifestFactory implements ManifestFactory {
       return new ManifestIdentifier(null, null, null, null, null);
     }
 
-    FsFile manifestFile = getBaseDir().join(config.manifest().equals(Config.DEFAULT_MANIFEST)
-        ? DEFAULT_MANIFEST_NAME : config.manifest().replaceAll("^(\\./)+", ""));
+    FsFile manifestFile = getBaseDir().join(config.manifest());
     FsFile baseDir = manifestFile.getParent();
     FsFile resDir = baseDir.join(config.resourceDir());
     FsFile assetDir = baseDir.join(config.assetDir());
@@ -77,7 +76,7 @@ public class MavenManifestFactory implements ManifestFactory {
     };
   }
 
-  private static FsFile getBaseDir() {
+  FsFile getBaseDir() {
     return Fs.currentDirectory();
   }
 
@@ -109,7 +108,7 @@ public class MavenManifestFactory implements ManifestFactory {
   }
 
   private static AndroidManifest createLibraryAndroidManifest(FsFile libraryBaseDir) {
-    return new AndroidManifest(libraryBaseDir.join(DEFAULT_MANIFEST_NAME), libraryBaseDir.join(Config.DEFAULT_RES_FOLDER), libraryBaseDir.join(Config.DEFAULT_ASSET_FOLDER));
+    return new AndroidManifest(libraryBaseDir.join(Config.DEFAULT_MANIFEST_NAME), libraryBaseDir.join(Config.DEFAULT_RES_FOLDER), libraryBaseDir.join(Config.DEFAULT_ASSET_FOLDER));
   }
 
   private static Properties getProperties(FsFile propertiesFile) {
