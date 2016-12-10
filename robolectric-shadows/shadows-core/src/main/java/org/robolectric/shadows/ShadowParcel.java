@@ -48,15 +48,15 @@ public class ShadowParcel {
   @Implementation
   public void writeInterfaceToken(String interfaceName) {
     // Write StrictMode.ThreadPolicy bits (assume 0 for test).
-    writeInt(0);
-    writeString(interfaceName);
+    realObject.writeInt(0);
+    realObject.writeString(interfaceName);
   }
 
   @Implementation
   public void enforceInterface(String interfaceName) {
     // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
-    readInt();
-    String actualInterfaceName = readString();
+    realObject.readInt();
+    String actualInterfaceName = realObject.readString();
     if (!Objects.equal(interfaceName, actualInterfaceName)) {
       throw new SecurityException("Binder invocation to an incorrect interface");
     }
