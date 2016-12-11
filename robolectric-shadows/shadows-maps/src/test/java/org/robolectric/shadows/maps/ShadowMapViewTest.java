@@ -166,7 +166,7 @@ public class ShadowMapViewTest {
   }
 
   @Implements(ItemizedOverlay.class)
-  public static class MyOverlay extends ItemizedOverlay {
+  public static class MyOverlay<T extends OverlayItem> extends ItemizedOverlay<T> {
     private MotionEvent lastMotionEvent;
     private boolean shouldConsumeEvent = true;
 
@@ -175,7 +175,7 @@ public class ShadowMapViewTest {
     }
 
     @Override
-    protected OverlayItem createItem(int i) {
+    protected T createItem(int i) {
       return null;
     }
 
