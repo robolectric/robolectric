@@ -176,6 +176,7 @@ public class ShadowAssetManagerTest {
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
     when(mockAttributeSet.getAttributeCount()).thenReturn(1);
     when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
+    when(mockAttributeSet.getAttributeName(0)).thenReturn("android:windowBackground");
     when(mockAttributeSet.getAttributeValue(0)).thenReturn("value");
 
     resources.obtainAttributes(mockAttributeSet, new int[]{android.R.attr.windowBackground});
