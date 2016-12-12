@@ -20,6 +20,7 @@ public class RuntimeEnvironment {
   private static Scheduler masterScheduler;
   private static ResourceLoader systemResourceLoader;
   private static ResourceLoader appResourceLoader;
+  private static ResourceLoader compiletimeResourceLoader;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -149,5 +150,13 @@ public class RuntimeEnvironment {
 
   public static ResourceLoader getAppResourceLoader() {
     return appResourceLoader;
+  }
+
+  public static void setCompiletimeResourceLoader(ResourceLoader compiletimeResourceLoader) {
+    RuntimeEnvironment.compiletimeResourceLoader = compiletimeResourceLoader;
+  }
+
+  public static ResourceLoader getCompiletimeResourceLoader() {
+    return compiletimeResourceLoader;
   }
 }

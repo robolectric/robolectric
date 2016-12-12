@@ -702,14 +702,6 @@ public class ShadowResourcesTest {
     }
   }
 
-  @Test @Config(sdk = 19)
-  public void shouldResolveStyleNameAgainstAttrSetResourceNames() throws Exception {
-    AttributeSet set = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@android:style/Theme_Material")
-        .build();
-    resources.obtainAttributes(set, new int[]{android.R.attr.layout_width});
-  }
-
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {
