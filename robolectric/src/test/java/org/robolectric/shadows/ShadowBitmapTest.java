@@ -325,6 +325,35 @@ public class ShadowBitmapTest {
   }
 
   @Test
+  public void shouldAdjustDimensionsForMatrix() {
+    Bitmap transformedBitmap;
+    int width = 10;
+    int height = 20;
+
+    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    Matrix matrix = new Matrix();
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(width);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(height);
+
+    matrix.setRotate(90);
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(height);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(width);
+
+    matrix.setScale(2, 3);
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(width * 2);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(height * 3);
+  }
+
+  @Test
   public void shouldWriteToParcelAndReconstruct() {
     Bitmap bitmapOriginal;
     int originalWidth = 10;

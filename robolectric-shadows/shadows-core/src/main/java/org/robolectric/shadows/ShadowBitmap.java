@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -301,6 +301,12 @@ public class ShadowBitmap {
     shadowBitmap.appendDescription(" with width " + width + " and height " + height);
     if (matrix != null) {
       shadowBitmap.appendDescription(" using matrix " + shadowOf(matrix).getDescription());
+
+      // Adjust width and height by using the matrix.
+      RectF mappedRect = new RectF();
+      matrix.mapRect(mappedRect, new RectF(0, 0, width, height));
+      width = Math.round(mappedRect.width());
+      height = Math.round(mappedRect.height());
     }
     if (filter) {
       shadowBitmap.appendDescription(" with filter");

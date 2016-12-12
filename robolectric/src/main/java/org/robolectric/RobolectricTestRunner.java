@@ -492,19 +492,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       sdkEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
     }
 
-    ClassHandler classHandler = getClassHandler(sdkEnvironment, shadowMap);
+    ClassHandler classHandler = new ShadowWrangler(shadowMap, sdkEnvironment.getSdkConfig()
+        .getApiLevel());
     injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
-  }
-
-  private ClassHandler getClassHandler(SdkEnvironment sdkEnvironment, ShadowMap shadowMap) {
-    ClassHandler classHandler;
-    synchronized (sdkEnvironment) {
-      classHandler = sdkEnvironment.classHandlersByShadowMap.get(shadowMap);
-      if (classHandler == null) {
-        classHandler = new ShadowWrangler(shadowMap, sdkEnvironment.getSdkConfig().getApiLevel());
-      }
-    }
-    return classHandler;
   }
 
   protected int pickSdkVersion(Config config, AndroidManifest manifest) {

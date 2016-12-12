@@ -17,7 +17,6 @@ public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
   private final ShadowInvalidator shadowInvalidator;
-  public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<>();
   private ShadowMap shadowMap = ShadowMap.EMPTY;
   private ResourceLoader systemResourceLoader;
 
