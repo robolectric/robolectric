@@ -1,14 +1,10 @@
 package org.robolectric.internal;
 
+import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.ShadowInvalidator;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.bytecode.ShadowMap;
-import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.res.Fs;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.res.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +13,8 @@ public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
   private final ShadowInvalidator shadowInvalidator;
+  private final Map<ShadowMap, ClassHandler> classHandlersByShadowMap = new HashMap<>();
+
   private ShadowMap shadowMap = ShadowMap.EMPTY;
   private ResourceLoader systemResourceLoader;
 
@@ -24,6 +22,14 @@ public class SdkEnvironment {
     this.sdkConfig = sdkConfig;
     this.robolectricClassLoader = robolectricClassLoader;
     shadowInvalidator = new ShadowInvalidator();
+  }
+
+  public void addClassHandler(ShadowMap shadowMap, ClassHandler classHandler) {
+    classHandlersByShadowMap.put(shadowMap, classHandler);
+  }
+
+  public ClassHandler getClassHandler(ShadowMap shadowMap) {
+    return classHandlersByShadowMap.get(shadowMap);
   }
 
   public synchronized ResourceLoader getSystemResourceLoader(DependencyResolver dependencyResolver) {
