@@ -495,6 +495,9 @@ public final class ShadowAssetManager {
   }
 
   private int getResourceType(TypedResource typedResource) {
+    if (typedResource == null) {
+      return -1;
+    }
     final ResType resType = typedResource.getResType();
     int type;
     if (typedResource.getData() == null || resType == ResType.NULL) {
