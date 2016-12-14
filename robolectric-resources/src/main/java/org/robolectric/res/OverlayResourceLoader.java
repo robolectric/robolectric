@@ -106,8 +106,8 @@ public class OverlayResourceLoader extends XResourceLoader {
     }
   }
 
-  @Override public InputStream getRawValue(ResName resName) {
-    return super.getRawValue(resName.withPackageName(packageName));
+  @Override public InputStream getRawValue(ResName resName, String qualifiers) {
+    return super.getRawValue(resName.withPackageName(packageName), qualifiers);
   }
 
   @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {

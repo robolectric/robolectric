@@ -18,16 +18,11 @@ import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import java.io.FileDescriptor;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
@@ -42,7 +37,6 @@ import static org.robolectric.internal.Shadow.directlyOn;
 @Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<>();
-  private static boolean initialized;
 
   @Implementation
   public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
@@ -104,7 +98,7 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
     String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
-    Point imageSize = is instanceof NamedStream ? null : getImageSizeFromStream(is);
+    Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.createdFromStream = is;
@@ -224,30 +218,5 @@ public class ShadowBitmapFactory {
     }
 
     return new Point(100, 100);
-  }
-
-  private static Point getImageSizeFromStream(InputStream is) {
-    if (!initialized) {
-      // Stops ImageIO from creating temp files when reading images
-      // from input stream.
-      ImageIO.setUseCache(false);
-      initialized = true;
-    }
-
-    try {
-      ImageInputStream imageStream = ImageIO.createImageInputStream(is);
-      Iterator<ImageReader> readers = ImageIO.getImageReaders(imageStream);
-      if (!readers.hasNext()) return null;
-
-      ImageReader reader = readers.next();
-      try {
-        reader.setInput(imageStream);
-        return new Point(reader.getWidth(0), reader.getHeight(0));
-      } finally {
-        reader.dispose();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 }
