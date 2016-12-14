@@ -88,11 +88,11 @@ public class ShadowLocalBroadcastManagerTest {
       @Override public void onReceive(Context context, Intent intent) {
         transcript.add("got intent " + intent.getAction());
       }
-    }, IntentFilter.create("foo", "blatz"));
+    }, IntentFilter.create("foo", "application/blatz"));
 
-    Intent intent1 = new Intent("foo");
+    Intent intent1 = new Intent("foo").setType("application/blatz");
     broadcastManager.sendBroadcast(intent1);
-    Intent intent2 = new Intent("bar");
+    Intent intent2 = new Intent("bar").setType("application/blatz");
     broadcastManager.sendBroadcast(intent2);
 
     transcript.assertEventsSoFar("got intent foo");

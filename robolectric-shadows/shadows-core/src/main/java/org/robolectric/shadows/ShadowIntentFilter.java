@@ -34,11 +34,12 @@ public class ShadowIntentFilter {
   int priority;
 
   public void __constructor__(String action) {
-    actions.add(action);
+    addAction(action);
   }
 
-  public void __constructor__(String action, String dataType) {
-    actions.add(action);
+  public void __constructor__(String action, String dataType) throws IntentFilter.MalformedMimeTypeException {
+    addAction(action);
+    addDataType(dataType);
   }
 
   public void __constructor__(IntentFilter filter) {
