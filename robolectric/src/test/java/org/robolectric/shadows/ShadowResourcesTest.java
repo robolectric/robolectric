@@ -448,6 +448,20 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void shouldLoadRawResources_supportsDrawable() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
+  }
+
+  @Test @Config(qualifiers = "hdpi")
+  public void shouldLoadRawResources_supportsDrawableWithQualifiers() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
+  }
+
+  @Test
   public void setScaledDensityShouldSetScaledDensityInDisplayMetrics() {
     final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
 

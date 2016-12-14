@@ -22,7 +22,7 @@ public class DocumentLoader {
   }
 
   public void load(String folderBaseName, XmlLoader... xmlLoaders) throws Exception {
-    FsFile[] files = resourceBase.listFiles(new DirectoryMatchingFilter(folderBaseName));
+    FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
     if (files == null) {
       throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
     }
@@ -54,18 +54,5 @@ public class DocumentLoader {
     vtdGen.parse(true);
 
     return vtdGen.getNav();
-  }
-
-  private static class DirectoryMatchingFilter implements FsFile.Filter {
-    private final String folderBaseName;
-
-    public DirectoryMatchingFilter(String folderBaseName) {
-      this.folderBaseName = folderBaseName;
-    }
-
-    @Override
-    public boolean accept(FsFile file) {
-      return file.getName().startsWith(folderBaseName);
-    }
   }
 }

@@ -49,10 +49,10 @@ abstract class XResourceLoader extends ResourceLoader {
   }
 
   @Override
-  public InputStream getRawValue(ResName resName) {
+  public InputStream getRawValue(ResName resName, String qualifiers) {
     initialize();
 
-    TypedResource typedResource = rawResources.get(resName, "");
+    TypedResource typedResource = rawResources.get(resName, qualifiers);
     FsFile file = typedResource == null ? null : (FsFile) typedResource.getData();
     try {
       return file == null ? null : file.getInputStream();

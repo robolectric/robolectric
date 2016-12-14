@@ -127,7 +127,7 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResourceLoader().getRawValue(id);
+    return shadowOf(realResources.getAssets()).getResourceLoader().getRawValue(id, RuntimeEnvironment.getQualifiers());
   }
 
   @Implementation

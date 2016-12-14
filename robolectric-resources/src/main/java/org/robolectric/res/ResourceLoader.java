@@ -19,16 +19,16 @@ public abstract class ResourceLoader {
 
   public abstract XmlBlock getXml(ResName resName, String qualifiers);
 
-  public abstract InputStream getRawValue(ResName resName);
+  public abstract InputStream getRawValue(ResName resName, String qualifiers);
 
-  public InputStream getRawValue(int resId) {
-    return getRawValue(getResourceIndex().getResName(resId));
+  public InputStream getRawValue(int resId, String qualifiers) {
+    return getRawValue(getResourceIndex().getResName(resId), qualifiers);
   }
 
   public boolean hasValue(ResName resName, String qualifiers) {
     return getValue(resName, qualifiers) != null
         || getXml(resName, qualifiers) != null
-        || getRawValue(resName) != null;
+        || getRawValue(resName, qualifiers) != null;
   }
 
   public abstract ResourceIndex getResourceIndex();
