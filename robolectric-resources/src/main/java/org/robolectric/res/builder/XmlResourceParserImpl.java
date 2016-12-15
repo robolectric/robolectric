@@ -739,15 +739,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
   @Override
   public int getIdAttributeResourceValue(int defaultValue) {
-    String id = getIdAttribute();
-    if (id == null) {
-      return defaultValue;
-    }
-    try {
-      return Integer.parseInt(id);
-    } catch (NumberFormatException ex) {
-      return defaultValue;
-    }
+    return getAttributeResourceValue(null, "id", defaultValue);
   }
 
   @Override
