@@ -18,7 +18,11 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+
+import static java.util.Arrays.asList;
 
 /**
  * Generator that creates the "ShadowProvider" implementation for a shadow package.
@@ -41,6 +45,14 @@ public class ShadowProviderGenerator extends Generator {
 
   @Override
   public void generate(String shadowPackage) {
+    List<Integer> apiLevels = asList(16, 17, 18, 19, 21, 22, 23, 24, 25);
+    for (Integer apiLevel : apiLevels) {
+      generateFor(shadowPackage + "." + apiLevel, apiLevel);
+    }
+    generateFor(shadowPackage, Collections.max(apiLevels));
+  }
+
+  private void generateFor(String shadowPackage, int maxApiLevel) {
     final String shadowClassName = shadowPackage + '.' + GEN_CLASS;
     messager.printMessage(Diagnostic.Kind.NOTE, "Generating output file: " + shadowClassName);
 
@@ -53,7 +65,7 @@ public class ShadowProviderGenerator extends Generator {
     try {
       JavaFileObject jfo = filer.createSourceFile(shadowClassName);
       writer = new PrintWriter(jfo.openWriter());
-      generate(shadowPackage, writer);
+      generate(shadowPackage, maxApiLevel, writer);
     } catch (IOException e) {
       messager.printMessage(Diagnostic.Kind.ERROR, "Failed to write shadow class file: " + e);
       throw new RuntimeException(e);
@@ -65,7 +77,7 @@ public class ShadowProviderGenerator extends Generator {
     }
   }
 
-  void generate(String shadowPackage, PrintWriter writer) {
+  void generate(String shadowPackage, int maxApiLevel, PrintWriter writer) {
     writer.print("package " + shadowPackage + ";\n");
     for (String name : model.getImports()) {
       writer.println("import " + name + ';');

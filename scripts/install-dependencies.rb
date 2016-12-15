@@ -157,7 +157,9 @@ MAPS_REVISION_VERSION = "1"
 
 # Mavenize all dependencies
 
-install_stubs(23)
+[16, 17, 18, 19, 21, 22, 23, 24, 25].each do |api|
+  install_stubs(api)
+end
 
 install_map(MAPS_GROUP_ID, MAPS_ARTIFACT_ID, MAPS_API_VERSION, MAPS_REVISION_VERSION)
 
