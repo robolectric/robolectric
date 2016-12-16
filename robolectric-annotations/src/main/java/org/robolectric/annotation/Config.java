@@ -35,12 +35,18 @@ public @interface Config {
   int DEFAULT_VALUE_INT = -1;
 
   String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
+  Class<? extends Application> DEFAULT_APPLICATION = DefaultApplication.class;
   String DEFAULT_PACKAGE_NAME = "";
   String DEFAULT_ABI_SPLIT = "";
   String DEFAULT_QUALIFIERS = "";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
   String DEFAULT_BUILD_FOLDER = "build";
+
+  int ALL_SDKS = -2;
+  int TARGET_SDK = -3;
+  int OLDEST_SDK = -4;
+  int NEWEST_SDK = -5;
 
   /**
    * The Android SDK level to emulate. This value will also be set as Build.VERSION.SDK_INT.
@@ -82,7 +88,7 @@ public @interface Config {
    *
    * @return The {@link android.app.Application} class to use in the test.
    */
-  Class<? extends Application> application() default Application.class;  // DEFAULT_APPLICATION
+  Class<? extends Application> application() default DefaultApplication.class;  // DEFAULT_APPLICATION
 
   /**
    * Java package name where the "R.class" file is located. This only needs to be specified if you define
@@ -179,9 +185,9 @@ public @interface Config {
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
       return new Implementation(
-          parseIntArrayProperty(properties.getProperty("sdk", "")),
-          Integer.parseInt(properties.getProperty("minSdk", "-1")),
-          Integer.parseInt(properties.getProperty("maxSdk", "-1")),
+          parseSdkArrayProperty(properties.getProperty("sdk", "")),
+          parseSdkInt(properties.getProperty("minSdk", "-1")),
+          parseSdkInt(properties.getProperty("maxSdk", "-1")),
           properties.getProperty("manifest", DEFAULT_VALUE_STRING),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
           properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
@@ -191,7 +197,7 @@ public @interface Config {
           properties.getProperty("buildDir", DEFAULT_BUILD_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
-          parseApplication(properties.getProperty("application", "android.app.Application")),
+          parseApplication(properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
           parseClass(properties.getProperty("constants", ""))
       );
@@ -226,14 +232,44 @@ public @interface Config {
       return property.split("[, ]+");
     }
 
-    private static int[] parseIntArrayProperty(String property) {
+    private static int[] parseSdkArrayProperty(String property) {
       String[] parts = parseStringArrayProperty(property);
       int[] result = new int[parts.length];
       for (int i = 0; i < parts.length; i++) {
-        result[i] = Integer.parseInt(parts[i]);
+        result[i] = parseSdkInt(parts[i]);
       }
 
       return result;
+    }
+
+    private static int parseSdkInt(String part) {
+      String spec = part.trim();
+      switch (spec) {
+        case "ALL_SDKS":
+          return Config.ALL_SDKS;
+        case "TARGET_SDK":
+          return Config.TARGET_SDK;
+        case "OLDEST_SDK":
+          return Config.OLDEST_SDK;
+        case "NEWEST_SDK":
+          return Config.NEWEST_SDK;
+        default:
+          return Integer.parseInt(spec);
+      }
+    }
+
+    private static void validate(Config config) {
+      //noinspection ConstantConditions
+      if (config.sdk() != null && config.sdk().length > 0 &&
+          (config.minSdk() != DEFAULT_VALUE_INT || config.maxSdk() != DEFAULT_VALUE_INT)) {
+        throw new IllegalArgumentException("sdk and minSdk/maxSdk may not be specified together" +
+            " (sdk=" + Arrays.toString(config.sdk()) + ", minSdk=" + config.minSdk() + ", maxSdk=" + config.maxSdk() + ")");
+      }
+
+      if (config.minSdk() > DEFAULT_VALUE_INT && config.maxSdk() > DEFAULT_VALUE_INT && config.minSdk() > config.maxSdk()) {
+        throw new IllegalArgumentException("minSdk may not be larger than maxSdk" +
+            " (minSdk=" + config.minSdk() + ", maxSdk=" + config.maxSdk() + ")");
+      }
     }
 
     public Implementation(int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
@@ -252,63 +288,8 @@ public @interface Config {
       this.application = application;
       this.libraries = libraries;
       this.constants = constants;
-    }
 
-    public Implementation(Config other) {
-      this.sdk = other.sdk();
-      this.minSdk = other.minSdk();
-      this.maxSdk = other.maxSdk();
-      this.manifest = other.manifest();
-      this.qualifiers = other.qualifiers();
-      this.packageName = other.packageName();
-      this.abiSplit = other.abiSplit();
-      this.resourceDir = other.resourceDir();
-      this.assetDir = other.assetDir();
-      this.buildDir = other.buildDir();
-      this.constants = other.constants();
-      this.shadows = other.shadows();
-      this.instrumentedPackages = other.instrumentedPackages();
-      this.application = other.application();
-      this.libraries = other.libraries();
-    }
-
-    public Implementation(Config baseConfig, Config overlayConfig) {
-      this.sdk = pickSdk(baseConfig.sdk(), overlayConfig.sdk(), new int[0]);
-      this.minSdk = pick(baseConfig.minSdk(), overlayConfig.minSdk(), DEFAULT_VALUE_INT);
-      this.maxSdk = pick(baseConfig.maxSdk(), overlayConfig.maxSdk(), DEFAULT_VALUE_INT);
-      this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT_VALUE_STRING);
-      this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
-      this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
-      this.abiSplit = pick(baseConfig.abiSplit(), overlayConfig.abiSplit(), "");
-      this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
-      this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
-      this.buildDir = pick(baseConfig.buildDir(), overlayConfig.buildDir(), Config.DEFAULT_BUILD_FOLDER);
-      this.constants = pick(baseConfig.constants(), overlayConfig.constants(), Void.class);
-
-      Set<Class<?>> shadows = new HashSet<>();
-      shadows.addAll(Arrays.asList(baseConfig.shadows()));
-      shadows.addAll(Arrays.asList(overlayConfig.shadows()));
-      this.shadows = shadows.toArray(new Class[shadows.size()]);
-
-      Set<String> instrumentedPackages = new HashSet<>();
-      instrumentedPackages.addAll(Arrays.asList(baseConfig.instrumentedPackages()));
-      instrumentedPackages.addAll(Arrays.asList(overlayConfig.instrumentedPackages()));
-      this.instrumentedPackages = instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
-
-      this.application = pick(baseConfig.application(), overlayConfig.application(), Application.class);
-
-      Set<String> libraries = new HashSet<>();
-      libraries.addAll(Arrays.asList(baseConfig.libraries()));
-      libraries.addAll(Arrays.asList(overlayConfig.libraries()));
-      this.libraries = libraries.toArray(new String[libraries.size()]);
-    }
-
-    private <T> T pick(T baseValue, T overlayValue, T nullValue) {
-      return overlayValue != null ? (overlayValue.equals(nullValue) ? baseValue : overlayValue) : null;
-    }
-
-    private int[] pickSdk(int[] baseValue, int[] overlayValue, int[] nullValue) {
-      return Arrays.equals(overlayValue, nullValue) ? baseValue : overlayValue;
+      validate(this);
     }
 
     @Override
@@ -405,11 +386,32 @@ public @interface Config {
     private String buildDir = Config.DEFAULT_BUILD_FOLDER;
     private Class<?>[] shadows = new Class[0];
     private String[] instrumentedPackages = new String[0];
-    private Class<? extends Application> application = Application.class; // todo: make a private default dummy
+    private Class<? extends Application> application = DEFAULT_APPLICATION;
     private String[] libraries = new String[0];
     private Class<?> constants = Void.class;
 
-    public Builder setSdk(int[] sdk) {
+    public Builder() {
+    }
+
+    public Builder(Config config) {
+      sdk = config.sdk();
+      minSdk = config.minSdk();
+      maxSdk = config.maxSdk();
+      manifest = config.manifest();
+      qualifiers = config.qualifiers();
+      packageName = config.packageName();
+      abiSplit = config.abiSplit();
+      resourceDir = config.resourceDir();
+      assetDir = config.assetDir();
+      buildDir = config.buildDir();
+      shadows = config.shadows();
+      instrumentedPackages = config.instrumentedPackages();
+      application = config.application();
+      libraries = config.libraries();
+      constants = config.constants();
+    }
+
+    public Builder setSdk(int... sdk) {
       this.sdk = sdk;
       return this;
     }
@@ -495,8 +497,68 @@ public @interface Config {
           .setAssetDir(DEFAULT_ASSET_FOLDER);
     }
 
+    public Builder overlay(Config overlayConfig) {
+      int[] overlaySdk = overlayConfig.sdk();
+      int overlayMinSdk = overlayConfig.minSdk();
+      int overlayMaxSdk = overlayConfig.maxSdk();
+
+      //noinspection ConstantConditions
+      if (overlaySdk != null && overlaySdk.length > 0) {
+        this.sdk = overlaySdk;
+        this.minSdk = overlayMinSdk;
+        this.maxSdk = overlayMaxSdk;
+      } else {
+        if (overlayMinSdk != DEFAULT_VALUE_INT || overlayMaxSdk != DEFAULT_VALUE_INT) {
+          this.sdk = new int[0];
+        } else {
+          this.sdk = pickSdk(this.sdk, overlaySdk, new int[0]);
+        }
+        this.minSdk = pick(this.minSdk, overlayMinSdk, DEFAULT_VALUE_INT);
+        this.maxSdk = pick(this.maxSdk, overlayMaxSdk, DEFAULT_VALUE_INT);
+      }
+      this.manifest = pick(this.manifest, overlayConfig.manifest(), DEFAULT_VALUE_STRING);
+      this.qualifiers = pick(this.qualifiers, overlayConfig.qualifiers(), "");
+      this.packageName = pick(this.packageName, overlayConfig.packageName(), "");
+      this.abiSplit = pick(this.abiSplit, overlayConfig.abiSplit(), "");
+      this.resourceDir = pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
+      this.assetDir = pick(this.assetDir, overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
+      this.buildDir = pick(this.buildDir, overlayConfig.buildDir(), Config.DEFAULT_BUILD_FOLDER);
+      this.constants = pick(this.constants, overlayConfig.constants(), Void.class);
+
+      Set<Class<?>> shadows = new HashSet<>();
+      shadows.addAll(Arrays.asList(this.shadows));
+      shadows.addAll(Arrays.asList(overlayConfig.shadows()));
+      this.shadows = shadows.toArray(new Class[shadows.size()]);
+
+      Set<String> instrumentedPackages = new HashSet<>();
+      instrumentedPackages.addAll(Arrays.asList(this.instrumentedPackages));
+      instrumentedPackages.addAll(Arrays.asList(overlayConfig.instrumentedPackages()));
+      this.instrumentedPackages = instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
+
+      this.application = pick(this.application, overlayConfig.application(), DEFAULT_APPLICATION);
+
+      Set<String> libraries = new HashSet<>();
+      libraries.addAll(Arrays.asList(this.libraries));
+      libraries.addAll(Arrays.asList(overlayConfig.libraries()));
+      this.libraries = libraries.toArray(new String[libraries.size()]);
+
+      return this;
+    }
+
+    private <T> T pick(T baseValue, T overlayValue, T nullValue) {
+      return overlayValue != null ? (overlayValue.equals(nullValue) ? baseValue : overlayValue) : null;
+    }
+
+    private int[] pickSdk(int[] baseValue, int[] overlayValue, int[] nullValue) {
+      return Arrays.equals(overlayValue, nullValue) ? baseValue : overlayValue;
+    }
+
     public Implementation build() {
       return new Implementation(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+    }
+
+    public static boolean isDefaultApplication(Class<? extends Application> clazz) {
+      return clazz == null || clazz.getCanonicalName().equals(DEFAULT_APPLICATION.getCanonicalName());
     }
   }
 }

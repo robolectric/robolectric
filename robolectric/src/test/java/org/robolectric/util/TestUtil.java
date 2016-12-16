@@ -1,6 +1,8 @@
 package org.robolectric.util;
 
+import android.app.Application;
 import org.robolectric.R;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
@@ -9,6 +11,7 @@ import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Collection;
 
 import static org.junit.Assert.assertTrue;
@@ -137,5 +140,47 @@ public abstract class TestUtil {
       fileWriter.close();
     }
     return file;
+  }
+
+  public static String stringify(Config config) {
+    int[] sdk = config.sdk();
+    String manifest = config.manifest();
+    Class<? extends Application> application = config.application();
+    String packageName = config.packageName();
+    String qualifiers = config.qualifiers();
+    String resourceDir = config.resourceDir();
+    String assetsDir = config.assetDir();
+    Class<?>[] shadows = config.shadows();
+    String[] instrumentedPackages = config.instrumentedPackages();
+    String[] libraries = config.libraries();
+    Class<?> constants = config.constants();
+    return stringify(sdk, manifest, application, packageName, qualifiers, resourceDir, assetsDir, shadows, instrumentedPackages, libraries, constants);
+  }
+
+  public static String stringify(int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, String[] instrumentedPackages, String[] libraries, Class<?> constants) {
+      String[] stringClasses = new String[shadows.length];
+      for (int i = 0; i < stringClasses.length; i++) {
+          stringClasses[i] = shadows[i].toString();
+      }
+
+      Arrays.sort(stringClasses);
+
+      String[] sortedLibraries = libraries.clone();
+      Arrays.sort(sortedLibraries);
+
+      String[] sortedInstrumentedPackages = instrumentedPackages.clone();
+      Arrays.sort(sortedInstrumentedPackages);
+
+      return "sdk=" + Arrays.toString(sdk) + "\n" +
+        "manifest=" + manifest + "\n" +
+        "application=" + application + "\n" +
+        "packageName=" + packageName + "\n" +
+        "qualifiers=" + qualifiers + "\n" +
+        "resourceDir=" + resourceDir + "\n" +
+        "assetDir=" + assetsDir + "\n" +
+        "shadows=" + Arrays.toString(stringClasses) + "\n" +
+        "instrumentedPackages" + Arrays.toString(sortedInstrumentedPackages) + "\n" +
+        "libraries=" + Arrays.toString(sortedLibraries) + "\n" +
+        "constants=" + constants;
   }
 }

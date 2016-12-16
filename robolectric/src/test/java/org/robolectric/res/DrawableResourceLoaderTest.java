@@ -17,13 +17,14 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.WithDefaults.class) // todo: @Config(sdk=ALL_SDKS) or something
 public class DrawableResourceLoaderTest {
   private Resources resources;
 
@@ -47,12 +48,17 @@ public class DrawableResourceLoaderTest {
     assertNotNull(Resources.getSystem().getDrawable(android.R.drawable.ic_menu_help));
   }
 
-  @Test @Config(qualifiers = "anydpi")
+  @Test
   public void testDrawableTypes() {
     assertThat(resources.getDrawable(R.drawable.l7_white)).isInstanceOf(BitmapDrawable.class);
     assertThat(resources.getDrawable(R.drawable.l0_red)).isInstanceOf(BitmapDrawable.class);
     assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
     assertThat(resources.getDrawable(R.drawable.rainbow)).isInstanceOf(LayerDrawable.class);
+    assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(BitmapDrawable.class);
+  }
+
+  @Test @Config(qualifiers = "anydpi", minSdk = LOLLIPOP)
+  public void testVectorDrawableType() {
     assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(VectorDrawable.class);
   }
 
