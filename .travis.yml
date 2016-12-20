@@ -46,3 +46,14 @@ cache:
   directories:
     - $HOME/.m2
     - $HOME/.gradle
+
+deploy:
+  provider: gcs
+  access_key_id: GOOG35JLXBE4BFEVEXGO
+  secret_access_key:
+    secure: xT+AK9HyB4XDA98cZBIY61HkND7HjsDKwr6CGK5UVGEsIH3CVAtkpfIge46q2NyckRONlOaNonG6TsdnwvJqLlwUTx/zKafxgD62tp49VKw7IJYJ8yqg8YOQ26eoPdv6qFFpqmolzqGxj4FYeT4HhvMc0xbOZg9gGaBb3qwiIHU=
+  bucket: robolectric-test-results
+  local-dir: robolectric/build/reports/tests/test
+  on:
+    repo: robolectric/robolectric
+    branch: merge-multi-api-test-runner

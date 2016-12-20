@@ -8,4 +8,5 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
+    compile "com.google.cloud:google-cloud-storage:0.8.0-beta"
 }

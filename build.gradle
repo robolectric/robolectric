@@ -79,6 +79,12 @@ allprojects {
         }
     }
 
+    task uploadTestResults(type: GcsFileUploader) {
+        dir = new File(project.buildDir, "reports/tests/test")
+        prefix = project.name
+
+    }
+
     signing {
         required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
         sign configurations.archives
