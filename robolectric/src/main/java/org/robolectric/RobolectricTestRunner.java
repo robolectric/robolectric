@@ -150,10 +150,43 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return dependencyResolver;
   }
 
+  /**
+   * Create a {@link ClassHandler} appropriate for the given arguments.
+   *
+   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdkConfig</tt>.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param shadowMap the {@link ShadowMap} in effect for this test
+   * @param sdkConfig the {@link SdkConfig} in effect for this test
+   * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
+   */
+  @NotNull
+  protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
+    return new ShadowWrangler(shadowMap, sdkConfig.getApiLevel());
+  }
+
+  /**
+   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link Config}.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param config the merged configuration for the test that's about to run
+   * @return an {@link InstrumentationConfiguration}
+   */
+  @NotNull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
     return InstrumentationConfiguration.newBuilder().withConfig(config).build();
   }
 
+  /**
+   * An instance of the returned class will be created for each test invocation.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @return a class which implements {@link TestLifecycle}. This implementation returns a {@link DefaultTestLifecycle}.
+   */
+  @NotNull
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
   }
@@ -333,11 +366,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Detects what build system is in use and returns the appropriate ManifestFactory implementation.
+   * Detects which build system is in use and returns the appropriate ManifestFactory implementation.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
    * @param config Specification of the SDK version, manifest file, package name, etc.
    */
   protected ManifestFactory getManifestFactory(Config config) {
-    if (config.constants() != null && config.constants() != Void.class) {
+    Class<?> buildConstants = config.constants();
+    //noinspection ConstantConditions
+    if (buildConstants != null && buildConstants != Void.class) {
       return new GradleManifestFactory();
     } else {
       return new MavenManifestFactory();
@@ -360,6 +398,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  /**
+   * Compute the effective Robolectric configuration for a given test method.
+   *
+   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
+   * and {@link Config} annotations on test classes, superclasses, and methods.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param method the test method
+   * @return the effective Robolectric configuration for the given test method
+   */
   public Config getConfig(Method method) {
     Class testClass = getTestClass().getJavaClass();
 
@@ -425,14 +474,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   /**
    * Generate the global {@link Config}.
    *
-   * More specific packages, test classes, and test method configurations
-   * will override values provided here.
+   * Configuration provided for specific packages, test classes, and test method
+   * configurations will override values provided here.
    *
    * The default implementation uses properties provided by {@link #getConfigProperties(String)}.
    *
    * The returned object is likely to be reused for many tests.
    *
-   * @return global {@link Config} object.
+   * @return global {@link Config} object
    */
   protected Config buildGlobalConfig() {
     return Config.Implementation.fromProperties(getConfigProperties(""));
@@ -448,8 +497,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    *
    * The returned object is likely to be reused for many tests.
    *
-   * @param packageName The name of the package, or empty string (<code>""</code>) for the top level package.
-   * @return {@link Config} object for the specified package.
+   * @param packageName the name of the package, or empty string (<code>""</code>) for the top level package
+   * @return {@link Config} object for the specified package
    */
   @Nullable
   private Config buildPackageConfig(String packageName) {
@@ -492,8 +541,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       sdkEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
     }
 
-    ClassHandler classHandler = new ShadowWrangler(shadowMap, sdkEnvironment.getSdkConfig()
-        .getApiLevel());
+    ClassHandler classHandler = createClassHandler(shadowMap, sdkEnvironment.getSdkConfig());
     injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
   }
 
