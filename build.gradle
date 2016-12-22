@@ -84,7 +84,7 @@ allprojects {
         sign configurations.archives
     }
 
-    def mavenArtifactName = {
+    ext.mavenArtifactName = {
         def projNameParts = project.name.split(/\//) as List
         if (projNameParts[0] == "robolectric-shadows") {
             projNameParts = projNameParts.drop(1)
@@ -92,8 +92,7 @@ allprojects {
         } else {
             return project.name
         }
-    }()
-    ext.mavenArtifactName = mavenArtifactName
+    }
 
     artifacts {
         archives jar
@@ -104,7 +103,7 @@ allprojects {
     uploadArchives {
         repositories {
             mavenDeployer {
-                pom.artifactId = mavenArtifactName
+                pom.artifactId = mavenArtifactName()
                 pom.project {
                     name project.name
                     description = "An alternative Android testing framework."
@@ -156,14 +155,6 @@ allprojects {
 
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
             }
-        }
-    }
-
-    if (ext.mavenArtifactName != "parent") {
-        apply plugin: CheckApiChangesPlugin
-
-        dependencies {
-            checkApiChanges("org.robolectric:${mavenArtifactName}:3.1.4@jar") { transitive = false; force = true }
         }
     }
 }
