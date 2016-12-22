@@ -451,6 +451,7 @@ public class ShadowContentResolver {
   /**
    * @deprecated Use {@link org.robolectric.Robolectric#buildContentProvider(Class)} instead.
    */
+  @Deprecated
   synchronized public static void registerProvider(String authority, ContentProvider provider) {
     initialize(provider, authority);
     providers.put(authority, provider);

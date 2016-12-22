@@ -20,6 +20,7 @@ import java.util.TreeSet;
 /**
  * A test runner for Robolectric that will run a test against multiple API versions.
  */
+@Deprecated
 public class MultiApiRobolectricTestRunner extends Suite {
 
   protected static class TestRunnerForApiVersion extends RobolectricTestRunner {

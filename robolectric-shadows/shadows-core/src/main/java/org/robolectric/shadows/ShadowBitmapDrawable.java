@@ -62,6 +62,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
    * @return resource id from which this {@code BitmapDrawable} was loaded
    * @deprecated use ShadowBitmap#getCreatedFromResId() instead.
    */
+  @Deprecated
   @Override
   public int getCreatedFromResId() {
     return shadowOf(realBitmapDrawable.getBitmap()).getCreatedFromResId();

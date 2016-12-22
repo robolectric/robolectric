@@ -26,6 +26,7 @@ public class ShadowHandler {
   /**
    * @deprecated use {@link ShadowLooper#idleMainLooper()} instead
    */
+  @Deprecated
   public static void flush() {
     idleMainLooper();
   }
@@ -34,6 +35,7 @@ public class ShadowHandler {
    * @deprecated
    * @see org.robolectric.shadows.ShadowLooper#idleMainLooper()
    */
+  @Deprecated
   public static void idleMainLooper() {
     ShadowLooper.idleMainLooper();
   }
@@ -42,6 +44,7 @@ public class ShadowHandler {
    * @deprecated
    * @see ShadowLooper#runUiThreadTasksIncludingDelayedTasks()
    */
+  @Deprecated
   public static void runMainLooperToEndOfTasks() {
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
   }
@@ -50,6 +53,7 @@ public class ShadowHandler {
    * @deprecated
    * @see ShadowLooper#runMainLooperOneTask() ()
    */
+  @Deprecated
   public static void runMainLooperOneTask() {
     shadowOf(Looper.myLooper()).runOneTask();
   }
@@ -58,6 +62,7 @@ public class ShadowHandler {
    * @deprecated
    * @see ShadowLooper#runMainLooperToNextTask() ()
    */
+  @Deprecated
   public static void runMainLooperToNextTask() {
     shadowOf(Looper.myLooper()).runToNextTask();
   }
