@@ -8,4 +8,6 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
+
+    compile "org.ow2.asm:asm-tree:5.0.1"
 }
