@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
 import org.robolectric.test.DummyClass;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RobolectricTestRunnerClassLoaderConfigTest {
 
   @Test

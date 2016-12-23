@@ -17,9 +17,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.testing.AFinalClass;
-import org.robolectric.internal.bytecode.testing.Foo;
 import org.robolectric.internal.bytecode.testing.Pony;
-import org.robolectric.internal.bytecode.testing.ShadowFoo;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
@@ -33,7 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class ShadowingTest {
 
   @Test

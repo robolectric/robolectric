@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
     private List<SQLiteDatabase> openDatabases = new ArrayList<>();

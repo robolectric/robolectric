@@ -20,7 +20,7 @@ import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
 import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCursorAdapterTest {
 
   private Cursor curs;

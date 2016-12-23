@@ -7,7 +7,7 @@ import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertNotNull;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowJsPromptResultTest {
 
   @Test

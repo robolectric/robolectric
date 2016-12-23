@@ -9,8 +9,8 @@ import static org.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunners {
 
-  public static class WithDefaults extends RobolectricTestRunner {
-    public WithDefaults(Class<?> testClass) throws InitializationError {
+  public static class SelfTest extends RobolectricTestRunner {
+    public SelfTest(Class<?> testClass) throws InitializationError {
       super(testClass);
       Locale.setDefault(Locale.ENGLISH);
     }
@@ -23,8 +23,8 @@ public class TestRunners {
     }
   }
 
-  public static class MultiApiWithDefaults extends WithDefaults {
-    public MultiApiWithDefaults(Class<?> testClass) throws Throwable {
+  public static class MultiApiSelfTest extends SelfTest {
+    public MultiApiSelfTest(Class<?> testClass) throws Throwable {
       super(testClass);
     }
 

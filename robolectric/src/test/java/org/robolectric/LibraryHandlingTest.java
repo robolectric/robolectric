@@ -11,7 +11,7 @@ import org.robolectric.manifest.AndroidManifest;
 
 import java.util.List;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class LibraryHandlingTest {
   private final Resources resources = RuntimeEnvironment.application.getResources();
 

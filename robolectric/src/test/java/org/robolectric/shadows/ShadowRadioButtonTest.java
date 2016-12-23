@@ -14,7 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowRadioButtonTest {
   @Test
   public void canBeExplicitlyChecked() throws Exception {

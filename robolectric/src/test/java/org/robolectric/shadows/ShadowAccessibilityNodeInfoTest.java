@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import android.R.anim;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -20,7 +19,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ShadowExtractor;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccessibilityNodeInfoTest {
 
   private AccessibilityNodeInfo node;

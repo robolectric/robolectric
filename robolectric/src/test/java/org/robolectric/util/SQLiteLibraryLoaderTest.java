@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class SQLiteLibraryLoaderTest {
   /** Saved system properties. */
   private String savedOs, savedArch;

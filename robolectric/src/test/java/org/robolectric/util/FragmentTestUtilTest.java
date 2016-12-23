@@ -17,7 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class FragmentTestUtilTest {
   @Test
   public void startFragment_shouldStartFragment() {

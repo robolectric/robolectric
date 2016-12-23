@@ -10,7 +10,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContentProviderTest {
   @Config(minSdk = KITKAT)
   @Test public void testSetCallingPackage() throws Exception {

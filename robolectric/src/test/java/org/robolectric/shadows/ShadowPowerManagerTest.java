@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.PowerManager;
 
 import org.junit.Before;
@@ -15,7 +14,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowPowerManagerTest {
   private PowerManager powerManager;
   private ShadowPowerManager shadowPowerManager;

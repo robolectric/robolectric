@@ -9,7 +9,7 @@ import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowResolveInfoTest {
 
   private ResolveInfo mResolveInfo;

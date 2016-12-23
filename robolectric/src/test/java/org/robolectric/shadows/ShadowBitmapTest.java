@@ -26,7 +26,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowBitmapTest {
   @Test
   public void shouldCreateScaledBitmap() throws Exception {

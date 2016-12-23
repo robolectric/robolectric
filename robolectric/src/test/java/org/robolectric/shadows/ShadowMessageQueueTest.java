@@ -9,7 +9,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +20,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMessageQueueTest {
   private Looper looper;
   private MessageQueue queue;

@@ -13,7 +13,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = M)
 public class ShadowIconTest {
   public static final int TYPE_BITMAP = 1;

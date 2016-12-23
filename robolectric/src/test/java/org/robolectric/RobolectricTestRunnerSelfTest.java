@@ -117,7 +117,7 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(onTerminateCalledFromMain).isTrue();
   }
 
-  public static class RunnerForTesting extends TestRunners.WithDefaults {
+  public static class RunnerForTesting extends TestRunners.SelfTest {
     public static RunnerForTesting instance;
 
     public RunnerForTesting(Class<?> testClass) throws InitializationError {

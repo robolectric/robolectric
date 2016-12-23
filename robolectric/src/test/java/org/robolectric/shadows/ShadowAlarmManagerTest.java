@@ -5,7 +5,6 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAlarmManagerTest {
 
   private Activity activity;

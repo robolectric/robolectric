@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
-import android.os.Build;
 import android.widget.ProgressBar;
 
 import org.junit.Test;
@@ -21,7 +20,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowNotificationBuilderTest {
   private final Notification.Builder builder = new Notification.Builder(RuntimeEnvironment.application);
 

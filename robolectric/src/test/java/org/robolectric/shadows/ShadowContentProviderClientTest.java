@@ -6,7 +6,6 @@ import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import org.junit.Before;
@@ -26,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContentProviderClientTest {
 
   static final String AUTHORITY = "org.robolectric";

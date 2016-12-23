@@ -8,7 +8,7 @@ import org.robolectric.TestRunners;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowSpannedStringTest {
 
   @Test

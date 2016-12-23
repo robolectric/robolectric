@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
-@RunWith(TestRunners.WithDefaults.class) // todo: @Config(sdk=ALL_SDKS) or something
+@RunWith(TestRunners.SelfTest.class) // todo: @Config(sdk=ALL_SDKS) or something
 public class DrawableResourceLoaderTest {
   private Resources resources;
 

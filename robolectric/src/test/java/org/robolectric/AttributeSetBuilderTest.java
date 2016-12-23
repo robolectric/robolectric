@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import android.content.res.Resources;
 import android.util.AttributeSet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,7 +13,7 @@ import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}
  */
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class AttributeSetBuilderTest {
 
   private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";

@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowNotificationTest {
 
   @Test

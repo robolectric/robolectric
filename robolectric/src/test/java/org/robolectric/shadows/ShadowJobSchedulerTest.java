@@ -15,7 +15,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowJobSchedulerTest {
 

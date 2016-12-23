@@ -7,7 +7,6 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.*;
@@ -44,7 +43,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowViewTest {
   private View view;
   private Transcript transcript;

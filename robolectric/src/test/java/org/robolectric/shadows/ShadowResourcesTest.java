@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowResourcesTest {
   private Resources resources;
 

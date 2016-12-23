@@ -9,11 +9,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.fakes.RoboMenuItem;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RoboMenuItemTest {
   private MenuItem item;
   private TestOnActionExpandListener listener;

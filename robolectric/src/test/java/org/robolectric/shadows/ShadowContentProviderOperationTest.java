@@ -15,7 +15,7 @@ import android.net.Uri;
 /**
  * Tests for {@link ShadowContentProviderOperation}.
  */
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContentProviderOperationTest {
 
   @Test
