@@ -38,6 +38,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -139,12 +140,21 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   @Override
+  protected Enumeration<URL> findResources(String name) throws IOException {
+    Enumeration<URL> resources = super.findResources(name);
+    if (resources.hasMoreElements()) {
+      return resources;
+    }
+    return urls.findResources(name);
+  }
+
+  @Override
   public InputStream getResourceAsStream(String resName) {
     InputStream fromUrlsClassLoader = urls.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null)  {
       return fromUrlsClassLoader;
     }
-    return InstrumentingClassLoader.class.getResourceAsStream(resName);
+    return InstrumentingClassLoader.class.getClassLoader().getResourceAsStream(resName);
   }
 
   @Override
@@ -188,7 +198,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         throw e;
       }
     } else {
-      throw new IllegalStateException("how did we get here? " + className);
+      return Class.forName(className, false, InstrumentingClassLoader.class.getClassLoader());
     }
   }
 

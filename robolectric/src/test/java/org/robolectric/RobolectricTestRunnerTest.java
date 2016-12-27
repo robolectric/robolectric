@@ -45,10 +45,6 @@ public class RobolectricTestRunnerTest {
   /////////////////////////////
 
   public static class MyParallelUniverse extends ParallelUniverse {
-    public MyParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
-      super(robolectricTestRunner);
-    }
-
     @Override
     public void resetStaticState(Config config) {
       throw new RuntimeException("fake error in resetStaticState");
