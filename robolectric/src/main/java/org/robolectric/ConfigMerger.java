@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.robolectric.annotation.Config;
@@ -26,7 +27,7 @@ public class ConfigMerger {
   public Config getConfig(Class<?> testClass, Method method, Config globalConfig) {
     Config config = globalConfig;
 
-    for (String packageName : reverse(packagesFor(testClass))) {
+    for (String packageName : reverse(packageHierarchyOf(testClass))) {
       Config packageConfig = cachedPackageConfig(packageName);
       config = override(config, packageConfig);
     }
@@ -75,8 +76,8 @@ public class ConfigMerger {
     }
   }
 
-  @NotNull
-  private List<String> packagesFor(Class<?> javaClass) {
+  @NotNull @VisibleForTesting
+  List<String> packageHierarchyOf(Class<?> javaClass) {
     String testPackageName = javaClass.getPackage().getName();
     List<String> packageHierarchy = new ArrayList<>();
     while (!testPackageName.isEmpty()) {

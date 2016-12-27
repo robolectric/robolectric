@@ -7,6 +7,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -135,6 +136,11 @@ public class ConfigMergerTest {
         new int[0],  "AndroidManifest.xml", DEFAULT_APPLICATION, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
   }
 
+  @Test public void testPackageHierarchyOf() throws Exception {
+    assertThat(new ConfigMerger().packageHierarchyOf(ConfigMergerTest.class))
+        .containsExactly("org.robolectric", "org", "");
+  }
+
   /////////////////////////////
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties) throws InitializationError {
@@ -153,7 +159,7 @@ public class ConfigMergerTest {
     return new ConfigMerger().getConfig(testClass, info, Config.Builder.defaults().build());
   }
 
-  private Method getMethod(Class<?> testClass, String methodName) {
+  private static Method getMethod(Class<?> testClass, String methodName) {
     try {
       return testClass.getMethod(methodName);
     } catch (NoSuchMethodException e) {
