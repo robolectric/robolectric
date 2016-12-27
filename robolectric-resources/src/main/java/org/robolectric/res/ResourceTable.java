@@ -28,6 +28,14 @@ public class ResourceTable {
     return resourceIndex.getResName(resourceId);
   }
 
+  public Integer getResourceId(ResName resName) {
+    return resourceIndex.getResourceId(resName);
+  }
+
+  public ResName getResName(int resourceId) {
+    return resourceIndex.getResName(resourceId);
+  }
+
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
     return data.get(resName, qualifiers);
   }

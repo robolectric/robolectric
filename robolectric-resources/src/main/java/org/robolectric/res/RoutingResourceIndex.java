@@ -35,11 +35,4 @@ public class RoutingResourceIndex implements ResourceIndex {
 
     return resourceIndex.getResName(resourceId);
   }
-
-  @Override
-  public void dump() {
-    for (ResourceIndex resourceIndex : packageNameToIndex.values()) {
-      resourceIndex.dump();
-    }
-  }
 }
