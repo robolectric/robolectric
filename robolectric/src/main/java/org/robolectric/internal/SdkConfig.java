@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import android.os.Build;
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.util.Logger;
 
@@ -13,7 +14,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-public class SdkConfig {
+public class SdkConfig implements Comparable<SdkConfig> {
   private static final String ROBOLECTRIC_VERSION = getRobolectricVersion();
 
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS = Collections.unmodifiableMap(new HashMap<Integer, SdkVersion>() {
@@ -87,6 +88,11 @@ public class SdkConfig {
   @Override
   public int hashCode() {
     return sdkVersion.hashCode();
+  }
+
+  @Override
+  public int compareTo(@NotNull SdkConfig o) {
+    return getApiLevel() - o.getApiLevel();
   }
 
   private DependencyJar createDependency(String groupId, String artifactId, String version, String classifier) {

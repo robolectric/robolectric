@@ -28,7 +28,7 @@ import android.os.Looper;
 import android.view.Window;
 import android.widget.LinearLayout;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class ActivityControllerTest {
   private static final Transcript transcript = new Transcript();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyActivity.class.getName());

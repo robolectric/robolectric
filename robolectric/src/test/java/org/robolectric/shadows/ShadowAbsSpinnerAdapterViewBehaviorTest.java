@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAbsSpinnerAdapterViewBehaviorTest extends AdapterViewBehavior {
   @Override public AdapterView createAdapterView() {
     return new Gallery(RuntimeEnvironment.application);

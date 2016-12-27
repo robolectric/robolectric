@@ -17,7 +17,7 @@ import java.io.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowBitmapRegionDecoderTest {
 
   private static final FsFile IMAGE_FILE = TestUtil.resourcesBaseDir().join("res/drawable-hdpi/robolectric.png");

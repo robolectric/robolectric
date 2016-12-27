@@ -33,9 +33,9 @@ public class DefaultTestLifecycle implements TestLifecycle {
   public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
 
     Application application = null;
-    if (config != null && !config.application().getCanonicalName().equals(Application.class.getCanonicalName())) {
+    if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
       if (config.application().getCanonicalName() != null) {
-        Class<? extends Application> applicationClass = null;
+        Class<? extends Application> applicationClass;
         try {
           applicationClass = new ClassNameResolver<Application>(null, config.application().getName()).resolve();
         } catch (ClassNotFoundException e) {

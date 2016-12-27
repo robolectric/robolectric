@@ -44,9 +44,9 @@ public class SdkEnvironment {
     return systemResourceLoader;
   }
 
-  public Class<?> bootstrappedClass(Class<?> testClass) {
+  public <T> Class<T> bootstrappedClass(Class<?> testClass) {
     try {
-      return robolectricClassLoader.loadClass(testClass.getName());
+      return (Class<T>) robolectricClassLoader.loadClass(testClass.getName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }

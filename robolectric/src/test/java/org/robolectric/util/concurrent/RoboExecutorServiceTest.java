@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RoboExecutorServiceTest {
   private final Transcript transcript = new Transcript();
   private final RoboExecutorService executorService = new RoboExecutorService();

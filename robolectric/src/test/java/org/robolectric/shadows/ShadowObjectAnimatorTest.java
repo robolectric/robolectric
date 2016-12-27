@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowObjectAnimatorTest {
   private final AnimatorTarget target = new AnimatorTarget();
   private final Animator.AnimatorListener listener = mock(Animator.AnimatorListener.class);

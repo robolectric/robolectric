@@ -22,7 +22,7 @@ import static org.robolectric.RuntimeEnvironment.*;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowTelephonyManagerTest {
 
   private TelephonyManager manager;

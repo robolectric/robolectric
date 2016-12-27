@@ -6,7 +6,7 @@ import org.robolectric.TestRunners;
 import android.graphics.Color;
 import static org.assertj.core.api.Assertions.*;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowColorTest {
 
   @Test

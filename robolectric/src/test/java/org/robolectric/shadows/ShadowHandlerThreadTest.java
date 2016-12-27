@@ -13,7 +13,7 @@ import org.robolectric.TestRunners;
 import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowHandlerThreadTest {
 
   private HandlerThread handlerThread;

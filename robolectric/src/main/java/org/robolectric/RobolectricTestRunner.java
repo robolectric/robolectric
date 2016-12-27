@@ -3,7 +3,6 @@ package org.robolectric;
 import android.app.Application;
 import android.os.Build;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,14 +47,11 @@ import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
-import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.Logger;
-import org.robolectric.util.Pair;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -64,23 +60,23 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-
-import static com.google.common.collect.Lists.reverse;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
  * {@link org.robolectric.res.ResourceLoader} in order to provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
-  private static final String CONFIG_PROPERTIES = "robolectric.properties";
+  public static final String CONFIG_PROPERTIES = "robolectric.properties";
+
   private static final Map<AndroidManifest, ResourceLoader> appResourceLoaderCache = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
   private static ResourceLoader compiletimeSdkResourceLoader;
+
+  private final SdkPicker sdkPicker;
+  private final ConfigMerger configMerger;
 
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -90,12 +86,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
-  private final Map<String, Config> packageConfigCache = new LinkedHashMap<String, Config>() {
-    @Override
-    protected boolean removeEldestEntry(Map.Entry eldest) {
-      return size() > 10;
-    }
-  };
 
   /**
    * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
@@ -106,6 +96,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    */
   public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
     super(testClass);
+    this.configMerger = createConfigMerger();
+    this.sdkPicker = createSdkPicker();
   }
 
   @SuppressWarnings("unchecked")
@@ -150,10 +142,70 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return dependencyResolver;
   }
 
+  /**
+   * Create a {@link ClassHandler} appropriate for the given arguments.
+   *
+   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdkConfig</tt>.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param shadowMap the {@link ShadowMap} in effect for this test
+   * @param sdkConfig the {@link SdkConfig} in effect for this test
+   * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
+   * @since 2.3
+   */
+  @NotNull
+  protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
+    return new ShadowWrangler(shadowMap, sdkConfig.getApiLevel());
+  }
+
+  /**
+   * Create a {@link ConfigMerger} for calculating the {@link Config} tests.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @return an {@link ConfigMerger}.
+   * @since 3.2
+   */
+  @NotNull
+  private ConfigMerger createConfigMerger() {
+    return new ConfigMerger();
+  }
+
+  /**
+   * Create a {@link SdkPicker} for determining which SDKs will be tested.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @return an {@link SdkPicker}.
+   * @since 3.2
+   */
+  @NotNull
+  protected SdkPicker createSdkPicker() {
+    return new SdkPicker();
+  }
+
+  /**
+   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link Config}.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param config the merged configuration for the test that's about to run
+   * @return an {@link InstrumentationConfiguration}
+   */
+  @NotNull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
     return InstrumentationConfiguration.newBuilder().withConfig(config).build();
   }
 
+  /**
+   * An instance of the returned class will be created for each test invocation.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @return a class which implements {@link TestLifecycle}. This implementation returns a {@link DefaultTestLifecycle}.
+   */
+  @NotNull
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
   }
@@ -185,6 +237,25 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
+  @Override
+  protected List<FrameworkMethod> getChildren() {
+    List<FrameworkMethod> children = new ArrayList<>();
+    for (FrameworkMethod frameworkMethod : super.getChildren()) {
+      Config config = getConfig(frameworkMethod.getMethod());
+      AndroidManifest appManifest = getAppManifest(config);
+      List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
+      RobolectricFrameworkMethod last = null;
+      for (SdkConfig sdkConfig : sdksToRun) {
+        last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config);
+        children.add(last);
+      }
+      if (last != null) {
+        last.dontIncludeApiLevelInName();
+      }
+    }
+    return children;
+  }
+
   private static void invokeAfterClass(final Class<?> clazz) throws Throwable {
     final TestClass testClass = new TestClass(clazz);
     final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
@@ -195,19 +266,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected void runChild(FrameworkMethod method, RunNotifier notifier) {
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     Description description = describeChild(method);
     EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
 
-    final Config config = getConfig(method.getMethod());
+    Config config = roboMethod.config;
     if (shouldIgnore(method, config)) {
       eachNotifier.fireTestIgnored();
-    } else if(shouldRunApiVersion(config)) {
+    } else {
       eachNotifier.fireTestStarted();
       try {
-        AndroidManifest appManifest = getAppManifest(config);
+        SdkConfig sdkConfig = ((RobolectricFrameworkMethod) method).sdkConfig;
         InstrumentingClassLoaderFactory instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver());
-        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(new SdkConfig(pickSdkVersion(config, appManifest)));
-        methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
+        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig);
+        methodBlock(method, config, roboMethod.getAppManifest(), sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);
       } catch (Throwable e) {
@@ -227,10 +299,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       compiletimeSdkResourceLoader = new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null)));
     }
     return compiletimeSdkResourceLoader;
-  }
-
-  protected boolean shouldRunApiVersion(Config config) {
-    return true;
   }
 
   protected boolean shouldIgnore(FrameworkMethod method, Config config) {
@@ -256,7 +324,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         final Method bootstrappedMethod;
         try {
           //noinspection unchecked
-          bootstrappedMethod = bootstrappedTestClass.getMethod(method.getName());
+          bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
         } catch (NoSuchMethodException e) {
           throw new RuntimeException(e);
         }
@@ -273,10 +341,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
             parallelUniverseInterface.resetStaticState(config);
 
-            int sdkVersion = pickSdkVersion(config, appManifest);
+            SdkConfig sdkConfig = ((RobolectricFrameworkMethod) method).sdkConfig;
             Class<?> androidBuildVersionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
-            ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkVersion);
-            SdkConfig sdkConfig = new SdkConfig(sdkVersion);
+            ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
             ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
@@ -333,11 +400,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Detects what build system is in use and returns the appropriate ManifestFactory implementation.
+   * Detects which build system is in use and returns the appropriate ManifestFactory implementation.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
    * @param config Specification of the SDK version, manifest file, package name, etc.
    */
   protected ManifestFactory getManifestFactory(Config config) {
-    if (config.constants() != null && config.constants() != Void.class) {
+    Class<?> buildConstants = config.constants();
+    //noinspection ConstantConditions
+    if (buildConstants != null && buildConstants != Void.class) {
       return new GradleManifestFactory();
     } else {
       return new MavenManifestFactory();
@@ -360,120 +432,42 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  /**
+   * Compute the effective Robolectric configuration for a given test method.
+   *
+   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
+   * and {@link Config} annotations on test classes, superclasses, and methods.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param method the test method
+   * @return the effective Robolectric configuration for the given test method
+   * @since 2.0
+   */
   public Config getConfig(Method method) {
-    Class testClass = getTestClass().getJavaClass();
-
-    Config config = Config.Builder.defaults().build();
-
-    Config globalConfig = cachedPackageConfig(""); // global config
-    config = override(config, globalConfig);
-
-    for (String packageName : reverse(packagesFor(testClass))) {
-      Config packageConfig = cachedPackageConfig(packageName);
-      config = override(config, packageConfig);
-    }
-
-    for (Class clazz : reverse(parentClassesFor(testClass))) {
-      Config classConfig = (Config) clazz.getAnnotation(Config.class);
-      config = override(config, classConfig);
-    }
-
-    Config methodConfig = method.getAnnotation(Config.class);
-    config = override(config, methodConfig);
-
-    return config;
-  }
-
-  @NotNull
-  private List<String> packagesFor(Class<?> javaClass) {
-    String testPackageName = javaClass.getPackage().getName();
-    List<String> packageHierarchy = new ArrayList<>();
-    while (!testPackageName.isEmpty()) {
-      packageHierarchy.add(testPackageName);
-      int lastDot = testPackageName.lastIndexOf('.');
-      testPackageName = lastDot > 1 ? testPackageName.substring(0, lastDot) : "";
-    }
-    return packageHierarchy;
-  }
-
-  @NotNull
-  private List<Class> parentClassesFor(Class testClass) {
-    List<Class> testClassHierarchy = new ArrayList<>();
-    while (testClass != null && !testClass.equals(Object.class)) {
-      testClassHierarchy.add(testClass);
-      testClass = testClass.getSuperclass();
-    }
-    return testClassHierarchy;
-  }
-
-  private Config override(Config config, Config classConfig) {
-    return classConfig != null ? new Config.Implementation(config, classConfig) : config;
-  }
-
-  @Nullable
-  private Config cachedPackageConfig(String packageName) {
-    synchronized (packageConfigCache) {
-      Config config = packageConfigCache.get(packageName);
-      if (config == null && !packageConfigCache.containsKey(packageName)) {
-        config = packageName.isEmpty() ? buildGlobalConfig() : buildPackageConfig(packageName);
-        packageConfigCache.put(packageName, config);
-      }
-      return config;
-    }
+    return configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig());
   }
 
   /**
-   * Generate the global {@link Config}.
+   * Provides the base Robolectric configuration {@link Config} used for all tests.
    *
-   * More specific packages, test classes, and test method configurations
-   * will override values provided here.
-   *
-   * The default implementation uses properties provided by {@link #getConfigProperties(String)}.
+   * Configuration provided for specific packages, test classes, and test method
+   * configurations will override values provided here.
    *
    * The returned object is likely to be reused for many tests.
    *
-   * @return global {@link Config} object.
+   * Custom TestRunner subclasses may wish to override this method to provide
+   * alternate configuration. Consider calling <code>super.buildGlobalConfig()</code>
+   * and overriding values as needed using a
+   * {@link Config.org.robolectric.annotation.Config.Builder}.
+   *
+   * The default implementation has appropriate values for most use cases.
+   *
+   * @return global {@link Config} object
+   * @since 3.1.3
    */
   protected Config buildGlobalConfig() {
-    return Config.Implementation.fromProperties(getConfigProperties(""));
-  }
-
-  /**
-   * Generate {@link Config} for the specified package.
-   *
-   * More specific packages, test classes, and test method configurations
-   * will override values provided here.
-   *
-   * The default implementation uses properties provided by {@link #getConfigProperties(String)}.
-   *
-   * The returned object is likely to be reused for many tests.
-   *
-   * @param packageName The name of the package, or empty string (<code>""</code>) for the top level package.
-   * @return {@link Config} object for the specified package.
-   */
-  @Nullable
-  private Config buildPackageConfig(String packageName) {
-    return Config.Implementation.fromProperties(getConfigProperties(packageName));
-  }
-
-  /**
-   * Return a {@link Properties} file for the given package name, or <code>null</code> if none is available.
-   */
-  protected Properties getConfigProperties(String packageName) {
-    String resourceName = packageName.replace('.', '/') + "/" + CONFIG_PROPERTIES;
-    try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
-      if (resourceAsStream == null) return null;
-      Properties properties = new Properties();
-      properties.load(resourceAsStream);
-      return properties;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  // visible for testing
-  InputStream getResourceAsStream(String resourceName) {
-    return getClass().getClassLoader().getResourceAsStream(resourceName);
+    return Config.Builder.defaults().build();
   }
 
   protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
@@ -492,19 +486,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       sdkEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
     }
 
-    ClassHandler classHandler = new ShadowWrangler(shadowMap, sdkEnvironment.getSdkConfig()
-        .getApiLevel());
+    ClassHandler classHandler = createClassHandler(shadowMap, sdkEnvironment.getSdkConfig());
     injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
-  }
-
-  protected int pickSdkVersion(Config config, AndroidManifest manifest) {
-    if (config != null && config.sdk().length > 1) {
-      throw new IllegalArgumentException("RobolectricTestRunner does not support multiple values for @Config.sdk");
-    } else if (config != null && config.sdk().length == 1) {
-      return config.sdk()[0];
-    } else {
-      return manifest.getTargetSdkVersion();
-    }
   }
 
   ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
@@ -588,6 +571,36 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           }
         }
       };
+    }
+  }
+
+  class RobolectricFrameworkMethod extends FrameworkMethod {
+    private final AndroidManifest appManifest;
+    final SdkConfig sdkConfig;
+    final Config config;
+    private boolean includeApiLevelInName = true;
+
+    RobolectricFrameworkMethod(Method method, AndroidManifest appManifest, SdkConfig sdkConfig, Config config) {
+      super(method);
+      this.appManifest = appManifest;
+      this.sdkConfig = sdkConfig;
+      this.config = config;
+    }
+
+    @Override
+    public String getName() {
+      // IDE focused test runs rely on preservation of the test name; we'll use the
+      //   latest supported SDK for focused test runs
+      return super.getName() +
+          (includeApiLevelInName ? "[" + sdkConfig.getApiLevel() + "]" : "");
+    }
+
+    void dontIncludeApiLevelInName() {
+      includeApiLevelInName = false;
+    }
+
+    public AndroidManifest getAppManifest() {
+      return appManifest;
     }
   }
 }

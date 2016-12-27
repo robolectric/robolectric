@@ -1,7 +1,6 @@
 package org.robolectric.fakes;
 
 import android.content.SharedPreferences;
-import org.robolectric.fakes.RoboSharedPreferences;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RoboSharedPreferencesTest {
   protected final static String FILENAME = "filename";
   private HashMap<String, Map<String, Object>> content;

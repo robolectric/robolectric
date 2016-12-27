@@ -10,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.util.DataSource;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowBitmapFactoryTest {
   @Test
   public void decodeResource_shouldSetDescriptionAndCreatedFrom() throws Exception {

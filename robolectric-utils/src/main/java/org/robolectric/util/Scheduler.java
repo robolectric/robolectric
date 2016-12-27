@@ -206,6 +206,7 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    * @deprecated Use {@link #advanceBy(long, TimeUnit)}.
    */
+  @Deprecated
   public synchronized boolean advanceBy(long interval) {
     return advanceBy(interval, TimeUnit.MILLISECONDS);
   }

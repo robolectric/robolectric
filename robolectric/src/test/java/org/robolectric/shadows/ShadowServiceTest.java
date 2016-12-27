@@ -3,10 +3,8 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.MediaScannerConnection;
 import android.os.IBinder;
@@ -22,7 +20,7 @@ import org.robolectric.internal.Shadow;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowServiceTest {
   private MyService service ;
   private ShadowService shadow;

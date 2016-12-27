@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowThemeTest {
 
   private Resources resources;

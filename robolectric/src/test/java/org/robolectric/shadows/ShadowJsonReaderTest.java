@@ -8,7 +8,7 @@ import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowJsonReaderTest {
   @Test public void shouldWork() throws Exception {
     JsonReader jsonReader = new JsonReader(new StringReader("{\"abc\": \"def\"}"));

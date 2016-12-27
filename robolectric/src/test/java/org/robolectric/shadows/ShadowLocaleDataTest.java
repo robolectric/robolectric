@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
-
 import java.util.Locale;
 import libcore.icu.LocaleData;
 import org.junit.Test;
@@ -12,7 +10,7 @@ import org.robolectric.annotation.Config;
 import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowLocaleDataTest {
 
   @Test

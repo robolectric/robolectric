@@ -1,7 +1,6 @@
 package org.robolectric.fakes;
 
 import android.content.Context;
-import org.robolectric.fakes.RoboVibrator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +9,7 @@ import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RoboVibratorTest {
   private RoboVibrator vibrator;
 

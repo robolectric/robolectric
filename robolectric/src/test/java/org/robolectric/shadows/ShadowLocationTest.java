@@ -11,7 +11,7 @@ import org.robolectric.TestRunners;
 import static junit.framework.Assert.*;
 import static org.junit.Assert.assertArrayEquals;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowLocationTest {
 
   private Location location;

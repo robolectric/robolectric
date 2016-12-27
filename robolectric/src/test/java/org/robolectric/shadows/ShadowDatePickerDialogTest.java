@@ -1,22 +1,19 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
 import android.widget.DatePicker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import android.app.DatePickerDialog;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
 
 import java.lang.Override;
 import java.util.Locale;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowDatePickerDialogTest {
 
   @Test

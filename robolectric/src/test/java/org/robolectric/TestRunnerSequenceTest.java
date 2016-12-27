@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -106,6 +107,7 @@ public class TestRunnerSequenceTest {
       super(testClass);
     }
 
+    @NotNull
     @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
       return InstrumentationConfiguration.newBuilder()
           .doNotAcquireClass(StateHolder.class.getName())
@@ -117,6 +119,7 @@ public class TestRunnerSequenceTest {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
+    @NotNull
     @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
       return MyTestLifecycle.class;
     }
