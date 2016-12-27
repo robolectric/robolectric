@@ -30,8 +30,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -62,10 +60,7 @@ public class XmlResourceParserImplTest {
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();
-    PackageResourceIndex resourceIndex = new PackageResourceIndex("org.robolectric");
-    ResourceExtractor.populate(resourceIndex, testResources().getRClass());
-    resourceProvider = mock(ResourceProvider.class);
-    when(resourceProvider.getResourceIndex()).thenReturn(resourceIndex);
+    resourceProvider = new EmptyResourceProvider(ResourceTableFactory.newResourceTable("org.robolectric", testResources()));
     parser = new XmlResourceParserImpl(xmlBlock.getDocument(), xmlBlock.getFilename(), xmlBlock.getPackageName(),
         TEST_PACKAGE, resourceProvider);
   }

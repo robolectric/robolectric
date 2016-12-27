@@ -150,11 +150,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   private void initializeAppManifest(AndroidManifest appManifest, ResourceProvider appResourceLoader, DefaultPackageManager packageManager) {
     appManifest.initMetaData(appResourceLoader);
-    ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
 
     int labelRes = 0;
-    if (appManifest.getLabelRef() != null && resourceIndex != null) {
-      Integer id = ResName.getResourceId(resourceIndex, appManifest.getLabelRef(), appManifest.getPackageName());
+    if (appManifest.getLabelRef() != null) {
+      String fullyQualifiedName = ResName.qualifyResName(appManifest.getLabelRef(), appManifest.getPackageName());
+      Integer id = appResourceLoader.getResourceId(new ResName(fullyQualifiedName));
       labelRes = id != null ? id : 0;
     }
     packageManager.addManifest(appManifest, labelRes);

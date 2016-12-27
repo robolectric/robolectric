@@ -83,7 +83,7 @@ public class ResName {
         name);
   }
 
-  public static Integer getResourceId(ResourceIndex resourceIndex, String possiblyQualifiedResourceName, String contextPackageName) {
+  public static String qualifyResName(String possiblyQualifiedResourceName, String contextPackageName) {
     if (possiblyQualifiedResourceName == null) {
       return null;
     }
@@ -98,10 +98,7 @@ public class ResName {
       return null;
     }
 
-    fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
-    Integer resourceId = resourceIndex.getResourceId(new ResName(fullyQualifiedResourceName));
-    // todo warn if resourceId is null
-    return resourceId;
+    return fullyQualifiedResourceName.replaceAll("[@+]", "");
   }
 
   public static ResName qualifyFromFilePath(@NotNull final String packageName, @NotNull final String filePath) {

@@ -4,30 +4,29 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.robolectric.res.builder.XmlBlock;
 
 public class RoutingResourceProvider extends ResourceProvider {
-  // todo(jongerrish): Can we remove this now?
-  private static final ResourceTable EMPTY_RESOURCE_TABLE = new ResourceTable(new PackageResourceIndex(""));
+  private static final ResourceTable EMPTY_RESOURCE_TABLE = ResourceTableFactory.newResourceTable("");
   private final Map<String, ResourceTable> resourceTables;
-  private final ResourceIndex resourceIndex;
 
   public RoutingResourceProvider(ResourceTable... resourceTables) {
     this.resourceTables = new HashMap<>();
 
-    Set<PackageResourceIndex> resourceIndexes = new HashSet<>();
     for (ResourceTable resourceTable : resourceTables) {
       this.resourceTables.put(resourceTable.getPackageName(), resourceTable);
-      resourceIndexes.add(resourceTable.getResourceIndex());
     }
-    resourceIndex = new RoutingResourceIndex(resourceIndexes.toArray(new PackageResourceIndex[resourceIndexes.size()]));
   }
 
   @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
     return pickFor(resName).getValue(resName, qualifiers);
+  }
+
+  @Override
+  public TypedResource getValue(int resId, String qualifiers) {
+    ResName resName = pickFor(resId).getResName(resId);
+    return resName != null ? getValue(resName, qualifiers) : null;
   }
 
   @Override
@@ -41,8 +40,13 @@ public class RoutingResourceProvider extends ResourceProvider {
   }
 
   @Override
-  public ResourceIndex getResourceIndex() {
-    return resourceIndex;
+  public Integer getResourceId(ResName resName) {
+    return pickFor(resName).getResourceId(resName);
+  }
+
+  @Override
+  public ResName getResName(int resourceId) {
+    return pickFor(resourceId).getResName(resourceId);
   }
 
   @Override
@@ -50,6 +54,15 @@ public class RoutingResourceProvider extends ResourceProvider {
     for (ResourceTable resourceTable : resourceTables.values()) {
       resourceTable.data.receive(visitor);
     }
+  }
+
+  private ResourceTable pickFor(int resId) {
+    for (ResourceTable resourceTable : resourceTables.values()) {
+      if (resourceTable.getPackageIdentifier() == ResourceIds.getPackageIdentifier(resId)) {
+        return resourceTable;
+      }
+    }
+    return EMPTY_RESOURCE_TABLE;
   }
 
   private ResourceTable pickFor(ResName resName) {

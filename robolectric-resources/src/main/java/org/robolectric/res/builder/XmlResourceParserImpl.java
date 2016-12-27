@@ -767,7 +767,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
     if (AttributeResource.isStyleReference(possiblyQualifiedResourceName)) {
       ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
-      Integer resourceId = resourceProvider.getResourceIndex().getResourceId(styleReference);
+      Integer resourceId = resourceProvider.getResourceId(styleReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(styleReference.getFullyQualifiedName());
       }
@@ -776,7 +776,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
     if (AttributeResource.isResourceReference(possiblyQualifiedResourceName)) {
       ResName resourceReference = AttributeResource.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-      Integer resourceId = resourceProvider.getResourceIndex().getResourceId(resourceReference);
+      Integer resourceId = resourceProvider.getResourceId(resourceReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(resourceReference.getFullyQualifiedName());
       }
@@ -784,7 +784,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     }
     possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);
     ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-    Integer resourceId = resourceProvider.getResourceIndex().getResourceId(resName);
+    Integer resourceId = resourceProvider.getResourceId(resName);
     return resourceId == null ? 0 : resourceId;
   }
 
