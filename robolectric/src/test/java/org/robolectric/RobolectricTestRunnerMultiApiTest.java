@@ -79,8 +79,8 @@ public class RobolectricTestRunnerMultiApiTest {
   }
 
   @Test
-  public void withEnabledApis_createChildrenForEachSupportedApi() throws Throwable {
-    properties.setProperty("robolectric.enabledApis", "16,17");
+  public void withEnabledSdks_createChildrenForEachSupportedSdk() throws Throwable {
+    properties.setProperty("robolectric.enabledSdks", "16,17");
     runner = runnerOf(TestWithNoConfig.class);
     assertThat(runner.getChildren()).hasSize(2);
   }

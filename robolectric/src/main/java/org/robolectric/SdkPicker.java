@@ -60,7 +60,7 @@ public class SdkPicker {
 
   @Nullable
   protected Set<SdkConfig> enumerateEnabledSdks() {
-    String overrideSupportedApis = properties.getProperty("robolectric.enabledApis");
+    String overrideSupportedApis = properties.getProperty("robolectric.enabledSdks");
     if (overrideSupportedApis == null || overrideSupportedApis.isEmpty()) {
       return null;
     } else {
