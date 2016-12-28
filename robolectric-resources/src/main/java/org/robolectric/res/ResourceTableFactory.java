@@ -6,7 +6,8 @@ import java.lang.reflect.Modifier;
 public class ResourceTableFactory {
 
   public static ResourceTable newResourceTable(String packageName, Class<?>... rClasses) {
-    ResourceIndex resourceIndex = new ResourceIndex(packageName);
+    ResourceTable resourceTable = new ResourceTable(packageName);
+
     for (Class<?> rClass : rClasses) {
       if (rClass != null) {
         for (Class innerClass : rClass.getClasses()) {
@@ -22,13 +23,14 @@ public class ResourceTableFactory {
 
               if (!resourceType.equals("styleable")) {
                 String resourceName = field.getName();
-                resourceIndex.addResource(id, resourceType, resourceName);
+                resourceTable.addResource(id, resourceType, resourceName);
               }
             }
           }
         }
       }
     }
-    return new ResourceTable(resourceIndex);
+
+    return resourceTable;
   }
 }
