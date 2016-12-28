@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.accounts.AccountManager;
+import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -30,11 +31,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.newInstanceOf;
@@ -45,10 +42,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  */
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl {
-  /**
-   * Special path used by in-memory databases (from android.database.sqlite.SQLiteDatabaseConfiguration).
-   */
-  public static final String SQLITE_IN_MEMORY_PATH = ":memory:";
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<>();
@@ -109,29 +102,6 @@ public class ShadowContextImpl {
     }
   }
 
-  @Implementation
-  public File validateFilePath(String name, boolean createDirectory) {
-    File dir;
-    File f = new File(name);
-
-    if (SQLITE_IN_MEMORY_PATH.equals(name)) {
-      return f;
-    } else if (f.isAbsolute()) {
-      dir = f.getParentFile();
-    } else {
-      dir = directlyOn(realObject, "android.app.ContextImpl", "getDatabasesDir");
-      f = directlyOn(realObject, "android.app.ContextImpl", "makeFilename", from(File.class, dir), from(String.class, name));
-    }
-
-    if (createDirectory && !dir.isDirectory() && dir.mkdir()) {
-      FileUtils.setPermissions(dir.getPath(),
-          FileUtils.S_IRWXU|FileUtils.S_IRWXG|FileUtils.S_IXOTH,
-          -1, -1);
-    }
-
-    return f;
-  }
-
   private Map<String, Object> systemServices = new HashMap<String, Object>();
 
   @Implementation
@@ -150,9 +120,20 @@ public class ShadowContextImpl {
 
       try {
         Class<?> clazz = Class.forName(serviceClassName);
-        if (serviceClassName.equals("android.app.SearchManager")
+
+        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+          if (getApiLevel() >= N) {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(IDevicePolicyManager.class, null),
+                ClassParameter.from(boolean.class, false));
+          } else {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(Handler.class, null));
+          }
+        } else if (serviceClassName.equals("android.app.SearchManager")
             || serviceClassName.equals("android.app.ActivityManager")
-            || serviceClassName.equals("android.app.admin.DevicePolicyManager")
             || serviceClassName.equals("android.app.WallpaperManager")) {
 
           service = ReflectionHelpers.callConstructor(clazz,
@@ -171,8 +152,15 @@ public class ShadowContextImpl {
         } else if (serviceClassName.equals("android.view.accessibility.AccessibilityManager")) {
           service = AccessibilityManager.getInstance(realObject);
         } else if (getApiLevel() >= JELLY_BEAN_MR1 && serviceClassName.equals("android.view.WindowManagerImpl")) {
-          Display display = newInstanceOf(Display.class);
-          service = ReflectionHelpers.callConstructor(Class.forName("android.view.WindowManagerImpl"), ClassParameter.from(Display.class, display));
+          Class<?> windowMgrImplClass = Class.forName("android.view.WindowManagerImpl");
+          if (getApiLevel() >= N) {
+            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
+                ClassParameter.from(Context.class, realObject));
+          } else {
+            Display display = newInstanceOf(Display.class);
+            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
+                ClassParameter.from(Display.class, display));
+          }
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
           service = AccountManager.get(null);
         } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.print.PrintManager")) {

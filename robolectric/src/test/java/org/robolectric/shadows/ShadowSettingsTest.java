@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.ContentResolver;
-import android.os.Build;
 import android.provider.Settings;
 
 import org.junit.Before;
@@ -14,7 +13,7 @@ import org.robolectric.annotation.Config;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowSettingsTest {
   private ContentResolver contentResolver;
 

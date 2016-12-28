@@ -8,7 +8,7 @@ import static android.provider.MediaStore.Images;
 import static android.provider.MediaStore.Video;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMediaStoreTest {
   @Test
   public void shouldInitializeFields() throws Exception {

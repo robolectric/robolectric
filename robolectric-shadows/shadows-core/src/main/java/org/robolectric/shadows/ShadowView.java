@@ -135,6 +135,7 @@ public class ShadowView {
    * @return the resource ID of this view's background
    * @deprecated Use FEST assertions instead.
    */
+  @Deprecated
   public int getBackgroundResourceId() {
     Drawable drawable = realView.getBackground();
     return drawable instanceof BitmapDrawable
@@ -148,6 +149,7 @@ public class ShadowView {
    * @return the color of this view's background, or 0 if it's not a solid color
    * @deprecated Use FEST assertions instead.
    */
+  @Deprecated
   public int getBackgroundColor() {
     Drawable drawable = realView.getBackground();
     return drawable instanceof ColorDrawable ? ((ColorDrawable) drawable).getColor() : 0;

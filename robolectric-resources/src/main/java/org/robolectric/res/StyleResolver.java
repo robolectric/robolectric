@@ -6,15 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StyleResolver implements Style {
-  private final ResourceLoader resourceLoader;
   private final List<StyleData> styles = new ArrayList<>();
+  private final ResourceLoader appResourceLoader;
+  private final ResourceLoader systemResourceLoader;
   private final Style theme;
   private final ResName myResName;
   private final String qualifiers;
 
-  public StyleResolver(ResourceLoader resourceLoader, StyleData styleData,
+  public StyleResolver(ResourceLoader appResourceLoader, ResourceLoader systemResourceLoader, StyleData styleData,
                        Style theme, ResName myResName, String qualifiers) {
-    this.resourceLoader = resourceLoader;
+    this.appResourceLoader = appResourceLoader;
+    this.systemResourceLoader = systemResourceLoader;
     this.theme = theme;
     this.myResName = myResName;
     this.qualifiers = qualifiers;
@@ -85,10 +87,12 @@ public class StyleResolver implements Style {
 
     styleRef = dereferenceResName(styleRef);
 
+    // TODO: Refactor this to a ResourceLoaderChooser
+    ResourceLoader resourceLoader = "android".equals(styleRef.packageName) ? systemResourceLoader : appResourceLoader;
     TypedResource typedResource = resourceLoader.getValue(styleRef, qualifiers);
 
     if (typedResource == null) {
-      StringBuilder builder = new StringBuilder("Could not find any resource ")
+      StringBuilder builder = new StringBuilder("Could not find any resource")
           .append(" from reference ").append(styleRef)
           .append(" from ").append(style)
           .append(" with ").append(theme);

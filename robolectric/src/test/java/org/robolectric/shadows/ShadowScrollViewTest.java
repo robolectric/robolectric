@@ -8,7 +8,7 @@ import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowScrollViewTest {
   @Test
   public void shouldSmoothScrollTo() throws Exception {

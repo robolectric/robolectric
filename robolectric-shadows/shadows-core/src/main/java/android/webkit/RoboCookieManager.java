@@ -239,7 +239,7 @@ public class RoboCookieManager extends CookieManager {
         DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
         return dateFormat.parse(date);
       } catch (ParseException e) {
-        // No-op. Try to parse additional date formats.
+        // No-op. Try to inferFromValue additional date formats.
       }
 
       try {

@@ -31,6 +31,7 @@ public class FakeHttp {
    * @param contentType  the contentType of the response
    * @deprecated use {@link #addPendingHttpResponse(int, String, org.apache.http.Header...)} instead
    */
+  @Deprecated
   public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
     getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, contentType);
   }

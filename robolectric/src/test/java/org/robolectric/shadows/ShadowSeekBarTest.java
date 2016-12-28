@@ -11,7 +11,7 @@ import org.robolectric.util.Transcript;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowSeekBarTest {
 
   private SeekBar seekBar;

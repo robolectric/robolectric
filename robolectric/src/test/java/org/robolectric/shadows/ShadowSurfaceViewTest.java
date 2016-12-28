@@ -14,7 +14,7 @@ import org.robolectric.TestRunners;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowSurfaceViewTest {
 
   private SurfaceHolder.Callback callback1 = new TestCallback();

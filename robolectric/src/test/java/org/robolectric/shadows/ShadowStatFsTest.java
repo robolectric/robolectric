@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
 import android.os.StatFs;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +11,7 @@ import java.io.File;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowStatFsTest {
   @Test
   public void shouldRegisterStats() throws Exception {

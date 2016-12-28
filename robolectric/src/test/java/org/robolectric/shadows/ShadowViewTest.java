@@ -7,19 +7,12 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
-import android.view.ContextMenu;
-import android.view.HapticFeedbackConstants;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.view.*;
 import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
@@ -33,10 +26,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.TestOnClickListener;
-import org.robolectric.util.TestOnLongClickListener;
-import org.robolectric.util.TestRunnable;
-import org.robolectric.util.Transcript;
+import org.robolectric.util.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,7 +43,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowViewTest {
   private View view;
   private Transcript transcript;
@@ -153,7 +143,7 @@ public class ShadowViewTest {
   @Test
   public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
     assertThat(view.isShown()).describedAs("view isn't considered shown unless it has a view root").isFalse();
-    shadowOf(view).setMyParent(new StubViewRoot());
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);
 
@@ -190,7 +180,7 @@ public class ShadowViewTest {
   @Test
   public void checkedClick_shouldClickOnView() throws Exception {
     TestOnClickListener clickListener = new TestOnClickListener();
-    shadowOf(view).setMyParent(new StubViewRoot());
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnClickListener(clickListener);
     shadowOf(view).checkedPerformClick();
 
@@ -537,7 +527,7 @@ public class ShadowViewTest {
 
   @Test
   public void itKnowsIfTheViewIsShown() {
-    shadowOf(view).setMyParent(new StubViewRoot()); // a view is only considered visible if it is added to a view root
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class)); // a view is only considered visible if it is added to a view root
     view.setVisibility(View.VISIBLE);
     assertThat(view.isShown()).isTrue();
   }

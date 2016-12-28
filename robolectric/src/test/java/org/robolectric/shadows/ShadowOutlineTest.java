@@ -9,7 +9,7 @@ import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowOutlineTest {
 

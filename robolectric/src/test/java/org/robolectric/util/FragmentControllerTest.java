@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class FragmentControllerTest {
 
   private static final int VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY = 123;

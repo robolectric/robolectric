@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.view.Choreographer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.robolectric.TestRunners;
 import org.robolectric.util.TimeUtils;
 
@@ -13,7 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowChoreographerTest {
 
   @Test

@@ -622,4 +622,16 @@ public class RoboWebSettings extends WebSettings {
   }
 
   // End API 23
+
+  @Override
+  public int getDisabledActionModeMenuItems() {
+    return 0;
+  }
+
+  @Override
+  public void setDisabledActionModeMenuItems(int menuItems) {
+
+  }
+
+  // End API 24.
 }

@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link org.robolectric.shadows.ShadowViewGroup.ShadowMarginLayoutParams} test suite.
  */
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMarginLayoutParamsTest {
 
   @Test

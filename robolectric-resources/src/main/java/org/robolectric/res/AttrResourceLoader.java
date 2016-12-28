@@ -47,7 +47,6 @@ public class AttrResourceLoader extends XpathResourceXmlLoader {
 //                    "you need a format, enums, or flags for \"" + name + "\" in " + xmlContext);
     }
     AttrData attrData = new AttrData(name, format, pairs);
-    resBunch.put("attr", name, new TypedResource<>(attrData, ResType.ATTR_DATA),
-        xmlContext);
+    resBunch.put("attr", name, new TypedResource<>(attrData, ResType.ATTR_DATA, xmlContext));
   }
 }

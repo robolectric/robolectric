@@ -8,7 +8,7 @@ import android.graphics.drawable.GradientDrawable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowGradientDrawableTest {
   @Test
   public void testGetColor_returnsColor() throws Exception {

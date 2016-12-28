@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowThemeTest {
 
   private Resources resources;
@@ -73,8 +73,8 @@ public class ShadowThemeTest {
   @Test public void shouldResolveReferencesThatStartWithAQuestionMark() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
     Button theButton = (Button) activity.findViewById(R.id.button);
-    assertThat(theButton.getMinWidth()).isEqualTo(42); // via AnotherTheme.Button -> logoWidth and logoHeight
-//        assertThat(theButton.getMinHeight()).isEqualTo(42); todo 2.0-cleanup
+    assertThat(theButton.getMinWidth()).isEqualTo(42);
+    assertThat(theButton.getMinHeight()).isEqualTo(8);
   }
 
   @Test public void shouldLookUpStylesFromStyleResId() throws Exception {
@@ -120,6 +120,60 @@ public class ShadowThemeTest {
     assertThat(value1.resourceId).isEqualTo(R.layout.activity_main);
     assertThat(value2.resourceId).isEqualTo(R.layout.activity_main);
     assertThat(value1.coerceToString()).isEqualTo(value2.coerceToString());
+  }
+
+  @Test public void withResolveRefsFalse_shouldResolveValue() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+
+    TypedValue value = new TypedValue();
+    boolean resolved = activity.getTheme().resolveAttribute(R.attr.logoWidth, value, false);
+
+    assertThat(resolved).isTrue();
+    assertThat(value.type).isEqualTo(TypedValue.TYPE_DIMENSION);
+    assertThat(value.coerceToString()).isEqualTo("42.0px");
+  }
+
+  @Test public void withResolveRefsFalse_shouldNotResolveResource() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+
+    TypedValue value = new TypedValue();
+    boolean resolved = activity.getTheme().resolveAttribute(R.attr.logoHeight, value, false);
+
+    assertThat(resolved).isTrue();
+    assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);
+    assertThat(value.data).isEqualTo(R.dimen.test_dp_dimen);
+  }
+
+  @Test public void withResolveRefsTrue_shouldResolveResource() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+
+    TypedValue value = new TypedValue();
+    boolean resolved = activity.getTheme().resolveAttribute(R.attr.logoHeight, value, true);
+
+    assertThat(resolved).isTrue();
+    assertThat(value.type).isEqualTo(TypedValue.TYPE_DIMENSION);
+    assertThat(value.resourceId).isEqualTo(R.dimen.test_dp_dimen);
+    assertThat(value.coerceToString()).isEqualTo("8.0dip");
+  }
+
+  @Test public void failToResolveCircularReference() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+
+    TypedValue value = new TypedValue();
+    boolean resolved = activity.getTheme().resolveAttribute(R.attr.isSugary, value, false);
+
+    assertThat(resolved).isFalse();
+  }
+
+  @Test public void canResolveAttrReferenceToDifferentPackage() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+
+    TypedValue value = new TypedValue();
+    boolean resolved = activity.getTheme().resolveAttribute(R.attr.styleReference, value, false);
+
+    assertThat(resolved).isTrue();
+    assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);
+    assertThat(value.data).isEqualTo(R.style.Widget_AnotherTheme_Button);
   }
 
   @Test public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {

@@ -1,55 +1,32 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
+import android.content.res.*;
+import android.graphics.drawable.*;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import com.google.common.collect.ImmutableMap;
 import org.assertj.core.data.Offset;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.*;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.AttrData;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.TypedResource;
-import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Map;
 
-import static android.os.Build.VERSION_CODES.*;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowResourcesTest {
   private Resources resources;
 
@@ -343,10 +320,23 @@ public class ShadowResourcesTest {
     assertThat(id).isEqualTo(0);
   }
 
+  /**
+   * Public framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/public.xml
+   * Private framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/symbols.xml
+   *
+   * These generate android.R and com.android.internal.R respectively, when Framework Java code does not need to reference a framework resource
+   * it will not have an R value generated. Robolectric is then missing an identifier for this resource so we must generate a placeholder ourselves.
+   */
   @Test
-  public void getIdentifier_missingFromRFile() throws Exception {
-    int identifier_missing_from_r_file = resources.getIdentifier("not_in_the_r_file", "string", RuntimeEnvironment.application.getPackageName());
-    assertThat(resources.getString(identifier_missing_from_r_file)).isEqualTo("Proguarded Out Probably");
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP) // android:color/secondary_text_material_dark was added in API 21
+  public void shouldGenerateIdsForResourcesThatAreMissingRValues() throws Exception {
+    int identifier_missing_from_r_file = resources.getIdentifier("secondary_text_material_dark", "color", "android");
+
+    // We expect Robolectric to generate a placeholder identifier where one was not generated in the android R files.
+    assertThat(identifier_missing_from_r_file).isNotEqualTo(0);
+
+    // We expect to be able to successfully android:color/secondary_text_material_dark to a ColorStateList.
+    assertThat(resources.getColorStateList(identifier_missing_from_r_file)).isNotNull();
   }
 
   @Test
@@ -458,6 +448,20 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void shouldLoadRawResources_supportsDrawable() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
+  }
+
+  @Test @Config(qualifiers = "hdpi")
+  public void shouldLoadRawResources_supportsDrawableWithQualifiers() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
+  }
+
+  @Test
   public void setScaledDensityShouldSetScaledDensityInDisplayMetrics() {
     final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
 
@@ -493,7 +497,17 @@ public class ShadowResourcesTest {
 
     theme.resolveAttribute(android.R.attr.windowBackground, out, false);
     assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(out.resourceId).isEqualTo(android.R.color.black);
+    assertThat(out.data).isEqualTo(android.R.color.black);
+  }
+
+  @Test
+  public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() throws Exception {
+    // android:id/mask was introduced in API 21, but it's still possible for apps built against API 21 to refer to it
+    // in older runtimes because referenced resource ids are compiled (by aapt) into the binary XML format.
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.id, "@android:id/mask").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[]{android.R.attr.id});
+    assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
   }
 
   @Test
@@ -508,32 +522,13 @@ public class ShadowResourcesTest {
     assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT).isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
   }
 
-  public static final class Lollipop_R_snippet {
-    public static final class attr {
-      public static final int viewportHeight = 16843779;
-      public static final int viewportWidth = 16843778;
-    }
-  }
-
   @Test
-  @Config(sdk = {JELLY_BEAN, LOLLIPOP, LOLLIPOP_MR1})
-  // todo: get this working on KITKAT by fixing resource id collision issue
-  // todo: change this to @Config(minSdk = JELLY_BEAN)
   public void obtainStyledAttributesShouldCheckXmlFirst() throws Exception {
 
     // This simulates a ResourceLoader built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
     // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
     // resource ID values in the AttributeSet before checking the theme.
-    Map<String, AttrData> attributesTypes = ImmutableMap.<String, AttrData>builder()
-            .put("viewportWidth", new AttrData("viewportWidth", "float", null))
-            .put("viewportHeight", new AttrData("viewportHeight", "float", null))
-            .build();
-    ResourceLoader fakeResourceLoader = new FakeResourceLoader(attributesTypes,
-            new ResourceExtractor(new ResourcePath(Lollipop_R_snippet.class, "android", null, null)));
-
-
-    RuntimeEnvironment.setAppResourceLoader(fakeResourceLoader);
 
     AttributeSet attributes = Robolectric.buildAttributeSet()
         .addAttribute(android.R.attr.viewportWidth, "12.0")
@@ -541,11 +536,33 @@ public class ShadowResourcesTest {
         .build();
 
     TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
-            Lollipop_R_snippet.attr.viewportWidth,
-            Lollipop_R_snippet.attr.viewportHeight
+        android.R.attr.viewportWidth,
+        android.R.attr.viewportHeight
     }, 0, 0);
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
+    typedArray.recycle();
+  }
+
+  @Test
+  public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() throws Exception {
+
+    // This simulates a ResourceLoader built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
+    // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
+    // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
+    // resource ID values in the AttributeSet before checking the theme.
+
+    AttributeSet attributes = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.viewportWidth, "@integer/test_integer1")
+        .addAttribute(android.R.attr.viewportHeight, "@integer/test_integer2")
+        .build();
+
+    TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
+        android.R.attr.viewportWidth,
+        android.R.attr.viewportHeight
+    }, 0, 0);
+    assertThat(typedArray.getFloat(0, 0)).isEqualTo(2000);
+    assertThat(typedArray.getFloat(1, 0)).isEqualTo(9);
     typedArray.recycle();
   }
 
@@ -558,13 +575,13 @@ public class ShadowResourcesTest {
 
   @Test
   @Config(sdk = KITKAT)
-  // todo: get this working on KITKAT by fixing resource id collision issue
-  // todo: change this to @Config(minSdk = KITKAT)
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
     //   numberPickerStyle from com.internal.android.R
     assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
         .isEqualTo("android:attr/numberPickerStyle");
+
+    assertThat(RuntimeEnvironment.application.getResources().getIdentifier("viewportHeight", "attr", "android")).isEqualTo(0);
   }
 
   @Test
@@ -710,45 +727,6 @@ public class ShadowResourcesTest {
   private static class SubClassResources extends Resources {
     public SubClassResources(Resources res) {
       super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
-    }
-  }
-
-  private static class FakeResourceLoader extends ResourceLoader {
-    private final Map<String, AttrData> attributesTypes;
-    private final ResourceIndex resourceIndex;
-
-    public FakeResourceLoader(Map<String, AttrData> attributesTypes, ResourceIndex resourceIndex) {
-      this.attributesTypes = attributesTypes;
-      this.resourceIndex = resourceIndex;
-    }
-
-    @Override
-    public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-      return new TypedResource<>(attributesTypes.get(resName.name), ResType.FLOAT);
-    }
-
-    @Override
-    public XmlBlock getXml(ResName resName, String qualifiers) {
-      return null;
-    }
-
-    @Override
-    public InputStream getRawValue(ResName resName) {
-      return null;
-    }
-
-    @Override
-    public ResourceIndex getResourceIndex() {
-      return resourceIndex;
-    }
-
-    @Override
-    public boolean providesFor(String namespace) {
-      return false;
-    }
-
-    @Override
-    public void receive(Visitor visitor) {
     }
   }
 }

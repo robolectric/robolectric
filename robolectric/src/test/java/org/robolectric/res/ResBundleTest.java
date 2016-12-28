@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -8,85 +9,86 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.robolectric.res.ResBundle.Value;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ResBundleTest {
-  private List<Value<TypedResource<String>>> vals = new ArrayList<>();
+  private List<TypedResource> vals = new ArrayList<>();
 
   @Test
   public void closestMatchIsPicked() {
-    Value<TypedResource<String>> val1 = new Value<>("v16", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("v16");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("v17", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("v17");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "v18");
+    TypedResource v = ResBundle.pick(vals, "v18");
     assertThat(v).isEqualTo(val2);
   }
 
   @Test
   public void firstValIsPickedWhenNoMatch() {
-    Value<TypedResource<String>> val1 = new Value<>("en", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("en");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("fr", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("fr");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "v18");
+    TypedResource v = ResBundle.pick(vals, "v18");
     assertThat(v).isEqualTo(val1);
   }
 
   @Test
   public void firstValIsPickedWhenNoQualifiersGiven() {
-    Value<TypedResource<String>> val1 = new Value<>("v16", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("v16");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("v17", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("v17");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "");
+    TypedResource v = ResBundle.pick(vals, "");
     assertThat(v).isEqualTo(val1);
   }
 
   @Test
   public void firstValIsPickedWhenNoVersionQualifiersGiven() {
-    Value<TypedResource<String>> val1 = new Value<>("v16", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("v16");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("v17", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("v17");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "en");
+    TypedResource v = ResBundle.pick(vals, "en");
     assertThat(v).isEqualTo(val1);
   }
 
   @Test
   public void eliminatedValuesAreNotPickedForVersion() {
-    Value<TypedResource<String>> val1 = new Value<>("en-v16", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("en-v16");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("v17", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("v17");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "en-v18");
+    TypedResource v = ResBundle.pick(vals, "en-v18");
     assertThat(v).isEqualTo(val1);
   }
 
   @Test
   public void greaterVersionsAreNotPicked() {
-    Value<TypedResource<String>> val1 = new Value<>("v11", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("v11");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("v19", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("v19");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "v18");
+    TypedResource v = ResBundle.pick(vals, "v18");
     assertThat(v).isEqualTo(val1);
   }
 
   @Test
   public void greaterVersionsAreNotPickedReordered() {
-    Value<TypedResource<String>> val1 = new Value<>("v19", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("v19");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("v11", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("v11");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "v18");
+    TypedResource v = ResBundle.pick(vals, "v18");
     assertThat(v).isEqualTo(val2);
   }
 
@@ -94,29 +96,29 @@ public class ResBundleTest {
   public void greaterVersionsAreNotPickedMoreQualifiers() {
     // List the contradicting qualifier first, in case the algorithm has a tendency
     // to pick the first qualifier when none of the qualifiers are a "perfect" match.
-    Value<TypedResource<String>> val1 = new Value<>("anydpi-v21", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("anydpi-v21");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("xhdpi-v9", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("xhdpi-v9");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "v18");
+    TypedResource v = ResBundle.pick(vals, "v18");
     assertThat(v).isEqualTo(val2);
   }
 
   @Test
   public void onlyMatchingVersionsQualifiersWillBePicked() {
-    Value<TypedResource<String>> val1 = new Value<>("v16", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("v16");
     vals.add(val1);
-    Value<TypedResource<String>> val2 = new Value<>("sw600dp-v17", createStringTypedResource());
+    TypedResource<String> val2 = createStringTypedResource("sw600dp-v17");
     vals.add(val2);
 
-    Value v = ResBundle.pick(vals, "v18");
+    TypedResource v = ResBundle.pick(vals, "v18");
     assertThat(v).isEqualTo(val1);
   }
 
   @Test
   public void illegalResourceQualifierThrowsException() {
-    Value<TypedResource<String>> val1 = new Value<>("v11-en-v12", createStringTypedResource());
+    TypedResource<String> val1 = createStringTypedResource("v11-en-v12");
     vals.add(val1);
 
     try {
@@ -129,45 +131,58 @@ public class ResBundleTest {
 
   @Test
   public void shouldMatchQualifiersPerAndroidSpec() throws Exception {
-    assertEquals("en-port", ResBundle.pick(asValues(
-        "",
-        "en",
-        "fr-rCA",
-        "en-port",
-        "en-notouch-12key",
-        "port-ldpi",
-        "port-notouch-12key"), "en-GB-port-hdpi-notouch-12key").getValue());
+    assertEquals("en-port", ResBundle.pick(
+        asValues(
+            "",
+            "en",
+            "fr-rCA",
+            "en-port",
+            "en-notouch-12key",
+            "port-ldpi",
+            "port-notouch-12key"),
+        "en-GB-port-hdpi-notouch-12key").asString());
   }
 
   @Test
   public void shouldMatchQualifiersInSizeRange() throws Exception {
-    assertEquals("sw300dp-port", ResBundle.pick(asValues(
-        "",
-        "sw200dp",
-        "sw350dp-port",
-        "sw300dp-port",
-        "sw300dp"), "sw320dp-port").getValue());
+    assertEquals("sw300dp-port", ResBundle.pick(
+        asValues(
+            "",
+            "sw200dp",
+            "sw350dp-port",
+            "sw300dp-port",
+            "sw300dp"),
+        "sw320dp-port").asString());
   }
 
   @Test
   public void shouldPreferWidthOverHeight() throws Exception {
-    assertEquals("sw300dp-sh200dp", ResBundle.pick(asValues(
-        "",
-        "sw200dp",
-        "sw200dp-sh300dp",
-        "sw300dp-sh200dp",
-        "sh300dp"), "sw320dp-sh320dp").getValue());
+    assertEquals("sw300dp-sh200dp", ResBundle.pick(
+        asValues(
+            "",
+            "sw200dp",
+            "sw200dp-sh300dp",
+            "sw300dp-sh200dp",
+            "sh300dp"),
+        "sw320dp-sh320dp").asString());
   }
 
-  private List<Value<String>> asValues(String... qualifierses) {
-    List<Value<String>> values = new ArrayList<>();
+  private List<TypedResource> asValues(String... qualifierses) {
+    List<TypedResource> values = new ArrayList<>();
     for (String qualifiers : qualifierses) {
-      values.add(new ResBundle.Value<>(qualifiers, qualifiers));
+      values.add(createStringTypedResource(qualifiers, qualifiers));
     }
     return values;
   }
 
-  private static TypedResource<String> createStringTypedResource() {
-    return new TypedResource<>("title from resourceLoader1", ResType.CHAR_SEQUENCE);
+  private static TypedResource<String> createStringTypedResource(String qualifiers) {
+    return createStringTypedResource("title from resourceLoader1", qualifiers);
+  }
+
+  @NotNull
+  private static TypedResource<String> createStringTypedResource(String str, String qualifiers) {
+    XmlLoader.XmlContext mockXmlContext = mock(XmlLoader.XmlContext.class);
+    when(mockXmlContext.getQualifiers()).thenReturn(qualifiers);
+    return new TypedResource<>(str, ResType.CHAR_SEQUENCE, mockXmlContext);
   }
 }

@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.os.Build;
 
 import org.assertj.core.api.Assertions;
+import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,7 +117,7 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(onTerminateCalledFromMain).isTrue();
   }
 
-  public static class RunnerForTesting extends TestRunners.WithDefaults {
+  public static class RunnerForTesting extends TestRunners.SelfTest {
     public static RunnerForTesting instance;
 
     public RunnerForTesting(Class<?> testClass) throws InitializationError {
@@ -124,6 +125,7 @@ public class RobolectricTestRunnerSelfTest {
       instance = this;
     }
 
+    @NotNull
     @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
       return MyTestLifecycle.class;
     }

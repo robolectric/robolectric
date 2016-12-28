@@ -15,7 +15,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowJobSchedulerTest {
 
@@ -53,6 +53,34 @@ public class ShadowJobSchedulerTest {
     jobScheduler.cancelAll();
 
     assertThat(jobScheduler.getAllPendingJobs()).isEmpty();
+  }
+
+  @Test
+  public void cancelSingleJob() {
+    jobScheduler.schedule(new JobInfo.Builder(99,
+          new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+          .setPeriodic(1000)
+          .build());
+
+    assertThat(jobScheduler.getAllPendingJobs()).isNotEmpty();
+
+    jobScheduler.cancel(99);
+
+    assertThat(jobScheduler.getAllPendingJobs()).isEmpty();
+  }
+
+  @Test
+  public void cancelNonExistentJob() {
+    jobScheduler.schedule(new JobInfo.Builder(99,
+          new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+          .setPeriodic(1000)
+          .build());
+
+    assertThat(jobScheduler.getAllPendingJobs()).isNotEmpty();
+
+    jobScheduler.cancel(33);
+
+    assertThat(jobScheduler.getAllPendingJobs()).isNotEmpty();
   }
 
   @Test

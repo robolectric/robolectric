@@ -113,6 +113,33 @@ public class ShadowWranglerUnitTest {
     assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, DummyClass.class)).isNull();
   }
 
+  @Test
+  public void whenChildShadowHasNarrowerSdk_createShadowFor_shouldReturnSuperShadowSometimes() throws Exception {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class, ShadowChildOfDummyClass.class).build();
+    assertThat(new ShadowWrangler(shadowMap, 18).createShadowFor(new ChildOfDummyClass()))
+        .isSameAs(ShadowWrangler.NO_SHADOW);
+    assertThat(new ShadowWrangler(shadowMap, 19).createShadowFor(new ChildOfDummyClass()))
+        .isInstanceOf(ShadowDummyClass.class);
+    assertThat(new ShadowWrangler(shadowMap, 20).createShadowFor(new ChildOfDummyClass()))
+        .isInstanceOf(ShadowChildOfDummyClass.class);
+    assertThat(new ShadowWrangler(shadowMap, 21).createShadowFor(new ChildOfDummyClass()))
+        .isInstanceOf(ShadowChildOfDummyClass.class);
+    assertThat(new ShadowWrangler(shadowMap, 22).createShadowFor(new ChildOfDummyClass()))
+        .isSameAs(ShadowWrangler.NO_SHADOW);
+  }
+
+  @Test
+  public void whenChildShadowHasNarrowerSdk_shouldCallAppropriateShadowMethod() throws Exception {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class, ShadowChildOfDummyClass.class).build();
+    String methodName = internalName(ChildOfDummyClass.class) + "/methodWithoutRange()V";
+    assertThat(new ShadowWrangler(shadowMap, 19).methodInvoked(methodName, false, ChildOfDummyClass.class))
+        .isNull();
+    assertThat(new ShadowWrangler(shadowMap, 20).methodInvoked(methodName, false, ChildOfDummyClass.class).describe())
+        .contains("ShadowChildOfDummyClass.methodWithoutRange()");
+    assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, ChildOfDummyClass.class).describe())
+        .contains("ShadowChildOfDummyClass.methodWithoutRange()");
+  }
+
   public static class DummyClass {
   }
 
@@ -136,6 +163,16 @@ public class ShadowWranglerUnitTest {
 
     @Implementation(maxSdk = 20)
     public void methodMax20() {
+    }
+  }
+
+  public static class ChildOfDummyClass extends DummyClass {
+  }
+
+  @Implements(value = ChildOfDummyClass.class, minSdk = 20, maxSdk = 21)
+  public static class ShadowChildOfDummyClass {
+    @Implementation
+    public void methodWithoutRange() {
     }
   }
 

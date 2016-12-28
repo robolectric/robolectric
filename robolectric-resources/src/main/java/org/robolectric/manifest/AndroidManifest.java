@@ -59,8 +59,9 @@ public class AndroidManifest {
   private String processName;
   private String themeRef;
   private String labelRef;
-  private Integer targetSdkVersion;
   private Integer minSdkVersion;
+  private Integer targetSdkVersion;
+  private Integer maxSdkVersion;
   private int versionCode;
   private String versionName;
   private int applicationFlags;
@@ -148,6 +149,7 @@ public class AndroidManifest {
         applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
         minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
         targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
+        maxSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:maxSdkVersion");
         processName = getTagAttributeText(manifestDocument, "application", "android:process");
         if (processName == null) {
           processName = packageName;
@@ -525,6 +527,11 @@ public class AndroidManifest {
   public int getTargetSdkVersion() {
     parseAndroidManifest();
     return targetSdkVersion == null ? getMinSdkVersion() : targetSdkVersion;
+  }
+
+  public Integer getMaxSdkVersion() {
+    parseAndroidManifest();
+    return maxSdkVersion;
   }
 
   public int getApplicationFlags() {

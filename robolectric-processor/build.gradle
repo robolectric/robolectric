@@ -3,7 +3,7 @@ dependencies {
     compile project(":robolectric-annotations")
 
     // Compile dependencies
-    compile "com.google.guava:guava:19.0"
+    compile "com.google.guava:guava:20.0"
     compileOnly "com.intellij:annotations:12.0"
     compile files("${System.properties['java.home']}/../lib/tools.jar")
 

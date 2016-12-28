@@ -17,7 +17,6 @@ public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
   private final ShadowInvalidator shadowInvalidator;
-  public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<>();
   private ShadowMap shadowMap = ShadowMap.EMPTY;
   private ResourceLoader systemResourceLoader;
 
@@ -45,9 +44,9 @@ public class SdkEnvironment {
     return systemResourceLoader;
   }
 
-  public Class<?> bootstrappedClass(Class<?> testClass) {
+  public <T> Class<T> bootstrappedClass(Class<?> testClass) {
     try {
-      return robolectricClassLoader.loadClass(testClass.getName());
+      return (Class<T>) robolectricClassLoader.loadClass(testClass.getName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }

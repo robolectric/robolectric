@@ -2,14 +2,12 @@ package org.robolectric.shadows;
 
 import android.R;
 import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import com.android.internal.policy.PolicyManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -23,7 +21,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowWindowTest {
   @Test
   public void getFlag_shouldReturnWindowFlags() throws Exception {
@@ -107,16 +105,6 @@ public class ShadowWindowTest {
   public void forM_create_shouldCreatePhoneWindow() throws Exception {
     assertThat(ShadowWindow.create(RuntimeEnvironment.application).getClass().getName())
         .isEqualTo("com.android.internal.policy.PhoneWindow");
-  }
-
-  @Test
-  public void makeNewWindowSucks() throws Exception {
-    PolicyManager.makeNewWindow(RuntimeEnvironment.application);
-  }
-
-  @Test @Config(minSdk = LOLLIPOP_MR1)
-  public void withLollipop_makeNewWindowSucks() throws Exception {
-    PolicyManager.makeNewWindow(RuntimeEnvironment.application);
   }
 
   public static class TestActivity extends Activity {

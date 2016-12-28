@@ -44,6 +44,7 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
    * @return true if the object is valid, false if not
    * @throws RuntimeException if the items have been changed without notification
    */
+  @Deprecated
   public boolean checkValidity() {
     throw new UnsupportedOperationException();
   }
@@ -57,6 +58,7 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
    * @param shouldUpdate false to turn off the feature, true to turn it back on
    * @deprecated Not supported as of Robolectric 2.0-alpha-3.
    */
+  @Deprecated
   public static void automaticallyUpdateRowViews(boolean shouldUpdate) {
     automaticallyUpdateRowViews = shouldUpdate;
   }

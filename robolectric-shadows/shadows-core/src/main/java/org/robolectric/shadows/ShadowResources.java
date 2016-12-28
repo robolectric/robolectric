@@ -1,11 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -21,11 +16,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralResourceLoader;
 import org.robolectric.res.ResType;
-import org.robolectric.res.Style;
-import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -38,9 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
  * Shadow for {@link android.content.res.Resources}.
@@ -99,7 +94,7 @@ public class ShadowResources {
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
     return shadowOf(realResources.getAssets())
-        .attrsToTypedArray(realResources, set, attrs, 0, null, 0);
+        .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
   }
 
   @Implementation
@@ -122,7 +117,8 @@ public class ShadowResources {
       }
 
       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
+          RuntimeEnvironment.getQualifiers(), resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
       return null;
@@ -131,7 +127,7 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResourceLoader().getRawValue(id);
+    return shadowOf(realResources.getAssets()).getResourceLoader().getRawValue(id, RuntimeEnvironment.getQualifiers());
   }
 
   @Implementation
@@ -187,43 +183,32 @@ public class ShadowResources {
     return loadXmlResourceParser(id, type);
   }
 
-  @Implements(Resources.Theme.class)
+  @Implements(value = Resources.Theme.class)
   public static class ShadowTheme {
     @RealObject Resources.Theme realTheme;
-    private ThemeStyleSet themeStyleSet = new ThemeStyleSet();
 
-    public void __constructor__(Resources this$0) {
-      invokeConstructor(Resources.Theme.class, realTheme, ClassParameter.from(Resources.class, this$0));
-      Number themePtr = ReflectionHelpers.getField(realTheme, "mTheme");
-      ShadowAssetManager.saveTheme(themePtr, realTheme);
+    long getNativePtr() {
+      if (RuntimeEnvironment.getApiLevel() >= N) {
+        ResourcesImpl.ThemeImpl themeImpl = ReflectionHelpers.getField(realTheme, "mThemeImpl");
+        return ((ShadowResourcesImpl.ShadowThemeImpl) ShadowExtractor.extract(themeImpl)).getNativePtr();
+      } else {
+        return ((Number) ReflectionHelpers.getField(realTheme, "mTheme")).longValue();
+      }
     }
 
-    @Implementation
+    @Implementation(maxSdk = M)
     public TypedArray obtainStyledAttributes(int[] attrs) {
       return obtainStyledAttributes(0, attrs);
     }
 
-    @Implementation
+    @Implementation(maxSdk = M)
     public TypedArray obtainStyledAttributes(int resid, int[] attrs) throws android.content.res.Resources.NotFoundException {
       return obtainStyledAttributes(null, attrs, 0, resid);
     }
 
-    @Implementation
+    @Implementation(maxSdk = M)
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, realTheme, defStyleRes);
-    }
-
-    public ThemeStyleSet getThemeStyleSet() {
-      return themeStyleSet;
-    }
-
-    public void setThemeStyleSet(ThemeStyleSet themeStyleSet) {
-      this.themeStyleSet = themeStyleSet;
-    }
-
-    void doApplyStyle(int styleRes, boolean force) {
-      Style style = getShadowAssetManager().resolveStyle(styleRes, null);
-      themeStyleSet.apply(style, force);
+      return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
     }
 
     private ShadowAssetManager getShadowAssetManager() {
@@ -239,20 +224,7 @@ public class ShadowResources {
   public Drawable loadDrawable(TypedValue value, int id) {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
-
-    // todo: this kinda sucks, find some better way...
-    if (drawable != null) {
-      shadowOf(drawable).createdFromResId = id;
-      if (drawable instanceof BitmapDrawable) {
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        if (bitmap != null) {
-          ShadowBitmap shadowBitmap = shadowOf(bitmap);
-          if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
-          }
-        }
-      }
-    }
+    setCreatedFromResId(realResources, id, drawable);
     return drawable;
   }
 
@@ -260,7 +232,11 @@ public class ShadowResources {
   public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
+    setCreatedFromResId(realResources, id, drawable);
+    return drawable;
+  }
 
+  static void setCreatedFromResId(Resources resources, int id, Drawable drawable) {
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
       shadowOf(drawable).createdFromResId = id;
@@ -269,12 +245,11 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
+            shadowBitmap.setCreatedFromResId(id, shadowOf(resources.getAssets()).getResourceName(id));
           }
         }
       }
     }
-    return drawable;
   }
 
   @Implements(Resources.NotFoundException.class)

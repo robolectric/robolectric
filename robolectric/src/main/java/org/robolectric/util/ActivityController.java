@@ -9,7 +9,6 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.internal.runtime.RuntimeAdapter;
 import org.robolectric.internal.runtime.RuntimeAdapterFactory;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.Activity;
 import android.app.Application;
@@ -23,6 +22,9 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.ViewRootImpl;
+
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
   private final ShadowsAdapter shadowsAdapter;
@@ -123,7 +125,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethod(Activity.class, component, "performCreate", ClassParameter.from(Bundle.class, bundle));
+        ReflectionHelpers.callInstanceMethod(Activity.class, component, "performCreate", from(Bundle.class, bundle));
       }
     });
     return this;
@@ -134,12 +136,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> restoreInstanceState(Bundle bundle) {
-    invokeWhilePaused("performRestoreInstanceState", bundle);
+    invokeWhilePaused("performRestoreInstanceState", from(Bundle.class, bundle));
     return this;
   }
 
   public ActivityController<T> postCreate(Bundle bundle) {
-    invokeWhilePaused("onPostCreate", bundle);
+    invokeWhilePaused("onPostCreate", from(Bundle.class, bundle));
     return this;
   }
 
@@ -164,12 +166,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> newIntent(Intent intent) {
-    invokeWhilePaused("onNewIntent", intent);
+    invokeWhilePaused("onNewIntent", from(Intent.class, intent));
     return this;
   }
 
   public ActivityController<T> saveInstanceState(Bundle outState) {
-    invokeWhilePaused("performSaveInstanceState", outState);
+    invokeWhilePaused("performSaveInstanceState", from(Bundle.class, outState));
     return this;
   }
 
@@ -209,7 +211,11 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> stop() {
-    invokeWhilePaused("performStop");
+    if (RuntimeEnvironment.getApiLevel() <= M) {
+      invokeWhilePaused("performStop");
+    } else {
+      invokeWhilePaused("performStop", from(boolean.class, true));
+    }
     return this;
   }
 
@@ -259,7 +265,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
         @Override
         public void run() {
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onConfigurationChanged",
-            ClassParameter.from(Configuration.class, newConfiguration));
+            from(Configuration.class, newConfiguration));
         }
       });
 
@@ -279,7 +285,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
           final Bundle outState = new Bundle();
     
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onSaveInstanceState",
-              ClassParameter.from(Bundle.class, outState));
+              from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onPause");
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onStop");
     
@@ -299,12 +305,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
           
             // Create lifecycle
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
-              "onCreate", ClassParameter.from(Bundle.class, outState));
+              "onCreate", from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onStart");
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
-              "onRestoreInstanceState", ClassParameter.from(Bundle.class, outState));
+              "onRestoreInstanceState", from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
-              "onPostCreate", ClassParameter.from(Bundle.class, outState));
+              "onPostCreate", from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onResume");
         }
       });

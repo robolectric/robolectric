@@ -14,25 +14,25 @@ import static org.robolectric.util.TestUtil.testResources;
 public class RawResourceLoaderTest {
 
   private ResourceExtractor resourceIndex;
-  private ResBundle<FsFile> rawResourceFiles;
+  private ResBundle rawResourceFiles;
 
   @Before
   public void setUp() throws Exception {
     resourceIndex = new ResourceExtractor(testResources());
-    rawResourceFiles = new ResBundle<>();
+    rawResourceFiles = new ResBundle();
     RawResourceLoader rawResourceLoader = new RawResourceLoader(TEST_RESOURCE_PATH);
     rawResourceLoader.loadTo(rawResourceFiles);
   }
 
   @Test
   public void shouldReturnRawResourcesWithExtensions() throws Exception {
-    FsFile f = rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_resource), "");
+    FsFile f = (FsFile) rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_resource), "").getData();
     assertThat(f).isEqualTo(TEST_RESOURCE_PATH.getResourceBase().join("raw").join("raw_resource.txt"));
   }
 
   @Test
   public void shouldReturnRawResourcesWithoutExtensions() throws Exception {
-    FsFile f = rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_no_ext), "");
+    FsFile f = (FsFile) rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_no_ext), "").getData();
     assertThat(f).isEqualTo(TEST_RESOURCE_PATH.getResourceBase().join("raw").join("raw_no_ext"));
   }
 }

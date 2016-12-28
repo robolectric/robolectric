@@ -11,11 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import android.view.ViewParent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Transcript;
 
 import android.util.SparseBooleanArray;
@@ -27,7 +29,7 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowListViewTest {
 
   private Transcript transcript;
@@ -228,7 +230,7 @@ public class ShadowListViewTest {
   public void getPositionForView_shouldReturnInvalidPositionForViewThatIsNotFound() throws Exception {
     prepareWithListAdapter();
     View view = new View(RuntimeEnvironment.application);
-    shadowOf(view).setMyParent(new StubViewRoot()); // Android implementation requires the item have a parent
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class)); // Android implementation requires the item have a parent
     assertThat(listView.getPositionForView(view)).isEqualTo(AdapterView.INVALID_POSITION);
   }
 

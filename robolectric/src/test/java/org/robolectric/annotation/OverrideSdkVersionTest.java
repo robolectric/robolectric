@@ -9,7 +9,7 @@ import org.robolectric.shadows.ShadowApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class OverrideSdkVersionTest {
   @Test
   public void whenNotOverridden_shouldUseTargetSdkVersionFromAppManifest() {

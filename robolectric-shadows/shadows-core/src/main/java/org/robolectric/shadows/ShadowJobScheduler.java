@@ -54,6 +54,7 @@ public abstract class ShadowJobScheduler {
 
     @Implementation
     public void cancel(int jobId) {
+      scheduledJobs.remove(jobId);
     }
 
     @Implementation

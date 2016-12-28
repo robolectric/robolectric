@@ -7,7 +7,6 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
 
@@ -27,13 +26,14 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowBitmapTest {
   @Test
   public void shouldCreateScaledBitmap() throws Exception {
-    Bitmap originalBitmap = create("Original bitmap");
+    Bitmap originalBitmap = create("Original bitmap", 100, 100);
     Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 100, 200, false);
-    assertThat(shadowOf(scaledBitmap).getDescription()).isEqualTo("Original bitmap scaled to 100 x 200");
+    assertThat(shadowOf(scaledBitmap).getDescription())
+        .isEqualTo("Original bitmap scaled to 100 x 200");
     assertThat(scaledBitmap.getWidth()).isEqualTo(100);
     assertThat(scaledBitmap.getHeight()).isEqualTo(200);
     scaledBitmap.getPixels(new int[20000], 0, 0, 0, 0, 100, 200);
@@ -86,9 +86,23 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldCreateBitmapFromAnotherBitmap() {
-    Bitmap originalBitmap = create("Original bitmap");
+    Bitmap originalBitmap = create("Original bitmap", 100, 100);
     Bitmap newBitmap = Bitmap.createBitmap(originalBitmap);
-    assertThat(shadowOf(newBitmap).getDescription()).isEqualTo("Original bitmap created from Bitmap object");
+    assertThat(shadowOf(newBitmap).getDescription())
+        .isEqualTo("Original bitmap created from Bitmap object");
+  }
+
+  @Test
+  public void shouldCreateBitmapWithMatrix() {
+    Bitmap originalBitmap = create("Original bitmap", 100, 100);
+    shadowOf(originalBitmap).setWidth(200);
+    shadowOf(originalBitmap).setHeight(200);
+    Matrix m = new Matrix();
+    m.postRotate(90);
+    Bitmap newBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, 100, 100, m, true);
+    assertThat(shadowOf(newBitmap).getDescription())
+        .isEqualTo("Original bitmap at (0,0) with width 100 and height 100" +
+            " using matrix Matrix[pre=[], set={}, post=[rotate 90.0]] with filter");
   }
 
   @Test
@@ -117,8 +131,8 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldReceiveDescriptionWhenDrawingToCanvas() throws Exception {
-    Bitmap bitmap1 = create("Bitmap One");
-    Bitmap bitmap2 = create("Bitmap Two");
+    Bitmap bitmap1 = create("Bitmap One", 100, 100);
+    Bitmap bitmap2 = create("Bitmap Two", 100, 100);
 
     Canvas canvas = new Canvas(bitmap1);
     canvas.drawBitmap(bitmap2, 0, 0, null);
@@ -128,32 +142,37 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldReceiveDescriptionWhenDrawingToCanvasWithBitmapAndMatrixAndPaint() throws Exception {
-    Bitmap bitmap1 = create("Bitmap One");
-    Bitmap bitmap2 = create("Bitmap Two");
+    Bitmap bitmap1 = create("Bitmap One", 100, 100);
+    Bitmap bitmap2 = create("Bitmap Two", 100, 100);
 
     Canvas canvas = new Canvas(bitmap1);
     canvas.drawBitmap(bitmap2, new Matrix(), null);
 
-    assertThat(shadowOf(bitmap1).getDescription()).isEqualTo("Bitmap One\nBitmap Two transformed by matrix");
+    assertThat(shadowOf(bitmap1).getDescription())
+        .isEqualTo("Bitmap One\nBitmap Two transformed by Matrix[pre=[], set={}, post=[]]");
   }
 
   @Test
   public void shouldReceiveDescriptionWhenDrawABitmapToCanvasWithAPaintEffect() throws Exception {
-    Bitmap bitmap1 = create("Bitmap One");
-    Bitmap bitmap2 = create("Bitmap Two");
+    Bitmap bitmap1 = create("Bitmap One", 100, 100);
+    Bitmap bitmap2 = create("Bitmap Two", 100, 100);
 
     Canvas canvas = new Canvas(bitmap1);
     Paint paint = new Paint();
     paint.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix()));
     canvas.drawBitmap(bitmap2, new Matrix(), paint);
 
-    assertThat(shadowOf(bitmap1).getDescription()).isEqualTo("Bitmap One\nBitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0> transformed by matrix");
+    assertThat(shadowOf(bitmap1).getDescription())
+        .isEqualTo("Bitmap One\n" +
+            "Bitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>" +
+            " transformed by Matrix[pre=[], set={}, post=[]]");
   }
 
   @Test
   public void visualize_shouldReturnDescription() throws Exception {
-    Bitmap bitmap = create("Bitmap One");
-    assertThat(ShadowBitmap.visualize(bitmap)).isEqualTo("Bitmap One");
+    Bitmap bitmap = create("Bitmap One", 100, 100);
+    assertThat(ShadowBitmap.visualize(bitmap))
+        .isEqualTo("Bitmap One");
   }
 
   @Test
@@ -306,6 +325,35 @@ public class ShadowBitmapTest {
   }
 
   @Test
+  public void shouldAdjustDimensionsForMatrix() {
+    Bitmap transformedBitmap;
+    int width = 10;
+    int height = 20;
+
+    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    Matrix matrix = new Matrix();
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(width);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(height);
+
+    matrix.setRotate(90);
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(height);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(width);
+
+    matrix.setScale(2, 3);
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(width * 2);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(height * 3);
+  }
+
+  @Test
   public void shouldWriteToParcelAndReconstruct() {
     Bitmap bitmapOriginal;
     int originalWidth = 10;
@@ -450,7 +498,7 @@ public class ShadowBitmapTest {
     bitmapOriginal.copyPixelsFromBuffer(buffer);
   }
 
-  private static Bitmap create(String name) {
+  private static Bitmap create(String name, int width, int height) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);
     return bitmap;

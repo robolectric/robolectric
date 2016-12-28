@@ -10,12 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.session.MediaSessionManager;
-import android.os.Build;
-import android.os.IBinder;
-import android.os.IInterface;
-import android.os.Parcel;
-import android.os.RemoteException;
-import android.os.UserManager;
+import android.os.*;
 import android.print.PrintManager;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
@@ -34,14 +29,11 @@ import org.robolectric.fakes.RoboSensorManager;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceExtractor;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestBroadcastReceiver;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.List;
 
@@ -59,7 +51,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -163,7 +155,7 @@ public class ShadowApplicationTest {
   public void bindServiceShouldCallOnServiceConnectedWithDefaultValues() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    NullBinder expectedBinder = new NullBinder();
+    Binder expectedBinder = new Binder();
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isEqualTo(expectedComponentName);
@@ -185,7 +177,7 @@ public class ShadowApplicationTest {
   public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
     ShadowLooper.pauseMainLooper();
     ComponentName expectedComponentName = new ComponentName("", "");
-    NullBinder expectedBinder = new NullBinder();
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
 
@@ -205,7 +197,7 @@ public class ShadowApplicationTest {
   public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    NullBinder expectedBinder = new NullBinder();
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
     RuntimeEnvironment.application.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
@@ -221,7 +213,7 @@ public class ShadowApplicationTest {
   public void unbindServiceAddsEntryToUnboundServicesCollection() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    NullBinder expectedBinder = new NullBinder();
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
@@ -236,7 +228,7 @@ public class ShadowApplicationTest {
     ShadowLooper.pauseMainLooper();
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
-    NullBinder expectedBinder = new NullBinder();
+    Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("refuseToBind");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
@@ -252,10 +244,10 @@ public class ShadowApplicationTest {
   public void bindServiceWithMultipleIntentsMapping() {
     TestService service = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
-    NullBinder expectedBinderOne = new NullBinder();
+    Binder expectedBinderOne = new Binder();
     Intent expectedIntentOne = new Intent("expected_one");
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
-    NullBinder expectedBinderTwo = new NullBinder();
+    Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -272,10 +264,10 @@ public class ShadowApplicationTest {
   public void bindServiceWithMultipleIntentsMappingWithDefault() {
     TestService service = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
-    NullBinder expectedBinderOne = new NullBinder();
+    Binder expectedBinderOne = new Binder();
     Intent expectedIntentOne = new Intent("expected_one");
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
-    NullBinder expectedBinderTwo = new NullBinder();
+    Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -295,11 +287,11 @@ public class ShadowApplicationTest {
   public void unbindServiceWithMultipleIntentsMapping() {
     TestService serviceOne = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
-    NullBinder expectedBinderOne = new NullBinder();
+    Binder expectedBinderOne = new Binder();
     Intent expectedIntentOne = new Intent("expected_one");
     TestService serviceTwo = new TestService();
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
-    NullBinder expectedBinderTwo = new NullBinder();
+    Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -437,50 +429,6 @@ public class ShadowApplicationTest {
     List<Intent> broadcastIntents = shadowOf(RuntimeEnvironment.application).getBroadcastIntents();
     assertTrue(broadcastIntents.size() == 1);
     assertEquals(broadcastIntent, broadcastIntents.get(0));
-  }
-
-  private static class NullBinder implements IBinder {
-    @Override
-    public String getInterfaceDescriptor() throws RemoteException {
-      return null;
-    }
-
-    @Override
-    public boolean pingBinder() {
-      return false;
-    }
-
-    @Override
-    public boolean isBinderAlive() {
-      return false;
-    }
-
-    @Override
-    public IInterface queryLocalInterface(String descriptor) {
-      return null;
-    }
-
-    @Override
-    public void dump(FileDescriptor fd, String[] args) throws RemoteException {
-    }
-
-    @Override
-    public void dumpAsync(FileDescriptor fileDescriptor, String[] strings) throws RemoteException {
-    }
-
-    @Override
-    public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
-      return false;
-    }
-
-    @Override
-    public void linkToDeath(DeathRecipient recipient, int flags) throws RemoteException {
-    }
-
-    @Override
-    public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
-      return false;
-    }
   }
 
   @Test

@@ -9,7 +9,7 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DoNotInstrument
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RoboWebSettingsTest {
   private final RoboWebSettings webSettings = new RoboWebSettings();
   private static final boolean[] TRUE_AND_FALSE = {true, false};

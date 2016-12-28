@@ -10,12 +10,11 @@ import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.ReflectionHelpers.StringParameter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Config(shadows={ RobolectricInternalsTest.ShadowConstructors.class })
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RobolectricInternalsTest {
 
   private static final String PARAM1 = "param1";

@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
@@ -22,7 +21,7 @@ import org.robolectric.annotation.Config;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContextImplTest {
   private final Context context = RuntimeEnvironment.application;
 
@@ -85,12 +84,6 @@ public class ShadowContextImplTest {
   public void createPackageContextRemoteViews() throws Exception {
     RemoteViews remoteViews = new RemoteViews(RuntimeEnvironment.application.getPackageName(), R.layout.remote_views);
     remoteViews.apply(RuntimeEnvironment.application, new FrameLayout(RuntimeEnvironment.application));
-  }
-
-  @Test
-  public void validateInMemoryDatabasePath() {
-    assertThat(context.getDatabasePath(ShadowContextImpl.SQLITE_IN_MEMORY_PATH).getPath())
-        .isEqualTo(ShadowContextImpl.SQLITE_IN_MEMORY_PATH);
   }
 }
 

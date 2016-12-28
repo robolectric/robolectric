@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -24,13 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.CustomStateView;
-import org.robolectric.util.CustomView;
-import org.robolectric.util.CustomView2;
-import org.robolectric.util.TestUtil;
+import org.robolectric.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +42,7 @@ import static org.robolectric.test.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowLayoutInflaterTest {
   private Activity context;
 
@@ -192,7 +189,7 @@ public class ShadowLayoutInflaterTest {
   @Test
   public void focusRequest_shouldNotExplodeOnViewRootImpl() throws Exception {
     LinearLayout parent = new LinearLayout(context);
-    shadowOf(parent).setMyParent(new StubViewRoot());
+    shadowOf(parent).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     int layoutResId = context.getResources().getIdentifier("request_focus", "layout", TEST_PACKAGE);
     LayoutInflater.from(context).inflate(layoutResId, parent);
   }

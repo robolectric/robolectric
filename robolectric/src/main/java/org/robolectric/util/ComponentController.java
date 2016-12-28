@@ -1,6 +1,5 @@
 package org.robolectric.util;
 
-import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -67,41 +66,11 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
     return intent;
   }
 
-  protected C invokeWhilePaused(final String methodName) {
+  protected C invokeWhilePaused(final String methodName, final ClassParameter<?>... classParameters) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethod(component, methodName);
-      }
-    });
-    return myself;
-  }
-
-  protected C invokeWhilePaused(final String methodName, final Bundle arg) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        ReflectionHelpers.callInstanceMethod(component, methodName, ClassParameter.from(Bundle.class, arg));
-      }
-    });
-    return myself;
-  }
-
-  protected C invokeWhilePaused(final String methodName, final Intent arg) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        ReflectionHelpers.callInstanceMethod(component, methodName, ClassParameter.from(Intent.class, arg));
-      }
-    });
-    return myself;
-  }
-
-  protected C invokeWhilePaused(final String methodName, final Intent arg, final int param1, final int param2) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        ReflectionHelpers.callInstanceMethod(component, methodName, ClassParameter.from(Intent.class, arg), ClassParameter.from(int.class, param1), ClassParameter.from(int.class, param2));
+        ReflectionHelpers.callInstanceMethod(component, methodName, classParameters);
       }
     });
     return myself;

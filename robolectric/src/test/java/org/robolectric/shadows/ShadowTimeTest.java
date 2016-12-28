@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import java.util.Arrays;
 import java.util.TimeZone;
 
-import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.TimeFormatException;
@@ -19,7 +18,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowTimeTest {
   private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();

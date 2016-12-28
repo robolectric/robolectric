@@ -7,16 +7,30 @@ public class RawResourceLoader {
     this.resourcePath = resourcePath;
   }
 
-  public void loadTo(ResBundle<FsFile> rawResourceFiles) {
-    FsFile rawDir = resourcePath.getResourceBase().join("raw");
+  public void loadTo(ResBundle rawResourceFiles) {
+    load(rawResourceFiles, "raw");
+    load(rawResourceFiles, "drawable");
+  }
 
-    if (rawDir != null) {
-      FsFile[] files = rawDir.listFiles();
-      if (files != null) {
-        for (FsFile file : files) {
-          String fileBaseName = file.getBaseName();
-          rawResourceFiles.put("raw", fileBaseName, file, new XmlLoader.XmlContext(resourcePath.getPackageName(), file));
-        }
+  public void load(ResBundle rawResourceFiles, String folderBaseName) {
+    FsFile resourceBase = resourcePath.getResourceBase();
+    FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
+    if (files == null) {
+      throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
+    }
+    for (FsFile dir : files) {
+      loadRawFiles(rawResourceFiles, folderBaseName, dir);
+    }
+  }
+
+  private void loadRawFiles(ResBundle rawResourceFiles, String resourceType, FsFile rawDir) {
+    FsFile[] files = rawDir.listFiles();
+    if (files != null) {
+      for (FsFile file : files) {
+        String fileBaseName = file.getBaseName();
+        rawResourceFiles.put(resourceType, fileBaseName,
+            new TypedResource<>(file, ResType.FILE,
+                new XmlLoader.XmlContext(resourcePath.getPackageName(), file)));
       }
     }
   }
