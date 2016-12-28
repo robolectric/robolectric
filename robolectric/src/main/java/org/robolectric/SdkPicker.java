@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -64,8 +65,8 @@ public class SdkPicker {
       return null;
     } else {
       Set<SdkConfig> enabledSdks = new HashSet<>();
-      for (String s : overrideSupportedApis.split(",")) {
-        enabledSdks.add(new SdkConfig(Integer.parseInt(s)));
+      for (int sdk : ConfigUtils.parseSdkArrayProperty(overrideSupportedApis)) {
+        enabledSdks.add(new SdkConfig(sdk));
       }
       return enabledSdks;
     }
