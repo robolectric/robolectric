@@ -23,6 +23,9 @@ public class PackageResourceIndex implements ResourceIndex {
 
   @Override
   public synchronized Integer getResourceId(ResName resName) {
+    if (resName == null) {
+      return null;
+    }
     Integer id = resourceTable.inverse().get(resName);
     if (id == null && isAndroidPackage(resName)) {
       id = androidResourceIdGenerator.generate(resName.type, resName.name);
