@@ -13,9 +13,8 @@ public class PackageResourceIndex implements ResourceIndex {
 
   private final BiMap<Integer, ResName> resourceTable = HashBiMap.create();
 
-  private Integer maxUsedInt = null;
-  private Integer generatedIdStart = null;
-  private String packageName;
+  private final ResourceIdGenerator androidResourceIdGenerator = new ResourceIdGenerator(0x01);
+  private final String packageName;
   private int packageIdentifier;
 
   public PackageResourceIndex(String packageName) {
@@ -25,12 +24,8 @@ public class PackageResourceIndex implements ResourceIndex {
   @Override
   public synchronized Integer getResourceId(ResName resName) {
     Integer id = resourceTable.inverse().get(resName);
-    if (id == null && ("android".equals(resName.packageName) || "".equals(resName.packageName))) {
-      if (maxUsedInt == null) {
-        maxUsedInt = resourceTable.isEmpty() ? 0 : Collections.max(resourceTable.keySet());
-        generatedIdStart = maxUsedInt;
-      }
-      id = ++maxUsedInt;
+    if (id == null && isAndroidPackage(resName)) {
+      id = androidResourceIdGenerator.generate(resName.type, resName.name);
       resourceTable.put(id, resName);
       LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
     }
@@ -39,13 +34,17 @@ public class PackageResourceIndex implements ResourceIndex {
     return id;
   }
 
+  private boolean isAndroidPackage(ResName resName) {
+    return "android".equals(resName.packageName) || "".equals(resName.packageName);
+  }
+
   @Override
   public synchronized ResName getResName(int resourceId) {
     return resourceTable.get(resourceId);
   }
 
   @Override
-  public void dump() {
+  public synchronized void dump() {
     System.out.println(resourceTable);
   }
 
@@ -57,7 +56,10 @@ public class PackageResourceIndex implements ResourceIndex {
     return packageIdentifier;
   }
 
-  void addResource(int id, String type, String name) {
+  synchronized void addResource(int id, String type, String name) {
+    if (ResourceIds.isFrameworkResource(id)) {
+      androidResourceIdGenerator.record(id, type, name);
+    }
     ResName resName = new ResName(packageName, type, name);
     int resIdPackageIdentifier = ResourceIds.getPackageIdentifier(id);
     if (getPackageIdentifier() == 0) {
