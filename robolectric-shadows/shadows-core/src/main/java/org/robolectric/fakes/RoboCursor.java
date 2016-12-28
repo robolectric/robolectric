@@ -65,16 +65,20 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public boolean moveToNext() {
-    return moveToPosition(resultsIndex + 1);
+    return doMoveToPosition(resultsIndex + 1);
   }
 
   @Override
   public boolean moveToFirst() {
-    return moveToPosition(0);
+    return doMoveToPosition(0);
   }
 
   @Override
   public boolean moveToPosition(int position) {
+    return doMoveToPosition(position);
+  }
+
+  private boolean doMoveToPosition(int position) {
     resultsIndex = position;
     return resultsIndex >= 0 && resultsIndex < results.length;
   }
@@ -117,6 +121,50 @@ public class RoboCursor extends BaseCursor {
   @Override
   public boolean isLast() {
     return resultsIndex == results.length - 1;
+  }
+
+  @Override public int getPosition() {
+    return resultsIndex;
+  }
+
+  @Override public boolean move(int offset) {
+    return doMoveToPosition(resultsIndex + offset);
+  }
+
+  @Override public boolean moveToLast() {
+    return doMoveToPosition(results.length - 1);
+  }
+
+  @Override public boolean moveToPrevious() {
+    return doMoveToPosition(resultsIndex - 1);
+  }
+
+  @Override public String[] getColumnNames() {
+    return columnNames.toArray(new String[columnNames.size()]);
+  }
+
+  @Override public byte[] getBlob(int columnIndex) {
+    return (byte[]) results[resultsIndex][columnIndex];
+  }
+
+  @Override public short getShort(int columnIndex) {
+    return (Short) results[resultsIndex][columnIndex];
+  }
+
+  @Override public float getFloat(int columnIndex) {
+    return (Float) results[resultsIndex][columnIndex];
+  }
+
+  @Override public double getDouble(int columnIndex) {
+    return (Double) results[resultsIndex][columnIndex];
+  }
+
+  @Override public boolean isNull(int columnIndex) {
+    return results[resultsIndex][columnIndex] == null;
+  }
+
+  @Override public boolean isClosed() {
+    return closeWasCalled;
   }
 
   public void setColumnNames(List<String> columnNames) {
