@@ -26,7 +26,6 @@ public class ResourceTableFactoryTest {
         testResources());
 
     systemResourceTable = ResourceTableFactory.newResourceTable("android",
-        systemResources(),
         systemResources());
   }
 
