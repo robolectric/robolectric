@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.res.ResourceProvider;
+import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -24,8 +24,7 @@ import static org.mockito.Mockito.when;
 @RunWith(JUnit4.class)
 public class MetaDataTest {
 
-  @Mock
-  ResourceProvider resourceProvider;
+  @Mock private ResourceTable resourceProvider;
 
   @Before
   public void setUp() {

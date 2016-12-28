@@ -5,7 +5,7 @@ import android.content.res.XmlResourceParser;
 import com.android.internal.util.XmlUtils;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceProvider;
+import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -50,7 +50,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   private final Document document;
   private final String fileName;
   private final String packageName;
-  private final ResourceProvider resourceProvider;
+  private final ResourceTable resourceTable;
   private final String applicationNamespace;
 
   private Node currentNode;
@@ -61,11 +61,11 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   private int mEventType = START_DOCUMENT;
 
   public XmlResourceParserImpl(Document document, String fileName, String packageName,
-                               String applicationPackageName, ResourceProvider resourceProvider) {
+                               String applicationPackageName, ResourceTable resourceTable) {
     this.document = document;
     this.fileName = fileName;
     this.packageName = packageName;
-    this.resourceProvider = resourceProvider;
+    this.resourceTable = resourceTable;
     this.applicationNamespace = AttributeResource.ANDROID_RES_NS_PREFIX + applicationPackageName;
   }
 
@@ -767,7 +767,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
     if (AttributeResource.isStyleReference(possiblyQualifiedResourceName)) {
       ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
-      Integer resourceId = resourceProvider.getResourceId(styleReference);
+      Integer resourceId = resourceTable.getResourceId(styleReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(styleReference.getFullyQualifiedName());
       }
@@ -776,7 +776,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
     if (AttributeResource.isResourceReference(possiblyQualifiedResourceName)) {
       ResName resourceReference = AttributeResource.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-      Integer resourceId = resourceProvider.getResourceId(resourceReference);
+      Integer resourceId = resourceTable.getResourceId(resourceReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(resourceReference.getFullyQualifiedName());
       }
@@ -784,7 +784,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     }
     possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);
     ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-    Integer resourceId = resourceProvider.getResourceId(resName);
+    Integer resourceId = resourceTable.getResourceId(resName);
     return resourceId == null ? 0 : resourceId;
   }
 

@@ -2,7 +2,7 @@ package org.robolectric.manifest;
 
 import android.content.res.Resources;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceProvider;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
 import org.robolectric.shadows.ResourceHelper;
 import org.w3c.dom.NamedNodeMap;
@@ -34,7 +34,7 @@ public final class MetaData {
     }
   }
 
-  public void init(ResourceProvider resourceProvider, String packageName) {
+  public void init(ResourceTable resourceTable, String packageName) {
     if (!initialised) {
       for (Map.Entry<String,VALUE_TYPE> entry : typeMap.entrySet()) {
         String value = valueMap.get(entry.getKey()).toString();
@@ -44,11 +44,11 @@ public final class MetaData {
           switch (entry.getValue()) {
             case RESOURCE:
               // Was provided by resource attribute, store resource ID
-              valueMap.put(entry.getKey(), resourceProvider.getResourceId(resName));
+              valueMap.put(entry.getKey(), resourceTable.getResourceId(resName));
               break;
             case VALUE:
               // Was provided by value attribute, need to inferFromValue it
-              TypedResource<?> typedRes = resourceProvider.getValue(resName, "");
+              TypedResource<?> typedRes = resourceTable.getValue(resName, "");
               // The typed resource's data is always a String, so need to inferFromValue the value.
               if (typedRes == null) {
                 throw new Resources.NotFoundException(resName.getFullyQualifiedName());

@@ -57,7 +57,7 @@ public class ResourceLoaderTest {
 
   @Test
   public void shouldMakeInternalResourcesAvailable() throws Exception {
-    ResourceProvider resourceProvider = RuntimeEnvironment.getSystemResourceProvider();
+    ResourceTable resourceProvider = RuntimeEnvironment.getSystemResourceProvider();
     ResName internalResource = new ResName("android", "string", "badPin");
     Integer resId = resourceProvider.getResourceId(internalResource);
     assertThat(resId).isNotNull();

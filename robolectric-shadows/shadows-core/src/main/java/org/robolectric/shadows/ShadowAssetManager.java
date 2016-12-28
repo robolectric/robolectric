@@ -50,7 +50,7 @@ public final class ShadowAssetManager {
 
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
-  private ResourceProvider resourceProvider;
+  private ResourceTable resourceTable;
 
   class NativeTheme {
     private ThemeStyleSet themeStyleSet;
@@ -92,7 +92,7 @@ public final class ShadowAssetManager {
       if (attribute.getReferenceResId() != null) {
         resourceId = attribute.getReferenceResId();
       } else {
-        resourceId = resourceProvider.getResourceId(resName);
+        resourceId = resourceTable.getResourceId(resName);
       }
 
       if (resourceId == null) {
@@ -107,7 +107,7 @@ public final class ShadowAssetManager {
 
       outValue.resourceId = resourceId;
 
-      TypedResource dereferencedRef = resourceProvider.getValue(resName, qualifiers);
+      TypedResource dereferencedRef = resourceTable.getValue(resName, qualifiers);
 
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
@@ -128,7 +128,7 @@ public final class ShadowAssetManager {
           return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
-          TypedResource drawableResource = resourceProvider.getValue(resName, qualifiers);
+          TypedResource drawableResource = resourceTable.getValue(resName, qualifiers);
           if (drawableResource == null) {
             throw new Resources.NotFoundException("can't find file for " + resName);
           } else {
@@ -167,7 +167,7 @@ public final class ShadowAssetManager {
       return;
     }
 
-    TypedResource attrTypeData = resourceProvider.getValue(attribute.resName, qualifiers);
+    TypedResource attrTypeData = resourceTable.getValue(attribute.resName, qualifiers);
     if (attrTypeData != null) {
       AttrData attrData = (AttrData) attrTypeData.getData();
       String format = attrData.getFormat();
@@ -196,15 +196,15 @@ public final class ShadowAssetManager {
   }
 
   public void __constructor__() {
-    resourceProvider = RuntimeEnvironment.getAppResourceProvider();
+    resourceTable = RuntimeEnvironment.getAppResourceProvider();
   }
 
   public void __constructor__(boolean isSystem) {
-    resourceProvider = isSystem ? RuntimeEnvironment.getSystemResourceProvider() : RuntimeEnvironment.getAppResourceProvider();
+    resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceProvider() : RuntimeEnvironment.getAppResourceProvider();
   }
 
-  public ResourceProvider getResourceProvider() {
-    return resourceProvider;
+  public ResourceTable getResourceTable() {
+    return resourceTable;
   }
 
   @HiddenApi @Implementation
@@ -236,11 +236,11 @@ public final class ShadowAssetManager {
 
     // If the resource does not exist then return 0, otherwise ResourceIndex.getResourceId() will generate a placeholder.
     if (!ResName.ID_TYPE.equals(resName.type)
-        && !resourceProvider.hasValue(resName, RuntimeEnvironment.getQualifiers())) {
+        && !resourceTable.hasValue(resName, RuntimeEnvironment.getQualifiers())) {
       return 0;
     }
 
-    Integer resourceId = resourceProvider.getResourceId(resName);
+    Integer resourceId = resourceTable.getResourceId(resName);
     return resourceId == null ? 0 : resourceId;
   }
 
@@ -282,7 +282,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResName resName = resourceProvider.getResName(ident);
+    ResName resName = resourceTable.getResName(ident);
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
@@ -336,7 +336,7 @@ public final class ShadowAssetManager {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
 
     final FileTypedResource typedResource =
-        (FileTypedResource) resourceProvider.getValue(resName, RuntimeEnvironment.getQualifiers());
+        (FileTypedResource) resourceTable.getValue(resName, RuntimeEnvironment.getQualifiers());
 
     if (typedResource == null) {
       throw new IOException("Unable to find resource for " + fileName);
@@ -376,17 +376,17 @@ public final class ShadowAssetManager {
     }
     resName = resolvedResName;
 
-    XmlBlock block = resourceProvider.getXml(resName, RuntimeEnvironment.getQualifiers());
+    XmlBlock block = resourceTable.getXml(resName, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
 
-    ResourceProvider resourceProvider = ResourceIds.isFrameworkResource(resId) ? RuntimeEnvironment.getSystemResourceProvider() : RuntimeEnvironment.getCompileTimeResourceProvider();
+    ResourceTable resourceProvider = ResourceIds.isFrameworkResource(resId) ? RuntimeEnvironment.getSystemResourceProvider() : RuntimeEnvironment.getCompiletimeResourceProvider();
 
     return getXmlResourceParser(resourceProvider, block, resName.packageName);
   }
 
-  private XmlResourceParser getXmlResourceParser(ResourceProvider resourceProvider, XmlBlock block, String packageName) {
+  private XmlResourceParser getXmlResourceParser(ResourceTable resourceProvider, XmlBlock block, String packageName) {
     return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
         packageName, resourceProvider);
   }
@@ -498,17 +498,17 @@ public final class ShadowAssetManager {
   }
 
   private Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
-    TypedResource themeStyleResource = resourceProvider.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
+    TypedResource themeStyleResource = resourceTable.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
-    return new StyleResolver(resourceProvider, shadowOf(AssetManager.getSystem()).getResourceProvider(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
+    return new StyleResolver(resourceTable, shadowOf(AssetManager.getSystem()).getResourceTable(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
   private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
-    TypedResource value = resourceProvider.getValue(resId, qualifiers);
+    TypedResource value = resourceTable.getValue(resId, qualifiers);
     if (resolveRefs) {
       value = resolve(value, qualifiers, resId);
     }
@@ -516,7 +516,7 @@ public final class ShadowAssetManager {
     // todo: make the drawable loader put stuff into the normal spot...
     String resourceTypeName = getResourceTypeName(resId);
     if (value == null && DrawableResourceLoader.isStillHandledHere(resourceTypeName)) {
-      FileTypedResource typedResource = (FileTypedResource) resourceProvider.getValue(resId, qualifiers);
+      FileTypedResource typedResource = (FileTypedResource) resourceTable.getValue(resId, qualifiers);
       return new TypedResource<>(typedResource.getFsFile(), ResType.FILE, typedResource.getXmlContext());
     }
 
@@ -533,7 +533,7 @@ public final class ShadowAssetManager {
   }
 
   public ResName resolveResName(ResName resName, String qualifiers) {
-    TypedResource value = resourceProvider.getValue(resName, qualifiers);
+    TypedResource value = resourceTable.getValue(resName, qualifiers);
     return resolveResource(value, qualifiers, resName);
   }
 
@@ -546,7 +546,7 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = resourceProvider.getValue(resName, qualifiers);
+        value = resourceTable.getValue(resName, qualifiers);
       }
     }
 
@@ -561,7 +561,7 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = resourceProvider.getValue(resName, qualifiers);
+        value = resourceTable.getValue(resName, qualifiers);
       }
     }
 
@@ -648,7 +648,7 @@ public final class ShadowAssetManager {
         Logger.info("huh... circular reference for %s?", attribute.resName.getFullyQualifiedName());
         return null;
       }
-      ResName resName = resourceProvider.getResName(resId);
+      ResName resName = resourceTable.getResName(resId);
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
@@ -730,7 +730,7 @@ public final class ShadowAssetManager {
       }
     }
 
-    ResName attrName = resourceProvider.getResName(resId);
+    ResName attrName = resourceTable.getResName(resId);
     if (attrName == null) return null;
 
     if (styleAttrStyle != null) {
@@ -760,10 +760,10 @@ public final class ShadowAssetManager {
   }
 
   @NotNull private ResName getResName(int id) {
-    ResName resName = resourceProvider.getResName(id);
+    ResName resName = resourceTable.getResName(id);
     if (resName == null) {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id)
-          + " in packages " + resourceProvider);
+          + " in packages " + resourceTable);
     }
     return resName;
   }

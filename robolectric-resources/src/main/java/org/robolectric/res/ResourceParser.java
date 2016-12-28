@@ -3,7 +3,7 @@ package org.robolectric.res;
 import org.robolectric.util.Logger;
 
 class ResourceParser {
-  static void load(String packageName, ResourcePath resourcePath, ResourceTable resourceTable) {
+  static void load(String packageName, ResourcePath resourcePath, PackageResourceTable resourceTable) {
     if (!resourcePath.hasResources()) {
       Logger.debug("No resources for %s", packageName);
       return;

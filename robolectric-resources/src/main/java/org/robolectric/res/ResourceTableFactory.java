@@ -5,8 +5,8 @@ import java.lang.reflect.Modifier;
 
 public class ResourceTableFactory {
 
-  public static ResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
-    ResourceTable resourceTable = new ResourceTable(packageName);
+  public static PackageResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
+    PackageResourceTable resourceTable = new PackageResourceTable(packageName);
 
     for (ResourcePath resourcePath : resourcePaths) {
       if (resourcePath.getRClass() != null) {
