@@ -62,6 +62,8 @@ public class ShadowSQLiteConnection {
   // indicates an ignored statement
   private static final int IGNORED_REINDEX_STMT = -2;
 
+  private static boolean useInMemoryDatabase;
+
   private static SQLiteConnection connection(long pointer) {
     return CONNECTIONS.getConnection(pointer);
   }
@@ -70,6 +72,9 @@ public class ShadowSQLiteConnection {
     return CONNECTIONS.getStatement(connectionPtr, pointer);
   }
 
+  public static void setUseInMemoryDatabase(boolean value) {
+    useInMemoryDatabase = value;
+  }
 
   @Implementation
   public static Number nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
@@ -99,6 +104,7 @@ public class ShadowSQLiteConnection {
   @Resetter
   public static void reset() {
     CONNECTIONS.reset();
+    useInMemoryDatabase = false;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -496,7 +502,7 @@ static class Connections {
     SQLiteConnection dbConnection = execute("open SQLite connection", new Callable<SQLiteConnection>() {
       @Override
       public SQLiteConnection call() throws Exception {
-        SQLiteConnection connection = IN_MEMORY_PATH.equals(path)
+        SQLiteConnection connection = useInMemoryDatabase || IN_MEMORY_PATH.equals(path)
             ? new SQLiteConnection()
             : new SQLiteConnection(new File(path));
 
