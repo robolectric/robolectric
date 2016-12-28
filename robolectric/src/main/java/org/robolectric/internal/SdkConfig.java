@@ -45,7 +45,6 @@ public class SdkConfig implements Comparable<SdkConfig> {
   public static final int MAX_SDK_VERSION = Collections.max(getSupportedApis());
 
   private final int apiLevel;
-  private final SdkVersion sdkVersion;
 
   public static Set<Integer> getSupportedApis() {
     return SUPPORTED_APIS.keySet();
@@ -53,10 +52,6 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
   public SdkConfig(int apiLevel) {
     this.apiLevel = apiLevel;
-    sdkVersion = SUPPORTED_APIS.get(apiLevel);
-    if (sdkVersion == null) {
-      throw new UnsupportedOperationException("Robolectric does not support API level " + apiLevel + ".");
-    }
   }
 
   public int getApiLevel() {
@@ -64,11 +59,11 @@ public class SdkConfig implements Comparable<SdkConfig> {
   }
 
   public String getAndroidVersion() {
-    return sdkVersion.androidVersion;
+    return getSdkVersion().androidVersion;
   }
 
   public DependencyJar getAndroidSdkDependency() {
-    return createDependency("org.robolectric", "android-all", sdkVersion.toString(), null);
+    return createDependency("org.robolectric", "android-all", getSdkVersion().toString(), null);
   }
 
   public DependencyJar getCoreShadowsDependency() {
@@ -77,7 +72,12 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
   @Override
   public boolean equals(Object that) {
-    return that == this || that instanceof SdkConfig && ((SdkConfig) that).sdkVersion.equals(sdkVersion);
+    return that == this || that instanceof SdkConfig && ((SdkConfig) that).apiLevel == (apiLevel);
+  }
+
+  @Override
+  public int hashCode() {
+    return apiLevel;
   }
 
   @Override
@@ -86,13 +86,16 @@ public class SdkConfig implements Comparable<SdkConfig> {
   }
 
   @Override
-  public int hashCode() {
-    return sdkVersion.hashCode();
+  public int compareTo(@NotNull SdkConfig o) {
+    return apiLevel - o.apiLevel;
   }
 
-  @Override
-  public int compareTo(@NotNull SdkConfig o) {
-    return getApiLevel() - o.getApiLevel();
+  private SdkVersion getSdkVersion() {
+    final SdkVersion sdkVersion = SUPPORTED_APIS.get(apiLevel);
+    if (sdkVersion == null) {
+      throw new UnsupportedOperationException("Robolectric does not support API level " + apiLevel + ".");
+    }
+    return sdkVersion;
   }
 
   private DependencyJar createDependency(String groupId, String artifactId, String version, String classifier) {
