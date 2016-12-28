@@ -49,13 +49,11 @@ public class SdkPicker {
    */
   @NotNull
   public List<SdkConfig> selectSdks(Config config, AndroidManifest appManifest) {
-    Set<SdkConfig> sdks = new TreeSet<>(supportedSdks);
+    Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, appManifest));
     Set<SdkConfig> enabledSdks = enumerateEnabledSdks();
     if (enabledSdks != null) {
       sdks = Sets.intersection(sdks, enabledSdks);
     }
-    sdks = Sets.intersection(sdks, configuredSdks(config, appManifest));
-
     return Lists.newArrayList(sdks);
   }
 
