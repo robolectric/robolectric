@@ -16,11 +16,13 @@ public class SdkPickerTest {
   private static final int[] sdkInts = { 16, 17, 18, 19, 21, 22, 23 };
   private AndroidManifest appManifest;
   private SdkPicker sdkPicker;
+  private Properties properties;
 
   @Before
   public void setUp() throws Exception {
     appManifest = mock(AndroidManifest.class);
-    sdkPicker = new SdkPicker(new Properties(), sdkInts);
+    properties = new Properties();
+    sdkPicker = new SdkPicker(properties, sdkInts);
   }
 
   @Test
@@ -104,5 +106,23 @@ public class SdkPickerTest {
         .containsExactly(new SdkConfig(16));
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(23).build(), appManifest))
         .containsExactly(new SdkConfig(23));
+  }
+
+  @Test
+  public void withEnabledApis_shouldRestrictAsSpecified() throws Exception {
+    when(appManifest.getMinSdkVersion()).thenReturn(16);
+    when(appManifest.getMaxSdkVersion()).thenReturn(23);
+    properties.setProperty("robolectric.enabledApis", "17,18");
+    assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), appManifest))
+        .containsExactly(new SdkConfig(17), new SdkConfig(18));
+  }
+
+  @Test
+  public void withEnabledApiNames_shouldRestrictAsSpecified() throws Exception {
+    when(appManifest.getMinSdkVersion()).thenReturn(16);
+    when(appManifest.getMaxSdkVersion()).thenReturn(23);
+    properties.setProperty("robolectric.enabledApis", "KITKAT, LOLLIPOP");
+    assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), appManifest))
+        .containsExactly(new SdkConfig(19), new SdkConfig(21));
   }
 }
