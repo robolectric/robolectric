@@ -109,19 +109,19 @@ public class SdkPickerTest {
   }
 
   @Test
-  public void withEnabledApis_shouldRestrictAsSpecified() throws Exception {
+  public void withEnabledSdks_shouldRestrictAsSpecified() throws Exception {
     when(appManifest.getMinSdkVersion()).thenReturn(16);
     when(appManifest.getMaxSdkVersion()).thenReturn(23);
-    properties.setProperty("robolectric.enabledApis", "17,18");
+    properties.setProperty("robolectric.enabledSdks", "17,18");
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), appManifest))
         .containsExactly(new SdkConfig(17), new SdkConfig(18));
   }
 
   @Test
-  public void withEnabledApiNames_shouldRestrictAsSpecified() throws Exception {
+  public void withEnabledSdkNames_shouldRestrictAsSpecified() throws Exception {
     when(appManifest.getMinSdkVersion()).thenReturn(16);
     when(appManifest.getMaxSdkVersion()).thenReturn(23);
-    properties.setProperty("robolectric.enabledApis", "KITKAT, LOLLIPOP");
+    properties.setProperty("robolectric.enabledSdks", "KITKAT, LOLLIPOP");
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), appManifest))
         .containsExactly(new SdkConfig(19), new SdkConfig(21));
   }
