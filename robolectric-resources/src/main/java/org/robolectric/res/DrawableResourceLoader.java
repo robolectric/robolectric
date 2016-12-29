@@ -4,24 +4,16 @@ package org.robolectric.res;
  * DrawableResourceLoader
  */
 public class DrawableResourceLoader {
+  private String packageName;
   private final ResBunch resBunch;
 
   public static boolean isStillHandledHere(String type) {
     return "drawable".equals(type) || "anim".equals(type) || "mipmap".equals(type);
   }
 
-  public DrawableResourceLoader(ResBunch resBunch) {
+  DrawableResourceLoader(String packageName, ResBunch resBunch) {
+    this.packageName = packageName;
     this.resBunch = resBunch;
-  }
-
-  /**
-   * Convert file name to resource name.
-   *
-   * @param xmlFile Xml File
-   * @return Resource name
-   */
-  private String toResourceName(FsFile xmlFile) {
-    return xmlFile.getName().replaceAll("\\..+$", "");
   }
 
   /**
@@ -29,20 +21,20 @@ public class DrawableResourceLoader {
    *
    * @param resourcePath Resource path.
    */
-  public void findDrawableResources(ResourcePath resourcePath) {
+  void findDrawableResources(ResourcePath resourcePath) {
     FsFile[] files = resourcePath.getResourceBase().listFiles();
     if (files != null) {
       for (FsFile f : files) {
         if (f.isDirectory() && f.getName().startsWith("drawable")) {
-          listDrawableResources(resourcePath, f, "drawable");
+          listDrawableResources(f, "drawable");
         } else if (f.isDirectory() && f.getName().startsWith("mipmap")) {
-          listDrawableResources(resourcePath, f, "mipmap");
+          listDrawableResources(f, "mipmap");
         }
       }
     }
   }
 
-  private void listDrawableResources(ResourcePath resourcePath, FsFile dir, String type) {
+  private void listDrawableResources(FsFile dir, String type) {
     FsFile[] files = dir.listFiles();
     if (files != null) {
       for (FsFile f : files) {
@@ -63,7 +55,7 @@ public class DrawableResourceLoader {
           isNinePatch = false;
         }
 
-        XmlLoader.XmlContext fakeXmlContext = new XmlLoader.XmlContext(resourcePath.getPackageName(), f);
+        XmlLoader.XmlContext fakeXmlContext = new XmlLoader.XmlContext(packageName, f);
         resBunch.put(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
       }
     }

@@ -3,7 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.content.pm.PackageManager;
 
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceProvider;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 
@@ -18,9 +18,9 @@ public class RuntimeEnvironment {
   private static RobolectricPackageManager packageManager;
   private static int apiLevel;
   private static Scheduler masterScheduler;
-  private static ResourceLoader systemResourceLoader;
-  private static ResourceLoader appResourceLoader;
-  private static ResourceLoader compiletimeResourceLoader;
+  private static ResourceProvider systemResourceProvider;
+  private static ResourceProvider appResourceProvider;
+  private static ResourceProvider compileTimeResourceProvider;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -136,27 +136,27 @@ public class RuntimeEnvironment {
     RuntimeEnvironment.masterScheduler = masterScheduler;
   }
 
-  public static void setSystemResourceLoader(ResourceLoader systemResourceLoader) {
-    RuntimeEnvironment.systemResourceLoader = systemResourceLoader;
+  public static void setSystemResourceProvider(ResourceProvider systemResourceProvider) {
+    RuntimeEnvironment.systemResourceProvider = systemResourceProvider;
   }
 
-  public static void setAppResourceLoader(ResourceLoader appResourceLoader) {
-    RuntimeEnvironment.appResourceLoader = appResourceLoader;
+  public static void setAppResourceProvider(ResourceProvider appResourceProvider) {
+    RuntimeEnvironment.appResourceProvider = appResourceProvider;
   }
 
-  public static ResourceLoader getSystemResourceLoader() {
-    return systemResourceLoader;
+  public static ResourceProvider getSystemResourceProvider() {
+    return systemResourceProvider;
   }
 
-  public static ResourceLoader getAppResourceLoader() {
-    return appResourceLoader;
+  public static ResourceProvider getAppResourceProvider() {
+    return appResourceProvider;
   }
 
-  public static void setCompiletimeResourceLoader(ResourceLoader compiletimeResourceLoader) {
-    RuntimeEnvironment.compiletimeResourceLoader = compiletimeResourceLoader;
+  public static void setCompileTimeResourceProvider(ResourceProvider compileTimeResourceProvider) {
+    RuntimeEnvironment.compileTimeResourceProvider = compileTimeResourceProvider;
   }
 
-  public static ResourceLoader getCompiletimeResourceLoader() {
-    return compiletimeResourceLoader;
+  public static ResourceProvider getCompileTimeResourceProvider() {
+    return compileTimeResourceProvider;
   }
 }

@@ -31,7 +31,6 @@ import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Method;
 import java.security.Security;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -59,13 +58,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(Method method,
-      TestLifecycle testLifecycle,
-      ResourceLoader androidCompiletimeSdkResourceLoader,
-      ResourceLoader androidRuntimeFrameworkResourceLoader,
-      ResourceLoader appResourceLoader,
-      AndroidManifest appManifest,
-      Config config) {
+  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, AndroidManifest appManifest,
+                                    Config config, ResourceProvider compileTimeResourceProvider,
+                                    ResourceProvider appResourceProvider,
+                                    ResourceProvider systemResourceProvider) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -73,22 +69,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
     DefaultPackageManager packageManager = new DefaultPackageManager();
-    initializeAppManifest(appManifest, appResourceLoader, packageManager);
     RuntimeEnvironment.setRobolectricPackageManager(packageManager);
 
-    Map<String, ResourceLoader> compiletimeResourceLoaders = new HashMap<>();
-    compiletimeResourceLoaders.put("android", androidCompiletimeSdkResourceLoader);
-    compiletimeResourceLoaders.put(appManifest.getPackageName(), appResourceLoader);
-    ResourceLoader compiletimeResourceLoader = new RoutingResourceLoader(compiletimeResourceLoaders);
-    RuntimeEnvironment.setCompiletimeResourceLoader(compiletimeResourceLoader);
+    RuntimeEnvironment.setCompileTimeResourceProvider(compileTimeResourceProvider);
+    RuntimeEnvironment.setAppResourceProvider(appResourceProvider);
+    RuntimeEnvironment.setSystemResourceProvider(systemResourceProvider);
 
-    Map<String, ResourceLoader> applicationResourceLoaders = new HashMap<>();
-    applicationResourceLoaders.put("android", androidRuntimeFrameworkResourceLoader);
-    applicationResourceLoaders.put(appManifest.getPackageName(), appResourceLoader);
-    ResourceLoader applicationResourceLoader = new RoutingResourceLoader(applicationResourceLoaders);
-    RuntimeEnvironment.setAppResourceLoader(applicationResourceLoader);
-
-    RuntimeEnvironment.setSystemResourceLoader(androidRuntimeFrameworkResourceLoader);
+    initializeAppManifest(appManifest, appResourceProvider, packageManager);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
@@ -161,7 +148,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
   }
 
-  private void initializeAppManifest(AndroidManifest appManifest, ResourceLoader appResourceLoader, DefaultPackageManager packageManager) {
+  private void initializeAppManifest(AndroidManifest appManifest, ResourceProvider appResourceLoader, DefaultPackageManager packageManager) {
     appManifest.initMetaData(appResourceLoader);
     ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
 

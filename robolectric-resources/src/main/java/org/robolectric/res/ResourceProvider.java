@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public abstract class ResourceLoader {
+public abstract class ResourceProvider {
 
   public abstract TypedResource getValue(@NotNull ResName resName, String qualifiers);
 
@@ -33,8 +33,6 @@ public abstract class ResourceLoader {
 
   public abstract ResourceIndex getResourceIndex();
 
-  public abstract boolean providesFor(String namespace);
-
   @NotNull
   public List<TypedResource> grep(String regex) {
       return grep(Pattern.compile(regex));
@@ -45,10 +43,10 @@ public abstract class ResourceLoader {
     final ArrayList<TypedResource> matches = new ArrayList<>();
     receive(new Visitor<TypedResource>() {
       @Override
-      public void visit(ResName resName, List<TypedResource> typedResources) {
+      public void visit(ResName resName, Iterable<TypedResource> items) {
         boolean match = pattern.matcher(resName.getFullyQualifiedName()).find();
         if (!match && resName.type.equals("style")) {
-          for (TypedResource typedResource : typedResources) {
+          for (TypedResource typedResource : items) {
             TypedResource<StyleData> style = (TypedResource<StyleData>) typedResource;
             if (style.getData().grep(pattern)) {
               match = true;
@@ -58,7 +56,7 @@ public abstract class ResourceLoader {
         }
 
         if (match) {
-          for (TypedResource typedResource : typedResources) {
+          for (TypedResource typedResource : items) {
             matches.add(typedResource);
           }
         }
@@ -70,6 +68,6 @@ public abstract class ResourceLoader {
   public abstract void receive(Visitor visitor);
 
   public interface Visitor <T> {
-    void visit(ResName key, List<T> value);
+    void visit(ResName key, Iterable<T> items);
   }
 }

@@ -7,8 +7,6 @@ import com.ximpleware.XPathEvalException;
 import com.ximpleware.XPathParseException;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.xpath.XPathExpressionException;
-
 public abstract class XpathResourceXmlLoader extends XmlLoader {
   private final String expression;
 
@@ -16,14 +14,18 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
     this.expression = expression;
   }
 
-  @Override protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
-    for (XmlNode node : xmlNode.selectByXpath(expression)) {
-      String name = node.getAttrValue("name");
-      processNode(name, node, xmlContext);
+  @Override protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) {
+    try {
+      for (XmlNode node : xmlNode.selectByXpath(expression)) {
+        String name = node.getAttrValue("name");
+        processNode(name, node, xmlContext);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Error processing " + xmlFile, e);
     }
   }
 
-  protected abstract void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) throws XPathExpressionException;
+  protected abstract void processNode(String name, XmlNode xmlNode, XmlContext xmlContext);
 
   public static class XmlNode {
     private final VTDNav vtdNav;

@@ -99,7 +99,6 @@ public class ShadowProviderGenerator extends Generator {
     writer.println();
 
     for (Map.Entry<TypeElement, TypeElement> entry : model.getShadowOfMap().entrySet()) {
-      final TypeElement shadowType = entry.getKey();
       final TypeElement actualType = entry.getValue();
       if (!actualType.getModifiers().contains(Modifier.PUBLIC)) {
         continue;
@@ -133,10 +132,7 @@ public class ShadowProviderGenerator extends Generator {
         paramUseStr = paramUse.append('>').toString();
       }
       final String actual = model.getReferentFor(actualType) + paramUseStr;
-      final String shadow = model.getReferentFor(shadowType) + paramUseStr;
-      if (shadowType.getAnnotation(Deprecated.class) != null) {
-        writer.println("  @Deprecated");
-      }
+      final String shadow = model.getReferentFor(entry.getKey()) + paramUseStr;
       writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
       writer.println("    return (" + shadow + ") ShadowExtractor.extract(actual);");
       writer.println("  }");

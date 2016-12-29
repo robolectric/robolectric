@@ -7,13 +7,11 @@ import android.app.IntentService;
 import android.content.ContentProvider;
 import android.content.Intent;
 
-import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceProvider;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.*;
@@ -128,21 +126,21 @@ public class Robolectric {
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
     }
-    return new AttributeSetBuilder(document, RuntimeEnvironment.getCompiletimeResourceLoader());
+    return new AttributeSetBuilder(document, RuntimeEnvironment.getCompileTimeResourceProvider());
   }
 
   public static class AttributeSetBuilder {
 
     private Document doc;
-    private ResourceLoader appResourceLoader;
+    private ResourceProvider appResourceProvider;
 
-    AttributeSetBuilder(Document doc, ResourceLoader resourceLoader) {
+    AttributeSetBuilder(Document doc, ResourceProvider resourceProvider) {
       this.doc = doc;
-      this.appResourceLoader = resourceLoader;
+      this.appResourceProvider = resourceProvider;
     }
 
     public AttributeSetBuilder addAttribute(int resId, String value) {
-      ResName resName = appResourceLoader.getResourceIndex().getResName(resId);
+      ResName resName = appResourceProvider.getResourceIndex().getResName(resId);
       if ("style".equals(resName.name)) {
         ((Element)doc.getFirstChild()).setAttribute(resName.name, value);
       } else {
@@ -157,7 +155,7 @@ public class Robolectric {
     }
 
     public AttributeSet build() {
-      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceLoader);
+      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceProvider);
       try {
         parser.next(); // Root document element
         parser.next(); // "dummy" element

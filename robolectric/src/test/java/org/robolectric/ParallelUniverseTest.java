@@ -13,10 +13,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.EmptyResourceLoader;
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
@@ -46,10 +43,17 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationState(Config defaultConfig) {
-    ResourceLoader sdkResourceLoader = new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null)));
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), sdkResourceLoader, RuntimeEnvironment.getSystemResourceLoader(),
-        new EmptyResourceLoader("package", new ResourceExtractor(new ResourcePath(org.robolectric.R.class, "package", null, null))),
-        new AndroidManifest(null, null, null, "package"), defaultConfig);
+    PackageResourceIndex androidResourceIndex = new PackageResourceIndex("android");
+    ResourceExtractor.populate(androidResourceIndex, android.R.class);
+    ResourceProvider sdkResourceProvider = new EmptyResourceProvider(androidResourceIndex);
+    PackageResourceIndex resourceIndex = new PackageResourceIndex("org.robolectric");
+    ResourceExtractor.populate(resourceIndex, R.class);
+    final RoutingResourceProvider routingResourceProvider = new RoutingResourceProvider(new ResourceTable(resourceIndex));
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(),
+        new AndroidManifest(null, null, null, "package"), defaultConfig,
+        sdkResourceProvider,
+        routingResourceProvider,
+        RuntimeEnvironment.getSystemResourceProvider());
   }
 
   @Test

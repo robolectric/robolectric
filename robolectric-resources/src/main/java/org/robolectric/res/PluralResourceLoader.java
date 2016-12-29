@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +11,7 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
     this.resBunch = resBunch;
   }
 
-  @Override protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) throws XPathExpressionException {
+  @Override protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
     List<Plural> rules = new ArrayList<>();
     for (XmlNode item : xmlNode.selectElements("item")) {
       String value = item.getTextContent();

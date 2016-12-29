@@ -15,13 +15,13 @@ public class DocumentLoader {
   private final String packageName;
   private final VTDGen vtdGen;
 
-  public DocumentLoader(ResourcePath resourcePath) {
+  public DocumentLoader(String packageName, ResourcePath resourcePath) {
     this.resourceBase = resourcePath.getResourceBase();
-    this.packageName = resourcePath.getPackageName();
+    this.packageName = packageName;
     vtdGen = new VTDGen();
   }
 
-  public void load(String folderBaseName, XmlLoader... xmlLoaders) throws Exception {
+  public void load(String folderBaseName, XmlLoader... xmlLoaders) {
     FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
     if (files == null) {
       throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
@@ -31,7 +31,7 @@ public class DocumentLoader {
     }
   }
 
-  private void loadFile(FsFile dir, XmlLoader[] xmlLoaders) throws Exception {
+  private void loadFile(FsFile dir, XmlLoader[] xmlLoaders) {
     if (!dir.exists()) {
       throw new RuntimeException("no such directory " + dir);
     }
@@ -41,18 +41,22 @@ public class DocumentLoader {
     }
   }
 
-  private void loadResourceXmlFile(FsFile fsFile, XmlLoader... xmlLoaders) throws Exception {
+  private void loadResourceXmlFile(FsFile fsFile, XmlLoader... xmlLoaders) {
     VTDNav vtdNav = parse(fsFile);
     for (XmlLoader xmlLoader : xmlLoaders) {
       xmlLoader.processResourceXml(fsFile, vtdNav, packageName);
     }
   }
 
-  private VTDNav parse(FsFile xmlFile) throws Exception {
-    byte[] bytes = xmlFile.getBytes();
-    vtdGen.setDoc(bytes);
-    vtdGen.parse(true);
+  private VTDNav parse(FsFile xmlFile) {
+    try {
+      byte[] bytes = xmlFile.getBytes();
+      vtdGen.setDoc(bytes);
+      vtdGen.parse(true);
 
-    return vtdGen.getNav();
+      return vtdGen.getNav();
+    } catch (Exception e) {
+      throw new RuntimeException("Error parsing " + xmlFile, e);
+    }
   }
 }

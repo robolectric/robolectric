@@ -8,14 +8,10 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.internal.ShadowExtractor;
 
 /**
- * Shadow for {@link Location}.
- *
- * @deprecated Use methods directly on {@link Location} instead. This class will be removed
- *   after Robolectric 3.2.
+ * Shadow for {@link android.location.Location}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Location.class)
-@Deprecated
 public class ShadowLocation {
   private long time;
   private String provider;
@@ -52,7 +48,6 @@ public class ShadowLocation {
     time = System.currentTimeMillis();
   }
 
-  @Deprecated
   @Implementation
   public void set(Location l) {
     time = l.getTime();
@@ -70,160 +65,135 @@ public class ShadowLocation {
     hasSpeed = l.hasSpeed();
   }
 
-  @Deprecated
   @Implementation
   public String getProvider() {
     return provider;
   }
 
-  @Deprecated
   @Implementation
   public void setProvider(String provider) {
     this.provider = provider;
   }
 
-  @Deprecated
   @Implementation
   public long getTime() {
     return time;
   }
 
-  @Deprecated
   @Implementation
   public void setTime(long time) {
     this.time = time;
   }
 
-  @Deprecated
   @Implementation
   public float getAccuracy() {
     return accuracy;
   }
 
-  @Deprecated
   @Implementation
   public void setAccuracy(float accuracy) {
     this.accuracy = accuracy;
     this.hasAccuracy = true;
   }
 
-  @Deprecated
   @Implementation
   public void removeAccuracy() {
     this.accuracy = 0.0f;
     this.hasAccuracy = false;
   }
 
-  @Deprecated
   @Implementation
   public boolean hasAccuracy() {
     return hasAccuracy;
   }
 
-  @Deprecated
   @Implementation
   public double getAltitude() {
     return altitude;
   }
 
-  @Deprecated
   @Implementation
   public void setAltitude(double altitude) {
     this.altitude = altitude;
     this.hasAltitude = true;
   }
 
-  @Deprecated
   @Implementation
   public void removeAltitude() {
     this.altitude = 0.0d;
     this.hasAltitude = false;
   }
 
-  @Deprecated
   @Implementation
   public boolean hasAltitude() {
     return hasAltitude;
   }
 
-  @Deprecated
   @Implementation
   public float getBearing() {
     return bearing;
   }
 
-  @Deprecated
   @Implementation
   public void setBearing(float bearing) {
     this.bearing = bearing;
     this.hasBearing = true;
   }
 
-  @Deprecated
   @Implementation
   public void removeBearing() {
     this.bearing = 0.0f;
     this.hasBearing = false;
   }
 
-  @Deprecated
   @Implementation
   public boolean hasBearing() {
     return hasBearing;
   }
 
 
-  @Deprecated
   @Implementation
   public double getLatitude() {
     return latitude;
   }
 
-  @Deprecated
   @Implementation
   public void setLatitude(double latitude) {
     this.latitude = latitude;
   }
 
-  @Deprecated
   @Implementation
   public double getLongitude() {
     return longitude;
   }
 
-  @Deprecated
   @Implementation
   public void setLongitude(double longitude) {
     this.longitude = longitude;
   }
 
-  @Deprecated
   @Implementation
   public float getSpeed() {
     return speed;
   }
 
-  @Deprecated
   @Implementation
   public void setSpeed(float speed) {
     this.speed = speed;
     this.hasSpeed = true;
   }
 
-  @Deprecated
   @Implementation
   public void removeSpeed() {
     this.hasSpeed = false;
     this.speed = 0.0f;
   }
 
-  @Deprecated
   @Implementation
   public boolean hasSpeed() {
     return hasSpeed;
   }
 
-  @Deprecated
   @Override @Implementation
   public boolean equals(Object o) {
     if (o == null) return false;
@@ -242,7 +212,6 @@ public class ShadowLocation {
     return true;
   }
 
-  @Deprecated
   @Override @Implementation
   public int hashCode() {
     int result;
@@ -258,7 +227,6 @@ public class ShadowLocation {
     return result;
   }
 
-  @Deprecated
   @Override @Implementation
   public String toString() {
     return "Location{" +
@@ -270,7 +238,6 @@ public class ShadowLocation {
         '}';
   }
 
-  @Deprecated
   @HiddenApi @Implementation
   public static void computeDistanceAndBearing(double lat1, double lon1,
       double lat2, double lon2, float[] results) {
@@ -375,7 +342,6 @@ public class ShadowLocation {
 
   private static float[] distanceBetween;
 
-  @Deprecated
   public static void setDistanceBetween(float[] distanceBetween) {
     ShadowLocation.distanceBetween = distanceBetween;
   }
@@ -400,7 +366,6 @@ public class ShadowLocation {
    *
    * @throws IllegalArgumentException if results is null or has length &lt; 1
    */
-  @Deprecated
   @Implementation
   public static void distanceBetween(double startLatitude, double startLongitude,
     double endLatitude, double endLongitude, float[] results) {
@@ -424,7 +389,6 @@ public class ShadowLocation {
    * @param dest the destination location
    * @return the approximate distance in meters
    */
-  @Deprecated
   @Implementation
   public float distanceTo(Location dest) {
     // See if we already have the result
@@ -454,7 +418,6 @@ public class ShadowLocation {
    * @param dest the destination location
    * @return the initial bearing in degrees
    */
-  @Deprecated
   @Implementation
   public float bearingTo(Location dest) {
     synchronized (mResults) {
@@ -474,13 +437,11 @@ public class ShadowLocation {
     }
   }
 
-  @Deprecated
   @Implementation
   public Bundle getExtras() {
     return extras;
   }
 
-  @Deprecated
   @Implementation
   public void setExtras(Bundle extras) {
     this.extras = extras;
