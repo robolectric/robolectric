@@ -220,7 +220,6 @@ public class AndroidManifestTest {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"), resourceFile("assets"));
     assertEquals(appManifest.getPackageName(), "org.no.resources.for.me");
     assertThat(appManifest.getRClass()).isNull();
-    assertEquals(appManifest.getResourcePath().getPackageName(), "org.no.resources.for.me");
   }
 
   @Test

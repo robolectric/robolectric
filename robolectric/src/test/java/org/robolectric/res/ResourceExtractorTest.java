@@ -12,9 +12,22 @@ public class ResourceExtractorTest {
 
   @Before
   public void setUp() throws Exception {
-    resourceIndex = new MergedResourceIndex(
-        new ResourceExtractor(testResources()),
-        new ResourceExtractor(systemResources()));
+    ResourceRemapper resourceRemapper = new ResourceRemapper(testResources().getRClass());
+    resourceRemapper.remapRClass(lib1Resources().getRClass());
+    resourceRemapper.remapRClass(lib2Resources().getRClass());
+    resourceRemapper.remapRClass(lib3Resources().getRClass());
+
+    PackageResourceIndex systemResourceIndex = new PackageResourceIndex("android");
+
+    PackageResourceIndex appResourceIndex = new PackageResourceIndex("org.robolectric");
+    ResourceExtractor.populate(appResourceIndex,
+        lib3Resources().getRClass(),
+        lib2Resources().getRClass(),
+        lib1Resources().getRClass(),
+        testResources().getRClass());
+
+    ResourceExtractor.populate(systemResourceIndex, systemResources().getRClass(), systemResources().getInternalRClass());
+    resourceIndex = new RoutingResourceIndex(systemResourceIndex, appResourceIndex);
   }
 
   @Test
@@ -48,18 +61,10 @@ public class ResourceExtractorTest {
   }
 
   @Test
-  public void shouldResolveEquivalentResNames() throws Exception {
-    OverlayResourceIndex overlayResourceIndex = new OverlayResourceIndex(
-        "org.robolectric",
-        new ResourceExtractor(testResources()),
-        new ResourceExtractor(lib1Resources()),
-        new ResourceExtractor(lib2Resources()),
-        new ResourceExtractor(lib3Resources()));
-    resourceIndex = new MergedResourceIndex(overlayResourceIndex, new ResourceExtractor(systemResources()));
-
+  public void shouldNotResolveLibraryResourceName() throws Exception {
     assertThat(resourceIndex.getResourceId(new ResName("org.robolectric", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
-    assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib1", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
-    assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib2", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
-    assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib3", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
+    assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib1", "string", "in_all_libs"))).isEqualTo(0);
+    assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib2", "string", "in_all_libs"))).isEqualTo(0);
+    assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib3", "string", "in_all_libs"))).isEqualTo(0);
   }
 }

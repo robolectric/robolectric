@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import com.google.android.collect.Lists;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceProvider;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,7 +37,7 @@ public class RoboAttributeSet {
    */
   @Deprecated
   public static AttributeSet create(Context context, List<Attribute> attributesList) {
-    return create(context, attributesList, shadowOf(context.getAssets()).getResourceLoader());
+    return create(context, attributesList, shadowOf(context.getAssets()).getResourceProvider());
   }
 
   /**
@@ -45,7 +45,7 @@ public class RoboAttributeSet {
    * @deprecated Use {@link Robolectric#buildAttributeSet()}
    */
   @Deprecated
-  public static AttributeSet create(Context context, List<Attribute> attributesList, ResourceLoader resourceLoader) {
+  public static AttributeSet create(Context context, List<Attribute> attributesList, ResourceProvider resourceProvider) {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);
     factory.setIgnoringComments(true);
@@ -64,7 +64,7 @@ public class RoboAttributeSet {
       }
       document.appendChild(dummy);
 
-      XmlResourceParserImpl parser = new XmlResourceParserImpl(document, null, context.getPackageName(), context.getPackageName(), resourceLoader);
+      XmlResourceParserImpl parser = new XmlResourceParserImpl(document, null, context.getPackageName(), context.getPackageName(), resourceProvider);
       parser.next(); // Root document element
       parser.next(); // "dummy" element
       return parser;

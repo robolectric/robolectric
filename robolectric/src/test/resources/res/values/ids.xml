@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <item name="idNotInRClass" type="id"/>
-  <item name="idInRClassAndXml" type="id"/>
+  <item name="idIDeclaredInXml" type="id"/>
 </resources>

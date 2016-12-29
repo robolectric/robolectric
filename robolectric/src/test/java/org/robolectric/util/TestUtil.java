@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
-  public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, R.class.getPackage().getName(), resourceFile("res"), resourceFile("assets"));
+  public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
   public static final String TEST_PACKAGE = R.class.getPackage().getName();
   public static File testDirLocation;
 
@@ -80,28 +80,28 @@ public abstract class TestUtil {
   }
 
   public static ResourcePath lib1Resources() {
-    return new ResourcePath(org.robolectric.lib1.R.class, "org.robolectric.lib1", resourceFile("lib1/res"), resourceFile("lib1/assets"));
+    return new ResourcePath(org.robolectric.lib1.R.class, resourceFile("lib1/res"), resourceFile("lib1/assets"));
   }
 
   public static ResourcePath lib2Resources() {
-    return new ResourcePath(org.robolectric.lib2.R.class, "org.robolectric.lib2", resourceFile("lib2/res"), resourceFile("lib2/assets"));
+    return new ResourcePath(org.robolectric.lib2.R.class, resourceFile("lib2/res"), resourceFile("lib2/assets"));
   }
 
   public static ResourcePath lib3Resources() {
-    return new ResourcePath(org.robolectric.lib3.R.class, "org.robolectric.lib3", resourceFile("lib3/res"), resourceFile("lib3/assets"));
+    return new ResourcePath(org.robolectric.lib3.R.class, resourceFile("lib3/res"), resourceFile("lib3/assets"));
   }
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
       Fs fs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, "android", fs.join("res"), fs.join("assets"));
+      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("res"), fs.join("assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath gradleAppResources() {
-    return new ResourcePath(org.robolectric.gradleapp.R.class, "org.robolectric.gradleapp", resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
+    return new ResourcePath(org.robolectric.gradleapp.R.class, resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
   }
 
   public static AndroidManifest newConfig(String androidManifestFile) {

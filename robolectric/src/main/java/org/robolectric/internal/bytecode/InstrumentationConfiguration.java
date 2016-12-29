@@ -1,6 +1,5 @@
 package org.robolectric.internal.bytecode;
 
-import android.R;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -18,7 +17,7 @@ import org.robolectric.internal.fakes.RoboCharsets;
 import org.robolectric.internal.fakes.RoboExtendedResponseCache;
 import org.robolectric.internal.fakes.RoboResponseSource;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceProvider;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.TempDirectory;
@@ -110,7 +109,7 @@ public class InstrumentationConfiguration {
           RobolectricTestRunner.class,
           RobolectricTestRunner.HelperTestRunner.class,
           ResourcePath.class,
-          ResourceLoader.class,
+          ResourceProvider.class,
           XmlBlock.class,
           ClassHandler.class,
           ClassHandler.Plan.class,

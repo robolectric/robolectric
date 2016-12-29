@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.robolectric.annotation.Config.DEFAULT_VALUE_INT;
 
 public class ConfigTest {
   @Test
@@ -102,10 +103,10 @@ public class ConfigTest {
   @Test
   public void sdksFromProperties() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty("sdk", "1, 2, ALL_SDKS, TARGET_SDK, OLDEST_SDK, NEWEST_SDK, 666, KITKAT");
+    properties.setProperty("sdk", "1, 2, ALL_SDKS, TARGET_SDK, OLDEST_SDK, NEWEST_SDK, 666");
     Config config = Config.Implementation.fromProperties(properties);
     assertThat(sdksIn(config))
-        .isEqualTo("sdk=[1, 2, -2, -3, -4, -5, 666, 19], minSdk=-1, maxSdk=-1");
+        .isEqualTo("sdk=[1, 2, -2, -3, -4, -5, 666], minSdk=-1, maxSdk=-1");
   }
 
   @Test
@@ -116,29 +117,6 @@ public class ConfigTest {
     Config config = Config.Implementation.fromProperties(properties);
     assertThat(sdksIn(config))
         .isEqualTo("sdk=[], minSdk=-4, maxSdk=-5");
-  }
-
-  @Test
-  public void minMaxSdksVersionCodesFromProperties() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty("minSdk", "HONEYCOMB");
-    properties.setProperty("maxSdk", "LOLLIPOP_MR1");
-    Config config = Config.Implementation.fromProperties(properties);
-    assertThat(sdksIn(config))
-        .isEqualTo("sdk=[], minSdk=11, maxSdk=22");
-  }
-
-  @Test
-  public void sdkUnknownVersionCodesFromProperties() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty("sdk", "HO_HO");
-    try {
-      Config.Implementation.fromProperties(properties);
-      fail();
-    } catch (Exception e) {
-      assertThat(e.getMessage())
-          .isEqualTo("unknown SDK \"HO_HO\"");
-    }
   }
 
   @Test

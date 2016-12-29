@@ -91,7 +91,7 @@ public class ShadowResourcesImpl {
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
 
-    TypedResource typedResource = shadowAssetManager.getResourceLoader().getValue(resId, RuntimeEnvironment.getQualifiers());
+    TypedResource typedResource = shadowAssetManager.getResourceProvider().getValue(resId, RuntimeEnvironment.getQualifiers());
     if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
       PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) typedResource;
       Plural plural = pluralRules.find(quantity);
@@ -110,7 +110,7 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return shadowOf(realResourcesImpl.getAssets()).getResourceLoader().getRawValue(id, RuntimeEnvironment.getQualifiers());
+    return shadowOf(realResourcesImpl.getAssets()).getResourceProvider().getRawValue(id, RuntimeEnvironment.getQualifiers());
   }
 
   @Implementation

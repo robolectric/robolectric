@@ -3,7 +3,7 @@ package org.robolectric.manifest;
 import android.content.res.Resources;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceProvider;
 import org.robolectric.res.TypedResource;
 import org.robolectric.shadows.ResourceHelper;
 import org.w3c.dom.NamedNodeMap;
@@ -35,7 +35,7 @@ public final class MetaData {
     }
   }
 
-  public void init(ResourceLoader resLoader, String packageName) {
+  public void init(ResourceProvider resLoader, String packageName) {
     ResourceIndex resIndex = resLoader.getResourceIndex();
 
     if (!initialised) {

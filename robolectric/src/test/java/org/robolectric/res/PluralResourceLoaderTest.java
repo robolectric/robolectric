@@ -2,6 +2,7 @@ package org.robolectric.res;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.R;
 import org.robolectric.util.TestUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +16,7 @@ public class PluralResourceLoaderTest {
     resBunch = new ResBunch();
     PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(resBunch);
 
-    new DocumentLoader(testResources()).load("values", pluralResourceLoader);
+    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("values", pluralResourceLoader);
   }
 
   @Test

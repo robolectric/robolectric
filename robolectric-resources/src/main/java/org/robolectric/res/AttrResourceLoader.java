@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +12,7 @@ public class AttrResourceLoader extends XpathResourceXmlLoader {
   }
 
   @Override
-  protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext)
-      throws XPathExpressionException {
+  protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
     String format = xmlNode.getAttrValue("format");
     String childFormat = null;
     List<AttrData.Pair> pairs = null;

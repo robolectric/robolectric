@@ -1,6 +1,7 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -14,8 +15,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-
-import static org.robolectric.annotation.internal.ConfigUtils.*;
 
 /**
  * Configuration settings that can be used on a per-class or per-test basis.
@@ -226,6 +225,37 @@ public @interface Config {
     @SuppressWarnings("unchecked")
     private static <T extends Application> Class<T> parseApplication(String className) {
       return (Class<T>) parseClass(className);
+    }
+
+    private static String[] parseStringArrayProperty(String property) {
+      if (property.isEmpty()) return new String[0];
+      return property.split("[, ]+");
+    }
+
+    private static int[] parseSdkArrayProperty(String property) {
+      String[] parts = parseStringArrayProperty(property);
+      int[] result = new int[parts.length];
+      for (int i = 0; i < parts.length; i++) {
+        result[i] = parseSdkInt(parts[i]);
+      }
+
+      return result;
+    }
+
+    private static int parseSdkInt(String part) {
+      String spec = part.trim();
+      switch (spec) {
+        case "ALL_SDKS":
+          return Config.ALL_SDKS;
+        case "TARGET_SDK":
+          return Config.TARGET_SDK;
+        case "OLDEST_SDK":
+          return Config.OLDEST_SDK;
+        case "NEWEST_SDK":
+          return Config.NEWEST_SDK;
+        default:
+          return Integer.parseInt(spec);
+      }
     }
 
     private static void validate(Config config) {
