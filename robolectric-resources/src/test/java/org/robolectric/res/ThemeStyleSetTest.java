@@ -37,16 +37,16 @@ public class ThemeStyleSetTest {
     assertThat(themeStyleSet.getAttrValue(attrName("string2")).value).isEqualTo("string2 value from style1");
   }
 
-  private StyleData createStyle(String styleName, AttributeResource... attributeResources) {
+  private StyleData createStyle(String styleName, ResourceValue... attributeResources) {
     StyleData styleData = new StyleData("package", styleName, null);
-    for (AttributeResource attributeResource : attributeResources) {
+    for (ResourceValue attributeResource : attributeResources) {
       styleData.add(attributeResource.resName, attributeResource);
     }
     return styleData;
   }
 
-  private AttributeResource createAttribute(String attrName, String value) {
-    return new AttributeResource(attrName(attrName), value, "package");
+  private ResourceValue createAttribute(String attrName, String value) {
+    return new ResourceValue(attrName(attrName), value, "package");
   }
 
   private ResName attrName(String attrName) {

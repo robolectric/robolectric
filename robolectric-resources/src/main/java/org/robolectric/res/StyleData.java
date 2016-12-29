@@ -10,7 +10,7 @@ public class StyleData implements Style {
   private final String packageName;
   private final String name;
   private final String parent;
-  private final Map<ResName, AttributeResource> items = new LinkedHashMap<>();
+  private final Map<ResName, ResourceValue> items = new LinkedHashMap<>();
 
   public StyleData(String packageName, String name, String parent) {
     this.packageName = packageName;
@@ -26,13 +26,13 @@ public class StyleData implements Style {
     return parent;
   }
 
-  public void add(ResName attrName, AttributeResource attribute) {
+  public void add(ResName attrName, ResourceValue attribute) {
     attrName.mustBe("attr");
     items.put(attrName, attribute);
   }
 
-  @Override public AttributeResource getAttrValue(ResName resName) {
-    AttributeResource attributeResource = items.get(resName);
+  @Override public ResourceValue getAttrValue(ResName resName) {
+    ResourceValue attributeResource = items.get(resName);
 
     // This hack allows us to look up attributes from downstream dependencies, see comment in
     // org.robolectric.shadows.ShadowThemeTest.obtainTypedArrayFromDependencyLibrary()
@@ -41,7 +41,7 @@ public class StyleData implements Style {
     if (attributeResource == null && !"android".equals(resName.packageName) && !"android".equals(packageName)) {
       attributeResource = items.get(resName.withPackageName(packageName));
       if (attributeResource != null && (!"android".equals(attributeResource.contextPackageName))) {
-        attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
+        attributeResource = new ResourceValue(resName, attributeResource.value, resName.packageName);
       }
     }
 

@@ -23,9 +23,9 @@ public class StyleResolver implements Style {
     styles.add(styleData);
   }
 
-  @Override public AttributeResource getAttrValue(ResName resName) {
+  @Override public ResourceValue getAttrValue(ResName resName) {
     for (StyleData style : styles) {
-      AttributeResource value = style.getAttrValue(resName);
+      ResourceValue value = style.getAttrValue(resName);
       if (value != null) return value;
     }
     int initialSize = styles.size();
@@ -39,13 +39,13 @@ public class StyleResolver implements Style {
     }
     for (int i = initialSize; i < styles.size(); i++) {
       StyleData style = styles.get(i);
-      AttributeResource value = style.getAttrValue(resName);
+      ResourceValue value = style.getAttrValue(resName);
       if (value != null) return value;
     }
 
     // todo: is this tested?
     if (theme != null) {
-      AttributeResource value = theme.getAttrValue(resName);
+      ResourceValue value = theme.getAttrValue(resName);
       if (value != null) return value;
     }
 
@@ -118,7 +118,7 @@ public class StyleResolver implements Style {
     while ("attr".equals(styleRef.type) && dereferencing) {
       dereferencing = false;
       for (StyleData parentStyle : styles) {
-        AttributeResource value = parentStyle.getAttrValue(styleRef);
+        ResourceValue value = parentStyle.getAttrValue(styleRef);
         if (value != null) {
           styleRef = dereferenceAttr(value);
           dereferencing = true;
@@ -126,7 +126,7 @@ public class StyleResolver implements Style {
         }
       }
       if (!dereferencing && theme != null) {
-        AttributeResource value = theme.getAttrValue(styleRef);
+        ResourceValue value = theme.getAttrValue(styleRef);
         if (value != null) {
           styleRef = dereferenceAttr(value);
           dereferencing = true;
@@ -137,7 +137,7 @@ public class StyleResolver implements Style {
     return styleRef;
   }
 
-  private ResName dereferenceAttr(AttributeResource attr) {
+  private ResName dereferenceAttr(ResourceValue attr) {
     if (attr.isResourceReference()) {
       return attr.getResourceReference();
     } else if (attr.isStyleReference()) {

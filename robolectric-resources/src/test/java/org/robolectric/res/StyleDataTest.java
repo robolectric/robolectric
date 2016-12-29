@@ -16,7 +16,7 @@ public class StyleDataTest {
   @Test
   public void getAttrValue_willFindLibraryResourcesWithSameName() {
     StyleData styleData = new StyleData("library.resource", "Theme_MyApp", "Theme_Material");
-    styleData.add(myLibSearchViewStyle, new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource"));
+    styleData.add(myLibSearchViewStyle, new ResourceValue(myLibSearchViewStyle, "lib_value", "library.resource"));
 
     assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("lib_value");
     assertThat(styleData.getAttrValue(myLibSearchViewStyle).value).isEqualTo("lib_value");
@@ -27,7 +27,7 @@ public class StyleDataTest {
   @Test
   public void getAttrValue_willNotFindFrameworkResourcesWithSameName() {
     StyleData styleData = new StyleData("android", "Theme_Material", "Theme");
-    styleData.add(androidSearchViewStyle, new AttributeResource(androidSearchViewStyle, "android_value", "android"));
+    styleData.add(androidSearchViewStyle, new ResourceValue(androidSearchViewStyle, "android_value", "android"));
 
     assertThat(styleData.getAttrValue(androidSearchViewStyle).value).isEqualTo("android_value");
 
@@ -38,8 +38,8 @@ public class StyleDataTest {
   @Test
   public void getAttrValue_willChooseBetweenAmbiguousAttributes() {
     StyleData styleData = new StyleData("android", "Theme_Material", "Theme");
-    styleData.add(myLibSearchViewStyle, new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource"));
-    styleData.add(androidSearchViewStyle, new AttributeResource(androidSearchViewStyle, "android_value", "android"));
+    styleData.add(myLibSearchViewStyle, new ResourceValue(myLibSearchViewStyle, "lib_value", "library.resource"));
+    styleData.add(androidSearchViewStyle, new ResourceValue(androidSearchViewStyle, "android_value", "android"));
 
     assertThat(styleData.getAttrValue(androidSearchViewStyle).value).isEqualTo("android_value");
     assertThat(styleData.getAttrValue(myLibSearchViewStyle).value).isEqualTo("lib_value");

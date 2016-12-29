@@ -6,4 +6,5 @@
   <integer name="test_large_hex">0xFFFF0000</integer>
   <integer name="test_value_with_zero">07210</integer>
   <integer name="scrollbar_style_ordinal_outside_overlay">0x02000000</integer>
+  <integer name="typed_array_5">5</integer>
 </resources>
