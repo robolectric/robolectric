@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class InstrumentingClassLoaderFactory {
+public class VirtualEnvironmentRepo {
 
   /** The factor for cache size. See {@link #CACHE_SIZE} for details. */
   private static final int CACHE_SIZE_FACTOR = 3;
@@ -28,7 +28,7 @@ public class InstrumentingClassLoaderFactory {
   private final InstrumentationConfiguration instrumentationConfig;
   private final DependencyResolver dependencyResolver;
 
-  public InstrumentingClassLoaderFactory(InstrumentationConfiguration instrumentationConfig, DependencyResolver dependencyResolver) {
+  public VirtualEnvironmentRepo(InstrumentationConfiguration instrumentationConfig, DependencyResolver dependencyResolver) {
     this.instrumentationConfig = instrumentationConfig;
     this.dependencyResolver = dependencyResolver;
   }
