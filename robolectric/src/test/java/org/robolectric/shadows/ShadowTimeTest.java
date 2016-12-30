@@ -360,7 +360,7 @@ public class ShadowTimeTest {
     Time t = new Time("Asia/Tokyo");
     t.set(1407496560000L);
 
-    assertEquals("08/08/2014", t.format("%x"));
+    assertEquals("08/08/2014", t.format("%transcript"));
     assertEquals("08:16:00 PM", t.format("%X"));
 
     // Case.

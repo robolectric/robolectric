@@ -454,11 +454,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
-    if (InvokeDynamic.ENABLED) {
-      ShadowMap oldShadowMap = sdkEnvironment.replaceShadowMap(shadowMap);
-      Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldShadowMap);
-      sdkEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
-    }
+    sdkEnvironment.setShadowMap(shadowMap);
 
     ClassHandler classHandler = createClassHandler(shadowMap, sdkEnvironment.getSdkConfig());
     injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
@@ -469,8 +465,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     try {
       Class<?> clazz = robolectricClassLoader.loadClass(ParallelUniverse.class.getName());
       Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);
-      Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor(RobolectricTestRunner.class);
-      return constructor.newInstance(this);
+      Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor(SdkEnvironment.class);
+      return constructor.newInstance(sdkEnvironment);
     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }

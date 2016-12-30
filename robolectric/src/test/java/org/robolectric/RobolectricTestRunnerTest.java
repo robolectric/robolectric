@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import android.os.Build;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -9,9 +10,13 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +29,7 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 public class RobolectricTestRunnerTest {
 
   private RunNotifier notifier;
-  private List<String> events;
+  private static List<String> events;
 
   @Before
   public void setUp() throws Exception {
@@ -107,4 +112,37 @@ public class RobolectricTestRunnerTest {
     public void second() throws Exception {
     }
   }
+
+  @Test
+  public void whenCustomShadowHasResetterMethod_shouldCallReset() throws Exception {
+    new RobolectricTestRunner(RealTest.class).run(notifier);
+    assertThat(events).isEmpty();
+  }
+
+  @Ignore @Config(shadows = RealShadow.class)
+  public static class RealTest {
+    @Test
+    public void setX() throws Exception {
+      RealShadow.transcript.add("set");
+    }
+
+    @AfterClass
+    public static void checkReset() {
+      assertThat(RealShadow.transcript.getEvents()).containsExactly("reset", "set", "reset");
+    }
+  }
+
+  @Instrument
+  public static class Real {
+  }
+
+  @Implements(Real.class)
+  public static class RealShadow {
+    public static Transcript transcript = new Transcript();
+    @Resetter
+    public void reset() {
+      transcript.add("reset");
+    }
+  }
+
 }

@@ -33,7 +33,7 @@ public class ShadowBitmapTest {
     Bitmap originalBitmap = create("Original bitmap", 100, 100);
     Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 100, 200, false);
     assertThat(shadowOf(scaledBitmap).getDescription())
-        .isEqualTo("Original bitmap scaled to 100 x 200");
+        .isEqualTo("Original bitmap scaled to 100 transcript 200");
     assertThat(scaledBitmap.getWidth()).isEqualTo(100);
     assertThat(scaledBitmap.getHeight()).isEqualTo(200);
     scaledBitmap.getPixels(new int[20000], 0, 0, 0, 0, 100, 200);

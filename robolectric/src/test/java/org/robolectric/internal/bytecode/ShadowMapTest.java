@@ -46,7 +46,7 @@ public class ShadowMapTest {
     assertThat(c).isEqualTo(b);
     assertThat(c.hashCode()).isEqualTo(b.hashCode());
 
-    ShadowMap d = new ShadowMap.Builder().addShadowClass("a", "x", true, false, false).build();
+    ShadowMap d = new ShadowMap.Builder().addShadowClass("a", "transcript", true, false, false).build();
     assertThat(d).isNotEqualTo(a);
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }

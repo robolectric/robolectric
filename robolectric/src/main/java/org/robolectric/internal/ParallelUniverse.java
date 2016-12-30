@@ -36,14 +36,14 @@ import java.util.Map;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
+  private SdkEnvironment sdkEnvironment;
 
-  public ParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
-    this.robolectricTestRunner = robolectricTestRunner;
+  public ParallelUniverse(SdkEnvironment sdkEnvironment) {
+    this.sdkEnvironment = sdkEnvironment;
   }
 
   @Override

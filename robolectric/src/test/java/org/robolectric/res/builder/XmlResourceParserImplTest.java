@@ -416,7 +416,7 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testNext() throws Exception {
-    // Recorded events while parsing preferences from Android
+    // Recorded transcript while parsing preferences from Android
     List<String> expectedEvents = Arrays.asList(
         "<xml>",
         "<", // PreferenceScreen
@@ -518,7 +518,7 @@ public class XmlResourceParserImplTest {
   }
 
   /**
-   * Test that next tag will only return tag events.
+   * Test that next tag will only return tag transcript.
    */
   @Test
   public void testNextTag() throws Exception {

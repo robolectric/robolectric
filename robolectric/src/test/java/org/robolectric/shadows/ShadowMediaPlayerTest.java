@@ -975,7 +975,7 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testSimulatenousEventsAllRun() {
-    // Simultaneous events should all run even if
+    // Simultaneous transcript should all run even if
     // one of them stops playback.
     MediaEvent e1 = new MediaEvent() {
       @Override

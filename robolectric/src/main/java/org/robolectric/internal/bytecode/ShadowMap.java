@@ -21,7 +21,7 @@ public class ShadowMap {
     }
   }
 
-  ShadowMap(Map<String, ShadowConfig> map) {
+  private ShadowMap(Map<String, ShadowConfig> map) {
     this.map = new HashMap<>(map);
   }
 

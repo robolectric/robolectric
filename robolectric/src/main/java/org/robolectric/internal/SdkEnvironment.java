@@ -1,10 +1,13 @@
 package org.robolectric.internal;
 
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.internal.bytecode.InvokeDynamic;
 import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.res.*;
+
+import java.util.Set;
 
 public class SdkEnvironment {
   private final SdkConfig sdkConfig;
@@ -65,9 +68,13 @@ public class SdkEnvironment {
     return sdkConfig;
   }
 
-  public ShadowMap replaceShadowMap(ShadowMap shadowMap) {
-    ShadowMap oldMap = this.shadowMap;
-    this.shadowMap = shadowMap;
-    return oldMap;
+  public void setShadowMap(ShadowMap shadowMap) {
+    if (InvokeDynamic.ENABLED) {
+      ShadowMap oldMap = this.shadowMap;
+      this.shadowMap = shadowMap;
+
+      Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldMap);
+      getShadowInvalidator().invalidateClasses(invalidatedClasses);
+    }
   }
 }
