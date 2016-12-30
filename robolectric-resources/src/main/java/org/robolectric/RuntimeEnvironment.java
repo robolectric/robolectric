@@ -3,7 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.content.pm.PackageManager;
 
-import org.robolectric.res.ResourceProvider;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 
@@ -18,9 +18,9 @@ public class RuntimeEnvironment {
   private static RobolectricPackageManager packageManager;
   private static int apiLevel;
   private static Scheduler masterScheduler;
-  private static ResourceProvider systemResourceProvider;
-  private static ResourceProvider appResourceProvider;
-  private static ResourceProvider compileTimeResourceProvider;
+  private static ResourceTable systemResourceTable;
+  private static ResourceTable appResourceTable;
+  private static ResourceTable compileTimeResourceTable;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -136,27 +136,27 @@ public class RuntimeEnvironment {
     RuntimeEnvironment.masterScheduler = masterScheduler;
   }
 
-  public static void setSystemResourceProvider(ResourceProvider systemResourceProvider) {
-    RuntimeEnvironment.systemResourceProvider = systemResourceProvider;
+  public static void setSystemResourceTable(ResourceTable systemResourceTable) {
+    RuntimeEnvironment.systemResourceTable = systemResourceTable;
   }
 
-  public static void setAppResourceProvider(ResourceProvider appResourceProvider) {
-    RuntimeEnvironment.appResourceProvider = appResourceProvider;
+  public static void setAppResourceTable(ResourceTable appResourceTable) {
+    RuntimeEnvironment.appResourceTable = appResourceTable;
   }
 
-  public static ResourceProvider getSystemResourceProvider() {
-    return systemResourceProvider;
+  public static ResourceTable getSystemResourceTable() {
+    return systemResourceTable;
   }
 
-  public static ResourceProvider getAppResourceProvider() {
-    return appResourceProvider;
+  public static ResourceTable getAppResourceTable() {
+    return appResourceTable;
   }
 
-  public static void setCompileTimeResourceProvider(ResourceProvider compileTimeResourceProvider) {
-    RuntimeEnvironment.compileTimeResourceProvider = compileTimeResourceProvider;
+  public static void setCompileTimeResourceTable(ResourceTable compileTimeResourceTable) {
+    RuntimeEnvironment.compileTimeResourceTable = compileTimeResourceTable;
   }
 
-  public static ResourceProvider getCompileTimeResourceProvider() {
-    return compileTimeResourceProvider;
+  public static ResourceTable getCompileTimeResourceTable() {
+    return compileTimeResourceTable;
   }
 }

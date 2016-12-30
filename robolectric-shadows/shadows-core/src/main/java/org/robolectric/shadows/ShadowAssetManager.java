@@ -196,11 +196,11 @@ public final class ShadowAssetManager {
   }
 
   public void __constructor__() {
-    resourceTable = RuntimeEnvironment.getAppResourceProvider();
+    resourceTable = RuntimeEnvironment.getAppResourceTable();
   }
 
   public void __constructor__(boolean isSystem) {
-    resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceProvider() : RuntimeEnvironment.getAppResourceProvider();
+    resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
   }
 
   public ResourceTable getResourceTable() {
@@ -381,7 +381,7 @@ public final class ShadowAssetManager {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
 
-    ResourceTable resourceProvider = ResourceIds.isFrameworkResource(resId) ? RuntimeEnvironment.getSystemResourceProvider() : RuntimeEnvironment.getCompiletimeResourceProvider();
+    ResourceTable resourceProvider = ResourceIds.isFrameworkResource(resId) ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getCompileTimeResourceTable();
 
     return getXmlResourceParser(resourceProvider, block, resName.packageName);
   }

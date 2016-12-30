@@ -49,7 +49,7 @@ public class ParallelUniverseTest {
         new AndroidManifest(null, null, null, "package"), defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
-        RuntimeEnvironment.getSystemResourceProvider());
+        RuntimeEnvironment.getSystemResourceTable());
   }
 
   @Test

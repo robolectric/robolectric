@@ -5,61 +5,32 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
-public class ResourceTable {
-  final ResBunch data = new ResBunch();
-  final ResBundle xmlDocuments = new ResBundle();
-  final ResBundle rawResources = new ResBundle();
-  private final ResourceIndex resourceIndex;
+public interface ResourceTable {
 
-  public ResourceTable(String packageName) {
-    this.resourceIndex = new ResourceIndex(packageName);;
-  }
+  Integer getResourceId(ResName resName);
 
-  public String getPackageName() {
-    return resourceIndex.getPackageName();
-  }
+  ResName getResName(int resourceId);
 
-  public Integer getResourceId(ResName resName) {
-    return resourceIndex.getResourceId(resName);
-  }
+  TypedResource getValue(int resId, String qualifiers);
 
-  public ResName getResName(int resourceId) {
-    return resourceIndex.getResName(resourceId);
-  }
+  TypedResource getValue(@NotNull ResName resName, String qualifiers) ;
 
-  public Integer getResourceId(ResName resName) {
-    return resourceIndex.getResourceId(resName);
-  }
+  XmlBlock getXml(ResName resName, String qualifiers);
 
-  public ResName getResName(int resourceId) {
-    return resourceIndex.getResName(resourceId);
-  }
+  InputStream getRawValue(ResName resName, String qualifiers);
 
-  public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-    return data.get(resName, qualifiers);
-  }
+  InputStream getRawValue(int resId, String qualifiers);
 
-  XmlBlock getXml(ResName resName, String qualifiers) {
-    TypedResource typedResource = xmlDocuments.get(resName, qualifiers);
-    return typedResource == null ? null : (XmlBlock) typedResource.getData();
-  }
+  void receive(Visitor visitor);
 
-  InputStream getRawValue(ResName resName, String qualifiers) {
-    TypedResource typedResource = rawResources.get(resName, qualifiers);
-    FsFile file = typedResource == null ? null : (FsFile) typedResource.getData();
-    try {
-      return file == null ? null : file.getInputStream();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  boolean hasValue(ResName resName, String qualifiers);
 
-  public int getPackageIdentifier() {
-    return resourceIndex.getPackageIdentifier();
-  }
+  void addResource(int resId, String type, String name);
 
-  public void addResource(int resId, String type, String name) {
-    resourceIndex.addResource(resId, type, name);
+  interface Visitor<T> {
+
+    void visit(ResName key, Iterable<T> values);
   }
 }
