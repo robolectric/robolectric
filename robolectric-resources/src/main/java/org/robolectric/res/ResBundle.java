@@ -15,7 +15,7 @@ public class ResBundle {
     return valuesMap.pick(resName, qualifiers);
   }
 
-  public void receive(ResourceProvider.Visitor visitor) {
+  public void receive(ResourceTable.Visitor visitor) {
     for (final Map.Entry<ResName, Map<String, TypedResource>> entry : valuesMap.map.entrySet()) {
       visitor.visit(entry.getKey(), entry.getValue().values());
     }

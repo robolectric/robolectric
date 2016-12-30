@@ -17,8 +17,8 @@ import org.robolectric.internal.fakes.RoboCharsets;
 import org.robolectric.internal.fakes.RoboExtendedResponseCache;
 import org.robolectric.internal.fakes.RoboResponseSource;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourceProvider;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
@@ -109,7 +109,7 @@ public class InstrumentationConfiguration {
           RobolectricTestRunner.class,
           RobolectricTestRunner.HelperTestRunner.class,
           ResourcePath.class,
-          ResourceProvider.class,
+          ResourceTable.class,
           XmlBlock.class,
           ClassHandler.class,
           ClassHandler.Plan.class,

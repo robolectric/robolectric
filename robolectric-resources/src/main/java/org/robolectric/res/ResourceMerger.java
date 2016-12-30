@@ -7,18 +7,20 @@ import java.util.List;
 
 public class  ResourceMerger {
   @NotNull
-  public static ResourceTable buildResourceTable(AndroidManifest appManifest) {
+  public static PackageResourceTable buildResourceTable(AndroidManifest appManifest) {
     List<ResourcePath> allResourcePaths = appManifest.getIncludedResourcePaths();
     ResourceRemapper resourceRemapper = null;
     for (ResourcePath resourcePath : allResourcePaths) {
       if (resourceRemapper == null) {
         resourceRemapper = new ResourceRemapper(resourcePath.getRClass());
       } else {
-        resourceRemapper.remapRClass(resourcePath.getRClass());
+        if (resourcePath.getRClass() != null) {
+          resourceRemapper.remapRClass(resourcePath.getRClass());
+        }
       }
     }
 
-    ResourceTable resourceTable = ResourceTableFactory.newResourceTable(appManifest.getPackageName(),
+    PackageResourceTable resourceTable = ResourceTableFactory.newResourceTable(appManifest.getPackageName(),
         allResourcePaths.toArray(new ResourcePath[allResourcePaths.size()]));
 
     for (ResourcePath resourcePath : allResourcePaths) {

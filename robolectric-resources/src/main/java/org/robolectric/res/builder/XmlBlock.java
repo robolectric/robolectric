@@ -1,11 +1,9 @@
 package org.robolectric.res.builder;
 
 import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourceProvider;
 import org.robolectric.res.XmlBlockLoader;
 import org.w3c.dom.Document;
 

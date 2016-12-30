@@ -50,7 +50,7 @@ public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
   private XmlResourceParserImpl parser;
-  private ResourceProvider resourceProvider;
+  private ResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {
@@ -60,9 +60,9 @@ public class XmlResourceParserImplTest {
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();
-    resourceProvider = new EmptyResourceProvider(ResourceTableFactory.newResourceTable("org.robolectric", testResources()));
+    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric", testResources());
     parser = new XmlResourceParserImpl(xmlBlock.getDocument(), xmlBlock.getFilename(), xmlBlock.getPackageName(),
-        TEST_PACKAGE, resourceProvider);
+        TEST_PACKAGE, resourceTable);
   }
 
   @After
@@ -90,7 +90,7 @@ public class XmlResourceParserImplTest {
           new ByteArrayInputStream(xmlValue.getBytes()));
 
       parser = new XmlResourceParserImpl(document, "file", R.class.getPackage().getName(),
-          TEST_PACKAGE, resourceProvider);
+          TEST_PACKAGE, resourceTable);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {

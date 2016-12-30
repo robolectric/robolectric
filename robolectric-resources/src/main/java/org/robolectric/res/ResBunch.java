@@ -26,7 +26,7 @@ public class ResBunch {
     return bundle.get(resName, qualifiers);
   }
 
-  void receive(ResourceProvider.Visitor visitor) {
+  void receive(ResourceTable.Visitor visitor) {
     for (ResBundle resBundle : types.values()) {
       resBundle.receive(visitor);
     }

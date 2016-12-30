@@ -11,7 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceProvider;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.*;
@@ -126,21 +126,21 @@ public class Robolectric {
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
     }
-    return new AttributeSetBuilder(document, RuntimeEnvironment.getCompileTimeResourceProvider());
+    return new AttributeSetBuilder(document, RuntimeEnvironment.getCompileTimeResourceTable());
   }
 
   public static class AttributeSetBuilder {
 
     private Document doc;
-    private ResourceProvider appResourceProvider;
+    private ResourceTable appResourceTable;
 
-    AttributeSetBuilder(Document doc, ResourceProvider resourceProvider) {
+    AttributeSetBuilder(Document doc, ResourceTable resourceTable) {
       this.doc = doc;
-      this.appResourceProvider = resourceProvider;
+      this.appResourceTable = resourceTable;
     }
 
     public AttributeSetBuilder addAttribute(int resId, String value) {
-      ResName resName = appResourceProvider.getResName(resId);
+      ResName resName = appResourceTable.getResName(resId);
       if ("style".equals(resName.name)) {
         ((Element)doc.getFirstChild()).setAttribute(resName.name, value);
       } else {
@@ -155,7 +155,7 @@ public class Robolectric {
     }
 
     public AttributeSet build() {
-      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceProvider);
+      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceTable);
       try {
         parser.next(); // Root document element
         parser.next(); // "dummy" element

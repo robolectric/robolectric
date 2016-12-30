@@ -22,7 +22,6 @@ import org.robolectric.internal.bytecode.*;
 import org.robolectric.internal.dependency.*;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -37,14 +36,15 @@ import java.util.*;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
- * {@link ResourceProvider} in order to provide a simulation of the Android runtime environment.
+ * {@link ResourceTable} in order to provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
-  private static final Map<AndroidManifest, ResourceTable> appResourceTableCache = new HashMap<>();
+  
+  private static final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
-  private static ResourceTable compiletimeSdkResourceTable;
+  private static PackageResourceTable compiletimeSdkResourceTable;
 
   private final SdkPicker sdkPicker;
   private final ConfigMerger configMerger;
@@ -265,7 +265,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    * Returns the ResourceProvider for the compile time SDK.
    */
   @NotNull
-  private static ResourceTable getCompiletimeSdkResourceTable() {
+  private static PackageResourceTable getCompiletimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
       compiletimeSdkResourceTable = ResourceTableFactory.newResourceTable("android", new ResourcePath(android.R.class, null, null));
     }
@@ -317,10 +317,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
-            ResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
-            ResourceTable appResourceTable = getAppResourceTable(appManifest);
+            PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
+            PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
-            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, appManifest, config, new RoutingResourceProvider(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceProvider(systemResourceTable, appResourceTable), new RoutingResourceProvider(systemResourceTable));
+            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
             testLifecycle.beforeTest(bootstrappedMethod);
           } catch (Exception e) {
             throw new RuntimeException(e);
@@ -491,8 +491,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
   }
 
-  private final ResourceTable getAppResourceTable(final AndroidManifest appManifest) {
-    ResourceTable resourceTable = appResourceTableCache.get(appManifest);
+  private final PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
+    PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
     if (resourceTable == null) {
       resourceTable = ResourceMerger.buildResourceTable(appManifest);
 
