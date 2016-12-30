@@ -14,7 +14,9 @@ public class  ResourceMerger {
       if (resourceRemapper == null) {
         resourceRemapper = new ResourceRemapper(resourcePath.getRClass());
       } else {
-        resourceRemapper.remapRClass(resourcePath.getRClass());
+        if (resourcePath.getRClass() != null) {
+          resourceRemapper.remapRClass(resourcePath.getRClass());
+        }
       }
     }
 
