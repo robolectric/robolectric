@@ -46,8 +46,12 @@ public class VirtualEnvironment {
   }
 
   public <T> Class<T> bootstrappedClass(Class<?> testClass) {
+    return bootstrappedClass(testClass.getName());
+  }
+
+  public <T> Class<T> bootstrappedClass(String className) {
     try {
-      return (Class<T>) robolectricClassLoader.loadClass(testClass.getName());
+      return (Class<T>) robolectricClassLoader.loadClass(className);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }

@@ -71,16 +71,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     this.sdkPicker = createSdkPicker();
   }
 
-  @SuppressWarnings("unchecked")
-  private void assureTestLifecycle(VirtualEnvironment virtualEnvironment) {
-    try {
-      ClassLoader robolectricClassLoader = virtualEnvironment.getRobolectricClassLoader();
-      testLifecycle = (TestLifecycle) robolectricClassLoader.loadClass(getTestLifecycleClass().getName()).newInstance();
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   protected DependencyResolver getJarResolver() {
     if (dependencyResolver == null) {
       if (Boolean.getBoolean("robolectric.offline")) {
@@ -306,25 +296,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         parallelUniverseInterface = getHooksInterface(virtualEnvironment);
         try {
           try {
-            // Only invoke @BeforeClass once per class
-            if (!loadedTestClasses.contains(bootstrappedTestClass)) {
-              invokeBeforeClass(bootstrappedTestClass);
-            }
-            assureTestLifecycle(virtualEnvironment);
-
-            parallelUniverseInterface.setSdkConfig(virtualEnvironment.getSdkConfig());
-            parallelUniverseInterface.resetStaticState(config);
-
-            SdkConfig sdkConfig = ((RobolectricFrameworkMethod) method).sdkConfig;
-            Class<?> androidBuildVersionClass = virtualEnvironment.bootstrappedClass(Build.VERSION.class);
-            ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
-            ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
-
-            ResourceTable systemResourceTable = virtualEnvironment.getSystemResourceTable(getJarResolver());
-            ResourceTable appResourceTable = getAppResourceTable(appManifest);
-
-            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, appManifest, config, new RoutingResourceProvider(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceProvider(systemResourceTable, appResourceTable), new RoutingResourceProvider(systemResourceTable));
-            testLifecycle.beforeTest(bootstrappedMethod);
+            beforeTest(bootstrappedTestClass, bootstrappedMethod);
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
@@ -335,19 +307,53 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           try {
             statement.evaluate();
           } finally {
-            try {
-              parallelUniverseInterface.tearDownApplication();
-            } finally {
-              try {
-                internalAfterTest(bootstrappedMethod);
-              } finally {
-                parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
-              }
-            }
+            afterTest(bootstrappedMethod);
           }
         } finally {
           Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
           parallelUniverseInterface = null;
+        }
+      }
+
+      private void beforeTest(Class bootstrappedTestClass, Method bootstrappedMethod) throws Throwable {
+        // Only invoke @BeforeClass once per class
+        if (!loadedTestClasses.contains(bootstrappedTestClass)) {
+          invokeBeforeClass(bootstrappedTestClass);
+        }
+        try {
+          testLifecycle = virtualEnvironment.bootstrappedClass(getTestLifecycleClass().getName())
+              .asSubclass(TestLifecycle.class).newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
+
+        parallelUniverseInterface.setSdkConfig(virtualEnvironment.getSdkConfig());
+        parallelUniverseInterface.resetStaticState(config);
+
+        SdkConfig sdkConfig = ((RobolectricFrameworkMethod) method).sdkConfig;
+        Class<?> androidBuildVersionClass = virtualEnvironment.bootstrappedClass(Build.VERSION.class);
+        ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
+        ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
+
+        ResourceTable systemResourceTable = virtualEnvironment.getSystemResourceTable(getJarResolver());
+        ResourceTable appResourceTable = getAppResourceTable(appManifest);
+
+        parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, appManifest, config,
+            new RoutingResourceProvider(getCompiletimeSdkResourceTable(), appResourceTable),
+            new RoutingResourceProvider(systemResourceTable, appResourceTable),
+            new RoutingResourceProvider(systemResourceTable));
+        testLifecycle.beforeTest(bootstrappedMethod);
+      }
+
+      private void afterTest(Method bootstrappedMethod) {
+        try {
+          parallelUniverseInterface.tearDownApplication();
+        } finally {
+          try {
+            internalAfterTest(bootstrappedMethod);
+          } finally {
+            parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
+          }
         }
       }
     };
