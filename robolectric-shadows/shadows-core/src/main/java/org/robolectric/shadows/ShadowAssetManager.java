@@ -92,7 +92,7 @@ public final class ShadowAssetManager {
       if (attribute.getReferenceResId() != null) {
         resourceId = attribute.getReferenceResId();
       } else {
-        resourceId = resourceProvider.getResourceIndex().getResourceId(resName);
+        resourceId = resourceProvider.getResourceId(resName);
       }
 
       if (resourceId == null) {
@@ -240,7 +240,7 @@ public final class ShadowAssetManager {
       return 0;
     }
 
-    Integer resourceId = resourceProvider.getResourceIndex().getResourceId(resName);
+    Integer resourceId = resourceProvider.getResourceId(resName);
     return resourceId == null ? 0 : resourceId;
   }
 
@@ -282,8 +282,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = resourceProvider.getResourceIndex();
-    ResName resName = resourceIndex.getResName(ident);
+    ResName resName = resourceProvider.getResName(ident);
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
@@ -649,7 +648,7 @@ public final class ShadowAssetManager {
         Logger.info("huh... circular reference for %s?", attribute.resName.getFullyQualifiedName());
         return null;
       }
-      ResName resName = resourceProvider.getResourceIndex().getResName(resId);
+      ResName resName = resourceProvider.getResName(resId);
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
@@ -731,7 +730,7 @@ public final class ShadowAssetManager {
       }
     }
 
-    ResName attrName = resourceProvider.getResourceIndex().getResName(resId);
+    ResName attrName = resourceProvider.getResName(resId);
     if (attrName == null) return null;
 
     if (styleAttrStyle != null) {
@@ -761,7 +760,7 @@ public final class ShadowAssetManager {
   }
 
   @NotNull private ResName getResName(int id) {
-    ResName resName = resourceProvider.getResourceIndex().getResName(id);
+    ResName resName = resourceProvider.getResName(id);
     if (resName == null) {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id)
           + " in packages " + resourceProvider);

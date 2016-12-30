@@ -9,9 +9,6 @@ public class  ResourceMerger {
   @NotNull
   public static ResourceTable buildResourceTable(AndroidManifest appManifest) {
     List<ResourcePath> allResourcePaths = appManifest.getIncludedResourcePaths();
-    PackageResourceIndex resourceIndex = new PackageResourceIndex(appManifest.getPackageName());
-    ResourceTable resourceTable = new ResourceTable(resourceIndex);
-
     ResourceRemapper resourceRemapper = null;
     for (ResourcePath resourcePath : allResourcePaths) {
       if (resourceRemapper == null) {
@@ -19,11 +16,10 @@ public class  ResourceMerger {
       } else {
         resourceRemapper.remapRClass(resourcePath.getRClass());
       }
-
-      if (resourcePath.getRClass() != null) {
-        ResourceExtractor.populate(resourceIndex, resourcePath.getRClass());
-      }
     }
+
+    ResourceTable resourceTable = ResourceTableFactory.newResourceTable(appManifest.getPackageName(),
+        allResourcePaths.toArray(new ResourcePath[allResourcePaths.size()]));
 
     for (ResourcePath resourcePath : allResourcePaths) {
       ResourceParser.load(appManifest.getPackageName(), resourcePath, resourceTable);

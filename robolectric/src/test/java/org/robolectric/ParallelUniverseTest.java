@@ -43,12 +43,8 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationState(Config defaultConfig) {
-    PackageResourceIndex androidResourceIndex = new PackageResourceIndex("android");
-    ResourceExtractor.populate(androidResourceIndex, android.R.class);
-    ResourceProvider sdkResourceProvider = new EmptyResourceProvider(androidResourceIndex);
-    PackageResourceIndex resourceIndex = new PackageResourceIndex("org.robolectric");
-    ResourceExtractor.populate(resourceIndex, R.class);
-    final RoutingResourceProvider routingResourceProvider = new RoutingResourceProvider(new ResourceTable(resourceIndex));
+    ResourceProvider sdkResourceProvider = new EmptyResourceProvider(ResourceTableFactory.newResourceTable("android", new ResourcePath(android.R.class, null, null)));
+    final RoutingResourceProvider routingResourceProvider = new RoutingResourceProvider(ResourceTableFactory.newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     pu.setUpApplicationState(null, new DefaultTestLifecycle(),
         new AndroidManifest(null, null, null, "package"), defaultConfig,
         sdkResourceProvider,

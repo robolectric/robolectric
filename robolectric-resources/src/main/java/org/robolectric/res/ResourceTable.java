@@ -10,18 +10,22 @@ public class ResourceTable {
   final ResBunch data = new ResBunch();
   final ResBundle xmlDocuments = new ResBundle();
   final ResBundle rawResources = new ResBundle();
-  private PackageResourceIndex resourceIndex;
+  private final ResourceIndex resourceIndex;
 
-  public ResourceTable(PackageResourceIndex resourceIndex) {
-    this.resourceIndex = resourceIndex;
+  public ResourceTable(String packageName) {
+    this.resourceIndex = new ResourceIndex(packageName);;
   }
 
   public String getPackageName() {
     return resourceIndex.getPackageName();
   }
 
-  public PackageResourceIndex getResourceIndex() {
-    return resourceIndex;
+  public Integer getResourceId(ResName resName) {
+    return resourceIndex.getResourceId(resName);
+  }
+
+  public ResName getResName(int resourceId) {
+    return resourceIndex.getResName(resourceId);
   }
 
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
@@ -41,5 +45,13 @@ public class ResourceTable {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public int getPackageIdentifier() {
+    return resourceIndex.getPackageIdentifier();
+  }
+
+  public void addResource(int resId, String type, String name) {
+    resourceIndex.addResource(resId, type, name);
   }
 }

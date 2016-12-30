@@ -10,15 +10,10 @@ import java.io.InputStream;
  */
 public class EmptyResourceProvider extends ResourceProvider {
 
-  private final ResourceIndex resourceIndex;
+  private final ResourceTable resourceTable;
 
-  public EmptyResourceProvider(ResourceIndex resourceIndex) {
-    this.resourceIndex = resourceIndex;
-  }
-
-  @Override
-  public ResourceIndex getResourceIndex() {
-    return resourceIndex;
+  public EmptyResourceProvider(ResourceTable resourceTable) {
+    this.resourceTable = resourceTable;
   }
 
   @Override
@@ -31,13 +26,28 @@ public class EmptyResourceProvider extends ResourceProvider {
   }
 
   @Override
+  public TypedResource getValue(int resId, String qualifiers) {
+    return null;
+  }
+
+  @Override
   public XmlBlock getXml(ResName resName, String qualifiers) {
     return null;
   }
 
   @Override
   public InputStream getRawValue(ResName resName, String qualifiers) {
-    return null;
+    return resourceTable.getRawValue(resName, qualifiers);
+  }
+
+  @Override
+  public Integer getResourceId(ResName resName) {
+    return resourceTable.getResourceId(resName);
+  }
+
+  @Override
+  public ResName getResName(int resourceId) {
+    return resourceTable.getResName(resourceId);
   }
 
 }

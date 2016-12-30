@@ -86,8 +86,7 @@ public final class ResourceHelper {
   }
 
   public static int getInternalResourceId(String idName) {
-    return RuntimeEnvironment.getSystemResourceProvider().getResourceIndex()
-        .getResourceId(new ResName("android", "id", idName));
+    return RuntimeEnvironment.getSystemResourceProvider().getResourceId(new ResName("android", "id", idName));
   }
 
   // ------- TypedValue stuff

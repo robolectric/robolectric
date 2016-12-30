@@ -59,9 +59,9 @@ public class ResourceLoaderTest {
   public void shouldMakeInternalResourcesAvailable() throws Exception {
     ResourceProvider resourceProvider = RuntimeEnvironment.getSystemResourceProvider();
     ResName internalResource = new ResName("android", "string", "badPin");
-    Integer resId = resourceProvider.getResourceIndex().getResourceId(internalResource);
+    Integer resId = resourceProvider.getResourceId(internalResource);
     assertThat(resId).isNotNull();
-    assertThat(resourceProvider.getResourceIndex().getResName(resId)).isEqualTo(internalResource);
+    assertThat(resourceProvider.getResName(resId)).isEqualTo(internalResource);
 
     Class<?> internalRIdClass = Robolectric.class.getClassLoader().loadClass("com.android.internal.R$" + internalResource.type);
     int internalResourceId;

@@ -12,10 +12,8 @@ public class ResourceParserTest {
 
   @Before
   public void setUp() {
-    resourceTable = new ResourceTable(new PackageResourceIndex("org.roobolectric"));
-    ResourceParser.load("org.robolectric", testResources(), resourceTable);
-    gradleResourceTable = new ResourceTable(new PackageResourceIndex("org.robolectric.gradleapp"));
-    ResourceParser.load("org.robolectric.gradleapp", gradleAppResources(), gradleResourceTable);
+    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric", testResources());
+    gradleResourceTable = ResourceTableFactory.newResourceTable("org.robolectric.gradleapp", gradleAppResources());
   }
 
   @Test

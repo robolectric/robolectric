@@ -12,17 +12,18 @@ public abstract class ResourceProvider {
 
   public abstract TypedResource getValue(@NotNull ResName resName, String qualifiers);
 
-  public TypedResource getValue(int resId, String qualifiers) {
-    ResName resName = getResourceIndex().getResName(resId);
-    return resName != null ? getValue(resName, qualifiers) : null;
-  }
+  public abstract TypedResource getValue(int resId, String qualifiers);
 
   public abstract XmlBlock getXml(ResName resName, String qualifiers);
 
   public abstract InputStream getRawValue(ResName resName, String qualifiers);
 
+  public abstract Integer getResourceId(ResName resName);
+
+  public abstract ResName getResName(int resourceId);
+
   public InputStream getRawValue(int resId, String qualifiers) {
-    return getRawValue(getResourceIndex().getResName(resId), qualifiers);
+    return getRawValue(getResName(resId), qualifiers);
   }
 
   public boolean hasValue(ResName resName, String qualifiers) {
@@ -30,8 +31,6 @@ public abstract class ResourceProvider {
         || getXml(resName, qualifiers) != null
         || getRawValue(resName, qualifiers) != null;
   }
-
-  public abstract ResourceIndex getResourceIndex();
 
   @NotNull
   public List<TypedResource> grep(String regex) {
