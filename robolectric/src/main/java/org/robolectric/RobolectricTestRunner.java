@@ -72,9 +72,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @SuppressWarnings("unchecked")
-  private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
+  private void assureTestLifecycle(VirtualEnvironment virtualEnvironment) {
     try {
-      ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
+      ClassLoader robolectricClassLoader = virtualEnvironment.getRobolectricClassLoader();
       testLifecycle = (TestLifecycle) robolectricClassLoader.loadClass(getTestLifecycleClass().getName()).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException(e);
@@ -249,8 +249,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       try {
         SdkConfig sdkConfig = ((RobolectricFrameworkMethod) method).sdkConfig;
         InstrumentingClassLoaderFactory instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver());
-        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig);
-        methodBlock(method, config, roboMethod.getAppManifest(), sdkEnvironment).evaluate();
+        VirtualEnvironment virtualEnvironment = instrumentingClassLoaderFactory.getVirtualEnvironment(sdkConfig);
+        methodBlock(method, config, roboMethod.getAppManifest(), virtualEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);
       } catch (Throwable e) {
@@ -281,18 +281,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private ParallelUniverseInterface parallelUniverseInterface;
 
-  Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final SdkEnvironment sdkEnvironment) {
+  Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final VirtualEnvironment virtualEnvironment) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
         // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
         // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
         // not available once we install the Robolectric class loader.
-        configureShadows(sdkEnvironment, config);
+        configureShadows(virtualEnvironment, config);
 
-        Thread.currentThread().setContextClassLoader(sdkEnvironment.getRobolectricClassLoader());
+        Thread.currentThread().setContextClassLoader(virtualEnvironment.getRobolectricClassLoader());
 
-        Class bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
+        Class bootstrappedTestClass = virtualEnvironment.bootstrappedClass(getTestClass().getJavaClass());
         HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
 
         final Method bootstrappedMethod;
@@ -303,24 +303,24 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           throw new RuntimeException(e);
         }
 
-        parallelUniverseInterface = getHooksInterface(sdkEnvironment);
+        parallelUniverseInterface = getHooksInterface(virtualEnvironment);
         try {
           try {
             // Only invoke @BeforeClass once per class
             if (!loadedTestClasses.contains(bootstrappedTestClass)) {
               invokeBeforeClass(bootstrappedTestClass);
             }
-            assureTestLifecycle(sdkEnvironment);
+            assureTestLifecycle(virtualEnvironment);
 
-            parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
+            parallelUniverseInterface.setSdkConfig(virtualEnvironment.getSdkConfig());
             parallelUniverseInterface.resetStaticState(config);
 
             SdkConfig sdkConfig = ((RobolectricFrameworkMethod) method).sdkConfig;
-            Class<?> androidBuildVersionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
+            Class<?> androidBuildVersionClass = virtualEnvironment.bootstrappedClass(Build.VERSION.class);
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
-            ResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
+            ResourceTable systemResourceTable = virtualEnvironment.getSystemResourceTable(getJarResolver());
             ResourceTable appResourceTable = getAppResourceTable(appManifest);
 
             parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, appManifest, config, new RoutingResourceProvider(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceProvider(systemResourceTable, appResourceTable), new RoutingResourceProvider(systemResourceTable));
@@ -444,7 +444,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return Config.Builder.defaults().build();
   }
 
-  protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
+  protected void configureShadows(VirtualEnvironment virtualEnvironment, Config config) {
     ShadowMap shadowMap = createShadowMap();
 
     if (config != null) {
@@ -455,17 +455,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     if (InvokeDynamic.ENABLED) {
-      ShadowMap oldShadowMap = sdkEnvironment.replaceShadowMap(shadowMap);
+      ShadowMap oldShadowMap = virtualEnvironment.replaceShadowMap(shadowMap);
       Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldShadowMap);
-      sdkEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
+      virtualEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
     }
 
-    ClassHandler classHandler = createClassHandler(shadowMap, sdkEnvironment.getSdkConfig());
-    injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
+    ClassHandler classHandler = createClassHandler(shadowMap, virtualEnvironment.getSdkConfig());
+    injectEnvironment(virtualEnvironment.getRobolectricClassLoader(), classHandler, virtualEnvironment.getShadowInvalidator());
   }
 
-  ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-    ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
+  ParallelUniverseInterface getHooksInterface(VirtualEnvironment virtualEnvironment) {
+    ClassLoader robolectricClassLoader = virtualEnvironment.getRobolectricClassLoader();
     try {
       Class<?> clazz = robolectricClassLoader.loadClass(ParallelUniverse.class.getName());
       Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);

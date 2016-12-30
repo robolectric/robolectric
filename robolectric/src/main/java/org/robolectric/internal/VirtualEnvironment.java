@@ -6,7 +6,7 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.res.*;
 
-public class SdkEnvironment {
+public class VirtualEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
   private final ShadowInvalidator shadowInvalidator;
@@ -14,7 +14,7 @@ public class SdkEnvironment {
   private ResourceTable systemResourceTable;
   public static final String ANDROID_PACKAGE_NAME = android.R.class.getPackage().getName();
 
-  public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
+  public VirtualEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
     this.sdkConfig = sdkConfig;
     this.robolectricClassLoader = robolectricClassLoader;
     shadowInvalidator = new ShadowInvalidator();

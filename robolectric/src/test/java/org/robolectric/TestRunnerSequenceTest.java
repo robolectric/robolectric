@@ -10,10 +10,9 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.VirtualEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FsFile;
 import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Method;
@@ -124,9 +123,9 @@ public class TestRunnerSequenceTest {
       return MyTestLifecycle.class;
     }
 
-    @Override protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
+    @Override protected void configureShadows(VirtualEnvironment virtualEnvironment, Config config) {
       StateHolder.transcript.add("configureShadows");
-      super.configureShadows(sdkEnvironment, config);
+      super.configureShadows(virtualEnvironment, config);
     }
   }
 

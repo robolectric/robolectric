@@ -104,7 +104,7 @@ public class InstrumentationConfiguration {
           ShadowWrangler.class,
           AndroidManifest.class,
           InstrumentingClassLoader.class,
-          SdkEnvironment.class,
+          VirtualEnvironment.class,
           SdkConfig.class,
           RobolectricTestRunner.class,
           RobolectricTestRunner.HelperTestRunner.class,

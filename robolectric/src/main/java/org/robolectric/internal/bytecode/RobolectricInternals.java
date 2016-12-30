@@ -8,7 +8,7 @@ import org.robolectric.internal.ShadowConstants;
 public class RobolectricInternals {
 
   @SuppressWarnings("UnusedDeclaration")
-  private static ClassHandler classHandler; // initialized via magic by SdkEnvironment
+  private static ClassHandler classHandler; // initialized via magic by VirtualEnvironment
 
   @SuppressWarnings("UnusedDeclaration")
   private static ShadowInvalidator shadowInvalidator;

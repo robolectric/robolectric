@@ -11,7 +11,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.VirtualEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +56,8 @@ public class RobolectricTestRunnerTest {
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner = new RobolectricTestRunner(TestWithTwoMethods.class) {
       @Override
-      ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-        Class<? extends ParallelUniverseInterface> clazz = sdkEnvironment.bootstrappedClass(MyParallelUniverse.class);
+      ParallelUniverseInterface getHooksInterface(VirtualEnvironment virtualEnvironment) {
+        Class<? extends ParallelUniverseInterface> clazz = virtualEnvironment.bootstrappedClass(MyParallelUniverse.class);
         return callConstructor(clazz, from(RobolectricTestRunner.class, this));
       }
     };
