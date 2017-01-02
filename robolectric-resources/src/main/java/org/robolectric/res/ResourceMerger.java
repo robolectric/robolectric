@@ -20,12 +20,7 @@ public class  ResourceMerger {
       }
     }
 
-    PackageResourceTable resourceTable = ResourceTableFactory.newResourceTable(appManifest.getPackageName(),
+    return ResourceTableFactory.newResourceTable(appManifest.getPackageName(),
         allResourcePaths.toArray(new ResourcePath[allResourcePaths.size()]));
-
-    for (ResourcePath resourcePath : allResourcePaths) {
-      ResourceParser.load(appManifest.getPackageName(), resourcePath, resourceTable);
-    }
-    return resourceTable;
   }
 }
