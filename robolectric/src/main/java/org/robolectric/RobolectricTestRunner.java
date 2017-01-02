@@ -17,36 +17,11 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.GradleManifestFactory;
-import org.robolectric.internal.InstrumentingClassLoaderFactory;
-import org.robolectric.internal.ManifestFactory;
-import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.internal.MavenManifestFactory;
-import org.robolectric.internal.ParallelUniverse;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.bytecode.ClassHandler;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InvokeDynamic;
-import org.robolectric.internal.bytecode.RobolectricInternals;
-import org.robolectric.internal.bytecode.ShadowInvalidator;
-import org.robolectric.internal.bytecode.ShadowMap;
-import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
-import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
-import org.robolectric.internal.dependency.PropertiesDependencyResolver;
+import org.robolectric.internal.*;
+import org.robolectric.internal.bytecode.*;
+import org.robolectric.internal.dependency.*;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.EmptyResourceLoader;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.OverlayResourceLoader;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
+import org.robolectric.res.*;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -57,23 +32,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
- * {@link org.robolectric.res.ResourceLoader} in order to provide a simulation of the Android runtime environment.
+ * {@link ResourceTable} in order to provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
-  public static final String CONFIG_PROPERTIES = "robolectric.properties";
 
-  private static final Map<AndroidManifest, ResourceLoader> appResourceLoaderCache = new HashMap<>();
+  public static final String CONFIG_PROPERTIES = "robolectric.properties";
+  
+  private static final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
-  private static ResourceLoader compiletimeSdkResourceLoader;
+  private static PackageResourceTable compiletimeSdkResourceTable;
 
   private final SdkPicker sdkPicker;
   private final ConfigMerger configMerger;
@@ -291,14 +262,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Returns the ResourceLoader for the compile time SDK.
+   * Returns the ResourceProvider for the compile time SDK.
    */
   @NotNull
-  private static ResourceLoader getCompiletimeSdkResourceLoader() {
-    if (compiletimeSdkResourceLoader == null) {
-      compiletimeSdkResourceLoader = new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null)));
+  private static PackageResourceTable getCompiletimeSdkResourceTable() {
+    if (compiletimeSdkResourceTable == null) {
+      compiletimeSdkResourceTable = ResourceTableFactory.newResourceTable("android", new ResourcePath(android.R.class, null, null));
     }
-    return compiletimeSdkResourceLoader;
+    return compiletimeSdkResourceTable;
   }
 
   protected boolean shouldIgnore(FrameworkMethod method, Config config) {
@@ -346,10 +317,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
-            ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
-            ResourceLoader appResourceLoader = getAppResourceLoader(appManifest);
+            PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
+            PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
-            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, getCompiletimeSdkResourceLoader(), systemResourceLoader, appResourceLoader, appManifest, config);
+            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
             testLifecycle.beforeTest(bootstrappedMethod);
           } catch (Exception e) {
             throw new RuntimeException(e);
@@ -454,12 +425,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    * Configuration provided for specific packages, test classes, and test method
    * configurations will override values provided here.
    *
-   * The returned object is likely to be reused for many tests.
-   *
    * Custom TestRunner subclasses may wish to override this method to provide
-   * alternate configuration. Consider calling <code>super.buildGlobalConfig()</code>
-   * and overriding values as needed using a
-   * {@link Config.org.robolectric.annotation.Config.Builder}.
+   * alternate configuration. Consider using a {@link Config.Builder}.
    *
    * The default implementation has appropriate values for most use cases.
    *
@@ -467,7 +434,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    * @since 3.1.3
    */
   protected Config buildGlobalConfig() {
-    return Config.Builder.defaults().build();
+    return new Config.Builder().build();
   }
 
   protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
@@ -520,17 +487,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
   }
 
-  private final ResourceLoader getAppResourceLoader(final AndroidManifest appManifest) {
-    ResourceLoader resourceLoader = appResourceLoaderCache.get(appManifest);
-    if (resourceLoader == null) {
-      List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
-      for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-        appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
-      }
-      resourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
-      appResourceLoaderCache.put(appManifest, resourceLoader);
+  private final PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
+    PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
+    if (resourceTable == null) {
+      resourceTable = ResourceMerger.buildResourceTable(appManifest);
+
+      appResourceTableCache.put(appManifest, resourceTable);
     }
-    return resourceLoader;
+    return resourceTable;
   }
 
   protected ShadowMap createShadowMap() {

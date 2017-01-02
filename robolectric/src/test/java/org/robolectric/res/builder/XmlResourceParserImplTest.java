@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
 import org.robolectric.res.*;
-import org.robolectric.util.TestUtil;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -31,8 +30,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -53,20 +50,19 @@ public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
   private XmlResourceParserImpl parser;
-  private ResourceLoader resourceLoader;
+  private ResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {
     ResBundle resBundle = new ResBundle();
     XmlBlockLoader xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
-    new DocumentLoader(testResources()).load("xml", xmlBlockLoader);
+    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("xml", xmlBlockLoader);
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();
-    ResourceIndex resourceIndex = new ResourceExtractor(testResources());
-    resourceLoader = mock(ResourceLoader.class);
-    when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);
-    parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceLoader);
+    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric", testResources());
+    parser = new XmlResourceParserImpl(xmlBlock.getDocument(), xmlBlock.getFilename(), xmlBlock.getPackageName(),
+        TEST_PACKAGE, resourceTable);
   }
 
   @After
@@ -93,8 +89,8 @@ public class XmlResourceParserImplTest {
       Document document = documentBuilder.parse(
           new ByteArrayInputStream(xmlValue.getBytes()));
 
-      parser = new XmlResourceParserImpl(document, "file", TestUtil.testResources().getPackageName(),
-          TEST_PACKAGE, resourceLoader);
+      parser = new XmlResourceParserImpl(document, "file", R.class.getPackage().getName(),
+          TEST_PACKAGE, resourceTable);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {

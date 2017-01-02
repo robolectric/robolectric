@@ -8,8 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -25,8 +24,7 @@ import static org.mockito.Mockito.when;
 @RunWith(JUnit4.class)
 public class MetaDataTest {
 
-  @Mock ResourceLoader resourceLoader;
-  @Mock ResourceIndex resourceIndex;
+  @Mock private ResourceTable resourceProvider;
 
   @Before
   public void setUp() {
@@ -35,11 +33,10 @@ public class MetaDataTest {
 
   @Test(expected = Resources.NotFoundException.class)
   public void testNonExistantResource_throwsResourceNotFoundException() {
-    when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);
     Element metaDataElement = createMetaDataNode("aName", "@xml/non_existant_resource");
 
     MetaData metaData = new MetaData(ImmutableList.<Node>of(metaDataElement));
-    metaData.init(resourceLoader, "a.package");
+    metaData.init(resourceProvider, "a.package");
   }
 
   private static Element createMetaDataNode(String name, String value) {

@@ -246,7 +246,7 @@ public class AttributeSetBuilderTest {
         .setStyleAttribute("@style/non_existent_style")
         .build();
 
-    assertThat(roboAttributeSet.getStyleAttribute()).isNotEqualTo(0);
+    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(0);
   }
 
   @Test

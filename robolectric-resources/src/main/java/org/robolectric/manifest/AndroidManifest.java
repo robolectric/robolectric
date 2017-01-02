@@ -17,8 +17,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.Nullable;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -409,22 +409,22 @@ public class AndroidManifest {
   /***
    * Allows RobolectricPackageManager to provide
    * a resource index for initialising the resource attributes in all the metadata elements
-   * @param resLoader used for getting resource IDs from string identifiers
+   * @param resourceTable used for getting resource IDs from string identifiers
    */
-  public void initMetaData(ResourceLoader resLoader) {
+  public void initMetaData(ResourceTable resourceTable) {
     if (!packageNameIsOverridden()) {
       // packageName needs to be resolved
       parseAndroidManifest();
     }
 
     if (applicationMetaData != null) {
-      applicationMetaData.init(resLoader, packageName);
+      applicationMetaData.init(resourceTable, packageName);
     }
     for (PackageItemData receiver : receivers) {
-      receiver.getMetaData().init(resLoader, packageName);
+      receiver.getMetaData().init(resourceTable, packageName);
     }
     for (ServiceData service : serviceDatas.values()) {
-      service.getMetaData().init(resLoader, packageName);
+      service.getMetaData().init(resourceTable, packageName);
     }
   }
 
@@ -553,7 +553,7 @@ public class AndroidManifest {
   }
 
   public ResourcePath getResourcePath() {
-    return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
+    return new ResourcePath(getRClass(), resDirectory, assetsDirectory);
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {

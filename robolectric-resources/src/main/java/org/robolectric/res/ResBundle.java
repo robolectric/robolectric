@@ -1,125 +1,23 @@
 package org.robolectric.res;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ResBundle {
   private final ResMap valuesMap = new ResMap();
-  private String overrideNamespace;
 
   public void put(String attrType, String name, TypedResource value) {
     XmlLoader.XmlContext xmlContext = value.getXmlContext();
-    ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
-    List<TypedResource> values = valuesMap.find(resName);
-    values.add(value);
-
-    // todo: should sort once we're fully populated, not now
-    Collections.sort(values, new Comparator<TypedResource>() {
-      @Override
-      public int compare(TypedResource o1, TypedResource o2) {
-        return o1.getQualifiers().compareTo(o2.getQualifiers());
-      }
-    });
+    ResName resName = new ResName(xmlContext.getPackageName(), attrType, name);
+    valuesMap.put(resName, value);
   }
 
   public TypedResource get(ResName resName, String qualifiers) {
-    List<TypedResource> typedResources = valuesMap.find(maybeOverride(resName));
-    return pick(typedResources, qualifiers);
+    return valuesMap.pick(resName, qualifiers);
   }
 
-  public static TypedResource pick(List<TypedResource> typedResources, String qualifiersStr) {
-    final int count = typedResources.size();
-    if (count == 0) return null;
-
-    // This should really follow the android algorithm specified at:
-    // http://developer.android.com/guide/topics/resources/providing-resources.html#BestMatch
-    //
-    // 1: eliminate resources that contradict the qualifiersStr
-    // 2: pick the (next) highest-precedence qualifier type in "table 2" of the reference above
-    // 3: check if any resource values use this qualifier, if no, back to 2, else move on to 4.
-    // 4: eliminate resources values that don't use this qualifier.
-    // 5: if more than one resource is left, go back to 2.
-    //
-    // However, we currently only model the smallest/available width/height and version qualifiers
-    // rather than all of the possibly qualifier classes in table 2.
-
-    Qualifiers toMatch = Qualifiers.parse(qualifiersStr);
-
-    List<TypedResource> passesRequirements = new ArrayList<>();
-    for (TypedResource candidate : typedResources) {
-      Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
-      if (qualifiers.passesRequirements(toMatch)) {
-        passesRequirements.add(candidate);
-      }
-    }
-
-    Qualifiers bestMatchQualifiers = null;
-    TypedResource bestMatch = null;
-    for (TypedResource candidate : passesRequirements) {
-      Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
-      if (qualifiers.matches(toMatch)) {
-        if (bestMatchQualifiers == null || qualifiers.isBetterThan(bestMatchQualifiers, toMatch)) {
-          bestMatchQualifiers = qualifiers;
-          bestMatch =  candidate;
-        }
-      }
-    }
-    if (bestMatch != null) {
-      return bestMatch;
-    }
-    if (!passesRequirements.isEmpty()) {
-      return passesRequirements.get(0);
-    }
-    return null;
-  }
-
-  public int size() {
-    return valuesMap.size();
-  }
-
-  public void makeImmutable() {
-    valuesMap.makeImmutable();
-  }
-
-  public void overrideNamespace(String overrideNamespace) {
-    this.overrideNamespace = overrideNamespace;
-    if (size() > 0) throw new RuntimeException();
-  }
-
-  String maybeOverride(String namespace) {
-    return overrideNamespace == null ? namespace : overrideNamespace;
-  }
-
-  ResName maybeOverride(ResName resName) {
-    return overrideNamespace == null ? resName : new ResName(overrideNamespace, resName.type, resName.name);
-  }
-
-  public void mergeLibraryStyle(ResBundle fromResBundle, String packageName) {
-    valuesMap.merge(packageName, fromResBundle.valuesMap);
-  }
-
-  public void receive(ResourceLoader.Visitor visitor) {
-    for (final Map.Entry<ResName, List<TypedResource>> entry : valuesMap.map.entrySet()) {
-      visitor.visit(entry.getKey(), new AbstractList<TypedResource>() {
-        List<TypedResource> typedResources;
-
-        @Override
-        public TypedResource get(int index) {
-          if (typedResources == null) typedResources = entry.getValue();
-          return typedResources.get(index);
-        }
-
-        @Override
-        public int size() {
-          if (typedResources == null) typedResources = entry.getValue();
-          return typedResources.size();
-        }
-      });
+  public void receive(ResourceTable.Visitor visitor) {
+    for (final Map.Entry<ResName, Map<String, TypedResource>> entry : valuesMap.map.entrySet()) {
+      visitor.visit(entry.getKey(), entry.getValue().values());
     }
   }
 
@@ -157,24 +55,63 @@ public class ResBundle {
     }
   }
 
-  private static class ResMap {
-    private final Map<ResName, List<TypedResource>> map = new HashMap<>();
-    private boolean immutable;
+  static class ResMap {
+    private final Map<ResName, Map<String, TypedResource>> map = new HashMap<>();
 
-    public List<TypedResource> find(ResName resName) {
-      List<TypedResource> values = map.get(resName);
-      if (values == null) map.put(resName, values = new ArrayList<>());
-      return values;
-    }
+    public TypedResource pick(ResName resName, String qualifiersStr) {
+      Map<String, TypedResource> values = map.get(resName);
+      if (values == null || values.size() == 0) return null;
 
-    private void merge(String packageName, ResMap sourceMap) {
-      if (immutable) {
-        throw new IllegalStateException("immutable!");
+      TreeSet<TypedResource> typedResources = new TreeSet<>(new QualifierSort());
+      typedResources.addAll(values.values());
+
+      // This should really follow the android algorithm specified at:
+      // http://developer.android.com/guide/topics/resources/providing-resources.html#BestMatch
+      //
+      // 1: eliminate resources that contradict the qualifiersStr
+      // 2: pick the (next) highest-precedence qualifier type in "table 2" of the reference above
+      // 3: check if any resource values use this qualifier, if no, back to 2, else move on to 4.
+      // 4: eliminate resources values that don't use this qualifier.
+      // 5: if more than one resource is left, go back to 2.
+      //
+      // However, we currently only model the smallest/available width/height and version qualifiers
+      // rather than all of the possibly qualifier classes in table 2.
+
+      Qualifiers toMatch = Qualifiers.parse(qualifiersStr);
+
+      List<TypedResource> passesRequirements = new ArrayList<>();
+      for (TypedResource candidate : typedResources) {
+        Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
+        if (qualifiers.passesRequirements(toMatch)) {
+          passesRequirements.add(candidate);
+        }
       }
 
-      for (Map.Entry<ResName, List<TypedResource>> entry : sourceMap.map.entrySet()) {
-        ResName resName = entry.getKey().withPackageName(packageName);
-        find(resName).addAll(entry.getValue());
+      Qualifiers bestMatchQualifiers = null;
+      TypedResource bestMatch = null;
+      for (TypedResource candidate : passesRequirements) {
+        Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
+        if (qualifiers.matches(toMatch)) {
+          if (bestMatchQualifiers == null || qualifiers.isBetterThan(bestMatchQualifiers, toMatch)) {
+            bestMatchQualifiers = qualifiers;
+            bestMatch =  candidate;
+          }
+        }
+      }
+      if (bestMatch != null) {
+        return bestMatch;
+      }
+      if (!passesRequirements.isEmpty()) {
+        return passesRequirements.get(0);
+      }
+      return null;
+    }
+
+    public void put(ResName resName, TypedResource value) {
+      Map<String, TypedResource> values = map.get(resName);
+      if (values == null) map.put(resName, values = new HashMap<>());
+      if (!values.containsKey(value.getQualifiers())) {
+        values.put(value.getQualifiers(), value);
       }
     }
 
@@ -182,9 +119,11 @@ public class ResBundle {
       return map.size();
     }
 
-    public void makeImmutable() {
-      immutable = true;
+    public static class QualifierSort implements Comparator<TypedResource> {
+      @Override
+      public int compare(TypedResource o1, TypedResource o2) {
+        return o1.getQualifiers().compareTo(o2.getQualifiers());
+      }
     }
   }
-
 }

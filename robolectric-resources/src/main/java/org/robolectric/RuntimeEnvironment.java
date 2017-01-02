@@ -3,7 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.content.pm.PackageManager;
 
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 
@@ -18,9 +18,9 @@ public class RuntimeEnvironment {
   private static RobolectricPackageManager packageManager;
   private static int apiLevel;
   private static Scheduler masterScheduler;
-  private static ResourceLoader systemResourceLoader;
-  private static ResourceLoader appResourceLoader;
-  private static ResourceLoader compiletimeResourceLoader;
+  private static ResourceTable systemResourceTable;
+  private static ResourceTable appResourceTable;
+  private static ResourceTable compileTimeResourceTable;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -136,27 +136,27 @@ public class RuntimeEnvironment {
     RuntimeEnvironment.masterScheduler = masterScheduler;
   }
 
-  public static void setSystemResourceLoader(ResourceLoader systemResourceLoader) {
-    RuntimeEnvironment.systemResourceLoader = systemResourceLoader;
+  public static void setSystemResourceTable(ResourceTable systemResourceTable) {
+    RuntimeEnvironment.systemResourceTable = systemResourceTable;
   }
 
-  public static void setAppResourceLoader(ResourceLoader appResourceLoader) {
-    RuntimeEnvironment.appResourceLoader = appResourceLoader;
+  public static void setAppResourceTable(ResourceTable appResourceTable) {
+    RuntimeEnvironment.appResourceTable = appResourceTable;
   }
 
-  public static ResourceLoader getSystemResourceLoader() {
-    return systemResourceLoader;
+  public static ResourceTable getSystemResourceTable() {
+    return systemResourceTable;
   }
 
-  public static ResourceLoader getAppResourceLoader() {
-    return appResourceLoader;
+  public static ResourceTable getAppResourceTable() {
+    return appResourceTable;
   }
 
-  public static void setCompiletimeResourceLoader(ResourceLoader compiletimeResourceLoader) {
-    RuntimeEnvironment.compiletimeResourceLoader = compiletimeResourceLoader;
+  public static void setCompileTimeResourceTable(ResourceTable compileTimeResourceTable) {
+    RuntimeEnvironment.compileTimeResourceTable = compileTimeResourceTable;
   }
 
-  public static ResourceLoader getCompiletimeResourceLoader() {
-    return compiletimeResourceLoader;
+  public static ResourceTable getCompileTimeResourceTable() {
+    return compileTimeResourceTable;
   }
 }
