@@ -24,8 +24,18 @@ public class ConfigMerger {
     }
   };
 
+  /**
+   * Calculate the {@link Config} for the given test.
+   *
+   * @param testClass the class containing the test
+   * @param method the test method
+   * @param globalConfig global configuration values
+   * @return the effective configuration
+   * @since 3.2
+   */
   public Config getConfig(Class<?> testClass, Method method, Config globalConfig) {
-    Config config = globalConfig;
+    Config config = Config.Builder.defaults().build();
+    config = override(config, globalConfig);
 
     for (String packageName : reverse(packageHierarchyOf(testClass))) {
       Config packageConfig = cachedPackageConfig(packageName);
@@ -55,6 +65,7 @@ public class ConfigMerger {
    *
    * @param packageName the name of the package, or empty string (<code>""</code>) for the top level package
    * @return {@link Config} object for the specified package
+   * @since 3.2
    */
   @Nullable
   private Config buildPackageConfig(String packageName) {
@@ -63,6 +74,8 @@ public class ConfigMerger {
 
   /**
    * Return a {@link Properties} file for the given package name, or <code>null</code> if none is available.
+   * 
+   * @since 3.2
    */
   protected Properties getConfigProperties(String packageName) {
     String resourceName = packageName.replace('.', '/') + "/" + RobolectricTestRunner.CONFIG_PROPERTIES;
