@@ -20,6 +20,17 @@ import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
 import static org.robolectric.util.TestUtil.stringify;
 
 public class ConfigMergerTest {
+  @Test public void defaultValuesAreMerged() throws Exception {
+    assertThat(configFor(Test2.class, "withoutAnnotation",
+        new Config.Builder().build()).manifest())
+        .isEqualTo("AndroidManifest.xml");
+  }
+
+  @Test public void globalValuesAreMerged() throws Exception {
+    assertThat(configFor(Test2.class, "withoutAnnotation",
+        new Config.Builder().setManifest("ManifestFromGlobal.xml").build()).manifest())
+        .isEqualTo("ManifestFromGlobal.xml");
+  }
 
   @Test
   public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() throws Exception {
@@ -154,9 +165,14 @@ public class ConfigMergerTest {
     }.getConfig(testClass, info, Config.Builder.defaults().build());
   }
 
-  private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
+  private Config configFor(Class<?> testClass, String methodName) {
+    Config.Implementation globalConfig = Config.Builder.defaults().build();
+    return configFor(testClass, methodName, globalConfig);
+  }
+
+  private Config configFor(Class<?> testClass, String methodName, Config.Implementation globalConfig) {
     Method info = getMethod(testClass, methodName);
-    return new ConfigMerger().getConfig(testClass, info, Config.Builder.defaults().build());
+    return new ConfigMerger().getConfig(testClass, info, globalConfig);
   }
 
   private static Method getMethod(Class<?> testClass, String methodName) {

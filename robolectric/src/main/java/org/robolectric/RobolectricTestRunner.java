@@ -454,12 +454,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    * Configuration provided for specific packages, test classes, and test method
    * configurations will override values provided here.
    *
-   * The returned object is likely to be reused for many tests.
-   *
    * Custom TestRunner subclasses may wish to override this method to provide
-   * alternate configuration. Consider calling <code>super.buildGlobalConfig()</code>
-   * and overriding values as needed using a
-   * {@link Config.org.robolectric.annotation.Config.Builder}.
+   * alternate configuration. Consider using a {@link Config.Builder}.
    *
    * The default implementation has appropriate values for most use cases.
    *
@@ -467,7 +463,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    * @since 3.1.3
    */
   protected Config buildGlobalConfig() {
-    return Config.Builder.defaults().build();
+    return new Config.Builder().build();
   }
 
   protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
