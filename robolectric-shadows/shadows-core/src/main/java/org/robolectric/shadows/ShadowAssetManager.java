@@ -510,12 +510,6 @@ public final class ShadowAssetManager {
     if (resolveRefs) {
       value = resolve(value, qualifiers, resId);
     }
-
-    // todo: gross. this is so resources.getString(R.layout.foo) works for ABS.
-    if (value == null && "layout".equals(getResourceTypeName(resId))) {
-      throw new UnsupportedOperationException("ugh, this doesn't work still?");
-    }
-
     return value;
   }
 
