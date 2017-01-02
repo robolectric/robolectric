@@ -21,40 +21,6 @@ public class ResBundle {
     }
   }
 
-  public static class Value<T> implements Comparable<Value<T>> {
-    private final String qualifiers;
-    private final T value;
-
-    Value(String qualifiers, T value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-
-      this.qualifiers = qualifiers == null ? "--" : "-" + qualifiers + "-";
-      this.value = value;
-    }
-
-    public String getQualifiers() {
-      return qualifiers;
-    }
-
-    public T getValue() {
-      return value;
-    }
-
-    @Override
-    public int compareTo(Value<T> o) {
-      return qualifiers.compareTo(o.qualifiers);
-    }
-
-    @Override public String toString() {
-      return "Value{" +
-          "qualifiers='" + qualifiers + '\'' +
-          ", value=" + value +
-          '}';
-    }
-  }
-
   static class ResMap {
     private final Map<ResName, Map<String, TypedResource>> map = new HashMap<>();
 
