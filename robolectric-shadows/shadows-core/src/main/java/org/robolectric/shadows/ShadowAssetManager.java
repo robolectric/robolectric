@@ -512,19 +512,6 @@ public final class ShadowAssetManager {
     if (resolveRefs) {
       value = resolve(value, qualifiers, resId);
     }
-
-    // todo: make the drawable loader put stuff into the normal spot...
-    String resourceTypeName = getResourceTypeName(resId);
-    if (value == null && DrawableResourceLoader.isStillHandledHere(resourceTypeName)) {
-      FileTypedResource typedResource = (FileTypedResource) resourceTable.getValue(resId, qualifiers);
-      return new TypedResource<>(typedResource.getFsFile(), ResType.FILE, typedResource.getXmlContext());
-    }
-
-    // todo: gross. this is so resources.getString(R.layout.foo) works for ABS.
-    if (value == null && "layout".equals(resourceTypeName)) {
-      throw new UnsupportedOperationException("ugh, this doesn't work still?");
-    }
-
     return value;
   }
 
