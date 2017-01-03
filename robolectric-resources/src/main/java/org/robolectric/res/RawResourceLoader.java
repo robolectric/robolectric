@@ -25,14 +25,13 @@ public class RawResourceLoader {
     }
   }
 
-  private void loadRawFiles(PackageResourceTable rawResourceFiles, String resourceType, FsFile rawDir) {
+  private void loadRawFiles(PackageResourceTable resourceTable, String resourceType, FsFile rawDir) {
     FsFile[] files = rawDir.listFiles();
     if (files != null) {
       for (FsFile file : files) {
         String fileBaseName = file.getBaseName();
-        rawResourceFiles.addRaw(resourceType, fileBaseName,
-            new TypedResource<>(file, ResType.FILE,
-                new XmlLoader.XmlContext(packageName, file)));
+        resourceTable.addRaw(resourceType, fileBaseName,
+            new TypedResource<>(file, ResType.FILE, new XmlLoader.XmlContext(packageName, file)));
       }
     }
   }

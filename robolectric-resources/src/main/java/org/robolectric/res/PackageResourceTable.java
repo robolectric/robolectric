@@ -83,15 +83,15 @@ public class PackageResourceTable implements ResourceTable {
     resourceIndex.addResource(resId, type, name);
   }
 
-  void addValue(String resourceType, String name, TypedResource valueWithType) {
-    values.put(resourceType, name, valueWithType);
+  void addValue(String type, String name, TypedResource value) {
+    values.put(type, name, value);
   }
 
-  void addXml(String resourceType, String baseName, TypedResource<XmlBlock> xmlBlockTypedResource) {
-    xmlDocuments.put(resourceType, baseName, xmlBlockTypedResource);
+  void addXml(String type, String name, TypedResource value) {
+    xmlDocuments.put(type, name, value);
   }
 
-  void addRaw(String resourceType, String name, TypedResource<FsFile> value) {
-    rawResources.put(resourceType, name, value);
+  void addRaw(String type, String name, TypedResource value) {
+    rawResources.put(type, name, value);
   }
 }
