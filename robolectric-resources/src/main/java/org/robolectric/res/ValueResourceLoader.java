@@ -13,11 +13,6 @@ public class ValueResourceLoader extends XpathResourceXmlLoader {
   }
 
   @Override
-  public void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) {
-    super.processResourceXml(xmlFile, xmlNode, xmlContext);
-  }
-
-  @Override
   protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
     resourceTable.addValue(attrType, name, resType.getValueWithType(xmlNode, xmlContext));
   }
