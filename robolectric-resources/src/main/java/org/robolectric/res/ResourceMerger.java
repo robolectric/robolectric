@@ -3,20 +3,19 @@ package org.robolectric.res;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.manifest.AndroidManifest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class  ResourceMerger {
   @NotNull
   public static PackageResourceTable buildResourceTable(AndroidManifest appManifest) {
+    ResourceRemapper resourceRemapper = new ResourceRemapper(appManifest.getRClass());
+
+    ResourcePath appResourcePath = appManifest.getResourcePath();
     List<ResourcePath> allResourcePaths = appManifest.getIncludedResourcePaths();
-    ResourceRemapper resourceRemapper = null;
     for (ResourcePath resourcePath : allResourcePaths) {
-      if (resourceRemapper == null) {
-        resourceRemapper = new ResourceRemapper(resourcePath.getRClass());
-      } else {
-        if (resourcePath.getRClass() != null) {
-          resourceRemapper.remapRClass(resourcePath.getRClass());
-        }
+      if (!resourcePath.equals(appResourcePath) && resourcePath.getRClass() != null) {
+        resourceRemapper.remapRClass(resourcePath.getRClass());
       }
     }
 
