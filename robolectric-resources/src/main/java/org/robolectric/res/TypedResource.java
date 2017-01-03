@@ -50,7 +50,7 @@ public class TypedResource<T> {
 
   @Override public String toString() {
     return getClass().getSimpleName() + "{" +
-        "data=" + data +
+        "values=" + data +
         ", resType=" + resType +
         ", xmlContext=" + xmlContext +
         '}';

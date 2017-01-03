@@ -45,7 +45,7 @@ import static org.robolectric.Robolectric.setupActivity;
 public class DefaultPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
-  private static final String TEST_APP_PATH = "/data/app/application.apk";
+  private static final String TEST_APP_PATH = "/values/app/application.apk";
   private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 

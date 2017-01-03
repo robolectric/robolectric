@@ -1,16 +1,16 @@
 package org.robolectric.res;
 
 public class ColorResourceLoader extends XpathResourceXmlLoader {
-  private final ResBunch data;
+  private final PackageResourceTable resourceTable;
 
-  public ColorResourceLoader(ResBunch data) {
+  public ColorResourceLoader(PackageResourceTable resourceTable) {
     super("/selector");
-    this.data = data;
+    this.resourceTable = resourceTable;
   }
 
   @Override
   protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
     TypedResource value = new FileTypedResource(xmlContext.getXmlFile(), ResType.COLOR_STATE_LIST, xmlContext);
-    data.put("color", xmlContext.getXmlFile().getBaseName(), value);
+    resourceTable.addValue("color", xmlContext.getXmlFile().getBaseName(), value);
   }
 }

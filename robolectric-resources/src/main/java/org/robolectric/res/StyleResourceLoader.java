@@ -1,11 +1,11 @@
 package org.robolectric.res;
 
 public class StyleResourceLoader extends XpathResourceXmlLoader {
-  private final ResBunch data;
+  private final PackageResourceTable resourceTable;
 
-  public StyleResourceLoader(ResBunch data) {
+  public StyleResourceLoader(PackageResourceTable resourceTable) {
     super("/resources/style");
-    this.data = data;
+    this.resourceTable = resourceTable;
   }
 
   @Override
@@ -30,7 +30,7 @@ public class StyleResourceLoader extends XpathResourceXmlLoader {
       styleData.add(attrResName, new AttributeResource(attrResName, value, xmlContext.getPackageName()));
     }
 
-    data.put("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE, xmlContext));
+    resourceTable.addValue("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE, xmlContext));
   }
 
   private String underscorize(String s) {

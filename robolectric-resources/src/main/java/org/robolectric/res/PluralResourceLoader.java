@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PluralResourceLoader extends XpathResourceXmlLoader {
-  private ResBunch resBunch;
+  private PackageResourceTable resourceTable;
 
-  public PluralResourceLoader(ResBunch resBunch) {
+  public PluralResourceLoader(PackageResourceTable resourceTable) {
     super("/resources/plurals");
-    this.resBunch = resBunch;
+    this.resourceTable = resourceTable;
   }
 
   @Override protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
@@ -18,7 +18,7 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
       String quantity = item.getAttrValue("quantity");
       rules.add(new Plural(quantity, value));
     }
-    resBunch.put("plurals", name, new PluralRules(rules, ResType.CHAR_SEQUENCE, xmlContext));
+    resourceTable.addValue("plurals", name, new PluralRules(rules, ResType.CHAR_SEQUENCE, xmlContext));
   }
 
   public static class PluralRules extends TypedResource<List<Plural>> {

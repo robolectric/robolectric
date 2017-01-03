@@ -5,15 +5,15 @@ package org.robolectric.res;
  */
 public class DrawableResourceLoader {
   private String packageName;
-  private final ResBunch resBunch;
+  private final PackageResourceTable resourceTable;
 
   public static boolean isStillHandledHere(String type) {
     return "drawable".equals(type) || "anim".equals(type) || "mipmap".equals(type);
   }
 
-  DrawableResourceLoader(String packageName, ResBunch resBunch) {
+  DrawableResourceLoader(String packageName, PackageResourceTable resourceTable) {
     this.packageName = packageName;
-    this.resBunch = resBunch;
+    this.resourceTable = resourceTable;
   }
 
   /**
@@ -56,7 +56,7 @@ public class DrawableResourceLoader {
         }
 
         XmlLoader.XmlContext fakeXmlContext = new XmlLoader.XmlContext(packageName, f);
-        resBunch.put(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
+        resourceTable.addValue(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
       }
     }
   }

@@ -11,17 +11,18 @@ import org.robolectric.res.builder.XmlBlock;
  * implementation. Please see the android source code for further details.
  */
 public class XmlBlockLoader extends XmlLoader {
+  private PackageResourceTable resourceTable;
   private final String attrType;
-  private final ResBundle resBundle;
 
-  public XmlBlockLoader(ResBundle resBundle, String attrType) {
+  public XmlBlockLoader(PackageResourceTable resourceTable, String attrType) {
+    this.resourceTable = resourceTable;
     this.attrType = attrType;
-    this.resBundle = resBundle;
   }
 
   @Override
   protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
     XmlBlock block = XmlBlock.create(parse(xmlFile), xmlFile.getPath(), xmlContext.getPackageName());
-    resBundle.put(attrType, xmlFile.getBaseName(), new TypedResource<>(block, null, xmlContext));
+    resourceTable.addXml(attrType, xmlFile.getBaseName(), new TypedResource<>(block, null, xmlContext));
+
   }
 }

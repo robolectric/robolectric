@@ -9,10 +9,10 @@ import java.io.InputStream;
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
  */
-public class PackageResourceTable extends ResourceTable {
-  final ResBunch data = new ResBunch();
-  final ResBundle xmlDocuments = new ResBundle();
-  final ResBundle rawResources = new ResBundle();
+public class PackageResourceTable implements ResourceTable {
+  private final ResBunch values = new ResBunch();
+  private final ResBundle xmlDocuments = new ResBundle();
+  private final ResBundle rawResources = new ResBundle();
   private final ResourceIndex resourceIndex;
 
   PackageResourceTable(String packageName) {
@@ -35,12 +35,12 @@ public class PackageResourceTable extends ResourceTable {
 
   @Override
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-    return data.get(resName, qualifiers);
+    return values.get(resName, qualifiers);
   }
 
   @Override
   public TypedResource getValue(int resId, String qualifiers) {
-    return data.get(getResName(resId), qualifiers);
+    return values.get(getResName(resId), qualifiers);
   }
 
   public XmlBlock getXml(ResName resName, String qualifiers) {
@@ -74,7 +74,7 @@ public class PackageResourceTable extends ResourceTable {
 
   @Override
   public void receive(Visitor visitor) {
-    data.receive(visitor);
+    values.receive(visitor);
   }
 
   @Override
@@ -82,5 +82,17 @@ public class PackageResourceTable extends ResourceTable {
     return getValue(resName, qualifiers) != null
         || getXml(resName, qualifiers) != null
         || getRawValue(resName, qualifiers) != null;
+  }
+
+  void addValue(String resourceType, String name, TypedResource valueWithType) {
+    values.put(resourceType, name, valueWithType);
+  }
+
+  void addXml(String resourceType, String baseName, TypedResource<XmlBlock> xmlBlockTypedResource) {
+    xmlDocuments.put(resourceType, baseName, xmlBlockTypedResource);
+  }
+
+  void addRaw(String resourceType, String name, TypedResource<FsFile> value) {
+    rawResources.put(resourceType, name, value);
   }
 }

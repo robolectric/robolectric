@@ -9,28 +9,28 @@ public class RawResourceLoader {
     this.resourcePath = resourcePath;
   }
 
-  public void loadTo(ResBundle rawResourceFiles) {
-    load(rawResourceFiles, "raw");
-    load(rawResourceFiles, "drawable");
+  public void loadTo(PackageResourceTable resourceTable) {
+    load(resourceTable, "raw");
+    load(resourceTable, "drawable");
   }
 
-  public void load(ResBundle rawResourceFiles, String folderBaseName) {
+  public void load(PackageResourceTable resourceTable, String folderBaseName) {
     FsFile resourceBase = resourcePath.getResourceBase();
     FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
     if (files == null) {
       throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
     }
     for (FsFile dir : files) {
-      loadRawFiles(rawResourceFiles, folderBaseName, dir);
+      loadRawFiles(resourceTable, folderBaseName, dir);
     }
   }
 
-  private void loadRawFiles(ResBundle rawResourceFiles, String resourceType, FsFile rawDir) {
+  private void loadRawFiles(PackageResourceTable rawResourceFiles, String resourceType, FsFile rawDir) {
     FsFile[] files = rawDir.listFiles();
     if (files != null) {
       for (FsFile file : files) {
         String fileBaseName = file.getBaseName();
-        rawResourceFiles.put(resourceType, fileBaseName,
+        rawResourceFiles.addRaw(resourceType, fileBaseName,
             new TypedResource<>(file, ResType.FILE,
                 new XmlLoader.XmlContext(packageName, file)));
       }
