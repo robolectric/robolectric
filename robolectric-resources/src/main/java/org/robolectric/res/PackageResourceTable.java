@@ -11,8 +11,6 @@ import java.io.InputStream;
  */
 public class PackageResourceTable implements ResourceTable {
   private final ResBunch values = new ResBunch();
-  private final ResBundle xmlDocuments = new ResBundle();
-  private final ResBundle rawResources = new ResBundle();
   private final ResourceIndex resourceIndex;
 
   PackageResourceTable(String packageName) {
@@ -44,13 +42,17 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   public XmlBlock getXml(ResName resName, String qualifiers) {
-    TypedResource typedResource = xmlDocuments.get(resName, qualifiers);
-    return typedResource == null ? null : (XmlBlock) typedResource.getData();
+    FileTypedResource typedResource = (FileTypedResource) values.get(resName, qualifiers);
+    if (typedResource == null || !typedResource.isXml()) {
+      return null;
+    } else {
+      return XmlBlock.create(typedResource.getFsFile(), resName.packageName);
+    }
   }
 
   public InputStream getRawValue(ResName resName, String qualifiers) {
-    TypedResource typedResource = rawResources.get(resName, qualifiers);
-    FsFile file = typedResource == null ? null : (FsFile) typedResource.getData();
+    FileTypedResource typedResource = (FileTypedResource) values.get(resName, qualifiers);
+    FsFile file = typedResource == null ? null : typedResource.getFsFile();
     try {
       return file == null ? null : file.getInputStream();
     } catch (IOException e) {
@@ -85,13 +87,5 @@ public class PackageResourceTable implements ResourceTable {
 
   void addValue(String type, String name, TypedResource value) {
     values.put(type, name, value);
-  }
-
-  void addXml(String type, String name, TypedResource value) {
-    xmlDocuments.put(type, name, value);
-  }
-
-  void addRaw(String type, String name, TypedResource value) {
-    rawResources.put(type, name, value);
   }
 }

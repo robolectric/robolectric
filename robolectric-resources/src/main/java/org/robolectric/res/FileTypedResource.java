@@ -17,6 +17,11 @@ public class FileTypedResource extends TypedResource<String> {
     return fsFile;
   }
 
+  @Override
+  public boolean isXml() {
+    return fsFile.getName().endsWith("xml");
+  }
+
   public static class Image extends FileTypedResource {
     private final boolean isNinePatch;
 

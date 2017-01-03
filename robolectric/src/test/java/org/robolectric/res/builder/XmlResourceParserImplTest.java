@@ -33,35 +33,21 @@ import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
-/**
- * Test class for {@link XmlBlockLoader} and its inner
- * class {@link XmlResourceParserImpl}. The tests verify
- * that this implementation will behave exactly as
- * the android implementation.
- *
- * <p>Please note that this implementation uses the resource file "xml/preferences"
- * to test the parser implementation. If that file is changed
- * some test may start failing.
- *
- * @author msama (michele@swiftkey.net)
- */
 @RunWith(JUnit4.class)
 public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
   private XmlResourceParserImpl parser;
-  private ResourceTable resourceTable;
+  private PackageResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {
-    ResBundle resBundle = new ResBundle();
-    XmlBlockLoader xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
-    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("xml", xmlBlockLoader);
-
-    ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
-    XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();
-    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric", testResources());
-    parser = new XmlResourceParserImpl(xmlBlock.getDocument(), xmlBlock.getFilename(), xmlBlock.getPackageName(),
+    resourceTable = ResourceTableFactory.newResourceTable(R.class.getPackage().getName(), testResources());
+    TypedResource typedResource = resourceTable.getValue(R.xml.preferences, "");
+    FsFile xmlFile = typedResource.getXmlContext().getXmlFile();
+    String packageName = typedResource.getXmlContext().getPackageName();
+    XmlBlock xmlBlock = XmlBlock.create(xmlFile, packageName);
+    parser = new XmlResourceParserImpl(xmlBlock.getDocument(), typedResource.asString(), packageName,
         TEST_PACKAGE, resourceTable);
   }
 

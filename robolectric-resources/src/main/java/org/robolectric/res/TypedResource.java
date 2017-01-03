@@ -55,4 +55,8 @@ public class TypedResource<T> {
         ", xmlContext=" + xmlContext +
         '}';
   }
+
+  public boolean isXml() {
+    return false;
+  }
 }

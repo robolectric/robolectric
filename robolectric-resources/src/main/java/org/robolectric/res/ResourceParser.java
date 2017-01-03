@@ -37,15 +37,15 @@ class ResourceParser {
           new StyleResourceLoader(resourceTable)
       );
 
-      documentLoader.load("layout", new OpaqueFileLoader(resourceTable, "layout"), new XmlBlockLoader(resourceTable, "layout"));
-      documentLoader.load("menu", new OpaqueFileLoader(resourceTable, "menu"), new XmlBlockLoader(resourceTable, "menu"));
-      documentLoader.load("drawable", new OpaqueFileLoader(resourceTable, "drawable", ResType.DRAWABLE), new XmlBlockLoader(resourceTable, "drawable"));
-      documentLoader.load("anim", new OpaqueFileLoader(resourceTable, "anim"), new XmlBlockLoader(resourceTable, "anim"));
-      documentLoader.load("animator", new OpaqueFileLoader(resourceTable, "animator"), new XmlBlockLoader(resourceTable, "animator"));
-      documentLoader.load("color", new ColorResourceLoader(resourceTable), new XmlBlockLoader(resourceTable, "color"));
-      documentLoader.load("xml", new OpaqueFileLoader(resourceTable, "xml"), new XmlBlockLoader(resourceTable, "xml"));
-      documentLoader.load("transition", new OpaqueFileLoader(resourceTable, "transition"), new XmlBlockLoader(resourceTable, "transition"));
-      documentLoader.load("interpolator", new OpaqueFileLoader(resourceTable, "interpolator"), new XmlBlockLoader(resourceTable, "interpolator"));
+      documentLoader.load("layout", new OpaqueFileLoader(resourceTable, "layout"));
+      documentLoader.load("menu", new OpaqueFileLoader(resourceTable, "menu"));
+      documentLoader.load("drawable", new OpaqueFileLoader(resourceTable, "drawable", ResType.DRAWABLE));
+      documentLoader.load("anim", new OpaqueFileLoader(resourceTable, "anim"));
+      documentLoader.load("animator", new OpaqueFileLoader(resourceTable, "animator"));
+      documentLoader.load("color", new ColorResourceLoader(resourceTable));
+      documentLoader.load("xml", new OpaqueFileLoader(resourceTable, "xml"));
+      documentLoader.load("transition", new OpaqueFileLoader(resourceTable, "transition"));
+      documentLoader.load("interpolator", new OpaqueFileLoader(resourceTable, "interpolator"));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -53,5 +53,4 @@ class ResourceParser {
     new DrawableResourceLoader(packageName, resourceTable).findDrawableResources(resourcePath);
     new RawResourceLoader(packageName, resourcePath).loadTo(resourceTable);
   }
-
 }
