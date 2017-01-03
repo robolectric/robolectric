@@ -10,7 +10,7 @@ import org.robolectric.res.builder.XmlBlock;
  * is returned. The returned implementation is based on the current Android
  * implementation. Please see the android source code for further details.
  */
-public class XmlBlockLoader extends XmlLoader {
+public class XmlBlockLoader implements XmlLoader {
   private PackageResourceTable resourceTable;
   private final String attrType;
 
@@ -20,9 +20,8 @@ public class XmlBlockLoader extends XmlLoader {
   }
 
   @Override
-  protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
-    XmlBlock block = XmlBlock.create(parse(xmlFile), xmlFile.getPath(), xmlContext.getPackageName());
+  public void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
+    XmlBlock block = XmlBlock.create(xmlFile, xmlContext.getPackageName());
     resourceTable.addXml(attrType, xmlFile.getBaseName(), new TypedResource<>(block, null, xmlContext));
-
   }
 }

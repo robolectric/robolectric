@@ -10,11 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ConverterTest {
 
-  private XmlLoader.XmlContext xmlContext;
+  private XmlContext xmlContext;
 
   @Before
   public void setUp() throws Exception {
-    xmlContext = new XmlLoader.XmlContext("", Fs.newFile(new File("res/values/foo.xml")));
+    xmlContext = new XmlContext("", Fs.newFile(new File("res/values/foo.xml")));
   }
 
   @Test

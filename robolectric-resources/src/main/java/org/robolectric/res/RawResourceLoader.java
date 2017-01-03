@@ -31,7 +31,7 @@ public class RawResourceLoader {
       for (FsFile file : files) {
         String fileBaseName = file.getBaseName();
         resourceTable.addRaw(resourceType, fileBaseName,
-            new TypedResource<>(file, ResType.FILE, new XmlLoader.XmlContext(packageName, file)));
+            new TypedResource<>(file, ResType.FILE, new XmlContext(packageName, file)));
       }
     }
   }

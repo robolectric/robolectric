@@ -3,7 +3,7 @@ package org.robolectric.res;
 public class FileTypedResource extends TypedResource<String> {
   private final FsFile fsFile;
 
-  public FileTypedResource(FsFile fsFile, ResType resType, XmlLoader.XmlContext xmlContext) {
+  public FileTypedResource(FsFile fsFile, ResType resType, XmlContext xmlContext) {
     super(fsFile.getPath(), resType, xmlContext);
 
     this.fsFile = fsFile;
@@ -20,7 +20,7 @@ public class FileTypedResource extends TypedResource<String> {
   public static class Image extends FileTypedResource {
     private final boolean isNinePatch;
 
-    public Image(FsFile fsFile, boolean isNinePatch, XmlLoader.XmlContext xmlContext) {
+    public Image(FsFile fsFile, boolean isNinePatch, XmlContext xmlContext) {
       super(fsFile, ResType.DRAWABLE, xmlContext);
       this.isNinePatch = isNinePatch;
     }

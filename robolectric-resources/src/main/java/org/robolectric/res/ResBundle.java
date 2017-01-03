@@ -6,7 +6,7 @@ public class ResBundle {
   private final ResMap valuesMap = new ResMap();
 
   public void put(String attrType, String name, TypedResource value) {
-    XmlLoader.XmlContext xmlContext = value.getXmlContext();
+    XmlContext xmlContext = value.getXmlContext();
     ResName resName = new ResName(xmlContext.getPackageName(), attrType, name);
     valuesMap.put(resName, value);
   }

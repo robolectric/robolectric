@@ -4,8 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -173,7 +171,7 @@ public class ResBundleTest {
   @Test
   public void shouldNotOverwriteValuesWithMatchingQualifiers() {
     ResBundle bundle = new ResBundle();
-    XmlLoader.XmlContext xmlContext = mock(XmlLoader.XmlContext.class);
+    XmlContext xmlContext = mock(XmlContext.class);
     when(xmlContext.getQualifiers()).thenReturn("--");
     when(xmlContext.getPackageName()).thenReturn("org.robolectric");
 
@@ -199,7 +197,7 @@ public class ResBundleTest {
 
   @NotNull
   private static TypedResource<String> createStringTypedResource(String str, String qualifiers) {
-    XmlLoader.XmlContext mockXmlContext = mock(XmlLoader.XmlContext.class);
+    XmlContext mockXmlContext = mock(XmlContext.class);
     when(mockXmlContext.getQualifiers()).thenReturn(qualifiers);
     return new TypedResource<>(str, ResType.CHAR_SEQUENCE, mockXmlContext);
   }

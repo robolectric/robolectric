@@ -365,7 +365,7 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    return getXmlResourceParser(null, XmlBlock.create(fileName, "fixme"), "fixme");
+    return getXmlResourceParser(null, XmlBlock.create(Fs.fileFromPath(fileName), "fixme"), "fixme");
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {

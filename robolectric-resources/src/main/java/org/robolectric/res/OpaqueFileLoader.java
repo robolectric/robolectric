@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-public class OpaqueFileLoader extends XmlLoader {
+public class OpaqueFileLoader implements XmlLoader {
   private final PackageResourceTable resourceTable;
   private final String attrType;
   private final ResType resType;
@@ -16,7 +16,7 @@ public class OpaqueFileLoader extends XmlLoader {
   }
 
   @Override
-  protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
+  public void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
     resourceTable.addValue(attrType, xmlFile.getBaseName(), new FileTypedResource(xmlFile, resType, xmlContext));
   }
 }

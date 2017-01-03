@@ -13,7 +13,7 @@ public class ValueResourceLoader extends XpathResourceXmlLoader {
   }
 
   @Override
-  protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) {
+  public void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) {
     super.processResourceXml(xmlFile, xmlNode, xmlContext);
   }
 
