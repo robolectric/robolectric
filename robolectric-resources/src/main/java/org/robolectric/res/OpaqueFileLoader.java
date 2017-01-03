@@ -16,7 +16,7 @@ public class OpaqueFileLoader implements XmlLoader {
   }
 
   @Override
-  public void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
-    resourceTable.addValue(attrType, xmlFile.getBaseName(), new FileTypedResource(xmlFile, resType, xmlContext));
+  public void processResourceXml(XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
+    resourceTable.addValue(attrType, xmlContext.getXmlFile().getBaseName(), new FileTypedResource(xmlContext.getXmlFile(), resType, xmlContext));
   }
 }

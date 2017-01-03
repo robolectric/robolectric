@@ -20,8 +20,8 @@ public class XmlBlockLoader implements XmlLoader {
   }
 
   @Override
-  public void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
-    XmlBlock block = XmlBlock.create(xmlFile, xmlContext.getPackageName());
-    resourceTable.addXml(attrType, xmlFile.getBaseName(), new TypedResource<>(block, null, xmlContext));
+  public void processResourceXml(XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
+    XmlBlock block = XmlBlock.create(xmlContext.getXmlFile(), xmlContext.getPackageName());
+    resourceTable.addXml(attrType, xmlContext.getXmlFile().getBaseName(), new TypedResource<>(block, null, xmlContext));
   }
 }

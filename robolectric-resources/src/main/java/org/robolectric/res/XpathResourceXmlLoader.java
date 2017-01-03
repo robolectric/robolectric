@@ -15,14 +15,14 @@ public abstract class XpathResourceXmlLoader implements XmlLoader {
   }
 
   @Override
-  public void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) {
+  public void processResourceXml(XmlNode xmlNode, XmlContext xmlContext) {
     try {
       for (XmlNode node : xmlNode.selectByXpath(expression)) {
         String name = node.getAttrValue("name");
         processNode(name, node, xmlContext);
       }
     } catch (Exception e) {
-      throw new RuntimeException("Error processing " + xmlFile, e);
+      throw new RuntimeException("Error processing " + xmlContext.getXmlFile(), e);
     }
   }
 
