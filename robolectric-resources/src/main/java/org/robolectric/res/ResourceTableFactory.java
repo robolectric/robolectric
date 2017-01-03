@@ -24,7 +24,7 @@ public class ResourceTableFactory {
     return resourceTable;
   }
 
-  private static void addRClassValues(ResourceTable resourceTable, Class<?> rClass) {
+  private static void addRClassValues(PackageResourceTable resourceTable, Class<?> rClass) {
     for (Class innerClass : rClass.getClasses()) {
       for (Field field : innerClass.getDeclaredFields()) {
         if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {

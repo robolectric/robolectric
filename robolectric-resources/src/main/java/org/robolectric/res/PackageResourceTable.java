@@ -68,11 +68,6 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   @Override
-  public void addResource(int resId, String type, String name) {
-    resourceIndex.addResource(resId, type, name);
-  }
-
-  @Override
   public void receive(Visitor visitor) {
     values.receive(visitor);
   }
@@ -82,6 +77,10 @@ public class PackageResourceTable implements ResourceTable {
     return getValue(resName, qualifiers) != null
         || getXml(resName, qualifiers) != null
         || getRawValue(resName, qualifiers) != null;
+  }
+
+  void addResource(int resId, String type, String name) {
+    resourceIndex.addResource(resId, type, name);
   }
 
   void addValue(String resourceType, String name, TypedResource valueWithType) {

@@ -35,11 +35,6 @@ public class RoutingResourceTable extends ResourceTable {
     return pickFor(resName).getValue(resName, qualifiers);
   }
 
-  @Override
-  public void addResource(int resId, String type, String name) {
-    pickFor(resId).addResource(resId, type, name);
-  }
-
   public TypedResource getValue(int resId, String qualifiers) {
     ResName resName = pickFor(resId).getResName(resId);
     return resName != null ? getValue(resName, qualifiers) : null;
@@ -70,7 +65,7 @@ public class RoutingResourceTable extends ResourceTable {
     }
   }
 
-  private ResourceTable pickFor(int resId) {
+  private PackageResourceTable pickFor(int resId) {
     for (PackageResourceTable resourceTable : resourceTables.values()) {
       if (resourceTable.getPackageIdentifier() == ResourceIds.getPackageIdentifier(resId)) {
         return resourceTable;
