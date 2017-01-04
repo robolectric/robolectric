@@ -9,13 +9,21 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
-import java.util.ArrayList;
-
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.SelfTest.class)
 public class RoboCursorTest {
+  private static final String STRING_COLUMN = "stringColumn";
+  private static final String LONG_COLUMN = "longColumn";
+  private static final String INT_COLUMN = "intColumn";
+  private static final String BLOB_COLUMN = "blobColumn";
+  private static final String SHORT_COLUMN = "shortColumn";
+  private static final String FLOAT_COLUMN = "floatColumn";
+  private static final String DOUBLE_COLUMN = "doubleColumn";
+  private static final String NULL_COLUMN = "nullColumn";
+
   private final Uri uri = Uri.parse("http://foo");
   private final RoboCursor cursor = new RoboCursor();
   private ContentResolver contentResolver;
@@ -25,11 +33,16 @@ public class RoboCursorTest {
     contentResolver = RuntimeEnvironment.application.getContentResolver();
     shadowOf(contentResolver).setCursor(uri, cursor);
 
-    final ArrayList<String> columnNames = new ArrayList<>();
-    columnNames.add("stringColumn");
-    columnNames.add("longColumn");
-    columnNames.add("intColumn");
-    cursor.setColumnNames(columnNames);
+    cursor.setColumnNames(asList(
+        STRING_COLUMN,
+        LONG_COLUMN,
+        INT_COLUMN,
+        BLOB_COLUMN,
+        SHORT_COLUMN,
+        FLOAT_COLUMN,
+        DOUBLE_COLUMN,
+        NULL_COLUMN
+    ));
   }
 
   @Test
@@ -43,35 +56,76 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void get_shouldReturnColumnValue() throws Exception {
-    cursor.setResults(new Object[][]{new Object[]{"aString", 1234L, 42}});
+  public void getColumnName_shouldReturnColumnName() throws Exception {
+    assertThat(cursor.getColumnCount()).isEqualTo(8);
+    assertThat(cursor.getColumnName(0)).isEqualTo(STRING_COLUMN);
+    assertThat(cursor.getColumnName(1)).isEqualTo(LONG_COLUMN);
+  }
+
+  @Test
+  public void getType_shouldReturnColumnType() throws Exception {
+    cursor.setResults(new Object[][]{new Object[]{
+        "aString", 1234L, 42, new byte[]{1, 2, 3}, 255, 1.25f, 2.5d, null
+    }});
     assertThat(cursor.getCount()).isEqualTo(1);
-    assertThat(cursor.getColumnCount()).isEqualTo(3);
-    assertThat(cursor.getType(0)).isEqualTo(Cursor.FIELD_TYPE_STRING);
-    assertThat(cursor.getColumnName(0)).isEqualTo("stringColumn");
-    assertThat(cursor.getColumnName(1)).isEqualTo("longColumn");
-    assertThat(cursor.getType(1)).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
+    assertThat(cursor.getType(indexOf(STRING_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_STRING);
+    assertThat(cursor.getType(indexOf(LONG_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
+    assertThat(cursor.getType(indexOf(INT_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
+    assertThat(cursor.getType(indexOf(BLOB_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_BLOB);
+    assertThat(cursor.getType(indexOf(SHORT_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
+    assertThat(cursor.getType(indexOf(FLOAT_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_FLOAT);
+    assertThat(cursor.getType(indexOf(DOUBLE_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_FLOAT);
+    assertThat(cursor.getType(indexOf(NULL_COLUMN))).isEqualTo(Cursor.FIELD_TYPE_NULL);
+  }
+
+  @Test
+  public void get_shouldReturnColumnValue() throws Exception {
+    cursor.setResults(new Object[][]{new Object[]{
+        "aString", 1234L, 42, new byte[]{1, 2, 3}, 255, 1.25f, 2.5d, null
+    }});
+    assertThat(cursor.getCount()).isEqualTo(1);
     assertThat(cursor.moveToNext()).isTrue();
-    assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("aString");
-    assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(1234L);
-    assertThat(cursor.getInt(cursor.getColumnIndex("intColumn"))).isEqualTo(42);
+    assertThat(cursor.getString(indexOf(STRING_COLUMN))).isEqualTo("aString");
+    assertThat(cursor.getLong(indexOf(LONG_COLUMN))).isEqualTo(1234L);
+    assertThat(cursor.getInt(indexOf(INT_COLUMN))).isEqualTo(42);
+    assertThat(cursor.getBlob(indexOf(BLOB_COLUMN))).containsExactly((byte) 1, (byte) 2, (byte) 3);
+    assertThat(cursor.getShort(indexOf(SHORT_COLUMN))).isEqualTo((short) 255);
+    assertThat(cursor.getFloat(indexOf(FLOAT_COLUMN))).isEqualTo(1.25f);
+    assertThat(cursor.getDouble(indexOf(DOUBLE_COLUMN))).isEqualTo(2.5d);
+    assertThat(cursor.isNull(indexOf(NULL_COLUMN))).isTrue();
+  }
+
+  @Test
+  public void get_shouldConvert() throws Exception {
+    cursor.setResults(new Object[][]{new Object[]{
+        "aString", 1234L, "42", new byte[]{1, 2, 3}, 255, "1.25", 2.5d, null
+    }});
+    assertThat(cursor.getCount()).isEqualTo(1);
+    assertThat(cursor.moveToNext()).isTrue();
+    assertThat(cursor.getString(indexOf(INT_COLUMN))).isEqualTo("42");
+    assertThat(cursor.getInt(indexOf(INT_COLUMN))).isEqualTo(42);
+    assertThat(cursor.getFloat(indexOf(FLOAT_COLUMN))).isEqualTo(1.25f);
+    assertThat(cursor.isNull(indexOf(INT_COLUMN))).isFalse();
+    assertThat(cursor.isNull(indexOf(FLOAT_COLUMN))).isFalse();
   }
 
   @Test
   public void moveToNext_advancesToNextRow() throws Exception {
-    cursor.setResults(new Object[][]{new Object[]{"aString", 1234L, 41}, new Object[]{"anotherString", 5678L, 42}});
+    cursor.setResults(
+        new Object[][]{new Object[]{"aString", 1234L, 41},
+            new Object[]{"anotherString", 5678L, 42}
+        });
 
     assertThat(cursor.getCount()).isEqualTo(2);
-    assertThat(cursor.getColumnCount()).isEqualTo(3);
     assertThat(cursor.getType(0)).isEqualTo(Cursor.FIELD_TYPE_STRING);
     assertThat(cursor.getType(1)).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.moveToNext()).isTrue();
-    assertThat(cursor.getColumnName(0)).isEqualTo("stringColumn");
-    assertThat(cursor.getColumnName(1)).isEqualTo("longColumn");
-    assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("anotherString");
-    assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(5678L);
-    assertThat(cursor.getInt(cursor.getColumnIndex("intColumn"))).isEqualTo(42);
+    assertThat(cursor.getColumnName(0)).isEqualTo(STRING_COLUMN);
+    assertThat(cursor.getColumnName(1)).isEqualTo(LONG_COLUMN);
+    assertThat(cursor.getString(indexOf(STRING_COLUMN))).isEqualTo("anotherString");
+    assertThat(cursor.getLong(indexOf(LONG_COLUMN))).isEqualTo(5678L);
+    assertThat(cursor.getInt(indexOf(INT_COLUMN))).isEqualTo(42);
   }
 
   @Test
@@ -79,14 +133,14 @@ public class RoboCursorTest {
     cursor.setResults(new Object[][]{new Object[]{"aString", 1234L, 41}, new Object[]{"anotherString", 5678L, 42}});
 
     assertThat(cursor.moveToPosition(1)).isTrue();
-    assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("anotherString");
-    assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(5678L);
-    assertThat(cursor.getInt(cursor.getColumnIndex("intColumn"))).isEqualTo(42);
+    assertThat(cursor.getString(indexOf(STRING_COLUMN))).isEqualTo("anotherString");
+    assertThat(cursor.getLong(indexOf(LONG_COLUMN))).isEqualTo(5678L);
+    assertThat(cursor.getInt(indexOf(INT_COLUMN))).isEqualTo(42);
 
     assertThat(cursor.moveToPosition(0)).isTrue();
-    assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("aString");
-    assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(1234L);
-    assertThat(cursor.getInt(cursor.getColumnIndex("intColumn"))).isEqualTo(41);
+    assertThat(cursor.getString(indexOf(STRING_COLUMN))).isEqualTo("aString");
+    assertThat(cursor.getLong(indexOf(LONG_COLUMN))).isEqualTo(1234L);
+    assertThat(cursor.getInt(indexOf(INT_COLUMN))).isEqualTo(41);
   }
 
   @Test
@@ -110,9 +164,9 @@ public class RoboCursorTest {
 
   @Test
   public void getColumnIndex_shouldReturnColumnIndex() {
-    assertThat(cursor.getColumnIndex("invalidColumn")).isEqualTo(-1);
-    assertThat(cursor.getColumnIndex("stringColumn")).isEqualTo(0);
-    assertThat(cursor.getColumnIndexOrThrow("stringColumn")).isEqualTo(0);
+    assertThat(indexOf("invalidColumn")).isEqualTo(-1);
+    assertThat(indexOf(STRING_COLUMN)).isEqualTo(0);
+    assertThat(cursor.getColumnIndexOrThrow(STRING_COLUMN)).isEqualTo(0);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -158,5 +212,9 @@ public class RoboCursorTest {
 
     cursor.moveToPosition(1);
     assertThat(cursor.isLast()).isTrue();
+  }
+
+  private int indexOf(String stringColumn) {
+    return cursor.getColumnIndex(stringColumn);
   }
 }
