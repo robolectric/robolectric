@@ -16,7 +16,7 @@ public class RoboCursor extends BaseCursor {
   public String[] selectionArgs;
   public String sortOrder;
   protected Object[][] results = new Object[0][0];
-  protected List<String> columnNames= new ArrayList<>();
+  protected List<String> columnNames = new ArrayList<>();
   private int resultsIndex = -1;
   private boolean closeWasCalled;
 
@@ -30,7 +30,7 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override
-  public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException{
+  public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException {
     int col = getColumnIndex(columnName);
     if (col == -1) {
       throw new IllegalArgumentException("No column with name: " + columnName);
@@ -45,7 +45,20 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public String getString(int columnIndex) {
-    return (String) results[resultsIndex][columnIndex];
+    Object value = results[resultsIndex][columnIndex];
+    return value == null ? null : value.toString();
+  }
+
+  @Override
+  public short getShort(int columnIndex) {
+    Object value = results[resultsIndex][columnIndex];
+    return value == null ? 0 : (value instanceof Number ? ((Number) value).shortValue() : Short.parseShort(value.toString()));
+  }
+
+  @Override
+  public int getInt(int columnIndex) {
+    Object value = results[resultsIndex][columnIndex];
+    return value == null ? 0 : (value instanceof Number ? ((Number) value).intValue() : Integer.parseInt(value.toString()));
   }
 
   @Override
@@ -54,8 +67,30 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override
-  public int getInt(int columnIndex) {
-    return (Integer) results[resultsIndex][columnIndex];
+  public float getFloat(int columnIndex) {
+    Object value = results[resultsIndex][columnIndex];
+    return value == null ? 0 : (value instanceof Number ? ((Number) value).floatValue() : Float.parseFloat(value.toString()));
+  }
+
+  @Override
+  public double getDouble(int columnIndex) {
+    Object value = results[resultsIndex][columnIndex];
+    return value == null ? 0 : (value instanceof Number ? ((Number) value).doubleValue() : Double.parseDouble(value.toString()));
+  }
+
+  @Override
+  public byte[] getBlob(int columnIndex) {
+    return (byte[]) results[resultsIndex][columnIndex];
+  }
+
+  @Override
+  public int getType(int columnIndex) {
+    return DatabaseUtils.getTypeOfObject(results[0][columnIndex]);
+  }
+
+  @Override
+  public boolean isNull(int columnIndex) {
+    return results[resultsIndex][columnIndex] == null;
   }
 
   @Override
@@ -90,17 +125,12 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public int getColumnCount() {
-    return results[0].length;
+    return columnNames.size();
   }
 
   @Override
   public String getColumnName(int index) {
     return columnNames.get(index);
-  }
-
-  @Override
-  public int getType(int columnIndex) {
-    return DatabaseUtils.getTypeOfObject(results[0][columnIndex]);
   }
 
   @Override
@@ -141,26 +171,6 @@ public class RoboCursor extends BaseCursor {
 
   @Override public String[] getColumnNames() {
     return columnNames.toArray(new String[columnNames.size()]);
-  }
-
-  @Override public byte[] getBlob(int columnIndex) {
-    return (byte[]) results[resultsIndex][columnIndex];
-  }
-
-  @Override public short getShort(int columnIndex) {
-    return (Short) results[resultsIndex][columnIndex];
-  }
-
-  @Override public float getFloat(int columnIndex) {
-    return (Float) results[resultsIndex][columnIndex];
-  }
-
-  @Override public double getDouble(int columnIndex) {
-    return (Double) results[resultsIndex][columnIndex];
-  }
-
-  @Override public boolean isNull(int columnIndex) {
-    return results[resultsIndex][columnIndex] == null;
   }
 
   @Override public boolean isClosed() {
