@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -30,16 +31,24 @@ public class ShadowNotification {
   Notification realNotification;
 
   public CharSequence getContentTitle() {
-    return findText(applyContentView(), "title");
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+        ? realNotification.extras.getString(Notification.EXTRA_TITLE)
+        : findText(applyContentView(), "title");
   }
 
   public CharSequence getContentText() {
-    return findText(applyContentView(), "text");
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+        ? realNotification.extras.getString(Notification.EXTRA_TEXT)
+        : findText(applyContentView(), "text");
   }
 
   public CharSequence getContentInfo() {
-    String resourceName = getApiLevel() >= N ? "header_text" : "info";
-    return findText(applyContentView(), resourceName);
+    if (getApiLevel() >= N) {
+      return realNotification.extras.getCharSequence(Notification.EXTRA_INFO_TEXT);
+    } else {
+      String resourceName = getApiLevel() >= N ? "header_text" : "info";
+      return findText(applyContentView(), resourceName);
+    }
   }
 
   public boolean isOngoing() {
@@ -47,35 +56,78 @@ public class ShadowNotification {
   }
 
   public CharSequence getBigText() {
-    return findText(applyBigContentView(), "big_text");
+    if (getApiLevel() >= N) {
+      return realNotification.extras.getCharSequence(Notification.EXTRA_BIG_TEXT);
+    } else {
+      return findText(applyBigContentView(), "big_text");
+    }
   }
 
   public CharSequence getBigContentTitle() {
-    return findText(applyBigContentView(), "title");
+    if (getApiLevel() >= N) {
+      return realNotification.extras.getCharSequence(Notification.EXTRA_TITLE_BIG);
+    } else {
+      return findText(applyBigContentView(), "title");
+    }
   }
 
   public CharSequence getBigContentText() {
-    String resourceName = getApiLevel() >= N ? "header_text" : "text";
-    return findText(applyBigContentView(), resourceName);
+    if (getApiLevel() >= N) {
+      return realNotification.extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT);
+    } else {
+      String resourceName = getApiLevel() >= N ? "header_text" : "text";
+      return findText(applyBigContentView(), resourceName);
+    }
   }
 
   public Bitmap getBigPicture() {
-    ImageView imageView = (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
-    return imageView != null && imageView.getDrawable() != null
-        ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      return realNotification.extras.getParcelable(Notification.EXTRA_PICTURE);
+    } else {
+      ImageView imageView = (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
+      return imageView != null && imageView.getDrawable() != null
+          ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
+    }
   }
 
   public boolean isWhenShown() {
-    return findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+        ? realNotification.extras.getBoolean(Notification.EXTRA_SHOW_WHEN)
+        : findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE
         || findView(applyContentView(), "time").getVisibility() == View.VISIBLE;
   }
 
+  /**
+   * These methods do not work on API > {@link Build#VERSION_CODES#N}
+   * Use {@link #isIndeterminate()}, {@link #getMax()} ()}, {@link #getProgress()} ()} instead.
+   */
+  @Deprecated
   public ProgressBar getProgressBar() {
     return ((ProgressBar) findView(applyContentView(), "progress"));
   }
 
+  public boolean isIndeterminate() {
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+        ? realNotification.extras.getBoolean(Notification.EXTRA_PROGRESS_INDETERMINATE)
+        : getProgressBar().isIndeterminate();
+  }
+
+  public int getMax() {
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+        ? realNotification.extras.getInt(Notification.EXTRA_PROGRESS_MAX)
+        : getProgressBar().getMax();
+  }
+
+  public int getProgress() {
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+        ? realNotification.extras.getInt(Notification.EXTRA_PROGRESS)
+        : getProgressBar().getProgress();
+  }
+
   public boolean usesChronometer() {
-    return findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE;
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+        ? realNotification.extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER)
+        : findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE;
   }
 
   private View applyContentView() {

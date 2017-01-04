@@ -26,13 +26,6 @@ public class ShadowNotificationBuilderTest {
   private final Notification.Builder builder = new Notification.Builder(RuntimeEnvironment.application);
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
-  public void build_handlesNullContentView() throws Exception {
-    Notification notification = builder.setContentTitle("Hello").setCustomContentView(null).build();
-    assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("Hello");
-  }
-
-  @Test
   public void build_setsContentTitleOnNotification() throws Exception {
     Notification notification = builder.setContentTitle("Hello").build();
     assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("Hello");
@@ -105,20 +98,17 @@ public class ShadowNotificationBuilderTest {
   @Test
   public void build_setsProgressOnNotification_true() throws Exception {
     Notification notification = builder.setProgress(36, 57, true).build();
-
-    ProgressBar progressBar = shadowOf(notification).getProgressBar();
     // If indeterminate then max and progress values are ignored.
-    assertThat(progressBar.isIndeterminate()).isTrue();
+    assertThat(shadowOf(notification).isIndeterminate()).isTrue();
   }
 
   @Test
   public void build_setsProgressOnNotification_false() throws Exception {
     Notification notification = builder.setProgress(50, 10, false).build();
 
-    ProgressBar progressBar = shadowOf(notification).getProgressBar();
-    assertThat(progressBar.getMax()).isEqualTo(50);
-    assertThat(progressBar.getProgress()).isEqualTo(10);
-    assertThat(progressBar.isIndeterminate()).isFalse();
+    assertThat(shadowOf(notification).getMax()).isEqualTo(50);
+    assertThat(shadowOf(notification).getProgress()).isEqualTo(10);
+    assertThat(shadowOf(notification).isIndeterminate()).isFalse();
   }
 
   @Test
@@ -141,14 +131,14 @@ public class ShadowNotificationBuilderTest {
   public void build_handlesNullContentTitle() {
     Notification notification = builder.setContentTitle(null).build();
 
-    assertThat(shadowOf(notification).getContentTitle()).isEmpty();
+    assertThat(shadowOf(notification).getContentTitle()).isNullOrEmpty();
   }
 
   @Test
   public void build_handlesNullContentText() {
     Notification notification = builder.setContentText(null).build();
 
-    assertThat(shadowOf(notification).getContentText()).isEmpty();
+    assertThat(shadowOf(notification).getContentText()).isNullOrEmpty();
   }
 
   @Test
@@ -162,7 +152,7 @@ public class ShadowNotificationBuilderTest {
   public void build_handlesNullContentInfo() {
     Notification notification = builder.setContentInfo(null).build();
 
-    assertThat(shadowOf(notification).getContentInfo()).isEmpty();
+    assertThat(shadowOf(notification).getContentInfo()).isNullOrEmpty();
   }
 
   @Test
