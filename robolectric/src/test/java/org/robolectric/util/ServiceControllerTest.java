@@ -18,7 +18,7 @@ import android.os.Looper;
 import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class ServiceControllerTest {
   private static final Transcript transcript = new Transcript();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyService.class.getName());

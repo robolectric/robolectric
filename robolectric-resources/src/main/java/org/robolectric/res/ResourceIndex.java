@@ -1,16 +1,73 @@
 package org.robolectric.res;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
-public abstract class ResourceIndex {
-  protected final Map<ResName, Integer> resourceNameToId = new HashMap<>();
-  protected final Map<Integer, ResName> resourceIdToResName = new HashMap<>();
+import java.util.logging.Logger;
 
-  public abstract Integer getResourceId(ResName resName);
+public class ResourceIndex {
+  private static final Logger LOGGER = Logger.getLogger(ResourceTableFactory.class.getName());
 
-  public abstract ResName getResName(int resourceId);
+  private final BiMap<Integer, ResName> resourceTable = HashBiMap.create();
 
-  public abstract Collection<String> getPackages();
+  private final ResourceIdGenerator androidResourceIdGenerator = new ResourceIdGenerator(0x01);
+  private final String packageName;
+  private int packageIdentifier;
+
+  public ResourceIndex(String packageName) {
+    this.packageName = packageName;
+  }
+
+  public synchronized Integer getResourceId(ResName resName) {
+    if (resName == null) {
+      return null;
+    }
+    Integer id = resourceTable.inverse().get(resName);
+    if (id == null && isAndroidPackage(resName)) {
+      id = androidResourceIdGenerator.generate(resName.type, resName.name);
+      resourceTable.put(id, resName);
+      LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
+    }
+    if (id == null) return 0;
+
+    return id;
+  }
+
+  private boolean isAndroidPackage(ResName resName) {
+    return "android".equals(resName.packageName) || "".equals(resName.packageName);
+  }
+
+  public synchronized ResName getResName(int resourceId) {
+    return resourceTable.get(resourceId);
+  }
+
+  public synchronized void dump() {
+    System.out.println(resourceTable);
+  }
+
+  public String getPackageName() {
+    return packageName;
+  }
+
+  int getPackageIdentifier() {
+    return packageIdentifier;
+  }
+
+  synchronized void addResource(int id, String type, String name) {
+    if (ResourceIds.isFrameworkResource(id)) {
+      androidResourceIdGenerator.record(id, type, name);
+    }
+    ResName resName = new ResName(packageName, type, name);
+    int resIdPackageIdentifier = ResourceIds.getPackageIdentifier(id);
+    if (getPackageIdentifier() == 0) {
+      this.packageIdentifier = resIdPackageIdentifier;
+    } else if (getPackageIdentifier() != resIdPackageIdentifier) {
+      throw new IllegalArgumentException("Attempted to add resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
+    }
+
+    ResName existingEntry = resourceTable.put(id, resName);
+    if (existingEntry != null && !existingEntry.equals(resName)) {
+      throw new IllegalArgumentException("ResId " + Integer.toHexString(id) + " mapped to both " + resName + " and " + existingEntry);
+    }
+  }
 }

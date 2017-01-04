@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.joinPath;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAssetManagerTest {
 
   @Rule
@@ -138,7 +138,7 @@ public class ShadowAssetManagerTest {
   @Test
   public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
     expectedException.expect(Resources.NotFoundException.class);
-    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android, org.robolectric, org.robolectric.lib1, org.robolectric.lib2, org.robolectric.lib3]");
+    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android, org.robolectric]");
 
     resources.newTheme().applyStyle(-1, false);
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
@@ -176,6 +176,7 @@ public class ShadowAssetManagerTest {
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
     when(mockAttributeSet.getAttributeCount()).thenReturn(1);
     when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
+    when(mockAttributeSet.getAttributeName(0)).thenReturn("android:windowBackground");
     when(mockAttributeSet.getAttributeValue(0)).thenReturn("value");
 
     resources.obtainAttributes(mockAttributeSet, new int[]{android.R.attr.windowBackground});
@@ -205,14 +206,14 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
-    assertThat(shadowOf(assetManager).getResourceIdentifier("idInRClassAndXml", "id", "org.robolectric"))
-        .isEqualTo(R.id.idInRClassAndXml);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idInRClassAndXml", null, "org.robolectric"))
-        .isEqualTo(R.id.idInRClassAndXml);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idInRClassAndXml", "id", null))
-        .isEqualTo(R.id.idInRClassAndXml);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idInRClassAndXml", "other", "other"))
-        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idIDeclaredInXml", "id", "org.robolectric"))
+        .isEqualTo(R.id.idIDeclaredInXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idIDeclaredInXml", null, "org.robolectric"))
+        .isEqualTo(R.id.idIDeclaredInXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idIDeclaredInXml", "id", null))
+        .isEqualTo(R.id.idIDeclaredInXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idIDeclaredInXml", "other", "other"))
+        .isEqualTo(R.id.idIDeclaredInXml);
   }
 
   @Test
@@ -240,15 +241,6 @@ public class ShadowAssetManagerTest {
   public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero() throws Exception {
     assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))
         .isEqualTo(0);
-  }
-
-  @Test
-  public void whenIdIsAbsentInRClassButPresentInXml_getResourceIdentifier_shouldReturnGeneratedId() throws Exception {
-    int id = shadowOf(assetManager).getResourceIdentifier("idNotInRClass", "id", "org.robolectric");
-    assertThat(id).isGreaterThan(0);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idNotInRClass", null, "org.robolectric")).isEqualTo(id);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idNotInRClass", "id", null)).isEqualTo(id);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idNotInRClass", "other", "other")).isEqualTo(id);
   }
 
   @Test

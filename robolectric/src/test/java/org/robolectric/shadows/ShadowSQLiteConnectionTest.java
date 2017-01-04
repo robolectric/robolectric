@@ -10,7 +10,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteStatement;
-import android.os.Build;
 import com.almworks.sqlite4java.SQLiteConnection;
 import org.junit.After;
 import org.junit.Before;
@@ -27,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;
@@ -38,16 +37,11 @@ public class ShadowSQLiteConnectionTest {
   
   @Before
   public void setUp() throws Exception {
-    databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
-    databasePath.getParentFile().mkdirs();
-
-    database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
+    database = createDatabase("database.db");
     SQLiteStatement createStatement = database.compileStatement(
         "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
-    ptr = ShadowSQLiteConnection.nativeOpen(databasePath.getPath(), 0, "test connection", false, false).longValue();
-    CONNECTIONS = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
-    conn = CONNECTIONS.getConnection(ptr);
+    conn = getSQLiteConnection(database);
   }
 
   @After
@@ -158,5 +152,27 @@ public class ShadowSQLiteConnectionTest {
       Thread.interrupted();
     }
     ShadowSQLiteConnection.reset();
+  }
+
+  @Test
+  public void test_setUseInMemoryDatabase() throws Exception {
+    assertThat(conn.isMemoryDatabase()).isFalse();
+    ShadowSQLiteConnection.setUseInMemoryDatabase(true);
+    SQLiteDatabase inMemoryDb = createDatabase("in_memory.db");
+    SQLiteConnection inMemoryConn = getSQLiteConnection(inMemoryDb);
+    assertThat(inMemoryConn.isMemoryDatabase()).isTrue();
+    inMemoryDb.close();
+  }
+
+  private SQLiteDatabase createDatabase(String filename) {
+    databasePath = RuntimeEnvironment.application.getDatabasePath(filename);
+    databasePath.getParentFile().mkdirs();
+    return SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
+  }
+
+  private SQLiteConnection getSQLiteConnection(SQLiteDatabase database) {
+    ptr = ShadowSQLiteConnection.nativeOpen(databasePath.getPath(), 0, "test connection", false, false).longValue();
+    CONNECTIONS = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
+    return CONNECTIONS.getConnection(ptr);
   }
 }

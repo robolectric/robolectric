@@ -54,10 +54,10 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
+    ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
     ResBunch bunch = mock(ResBunch.class);
-    DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", bunch);
     testLoader.findDrawableResources(resourcePath);
 
     verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());
@@ -78,10 +78,10 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
+    ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
     ResBunch bunch = mock(ResBunch.class);
-    DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", bunch);
     testLoader.findDrawableResources(resourcePath);
 
     verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());
@@ -102,10 +102,10 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
+    ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
     ResBunch bunch = mock(ResBunch.class);
-    DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", bunch);
     testLoader.findDrawableResources(resourcePath);
 
     verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());
@@ -126,10 +126,10 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
+    ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
     ResBunch bunch = mock(ResBunch.class);
-    DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", bunch);
     testLoader.findDrawableResources(resourcePath);
 
     verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());

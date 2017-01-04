@@ -11,7 +11,6 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -39,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccountManagerTest {
   Application app;
   AccountManager am;

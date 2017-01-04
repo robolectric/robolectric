@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import android.preference.PreferenceActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -12,12 +11,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class ResourceLoaderTest {
 
   @Test
@@ -59,11 +57,11 @@ public class ResourceLoaderTest {
 
   @Test
   public void shouldMakeInternalResourcesAvailable() throws Exception {
-    ResourceLoader resourceLoader = RuntimeEnvironment.getSystemResourceLoader();
+    ResourceTable resourceProvider = RuntimeEnvironment.getSystemResourceTable();
     ResName internalResource = new ResName("android", "string", "badPin");
-    Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
+    Integer resId = resourceProvider.getResourceId(internalResource);
     assertThat(resId).isNotNull();
-    assertThat(resourceLoader.getResourceIndex().getResName(resId)).isEqualTo(internalResource);
+    assertThat(resourceProvider.getResName(resId)).isEqualTo(internalResource);
 
     Class<?> internalRIdClass = Robolectric.class.getClassLoader().loadClass("com.android.internal.R$" + internalResource.type);
     int internalResourceId;

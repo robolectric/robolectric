@@ -294,7 +294,10 @@ public class ShadowContentResolver {
   public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
 
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
+    CopyOnWriteArraySet<ContentObserver> observers;
+    synchronized (this) {
+      observers = contentObservers.get(uri);
+    }
     if (observers != null) {
       for (ContentObserver obs : observers) {
         if ( obs != null && obs != observer  ) {
@@ -451,6 +454,7 @@ public class ShadowContentResolver {
   /**
    * @deprecated Use {@link org.robolectric.Robolectric#buildContentProvider(Class)} instead.
    */
+  @Deprecated
   synchronized public static void registerProvider(String authority, ContentProvider provider) {
     initialize(provider, authority);
     providers.put(authority, provider);
@@ -530,7 +534,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+  synchronized public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
     CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
     if (observers == null) {
       observers = new CopyOnWriteArraySet<>();
@@ -547,7 +551,11 @@ public class ShadowContentResolver {
   @Implementation
   public void unregisterContentObserver( ContentObserver observer ) {
     if ( observer != null ) {
-      for (CopyOnWriteArraySet<ContentObserver> observers : contentObservers.values()) {
+      Collection<CopyOnWriteArraySet<ContentObserver>> observerSets;
+      synchronized (this) {
+        observerSets = contentObservers.values();
+      }
+      for (CopyOnWriteArraySet<ContentObserver> observers : observerSets) {
         observers.remove(observer);
       }
     }
@@ -557,7 +565,7 @@ public class ShadowContentResolver {
    * Non-Android accessor.  Clears the list of registered content observers.
    * Commonly used in test case setup.
    */
-  public void clearContentObservers() {
+  synchronized public void clearContentObservers() {
     contentObservers.clear();
   }
 
@@ -582,7 +590,7 @@ public class ShadowContentResolver {
    * @param uri Given URI
    * @return The content observers
    */
-  public Collection<ContentObserver> getContentObservers( Uri uri ) {
+  synchronized public Collection<ContentObserver> getContentObservers( Uri uri ) {
     CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
     return (observers == null) ? Collections.<ContentObserver>emptyList() : observers;
   }

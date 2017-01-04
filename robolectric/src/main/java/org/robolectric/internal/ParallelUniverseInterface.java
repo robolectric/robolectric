@@ -4,12 +4,14 @@ import java.lang.reflect.Method;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourceTable;
 
 public interface ParallelUniverseInterface {
   void resetStaticState(Config config);
 
-  void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, ResourceLoader compiletimeSdkResourceLoader, AndroidManifest appManifest, Config config);
+  void setUpApplicationState(Method method, TestLifecycle testLifecycle, AndroidManifest appManifest, Config config,
+                             ResourceTable compiletimeResourceTable, ResourceTable appResourceTable,
+                             ResourceTable systemResourceTable);
 
   Thread getMainThread();
 

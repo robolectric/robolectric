@@ -22,10 +22,20 @@ public class ShadowBinder {
 
   @Implementation
   public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
-    if (data != null) {
+   if (data != null) {
      data.setDataPosition(0);
    }
-   boolean result = new ShadowBinderBridge(realObject).onTransact(code, data, reply, flags);
+
+   boolean result;
+   try {
+     result = new ShadowBinderBridge(realObject).onTransact(code, data, reply, flags);
+   } catch (Exception e) {
+     result = true;
+     if (reply != null) {
+       reply.writeException(e);
+     }
+   }
+
    if (reply != null) {
      reply.setDataPosition(0);
    }

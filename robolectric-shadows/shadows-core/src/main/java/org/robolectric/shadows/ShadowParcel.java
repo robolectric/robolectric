@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -315,6 +316,35 @@ public class ShadowParcel {
     ByteBuffer thisByteBuffer = NATIVE_PTR_TO_PARCEL.get(thisNativePtr);
     ByteBuffer otherByteBuffer = NATIVE_PTR_TO_PARCEL.get(otherNativePtr);
     thisByteBuffer.appendFrom(otherByteBuffer, offset, length);
+  }
+  
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static void nativeWriteInterfaceToken(int nativePtr, String interfaceName) {
+    nativeWriteInterfaceToken((long) nativePtr, interfaceName);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public static void nativeWriteInterfaceToken(long nativePtr, String interfaceName) {
+    // Write StrictMode.ThreadPolicy bits (assume 0 for test).
+    nativeWriteInt(nativePtr, 0);
+    nativeWriteString(nativePtr, interfaceName);
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static void nativeEnforceInterface(int nativePtr, String interfaceName) {
+    nativeEnforceInterface((long) nativePtr, interfaceName);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public static void nativeEnforceInterface(long nativePtr, String interfaceName) {
+    // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
+    nativeReadInt(nativePtr);
+    String actualInterfaceName = nativeReadString(nativePtr);
+    if (!Objects.equals(interfaceName, actualInterfaceName)) {
+      throw new SecurityException("Binder invocation to an incorrect interface");
+    }
   }
 
   private static class ByteBuffer {

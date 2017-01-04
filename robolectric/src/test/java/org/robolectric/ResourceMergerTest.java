@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import android.content.res.Resources;
@@ -8,11 +9,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.shadows.ShadowApplication;
 
 import java.util.List;
 
-@RunWith(TestRunners.WithDefaults.class)
-public class LibraryHandlingTest {
+@RunWith(TestRunners.SelfTest.class)
+public class ResourceMergerTest {
   private final Resources resources = RuntimeEnvironment.application.getResources();
 
   @Test
@@ -30,6 +33,12 @@ public class LibraryHandlingTest {
     assertEquals("from lib3", resources.getText(org.robolectric.R.string.in_lib2_and_lib3));
     assertEquals("from lib1", resources.getText(org.robolectric.R.string.in_lib1_and_lib3));
     assertEquals("from main", resources.getText(org.robolectric.R.string.in_main_and_lib1));
+  }
+
+  @Test
+  public void sameIdentifiersFromLibraryRClassesShouldReturnSameValues() throws Exception {
+    assertThat(resources.getText(org.robolectric.R.string.in_all_libs))
+        .isEqualTo(resources.getText(org.robolectric.lib1.R.string.in_all_libs));
   }
 
   @Test

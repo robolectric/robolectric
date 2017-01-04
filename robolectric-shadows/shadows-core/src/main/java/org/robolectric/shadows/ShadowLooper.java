@@ -16,6 +16,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Scheduler;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.*;
@@ -110,6 +111,11 @@ public class ShadowLooper {
   public void quit() {
     if (this == getShadowMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
     quitUnchecked();
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public void quitSafely() {
+    quit();
   }
 
   public void quitUnchecked() {

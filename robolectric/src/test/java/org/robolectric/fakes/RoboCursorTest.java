@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.SelfTest.class)
 public class RoboCursorTest {
   private final Uri uri = Uri.parse("http://foo");
   private final RoboCursor cursor = new RoboCursor();

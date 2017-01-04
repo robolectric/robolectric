@@ -1,25 +1,18 @@
 package org.robolectric.internal;
 
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.bytecode.ShadowMap;
-import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.res.Fs;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.robolectric.res.*;
 
 public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
   private final ShadowInvalidator shadowInvalidator;
-  public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<>();
   private ShadowMap shadowMap = ShadowMap.EMPTY;
-  private ResourceLoader systemResourceLoader;
+  private PackageResourceTable systemResourceTable;
+  public static final String ANDROID_PACKAGE_NAME = android.R.class.getPackage().getName();
 
   public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
     this.sdkConfig = sdkConfig;
@@ -27,27 +20,31 @@ public class SdkEnvironment {
     shadowInvalidator = new ShadowInvalidator();
   }
 
-  public synchronized ResourceLoader getSystemResourceLoader(DependencyResolver dependencyResolver) {
-    if (systemResourceLoader == null) {
-      ResourcePath resourcePath;
-      try {
-        Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
-        Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
-        Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-        resourcePath = new ResourcePath(androidRClass, androidRClass.getPackage().getName(), systemResFs.join("res"), systemResFs.join("assets"), androidInternalRClass);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-
-      ResourceExtractor resourceExtractor = new ResourceExtractor(resourcePath);
-      systemResourceLoader = new PackageResourceLoader(resourcePath, resourceExtractor);
+  public synchronized PackageResourceTable getSystemResourceTable(DependencyResolver dependencyResolver) {
+    if (systemResourceTable == null) {
+      ResourcePath resourcePath = createRuntimeSdkResourcePath(dependencyResolver);
+      systemResourceTable = ResourceTableFactory.newResourceTable(ANDROID_PACKAGE_NAME, resourcePath);
     }
-    return systemResourceLoader;
+    return systemResourceTable;
   }
 
-  public Class<?> bootstrappedClass(Class<?> testClass) {
+  @NotNull
+  private ResourcePath createRuntimeSdkResourcePath(DependencyResolver dependencyResolver) {
     try {
-      return robolectricClassLoader.loadClass(testClass.getName());
+      Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
+      Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
+      return new ResourcePath(androidRClass,
+          systemResFs.join("res"), systemResFs.join("assets"),
+          androidInternalRClass);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public <T> Class<T> bootstrappedClass(Class<?> testClass) {
+    try {
+      return (Class<T>) robolectricClassLoader.loadClass(testClass.getName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }

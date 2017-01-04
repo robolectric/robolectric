@@ -26,7 +26,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowBitmapTest {
   @Test
   public void shouldCreateScaledBitmap() throws Exception {
@@ -322,6 +322,35 @@ public class ShadowBitmapTest {
 
     bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
     bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+  }
+
+  @Test
+  public void shouldAdjustDimensionsForMatrix() {
+    Bitmap transformedBitmap;
+    int width = 10;
+    int height = 20;
+
+    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    Matrix matrix = new Matrix();
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(width);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(height);
+
+    matrix.setRotate(90);
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(height);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(width);
+
+    matrix.setScale(2, 3);
+    transformedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+    assertThat(transformedBitmap.getWidth())
+        .isEqualTo(width * 2);
+    assertThat(transformedBitmap.getHeight())
+        .isEqualTo(height * 3);
   }
 
   @Test

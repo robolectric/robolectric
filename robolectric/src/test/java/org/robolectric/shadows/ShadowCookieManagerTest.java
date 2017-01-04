@@ -4,11 +4,10 @@ import android.webkit.CookieManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCookieManagerTest {
   private final String url = "robolectric.org/";
   private final String httpUrl = "http://robolectric.org/";

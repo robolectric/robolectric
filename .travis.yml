@@ -31,7 +31,7 @@ before_install:
 
 script:
     - ./gradlew clean assemble install compileTest --info --stacktrace
-    - ./gradlew test --continue --info --stacktrace # -Drobolectric.enabledApis=$APIs
+    - ./gradlew test --continue --info --stacktrace # -Drobolectric.enabledSdks=$APIs
 
 after_success:
   - ./scripts/deploy-snapshot.sh

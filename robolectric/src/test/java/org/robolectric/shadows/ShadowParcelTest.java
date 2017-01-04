@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ import android.accounts.Account;
 import android.os.Bundle;
 import android.os.Parcel;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowParcelTest {
 
   private Parcel parcel;
@@ -543,5 +544,25 @@ public class ShadowParcelTest {
   public void testSetDataCapacity() {
     parcel.setDataCapacity(8);
     assertThat(parcel.dataCapacity()).isEqualTo(8);
+  }
+  
+  @Test
+  public void testWriteAndEnforceCompatibleInterface() {
+    parcel.writeInterfaceToken("com.example.IMyInterface");
+    parcel.setDataPosition(0);
+    parcel.enforceInterface("com.example.IMyInterface");
+    // Nothing explodes
+  }
+  
+  @Test
+  public void testWriteAndEnforceIncompatibleInterface() {
+    parcel.writeInterfaceToken("com.example.Derp");
+    parcel.setDataPosition(0);
+    try {
+      parcel.enforceInterface("com.example.IMyInterface");
+      fail("Expected SecurityException");
+    } catch (SecurityException e) {
+      // Expected
+    }
   }
 }

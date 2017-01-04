@@ -9,7 +9,7 @@ import static junit.framework.Assert.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowWifiConfigurationTest {
   @Test
   public void shouldSetTheBitSetsAndWepKeyArrays() throws Exception {

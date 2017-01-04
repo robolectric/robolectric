@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import org.junit.Test;
@@ -15,7 +14,7 @@ import org.robolectric.internal.Shadow;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowDisplayTest {
   @Test
   public void shouldProvideDisplayMetrics() throws Exception {

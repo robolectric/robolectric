@@ -2,9 +2,6 @@ package org.robolectric.shadows;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
-import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
@@ -24,7 +21,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowTelecomManagerTest {
 

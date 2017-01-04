@@ -10,7 +10,7 @@ import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowSpannableStringTest {
   private static final String TEST_STRING = "Visit us at http://www.foobar.com for more selections";
 

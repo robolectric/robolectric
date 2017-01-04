@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCanvasTest {
   private Bitmap targetBitmap;
   private Bitmap imageBitmap;
@@ -50,6 +50,14 @@ public class ShadowCanvasTest {
     canvas.drawBitmap(imageBitmap, new Rect(1,2,3,4), new Rect(5,6,7,8), new Paint());
 
     assertEquals("Bitmap for file:/an/image.jpg at (5,6) with height=2 and width=2 taken from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
+  }
+
+  @Test
+  public void shouldDescribeBitmapDrawing_withDestinationRectF() throws Exception {
+    Canvas canvas = new Canvas(targetBitmap);
+    canvas.drawBitmap(imageBitmap, new Rect(1,2,3,4), new RectF(5.0f,6.0f,7.5f,8.5f), new Paint());
+
+    assertEquals("Bitmap for file:/an/image.jpg at (5.0,6.0) with height=2.5 and width=2.5 taken from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
   }
 
   @Test

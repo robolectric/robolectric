@@ -12,7 +12,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.DeepCloner;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.EmptyResourceLoader;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

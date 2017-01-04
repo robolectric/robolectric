@@ -12,7 +12,7 @@ import org.robolectric.TestRunners;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.*;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowVideoViewTest {
 
   private VideoView view;

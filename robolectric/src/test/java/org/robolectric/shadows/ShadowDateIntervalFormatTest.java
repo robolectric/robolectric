@@ -4,7 +4,6 @@ import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.icu.util.ULocale;
-import android.os.Build;
 import android.text.format.DateUtils;
 import libcore.icu.DateIntervalFormat;
 import org.junit.Test;
@@ -19,7 +18,7 @@ import java.util.Date;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = M)
 public class ShadowDateIntervalFormatTest {
   @Test

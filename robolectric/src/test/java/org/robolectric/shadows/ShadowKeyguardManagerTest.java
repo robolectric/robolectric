@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.app.KeyguardManager;
-import android.os.Build;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowKeyguardManagerTest {
 
   private KeyguardManager manager;

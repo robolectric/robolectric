@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.R;
 import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -22,7 +21,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowWindowTest {
   @Test
   public void getFlag_shouldReturnWindowFlags() throws Exception {

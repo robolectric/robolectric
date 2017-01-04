@@ -1,35 +1,12 @@
 package org.robolectric.manifest;
 
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
-import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
-import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
-import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
-import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
-import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
-import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.*;
-
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
@@ -39,8 +16,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+import static android.content.pm.ApplicationInfo.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.util.TestUtil.newConfig;
+import static org.robolectric.util.TestUtil.resourceFile;
+
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -101,10 +83,10 @@ public class AndroidManifestTest {
     assertEquals(config.getServiceData("com.foo.Service").getPermission(), "com.foo.Permission");
   }
 
-  @Test(expected = IllegalAccessError.class)
+  @Test
   public void testManifestWithNoApplicationElement() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestNoApplicationElement.xml");
-    config.parseAndroidManifest();
+    assertThat(config.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test
@@ -238,7 +220,6 @@ public class AndroidManifestTest {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"), resourceFile("assets"));
     assertEquals(appManifest.getPackageName(), "org.no.resources.for.me");
     assertThat(appManifest.getRClass()).isNull();
-    assertEquals(appManifest.getResourcePath().getPackageName(), "org.no.resources.for.me");
   }
 
   @Test
@@ -361,19 +342,19 @@ public class AndroidManifestTest {
 
 
     assertThat(intentFilterData.getSchemes().get(0)).isEqualTo("content");
-    assertThat(intentFilterData.getPaths().get(0).toString()).isEqualTo("/testPath");
+    assertThat(intentFilterData.getPaths().get(0)).isEqualTo("/testPath/test.jpeg");
     assertThat(intentFilterData.getMimeTypes().get(0)).isEqualTo("video/mpeg");
     assertThat(intentFilterData.getAuthorities().get(0).getHost()).isEqualTo("testhost1.com");
     assertThat(intentFilterData.getAuthorities().get(0).getPort()).isEqualTo("1");
 
     assertThat(intentFilterData.getSchemes().get(1)).isEqualTo("http");
-    assertThat(intentFilterData.getPathPrefixes().get(0).toString()).isEqualTo("/testPrefix");
+    assertThat(intentFilterData.getPathPrefixes().get(0)).isEqualTo("/testPrefix");
     assertThat(intentFilterData.getMimeTypes().get(1)).isEqualTo("image/jpeg");
     assertThat(intentFilterData.getAuthorities().get(1).getHost()).isEqualTo("testhost2.com");
     assertThat(intentFilterData.getAuthorities().get(1).getPort()).isEqualTo("2");
 
     assertThat(intentFilterData.getSchemes().get(2)).isEqualTo("https");
-    assertThat(intentFilterData.getPathPatterns().get(0).toString()).isEqualTo("/.*testPattern");
+    assertThat(intentFilterData.getPathPatterns().get(0)).isEqualTo("/.*testPattern");
     assertThat(intentFilterData.getMimeTypes().get(2)).isEqualTo("image/*");
     assertThat(intentFilterData.getAuthorities().get(2).getHost()).isEqualTo("testhost3.com");
     assertThat(intentFilterData.getAuthorities().get(2).getPort()).isEqualTo("3");

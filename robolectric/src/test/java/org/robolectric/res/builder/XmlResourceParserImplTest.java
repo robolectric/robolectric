@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
 import org.robolectric.res.*;
-import org.robolectric.util.TestUtil;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -31,8 +30,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -53,20 +50,19 @@ public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
   private XmlResourceParserImpl parser;
-  private ResourceLoader resourceLoader;
+  private ResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {
     ResBundle resBundle = new ResBundle();
     XmlBlockLoader xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
-    new DocumentLoader(testResources()).load("xml", xmlBlockLoader);
+    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("xml", xmlBlockLoader);
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();
-    ResourceIndex resourceIndex = new ResourceExtractor(testResources());
-    resourceLoader = mock(ResourceLoader.class);
-    when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);
-    parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceLoader);
+    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric", testResources());
+    parser = new XmlResourceParserImpl(xmlBlock.getDocument(), xmlBlock.getFilename(), xmlBlock.getPackageName(),
+        TEST_PACKAGE, resourceTable);
   }
 
   @After
@@ -74,8 +70,7 @@ public class XmlResourceParserImplTest {
     parser.close();
   }
 
-  private void parseUntilNext(int event)
-      throws XmlPullParserException, IOException {
+  private void parseUntilNext(int event) throws Exception {
     while (parser.next() != event) {
       if (parser.getEventType() == XmlResourceParser.END_DOCUMENT) {
         throw new RuntimeException("Impossible to find: " +
@@ -84,15 +79,7 @@ public class XmlResourceParserImplTest {
     }
   }
 
-  /**
-   * Create a new {@link Document} from a given string.
-   *
-   * @param xmlValue the XML from which to forge a document.
-   * @throws XmlPullParserException if the parser fails
-   *                                to parse the root element.
-   */
-  private void forgeAndOpenDocument(String xmlValue)
-      throws XmlPullParserException {
+  private void forgeAndOpenDocument(String xmlValue) {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setNamespaceAware(true);
@@ -102,8 +89,8 @@ public class XmlResourceParserImplTest {
       Document document = documentBuilder.parse(
           new ByteArrayInputStream(xmlValue.getBytes()));
 
-      parser = new XmlResourceParserImpl(document, "file", TestUtil.testResources().getPackageName(),
-          TEST_PACKAGE, resourceLoader);
+      parser = new XmlResourceParserImpl(document, "file", R.class.getPackage().getName(),
+          TEST_PACKAGE, resourceTable);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {
@@ -120,7 +107,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetXmlInt() throws XmlPullParserException, IOException {
+  public void testGetXmlInt() throws Exception {
     assertThat(parser).isNotNull();
     int evt = parser.next();
     assertThat(evt).isEqualTo(XmlResourceParser.START_DOCUMENT);
@@ -132,7 +119,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testSetFeature() throws XmlPullParserException {
+  public void testSetFeature() throws Exception {
     for (String feature : XmlResourceParserImpl.AVAILABLE_FEATURES) {
       parser.setFeature(feature, true);
       try {
@@ -269,7 +256,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetDepth() throws XmlPullParserException, IOException {
+  public void testGetDepth() throws Exception {
     // Recorded depths from preference file elements
     List<Integer> expectedDepths = asList(1, 2, 3, 2, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3);
     List<Integer> actualDepths = new ArrayList<>();
@@ -287,7 +274,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetText() throws XmlPullParserException, IOException {
+  public void testGetText() throws Exception {
     forgeAndOpenDocument("<foo/>");
     assertThat(parser.getText()).isEqualTo("");
 
@@ -296,7 +283,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetEventType() throws XmlPullParserException, IOException {
+  public void testGetEventType() throws Exception {
     int evt;
     while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
       assertThat(parser.getEventType()).isEqualTo(evt);
@@ -304,7 +291,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testIsWhitespace() throws XmlPullParserException {
+  public void testIsWhitespace() throws Exception {
     assertThat(parser.isWhitespace("bar")).isFalse();
     assertThat(parser.isWhitespace(" ")).isTrue();
   }
@@ -320,42 +307,39 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetNamespace() throws XmlPullParserException, IOException {
+  public void testGetNamespace() throws Exception {
     forgeAndOpenDocument("<foo xmlns=\"http://www.w3.org/1999/xhtml\">bar</foo>");
     assertThat(parser.getNamespace()).isEqualTo("http://www.w3.org/1999/xhtml");
   }
 
   @Test
-  public void testGetName_atStart()
-      throws XmlPullParserException, IOException {
+  public void testGetName_atStart() throws Exception {
     assertThat(parser.getName()).isEqualTo("");
     parseUntilNext(XmlResourceParser.START_DOCUMENT);
     assertThat(parser.getName()).isEqualTo("");
   }
 
   @Test
-  public void testGetName() throws XmlPullParserException, IOException {
+  public void testGetName() throws Exception {
     forgeAndOpenDocument("<foo/>");
     assertThat(parser.getName()).isEqualTo("foo");
   }
 
 
   @Test
-  public void testGetAttribute() throws XmlPullParserException, IOException {
+  public void testGetAttribute() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
     assertThat(parser.getAttribute(XMLNS_NS, "bar")).isEqualTo("bar");
   }
 
   @Test
-  public void testGetAttributeNamespace()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributeNamespace() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
     assertThat(parser.getAttributeNamespace(0)).isEqualTo(XMLNS_NS);
   }
 
   @Test
-  public void testGetAttributeName()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributeName() throws Exception {
     assertThat(parser.getAttributeName(0)).isNull();
 
     forgeAndOpenDocument("<foo bar=\"bar\"/>");
@@ -364,8 +348,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributePrefix()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributePrefix() throws Exception {
     parseUntilNext(XmlResourceParser.START_TAG);
     try {
       parser.getAttributePrefix(0);
@@ -376,8 +359,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testIsEmptyElementTag()
-      throws XmlPullParserException, IOException {
+  public void testIsEmptyElementTag() throws Exception {
     assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("Before START_DOCUMENT should return false.");
 
     forgeAndOpenDocument("<foo><bar/></foo>");
@@ -389,8 +371,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeCount()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributeCount() throws Exception {
     assertThat(parser.getAttributeCount()).isEqualTo(-1)
         .as("When no node is being explored the number of attributes should be -1.");
 
@@ -399,8 +380,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeValue_Int()
-      throws XmlPullParserException {
+  public void testGetAttributeValue_Int() throws Exception {
     forgeAndOpenDocument("<foo bar=\"bar\"/>");
     assertThat(parser.getAttributeValue(0)).isEqualTo("bar");
 
@@ -424,14 +404,13 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeValueStringString()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributeValueStringString() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
     assertThat(parser.getAttributeValue(XMLNS_NS, "bar")).isEqualTo("bar");
   }
 
   @Test
-  public void testNext() throws XmlPullParserException, IOException {
+  public void testNext() throws Exception {
     // Recorded events while parsing preferences from Android
     List<String> expectedEvents = Arrays.asList(
         "<xml>",
@@ -492,7 +471,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testRequire() throws XmlPullParserException, IOException {
+  public void testRequire() throws Exception {
     parseUntilNext(XmlResourceParser.START_TAG);
     parser.require(XmlResourceParser.START_TAG,
         parser.getNamespace(), parser.getName());
@@ -523,7 +502,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testNextText_noText() throws XmlPullParserException, IOException {
+  public void testNextText_noText() throws Exception {
     forgeAndOpenDocument("<foo><bar/></foo>");
     try {
       assertThat(parser.nextText()).isEqualTo(parser.getText());
@@ -537,7 +516,7 @@ public class XmlResourceParserImplTest {
    * Test that next tag will only return tag events.
    */
   @Test
-  public void testNextTag() throws XmlPullParserException, IOException {
+  public void testNextTag() throws Exception {
     Set<Integer> acceptableTags = new HashSet<>();
     acceptableTags.add(XmlResourceParser.START_TAG);
     acceptableTags.add(XmlResourceParser.END_TAG);
@@ -552,8 +531,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeListValue_StringStringStringArrayInt()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributeListValue_StringStringStringArrayInt() throws Exception {
     String[] options = {"foo", "bar"};
     forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
     assertThat(parser.getAttributeListValue(XMLNS_NS, "bar", options, 0)).isEqualTo(1);
@@ -563,56 +541,48 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeBooleanValue_StringStringBoolean()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributeBooleanValue_StringStringBoolean() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"true\"/>");
     assertThat(parser.getAttributeBooleanValue(XMLNS_NS, "bar", false)).isTrue();
     assertThat(parser.getAttributeBooleanValue(XMLNS_NS, "foo", false)).isFalse();
   }
 
   @Test
-  public void testGetAttributeBooleanValue_IntBoolean()
-      throws XmlPullParserException {
+  public void testGetAttributeBooleanValue_IntBoolean() throws Exception {
     forgeAndOpenDocument("<foo bar=\"true\"/>");
     assertThat(parser.getAttributeBooleanValue(0, false)).isTrue();
     assertThat(parser.getAttributeBooleanValue(attributeIndexOutOfIndex(), false)).isFalse();
   }
 
   @Test
-  public void testGetAttributeResourceValueIntInt()
-      throws XmlPullParserException {
+  public void testGetAttributeResourceValueIntInt() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
     assertThat(parser.getAttributeResourceValue(0, 42)).isEqualTo(R.layout.main);
   }
 
   @Test
-  public void testGetAttributeResourceValueStringStringInt()
-      throws XmlPullParserException {
+  public void testGetAttributeResourceValueStringStringInt() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
     assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(R.layout.main);
     assertThat(parser.getAttributeResourceValue(XMLNS_NS, "foo", 42)).isEqualTo(42);
   }
 
   @Test
-  public void testGetAttributeResourceValueWhenNotAResource()
-          throws XmlPullParserException {
+  public void testGetAttributeResourceValueWhenNotAResource() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"banana\"/>");
     assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(42);
   }
 
   @Test
-  public void testGetAttributeIntValue_StringStringInt()
-      throws XmlPullParserException {
+  public void testGetAttributeIntValue_StringStringInt() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
 
     assertThat(parser.getAttributeIntValue(XMLNS_NS, "bar", 0)).isEqualTo(-12);
     assertThat(parser.getAttributeIntValue(XMLNS_NS, "foo", 0)).isEqualTo(0);
   }
 
-
   @Test
-  public void testGetAttributeIntValue_IntInt()
-      throws XmlPullParserException {
+  public void testGetAttributeIntValue_IntInt() throws Exception {
     forgeAndOpenDocument("<foo bar=\"-12\"/>");
 
     assertThat(parser.getAttributeIntValue(0, 0)).isEqualTo(-12);
@@ -624,8 +594,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeUnsignedIntValue_StringStringInt()
-      throws XmlPullParserException {
+  public void testGetAttributeUnsignedIntValue_StringStringInt() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"12\"/>");
 
     assertThat(parser.getAttributeUnsignedIntValue(XMLNS_NS, "bar", 0)).isEqualTo(12);
@@ -640,8 +609,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeUnsignedIntValue_IntInt()
-      throws XmlPullParserException {
+  public void testGetAttributeUnsignedIntValue_IntInt() throws Exception {
     forgeAndOpenDocument("<foo bar=\"12\"/>");
 
     assertThat(parser.getAttributeUnsignedIntValue(0, 0)).isEqualTo(12);
@@ -656,8 +624,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeFloatValue_StringStringFloat()
-      throws XmlPullParserException {
+  public void testGetAttributeFloatValue_StringStringFloat() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"12.01\"/>");
 
     assertThat(parser.getAttributeFloatValue(XMLNS_NS, "bar", 0.0f)).isEqualTo(12.01f);
@@ -669,8 +636,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeFloatValue_IntFloat()
-      throws XmlPullParserException, IOException {
+  public void testGetAttributeFloatValue_IntFloat() throws Exception {
     forgeAndOpenDocument("<foo bar=\"12.01\"/>");
 
     assertThat(parser.getAttributeFloatValue(0, 0.0f)).isEqualTo(12.01f);
@@ -683,8 +649,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetAttributeListValue_IntStringArrayInt()
-      throws XmlPullParserException {
+  public void testGetAttributeListValue_IntStringArrayInt() throws Exception {
     String[] options = {"foo", "bar"};
     forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
     assertThat(parser.getAttributeListValue(0, options, 0)).isEqualTo(1);
@@ -698,7 +663,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetIdAttribute() throws XmlPullParserException, IOException {
+  public void testGetIdAttribute() throws Exception {
     forgeAndOpenDocument("<foo/>");
     assertThat(parser.getIdAttribute()).isEqualTo(null);
 
@@ -707,7 +672,7 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetClassAttribute() throws XmlPullParserException, IOException {
+  public void testGetClassAttribute() throws Exception {
     forgeAndOpenDocument("<foo/>");
     assertThat(parser.getClassAttribute()).isEqualTo(null);
 
@@ -716,13 +681,15 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
-  public void testGetIdAttributeResourceValue_defaultValue() {
+  public void testGetIdAttributeResourceValue_defaultValue() throws Exception {
     assertThat(parser.getIdAttributeResourceValue(12)).isEqualTo(12);
+
+    forgeAndOpenDocument("<foo id=\"@+id/tacos\"/>");
+    assertThat(parser.getIdAttributeResourceValue(12)).isEqualTo(R.id.tacos);
   }
 
   @Test
-  public void testGetStyleAttribute()
-      throws XmlPullParserException {
+  public void testGetStyleAttribute() throws Exception {
     forgeAndOpenDocument("<foo/>");
     assertThat(parser.getStyleAttribute()).isEqualTo(0);
   }

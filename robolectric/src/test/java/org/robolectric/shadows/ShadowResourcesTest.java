@@ -7,6 +7,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.util.Xml;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowResourcesTest {
   private Resources resources;
 
@@ -448,6 +449,20 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void shouldLoadRawResources_supportsDrawable() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
+  }
+
+  @Test @Config(qualifiers = "hdpi")
+  public void shouldLoadRawResources_supportsDrawableWithQualifiers() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
+  }
+
+  @Test
   public void setScaledDensityShouldSetScaledDensityInDisplayMetrics() {
     final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
 
@@ -509,9 +524,9 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void obtainStyledAttributesShouldCheckXmlFirst() throws Exception {
+  public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() throws Exception {
 
-    // This simulates a ResourceLoader built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
+    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
     // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
     // resource ID values in the AttributeSet before checking the theme.
@@ -530,10 +545,31 @@ public class ShadowResourcesTest {
     typedArray.recycle();
   }
 
+  public void obtainStyledAttributes_shouldCheckXmlFirst_fromXmlLoadedFromResources() throws Exception {
+
+    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
+    // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
+    // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
+    // resource ID values in the AttributeSet before checking the theme.
+
+    XmlResourceParser xml = RuntimeEnvironment.application.getResources().getXml(R.drawable.vector);
+    xml.next();
+    xml.next();
+    AttributeSet attributeSet = Xml.asAttributeSet(xml);
+
+    TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributeSet, new int[] {
+        android.R.attr.viewportWidth,
+        android.R.attr.viewportHeight
+    }, 0, 0);
+    assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
+    assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
+    typedArray.recycle();
+  }
+
   @Test
   public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() throws Exception {
 
-    // This simulates a ResourceLoader built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
+    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
     // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
     // resource ID values in the AttributeSet before checking the theme.
@@ -700,14 +736,6 @@ public class ShadowResourcesTest {
     } catch (Resources.NotFoundException e) {
       assertThat(e.getMessage()).contains("org.robolectric:id/ungulate");
     }
-  }
-
-  @Test @Config(sdk = 19)
-  public void shouldResolveStyleNameAgainstAttrSetResourceNames() throws Exception {
-    AttributeSet set = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@android:style/Theme_Material")
-        .build();
-    resources.obtainAttributes(set, new int[]{android.R.attr.layout_width});
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

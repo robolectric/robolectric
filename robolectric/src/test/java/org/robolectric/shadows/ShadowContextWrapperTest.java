@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -40,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContextWrapperTest {
   public Transcript transcript;
   private ContextWrapper contextWrapper;
