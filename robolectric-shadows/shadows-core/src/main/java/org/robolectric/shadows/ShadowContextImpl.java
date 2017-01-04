@@ -33,9 +33,7 @@ import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.newInstanceOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
  * Shadow for {@code android.content.ContextImpl}.
@@ -100,6 +98,9 @@ public class ShadowContextImpl {
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
     }
+    if (getApiLevel() >= LOLLIPOP_MR1) {
+      SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");
+    }
   }
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
@@ -142,12 +143,10 @@ public class ShadowContextImpl {
 
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
-
         } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application));
-
-        } else if (serviceClassName.equals("android.hardware.display.DisplayManager")) {
+        } else if (serviceClassName.equals("android.hardware.display.DisplayManager") || serviceClassName.equals("android.telephony.SubscriptionManager")) {
           service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else if (serviceClassName.equals("android.view.accessibility.AccessibilityManager")) {
           service = AccessibilityManager.getInstance(realObject);
