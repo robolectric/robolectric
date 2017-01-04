@@ -98,8 +98,8 @@ public class ShadowNotification {
   }
 
   /**
-   * These methods do not work on API > {@link Build#VERSION_CODES#N}
-   * Use {@link #isIndeterminate()}, {@link #getMax()} ()}, {@link #getProgress()} ()} instead.
+   * This method does not work on API > {@link Build.VERSION_CODES#N}
+   * @deprecated Use {@link #isIndeterminate()}, {@link #getMax()} ()}, {@link #getProgress()} ()} instead.
    */
   @Deprecated
   public ProgressBar getProgressBar() {
