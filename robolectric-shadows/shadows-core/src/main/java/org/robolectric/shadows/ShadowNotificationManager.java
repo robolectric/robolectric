@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -48,7 +49,7 @@ public class ShadowNotificationManager {
     notifications.clear();
   }
 
-  @Implementation
+  @Implementation(minSdk = Build.VERSION_CODES.M)
   public StatusBarNotification[] getActiveNotifications() {
     StatusBarNotification[] statusBarNotifications =
         new StatusBarNotification[notifications.size()];

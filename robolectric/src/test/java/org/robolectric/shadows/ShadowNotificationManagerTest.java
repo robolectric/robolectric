@@ -10,11 +10,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
@@ -99,30 +99,15 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
   public void testGetActiveNotifications() throws Exception {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-      // This API was added in M.
-      return;
-    }
     notificationManager.notify(1, notification1);
     notificationManager.notify(31, notification2);
 
     StatusBarNotification[] statusBarNotifications =
         shadowOf(notificationManager).getActiveNotifications();
-    assertEquals(2, statusBarNotifications.length);
-    boolean hasNotification1 = false;
-    boolean hasNotification2 = false;
-    for (StatusBarNotification notification : statusBarNotifications) {
-      if (notification.getId() == 1) {
-        hasNotification1 = true;
-        assertEquals(notification1, notification.getNotification());
-      } else if (notification.getId() == 31) {
-        hasNotification2 = true;
-        assertEquals(notification2, notification.getNotification());
-      } else {
-        fail("Unexpected notification id " + notification.getId());
-      }
-    }
-    assertTrue(hasNotification1 && hasNotification2);
+    assertThat(statusBarNotifications)
+        .extractingResultOf("getNotification", Notification.class)
+        .containsOnly(notification1, notification2);
   }
 }
