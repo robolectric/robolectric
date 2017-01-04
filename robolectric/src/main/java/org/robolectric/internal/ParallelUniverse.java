@@ -154,7 +154,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     int labelRes = 0;
     if (appManifest.getLabelRef() != null) {
       String fullyQualifiedName = ResName.qualifyResName(appManifest.getLabelRef(), appManifest.getPackageName());
-      Integer id = appResourceTable.getResourceId(new ResName(fullyQualifiedName));
+      Integer id = fullyQualifiedName == null ? null : appResourceTable.getResourceId(new ResName(fullyQualifiedName));
       labelRes = id != null ? id : 0;
     }
     packageManager.addManifest(appManifest, labelRes);

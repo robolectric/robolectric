@@ -748,10 +748,18 @@ public class DefaultPackageManagerTest {
   @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
   public void shouldAssignLabelResFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
-    String appName = ShadowApplication.getInstance().getApplicationContext().getString(applicationInfo.labelRes);
-    assertThat(appName).isEqualTo("Testing App");
+    assertThat(applicationInfo.labelRes).isEqualTo(R.string.app_name);
+    assertThat(applicationInfo.nonLocalizedLabel).isNull();
   }
   
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
+  public void shouldAssignNonLocalizedLabelFromTheManifest() throws Exception {
+    ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
+    assertThat(applicationInfo.labelRes).isEqualTo(0);
+    assertThat(applicationInfo.nonLocalizedLabel).isEqualTo("App Label");
+  }
+
   @Test
   @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
   public void getServiceInfo_shouldReturnServiceInfoIfExists() throws Exception {
