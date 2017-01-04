@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.widget.ProgressBar;
 
 import org.junit.Test;
@@ -23,6 +24,13 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowNotificationBuilderTest {
   private final Notification.Builder builder = new Notification.Builder(RuntimeEnvironment.application);
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void build_handlesNullContentView() throws Exception {
+    Notification notification = builder.setContentTitle("Hello").setCustomContentView(null).build();
+    assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("Hello");
+  }
 
   @Test
   public void build_setsContentTitleOnNotification() throws Exception {
