@@ -9,6 +9,7 @@ import org.robolectric.manifest.AndroidManifest;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -58,6 +59,29 @@ public class SdkPickerTest {
     when(appManifest.getMaxSdkVersion()).thenReturn(null);
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), appManifest))
         .containsExactly(new SdkConfig(19), new SdkConfig(21), new SdkConfig(22), new SdkConfig(23));
+  }
+
+  @Test
+  public void withMinSdkHigherThanSupportedRange_ShouldReturnNone() throws Exception {
+    when(appManifest.getTargetSdkVersion()).thenReturn(23);
+    when(appManifest.getMinSdkVersion()).thenReturn(1);
+    when(appManifest.getMaxSdkVersion()).thenReturn(null);
+    assertThat(sdkPicker.selectSdks(new Config.Builder().setMinSdk(24).build(), appManifest))
+        .isEmpty();
+  }
+
+  @Test
+  public void withMinSdkHigherMaxSdk_ShouldThrowError() throws Exception {
+    when(appManifest.getTargetSdkVersion()).thenReturn(23);
+    when(appManifest.getMinSdkVersion()).thenReturn(1);
+    when(appManifest.getMaxSdkVersion()).thenReturn(null);
+
+    try {
+      sdkPicker.selectSdks(new Config.Builder().setMinSdk(22).setMaxSdk(21).build(), appManifest);
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("minSdk may not be larger than maxSdk (minSdk=22, maxSdk=21)");
+    }
   }
 
   @Test

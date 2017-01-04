@@ -84,9 +84,14 @@ public class SdkPicker {
     int minSdk = config.minSdk();
     int maxSdk = config.maxSdk();
     if (minSdk != -1 || maxSdk != -1) {
-      return sdkRange(
-          decodeSdk(minSdk, appMinSdk, appMinSdk, appTargetSdk, appMaxSdk),
-          decodeSdk(maxSdk, appMaxSdk, appMinSdk, appTargetSdk, appMaxSdk));
+      int rangeMin = decodeSdk(minSdk, appMinSdk, appMinSdk, appTargetSdk, appMaxSdk);
+      int rangeMax = decodeSdk(maxSdk, appMaxSdk, appMinSdk, appTargetSdk, appMaxSdk);
+
+      if (rangeMin > rangeMax && (minSdk == -1 || maxSdk == -1)) {
+        return Collections.emptySet();
+      }
+
+      return sdkRange(rangeMin, rangeMax);
     }
 
     // For explicitly-enumerated SDKs...

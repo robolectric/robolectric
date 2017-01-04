@@ -212,16 +212,21 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   protected List<FrameworkMethod> getChildren() {
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
-      Config config = getConfig(frameworkMethod.getMethod());
-      AndroidManifest appManifest = getAppManifest(config);
-      List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
-      RobolectricFrameworkMethod last = null;
-      for (SdkConfig sdkConfig : sdksToRun) {
-        last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config);
-        children.add(last);
-      }
-      if (last != null) {
-        last.dontIncludeApiLevelInName();
+      try {
+        Config config = getConfig(frameworkMethod.getMethod());
+        AndroidManifest appManifest = getAppManifest(config);
+        List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
+        RobolectricFrameworkMethod last = null;
+        for (SdkConfig sdkConfig : sdksToRun) {
+          last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config);
+          children.add(last);
+        }
+        if (last != null) {
+          last.dontIncludeApiLevelInName();
+        }
+      } catch (IllegalArgumentException e) {
+        throw new RuntimeException("failed to configure " +
+            getTestClass().getName() + "." + frameworkMethod.getMethod().getName(), e);
       }
     }
     return children;
