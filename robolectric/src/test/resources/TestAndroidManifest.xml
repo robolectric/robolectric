@@ -3,7 +3,6 @@
       package="org.robolectric">
   <uses-sdk android:targetSdkVersion="23"/>
 
-  <!-- todo: get @Config(manifest=xxx) working -->
   <application android:name="org.robolectric.TestApplication"
          android:theme="@style/Theme.Robolectric"
          android:label="@string/app_name">

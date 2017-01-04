@@ -561,6 +561,10 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
     applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
     applicationInfo.labelRes = labelRes;
+    String labelRef = androidManifest.getLabelRef();
+    if (labelRef != null && !labelRef.startsWith("@")) {
+      applicationInfo.nonLocalizedLabel = labelRef;
+    }
 
     packageInfo.applicationInfo = applicationInfo;
     addPackage(packageInfo);
