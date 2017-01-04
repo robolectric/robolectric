@@ -12,6 +12,7 @@ import android.content.ServiceConnection;
 import android.media.session.MediaSessionManager;
 import android.os.*;
 import android.print.PrintManager;
+import android.telephony.SubscriptionManager;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.LinearLayout;
@@ -42,6 +43,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -109,6 +111,12 @@ public class ShadowApplicationTest {
   @Config(minSdk = LOLLIPOP)
   public void shouldProvideMediaSessionService() throws Exception {
     checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void shouldProvideServicesIntroducedInLollipopMr1() throws Exception {
+    checkSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE, SubscriptionManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
