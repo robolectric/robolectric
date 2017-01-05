@@ -73,7 +73,7 @@ public class RobolectricTestRunnerMultiApiTest {
       runner.getChildren();
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).isEqualTo("sdk and minSdk/maxSdk may not be specified together" +
+      assertThat(e.getMessage()).contains("sdk and minSdk/maxSdk may not be specified together" +
           " (sdk=[16], minSdk=19, maxSdk=21)");
     }
   }

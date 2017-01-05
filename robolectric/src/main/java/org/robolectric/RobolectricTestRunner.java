@@ -225,8 +225,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           last.dontIncludeApiLevelInName();
         }
       } catch (IllegalArgumentException e) {
-        throw new RuntimeException("failed to configure " +
-            getTestClass().getName() + "." + frameworkMethod.getMethod().getName(), e);
+        throw new IllegalArgumentException("failed to configure " +
+            getTestClass().getName() + "." + frameworkMethod.getMethod().getName() +
+            ": " + e.getMessage(), e);
       }
     }
     return children;
