@@ -19,11 +19,28 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContextImplTest {
   private final Context context = RuntimeEnvironment.application;
+
+  @Test
+  @Config(minSdk = N)
+  public void deviceProtectedContext() {
+    // Regular context should be credential protected, not device protected.
+    assertThat(context.isDeviceProtectedStorage()).isFalse();
+    assertThat(context.isCredentialProtectedStorage()).isFalse();
+
+    // Device protected storage context should have device protected rather than credential protected storage.
+    Context deviceProtectedStorageContext = context.createDeviceProtectedStorageContext();
+    assertThat(deviceProtectedStorageContext.isDeviceProtectedStorage()).isTrue();
+    assertThat(deviceProtectedStorageContext.isCredentialProtectedStorage()).isFalse();
+
+    // Data dirs of these two contexts must be different locations.
+    assertThat(context.getDataDir()).isNotEqualTo(deviceProtectedStorageContext.getDataDir());
+  }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)

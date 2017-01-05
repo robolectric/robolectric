@@ -11,12 +11,12 @@ import java.util.Collections;
 import java.util.List;
 
 import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.*;
 
 @Implements(value = UserManager.class, minSdk = JELLY_BEAN_MR1)
 public class ShadowUserManager {
+
+  private boolean userUnlocked = true;
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public Bundle getApplicationRestrictions(String packageName) {
@@ -28,4 +28,15 @@ public class ShadowUserManager {
     return Collections.emptyList();
   }
 
+  @Implementation(minSdk = N)
+  public boolean isUserUnlocked() {
+    return userUnlocked;
+  }
+
+  /**
+   * Setter for {@link UserManager#isUserUnlocked()}
+   */
+  public void setUserUnlocked(boolean userUnlocked) {
+    this.userUnlocked = userUnlocked;
+  }
 }

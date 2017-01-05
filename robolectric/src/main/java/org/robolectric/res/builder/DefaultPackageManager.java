@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static android.os.Build.VERSION_CODES.N;
+
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
   private Map<Integer, String> namesForUid = new HashMap<>();
@@ -560,6 +562,11 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
     applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
+
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      applicationInfo.credentialProtectedDataDir = TempDirectory.create().toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir = TempDirectory.create().toAbsolutePath().toString();
+    }
     applicationInfo.labelRes = labelRes;
     String labelRef = androidManifest.getLabelRef();
     if (labelRef != null && !labelRef.startsWith("@")) {
