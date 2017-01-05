@@ -25,15 +25,6 @@ import org.robolectric.annotation.Config;
 import java.io.IOException;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -464,28 +455,18 @@ public class ShadowAccountManagerTest {
   public void addAccount_shouldCallCallback() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
 
-    AccountManagerCallback<Bundle> callback = mock(AccountManagerCallback.class);
+    TestAccountManagerCallback callback = new TestAccountManagerCallback();
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, new Activity(), callback, null);
-    verify(callback, never()).run(any(AccountManagerFuture.class));
-    assertFalse(result.isDone());
+    assertThat(callback.accountManagerFuture).isNull();
+    assertThat(result.isDone()).isFalse();
+
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
-    assertTrue(result.isDone());
-    AccountManagerFutureMatcher<Bundle> matcher = new AccountManagerFutureMatcher<>(new BaseMatcher<Bundle>() {
-      @Override
-      public boolean matches(Object o) {
-        return "thebomb@google.com".equals(((Bundle) o).getString(AccountManager.KEY_ACCOUNT_NAME));
-      }
+    assertThat(result.isDone()).isTrue();
+    assertThat(callback.accountManagerFuture).isNotNull();
 
-      @Override
-      public void describeTo(Description description) {
-        description.appendText("Expected thebomb@google.com");
-      }
-    });
-    verify(callback).run(argThat(allOf(matcher, sameInstance(result))));
-    Bundle resultBundle = result.getResult();
-
+    Bundle resultBundle = callback.accountManagerFuture.getResult();
     assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
-    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isNotNull();
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("thebomb@google.com");
   }
 
   @Test
@@ -562,6 +543,15 @@ public class ShadowAccountManagerTest {
     @Override
     public void describeTo(Description description) {
       matcher.describeTo(description);
+    }
+  }
+
+  private static class TestAccountManagerCallback implements AccountManagerCallback<Bundle> {
+    AccountManagerFuture<Bundle> accountManagerFuture;
+
+    @Override
+    public void run(AccountManagerFuture<Bundle> accountManagerFuture) {
+      this.accountManagerFuture = accountManagerFuture;
     }
   }
 }
