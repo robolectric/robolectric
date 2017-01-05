@@ -9,14 +9,14 @@ import java.io.InputStream;
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
  */
-public class PackageResourceTable implements ResourceTable {
+public class PackageResourceTable extends ResourceTable {
   final ResBunch data = new ResBunch();
   final ResBundle xmlDocuments = new ResBundle();
   final ResBundle rawResources = new ResBundle();
   private final ResourceIndex resourceIndex;
 
   PackageResourceTable(String packageName) {
-    this.resourceIndex = new ResourceIndex(packageName);;
+    this.resourceIndex = new ResourceIndex(packageName);
   }
 
   public String getPackageName() {
@@ -74,7 +74,7 @@ public class PackageResourceTable implements ResourceTable {
 
   @Override
   public void receive(Visitor visitor) {
-
+    data.receive(visitor);
   }
 
   @Override
