@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import org.robolectric.res.builder.XmlBlock;
 
-public class RoutingResourceTable implements ResourceTable {
+public class RoutingResourceTable extends ResourceTable {
   private static final PackageResourceTable EMPTY_RESOURCE_TABLE = ResourceTableFactory.newResourceTable("");
   private final Map<String, PackageResourceTable> resourceTables;
 
@@ -29,38 +29,6 @@ public class RoutingResourceTable implements ResourceTable {
 
   public boolean hasValue(ResName resName, String qualifiers) {
     return pickFor(resName).hasValue(resName, qualifiers);
-  }
-
-  @NotNull
-  public List<TypedResource> grep(String regex) {
-    return grep(Pattern.compile(regex));
-  }
-
-  @NotNull
-  public List<TypedResource> grep(final Pattern pattern) {
-    final ArrayList<TypedResource> matches = new ArrayList<>();
-    receive(new Visitor<TypedResource>() {
-      @Override
-      public void visit(ResName resName, Iterable<TypedResource> items) {
-        boolean match = pattern.matcher(resName.getFullyQualifiedName()).find();
-        if (!match && resName.type.equals("style")) {
-          for (TypedResource typedResource : items) {
-            TypedResource<StyleData> style = (TypedResource<StyleData>) typedResource;
-            if (style.getData().grep(pattern)) {
-              match = true;
-              break;
-            }
-          }
-        }
-
-        if (match) {
-          for (TypedResource typedResource : items) {
-            matches.add(typedResource);
-          }
-        }
-      }
-    });
-    return matches;
   }
 
   @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
@@ -95,9 +63,10 @@ public class RoutingResourceTable implements ResourceTable {
     return pickFor(resourceId).getResName(resourceId);
   }
 
+  @Override
   public void receive(Visitor visitor) {
     for (PackageResourceTable resourceTable : resourceTables.values()) {
-      resourceTable.data.receive(visitor);
+      resourceTable.receive(visitor);
     }
   }
 
