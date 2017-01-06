@@ -1,3 +1,5 @@
+def skipJavadoc = System.getenv()["SKIP_JAVADOC"] == "true"
+
 allprojects {
     repositories {
         mavenLocal()
@@ -97,7 +99,9 @@ allprojects {
     artifacts {
         archives jar
         archives sourcesJar
-        archives javadocJar
+        if (!skipJavadoc) {
+            archives javadocJar
+        }
     }
 
     uploadArchives {
