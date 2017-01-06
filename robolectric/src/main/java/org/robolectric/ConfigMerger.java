@@ -91,7 +91,8 @@ public class ConfigMerger {
 
   @NotNull @VisibleForTesting
   List<String> packageHierarchyOf(Class<?> javaClass) {
-    String testPackageName = javaClass.getPackage().getName();
+    Package aPackage = javaClass.getPackage();
+    String testPackageName = aPackage == null ? "" : aPackage.getName();
     List<String> packageHierarchy = new ArrayList<>();
     while (!testPackageName.isEmpty()) {
       packageHierarchy.add(testPackageName);

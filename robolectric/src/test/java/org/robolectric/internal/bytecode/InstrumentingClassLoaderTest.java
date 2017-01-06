@@ -129,7 +129,13 @@ public class InstrumentingClassLoaderTest {
     ClassLoader classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
-    assertNotNull(exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME));
+    Field roboDataField = exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME);
+    assertNotNull(roboDataField);
+    assertThat(Modifier.isPublic(roboDataField.getModifiers())).isTrue();
+
+    // field should be marked final so Mockito doesn't try to @InjectMocks on it;
+    //   see https://github.com/robolectric/robolectric/issues/2442
+    assertThat(Modifier.isFinal(roboDataField.getModifiers())).isTrue();
   }
 
   @Test
