@@ -705,4 +705,10 @@ public class XmlResourceParserImplTest {
     forgeAndOpenDocument("<foo style=\"?parentStyleReference\"/>");
     assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
   }
+
+  @Test
+  public void getStyleAttribute_withMeaninglessString_returnsZero() throws Exception {
+    forgeAndOpenDocument("<foo style=\"android:style/whatever\"/>");
+    assertThat(parser.getStyleAttribute()).isEqualTo(0);
+  }
 }

@@ -745,9 +745,11 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   @Override
   public int getStyleAttribute() {
     String attr = getAttribute(null, "style");
-    if (attr == null) {
+    if (attr == null ||
+        (!AttributeResource.isResourceReference(attr) && !AttributeResource.isStyleReference(attr))) {
       return 0;
     }
+
     return getResourceId(attr, packageName, "style");
   }
 
