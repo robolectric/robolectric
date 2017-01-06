@@ -133,15 +133,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   @Override
-  public URL getResource(String name) {
-    URL fromParent = super.getResource(name);
-    if (fromParent != null)  {
-      return fromParent;
-    }
-    return urls.getResource(name);
-  }
-
-  private InputStream getClassBytesAsStreamPreferringLocalUrls(String resName) {
+  public InputStream getResourceAsStream(String resName) {
     InputStream fromUrlsClassLoader = urls.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null)  {
       return fromUrlsClassLoader;
@@ -196,7 +188,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
     String classFilename = className.replace('.', '/') + ".class";
-    try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
+    try (InputStream classBytesStream = getResourceAsStream(classFilename)) {
       if (classBytesStream == null) throw new ClassNotFoundException(className);
 
       return readBytes(classBytesStream);
@@ -1157,7 +1149,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     }
 
     private ClassReader typeInfo(final String type) throws IOException {
-      try (InputStream is = getClassBytesAsStreamPreferringLocalUrls(type + ".class")) {
+      try (InputStream is = getResourceAsStream(type + ".class")) {
         return new ClassReader(is);
       }
     }
