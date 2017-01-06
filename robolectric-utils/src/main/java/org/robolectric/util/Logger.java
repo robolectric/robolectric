@@ -10,6 +10,11 @@ package org.robolectric.util;
 public class Logger {
   private static final String LOGGING_ENABLED = "robolectric.logging.enabled";
 
+  /**
+   * Internal -- don't use me yet!
+   */
+  static boolean strictErrors = false;
+
   public static void strict(String message, Throwable e) {
     if (loggingEnabled()) {
       System.out.print("WARNING: ");
@@ -22,6 +27,14 @@ public class Logger {
     if (loggingEnabled()) {
       System.out.print("WARNING: ");
       System.out.println(String.format(message, args));
+    }
+  }
+
+  public static void strictError(String message, Object... args) {
+    if (strictErrors) {
+      throw new RuntimeException(String.format(message, args));
+    } else {
+      Logger.strict(message, args);
     }
   }
 

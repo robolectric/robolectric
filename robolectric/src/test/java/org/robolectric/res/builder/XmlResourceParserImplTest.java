@@ -49,6 +49,7 @@ import static org.robolectric.util.TestUtil.testResources;
 public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
+  public static final int DEFAULT_VALUE = 42;
   private XmlResourceParserImpl parser;
   private ResourceTable resourceTable;
 
@@ -555,22 +556,58 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
+  public void testGetAttributeResourceValueIntInt_withLiteralString() throws Exception {
+    forgeAndOpenDocument("<foo xmlns:bar=\"some string\"/>");
+    assertThat(parser.getAttributeResourceValue(0, DEFAULT_VALUE)).isEqualTo(DEFAULT_VALUE);
+  }
+
+  @Test
   public void testGetAttributeResourceValueIntInt() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
-    assertThat(parser.getAttributeResourceValue(0, 42)).isEqualTo(R.layout.main);
+    assertThat(parser.getAttributeResourceValue(0, DEFAULT_VALUE)).isEqualTo(R.layout.main);
+  }
+
+  @Test
+  public void testGetAttributeValue_withReference() throws Exception {
+    forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
+    assertThat(parser.getAttributeValue(0)).isEqualTo("@" + R.layout.main);
+  }
+
+  @Test
+  public void testGetAttributeValue_withNull() throws Exception {
+    forgeAndOpenDocument("<foo xmlns:bar=\"@null\"/>");
+    assertThat(parser.getAttributeValue(0)).isEqualTo("@0");
+  }
+
+  @Test
+  public void testGetAttributeValue_withEmpty() throws Exception {
+    forgeAndOpenDocument("<foo xmlns:bar=\"@empty\"/>");
+    assertThat(parser.getAttributeValue(0)).isEqualTo("@empty");
+  }
+
+  @Test
+  public void testGetAttributeResourceValueIntInt_withNull() throws Exception {
+    forgeAndOpenDocument("<foo xmlns:bar=\"@null\"/>");
+    assertThat(parser.getAttributeResourceValue(0, DEFAULT_VALUE)).isEqualTo(0);
+  }
+
+  @Test
+  public void testGetAttributeResourceValueIntInt_withEmpty() throws Exception {
+    forgeAndOpenDocument("<foo xmlns:bar=\"@empty\"/>");
+    assertThat(parser.getAttributeResourceValue(0, DEFAULT_VALUE)).isEqualTo(DEFAULT_VALUE);
   }
 
   @Test
   public void testGetAttributeResourceValueStringStringInt() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
-    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(R.layout.main);
-    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "foo", 42)).isEqualTo(42);
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", DEFAULT_VALUE)).isEqualTo(R.layout.main);
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "foo", DEFAULT_VALUE)).isEqualTo(DEFAULT_VALUE);
   }
 
   @Test
   public void testGetAttributeResourceValueWhenNotAResource() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"banana\"/>");
-    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(42);
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", DEFAULT_VALUE)).isEqualTo(DEFAULT_VALUE);
   }
 
   @Test
@@ -695,14 +732,32 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
+  public void getStyleAttribute_allowStyleReference() throws Exception {
+    forgeAndOpenDocument("<foo style=\"@style/Gastropod\"/>");
+    assertThat(parser.getStyleAttribute()).isEqualTo(R.style.Gastropod);
+  }
+
+  @Test
+  public void getStyleAttribute_allowStyleReferenceLackingExplicitType() throws Exception {
+    forgeAndOpenDocument("<foo style=\"@Gastropod\"/>");
+    assertThat(parser.getStyleAttribute()).isEqualTo(R.style.Gastropod);
+  }
+
+  @Test
   public void getStyleAttribute_allowStyleAttrReference() throws Exception {
     forgeAndOpenDocument("<foo style=\"?attr/parentStyleReference\"/>");
     assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
   }
 
   @Test
-  public void getStyleAttribute_allowStyleAttrReferenceLackingExplicitAttrType() throws Exception {
+  public void getStyleAttribute_allowStyleAttrReferenceLackingExplicitType() throws Exception {
     forgeAndOpenDocument("<foo style=\"?parentStyleReference\"/>");
     assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
+  }
+
+  @Test
+  public void getStyleAttribute_withMeaninglessString_returnsZero() throws Exception {
+    forgeAndOpenDocument("<foo style=\"android:style/whatever\"/>");
+    assertThat(parser.getStyleAttribute()).isEqualTo(0);
   }
 }

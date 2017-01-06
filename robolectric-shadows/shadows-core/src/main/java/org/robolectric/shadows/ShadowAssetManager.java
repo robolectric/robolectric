@@ -46,8 +46,6 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  boolean strictErrors = false;
-
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
   private ResourceTable resourceTable;
@@ -639,7 +637,7 @@ public final class ShadowAssetManager {
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
-        strictError("no such attr %s in %s while resolving value for %s", attribute.value, themeStyleSet, resName.getFullyQualifiedName());
+        Logger.strictError("no such attr %s in %s while resolving value for %s", attribute.value, themeStyleSet, resName.getFullyQualifiedName());
         attribute = null;
       } else {
         attribute = new AttributeResource(resName, otherAttr.value, otherAttr.contextPackageName);
@@ -652,14 +650,6 @@ public final class ShadowAssetManager {
       TypedValue typedValue = new TypedValue();
       convertAndFill(attribute, typedValue, RuntimeEnvironment.getQualifiers(), true);
       return typedValue;
-    }
-  }
-
-  private void strictError(String message, Object... args) {
-    if (strictErrors) {
-      throw new RuntimeException(String.format(message, args));
-    } else {
-      Logger.strict(message, args);
     }
   }
 

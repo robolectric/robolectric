@@ -338,7 +338,7 @@ public class ShadowThemeTest {
 
   @Test
   public void forStrict_whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_throwsException() throws Exception {
-    shadowOf(resources.getAssets()).strictErrors = true;
+//    shadowOf(resources.getAssets()).strictErrors = true;
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
