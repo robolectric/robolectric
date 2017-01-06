@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.util.Util;
 
 import java.io.BufferedInputStream;
@@ -8,8 +10,12 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Pattern;
 
 public class FileFsFile implements FsFile {
+  @VisibleForTesting
+  static String FILE_SEPARATOR = File.separator;
+
   private File canonicalFile;
   private final File file;
 
@@ -87,7 +93,7 @@ public class FileFsFile implements FsFile {
   public FsFile join(String... pathParts) {
     File f = file;
     for (String pathPart : pathParts) {
-      for (String part : pathPart.split(File.separator)) {
+      for (String part : pathPart.split(Pattern.quote(FILE_SEPARATOR))) {
         if (!part.equals(".")) {
           f = new File(f, part);
         }
@@ -170,19 +176,19 @@ public class FileFsFile implements FsFile {
    * @param paths Array of path components.
    * @return New FileFsFile.
    */
+  @NotNull
   public static FileFsFile from(String... paths) {
-    final StringBuilder sb = new StringBuilder();
+    File file = null;
     for (String path : paths) {
       if (path != null && path.length() > 0) {
-        for (String part : path.split(File.separator)) {
-          boolean first = sb.length() == 0;
-          if ((part.length() > 0 || first) && (first || !part.equals("."))) {
-            if (!first || part.length() == 0) sb.append(File.separator);
-            sb.append(part);
-          }
+        for (String part : path.split(Pattern.quote(FILE_SEPARATOR))) {
+          if (file != null && part.equals(".")) continue;
+          file = (file == null)
+              ? new File(part)
+              : new File(file, part);
         }
       }
     }
-    return new FileFsFile(sb.toString());
+    return new FileFsFile(file);
   }
 }
