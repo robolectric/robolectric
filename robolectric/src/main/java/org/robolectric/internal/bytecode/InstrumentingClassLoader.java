@@ -386,7 +386,9 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         }
       }
 
-      classNode.fields.add(0, new FieldNode(ACC_PUBLIC, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+      classNode.fields.add(0, new FieldNode(ACC_PUBLIC | ACC_FINAL,
+          ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+
 
       // If there is no constructor, adds one
       if (!foundMethods.contains("<init>()V")) {
