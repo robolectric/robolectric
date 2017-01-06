@@ -56,6 +56,19 @@ public class RoboCursorTest {
   }
 
   @Test
+  public void getColumnCount_whenSetColumnNamesHasntBeenCalled_shouldReturnCountFromData() throws Exception {
+    RoboCursor cursor = new RoboCursor();
+    cursor.setResults(new Object[][]{
+        new Object[] {1, 2, 3},
+        new Object[] {1, 2},
+    });
+    assertThat(cursor.getColumnCount()).isEqualTo(3);
+
+    cursor.setColumnNames(asList("a", "b", "c", "d"));
+    assertThat(cursor.getColumnCount()).isEqualTo(4);
+  }
+
+  @Test
   public void getColumnName_shouldReturnColumnName() throws Exception {
     assertThat(cursor.getColumnCount()).isEqualTo(8);
     assertThat(cursor.getColumnName(0)).isEqualTo(STRING_COLUMN);

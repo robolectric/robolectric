@@ -125,7 +125,11 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public int getColumnCount() {
-    return columnNames.size();
+    if (columnNames.isEmpty()) {
+      return results[0].length;
+    } else {
+      return columnNames.size();
+    }
   }
 
   @Override
