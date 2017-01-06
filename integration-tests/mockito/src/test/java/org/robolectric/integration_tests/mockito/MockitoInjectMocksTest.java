@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.integration_tests.mockito;
 
 import android.app.Activity;
 import android.support.v4.app.FragmentActivity;
@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class MockitoInjectMocksTest {
@@ -23,7 +25,7 @@ public class MockitoInjectMocksTest {
   Activity activity = Robolectric.setupActivity(FragmentActivity.class);
 
   @Test
-  public void test() {
+  public void testInjection() {
     activity.finish();
   }
 }
