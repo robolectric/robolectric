@@ -7,7 +7,7 @@ allprojects {
     }
 
     group = "org.robolectric"
-    version = "3.2.1"
+    version = "3.2.2-SNAPSHOT"
 
     apply plugin: "java"
     sourceCompatibility = JavaVersion.VERSION_1_7
