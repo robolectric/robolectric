@@ -1,3 +1,5 @@
+apply plugin: RoboJavaModulePlugin
+
 dependencies {
     compile project(":robolectric")
     compile "junit:junit:4.12"
