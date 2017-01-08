@@ -36,7 +36,7 @@ public class MethodSignature {
     return className + "." + methodName + "(" + Join.join(", ", (Object[]) paramTypes) + ")";
   }
 
-  boolean matches(String className, String methodName) {
+  public boolean matches(String className, String methodName) {
     return this.className.equals(className) && this.methodName.equals(methodName);
   }
 }

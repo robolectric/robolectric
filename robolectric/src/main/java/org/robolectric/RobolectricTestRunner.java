@@ -127,7 +127,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    */
   @NotNull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
-    return new ShadowWrangler(shadowMap, sdkConfig.getApiLevel());
+    return new ShadowWrangler(shadowMap, sdkConfig.getApiLevel(),
+        AndroidInstrumentationConfigurer.getMethodCallHandlers()) {
+      @Override
+      protected boolean strict(InvocationProfile invocationProfile) {
+        return isAndroidSupport(invocationProfile) || super.strict(invocationProfile);
+      }
+
+      private boolean isAndroidSupport(InvocationProfile invocationProfile) {
+        return invocationProfile.clazz.getName().startsWith("android.support");
+      }
+    };
   }
 
   /**

@@ -1,7 +1,6 @@
 package org.robolectric;
 
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.TestLifecycle;
+import android.content.Context;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -19,6 +18,7 @@ import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
 import org.robolectric.internal.bytecode.Intrinsics;
 import org.robolectric.internal.bytecode.MethodRef;
+import org.robolectric.internal.bytecode.MethodSignature;
 import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.DependencyJar;
@@ -29,9 +29,14 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.util.Function;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.ServiceLoader;
 
 import static java.util.Arrays.asList;
@@ -131,5 +136,147 @@ public class AndroidInstrumentationConfigurer {
       builder.addInstrumentedPackage(packageName);
     }
     return builder;
+  }
+
+  public static List<ShadowWrangler.MethodCallHandler> getMethodCallHandlers() {
+    List<ShadowWrangler.MethodCallHandler> methodCallHandlers = new ArrayList<>();
+    methodCallHandlers.add(new ShadowWrangler.MethodCallHandler() {
+      @Override
+      public boolean matches(MethodSignature methodSignature) {
+        return methodSignature.matches(LinkedHashMap.class.getName(), "eldest");
+      }
+
+      @Override
+      public Function<Object, Object> getInterceptionHandler(MethodSignature methodSignature) {
+        return new Function<Object, Object>() {
+          @Override
+          public Object call(Class<?> theClass, Object value, Object[] params) {
+            LinkedHashMap map = (LinkedHashMap) value;
+            return map.isEmpty() ? null : map.entrySet().iterator().next();
+          }
+        };
+      }
+    });
+
+    methodCallHandlers.add(new ShadowWrangler.MethodCallHandler() {
+      @Override
+      public boolean matches(MethodSignature methodSignature) {
+        return methodSignature.matches("com.android.internal.policy.PolicyManager", "makeNewWindow");
+      }
+
+      @Override
+      public Function<Object, Object> getInterceptionHandler(MethodSignature methodSignature) {
+        return new Function<Object, Object>() {
+          @Override
+          public Object call(Class<?> theClass, Object value, Object[] params) {
+            ClassLoader cl = theClass.getClassLoader();
+            Class<?> shadowWindowClass;
+
+            try {
+              shadowWindowClass = cl.loadClass("org.robolectric.shadows.ShadowWindow");
+            } catch (ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+
+            Class<?> activityClass;
+
+            try {
+              activityClass = cl.loadClass(Context.class.getName());
+            } catch (ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+
+            Object context = params[0];
+            return ReflectionHelpers.callStaticMethod(shadowWindowClass, "create", ReflectionHelpers.ClassParameter.from(activityClass, context));
+          }
+        };
+      }
+    });
+
+    methodCallHandlers.add(new ShadowWrangler.MethodCallHandler() {
+      @Override
+      public boolean matches(MethodSignature methodSignature) {
+        return methodSignature.matches("java.lang.System", "nanoTime") || methodSignature.matches("java.lang.System", "currentTimeMillis");
+      }
+
+      @Override
+      public Function<Object, Object> getInterceptionHandler(final MethodSignature methodSignature) {
+        return new Function<Object, Object>() {
+          @Override
+          public Object call(Class<?> theClass, Object value, Object[] params) {
+            ClassLoader cl = theClass.getClassLoader();
+            Class<?> shadowSystemClockClass;
+            try {
+              shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
+            } catch (ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+
+            return ReflectionHelpers.callStaticMethod(shadowSystemClockClass, methodSignature.methodName);
+          }
+        };
+      }
+    });
+
+    methodCallHandlers.add(new ShadowWrangler.MethodCallHandler() {
+      @Override
+      public boolean matches(MethodSignature methodSignature) {
+        return methodSignature.matches("java.lang.System", "arraycopy");
+      }
+
+      @Override
+      public Function<Object, Object> getInterceptionHandler(MethodSignature methodSignature) {
+        return new Function<Object, Object>() {
+          @Override
+          public Object call(Class<?> theClass, Object value, Object[] params) {
+            //noinspection SuspiciousSystemArraycopy
+            System.arraycopy(params[0], (Integer) params[1], params[2], (Integer) params[3], (Integer) params[4]);
+            return null;
+          }
+        };
+      }
+    });
+
+    methodCallHandlers.add(new ShadowWrangler.MethodCallHandler() {
+      @Override
+      public boolean matches(MethodSignature methodSignature) {
+        return methodSignature.matches("java.util.Locale", "adjustLanguageCode");
+      }
+
+      @Override
+      public Function<Object, Object> getInterceptionHandler(MethodSignature methodSignature) {
+        return new Function<Object, Object>() {
+          @Override
+          public Object call(Class<?> theClass, Object value, Object[] params) {
+            return params[0];
+          }
+        };
+      }
+    });
+
+
+    methodCallHandlers.add(new ShadowWrangler.MethodCallHandler() {
+      @Override
+      public boolean matches(MethodSignature methodSignature) {
+        return methodSignature.matches("java.lang.System", "logE");
+      }
+
+      @Override
+      public Function<Object, Object> getInterceptionHandler(MethodSignature methodSignature) {
+        return new Function<Object, Object>() {
+          @Override
+          public Object call(Class<?> theClass, Object value, Object[] params) {
+            String message = "System.logE: ";
+            for (Object param : params) {
+              message += param.toString();
+            }
+            System.err.println(message);
+            return null;
+          }
+        };
+      }
+    });
+
+    return methodCallHandlers;
   }
 }
