@@ -166,7 +166,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    */
   @NotNull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-    return InstrumentationConfiguration.newBuilder().withConfig(config).build();
+    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
+    AndroidInstrumentationConfigurer.initialize(builder);
+    AndroidInstrumentationConfigurer.withConfig(builder, config);
+    return builder.build();
   }
 
   /**
