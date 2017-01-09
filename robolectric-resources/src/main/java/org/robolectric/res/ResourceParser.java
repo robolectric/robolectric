@@ -37,6 +37,7 @@ class ResourceParser {
           new ValueResourceLoader(data, "/resources/string", "string", ResType.CHAR_SEQUENCE),
           new ValueResourceLoader(data, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
           new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
+          new ValueResourceLoader(data, "/resources/array", "array", ResType.TYPED_ARRAY),
           new AttrResourceLoader(data),
           new StyleResourceLoader(data)
       );

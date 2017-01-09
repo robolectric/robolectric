@@ -27,7 +27,7 @@ public class StyleResourceLoader extends XpathResourceXmlLoader {
       String value = item.getTextContent();
 
       ResName attrResName = ResName.qualifyResName(attrName, xmlContext.getPackageName(), "attr");
-      styleData.add(attrResName, new AttributeResource(attrResName, value, xmlContext.getPackageName()));
+      styleData.add(attrResName, new ResourceValue(attrResName, value, xmlContext.getPackageName()));
     }
 
     data.put("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE, xmlContext));

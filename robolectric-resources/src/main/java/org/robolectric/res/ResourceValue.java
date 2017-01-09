@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 
-public class AttributeResource {
+public class ResourceValue {
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
@@ -14,11 +14,11 @@ public class AttributeResource {
   public final @NotNull String contextPackageName;
   private final Integer referenceResId;
 
-  public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
+  public ResourceValue(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
     this(resName, value, contextPackageName, null);
   }
 
-  public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName, Integer referenceResId) {
+  public ResourceValue(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName, Integer referenceResId) {
     this.referenceResId = referenceResId;
     if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
 

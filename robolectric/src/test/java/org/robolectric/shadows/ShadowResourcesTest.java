@@ -1,19 +1,33 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.content.res.*;
-import android.graphics.drawable.*;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
+import android.view.Display;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.*;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.Shadow;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
@@ -102,6 +116,41 @@ public class ShadowResourcesTest {
   public void getStringArray() throws Exception {
     assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[]{"foo", "bar"});
     assertThat(resources.getStringArray(R.array.greetings)).isEqualTo(new String[]{"hola", "Hello"});
+  }
+
+  @Test
+  public void obtainTypedArray() throws Exception {
+    final Display display = Shadow.newInstanceOf(Display.class);
+    final ShadowDisplay shadowDisplay = shadowOf(display);
+    // Standard xxhdpi screen
+    shadowDisplay.setDensityDpi(480);
+    final DisplayMetrics displayMetrics = new DisplayMetrics();
+    display.getMetrics(displayMetrics);
+
+    /*final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
+    assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
+    assertThat(valuesTypedArray.getInt(1, 0)).isEqualTo(3875);
+    assertThat(valuesTypedArray.getInteger(1, 0)).isEqualTo(3875);
+    assertThat(valuesTypedArray.getFloat(2, 0.0f)).isEqualTo(2.0f);
+    assertThat(valuesTypedArray.getColor(3, Color.BLACK)).isEqualTo(Color.MAGENTA);
+    assertThat(valuesTypedArray.getColor(4, Color.BLACK)).isEqualTo(Color.parseColor("#00ffff"));
+    assertThat(valuesTypedArray.getDimension(5, 0.0f)).isEqualTo(8.0f);
+    assertThat(valuesTypedArray.getDimension(6, 0.0f)).isEqualTo(12.0f);
+    assertThat(valuesTypedArray.getDimension(7, 0.0f)).isEqualTo(6.0f);
+    assertThat(valuesTypedArray.getDimension(8, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 3.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(9, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_IN, 4.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(10, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 36.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(11, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PT, 18.0f, displayMetrics));
+
+    final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
+    assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
+    assertThat(refsTypedArray.getString(1)).isEqualTo("banana");
+    assertThat(refsTypedArray.getInt(2, 0)).isEqualTo(5);
+    assertThat(refsTypedArray.getBoolean(3, false)).isTrue();
+    assertThat(refsTypedArray.getType(4)).isEqualTo(TypedValue.TYPE_NULL);
+    assertThat(shadowOf(refsTypedArray.getDrawable(5)).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
+    assertThat(refsTypedArray.getColor(6, Color.BLACK)).isEqualTo(Color.parseColor("#ff5c00"));
+    assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);*/
   }
 
   @Test

@@ -38,7 +38,15 @@ public enum ResType {
     @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
       return extractScalarItems(xmlNode, INTEGER_ARRAY, INTEGER, xmlContext);
     }
-  };
+  },
+
+  TYPED_ARRAY {
+    @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
+      return extractTypedItems(xmlNode, TYPED_ARRAY, xmlContext);
+    }
+  },
+
+  NULL;
 
   private static TypedResource extractScalarItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, ResType itemResType, XmlLoader.XmlContext xmlContext) {
     List<TypedResource> items = new ArrayList<>();
@@ -46,6 +54,27 @@ public enum ResType {
       items.add(new TypedResource<>(item.getTextContent(), itemResType, xmlContext));
     }
     TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
+    return new TypedResource<>(typedResources, arrayResType, xmlContext);
+  }
+
+  private static TypedResource extractTypedItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, XmlLoader.XmlContext xmlContext) {
+    final List<TypedResource> items = new ArrayList<>();
+    for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
+      final String itemString = item.getTextContent();
+      ResType itemResType = inferFromValue(itemString);
+      if (itemResType == ResType.CHAR_SEQUENCE) {
+        if (ResourceValue.isStyleReference(itemString)) {
+          itemResType = ResType.STYLE;
+        } else if (itemString.equals("@null")) {
+          itemResType = ResType.NULL;
+        } else if (ResourceValue.isResourceReference(itemString)) {
+          // This is a reference; no type info needed.
+          itemResType = null;
+        }
+      }
+      items.add(new TypedResource<>(itemString, itemResType, xmlContext));
+    }
+    final TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
     return new TypedResource<>(typedResources, arrayResType, xmlContext);
   }
 
@@ -61,7 +90,7 @@ public enum ResType {
       return ResType.COLOR;
     } else if ("true".equals(value) || "false".equals(value)) {
       return ResType.BOOLEAN;
-    } else if (value.endsWith("dp") || value.endsWith("sp") || value.endsWith("pt") || value.endsWith("px") || value.endsWith("mm") || value.endsWith("in")) {
+    } else if (value.endsWith("dp") || value.endsWith("sp") || value.endsWith("pt") || value.endsWith("px") || value.endsWith("mm") || value.endsWith("in") || value.endsWith("dip")) {
       return ResType.DIMEN;
     } else {
       try {

@@ -42,7 +42,7 @@ public class ResourceTableFactoryTest {
 
   @Test
   public void shouldHandleNull() throws Exception {
-    assertThat(appResourceTable.getResourceId(ResName.qualifyResName(AttributeResource.NULL_VALUE, null, null))).isEqualTo(null);
+    assertThat(appResourceTable.getResourceId(ResName.qualifyResName(ResourceValue.NULL_VALUE, null, null))).isEqualTo(null);
   }
 
   @Test

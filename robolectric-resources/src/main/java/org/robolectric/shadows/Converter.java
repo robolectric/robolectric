@@ -66,6 +66,7 @@ public class Converter<T> {
         return new FromFraction();
       case CHAR_SEQUENCE_ARRAY:
       case INTEGER_ARRAY:
+      case TYPED_ARRAY:
         return new FromArray();
       default:
         throw new UnsupportedOperationException(resType.name());
