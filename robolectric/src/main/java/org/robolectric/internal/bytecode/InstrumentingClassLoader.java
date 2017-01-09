@@ -94,6 +94,9 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private final Map<String, Class> classes = new HashMap<>();
   private final Map<String, String> classesToRemap;
   private final Set<MethodRef> methodsToIntercept;
+  private final Set<String> possiblyMissingClassesNeedingDummies = new HashSet<String>() { {
+    add("android.content.pm.PackageInstaller");
+  } };
 
   public InstrumentingClassLoader(InstrumentationConfiguration config, URL... urls) {
     super(InstrumentingClassLoader.class.getClassLoader());
@@ -189,12 +192,37 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
     String classFilename = className.replace('.', '/') + ".class";
     try (InputStream classBytesStream = getResourceAsStream(classFilename)) {
-      if (classBytesStream == null) throw new ClassNotFoundException(className);
+      if (classBytesStream == null) {
+        if (possiblyMissingClassesNeedingDummies.contains(className)) {
+          return createEmptyClass(className);
+        } else {
+          throw new ClassNotFoundException(className);
+        }
+      }
 
       return readBytes(classBytesStream);
     } catch (IOException e) {
       throw new ClassNotFoundException("couldn't load " + className, e);
     }
+  }
+
+  private byte[] createEmptyClass(String className) {
+    ClassWriter cw = new ClassWriter(0);
+    cw.visit(V1_7, ACC_PUBLIC | ACC_SUPER | ACC_FINAL,
+        internalize(className), null, internalize(Object.class.getName()), null);
+    //default constructor
+    {
+      MethodVisitor mv=cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+      mv.visitCode();
+      mv.visitVarInsn(ALOAD, 0); //load the first local variable: this
+      mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
+      mv.visitInsn(RETURN);
+      mv.visitMaxs(1,1);
+      mv.visitEnd();
+    }
+
+    cw.visitEnd();
+    return cw.toByteArray();
   }
 
   private void ensurePackage(final String className) {
