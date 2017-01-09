@@ -3,7 +3,7 @@ package org.robolectric.res.builder;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import com.android.internal.util.XmlUtils;
-import org.robolectric.res.ResourceValue;
+import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Document;
@@ -66,7 +66,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     this.fileName = fileName;
     this.packageName = packageName;
     this.resourceTable = resourceTable;
-    this.applicationNamespace = ResourceValue.ANDROID_RES_NS_PREFIX + applicationPackageName;
+    this.applicationNamespace = AttributeResource.ANDROID_RES_NS_PREFIX + applicationPackageName;
   }
 
   @Override
@@ -257,8 +257,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     if (element.hasAttributeNS(namespace, name)) {
       return element.getAttributeNS(namespace, name).trim();
     } else if (applicationNamespace.equals(namespace)
-        && element.hasAttributeNS(ResourceValue.RES_AUTO_NS_URI, name)) {
-      return element.getAttributeNS(ResourceValue.RES_AUTO_NS_URI, name).trim();
+        && element.hasAttributeNS(AttributeResource.RES_AUTO_NS_URI, name)) {
+      return element.getAttributeNS(AttributeResource.RES_AUTO_NS_URI, name).trim();
     }
 
     return null;
@@ -274,7 +274,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   private String maybeReplaceNamespace(String namespace) {
-    if (ResourceValue.RES_AUTO_NS_URI.equals(namespace)) {
+    if (AttributeResource.RES_AUTO_NS_URI.equals(namespace)) {
       return applicationNamespace;
     } else {
       return namespace;
@@ -322,9 +322,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   // for testing only...
   public String qualify(String value) {
     if (value == null) return null;
-    if (ResourceValue.isResourceReference(value)) {
+    if (AttributeResource.isResourceReference(value)) {
       return "@" + ResName.qualifyResourceName(value.substring(1).replace("+", ""), packageName, "attr");
-    } else if (ResourceValue.isStyleReference(value)) {
+    } else if (AttributeResource.isStyleReference(value)) {
       return "?" + ResName.qualifyResourceName(value.substring(1), packageName, "attr");
     } else {
       return value;
@@ -624,7 +624,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   @Override
   public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
     String attr = getAttribute(namespace, attribute);
-    if (attr != null && attr.startsWith("@") && !ResourceValue.isNull(attr)) {
+    if (attr != null && attr.startsWith("@") && !AttributeResource.isNull(attr)) {
       return getResourceId(attr, packageName, null);
     }
     return defaultValue;
@@ -746,7 +746,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public int getStyleAttribute() {
     String attr = getAttribute(null, "style");
     if (attr == null ||
-        (!ResourceValue.isResourceReference(attr) && !ResourceValue.isStyleReference(attr))) {
+        (!AttributeResource.isResourceReference(attr) && !AttributeResource.isStyleReference(attr))) {
       return 0;
     }
 
@@ -765,10 +765,10 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
   private int getResourceId(String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
 
-    if (ResourceValue.isNull(possiblyQualifiedResourceName)) return 0;
+    if (AttributeResource.isNull(possiblyQualifiedResourceName)) return 0;
 
-    if (ResourceValue.isStyleReference(possiblyQualifiedResourceName)) {
-      ResName styleReference = ResourceValue.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
+    if (AttributeResource.isStyleReference(possiblyQualifiedResourceName)) {
+      ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
       Integer resourceId = resourceTable.getResourceId(styleReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(styleReference.getFullyQualifiedName());
@@ -776,8 +776,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
       return resourceId;
     }
 
-    if (ResourceValue.isResourceReference(possiblyQualifiedResourceName)) {
-      ResName resourceReference = ResourceValue.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
+    if (AttributeResource.isResourceReference(possiblyQualifiedResourceName)) {
+      ResName resourceReference = AttributeResource.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
       Integer resourceId = resourceTable.getResourceId(resourceReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(resourceReference.getFullyQualifiedName());

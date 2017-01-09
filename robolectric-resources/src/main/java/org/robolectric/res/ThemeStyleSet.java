@@ -10,11 +10,11 @@ public class ThemeStyleSet implements Style {
 
   private List<OverlayedStyle> styles = new ArrayList<>();
 
-  public ResourceValue getAttrValue(ResName attrName) {
-    ResourceValue attribute = null;
+  public AttributeResource getAttrValue(ResName attrName) {
+    AttributeResource attribute = null;
 
     for (OverlayedStyle overlayedStyle : styles) {
-      ResourceValue overlayedAttribute = overlayedStyle.style.getAttrValue(attrName);
+      AttributeResource overlayedAttribute = overlayedStyle.style.getAttrValue(attrName);
       if (overlayedAttribute != null && (attribute == null || overlayedStyle.force)) {
         attribute = overlayedAttribute;
       }

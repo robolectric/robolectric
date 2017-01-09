@@ -48,11 +48,11 @@ public class Attribute {
   }
 
   public boolean isNull() {
-    return ResourceValue.isNull(value);
+    return AttributeResource.isNull(value);
   }
 
   public boolean isEmpty() {
-    return ResourceValue.isEmpty(value);
+    return AttributeResource.isEmpty(value);
   }
 
   @Override

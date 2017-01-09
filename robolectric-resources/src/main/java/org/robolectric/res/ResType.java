@@ -63,11 +63,11 @@ public enum ResType {
       final String itemString = item.getTextContent();
       ResType itemResType = inferFromValue(itemString);
       if (itemResType == ResType.CHAR_SEQUENCE) {
-        if (ResourceValue.isStyleReference(itemString)) {
+        if (AttributeResource.isStyleReference(itemString)) {
           itemResType = ResType.STYLE;
         } else if (itemString.equals("@null")) {
           itemResType = ResType.NULL;
-        } else if (ResourceValue.isResourceReference(itemString)) {
+        } else if (AttributeResource.isResourceReference(itemString)) {
           // This is a reference; no type info needed.
           itemResType = null;
         }

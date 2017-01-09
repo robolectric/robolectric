@@ -10,7 +10,7 @@ public class StyleData implements Style {
   private final String packageName;
   private final String name;
   private final String parent;
-  private final Map<ResName, ResourceValue> items = new LinkedHashMap<>();
+  private final Map<ResName, AttributeResource> items = new LinkedHashMap<>();
 
   public StyleData(String packageName, String name, String parent) {
     this.packageName = packageName;
@@ -26,26 +26,26 @@ public class StyleData implements Style {
     return parent;
   }
 
-  public void add(ResName attrName, ResourceValue attribute) {
+  public void add(ResName attrName, AttributeResource attribute) {
     attrName.mustBe("attr");
     items.put(attrName, attribute);
   }
 
-  @Override public ResourceValue getAttrValue(ResName resName) {
-    ResourceValue resourceValue = items.get(resName);
+  @Override public AttributeResource getAttrValue(ResName resName) {
+    AttributeResource attributeResource = items.get(resName);
 
     // This hack allows us to look up attributes from downstream dependencies, see comment in
     // org.robolectric.shadows.ShadowThemeTest.obtainTypedArrayFromDependencyLibrary()
     // for an explanation. TODO(jongerrish): Make Robolectric use a more realistic resource merging
     // scheme.
-    if (resourceValue == null && !"android".equals(resName.packageName) && !"android".equals(packageName)) {
-      resourceValue = items.get(resName.withPackageName(packageName));
-      if (resourceValue != null && (!"android".equals(resourceValue.contextPackageName))) {
-        resourceValue = new ResourceValue(resName, resourceValue.value, resName.packageName);
+    if (attributeResource == null && !"android".equals(resName.packageName) && !"android".equals(packageName)) {
+      attributeResource = items.get(resName.withPackageName(packageName));
+      if (attributeResource != null && (!"android".equals(attributeResource.contextPackageName))) {
+        attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
       }
     }
 
-    return resourceValue;
+    return attributeResource;
   }
 
   public boolean grep(Pattern pattern) {

@@ -88,7 +88,7 @@ public class ResName {
       return null;
     }
 
-    if (ResourceValue.isNull(possiblyQualifiedResourceName)) {
+    if (AttributeResource.isNull(possiblyQualifiedResourceName)) {
       return null;
     }
 
