@@ -8,18 +8,24 @@ import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
+import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.manifest.AndroidManifest;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
+import static org.robolectric.util.ReflectionHelpers.newInstance;
 
 public class RobolectricTestRunnerTest {
 
@@ -66,6 +72,20 @@ public class RobolectricTestRunnerTest {
         "failure: java.lang.RuntimeException: fake error in resetStaticState",
         "failure: java.lang.RuntimeException: fake error in resetStaticState"
     );
+  }
+
+  @Test
+  public void equalityOfRobolectricFrameworkMethod() throws Exception {
+    Method method = TestWithTwoMethods.class.getMethod("first");
+    RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method, mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
+    RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method, mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class));
+    RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method, mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
+
+    assertThat(rfm16).isEqualTo(rfm16);
+    assertThat(rfm16).isNotEqualTo(rfm17);
+    assertThat(rfm16).isEqualTo(rfm16b);
+
+    assertThat(rfm16.hashCode()).isEqualTo((rfm16b.hashCode()));
   }
 
   /////////////////////////////
