@@ -1,0 +1,29 @@
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+dependencies {
+    // Project dependencies
+    compile project(":robolectric-annotations")
+    compile project(":robolectric-utils")
+
+    // Compile dependencies
+    compile "org.ow2.asm:asm:5.0.1"
+    compile "org.ow2.asm:asm-util:5.0.1"
+    compile "org.ow2.asm:asm-commons:5.0.1"
+    compile "org.ow2.asm:asm-analysis:5.0.1"
+
+    compileOnly "com.intellij:annotations:12.0"
+
+    compile "org.apache.ant:ant:1.8.0"
+    compile("org.apache.maven:maven-ant-tasks:2.1.3") {
+        exclude group: "junit", module: "junit"
+    }
+    compileOnly "junit:junit:4.12"
+
+    // Testing dependencies
+    testCompile "junit:junit:4.12"
+    testCompile "org.hamcrest:hamcrest-core:1.3"
+    testCompile "org.assertj:assertj-core:2.0.0"
+    testCompile "org.mockito:mockito-core:2.5.4"
+}

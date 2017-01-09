@@ -1,8 +1,5 @@
 package org.robolectric.internal.bytecode;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
 
@@ -84,13 +81,13 @@ public class InstrumentationConfiguration {
   private int cachedHashCode;
 
   private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAcquire, Collection<String> packagesToNotAquire, Collection<String> classesToNotInstrument) {
-    this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
-    this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
-    this.instrumentedPackages = ImmutableList.copyOf(instrumentedPackages);
-    this.instrumentedClasses = ImmutableSet.copyOf(instrumentedClasses);
-    this.classesToNotAcquire = ImmutableSet.copyOf(classesToNotAcquire);
-    this.packagesToNotAcquire = ImmutableSet.copyOf(packagesToNotAquire);
-    this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
+    this.classNameTranslations = new HashMap<>(classNameTranslations);
+    this.interceptedMethods = new HashSet<>(interceptedMethods);
+    this.instrumentedPackages = new ArrayList<>(instrumentedPackages);
+    this.instrumentedClasses = new HashSet<>(instrumentedClasses);
+    this.classesToNotAcquire = new HashSet<>(classesToNotAcquire);
+    this.packagesToNotAcquire = new HashSet<>(packagesToNotAquire);
+    this.classesToNotInstrument = new HashSet<>(classesToNotInstrument);
     this.cachedHashCode = 0;
   }
 
@@ -163,14 +160,6 @@ public class InstrumentationConfiguration {
 
   public boolean containsStubs(ClassInfo classInfo) {
     return classInfo.getName().startsWith("com.google.android.maps.");
-  }
-
-  private static Collection<String> stringify(Class... classes) {
-    ArrayList<String> strings = new ArrayList<>();
-    for (Class aClass : classes) {
-      strings.add(aClass.getName());
-    }
-    return strings;
   }
 
   private boolean isInInstrumentedPackage(ClassInfo classInfo) {
