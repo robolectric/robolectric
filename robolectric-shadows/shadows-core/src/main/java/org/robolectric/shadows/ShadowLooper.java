@@ -1,12 +1,6 @@
 package org.robolectric.shadows;
 
 import android.os.Looper;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.concurrent.TimeUnit;
-
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -16,10 +10,14 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Scheduler;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
@@ -31,12 +29,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  */
 @Implements(Looper.class)
 public class ShadowLooper {
-  // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
-  // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
-  // is called. This also allows us to implement the useful getLooperForThread() method.
-  // Note that the main looper is handled differently and is not put in this hash, because we need to be able to
-  // "switch" the thread that the main looper is associated with.
-  private static Map<Thread, Looper> loopingLoopers = Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
+  private static final List<Looper> loopingLoopers = new ArrayList<>();
 
   private static Looper mainLooper;
 
@@ -52,15 +45,16 @@ public class ShadowLooper {
     if (!isMainThread()) {
       throw new IllegalStateException("you should only be calling this from the main thread!");
     }
+
+    // Threads on which `Looper.loop()` was called may be blocked at test teardown time; unstick them.
     synchronized (loopingLoopers) {
-      for (Looper looper : loopingLoopers.values()) {
-        synchronized (looper) {
-          if (!shadowOf(looper).quit) {
-            looper.quit();
-          }
-        }
+      for (Looper looper : loopingLoopers) {
+        looper.quit();
       }
+
+      loopingLoopers.clear();
     }
+
     // Because resetStaticState() is called by ParallelUniverse on startup before prepareMainLooper() is
     // called, this might be null on that occasion.
     if (mainLooper != null) {
@@ -74,7 +68,9 @@ public class ShadowLooper {
     if (isMainThread()) {
       mainLooper = realObject;
     } else {
-      loopingLoopers.put(Thread.currentThread(), realObject);
+      synchronized (loopingLoopers) {
+        loopingLoopers.add(realObject);
+      }
     }
     resetScheduler();
   }
@@ -142,7 +138,15 @@ public class ShadowLooper {
   }
   
   public static Looper getLooperForThread(Thread thread) {
-    return isMainThread(thread) ? mainLooper : loopingLoopers.get(thread);
+    if (isMainThread(thread)) return mainLooper;
+    synchronized (loopingLoopers) {
+      for (Looper looper : loopingLoopers) {
+        if (looper.getThread().equals(thread)) {
+          return looper;
+        }
+      }
+    }
+    return null;
   }
   
   public static void pauseLooper(Looper looper) {

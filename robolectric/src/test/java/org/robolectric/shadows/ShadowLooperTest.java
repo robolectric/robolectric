@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,6 +15,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -89,7 +89,31 @@ public class ShadowLooperTest {
   public void shadowMainLooper_shouldBeShadowOfMainLooper() {
     assertThat(ShadowLooper.getShadowMainLooper()).isSameAs(shadowOf(Looper.getMainLooper()));
   }
-  
+
+  @Test
+  public void backgroundThreadLooperManipulation() throws Exception {
+    final Transcript transcript = new Transcript();
+    Thread backgroundThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        Looper.prepare();
+        shadowOf(Looper.myLooper()).getScheduler().pause();
+        new Handler(Looper.myLooper()).post(new Runnable() {
+          @Override
+          public void run() {
+            transcript.add("ran");
+          }
+        });
+      }
+    });
+    backgroundThread.start();
+    backgroundThread.join();
+
+    assertThat(transcript.getEvents()).isEmpty();
+    shadowOf(ShadowLooper.getLooperForThread(backgroundThread)).getScheduler().advanceToLastPostedRunnable();
+    assertThat(transcript.getEvents()).containsExactly("ran");
+  }
+
   @Test
   public void getLooperForThread_returnsLooperForAThreadThatHasOne() throws InterruptedException {
     QuitThread qt = getQuitThread();
