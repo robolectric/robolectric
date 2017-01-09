@@ -12,7 +12,7 @@ class ProvideBuildClasspathTask extends DefaultTask {
         project.rootProject.allprojects.each { Project otherProject ->
             def match = otherProject.name =~ /robolectric-shadows\/(.*)/
             if (match.matches()) {
-                def artifactName = "${otherProject.group}:${otherProject.mavenArtifactName()}:${otherProject.version}"
+                def artifactName = "${otherProject.group}:${otherProject.mavenArtifactName}:${otherProject.version}"
                 File classesDir = otherProject.sourceSets['main'].output.classesDir
                 File resourcesDir = otherProject.sourceSets['main'].output.resourcesDir
                 paths << "${artifactName.replaceAll(/:/, '\\\\:')}: ${classesDir}:${resourcesDir}"
