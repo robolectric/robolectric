@@ -52,3 +52,7 @@ dependencies {
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates // run against whatever this JDK supports
 }
+
+checkApiChanges {
+    entryPoints += "org.robolectric.RobolectricTestRunner"
+}
