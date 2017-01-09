@@ -6,7 +6,7 @@ dependencies {
     testCompile "com.google.android:android-stubs:23"
 
     // Testing dependencies
-    testCompile "org.hamcrest:hamcrest-core:1.3"
-    testCompile "org.assertj:assertj-core:2.0.0"
+    testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
+    testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "org.mockito:mockito-core:2.5.4"
 }
