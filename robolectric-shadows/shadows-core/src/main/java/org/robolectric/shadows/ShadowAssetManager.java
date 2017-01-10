@@ -15,7 +15,21 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.*;
+import org.robolectric.res.AttrData;
+import org.robolectric.res.AttributeResource;
+import org.robolectric.res.DrawableResourceLoader;
+import org.robolectric.res.EmptyStyle;
+import org.robolectric.res.FileTypedResource;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceIds;
+import org.robolectric.res.ResourceTable;
+import org.robolectric.res.Style;
+import org.robolectric.res.StyleData;
+import org.robolectric.res.StyleResolver;
+import org.robolectric.res.ThemeStyleSet;
+import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
@@ -459,11 +473,11 @@ public final class ShadowAssetManager {
       final TypedValue typedValue = new TypedValue();
 
       if (type == TypedValue.TYPE_REFERENCE) {
-        final String resName = typedResource.asString();
-        final int startIdx = resName.indexOf("@");
-        final int slashIdx = resName.indexOf("/");
-        typedValue.resourceId = getResourceIdentifier(resName.substring(slashIdx + 1),
-                resName.substring(startIdx + 1, slashIdx), getResourcePackageName(resId));
+        final String reference = typedResource.asString();
+        ResName refResName = AttributeResource.getResourceReference(reference,
+            typedResource.getXmlContext().getPackageName(), null);
+        typedValue.resourceId = resourceTable.getResourceId(refResName);
+        typedValue.data = typedValue.resourceId;
         typedResource = resolve(typedResource, RuntimeEnvironment.getQualifiers(), typedValue.resourceId);
         // Reclassify to a non-reference type.
         type = getResourceType(typedResource);
@@ -520,6 +534,8 @@ public final class ShadowAssetManager {
       type = TypedValue.TYPE_INT_COLOR_ARGB8;
     } else if (resType == ResType.STYLE) {
       type = TypedValue.TYPE_ATTRIBUTE;
+    } else if (resType == ResType.TYPED_ARRAY) {
+      type = TypedValue.TYPE_REFERENCE;
     } else {
       type = -1;
     }

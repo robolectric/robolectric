@@ -106,7 +106,7 @@ public class ShadowResourcesTest {
   @Test
   public void getText_withHtml() throws Exception {
     assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
-  } 
+  }
 
   @Test
   public void getText_withLayoutId() throws Exception {
@@ -122,13 +122,11 @@ public class ShadowResourcesTest {
   @Test
   public void withIdReferenceEntry_obtainTypedArray() {
     TypedArray typedArray = resources.obtainTypedArray(R.array.typed_array_with_resource_id);
-    assertThat(typedArray.length()).isEqualTo(2);
+    assertThat(typedArray.length()).isEqualTo(3);
 
-    int firstId = typedArray.getResourceId(0, 0);
-    assertThat(firstId).isEqualTo(R.id.id_declared_in_id_tag);
-
-    int secondId = typedArray.getResourceId(1, 0);
-    assertThat(secondId).isEqualTo(R.id.id_declared_in_item_tag);
+    assertThat(typedArray.getResourceId(0, 0)).isEqualTo(R.id.id_declared_in_id_tag);
+    assertThat(typedArray.getResourceId(1, 0)).isEqualTo(R.id.id_declared_in_item_tag);
+    assertThat(typedArray.getResourceId(2, 0)).isEqualTo(R.id.id_declared_in_layout);
   }
 
   @Test
@@ -171,6 +169,11 @@ public class ShadowResourcesTest {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);
     }
+
+    assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.typed_array_values);
+    assertThat(refsTypedArray.getTextArray(8))
+        .containsExactly("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
+            "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
   }
 
   @Test

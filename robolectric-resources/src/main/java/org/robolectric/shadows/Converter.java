@@ -74,7 +74,7 @@ public class Converter<T> {
   }
 
   public CharSequence asCharSequence(TypedResource typedResource) {
-    throw cantDo("asCharSequence");
+    return typedResource.asString();
   }
 
   public int asInt(TypedResource typedResource) {
