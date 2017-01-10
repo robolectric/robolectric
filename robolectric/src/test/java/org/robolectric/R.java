@@ -84,10 +84,12 @@ public final class R {
     public static final int list_view_with_enum_scrollbar = 0x7f01003b;
     public static final int action_search = 0x7f01003c;
 
-    public static final int idNotInXml = 0x7f01003d;
-    public static final int idIDeclaredInXml = 0x7f01003e;
-    public static int lib_button = 0x7f01003f;
-    public static int lib3_button = 0x7f010040;
+    public static final int id_declared_in_layout = 0x7f01003d;
+    public static final int id_declared_in_item_tag = 0x7f01003e;
+    public static final int id_with_string_value = 0x7f010042;
+    public static final int id_declared_in_id_tag = 0x7f010041;
+    public static final int lib_button = 0x7f01003f;
+    public static final int lib3_button = 0x7f010040;
   }
 
   public static final class string {
@@ -146,6 +148,7 @@ public final class R {
     public static final int referenced_colors_int_array = 0x7f040307;
     public static final int typed_array_values = 0x7f040308;
     public static final int typed_array_references = 0x7f040309;
+    public static final int typed_array_with_resource_id = 0x7f04030A;
   }
 
   public static final class color {

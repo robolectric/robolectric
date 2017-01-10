@@ -493,7 +493,7 @@ public final class ShadowAssetManager {
     }
 
     int[] indices = new int[typedResources.length + 1]; /* keep zeroed out */
-    return ShadowTypedArray.create(resources, null, data, indices, totalLen, stringData);
+    return ShadowTypedArray.create(resources, null, data, indices, typedResources.length, stringData);
   }
 
   private int getResourceType(TypedResource typedResource) {

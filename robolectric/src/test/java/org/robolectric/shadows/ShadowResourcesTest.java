@@ -106,7 +106,7 @@ public class ShadowResourcesTest {
   @Test
   public void getText_withHtml() throws Exception {
     assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
-  }
+  } 
 
   @Test
   public void getText_withLayoutId() throws Exception {
@@ -117,6 +117,18 @@ public class ShadowResourcesTest {
   public void getStringArray() throws Exception {
     assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[]{"foo", "bar"});
     assertThat(resources.getStringArray(R.array.greetings)).isEqualTo(new String[]{"hola", "Hello"});
+  }
+
+  @Test
+  public void withIdReferenceEntry_obtainTypedArray() {
+    TypedArray typedArray = resources.obtainTypedArray(R.array.typed_array_with_resource_id);
+    assertThat(typedArray.length()).isEqualTo(2);
+
+    int firstId = typedArray.getResourceId(0, 0);
+    assertThat(firstId).isEqualTo(R.id.id_declared_in_id_tag);
+
+    int secondId = typedArray.getResourceId(1, 0);
+    assertThat(secondId).isEqualTo(R.id.id_declared_in_item_tag);
   }
 
   @Test
