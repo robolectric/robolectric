@@ -20,3 +20,6 @@ apply plugin: 'nebula-aggregate-javadocs'
 rootProject.gradle.projectsEvaluated {
     rootProject.tasks['aggregateJavadocs'].failOnError = false
 }
+
+// for use of external initialization scripts...
+project.ext.allSdks = AndroidSdk.ALL_SDKS
