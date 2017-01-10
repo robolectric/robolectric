@@ -148,10 +148,17 @@ public class ShadowResourcesTest {
     assertThat(refsTypedArray.getString(1)).isEqualTo("banana");
     assertThat(refsTypedArray.getInt(2, 0)).isEqualTo(5);
     assertThat(refsTypedArray.getBoolean(3, false)).isTrue();
-    assertThat(refsTypedArray.getType(4)).isEqualTo(TypedValue.TYPE_NULL);
+
+    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+      assertThat(refsTypedArray.getType(4)).isEqualTo(TypedValue.TYPE_NULL);
+    }
+
     assertThat(shadowOf(refsTypedArray.getDrawable(5)).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
     assertThat(refsTypedArray.getColor(6, Color.BLACK)).isEqualTo(Color.parseColor("#ff5c00"));
-    assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);
+
+    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+      assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);
+    }
   }
 
   @Test
