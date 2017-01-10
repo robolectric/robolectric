@@ -3,6 +3,7 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.util.GFileUtils
 
+@SuppressWarnings("GroovyUnusedDeclaration")
 class ShadowsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
@@ -51,8 +52,8 @@ class ShadowsPlugin implements Plugin<Project> {
         def compileJavaTask = project.tasks["compileJava"]
         compileJavaTask.dependsOn("generateShadowProvider")
     }
-}
 
-class ShadowsPluginExtension {
-    String packageName
+    static class ShadowsPluginExtension {
+        String packageName
+    }
 }

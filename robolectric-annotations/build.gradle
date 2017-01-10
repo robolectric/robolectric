@@ -1,3 +1,7 @@
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
 dependencies {
     // Compile dependencies
     compileOnly "com.intellij:annotations:12.0"
