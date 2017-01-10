@@ -170,6 +170,11 @@ public class RobolectricTest {
     public Map<String, String> getShadowMap() {
       return null;
     }
+
+    @Override
+    public Tier getTier() {
+      return Tier.Base;
+    }
   }
 
   @Test

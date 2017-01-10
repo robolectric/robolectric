@@ -16,8 +16,18 @@ public class ShadowMap {
   private static final Map<String, String> SHADOWS = new HashMap<>();
 
   static {
-    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
-      SHADOWS.putAll(provider.getShadowMap());
+    ServiceLoader<ShadowProvider> loader = ServiceLoader.load(ShadowProvider.class);
+    // load base shadows
+    for (ShadowProvider provider : loader) {
+      if (provider.getTier() == ShadowProvider.Tier.Base) {
+        SHADOWS.putAll(provider.getShadowMap());
+      }
+    }
+    // load user-defined shadows
+    for (ShadowProvider provider : loader) {
+      if (provider.getTier() == ShadowProvider.Tier.Custom) {
+        SHADOWS.putAll(provider.getShadowMap());
+      }
     }
   }
 

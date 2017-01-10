@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing;
 
+import com.google.common.base.Strings;
 import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
 import org.robolectric.annotation.processing.generator.ShadowProviderGenerator;
@@ -38,7 +39,9 @@ public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
   static final String SHOULD_INSTRUMENT_PKG_OPT = 
       "org.robolectric.annotation.processing.shouldInstrumentPackage";
-  
+  static final String SHADOW_PROVIDER_TIER_OPT =
+      "org.robolectric.annotation.processing.shadowProviderTier";
+
   private RobolectricModel model;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
@@ -46,6 +49,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   private boolean generated = false;
   private final List<Generator> generators = new ArrayList<>();
   private final Map<TypeElement, Validator> elementValidators = new HashMap<>(13);
+  private String shadowProviderTier;
 
   /**
    * Default constructor.
@@ -79,7 +83,7 @@ public class RobolectricProcessor extends AbstractProcessor {
     addValidator(new RealObjectValidator(model, environment));
     addValidator(new ResetterValidator(model, environment));
 
-    generators.add(new ShadowProviderGenerator(model, environment, shouldInstrumentPackages));
+    generators.add(new ShadowProviderGenerator(model, environment, shouldInstrumentPackages, shadowProviderTier));
     generators.add(new ServiceLoaderGenerator(model, environment));
   }
 
@@ -115,6 +119,10 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.shouldInstrumentPackages = 
           "false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT)) 
           ? false : true;
+      this.shadowProviderTier = options.get(SHADOW_PROVIDER_TIER_OPT);
+      if (Strings.isNullOrEmpty(this.shadowProviderTier)) {
+        this.shadowProviderTier = "Custom";
+      }
     }
   }
 }

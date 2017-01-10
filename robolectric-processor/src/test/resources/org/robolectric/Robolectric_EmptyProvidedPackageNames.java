@@ -43,4 +43,9 @@ public class Shadows implements ShadowProvider {
   public String[] getProvidedPackageNames() {
     return new String[] {};
   }
+
+  @Override
+  public Tier getTier() {
+    return Tier.Base;
+  }
 }

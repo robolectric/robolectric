@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing;
 
+import static org.robolectric.annotation.processing.RobolectricProcessor.SHADOW_PROVIDER_TIER_OPT;
 import static org.truth0.Truth.ASSERT;
 import static com.google.testing.compile.JavaFileObjects.*;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
@@ -25,6 +26,7 @@ public class RobolectricProcessorTest {
   
   static {
     DEFAULT_OPTS.put(PACKAGE_OPT, "org.robolectric");
+    DEFAULT_OPTS.put(SHADOW_PROVIDER_TIER_OPT, "Base");
   }
 	
   @Test
@@ -142,7 +144,7 @@ public class RobolectricProcessorTest {
 
     Map<String,String> opts = new HashMap<>();
     opts.put(PACKAGE_OPT, "my.test.pkg");
-    
+    opts.put(SHADOW_PROVIDER_TIER_OPT, "Base");
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
           SHADOW_PROVIDER_SOURCE,
@@ -219,6 +221,7 @@ public class RobolectricProcessorTest {
   public void generatedShadowProvider_canConfigureInstrumentingPackages() {
     Map<String, String> options = new HashMap<>();
     options.put(PACKAGE_OPT, "org.robolectric");
+    options.put(SHADOW_PROVIDER_TIER_OPT, "Base");
     options.put(SHOULD_INSTRUMENT_PKG_OPT, "false");
     
     ASSERT.about(javaSources())

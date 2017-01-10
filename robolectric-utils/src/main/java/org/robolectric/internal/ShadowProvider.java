@@ -25,4 +25,14 @@ public interface ShadowProvider {
    * @return  Shadow mapping.
    */
   Map<String, String> getShadowMap();
+
+  enum Tier {Base, Custom}
+
+  /**
+   * Return the tier of shadows of this Shadow Provider. By default base shadows included with
+   * Robolectric have the Base tier.
+   *
+   * @return  The tier.
+   */
+  Tier getTier();
 }

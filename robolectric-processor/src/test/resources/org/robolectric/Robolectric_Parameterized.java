@@ -42,4 +42,9 @@ public class Shadows implements ShadowProvider {
   public String[] getProvidedPackageNames() {
     return new String[] {"org.robolectric.annotation.processing.objects"};
   }
+
+  @Override
+  public Tier getTier() {
+    return Tier.Base;
+  }
 }

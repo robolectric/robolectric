@@ -9,4 +9,8 @@ public interface ShadowProvider {
   String[] getProvidedPackageNames();
 
   Map<String, String> getShadowMap();
+
+  enum Tier {Base, Custom}
+
+  Tier getTier();
 }
