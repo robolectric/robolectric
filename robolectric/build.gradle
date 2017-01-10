@@ -1,3 +1,7 @@
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
 processResources {
     filesMatching("**/robolectric-version.properties") {
         filter { String line ->

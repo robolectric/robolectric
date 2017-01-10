@@ -1,3 +1,7 @@
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
 apply plugin: ShadowsPlugin
 
 shadows {
