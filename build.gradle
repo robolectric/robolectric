@@ -7,3 +7,16 @@ allprojects {
     group = "org.robolectric"
     version = "3.2.2-SNAPSHOT"
 }
+
+buildscript {
+    repositories { jcenter() }
+
+    dependencies {
+        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
+    }
+}
+
+apply plugin: 'nebula-aggregate-javadocs'
+rootProject.gradle.projectsEvaluated {
+    rootProject.tasks['aggregateJavadocs'].failOnError = false
+}
