@@ -23,6 +23,7 @@ public class InvokeDynamicSupport {
   private static final MethodHandle BIND_INIT_CALL_SITE;
   private static final MethodHandle EXCEPTION_HANDLER;
   private static final MethodHandle GET_SHADOW;
+  public static IIntrinsics intrinsics;
 
   static {
     try {
@@ -74,7 +75,7 @@ public class InvokeDynamicSupport {
   public static CallSite bootstrapIntrinsic(MethodHandles.Lookup caller, String name,
       MethodType type, String callee) throws IllegalAccessException {
 
-    MethodHandle mh = Intrinsics.Impl.getIntrinsic(callee, name, type);
+    MethodHandle mh = intrinsics.getIntrinsic(callee, name, type);
     if (mh == null) {
       throw new IllegalArgumentException("Could not find intrinsic for " + callee + ":" + name);
     }
@@ -131,5 +132,9 @@ public class InvokeDynamicSupport {
   private static MethodHandle cleanStackTraces(MethodHandle mh) {
     MethodType type = EXCEPTION_HANDLER.type().changeReturnType(mh.type().returnType());
     return catchException(mh, Throwable.class, EXCEPTION_HANDLER.asType(type));
+  }
+
+  public interface IIntrinsics {
+    MethodHandle getIntrinsic(String callee, String name, MethodType type);
   }
 }

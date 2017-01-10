@@ -2,9 +2,9 @@ package org.robolectric.res;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;

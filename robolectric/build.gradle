@@ -46,6 +46,7 @@ dependencies {
     compileOnly "junit:junit:4.12"
 
     // Testing dependencies
+    testCompile project(":testutil")
     testCompile "junit:junit:4.12"
     testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
     testCompile "org.assertj:assertj-core:2.6.0"

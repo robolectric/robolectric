@@ -2,7 +2,8 @@ package org.robolectric.internal;
 
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
-import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.bytecode.Intrinsics;
+import org.robolectric.internal.bytecode.InvokeDynamicSupport;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.util.Pair;
 
@@ -25,6 +26,10 @@ public class InstrumentingClassLoaderFactory {
       return size() > CACHE_SIZE;
     }
   };
+
+  static {
+    InvokeDynamicSupport.intrinsics = new Intrinsics.Impl();
+  }
 
   private final InstrumentationConfiguration instrumentationConfig;
   private final DependencyResolver dependencyResolver;

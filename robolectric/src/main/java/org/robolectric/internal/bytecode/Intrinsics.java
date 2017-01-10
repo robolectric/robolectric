@@ -57,7 +57,7 @@ public enum Intrinsics {
     return refs;
   }
 
-  public static class Impl {
+  public static class Impl implements InvokeDynamicSupport.IIntrinsics {
     private static final MethodHandle ELDEST;
     private static final MethodHandle NANO_TIME;
     private static final MethodHandle MILLIS_TIME;
@@ -93,7 +93,7 @@ public enum Intrinsics {
           .build();
     }
 
-    public static MethodHandle getIntrinsic(String className, String methodName, MethodType type) {
+    public MethodHandle getIntrinsic(String className, String methodName, MethodType type) {
       MethodHandle mh = intrinsics.get(new MethodRef(className, methodName));
       if (mh == null) mh = intrinsics.get(new MethodRef(className, "*"));
 
