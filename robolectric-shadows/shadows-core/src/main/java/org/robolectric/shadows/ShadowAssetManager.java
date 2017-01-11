@@ -479,21 +479,27 @@ public final class ShadowAssetManager {
         typedValue.resourceId = resourceTable.getResourceId(refResName);
         typedValue.data = typedValue.resourceId;
         typedResource = resolve(typedResource, RuntimeEnvironment.getQualifiers(), typedValue.resourceId);
-        // Reclassify to a non-reference type.
-        type = getResourceType(typedResource);
-        if (type == -1) {
-          // This type is unsupported; leave empty.
-          continue;
+
+        if (typedResource != null) {
+          // Reclassify to a non-reference type.
+          type = getResourceType(typedResource);
+          if (type == TypedValue.TYPE_ATTRIBUTE) {
+            type = TypedValue.TYPE_REFERENCE;
+          } else if (type == -1) {
+            // This type is unsupported; leave empty.
+            continue;
+          }
         }
       }
 
       if (type == TypedValue.TYPE_ATTRIBUTE) {
-        final String resName = typedResource.asString();
-        final int slashIdx = resName.indexOf("/");
-        typedValue.data = resources.getIdentifier(resName.substring(slashIdx + 1), "attr", getResourcePackageName(resId));
+        final String reference = typedResource.asString();
+        final ResName attrResName = AttributeResource.getStyleReference(reference,
+            typedResource.getXmlContext().getPackageName(), "attr");
+        typedValue.data = resourceTable.getResourceId(attrResName);
       }
 
-      if (type != TypedValue.TYPE_NULL && type != TypedValue.TYPE_ATTRIBUTE) {
+      if (typedResource != null && type != TypedValue.TYPE_NULL && type != TypedValue.TYPE_ATTRIBUTE) {
         getConverter(typedResource).fillTypedValue(typedResource.getData(), typedValue);
       }
 
@@ -503,7 +509,7 @@ public final class ShadowAssetManager {
       data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
       data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
       data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
-      stringData[i] = typedResource.asString();
+      stringData[i] = typedResource == null ? null : typedResource.asString();
     }
 
     int[] indices = new int[typedResources.length + 1]; /* keep zeroed out */
@@ -520,6 +526,8 @@ public final class ShadowAssetManager {
       type = TypedValue.TYPE_NULL;
     } else if (typedResource.isReference()) {
       type = TypedValue.TYPE_REFERENCE;
+    } else if (resType == ResType.STYLE) {
+      type = TypedValue.TYPE_ATTRIBUTE;
     } else if (resType == ResType.CHAR_SEQUENCE || resType == ResType.DRAWABLE) {
       type = TypedValue.TYPE_STRING;
     } else if (resType == ResType.INTEGER) {
@@ -532,9 +540,7 @@ public final class ShadowAssetManager {
       type = TypedValue.TYPE_DIMENSION;
     } else if (resType == ResType.COLOR) {
       type = TypedValue.TYPE_INT_COLOR_ARGB8;
-    } else if (resType == ResType.STYLE) {
-      type = TypedValue.TYPE_ATTRIBUTE;
-    } else if (resType == ResType.TYPED_ARRAY) {
+    } else if (resType == ResType.TYPED_ARRAY || resType == ResType.CHAR_SEQUENCE_ARRAY) {
       type = TypedValue.TYPE_REFERENCE;
     } else {
       type = -1;

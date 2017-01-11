@@ -25,6 +25,7 @@
         <item>@color/typed_array_orange</item>
         <item>?attr/animalStyle</item>
         <item>@array/typed_array_values</item>
+        <item>@style/Theme.Robolectric</item>
     </array>
 
     <array name="typed_array_with_resource_id">

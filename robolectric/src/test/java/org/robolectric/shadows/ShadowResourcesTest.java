@@ -174,6 +174,8 @@ public class ShadowResourcesTest {
     assertThat(refsTypedArray.getTextArray(8))
         .containsExactly("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
             "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
+
+    assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
   }
 
   @Test
