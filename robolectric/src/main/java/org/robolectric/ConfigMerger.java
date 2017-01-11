@@ -4,11 +4,13 @@ import com.google.common.annotations.VisibleForTesting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.Join;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +80,9 @@ public class ConfigMerger {
    * @since 3.2
    */
   protected Properties getConfigProperties(String packageName) {
-    String resourceName = packageName.replace('.', '/') + "/" + RobolectricTestRunner.CONFIG_PROPERTIES;
+    List<String> packageParts = new ArrayList<>(Arrays.asList(packageName.split("\\.")));
+    packageParts.add(RobolectricTestRunner.CONFIG_PROPERTIES);
+    final String resourceName = Join.join("/", packageParts);
     try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
       if (resourceAsStream == null) return null;
       Properties properties = new Properties();
