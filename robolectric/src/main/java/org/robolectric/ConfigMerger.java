@@ -78,7 +78,7 @@ public class ConfigMerger {
    * @since 3.2
    */
   protected Properties getConfigProperties(String packageName) {
-    String resourceName = packageName.replace('.', '/') + "/" + RobolectricTestRunner.CONFIG_PROPERTIES;
+    String resourceName = packageName.isEmpty? RobolectricTestRunner.CONFIG_PROPERTIES : packageName.replace('.', '/') + "/" + RobolectricTestRunner.CONFIG_PROPERTIES;
     try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
       if (resourceAsStream == null) return null;
       Properties properties = new Properties();
