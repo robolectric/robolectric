@@ -206,14 +206,14 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
-    assertThat(shadowOf(assetManager).getResourceIdentifier("idIDeclaredInXml", "id", "org.robolectric"))
-        .isEqualTo(R.id.idIDeclaredInXml);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idIDeclaredInXml", null, "org.robolectric"))
-        .isEqualTo(R.id.idIDeclaredInXml);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idIDeclaredInXml", "id", null))
-        .isEqualTo(R.id.idIDeclaredInXml);
-    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idIDeclaredInXml", "other", "other"))
-        .isEqualTo(R.id.idIDeclaredInXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id_declared_in_item_tag", "id", "org.robolectric"))
+        .isEqualTo(R.id.id_declared_in_item_tag);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/id_declared_in_item_tag", null, "org.robolectric"))
+        .isEqualTo(R.id.id_declared_in_item_tag);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id_declared_in_item_tag", "id", null))
+        .isEqualTo(R.id.id_declared_in_item_tag);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/id_declared_in_item_tag", "other", "other"))
+        .isEqualTo(R.id.id_declared_in_item_tag);
   }
 
   @Test
@@ -245,8 +245,8 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout() throws Exception {
-    assertThat(shadowOf(assetManager).getResourceIdentifier("idNotInXml", "id", "org.robolectric"))
-        .isEqualTo(R.id.idNotInXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id_declared_in_layout", "id", "org.robolectric"))
+        .isEqualTo(R.id.id_declared_in_layout);
   }
 
   @Test

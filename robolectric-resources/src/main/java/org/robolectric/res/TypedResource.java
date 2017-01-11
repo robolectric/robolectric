@@ -32,7 +32,8 @@ public class TypedResource<T> {
   }
 
   public String asString() {
-    return ((String) getData());
+    T data = getData();
+    return data instanceof String ? (String) data : null;
   }
 
   public boolean isFile() {

@@ -17,4 +17,5 @@
   <color name="android_red">red</color>
   <color name="list_separator">#111111</color>
 
+  <color name="typed_array_orange">#FF5C00</color>
 </resources>
