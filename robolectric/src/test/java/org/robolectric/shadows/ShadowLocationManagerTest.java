@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.util.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -396,7 +397,7 @@ public class ShadowLocationManagerTest {
 
     shadowLocationManager.simulateLocation(location1);
     shadowLocationManager.simulateLocation(location2);
-    assertThat(listener.location).isEqualTo(location1);
+    assertThat(LocationUtils.locationEquals(listener.location, location1)).isTrue();
   }
 
   @Test
@@ -414,7 +415,7 @@ public class ShadowLocationManagerTest {
 
     shadowLocationManager.simulateLocation(location1);
     shadowLocationManager.simulateLocation(location2);
-    assertThat(listener.location).isEqualTo(location1);
+    assertThat(LocationUtils.locationEquals(listener.location, location1)).isTrue();
   }
 
   @Test

@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.util.LocationUtils;
 
 import static junit.framework.Assert.*;
 import static org.junit.Assert.assertArrayEquals;
@@ -120,7 +121,7 @@ public class ShadowLocationTest {
     assertTrue(l.hasBearing());
     assertTrue(l.hasSpeed());
 
-    assertEquals(location, l);
+    assertTrue(LocationUtils.locationEquals(location, l));
   }
 
   @Test
