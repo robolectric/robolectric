@@ -161,7 +161,7 @@ public class ShadowCanvas {
 
   @Implementation
   public void drawPath(Path path, Paint paint) {
-    pathPaintEvents.add(new PathPaintHistoryEvent(new Path(path), paint));
+    pathPaintEvents.add(new PathPaintHistoryEvent(new Path(path), new Paint(paint)));
 
     separateLines();
     appendDescription("Path " + shadowOf(path).getPoints().toString());
