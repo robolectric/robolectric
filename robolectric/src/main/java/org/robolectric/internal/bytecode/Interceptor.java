@@ -4,6 +4,11 @@ import org.jetbrains.annotations.NotNull;
 import org.robolectric.util.Function;
 import org.robolectric.util.ReflectionHelpers;
 
+import java.lang.invoke.MethodHandle;
+
+import static java.lang.invoke.MethodHandles.constant;
+import static java.lang.invoke.MethodType.methodType;
+
 public class Interceptor {
   private MethodRef[] methodRefs;
 
@@ -17,6 +22,10 @@ public class Interceptor {
 
   public Function<Object, Object> handle(MethodSignature methodSignature) {
     return returnDefaultValue(methodSignature);
+  }
+
+  public MethodHandle getMethodHandle(String methodSignature) throws NoSuchMethodException, IllegalAccessException {
+    return constant(Void.class, null).asType(methodType(void.class));
   }
 
   @NotNull
