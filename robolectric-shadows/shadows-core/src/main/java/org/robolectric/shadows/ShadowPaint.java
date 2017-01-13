@@ -48,26 +48,26 @@ public class ShadowPaint {
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(int.class, flags));
   }
 
-  public void __constructor__(Paint paint) {
-    ShadowPaint other = shadowOf(paint);
-    this.color = other.color;
-    this.style = other.style;
-    this.cap = other.cap;
-    this.join = other.join;
-    this.width = other.width;
-    this.shadowRadius = other.shadowRadius;
-    this.shadowDx = other.shadowDx;
-    this.shadowDy = other.shadowDy;
-    this.shadowColor = other.shadowColor;
-    this.shader = other.shader;
-    this.alpha = other.alpha;
-    this.filter = other.filter;
-    this.antiAlias = other.antiAlias;
-    this.dither = other.dither;
-    this.flags = other.flags;
-    this.pathEffect = other.pathEffect;
+  public void __constructor__(Paint otherPaint) {
+    ShadowPaint otherShadowPaint = shadowOf(otherPaint);
+    this.color = otherShadowPaint.color;
+    this.style = otherShadowPaint.style;
+    this.cap = otherShadowPaint.cap;
+    this.join = otherShadowPaint.join;
+    this.width = otherShadowPaint.width;
+    this.shadowRadius = otherShadowPaint.shadowRadius;
+    this.shadowDx = otherShadowPaint.shadowDx;
+    this.shadowDy = otherShadowPaint.shadowDy;
+    this.shadowColor = otherShadowPaint.shadowColor;
+    this.shader = otherShadowPaint.shader;
+    this.alpha = otherShadowPaint.alpha;
+    this.filter = otherShadowPaint.filter;
+    this.antiAlias = otherShadowPaint.antiAlias;
+    this.dither = otherShadowPaint.dither;
+    this.flags = otherShadowPaint.flags;
+    this.pathEffect = otherShadowPaint.pathEffect;
 
-    Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(Paint.class, paint));
+    Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(Paint.class, otherPaint));
   }
 
   @Implementation(minSdk = N)

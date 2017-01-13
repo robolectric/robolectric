@@ -73,4 +73,10 @@ public class ShadowPaintTest {
     assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2);
     assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3);
   }
+
+  @Test
+  public void createPaintFromPaint() throws Exception {
+    Paint origPaint = new Paint();
+    assertThat(new Paint(origPaint).getTextLocale()).isSameAs(origPaint.getTextLocale());
+  }
 }
