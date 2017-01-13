@@ -2,8 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import org.junit.Test;
 
-import java.util.HashSet;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AndroidInterceptorsTest {
@@ -27,5 +25,17 @@ public class AndroidInterceptorsTest {
             new MethodRef("java.lang.System", "logE"),
             new MethodRef("java.util.Locale", "adjustLanguageCode")
         );
+  }
+
+  @Test
+  public void localeAdjustCodeInterceptor() throws Exception {
+    assertThat(adjust("EN")).isEqualTo("en");
+    assertThat(adjust("he")).isEqualTo("iw");
+    assertThat(adjust("yi")).isEqualTo("ji");
+    assertThat(adjust("ja")).isEqualTo("ja");
+  }
+
+  private Object adjust(String languageCode) {
+    return AndroidInterceptors.LocaleAdjustLanguageCodeInterceptor.adjustLanguageCode(languageCode);
   }
 }

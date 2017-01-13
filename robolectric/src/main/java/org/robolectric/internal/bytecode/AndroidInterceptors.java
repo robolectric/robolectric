@@ -16,7 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
-import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodType.methodType;
 
 public class AndroidInterceptors {
@@ -163,9 +162,24 @@ public class AndroidInterceptors {
     }
   }
 
-  private static class LocaleAdjustLanguageCodeInterceptor extends Interceptor {
+  static class LocaleAdjustLanguageCodeInterceptor extends Interceptor {
     public LocaleAdjustLanguageCodeInterceptor() {
       super(new MethodRef(Locale.class, "adjustLanguageCode"));
+    }
+
+    static Object adjustLanguageCode(String languageCode) {
+      String adjusted = languageCode.toLowerCase(Locale.US);
+      // Map new language codes to the obsolete language
+      // codes so the correct resource bundles will be used.
+      if (languageCode.equals("he")) {
+        adjusted = "iw";
+      } else if (languageCode.equals("id")) {
+        adjusted = "in";
+      } else if (languageCode.equals("yi")) {
+        adjusted = "ji";
+      }
+
+      return adjusted;
     }
 
     @Override
@@ -173,14 +187,15 @@ public class AndroidInterceptors {
       return new Function<Object, Object>() {
         @Override
         public Object call(Class<?> theClass, Object value, Object[] params) {
-          return params[0];
+          return adjustLanguageCode((String) params[0]);
         }
       };
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodName, MethodType type) {
-      return identity(String.class);
+    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(getClass(), "adjustLanguageCode",
+          methodType(String.class, String.class));
     }
   }
 
