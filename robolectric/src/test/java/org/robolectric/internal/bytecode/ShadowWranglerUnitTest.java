@@ -23,7 +23,7 @@ public class ShadowWranglerUnitTest {
   @Test
   public void getInterceptionHandler_whenCallIsNotRecognized_shouldReturnDoNothingHandler() throws Exception {
     MethodSignature methodSignature = MethodSignature.parse("java/lang/Object/unknownMethod()V");
-    Function<Object,Object> handler = shadowWrangler.getInterceptionHandler(methodSignature);
+    Function<Object,Object> handler = new Interceptors().getInterceptionHandler(methodSignature);
 
     assertThat(handler.call(null, null, new Object[0])).isNull();
   }
@@ -31,7 +31,7 @@ public class ShadowWranglerUnitTest {
   @Test
   public void getInterceptionHandler_whenInterceptingElderOnLinkedHashMap_shouldReturnNonDoNothingHandler() throws Exception {
     MethodSignature methodSignature = MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
-    Function<Object,Object> handler = shadowWrangler.getInterceptionHandler(methodSignature);
+    Function<Object,Object> handler = new Interceptors().getInterceptionHandler(methodSignature);
 
     assertThat(handler).isNotSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
   }
