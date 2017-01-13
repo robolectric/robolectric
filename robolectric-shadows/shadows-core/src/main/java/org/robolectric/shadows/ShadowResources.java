@@ -98,34 +98,6 @@ public class ShadowResources {
   }
 
   @Implementation
-  public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
-    String raw = getQuantityString(id, quantity);
-    return String.format(Locale.ENGLISH, raw, formatArgs);
-  }
-
-  @Implementation
-  public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-
-    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
-    if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
-      PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) typedResource;
-      Plural plural = pluralRules.find(quantity);
-
-      if (plural == null) {
-        return null;
-      }
-
-      TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
-          RuntimeEnvironment.getQualifiers(), resId);
-      return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
-    } else {
-      return null;
-    }
-  }
-
-  @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
     return shadowOf(realResources.getAssets()).getResourceTable().getRawValue(id, RuntimeEnvironment.getQualifiers());
   }

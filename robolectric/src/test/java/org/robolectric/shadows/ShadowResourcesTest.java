@@ -270,6 +270,14 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void getQuantityText() throws Exception {
+    assertThat(resources.getQuantityText(R.plurals.beer, 0)).isEqualTo("Howdy");
+    assertThat(resources.getQuantityText(R.plurals.beer, 1)).isEqualTo("One beer");
+    assertThat(resources.getQuantityText(R.plurals.beer, 2)).isEqualTo("Two beers");
+    assertThat(resources.getQuantityText(R.plurals.beer, 3)).isEqualTo("%d beers, yay!");
+  }
+
+  @Test
   public void getFraction() throws Exception {
     final int myself = 300;
     final int myParent = 600;

@@ -21,6 +21,8 @@ import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.EmptyStyle;
 import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.Plural;
+import org.robolectric.res.PluralResourceLoader;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIds;
@@ -230,8 +232,35 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public CharSequence getResourceBagText(int ident, int bagEntryId) {
-    throw new UnsupportedOperationException(); // todo
+    TypedResource typedResource = resourceTable.getValue(ident, RuntimeEnvironment.getQualifiers());
+    if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
+      PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) typedResource;
+      Plural plural = pluralRules.find(quantity);
+
+      if (plural == null) {
+        return null;
+      }
+
+      TypedResource<?> resolvedTypedResource = resolve(
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
+          RuntimeEnvironment.getQualifiers(), ident);
+      return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
+    } else {
+      return null;
+    }
+
+
   }
+
+  //  @Implementation
+//  public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
+//    String raw = getQuantityString(id, quantity);
+//    return String.format(Locale.ENGLISH, raw, formatArgs);
+//  }
+//
+//  @Implementation
+//  public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
+//  }
 
   @HiddenApi @Implementation
   public String[] getResourceStringArray(final int id) {

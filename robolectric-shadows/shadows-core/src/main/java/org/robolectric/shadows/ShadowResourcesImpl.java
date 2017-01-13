@@ -1,15 +1,21 @@
 package org.robolectric.shadows;
 
-import android.content.res.*;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.Resources;
+import android.content.res.ResourcesImpl;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.*;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralResourceLoader;
 import org.robolectric.res.ResType;
@@ -18,10 +24,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import static android.os.Build.VERSION_CODES.N;
@@ -31,55 +33,11 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)
 public class ShadowResourcesImpl {
-  private static Resources system = null;
-  private static List<LongSparseArray<?>> resettableArrays;
-
   private float density = 1.0f;
   private DisplayMetrics displayMetrics;
   private Display display;
   @RealObject
   ResourcesImpl realResourcesImpl;
-
-  @Resetter
-  public static void reset() {
-    if (resettableArrays == null) {
-      resettableArrays = obtainResettableArrays();
-    }
-    for (LongSparseArray<?> sparseArray : resettableArrays) {
-      sparseArray.clear();
-    }
-    system = null;
-  }
-
-  private static List<LongSparseArray<?>> obtainResettableArrays() {
-    List<LongSparseArray<?>> resettableArrays = new ArrayList<>();
-    Field[] allFields = Resources.class.getDeclaredFields();
-    for (Field field : allFields) {
-      if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
-        field.setAccessible(true);
-        try {
-          LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
-          if (longSparseArray != null) {
-            resettableArrays.add(longSparseArray);
-          }
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-    return resettableArrays;
-  }
-
-  @Implementation
-  public static Resources getSystem() {
-    if (system == null) {
-      AssetManager assetManager = AssetManager.getSystem();
-      DisplayMetrics metrics = new DisplayMetrics();
-      Configuration config = new Configuration();
-      system = new Resources(assetManager, metrics, config);
-    }
-    return system;
-  }
 
   @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
