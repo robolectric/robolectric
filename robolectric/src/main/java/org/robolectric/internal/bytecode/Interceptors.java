@@ -45,7 +45,7 @@ public class Interceptors {
     if (mh == null) mh = interceptors.get(new MethodRef(className, "*"));
     if (mh != null) {
       try {
-        return mh.getMethodHandle(methodName);
+        return mh.getMethodHandle(methodName, type);
       } catch (NoSuchMethodException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }

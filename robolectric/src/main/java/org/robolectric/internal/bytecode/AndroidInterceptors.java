@@ -10,6 +10,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,7 +52,7 @@ public class AndroidInterceptors {
     }
 
     @Nullable
-    private static Object eldest(LinkedHashMap map) {
+    static Object eldest(LinkedHashMap map) {
       return map.isEmpty() ? null : map.entrySet().iterator().next();
     }
 
@@ -66,7 +67,7 @@ public class AndroidInterceptors {
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodSignature) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(getClass(), "eldest",
           methodType(Object.class, LinkedHashMap.class));
     }
@@ -97,7 +98,7 @@ public class AndroidInterceptors {
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodSignature) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(ShadowWindow.class, "create",
           methodType(Window.class, Context.class));
     }
@@ -125,7 +126,7 @@ public class AndroidInterceptors {
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodName) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       switch (methodName) {
         case "nanoTime":
           return lookup.findStatic(ShadowSystemClock.class,
@@ -156,7 +157,7 @@ public class AndroidInterceptors {
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodSignature) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(System.class, "arraycopy",
           methodType(void.class, Object.class, int.class, Object.class, int.class, int.class));
     }
@@ -178,7 +179,7 @@ public class AndroidInterceptors {
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodSignature) {
+    public MethodHandle getMethodHandle(String methodName, MethodType type) {
       return identity(String.class);
     }
   }
@@ -208,7 +209,7 @@ public class AndroidInterceptors {
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodSignature) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(getClass(), "logE",
           methodType(void.class, Object[].class));
     }

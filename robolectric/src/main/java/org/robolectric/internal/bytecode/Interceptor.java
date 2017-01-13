@@ -5,8 +5,11 @@ import org.robolectric.util.Function;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.WrongMethodTypeException;
 
 import static java.lang.invoke.MethodHandles.constant;
+import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
 
 public class Interceptor {
@@ -24,8 +27,14 @@ public class Interceptor {
     return returnDefaultValue(methodSignature);
   }
 
-  public MethodHandle getMethodHandle(String methodSignature) throws NoSuchMethodException, IllegalAccessException {
-    return constant(Void.class, null).asType(methodType(void.class));
+  public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
+    MethodHandle nothing = constant(Void.class, null).asType(methodType(void.class));
+
+    if (type.parameterCount() != 0) {
+      return dropArguments(nothing, 0, type.parameterArray());
+    } else {
+      return nothing;
+    }
   }
 
   @NotNull
