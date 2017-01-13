@@ -167,7 +167,7 @@ public class AndroidInterceptors {
       super(new MethodRef(Locale.class, "adjustLanguageCode"));
     }
 
-    static Object adjustLanguageCode(String languageCode) {
+    static String adjustLanguageCode(String languageCode) {
       String adjusted = languageCode.toLowerCase(Locale.US);
       // Map new language codes to the obsolete language
       // codes so the correct resource bundles will be used.
