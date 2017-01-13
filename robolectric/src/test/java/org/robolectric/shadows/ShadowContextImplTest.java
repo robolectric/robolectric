@@ -19,6 +19,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +41,11 @@ public class ShadowContextImplTest {
 
     // Data dirs of these two contexts must be different locations.
     assertThat(context.getDataDir()).isNotEqualTo(deviceProtectedStorageContext.getDataDir());
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test public void getExternalFilesDirs() {
+    assertThat(context.getExternalFilesDirs("something")).isEmpty();
   }
 
   @Test
