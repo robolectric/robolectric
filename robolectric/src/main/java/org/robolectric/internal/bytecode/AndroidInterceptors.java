@@ -124,6 +124,17 @@ public class AndroidInterceptors {
       }
     });
 
+    interceptorList.add(new Interceptor(
+        new MethodRef("java.lang.System", "loadLibrary"),
+        new MethodRef("android.os.StrictMode", "trackActivity"),
+        new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
+        new MethodRef("java.lang.AutoCloseable", "*"),
+        new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
+        new MethodRef("com.android.internal.policy.PolicyManager", "*"),
+        new MethodRef("android.view.FallbackEventHandler", "*"),
+        new MethodRef("android.view.IWindowSession", "*")
+    ));
+
     return new Interceptors(interceptorList);
   }
 }

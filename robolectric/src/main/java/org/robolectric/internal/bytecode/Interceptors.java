@@ -1,8 +1,8 @@
 package org.robolectric.internal.bytecode;
 
 import org.robolectric.util.Function;
-import org.robolectric.util.ReflectionHelpers;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +25,10 @@ public class Interceptors {
     }
 
     // nothing matched, return default
-    return new Function<Object, Object>() {
-      @Override
-      public Object call(Class<?> theClass, Object value, Object[] params) {
-        return ReflectionHelpers.PRIMITIVE_RETURN_VALUES.get(methodSignature.returnType);
-      }
-    };
+    return Interceptor.returnDefaultValue(methodSignature);
+  }
+
+  public Collection<MethodRef> getAllMethodRefs() {
+    return interceptors.keySet();
   }
 }

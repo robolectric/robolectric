@@ -49,14 +49,6 @@ public enum Intrinsics {
     return ref;
   }
 
-  public static List<MethodRef> allRefs() {
-    List<MethodRef> refs = new ArrayList<>();
-    for (Intrinsics i : values()) {
-      refs.add(i.getRef());
-    }
-    return refs;
-  }
-
   public static class Impl {
     private static final MethodHandle ELDEST;
     private static final MethodHandle NANO_TIME;

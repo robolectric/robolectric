@@ -98,7 +98,7 @@ public class InstrumentationConfiguration {
     }
 
     public InstrumentationConfiguration build() {
-      interceptedMethods.addAll(Intrinsics.allRefs());
+      interceptedMethods.addAll(new AndroidInterceptors().build().getAllMethodRefs());
       classesToNotAcquire.addAll(stringify(
           TestLifecycle.class,
           ShadowWrangler.class,
