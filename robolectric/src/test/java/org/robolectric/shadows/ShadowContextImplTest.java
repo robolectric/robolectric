@@ -18,6 +18,8 @@ import org.robolectric.TestApplication;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import java.io.File;
+
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
@@ -45,7 +47,11 @@ public class ShadowContextImplTest {
 
   @Config(minSdk = KITKAT)
   @Test public void getExternalFilesDirs() {
-    assertThat(context.getExternalFilesDirs("something")).isEmpty();
+    File[] dirs = context.getExternalFilesDirs("something");
+    assertThat(dirs).hasSize(1);
+    assertThat(dirs[0]).isDirectory();
+    assertThat(dirs[0]).canWrite();
+    assertThat(dirs[0].getName()).isEqualTo("something");
   }
 
   @Test
