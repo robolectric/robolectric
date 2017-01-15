@@ -1,5 +1,6 @@
 package org.robolectric.internal.bytecode;
 
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -358,7 +359,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   abstract class ClassInstrumentor {
-    private final ClassNode classNode;
+    final ClassNode classNode;
     private final boolean containsStubs;
     final String internalClassName;
     private final String className;
@@ -381,6 +382,30 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       // Need Java version >=7 to allow invokedynamic
       classNode.version = Math.max(classNode.version, V1_7);
 
+      classNode.fields.add(0, new FieldNode(ACC_PUBLIC | ACC_FINAL,
+          ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+
+      Set<String> foundMethods = instrumentMethods();
+
+      // If there is no constructor, adds one
+      addNoArgsConstructor(foundMethods);
+
+      addDirectCallConstructor();
+
+      // Do not override final #equals, #hashCode, and #toString for all classes
+      instrumentInheritedObjectMethod(classNode, foundMethods, "equals", "(Ljava/lang/Object;)Z");
+      instrumentInheritedObjectMethod(classNode, foundMethods, "hashCode", "()I");
+      instrumentInheritedObjectMethod(classNode, foundMethods, "toString", "()Ljava/lang/String;");
+
+      addRoboInitMethod();
+
+      addRoboGetDataMethod();
+
+      doSpecialHandling();
+    }
+
+    @NotNull
+    private Set<String> instrumentMethods() {
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
       for (MethodNode method : methods) {
@@ -397,12 +422,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
           instrumentNormalMethod(method);
         }
       }
+      return foundMethods;
+    }
 
-      classNode.fields.add(0, new FieldNode(ACC_PUBLIC | ACC_FINAL,
-          ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
-
-
-      // If there is no constructor, adds one
+    private void addNoArgsConstructor(Set<String> foundMethods) {
       if (!foundMethods.contains("<init>()V")) {
         MethodNode defaultConstructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", "()V", null);
         RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(defaultConstructor);
@@ -413,62 +436,42 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         generator.returnValue();
         classNode.methods.add(defaultConstructor);
       }
+    }
 
-      if (!InvokeDynamic.ENABLED) {
-        MethodNode directCallConstructor = new MethodNode(ACC_PUBLIC,
-            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + classType.getDescriptor() + ")V", null, null);
-        RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
-        generator.loadThis();
-        if (classNode.superName.equals("java/lang/Object")) {
-          generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
-        } else {
-          generator.loadArgs();
-          generator.visitMethodInsn(INVOKESPECIAL, classNode.superName,
-              "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V");
-        }
-        generator.loadThis();
-        generator.loadArg(1);
-        generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
-        generator.returnValue();
-        classNode.methods.add(directCallConstructor);
+    abstract protected void addDirectCallConstructor();
+
+    private void addRoboInitMethod() {
+      MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
+      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
+      Label alreadyInitialized = new Label();
+      generator.loadThis();                                         // this
+      generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+      generator.ifNonNull(alreadyInitialized);
+      generator.loadThis();                                         // this
+      generator.loadThis();                                         // this, this
+      if (InvokeDynamic.ENABLED) {
+        generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
+      } else {
+        generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
       }
+      // this, __robo_data__
+      generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+      generator.mark(alreadyInitialized);
+      generator.returnValue();
+      classNode.methods.add(initMethodNode);
+    }
 
-      // Do not override final #equals, #hashCode, and #toString for all classes
-      instrumentInheritedObjectMethod(classNode, foundMethods, "equals", "(Ljava/lang/Object;)Z");
-      instrumentInheritedObjectMethod(classNode, foundMethods, "hashCode", "()I");
-      instrumentInheritedObjectMethod(classNode, foundMethods, "toString", "()Ljava/lang/String;");
+    private void addRoboGetDataMethod() {
+      MethodNode initMethodNode = new MethodNode(ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
+      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
+      generator.loadThis();                                         // this
+      generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+      generator.returnValue();
+      generator.endMethod();
+      classNode.methods.add(initMethodNode);
+    }
 
-      {
-        MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
-        RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
-        Label alreadyInitialized = new Label();
-        generator.loadThis();                                         // this
-        generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-        generator.ifNonNull(alreadyInitialized);
-        generator.loadThis();                                         // this
-        generator.loadThis();                                         // this, this
-        if (InvokeDynamic.ENABLED) {
-          generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
-        } else {
-          generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
-        }
-        // this, __robo_data__
-        generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
-        generator.mark(alreadyInitialized);
-        generator.returnValue();
-        classNode.methods.add(initMethodNode);
-      }
-
-      {
-        MethodNode initMethodNode = new MethodNode(ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
-        RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
-        generator.loadThis();                                         // this
-        generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-        generator.returnValue();
-        generator.endMethod();
-        classNode.methods.add(initMethodNode);
-      }
-
+    private void doSpecialHandling() {
       if (className.equals("android.os.Build$VERSION")) {
         for (Object field : classNode.fields) {
           FieldNode fieldNode = (FieldNode) field;
@@ -1008,6 +1011,26 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     }
 
     @Override
+    protected void addDirectCallConstructor() {
+      MethodNode directCallConstructor = new MethodNode(ACC_PUBLIC,
+          "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + classType.getDescriptor() + ")V", null, null);
+      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
+      generator.loadThis();
+      if (classNode.superName.equals("java/lang/Object")) {
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+      } else {
+        generator.loadArgs();
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName,
+            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V");
+      }
+      generator.loadThis();
+      generator.loadArg(1);
+      generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+      generator.returnValue();
+      classNode.methods.add(directCallConstructor);
+    }
+
+    @Override
     protected void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
       generateCallToClassHandler(originalMethod, originalMethodName, generator);
     }
@@ -1241,6 +1264,11 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   public class InvokeDynamicClassInstrumentor extends InstrumentingClassLoader.ClassInstrumentor {
     public InvokeDynamicClassInstrumentor(ClassNode classNode, boolean containsStubs) {
       super(classNode, containsStubs);
+    }
+
+    @Override
+    protected void addDirectCallConstructor() {
+      // not needed, for reasons.
     }
 
     @Override
