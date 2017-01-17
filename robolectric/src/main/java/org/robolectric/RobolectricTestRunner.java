@@ -83,6 +83,28 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     this.sdkPicker = createSdkPicker();
   }
 
+  public static Builder withConfig(Builder builder, Config config) {
+    for (Class<?> clazz : config.shadows()) {
+      Implements annotation = clazz.getAnnotation(Implements.class);
+      if (annotation == null) {
+        throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+      }
+
+      String className = annotation.className();
+      if (className.isEmpty()) {
+        className = annotation.value().getName();
+      }
+
+      if (!className.isEmpty()) {
+        builder.addInstrumentedClass(className);
+      }
+    }
+    for (String packageName : config.instrumentedPackages()) {
+      builder.addInstrumentedPackage(packageName);
+    }
+    return builder;
+  }
+
   public static Builder configure(Builder builder) {
     for (MethodRef methodRef : new AndroidInterceptors().build().getAllMethodRefs()) {
       builder.addInterceptedMethod(methodRef);
@@ -247,7 +269,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    */
   @NotNull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-    return configure(InstrumentationConfiguration.newBuilder().withConfig(config)).build();
+    Builder builder = InstrumentationConfiguration.newBuilder();
+    builder = withConfig(builder, config);
+    return configure(builder).build();
   }
 
   /**

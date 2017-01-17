@@ -3,8 +3,6 @@ package org.robolectric.internal.bytecode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
 
@@ -20,85 +18,6 @@ import java.util.Set;
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
  */
 public class InstrumentationConfiguration {
-
-  public static final class Builder {
-
-    private final Collection<String> instrumentedPackages = new HashSet<>();
-    private final Collection<MethodRef> interceptedMethods = new HashSet<>();
-    private final Map<String, String> classNameTranslations = new HashMap<>();
-    private final Collection<String> classesToNotAcquire = new HashSet<>();
-    private final Collection<String> packagesToNotAcquire = new HashSet<>();
-    private final Collection<String> instrumentedClasses = new HashSet<>();
-    private final Collection<String> classesToNotInstrument = new HashSet<>();
-
-    public Builder doNotAcquireClass(Class<?> clazz) {
-      doNotAcquireClass(clazz.getName());
-      return this;
-    }
-
-    public Builder doNotAcquireClass(String className) {
-      this.classesToNotAcquire.add(className);
-      return this;
-    }
-
-    public Builder doNotAcquirePackage(String packageName) {
-      this.packagesToNotAcquire.add(packageName);
-      return this;
-    }
-
-    public Builder addClassNameTranslation(String fromName, String toName) {
-      classNameTranslations.put(fromName, toName);
-      return this;
-    }
-
-    public Builder addInterceptedMethod(MethodRef methodReference) {
-      interceptedMethods.add(methodReference);
-      return this;
-    }
-
-    public Builder addInstrumentedClass(String name) {
-      instrumentedClasses.add(name);
-      return this;
-    }
-
-    public Builder addInstrumentedPackage(String packageName) {
-      instrumentedPackages.add(packageName);
-      return this;
-    }
-
-    public Builder doNotInstrumentClass(String className) {
-      this.classesToNotInstrument.add(className);
-      return this;
-    }
-
-    public Builder withConfig(Config config) {
-      for (Class<?> clazz : config.shadows()) {
-        Implements annotation = clazz.getAnnotation(Implements.class);
-        if (annotation == null) {
-          throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
-        }
-
-        String className = annotation.className();
-        if (className.isEmpty()) {
-          className = annotation.value().getName();
-        }
-
-        if (!className.isEmpty()) {
-          addInstrumentedClass(className);
-        }
-      }
-      for (String packageName : config.instrumentedPackages()) {
-        addInstrumentedPackage(packageName);
-      }
-      return this;
-    }
-
-    public InstrumentationConfiguration build() {
-      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAcquire, packagesToNotAcquire, classesToNotInstrument);
-    }
-
-  }
-
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -146,6 +65,7 @@ public class InstrumentationConfiguration {
    * @return  True if the class should be loaded.
    */
   public boolean shouldAcquire(String name) {
+    // TODO: kill this:
     // the org.robolectric.res and org.robolectric.manifest packages live in the base classloader, but not its tests; yuck.
     int lastDot = name.lastIndexOf('.');
     String pkgName = name.substring(0, lastDot == -1 ? 0 : lastDot);
@@ -174,7 +94,9 @@ public class InstrumentationConfiguration {
       if (name.startsWith(packageName)) return false;
     }
 
-    return !(name.matches(".*\\.R(|\\$[a-z]+)$") || classesToNotAcquire.contains(name));
+    boolean isRClass = name.matches(".*\\.R(|\\$[a-z]+)$");
+    return !isRClass && !classesToNotAcquire.contains(name);
+
   }
 
   public Set<MethodRef> methodsToIntercept() {
@@ -234,5 +156,61 @@ public class InstrumentationConfiguration {
     result = 31 * result + classesToNotAcquire.hashCode();
     cachedHashCode = result;
     return result;
+  }
+
+  public static final class Builder {
+    private final Collection<String> instrumentedPackages = new HashSet<>();
+    private final Collection<MethodRef> interceptedMethods = new HashSet<>();
+    private final Map<String, String> classNameTranslations = new HashMap<>();
+    private final Collection<String> classesToNotAcquire = new HashSet<>();
+    private final Collection<String> packagesToNotAcquire = new HashSet<>();
+    private final Collection<String> instrumentedClasses = new HashSet<>();
+    private final Collection<String> classesToNotInstrument = new HashSet<>();
+
+    public Builder doNotAcquireClass(Class<?> clazz) {
+      doNotAcquireClass(clazz.getName());
+      return this;
+    }
+
+    public Builder doNotAcquireClass(String className) {
+      this.classesToNotAcquire.add(className);
+      return this;
+    }
+
+    public Builder doNotAcquirePackage(String packageName) {
+      this.packagesToNotAcquire.add(packageName);
+      return this;
+    }
+
+    public Builder addClassNameTranslation(String fromName, String toName) {
+      classNameTranslations.put(fromName, toName);
+      return this;
+    }
+
+    public Builder addInterceptedMethod(MethodRef methodReference) {
+      interceptedMethods.add(methodReference);
+      return this;
+    }
+
+    public Builder addInstrumentedClass(String name) {
+      instrumentedClasses.add(name);
+      return this;
+    }
+
+    public Builder addInstrumentedPackage(String packageName) {
+      instrumentedPackages.add(packageName);
+      return this;
+    }
+
+    public Builder doNotInstrumentClass(String className) {
+      this.classesToNotInstrument.add(className);
+      return this;
+    }
+
+    public InstrumentationConfiguration build() {
+      return new InstrumentationConfiguration(
+          classNameTranslations, interceptedMethods, instrumentedPackages,
+          instrumentedClasses, classesToNotAcquire, packagesToNotAcquire, classesToNotInstrument);
+    }
   }
 }

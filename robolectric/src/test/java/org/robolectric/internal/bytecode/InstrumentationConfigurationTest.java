@@ -51,6 +51,15 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldAcquireAndroidRClasses() throws Exception {
+    assertThat(config.shouldAcquire("android.Rfoo")).isTrue();
+    assertThat(config.shouldAcquire("android.fooR")).isTrue();
+    assertThat(config.shouldAcquire("android.R")).isTrue();
+    assertThat(config.shouldAcquire("android.R$anything")).isTrue();
+    assertThat(config.shouldAcquire("android.R$anything$else")).isTrue();
+  }
+
+  @Test
   public void shouldNotAcquireRClasses() throws Exception {
     assertThat(config.shouldAcquire("com.whatever.Rfoo")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.fooR")).isTrue();
@@ -85,6 +94,7 @@ public class InstrumentationConfigurationTest {
     assertThat(baseConfig).isNotEqualTo(customConfig);
   }
 
+  @Test
   public void shouldNotInstrumentListedClasses() throws Exception {
     String instrumentName = "android.foo.bar";
     InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();
