@@ -49,7 +49,7 @@ public class ShadowWrangler implements ClassHandler {
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
   private final Interceptors interceptors;
-  private int apiLevel;
+  private final int apiLevel;
   private final Map<Class, MetaShadow> metaShadowMap = new HashMap<>();
   private final Map<String, Plan> planCache =
       Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
