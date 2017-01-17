@@ -1,0 +1,3 @@
+machine:
+  environment:
+    GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx4000m -XX:+HeapDumpOnOutOfMemoryError"'
