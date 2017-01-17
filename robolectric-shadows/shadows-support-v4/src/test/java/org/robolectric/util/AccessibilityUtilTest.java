@@ -1,12 +1,5 @@
 package org.robolectric.util;
 
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.robolectric.Shadows.shadowOf;
-
-import com.google.android.apps.common.testing.accessibility.framework.integrations.AccessibilityViewCheckException;
-
 import android.graphics.Rect;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -14,7 +7,7 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
+import com.google.android.apps.common.testing.accessibility.framework.integrations.AccessibilityViewCheckException;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +15,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
-import org.robolectric.shadows.ShadowView;
+
+import static org.mockito.Mockito.mock;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Tests for accessibility checking. The checking relies on the Accessibility Test Framework for

@@ -1,22 +1,20 @@
 package org.robolectric.util;
 
+import android.view.View;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult;
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultDescriptor;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultUtils;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewCheckResult;
 import com.google.android.apps.common.testing.accessibility.framework.DuplicateClickableBoundsViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.TouchTargetSizeViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator;
-
-import android.view.View;
-
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -244,9 +242,12 @@ public class AccessibilityUtil {
         if (classChecksAnnotation != null) {
           break;
         }
+
         /* If we've crawled up the stack far enough to find the test, stop looking */
-        if (clazz.getAnnotation(org.junit.Test.class) != null) {
-          break;
+        for (Annotation annotation : clazz.getAnnotations()) {
+          if (annotation.getClass().getName().equals("org.junit.Test")) {
+            break;
+          }
         }
       }
       /* 

@@ -11,12 +11,10 @@ dependencies {
     compile "org.ow2.asm:asm:5.0.1"
     compile "org.ow2.asm:asm-commons:5.0.1"
     compile project(":robolectric-annotations")
-    compile "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
     testCompile "org.mockito:mockito-core:2.5.4"
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
 }
