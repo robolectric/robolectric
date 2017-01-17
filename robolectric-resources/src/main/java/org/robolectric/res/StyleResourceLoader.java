@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import javax.xml.stream.XMLStreamReader;
+
 public class StyleResourceLoader extends XpathResourceXmlLoader {
   private final ResBunch data;
 
@@ -9,7 +11,12 @@ public class StyleResourceLoader extends XpathResourceXmlLoader {
   }
 
   @Override
-  protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
+  public void onStart(XMLStreamReader xml, XmlContext xmlContext) {
+
+  }
+
+  @Override
+  protected void onStart(String name, XmlNode xmlNode, XmlContext xmlContext) {
     String styleName = xmlNode.getAttrValue("name");
     String styleParent = xmlNode.getAttrValue("parent");
     if (styleParent == null) {

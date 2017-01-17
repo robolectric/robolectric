@@ -9,6 +9,7 @@ public class ResBunch {
 
   public void put(String attrType, String name, TypedResource value) {
     ResBundle bundle = getBundle(attrType);
+//    System.out.println(attrType + "/" + name + ":" + value);
     bundle.put(attrType, name, value);
   }
 

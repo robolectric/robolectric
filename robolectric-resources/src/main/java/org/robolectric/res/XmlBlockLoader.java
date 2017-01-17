@@ -20,6 +20,11 @@ public class XmlBlockLoader extends XmlLoader {
   }
 
   @Override
+  public DocumentLoader.NodeHandler addTo(DocumentLoader.NodeHandler nodeHandler) {
+    return nodeHandler;
+  }
+
+  @Override
   protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
     XmlBlock block = XmlBlock.create(parse(xmlFile), xmlFile.getPath(), xmlContext.getPackageName());
     resBundle.put(attrType, xmlFile.getBaseName(), new TypedResource<>(block, null, xmlContext));

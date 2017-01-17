@@ -16,7 +16,7 @@ public class PluralResourceLoaderTest {
     resBunch = new ResBunch();
     PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(resBunch);
 
-    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("values", pluralResourceLoader);
+//    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("values", pluralResourceLoader);
   }
 
   @Test

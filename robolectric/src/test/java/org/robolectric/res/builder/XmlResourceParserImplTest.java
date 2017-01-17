@@ -56,7 +56,7 @@ public class XmlResourceParserImplTest {
   public void setUp() throws Exception {
     ResBundle resBundle = new ResBundle();
     XmlBlockLoader xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
-    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("xml", xmlBlockLoader);
+//    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("xml", xmlBlockLoader);
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();

@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
@@ -280,10 +281,11 @@ public final class ShadowAssetManager {
   public CharSequence[] getResourceTextArray(int resId) {
     TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
-    TypedResource[] items = getConverter(value).getItems(value);
-    CharSequence[] charSequences = new CharSequence[items.length];
-    for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
+    List<String> items = (List<String>) value.getData();
+    CharSequence[] charSequences = new CharSequence[items.size()];
+    for (int i = 0; i < items.size(); i++) {
+      TypedResource tvalue = new TypedResource<>(items.get(i), ResType.CHAR_SEQUENCE, value.getXmlContext());
+      TypedResource typedResource = resolve(tvalue, RuntimeEnvironment.getQualifiers(), resId);
       charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
     }
     return charSequences;
@@ -436,10 +438,12 @@ public final class ShadowAssetManager {
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
-    TypedResource[] items = getConverter(value).getItems(value);
-    int[] ints = new int[items.length];
-    for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
+    List<String> items = (List<String>) value.getData();
+    int[] ints = new int[items.size()];
+    for (int i = 0; i < items.size(); i++) {
+      TypedResource typedResource = resolve(
+          new TypedResource<>(items.get(i), ResType.INTEGER, value.getXmlContext()),
+          RuntimeEnvironment.getQualifiers(), resId);
       ints[i] = getConverter(typedResource).asInt(typedResource);
     }
     return ints;
@@ -450,7 +454,7 @@ public final class ShadowAssetManager {
     if (value == null) {
       return null;
     }
-    TypedResource[] items = getConverter(value).getItems(value);
+    TypedResource[] items = (TypedResource[]) value.getData();
     return getTypedArray(resources, items, resId);
   }
 

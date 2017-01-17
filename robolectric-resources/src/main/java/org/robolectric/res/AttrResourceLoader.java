@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,12 @@ public class AttrResourceLoader extends XpathResourceXmlLoader {
   }
 
   @Override
-  protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
+  public void onStart(XMLStreamReader xml, XmlContext xmlContext) {
+
+  }
+
+  @Override
+  protected void onStart(String name, XmlNode xmlNode, XmlContext xmlContext) {
     String format = xmlNode.getAttrValue("format");
     String childFormat = null;
     List<AttrData.Pair> pairs = null;

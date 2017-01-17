@@ -1,5 +1,10 @@
 package org.robolectric.res;
 
+import org.jetbrains.annotations.NotNull;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,70 +21,136 @@ public enum ResType {
   INTEGER,
   LAYOUT,
   STYLE {
-    @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
+    @Override
+    public TypedResource getValueWithType(String text, XmlLoader.XmlContext xmlContext) {
       throw new UnsupportedOperationException();
     }
   },
 
-  CHAR_SEQUENCE {
-    @Override
-    public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
-      return new TypedResource<>(StringResources.proccessStringResources(xmlNode.getTextContent()), this, xmlContext);
-    }
-  },
+  CHAR_SEQUENCE,
 
   CHAR_SEQUENCE_ARRAY {
-    @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
-      return extractScalarItems(xmlNode, CHAR_SEQUENCE_ARRAY, CHAR_SEQUENCE, xmlContext);
-    }
+//    @Override
+//    public TypedResource getValueWithType(String text, XmlLoader.XmlContext xmlContext) {
+//      return extractScalarItems(text, CHAR_SEQUENCE_ARRAY, CHAR_SEQUENCE, xmlContext);
+//    }
   },
 
   INTEGER_ARRAY {
-    @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
-      return extractScalarItems(xmlNode, INTEGER_ARRAY, INTEGER, xmlContext);
-    }
+//    @Override
+//    public TypedResource getValueWithType(String text, XmlLoader.XmlContext xmlContext) {
+//      return extractScalarItems(text, INTEGER_ARRAY, INTEGER, xmlContext);
+//    }
   },
 
   TYPED_ARRAY {
-    @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
-      return extractTypedItems(xmlNode, TYPED_ARRAY, xmlContext);
-    }
+//    @Override
+//    public TypedResource getValueWithType(String text, XmlLoader.XmlContext xmlContext) throws XMLStreamException {
+//      return extractTypedItems(text, TYPED_ARRAY, xmlContext);
+//    }
   },
 
   NULL;
 
-  private static TypedResource extractScalarItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, ResType itemResType, XmlLoader.XmlContext xmlContext) {
+  private static TypedResource extractScalarItems(XMLStreamReader xml, ResType arrayResType, ResType itemResType, XmlLoader.XmlContext xmlContext) {
     List<TypedResource> items = new ArrayList<>();
-    for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
-      items.add(new TypedResource<>(item.getTextContent(), itemResType, xmlContext));
+
+    try {
+      int nestLevel = 1;
+      String tagName = null;
+      while (nestLevel > 0 && xml.hasNext()) {
+        switch (xml.next()) {
+          case XMLStreamConstants.START_ELEMENT:
+            nestLevel++;
+            tagName = xml.getLocalName();
+            break;
+
+          case XMLStreamConstants.CHARACTERS:
+            if ("item".equals(tagName)) {
+              items.add(new TypedResource<>(xml.getText(), itemResType, xmlContext));
+            }
+            break;
+
+          case XMLStreamConstants.END_ELEMENT:
+            nestLevel--;
+            break;
+        }
+      }
+    } catch (XMLStreamException e) {
+      throw new RuntimeException(e);
     }
     TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
     return new TypedResource<>(typedResources, arrayResType, xmlContext);
   }
 
-  private static TypedResource extractTypedItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, XmlLoader.XmlContext xmlContext) {
+  private static TypedResource extractTypedItems(XMLStreamReader xml, ResType arrayResType, XmlLoader.XmlContext xmlContext) throws XMLStreamException {
     final List<TypedResource> items = new ArrayList<>();
-    for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
-      final String itemString = item.getTextContent();
-      ResType itemResType = inferFromValue(itemString);
-      if (itemResType == ResType.CHAR_SEQUENCE) {
-        if (AttributeResource.isStyleReference(itemString)) {
-          itemResType = ResType.STYLE;
-        } else if (itemString.equals("@null")) {
-          itemResType = ResType.NULL;
-        } else if (AttributeResource.isResourceReference(itemString)) {
-          // This is a reference; no type info needed.
-          itemResType = null;
-        }
+    int nestLevel = 1;
+    String tagName = null;
+    StringBuilder buf = new StringBuilder();
+    while (nestLevel > 0 && xml.hasNext()) {
+      switch (xml.next()) {
+        case XMLStreamConstants.START_ELEMENT:
+          tagName = xml.getLocalName();
+          if ("item".equals(tagName)) {
+            buf.setLength(0);
+          }
+          nestLevel++;
+          break;
+        case XMLStreamConstants.CHARACTERS:
+          buf.append(xml.getText().trim());
+          break;
+        case XMLStreamConstants.END_ELEMENT:
+          String itemString = buf.toString();
+
+          if ("item".equals(tagName)) {
+            ResType itemResType = inferFromValue(itemString);
+            if (itemResType == ResType.CHAR_SEQUENCE) {
+              if (AttributeResource.isStyleReference(itemString)) {
+                itemResType = ResType.STYLE;
+              } else if (itemString.equals("@null")) {
+                itemResType = ResType.NULL;
+              } else if (AttributeResource.isResourceReference(itemString)) {
+                // This is a reference; no type info needed.
+                itemResType = null;
+              }
+            }
+            items.add(new TypedResource<>(itemString, itemResType, xmlContext));
+
+            tagName = null;
+            buf.setLength(0);
+          }
+          nestLevel--;
+          break;
       }
-      items.add(new TypedResource<>(itemString, itemResType, xmlContext));
     }
+
     final TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
     return new TypedResource<>(typedResources, arrayResType, xmlContext);
   }
 
-  public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
-    return new TypedResource<>(xmlNode.getTextContent(), this, xmlContext);
+  public TypedResource getValueWithType(String text, XmlLoader.XmlContext xmlContext) throws XMLStreamException {
+    return new TypedResource<>(text, this, xmlContext);
+  }
+
+  @NotNull
+  protected String collectString(XMLStreamReader xml) throws XMLStreamException {
+    StringBuilder buf = new StringBuilder();
+    int nestLevel = 1;
+    while (nestLevel > 0 && xml.hasNext()) {
+      switch (xml.next()) {
+        case XMLStreamConstants.START_ELEMENT:
+          nestLevel++;
+          break;
+        case XMLStreamConstants.CHARACTERS:
+          buf.append(xml.getText().trim());
+          break;
+        case XMLStreamConstants.END_ELEMENT:
+          nestLevel--;
+          break;
+      }
+    }
+    return buf.toString();
   }
 
   /**
@@ -96,12 +167,14 @@ public enum ResType {
       try {
         Integer.parseInt(value);
         return ResType.INTEGER;
-      } catch (NumberFormatException nfe) {}
+      } catch (NumberFormatException nfe) {
+      }
 
       try {
         Float.parseFloat(value);
         return ResType.FRACTION;
-      } catch (NumberFormatException nfe) {}
+      } catch (NumberFormatException nfe) {
+      }
 
 
       return ResType.CHAR_SEQUENCE;

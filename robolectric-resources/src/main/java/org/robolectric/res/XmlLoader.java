@@ -48,6 +48,8 @@ public abstract class XmlLoader {
 
   protected abstract void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext);
 
+  abstract public DocumentLoader.NodeHandler addTo(DocumentLoader.NodeHandler nodeHandler);
+
   public static class XmlContext {
     private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
 

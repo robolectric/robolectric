@@ -6,26 +6,71 @@ import com.ximpleware.VTDNav;
 import com.ximpleware.XPathEvalException;
 import com.ximpleware.XPathParseException;
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.res.DocumentLoader.NodeListener;
 
-public abstract class XpathResourceXmlLoader extends XmlLoader {
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public abstract class XpathResourceXmlLoader extends XmlLoader implements NodeListener {
+  public static final Pattern ATTR_RE = Pattern.compile("([^\\[]*)(?:\\[@(.+)='(.+)'])?");
   private final String expression;
 
   public XpathResourceXmlLoader(String expression) {
     this.expression = expression;
   }
 
+  @Override
+  public DocumentLoader.NodeHandler addTo(DocumentLoader.NodeHandler nodeHandler) {
+    for (String s : expression.split("/")) {
+      if (s.isEmpty()) continue;
+
+      Matcher attrMatcher = ATTR_RE.matcher(s);
+      if (attrMatcher.find()) {
+        String elementName = attrMatcher.group(1);
+        String attrName = attrMatcher.group(2);
+        String attrValue = attrMatcher.group(3);
+
+        Map<String, String> attrs = attrName == null
+            ? Collections.<String, String>emptyMap()
+            : Collections.singletonMap(attrName, attrValue);
+        nodeHandler = nodeHandler.addHandler(elementName, attrs);
+      } else {
+        throw new RuntimeException("unknown pattern " + s);
+      }
+    }
+
+    nodeHandler.addListener(this);
+    return nodeHandler;
+  }
+
+  @Override
+  public abstract void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException;
+
+  @Override
+  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  }
+
+  @Override
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  }
+
   @Override protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) {
     try {
       for (XmlNode node : xmlNode.selectByXpath(expression)) {
         String name = node.getAttrValue("name");
-        processNode(name, node, xmlContext);
+        onStart(name, node, xmlContext);
       }
     } catch (Exception e) {
       throw new RuntimeException("Error processing " + xmlFile, e);
     }
   }
 
-  protected abstract void processNode(String name, XmlNode xmlNode, XmlContext xmlContext);
+  protected abstract void onStart(String name, XmlNode xmlNode, XmlContext xmlContext);
 
   public static class XmlNode {
     private final VTDNav vtdNav;
@@ -61,18 +106,19 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
     }
 
     public Iterable<XmlNode> selectByXpath(String expr) throws XPathParseException {
-      VTDNav cloneVtdNav = vtdNav.cloneNav();
-      final AutoPilot ap = new AutoPilot(cloneVtdNav);
-      ap.selectXPath(expr);
-      return returnIterable(new Iterator(ap, cloneVtdNav) {
-        @Override boolean doHasNext() throws XPathEvalException, NavException {
-          int result = ap.evalXPath();
-          if (result == -1) {
-            ap.resetXPath();
-          }
-          return result != -1;
-        }
-      });
+//      VTDNav cloneVtdNav = vtdNav.cloneNav();
+//      final AutoPilot ap = new AutoPilot(cloneVtdNav);
+//      ap.selectXPath(expr);
+//      return returnIterable(new Iterator(ap, cloneVtdNav) {
+//        @Override boolean doHasNext() throws XPathEvalException, NavException {
+//          int result = ap.evalXPath();
+//          if (result == -1) {
+//            ap.resetXPath();
+//          }
+//          return result != -1;
+//        }
+//      });
+      return new ArrayList<>();
     }
 
     public Iterable<XmlNode> selectElements(String name) {

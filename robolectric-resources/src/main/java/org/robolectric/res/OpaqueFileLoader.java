@@ -16,6 +16,11 @@ public class OpaqueFileLoader extends XmlLoader {
   }
 
   @Override
+  public DocumentLoader.NodeHandler addTo(DocumentLoader.NodeHandler nodeHandler) {
+    return nodeHandler;
+  }
+
+  @Override
   protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
     resBunch.put(attrType, xmlFile.getBaseName(), new FileTypedResource(xmlFile, resType, xmlContext));
   }
