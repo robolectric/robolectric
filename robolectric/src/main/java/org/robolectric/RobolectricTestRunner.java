@@ -17,13 +17,25 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.*;
 import org.robolectric.internal.bytecode.*;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.internal.dependency.*;
+import org.robolectric.internal.fakes.RoboCharsets;
+import org.robolectric.internal.fakes.RoboExtendedResponseCache;
+import org.robolectric.internal.fakes.RoboResponseSource;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;
+import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.TempDirectory;
+import org.robolectric.util.Transcript;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,6 +81,75 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     super(testClass);
     this.configMerger = createConfigMerger();
     this.sdkPicker = createSdkPicker();
+  }
+
+  public static Builder configure(Builder builder) {
+    for (MethodRef methodRef : new AndroidInterceptors().build().getAllMethodRefs()) {
+      builder.addInterceptedMethod(methodRef);
+    }
+
+    builder.doNotAcquireClass(TestLifecycle.class)
+      .doNotAcquireClass(ShadowWrangler.class)
+      .doNotAcquireClass(AndroidManifest.class)
+      .doNotAcquireClass(InstrumentingClassLoader.class)
+      .doNotAcquireClass(SdkEnvironment.class)
+      .doNotAcquireClass(SdkConfig.class)
+      .doNotAcquireClass(RobolectricTestRunner.class)
+      .doNotAcquireClass(HelperTestRunner.class)
+      .doNotAcquireClass(ResourcePath.class)
+      .doNotAcquireClass(ResourceTable.class)
+      .doNotAcquireClass(XmlBlock.class)
+      .doNotAcquireClass(ClassHandler.class)
+      .doNotAcquireClass(ClassHandler.Plan.class)
+      .doNotAcquireClass(ShadowInvalidator.class)
+      .doNotAcquireClass(RealObject.class)
+      .doNotAcquireClass(Implements.class)
+      .doNotAcquireClass(Implementation.class)
+      .doNotAcquireClass(Instrument.class)
+      .doNotAcquireClass(DoNotInstrument.class)
+      .doNotAcquireClass(Config.class)
+      .doNotAcquireClass(Transcript.class)
+      .doNotAcquireClass(DirectObjectMarker.class)
+      .doNotAcquireClass(DependencyJar.class)
+      .doNotAcquireClass(ParallelUniverseInterface.class)
+      .doNotAcquireClass(ShadowedObject.class)
+      .doNotAcquireClass(TempDirectory.class);
+
+    builder.doNotAcquirePackage("java.")
+      .doNotAcquirePackage("javax.")
+      .doNotAcquirePackage("sun.")
+      .doNotAcquirePackage("com.sun.")
+      .doNotAcquirePackage("org.w3c.")
+      .doNotAcquirePackage("org.xml.")
+      .doNotAcquirePackage("org.junit")
+      .doNotAcquirePackage("org.hamcrest")
+      .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
+      .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+      .doNotAcquirePackage("kotlin.")
+      .doNotAcquirePackage("com.almworks.sqlite4java"); // Fix #958: SQLite native library must be loaded once.
+
+    builder.addClassNameTranslation("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
+       .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
+       .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName());
+
+    // Instrumenting these classes causes a weird failure.
+    builder.doNotInstrumentClass("android.R")
+        .doNotInstrumentClass("android.R$styleable");
+
+    builder.addInstrumentedPackage("dalvik.")
+      .addInstrumentedPackage("libcore.")
+      .addInstrumentedPackage("android.")
+      .addInstrumentedPackage("com.android.internal.")
+      .addInstrumentedPackage("org.apache.http.")
+      .addInstrumentedPackage("org.kxml2.");
+
+
+    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
+      for (String packagePrefix : provider.getProvidedPackageNames()) {
+        builder.addInstrumentedPackage(packagePrefix);
+      }
+    }
+    return builder;
   }
 
   @SuppressWarnings("unchecked")
@@ -166,7 +247,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    */
   @NotNull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-    return InstrumentationConfiguration.newBuilder().withConfig(config).build();
+    return configure(InstrumentationConfiguration.newBuilder().withConfig(config)).build();
   }
 
   /**

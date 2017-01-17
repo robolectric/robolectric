@@ -1,13 +1,22 @@
 package org.robolectric.internal.bytecode;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.RobolectricTestRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class InstrumentationConfigurationTest {
-  private final InstrumentationConfiguration config = InstrumentationConfiguration.newBuilder().build();
+  private InstrumentationConfiguration config;
+
+  @Before
+  public void setUp() throws Exception {
+    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
+    RobolectricTestRunner.configure(builder);
+    config = builder.build();
+  }
 
   @Test
   public void shouldNotInstrumentAndroidAppClasses() throws Exception {

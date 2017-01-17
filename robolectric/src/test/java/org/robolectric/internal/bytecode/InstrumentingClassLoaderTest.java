@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import android.os.Build;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
@@ -113,7 +114,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldPerformClassLoadForAcquiredClasses() throws Exception {
-    ClassLoader classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
+    ClassLoader classLoader = new InstrumentingClassLoader(configureBuilder().build());
     Class<?> exampleClass = classLoader.loadClass(AnUninstrumentedClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     try {
@@ -126,7 +127,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldPerformClassLoadAndInstrumentLoadForInstrumentedClasses() throws Exception {
-    ClassLoader classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
+    ClassLoader classLoader = new InstrumentingClassLoader(configureBuilder().build());
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     Field roboDataField = exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME);
@@ -402,7 +403,7 @@ public class InstrumentingClassLoaderTest {
   }
 
   private InstrumentationConfiguration createRemappingConfig() {
-    return InstrumentationConfiguration.newBuilder()
+    return configureBuilder()
         .addClassNameTranslation(AClassToForget.class.getName(), AClassToRemember.class.getName())
         .build();
   }
@@ -426,7 +427,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldInterceptFilteredMethodInvocations() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "forgettableMethod"))
         .build()));
 
@@ -438,7 +439,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldInterceptFilteredStaticMethodInvocations() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "forgettableStaticMethod"))
         .build()));
 
@@ -540,7 +541,7 @@ public class InstrumentingClassLoaderTest {
   }
 
   private Object invokeInterceptedMethodOnAClassToForget(String methodName) throws Exception {
-    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "*"))
         .build()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
@@ -550,12 +551,17 @@ public class InstrumentingClassLoaderTest {
     return m.invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
   }
 
+  @NotNull
+  private InstrumentationConfiguration.Builder configureBuilder() {
+    return RobolectricTestRunner.configure(InstrumentationConfiguration.newBuilder());
+  }
+
   @Test
   public void shouldPassArgumentsFromInterceptedMethods() throws Exception {
     if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = 10L;
 
-    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "*"))
         .build()));
 
@@ -569,7 +575,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
-    InstrumentationConfiguration config = InstrumentationConfiguration.newBuilder()
+    InstrumentationConfiguration config = configureBuilder()
         .addClassNameTranslation(AClassToForget.class.getName(), AClassToRemember.class.getName())
         .addInterceptedMethod(new MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))
         .build();
@@ -727,7 +733,7 @@ public class InstrumentingClassLoaderTest {
 
   private Class<?> loadClass(Class<?> clazz) throws ClassNotFoundException {
     if (classLoader == null) {
-      classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
+      classLoader = new InstrumentingClassLoader(configureBuilder().build());
     }
     ShadowInvalidator invalidator = Mockito.mock(ShadowInvalidator.class);
     when(invalidator.getSwitchPoint(any(Class.class))).thenReturn(new SwitchPoint());
@@ -738,7 +744,7 @@ public class InstrumentingClassLoaderTest {
   @Test public void shouldCacheMisses() throws Exception {
     final Transcript transcript = new Transcript();
 
-    InstrumentingClassLoader classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build()) {
+    InstrumentingClassLoader classLoader = new InstrumentingClassLoader(configureBuilder().build()) {
       @Override
       protected Class<?> findClass(String className) throws ClassNotFoundException {
         transcript.add("find " + className);

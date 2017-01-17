@@ -8,6 +8,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -116,9 +117,10 @@ public class TestRunnerSequenceTest {
 
     @NotNull
     @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-      return InstrumentationConfiguration.newBuilder()
-          .doNotAcquireClass(StateHolder.class.getName())
-          .build();
+      InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
+      RobolectricTestRunner.configure(builder);
+      builder.doNotAcquireClass(StateHolder.class);
+      return builder.build();
     }
 
     @Override
@@ -137,6 +139,7 @@ public class TestRunnerSequenceTest {
     }
   }
 
+  @DoNotInstrument
   public static class MyTestLifecycle extends DefaultTestLifecycle {
     @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
       StateHolder.transcript.add("createApplication");

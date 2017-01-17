@@ -3,27 +3,18 @@ package org.robolectric.internal.bytecode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.*;
-import org.robolectric.internal.dependency.DependencyJar;
-import org.robolectric.internal.fakes.RoboCharsets;
-import org.robolectric.internal.fakes.RoboExtendedResponseCache;
-import org.robolectric.internal.fakes.RoboResponseSource;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.ResourceTable;
-import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.util.TempDirectory;
-import org.robolectric.util.Transcript;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
@@ -39,6 +30,11 @@ public class InstrumentationConfiguration {
     private final Collection<String> packagesToNotAcquire = new HashSet<>();
     private final Collection<String> instrumentedClasses = new HashSet<>();
     private final Collection<String> classesToNotInstrument = new HashSet<>();
+
+    public Builder doNotAcquireClass(Class<?> clazz) {
+      doNotAcquireClass(clazz.getName());
+      return this;
+    }
 
     public Builder doNotAcquireClass(String className) {
       this.classesToNotAcquire.add(className);
@@ -98,64 +94,9 @@ public class InstrumentationConfiguration {
     }
 
     public InstrumentationConfiguration build() {
-      interceptedMethods.addAll(new AndroidInterceptors().build().getAllMethodRefs());
-      classesToNotAcquire.addAll(stringify(
-          TestLifecycle.class,
-          ShadowWrangler.class,
-          AndroidManifest.class,
-          InstrumentingClassLoader.class,
-          SdkEnvironment.class,
-          SdkConfig.class,
-          RobolectricTestRunner.class,
-          RobolectricTestRunner.HelperTestRunner.class,
-          ResourcePath.class,
-          ResourceTable.class,
-          XmlBlock.class,
-          ClassHandler.class,
-          ClassHandler.Plan.class,
-          ShadowInvalidator.class,
-          RealObject.class,
-          Implements.class,
-          Implementation.class,
-          Instrument.class,
-          DoNotInstrument.class,
-          Config.class,
-          Transcript.class,
-          DirectObjectMarker.class,
-          DependencyJar.class,
-          ParallelUniverseInterface.class,
-          ShadowedObject.class,
-          TempDirectory.class
-      ));
-      packagesToNotAcquire.addAll(Arrays.asList(
-          "java.",
-          "javax.",
-          "sun.",
-          "com.sun.",
-          "org.w3c.",
-          "org.xml.",
-          "org.junit",
-          "org.hamcrest",
-          "org.specs2",  // allows for android projects with mixed scala\java tests to be
-          "scala.",      //  run with Maven Surefire (see the RoboSpecs project on github)
-          "kotlin.",
-          "com.almworks.sqlite4java" // Fix #958: SQLite native library must be loaded once.
-      ));
-      classNameTranslations.put("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName());
-      classNameTranslations.put("java.net.ResponseSource", RoboResponseSource.class.getName());
-      classNameTranslations.put("java.nio.charset.Charsets", RoboCharsets.class.getName());
-
-      // Instrumenting these classes causes a wierd failure.
-      classesToNotInstrument.add("android.R");
-      classesToNotInstrument.add("android.R$styleable");
-
-      instrumentedPackages.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "org.apache.http.", "org.kxml2."));
-      for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
-        instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
-      }
-
       return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAcquire, packagesToNotAcquire, classesToNotInstrument);
     }
+
   }
 
   public static Builder newBuilder() {
@@ -251,14 +192,6 @@ public class InstrumentationConfiguration {
 
   public boolean containsStubs(ClassInfo classInfo) {
     return classInfo.getName().startsWith("com.google.android.maps.");
-  }
-
-  private static Collection<String> stringify(Class... classes) {
-    ArrayList<String> strings = new ArrayList<>();
-    for (Class aClass : classes) {
-      strings.add(aClass.getName());
-    }
-    return strings;
   }
 
   private boolean isInInstrumentedPackage(ClassInfo classInfo) {
