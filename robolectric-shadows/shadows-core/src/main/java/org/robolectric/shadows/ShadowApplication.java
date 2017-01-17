@@ -75,7 +75,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
   private Handler mainHandler;
   private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
-  private ArrayList<Toast> shownToasts = new ArrayList<>();
+  private List<android.widget.Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;
   private ShadowDialog latestDialog;

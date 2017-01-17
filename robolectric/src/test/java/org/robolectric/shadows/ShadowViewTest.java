@@ -28,6 +28,8 @@ import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
@@ -47,11 +49,11 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowViewTest {
   private View view;
-  private Transcript transcript;
+  private List<String> transcript;
 
   @Before
   public void setUp() throws Exception {
-    transcript = new Transcript();
+    transcript = new ArrayList<>();
     view = new View(RuntimeEnvironment.application);
   }
 
@@ -92,16 +94,17 @@ public class ShadowViewTest {
       }
     };
     view1.layout(0, 0, 0, 0);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     view1.layout(1, 2, 3, 4);
-    transcript.assertEventsSoFar("onLayout true 1 2 3 4");
+    assertThat(transcript).containsExactly("onLayout true 1 2 3 4");
+    transcript.clear();
     view1.layout(1, 2, 3, 4);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
   }
 
   @Test
   public void shouldFocus() throws Exception {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
 
     view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
       @Override
@@ -112,25 +115,26 @@ public class ShadowViewTest {
 
     assertFalse(view.isFocused());
     assertFalse(view.hasFocus());
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     view.requestFocus();
     assertFalse(view.isFocused());
     assertFalse(view.hasFocus());
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     view.setFocusable(true);
     view.requestFocus();
     assertTrue(view.isFocused());
     assertTrue(view.hasFocus());
-    transcript.assertEventsSoFar("Gained focus");
+    assertThat(transcript).containsExactly("Gained focus");
+    transcript.clear();
 
     shadowOf(view).setMyParent(new LinearLayout(RuntimeEnvironment.application)); // we can never lose focus unless a parent can take it
 
     view.clearFocus();
     assertFalse(view.isFocused());
     assertFalse(view.hasFocus());
-    transcript.assertEventsSoFar("Lost focus");
+    assertThat(transcript).containsExactly("Lost focus");
   }
 
   @Test
@@ -770,22 +774,25 @@ public class ShadowViewTest {
   public void shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
     MyView parent = new MyView("parent", transcript);
     parent.addView(new MyView("child", transcript));
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
-    transcript.assertEventsSoFar("parent attached", "child attached");
+    assertThat(transcript).containsExactly("parent attached", "child attached");
+    transcript.clear();
 
     parent.addView(new MyView("another child", transcript));
-    transcript.assertEventsSoFar("another child attached");
+    assertThat(transcript).containsExactly("another child attached");
+    transcript.clear();
 
     MyView temporaryChild = new MyView("temporary child", transcript);
     parent.addView(temporaryChild);
-    transcript.assertEventsSoFar("temporary child attached");
+    assertThat(transcript).containsExactly("temporary child attached");
+    transcript.clear();
     assertTrue(shadowOf(temporaryChild).isAttachedToWindow());
 
     parent.removeView(temporaryChild);
-    transcript.assertEventsSoFar("temporary child detached");
+    assertThat(transcript).containsExactly("temporary child detached");
     assertFalse(shadowOf(temporaryChild).isAttachedToWindow());
   }
 
@@ -827,7 +834,7 @@ public class ShadowViewTest {
     transcript.clear();
     parent.removeAllViews();
     ShadowLooper.runUiThreadTasks();
-    transcript.assertEventsSoFar("another child detached", "child detached");
+    assertThat(transcript).containsExactly("another child detached", "child detached");
   }
 
   @Test
@@ -870,9 +877,9 @@ public class ShadowViewTest {
 
   public static class MyView extends LinearLayout {
     private String name;
-    private Transcript transcript;
+    private List<String> transcript;
 
-    public MyView(String name, Transcript transcript) {
+    public MyView(String name, List<String> transcript) {
       super(RuntimeEnvironment.application);
       this.name = name;
       this.transcript = transcript;

@@ -36,7 +36,6 @@ import org.robolectric.internal.bytecode.testing.AnInstrumentedChild;
 import org.robolectric.internal.bytecode.testing.AnInstrumentedClassWithoutToStringWithSuperToString;
 import org.robolectric.internal.bytecode.testing.AnUninstrumentedClass;
 import org.robolectric.internal.bytecode.testing.AnUninstrumentedParent;
-import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
 
 import java.lang.invoke.MethodHandle;
@@ -48,6 +47,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
@@ -69,7 +70,7 @@ import static org.mockito.Mockito.when;
 public class InstrumentingClassLoaderTest {
 
   private ClassLoader classLoader;
-  private Transcript transcript = new Transcript();
+  private List<String> transcript = new ArrayList<>();
   private MyClassHandler classHandler = new MyClassHandler(transcript);
 
   @Test
@@ -85,7 +86,7 @@ public class InstrumentingClassLoaderTest {
     defaultCtor.setAccessible(true);
     Object instance = defaultCtor.newInstance();
     assertThat(ShadowExtractor.extract(instance)).isNotNull();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
   }
 
   @Test
@@ -95,7 +96,8 @@ public class InstrumentingClassLoaderTest {
     assertTrue(Modifier.isPublic(ctor.getModifiers()));
     ctor.setAccessible(true);
     Object instance = ctor.newInstance("new one");
-    transcript.assertEventsSoFar("methodInvoked: AClassWithNoDefaultConstructor.__constructor__(java.lang.String new one)");
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AClassWithNoDefaultConstructor.__constructor__(java.lang.String new one)");
 
     Field nameField = clazz.getDeclaredField("name");
     nameField.setAccessible(true);
@@ -147,7 +149,8 @@ public class InstrumentingClassLoaderTest {
     Object exampleInstance = exampleClass.newInstance();
     assertEquals("response from methodInvoked: AnExampleClass.normalMethod(java.lang.String value1, int 123)",
         normalMethod.invoke(exampleInstance, "value1", 123));
-    transcript.assertEventsSoFar("methodInvoked: AnExampleClass.__constructor__()",
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AnExampleClass.__constructor__()",
         "methodInvoked: AnExampleClass.normalMethod(java.lang.String value1, int 123)");
   }
 
@@ -159,7 +162,8 @@ public class InstrumentingClassLoaderTest {
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.newInstance();
     assertEquals("normalMethod(value1, 123)", directMethod.invoke(exampleInstance, "value1", 123));
-    transcript.assertEventsSoFar("methodInvoked: AnExampleClass.__constructor__()");
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AnExampleClass.__constructor__()");
   }
 
   @Test
@@ -179,7 +183,7 @@ public class InstrumentingClassLoaderTest {
     assertEquals(
         "response from methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)",
         normalMethod.invoke(null, "value1"));
-    transcript.assertEventsSoFar(
+    assertThat(transcript).containsExactly(
         "methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)");
   }
 
@@ -200,7 +204,8 @@ public class InstrumentingClassLoaderTest {
     Method normalMethod = exampleClass.getMethod("normalMethodReturningInteger", int.class);
     Object exampleInstance = exampleClass.newInstance();
     assertEquals(456, normalMethod.invoke(exampleInstance, 123));
-    transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningInteger.__constructor__()",
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AClassWithMethodReturningInteger.__constructor__()",
         "methodInvoked: AClassWithMethodReturningInteger.normalMethodReturningInteger(int 123)");
   }
 
@@ -212,7 +217,8 @@ public class InstrumentingClassLoaderTest {
     Method normalMethod = exampleClass.getMethod("normalMethodReturningDouble", double.class);
     Object exampleInstance = exampleClass.newInstance();
     assertEquals(456.0, normalMethod.invoke(exampleInstance, 123d));
-    transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningDouble.__constructor__()",
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AClassWithMethodReturningDouble.__constructor__()",
         "methodInvoked: AClassWithMethodReturningDouble.normalMethodReturningDouble(double 123.0)");
   }
 
@@ -223,7 +229,8 @@ public class InstrumentingClassLoaderTest {
     Object exampleInstance = exampleClass.newInstance();
     assertEquals("response from methodInvoked: AClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)",
         normalMethod.invoke(exampleInstance, "value1", 123));
-    transcript.assertEventsSoFar("methodInvoked: AClassWithNativeMethod.__constructor__()",
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AClassWithNativeMethod.__constructor__()",
         "methodInvoked: AClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)");
   }
 
@@ -256,7 +263,8 @@ public class InstrumentingClassLoaderTest {
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.newInstance();
     assertEquals(true, directMethod.invoke(exampleInstance, true, new boolean[0]));
-    transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningBoolean.__constructor__()",
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AClassWithMethodReturningBoolean.__constructor__()",
         "methodInvoked: AClassWithMethodReturningBoolean.normalMethodReturningBoolean(boolean true, boolean[] {})");
   }
 
@@ -268,15 +276,18 @@ public class InstrumentingClassLoaderTest {
     Method directMethod = exampleClass.getMethod("normalMethodReturningArray");
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.newInstance();
-    transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.__constructor__()");
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AClassWithMethodReturningArray.__constructor__()");
+    transcript.clear();
     assertArrayEquals(new String[]{"miao, mieuw"}, (String[]) directMethod.invoke(exampleInstance));
-    transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.normalMethodReturningArray()");
+    assertThat(transcript).containsExactly(
+        "methodInvoked: AClassWithMethodReturningArray.normalMethodReturningArray()");
   }
 
   @Test
   public void shouldInvokeShadowForEachConstructorInInheritanceTree() throws Exception {
     loadClass(AChild.class).newInstance();
-    transcript.assertEventsSoFar(
+    assertThat(transcript).containsExactly(
         "methodInvoked: AGrandparent.__constructor__()",
         "methodInvoked: AParent.__constructor__()",
         "methodInvoked: AChild.__constructor__()");
@@ -294,7 +305,7 @@ public class InstrumentingClassLoaderTest {
   public void shouldCorrectlySplitStaticPrepFromConstructorChaining() throws Exception {
     Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
     Object o = aClass.getDeclaredConstructor(String.class).newInstance("hortense");
-    transcript.assertEventsSoFar(
+    assertThat(transcript).containsExactly(
         "methodInvoked: AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='hortense'}, java.lang.String foo)",
         "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String hortense)");
 
@@ -307,9 +318,10 @@ public class InstrumentingClassLoaderTest {
   public void shouldGenerateClassSpecificDirectAccessMethodForConstructorWhichDoesNotCallSuper() throws Exception {
     Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
     Object instance = aClass.getConstructor(String.class).newInstance("horace");
-    transcript.assertEventsSoFar(
+    assertThat(transcript).containsExactly(
         "methodInvoked: AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='horace'}, java.lang.String foo)",
         "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String horace)");
+    transcript.clear();
 
     // each directly-accessible constructor body will need to be called explicitly, with the correct args...
 
@@ -317,7 +329,7 @@ public class InstrumentingClassLoaderTest {
     Method directMethod = findDirectMethod(aClass, "__constructor__", uninstrumentedParentClass, String.class);
     Object uninstrumentedParentIn = uninstrumentedParentClass.getDeclaredConstructor(String.class).newInstance("hortense");
     assertEquals(null, directMethod.invoke(instance, uninstrumentedParentIn, "foo"));
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     assertEquals(null, getDeclaredFieldValue(aClass, instance, "name"));
     Object uninstrumentedParentOut = getDeclaredFieldValue(aClass, instance, "uninstrumentedParent");
@@ -325,7 +337,7 @@ public class InstrumentingClassLoaderTest {
 
     Method directMethod2 = findDirectMethod(aClass, "__constructor__", String.class);
     assertEquals(null, directMethod2.invoke(instance, "hortense"));
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     assertEquals("hortense", getDeclaredFieldValue(aClass, instance, "name"));
   }
@@ -346,50 +358,57 @@ public class InstrumentingClassLoaderTest {
   public void shouldInstrumentEqualsAndHashCodeAndToStringEvenWhenUndeclared() throws Exception {
     Class<?> theClass = loadClass(AClassWithoutEqualsHashCodeToString.class);
     Object instance = theClass.newInstance();
-    transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.__constructor__()");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.__constructor__()");
+    transcript.clear();
 
     instance.toString();
-    transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.toString()");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.toString()");
+    transcript.clear();
 
     classHandler.valueToReturn = true;
     //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
     instance.equals(null);
-    transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
+    transcript.clear();
 
     classHandler.valueToReturn = 42;
     //noinspection ResultOfMethodCallIgnored
     instance.hashCode();
-    transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.hashCode()");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.hashCode()");
   }
 
   @Test
   public void shouldAlsoInstrumentEqualsAndHashCodeAndToStringWhenDeclared() throws Exception {
     Class<?> theClass = loadClass(AClassWithEqualsHashCodeToString.class);
     Object instance = theClass.newInstance();
-    transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.__constructor__()");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.__constructor__()");
+    transcript.clear();
 
     instance.toString();
-    transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.toString()");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.toString()");
+    transcript.clear();
 
     classHandler.valueToReturn = true;
     //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
     instance.equals(null);
-    transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.equals(java.lang.Object null)");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.equals(java.lang.Object null)");
+    transcript.clear();
 
     classHandler.valueToReturn = 42;
     //noinspection ResultOfMethodCallIgnored
     instance.hashCode();
-    transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.hashCode()");
+    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.hashCode()");
   }
 
   @Test
   public void shouldProperlyCallSuperWhenForcingDeclarationOfEqualsHashCodeToString() throws Exception {
     Class<?> theClass = loadClass(AnInstrumentedClassWithoutToStringWithSuperToString.class);
     Object instance = theClass.newInstance();
-    transcript.assertEventsSoFar("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
+    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
+    transcript.clear();
 
     instance.toString();
-    transcript.assertEventsSoFar("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.toString()");
+    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.toString()");
 
     assertEquals("baaaaaah", findDirectMethod(theClass, "toString").invoke(instance));
   }
@@ -568,7 +587,7 @@ public class InstrumentingClassLoaderTest {
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
     Shadow.directlyOn(instance, (Class<Object>) theClass, "longMethod");
-    transcript.assertEventsSoFar(
+    assertThat(transcript).containsExactly(
         "methodInvoked: AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
         "intercept: org/robolectric/internal/bytecode/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");
   }
@@ -615,11 +634,11 @@ public class InstrumentingClassLoaderTest {
 
   public static class MyClassHandler implements ClassHandler {
     private static Object GENERATE_YOUR_OWN_VALUE = new Object();
-    private Transcript transcript;
+    private List<String> transcript;
     private Object valueToReturn = GENERATE_YOUR_OWN_VALUE;
     private Object valueToReturnFromIntercept = null;
 
-    public MyClassHandler(Transcript transcript) {
+    public MyClassHandler(List<String> transcript) {
       this.transcript = transcript;
     }
 
@@ -742,7 +761,7 @@ public class InstrumentingClassLoaderTest {
   }
 
   @Test public void shouldCacheMisses() throws Exception {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
 
     InstrumentingClassLoader classLoader = new InstrumentingClassLoader(configureBuilder().build()) {
       @Override
@@ -763,6 +782,6 @@ public class InstrumentingClassLoaderTest {
       // expected
     }
 
-    transcript.assertEventsSoFar("find foo.AClass");
+    assertThat(transcript).containsExactly("find foo.AClass");
   }
 }

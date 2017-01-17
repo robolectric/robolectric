@@ -16,7 +16,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.CustomView;
-import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -259,10 +258,11 @@ public class ShadowAlertDialogTest {
 
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
     shadowAlertDialog.clickOnItem(0);
-    listener.assertEventsSoFar("clicked on 0");
+    assertThat(listener.transcript).containsExactly("clicked on 0");
+    listener.transcript.clear();
 
     shadowAlertDialog.clickOnItem(1);
-    listener.assertEventsSoFar("clicked on 1");
+    assertThat(listener.transcript).containsExactly("clicked on 1");
 
   }
 
@@ -314,9 +314,11 @@ public class ShadowAlertDialogTest {
     assertThat(alertController.getIconId()).isEqualTo(R.drawable.an_image);
   }
 
-  private static class TestDialogOnClickListener extends Transcript implements DialogInterface.OnClickListener {
+  private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
+    private final ArrayList<String> transcript = new ArrayList<>();
+
     public void onClick(DialogInterface dialog, int item) {
-      add("clicked on " + item);
+      transcript.add("clicked on " + item);
     }
   }
 }

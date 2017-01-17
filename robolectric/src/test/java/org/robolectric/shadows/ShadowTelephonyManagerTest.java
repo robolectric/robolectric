@@ -5,6 +5,7 @@ import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -81,7 +82,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveAllCellInfo() {
     TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
     ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
-    ArrayList<CellInfo> allCellInfo = new ArrayList<CellInfo>();
+    List<CellInfo> allCellInfo = new ArrayList<CellInfo>();
     shadowTelephonyManager.setAllCellInfo(allCellInfo);
     assertEquals(allCellInfo, telephonyManager.getAllCellInfo());
   }

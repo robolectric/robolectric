@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
@@ -215,15 +217,15 @@ public class ShadowSmsManager {
       return scAddress;
     }
 
-    public ArrayList<String> getParts() {
+    public List<String> getParts() {
       return parts;
     }
 
-    public ArrayList<PendingIntent> getSentIntents() {
+    public List<android.app.PendingIntent> getSentIntents() {
       return sentIntents;
     }
 
-    public ArrayList<PendingIntent> getDeliveryIntents() {
+    public List<android.app.PendingIntent> getDeliveryIntents() {
       return deliveryIntents;
     }
   }

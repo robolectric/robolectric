@@ -12,7 +12,6 @@ import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
-import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowHandlerTest {
-  private Transcript transcript;
+  private List<String> transcript;
   TestRunnable scratchRunnable = new TestRunnable();
 
   private Handler.Callback callback = new Handler.Callback() {
@@ -40,7 +39,7 @@ public class ShadowHandlerTest {
 
   @Before
   public void setUp() throws Exception {
-    transcript = new Transcript();
+    transcript = new ArrayList<>();
   }
 
   @Test
@@ -55,7 +54,7 @@ public class ShadowHandlerTest {
 
     shadowOf(looper).idle();
 
-    transcript.assertEventsSoFar("first thing", "second thing");
+    assertThat(transcript).containsExactly("first thing", "second thing");
   }
 
   @Test
@@ -68,7 +67,7 @@ public class ShadowHandlerTest {
 
     shadowOf(Looper.myLooper()).idle();
 
-    transcript.assertEventsSoFar("first thing", "second thing");
+    assertThat(transcript).containsExactly("first thing", "second thing");
   }
 
   private static Looper newLooper(boolean canQuit) {
@@ -93,7 +92,7 @@ public class ShadowHandlerTest {
 
     shadowOf(looper2).idle();
 
-    transcript.assertEventsSoFar("second thing");
+    assertThat(transcript).containsExactly("second thing");
   }
 
   @Test

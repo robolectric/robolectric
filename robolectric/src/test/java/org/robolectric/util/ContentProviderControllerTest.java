@@ -15,6 +15,9 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
@@ -51,7 +54,7 @@ public class ContentProviderControllerTest {
     ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
     ContentProviderClient client = contentResolver.acquireContentProviderClient("org.robolectric.authority2");
     client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
-    assertThat(controller.get().transcript.getEvents()).containsExactly("onCreate", "query for something");
+    assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
   }
 
   @Test
@@ -65,13 +68,13 @@ public class ContentProviderControllerTest {
   @Test
   public void create_shouldCallOnCreate() throws Exception {
     MyContentProvider myContentProvider = controller.create().get();
-    myContentProvider.transcript.assertEventsSoFar("onCreate");
+    assertThat(myContentProvider.transcript).containsExactly("onCreate");
   }
 
   @Test
   public void shutdown_shouldCallShutdown() throws Exception {
     MyContentProvider myContentProvider = controller.shutdown().get();
-    myContentProvider.transcript.assertEventsSoFar("shutdown");
+    assertThat(myContentProvider.transcript).containsExactly("shutdown");
   }
 
   @Test
@@ -83,11 +86,11 @@ public class ContentProviderControllerTest {
     ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
     ContentProviderClient client = contentResolver.acquireContentProviderClient(providerInfo.authority);
     client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
-    assertThat(controller.get().transcript.getEvents()).containsExactly("onCreate", "query for something");
+    assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
   }
 
   public static class MyContentProvider extends ContentProvider {
-    private final Transcript transcript = new Transcript();
+    private final List<String> transcript = new ArrayList<>();
 
     @Override
     public boolean onCreate() {

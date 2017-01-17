@@ -6,7 +6,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.util.Transcript;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,13 +17,13 @@ public class ShadowRatingBarTest {
 
   private RatingBar ratingBar;
   private RatingBar.OnRatingBarChangeListener listener;
-  private Transcript transcript;
+  private List<String> transcript;
 
   @Before
   public void setup() {
     ratingBar = new RatingBar(RuntimeEnvironment.application);
     listener = new TestRatingBarChangedListener();
-    transcript = new Transcript();
+    transcript = new ArrayList<>();
     ratingBar.setOnRatingBarChangeListener(listener);
   }
 
@@ -35,7 +37,7 @@ public class ShadowRatingBarTest {
   @Test
   public void testOnChangeNotification() {
     ratingBar.setRating(5.0f);
-    transcript.assertEventsSoFar("onRatingChanged() - 5.0");
+    assertThat(transcript).containsExactly("onRatingChanged() - 5.0");
   }
 
   private class TestRatingBarChangedListener implements RatingBar.OnRatingBarChangeListener {

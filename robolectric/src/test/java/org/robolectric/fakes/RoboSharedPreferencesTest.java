@@ -5,10 +5,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.util.Transcript;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -188,7 +189,7 @@ public class RoboSharedPreferencesTest {
 
     final String testKey = "foo";
 
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
 
     SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
       @Override
@@ -199,7 +200,7 @@ public class RoboSharedPreferencesTest {
     anotherSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
     anotherSharedPreferences.edit().putString(testKey, "bar").commit();
 
-    transcript.assertEventsSoFar(testKey+ " called");
+    assertThat(transcript).containsExactly(testKey+ " called");
   }
 
   private SharedPreferences.OnSharedPreferenceChangeListener testListener = new SharedPreferences.OnSharedPreferenceChangeListener() {

@@ -11,9 +11,12 @@ import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public abstract class TestUtil {
@@ -182,5 +185,16 @@ public abstract class TestUtil {
         "instrumentedPackages" + Arrays.toString(sortedInstrumentedPackages) + "\n" +
         "libraries=" + Arrays.toString(sortedLibraries) + "\n" +
         "constants=" + constants;
+  }
+
+  public static void assertStringsInclude(List<String> list, String... expectedStrings) {
+    List<String> original = new ArrayList<>(list);
+    for (String expectedEvent : expectedStrings) {
+      int index = list.indexOf(expectedEvent);
+      if (index == -1) {
+        assertThat(original).containsExactly(expectedStrings);
+      }
+      list.subList(0, index + 1).clear();
+    }
   }
 }

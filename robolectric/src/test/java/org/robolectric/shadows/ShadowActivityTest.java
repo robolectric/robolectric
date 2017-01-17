@@ -47,10 +47,11 @@ import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.TestRunnable;
-import org.robolectric.util.Transcript;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
@@ -131,7 +132,7 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivity_shouldDelegateToStartActivityForResult() {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
     Activity activity = new Activity() {
       @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
@@ -141,7 +142,7 @@ public class ShadowActivityTest {
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    transcript.assertEventsSoFar("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+    assertThat(transcript).containsExactly("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
   }
 
   @Test
@@ -170,7 +171,7 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
     Activity activity = new Activity() {
       @Override
       protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -182,7 +183,7 @@ public class ShadowActivityTest {
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    transcript.assertEventsSoFar("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
+    assertThat(transcript).containsExactly("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
   }
 
   @Test
@@ -254,11 +255,11 @@ public class ShadowActivityTest {
 
   @Test
   public void onContentChangedShouldBeCalledAfterContentViewIsSet() throws RuntimeException {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
     ActivityWithContentChangedTranscript customActivity = Robolectric.setupActivity(ActivityWithContentChangedTranscript.class);
     customActivity.setTranscript(transcript);
     customActivity.setContentView(R.layout.main);
-    transcript.assertEventsSoFar("onContentChanged was called; title is \"Main Layout\"");
+    assertThat(transcript).containsExactly("onContentChanged was called; title is \"Main Layout\"");
   }
 
   @Test
@@ -515,7 +516,7 @@ public class ShadowActivityTest {
     TestActivity activity = buildActivity(TestActivity.class).get();
     activity.recreate();
 
-    activity.transcript.assertEventsSoFar(
+    assertThat(activity.transcript).containsExactly(
         "onSaveInstanceState",
         "onPause",
         "onStop",
@@ -583,7 +584,7 @@ public class ShadowActivityTest {
   }
 
   private static class TestActivity extends Activity {
-    Transcript transcript = new Transcript();
+    List<String> transcript = new ArrayList<>();
 
     private boolean isRecreating = false;
 
@@ -797,30 +798,36 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldCallActivityLifecycleCallbacks() {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
     final ActivityController<Activity> controller = buildActivity(Activity.class);
     RuntimeEnvironment.application.registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks(transcript));
 
     controller.create();
-    transcript.assertEventsSoFar("onActivityCreated");
+    assertThat(transcript).containsExactly("onActivityCreated");
+    transcript.clear();
 
     controller.start();
-    transcript.assertEventsSoFar("onActivityStarted");
+    assertThat(transcript).containsExactly("onActivityStarted");
+    transcript.clear();
 
     controller.resume();
-    transcript.assertEventsSoFar("onActivityResumed");
+    assertThat(transcript).containsExactly("onActivityResumed");
+    transcript.clear();
 
     controller.saveInstanceState(new Bundle());
-    transcript.assertEventsSoFar("onActivitySaveInstanceState");
+    assertThat(transcript).containsExactly("onActivitySaveInstanceState");
+    transcript.clear();
 
     controller.pause();
-    transcript.assertEventsSoFar("onActivityPaused");
+    assertThat(transcript).containsExactly("onActivityPaused");
+    transcript.clear();
 
     controller.stop();
-    transcript.assertEventsSoFar("onActivityStopped");
+    assertThat(transcript).containsExactly("onActivityStopped");
+    transcript.clear();
 
     controller.destroy();
-    transcript.assertEventsSoFar("onActivityDestroyed");
+    assertThat(transcript).containsExactly("onActivityDestroyed");
   }
 
   public static class ChildActivity extends Activity { }
@@ -960,14 +967,14 @@ public class ShadowActivityTest {
   }
 
   private static class ActivityWithContentChangedTranscript extends Activity {
-    private Transcript transcript;
+    private List<String> transcript;
 
     @Override
     public void onContentChanged() {
       transcript.add("onContentChanged was called; title is \"" + shadowOf(findViewById(R.id.title)).innerText() + "\"");
     }
 
-    private void setTranscript(Transcript transcript) {
+    private void setTranscript(List<String> transcript) {
       this.transcript = transcript;
     }
   }
@@ -983,9 +990,9 @@ public class ShadowActivityTest {
   }
 
   private static class ActivityLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
-    private final Transcript transcript;
+    private final List<String> transcript;
 
-    public ActivityLifecycleCallbacks(Transcript transcript) {
+    public ActivityLifecycleCallbacks(List<String> transcript) {
       this.transcript = transcript;
     }
 

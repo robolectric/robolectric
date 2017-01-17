@@ -10,15 +10,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 import org.robolectric.util.TestRunnerWithManifest;
-import org.robolectric.util.Transcript;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static junit.framework.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowLocalBroadcastManagerTest {
-  private Transcript transcript = new Transcript();
+  private List<String> transcript = new ArrayList<>();
 
   @Test
   public void shouldGetInstance() throws Exception {
@@ -95,7 +97,7 @@ public class ShadowLocalBroadcastManagerTest {
     Intent intent2 = new Intent("bar").setType("application/blatz");
     broadcastManager.sendBroadcast(intent2);
 
-    transcript.assertEventsSoFar("got intent foo");
+    assertThat(transcript).containsExactly("got intent foo");
   }
 
   @Test

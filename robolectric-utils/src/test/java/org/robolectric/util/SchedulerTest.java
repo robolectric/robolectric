@@ -11,7 +11,7 @@ import static org.robolectric.util.Scheduler.IdleState.*;
 
 public class SchedulerTest {
   private final Scheduler scheduler = new Scheduler();
-  private final Transcript transcript = new Transcript();
+  private final List<String> transcript = new ArrayList<>();
 
   private long startTime;
   
@@ -68,10 +68,10 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("one"), 0);
     scheduler.postDelayed(new AddToTranscript("two"), 0);
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     final long time = scheduler.getCurrentTime();
     scheduler.setIdleState(UNPAUSED);
-    transcript.assertEventsSoFar("one", "two");
+    assertThat(transcript).containsExactly("one", "two");
     assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time);
   }
 
@@ -80,10 +80,10 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("one"), 0);
     scheduler.postDelayed(new AddToTranscript("two"), 0);
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     final long time = scheduler.getCurrentTime();
     scheduler.setIdleState(CONSTANT_IDLE);
-    transcript.assertEventsSoFar("one", "two", "three");
+    assertThat(transcript).containsExactly("one", "two", "three");
     assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time + 1000);
   }
 
@@ -92,10 +92,10 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("one"), 0);
     scheduler.postDelayed(new AddToTranscript("two"), 0);
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     final long time = scheduler.getCurrentTime();
     scheduler.unPause();
-    transcript.assertEventsSoFar("one", "two");
+    assertThat(transcript).containsExactly("one", "two");
     assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time);
   }
 
@@ -105,10 +105,10 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("one"), 0);
     scheduler.postDelayed(new AddToTranscript("two"), 0);
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     final long time = scheduler.getCurrentTime();
     scheduler.idleConstantly(true);
-    transcript.assertEventsSoFar("one", "two", "three");
+    assertThat(transcript).containsExactly("one", "two", "three");
     assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time + 1000);
   }
 
@@ -125,13 +125,14 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
 
     assertThat(scheduler.advanceBy(0)).isTrue();
-    transcript.assertEventsSoFar("one", "two");
+    assertThat(transcript).containsExactly("one", "two");
+    transcript.clear();
 
     assertThat(scheduler.advanceBy(0)).isFalse();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     assertThat(scheduler.advanceBy(1000)).isTrue();
-    transcript.assertEventsSoFar("three");
+    assertThat(transcript).containsExactly("three");
   }
 
   @Test
@@ -141,16 +142,18 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("three"), 3000);
 
     scheduler.advanceBy(1000);
-    transcript.assertEventsSoFar("one");
+    assertThat(transcript).containsExactly("one");
+    transcript.clear();
 
     scheduler.advanceBy(500);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     scheduler.advanceBy(501);
-    transcript.assertEventsSoFar("two");
+    assertThat(transcript).containsExactly("two");
+    transcript.clear();
 
     scheduler.advanceBy(999);
-    transcript.assertEventsSoFar("three");
+    assertThat(transcript).containsExactly("three");
   }
 
   @Test
@@ -158,7 +161,7 @@ public class SchedulerTest {
     scheduler.setIdleState(CONSTANT_IDLE);
     scheduler.postDelayed(new AddToTranscript("one"), 1000);
 
-    transcript.assertEventsSoFar("one");
+    assertThat(transcript).containsExactly("one");
   }
   
   @Test
@@ -176,20 +179,22 @@ public class SchedulerTest {
     scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
 
     scheduler.runOneTask();
-    transcript.assertEventsSoFar("three");
+    assertThat(transcript).containsExactly("three");
+    transcript.clear();
 
     scheduler.runOneTask();
-    transcript.assertEventsSoFar("one");
+    assertThat(transcript).containsExactly("one");
+    transcript.clear();
 
     scheduler.runOneTask();
-    transcript.assertEventsSoFar("two");
+    assertThat(transcript).containsExactly("two");
   }
 
   @Test
   public void postAtFrontOfQueue_whenUnpaused_runsJobs() throws Exception {
     scheduler.unPause();
     scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
-    transcript.assertEventsSoFar("three");
+    assertThat(transcript).containsExactly("three");
   }
 
   @Test
@@ -209,16 +214,18 @@ public class SchedulerTest {
     }, 1000);
 
     scheduler.advanceBy(1000);
-    transcript.assertEventsSoFar("one");
+    assertThat(transcript).containsExactly("one");
+    transcript.clear();
 
     scheduler.advanceBy(500);
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     scheduler.advanceBy(501);
-    transcript.assertEventsSoFar("two");
+    assertThat(transcript).containsExactly("two");
+    transcript.clear();
 
     scheduler.advanceBy(999);
-    transcript.assertEventsSoFar("three");
+    assertThat(transcript).containsExactly("three");
   }
 
   @Test

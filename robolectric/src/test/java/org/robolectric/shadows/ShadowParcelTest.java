@@ -387,7 +387,7 @@ public class ShadowParcelTest {
 
     parcel.writeTypedList(normals);
     parcel.setDataPosition(0);
-    ArrayList<TestParcelable> rehydrated = parcel
+    List<org.robolectric.shadows.TestParcelable> rehydrated = parcel
         .createTypedArrayList(TestParcelable.CREATOR);
 
     assertEquals(1, rehydrated.size());
@@ -397,7 +397,7 @@ public class ShadowParcelTest {
   @Test
   public void testReadAndWriteStringList() throws Exception {
     ArrayList<String> original = new ArrayList<>();
-    ArrayList<String> rehydrated = new ArrayList<>();
+    List<String> rehydrated = new ArrayList<>();
     original.add("str1");
     original.add("str2");
     parcel.writeStringList(original);

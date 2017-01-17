@@ -6,6 +6,7 @@ import org.assertj.core.api.AbstractAssert;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.test.Assertions.assertThat;
 
 public class DrawableAssert<T extends Drawable> extends AbstractAssert<DrawableAssert<T>, T> {
   public DrawableAssert(T actual) {
@@ -13,7 +14,7 @@ public class DrawableAssert<T extends Drawable> extends AbstractAssert<DrawableA
   }
 
   public void isResource(int resourceId) {
-    Assertions.assertThat(actual).isInstanceOf(BitmapDrawable.class);
+    assertThat(actual).isInstanceOf(BitmapDrawable.class);
     BitmapDrawable bitmapDrawable = (BitmapDrawable) actual;
     assertThat(shadowOf(bitmapDrawable.getBitmap()).getCreatedFromResId())
         .isEqualTo(resourceId);

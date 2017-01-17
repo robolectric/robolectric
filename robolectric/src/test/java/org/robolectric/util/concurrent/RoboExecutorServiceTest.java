@@ -7,8 +7,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Scheduler;
-import org.robolectric.util.Transcript;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.SelfTest.class)
 public class RoboExecutorServiceTest {
-  private final Transcript transcript = new Transcript();
+  private final List<String> transcript = new ArrayList<>();
   private final RoboExecutorService executorService = new RoboExecutorService();
   private final Scheduler backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
   private Runnable runnable;
@@ -38,21 +38,21 @@ public class RoboExecutorServiceTest {
   public void execute_shouldRunStuffOnBackgroundThread() throws Exception {
     executorService.execute(runnable);
 
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     ShadowApplication.runBackgroundTasks();
-    transcript.assertEventsSoFar("background event ran");
+    assertThat(transcript).containsExactly("background event ran");
   }
 
   @Test
   public void submitRunnable_shouldRunStuffOnBackgroundThread() throws Exception {
     Future<String> future = executorService.submit(runnable, "foo");
 
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     assertThat(future.isDone()).isFalse();
 
     ShadowApplication.runBackgroundTasks();
-    transcript.assertEventsSoFar("background event ran");
+    assertThat(transcript).containsExactly("background event ran");
     assertThat(future.isDone()).isTrue();
 
     assertThat(future.get()).isEqualTo("foo");
@@ -68,11 +68,11 @@ public class RoboExecutorServiceTest {
       }
     });
 
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     assertThat(future.isDone()).isFalse();
 
     ShadowApplication.runBackgroundTasks();
-    transcript.assertEventsSoFar("background event ran");
+    assertThat(transcript).containsExactly("background event ran");
     assertThat(future.isDone()).isTrue();
 
     assertThat(future.get()).isEqualTo("foo");
@@ -95,7 +95,7 @@ public class RoboExecutorServiceTest {
     executorService.shutdown();
     ShadowApplication.runBackgroundTasks();
 
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
   }
 
   @Test
@@ -105,7 +105,7 @@ public class RoboExecutorServiceTest {
     List<Runnable> notExecutedRunnables = executorService.shutdownNow();
     ShadowApplication.runBackgroundTasks();
 
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     assertThat(notExecutedRunnables).hasSize(1);
   }
 
@@ -129,6 +129,6 @@ public class RoboExecutorServiceTest {
     executorService.execute(runnable);
 
     assertThat(executorService.awaitTermination(500, TimeUnit.MILLISECONDS)).isFalse();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
   }
 }

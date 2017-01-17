@@ -12,7 +12,9 @@ import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.Transcript;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.*;
@@ -26,7 +28,7 @@ import static org.robolectric.util.TestUtil.assertInstanceOf;
 public class ShadowDialogTest {
   @Test
   public void shouldCallOnDismissListener() throws Exception {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
 
     final Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.show();
@@ -40,7 +42,7 @@ public class ShadowDialogTest {
 
     dialog.dismiss();
 
-    transcript.assertEventsSoFar("onDismiss called!");
+    assertThat(transcript).containsExactly("onDismiss called!");
   }
 
   @Test
@@ -95,7 +97,7 @@ public class ShadowDialogTest {
 
   @Test
   public void shouldOnlyCallOnCreateOnce() {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
 
     Dialog dialog = new Dialog(RuntimeEnvironment.application) {
       @Override
@@ -106,11 +108,12 @@ public class ShadowDialogTest {
     };
 
     dialog.show();
-    transcript.assertEventsSoFar("onCreate called");
+    assertThat(transcript).containsExactly("onCreate called");
+    transcript.clear();
 
     dialog.dismiss();
     dialog.show();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
   }
 
   @Test

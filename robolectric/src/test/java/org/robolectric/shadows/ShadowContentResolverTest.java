@@ -377,7 +377,7 @@ public class ShadowContentResolverTest {
 
   @Test
   public void applyBatchForUnregisteredProvider() throws RemoteException, OperationApplicationException {
-    ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
+    List<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
     assertThat(resultOperations).isNotNull();
     assertThat(resultOperations.size()).isEqualTo(0);
 

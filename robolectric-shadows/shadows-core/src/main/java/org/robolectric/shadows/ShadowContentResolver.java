@@ -59,7 +59,7 @@ public class ShadowContentResolver {
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
-  private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<>();
+  private final Map<String, List<android.content.ContentProviderOperation>> contentProviderOperations = new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
 
   private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<>();
@@ -529,8 +529,8 @@ public class ShadowContentResolver {
     return notifiedUris;
   }
 
-  public ArrayList<ContentProviderOperation> getContentProviderOperations(String authority) {
-    ArrayList<ContentProviderOperation> operations = contentProviderOperations.get(authority);
+  public List<ContentProviderOperation> getContentProviderOperations(String authority) {
+    List<ContentProviderOperation> operations = contentProviderOperations.get(authority);
     if (operations == null)
       return new ArrayList<>();
     return operations;

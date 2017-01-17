@@ -35,7 +35,6 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
-import org.robolectric.util.Transcript;
 
 import java.io.File;
 import java.io.IOException;
@@ -130,7 +129,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       .doNotAcquireClass(Instrument.class)
       .doNotAcquireClass(DoNotInstrument.class)
       .doNotAcquireClass(Config.class)
-      .doNotAcquireClass(Transcript.class)
       .doNotAcquireClass(DirectObjectMarker.class)
       .doNotAcquireClass(DependencyJar.class)
       .doNotAcquireClass(ParallelUniverseInterface.class)

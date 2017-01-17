@@ -9,7 +9,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
-import org.robolectric.util.Transcript;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -27,7 +29,7 @@ abstract public class AdapterViewBehavior {
   abstract public AdapterView createAdapterView();
 
   @Test public void shouldIgnoreSetSelectionCallsWithInvalidPosition() {
-    final Transcript transcript = new Transcript();
+    final List<String> transcript = new ArrayList<>();
 
     adapterView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
@@ -41,10 +43,10 @@ abstract public class AdapterViewBehavior {
     });
 
     ShadowHandler.idleMainLooper();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     adapterView.setSelection(AdapterView.INVALID_POSITION);
     ShadowHandler.idleMainLooper();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
   }
 
   @Test public void testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously() throws Exception {

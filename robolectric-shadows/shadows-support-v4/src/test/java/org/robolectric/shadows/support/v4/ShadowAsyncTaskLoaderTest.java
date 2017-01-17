@@ -5,13 +5,17 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.Transcript;
 import org.robolectric.util.TestRunnerWithManifest;
 import android.support.v4.content.AsyncTaskLoader;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowAsyncTaskLoaderTest {
-  private final Transcript transcript = new Transcript();
+  private final List<String> transcript = new ArrayList<>();
 
   @Before
   public void setUp() {
@@ -22,13 +26,14 @@ public class ShadowAsyncTaskLoaderTest {
   @Test
   public void forceLoad_shouldEnqueueWorkOnSchedulers() {
     new TestLoader(42).forceLoad();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     Robolectric.flushBackgroundThreadScheduler();
-    transcript.assertEventsSoFar("loadInBackground");
+    assertThat(transcript).containsExactly("loadInBackground");
+    transcript.clear();
 
     Robolectric.flushForegroundThreadScheduler();
-    transcript.assertEventsSoFar("deliverResult 42");
+    assertThat(transcript).containsExactly("deliverResult 42");
   }
 
   public class TestLoader extends AsyncTaskLoader<Integer> {
