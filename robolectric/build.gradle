@@ -18,6 +18,7 @@ project.sourceSets.test.compileClasspath += configurations.shadow
 
 dependencies {
     // Project dependencies
+    compile project(":robolectric-instrumentation")
     compile project(":robolectric-annotations")
     compile project(":robolectric-resources")
     compile project(":robolectric-utils")

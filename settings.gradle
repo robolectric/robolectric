@@ -1,6 +1,8 @@
 rootProject.name = 'parent'
 
 include ":robolectric"
+include ":robolectric-instrumentation"
+include ":robolectric-instrumentation-annotations"
 include ":robolectric-utils"
 include ":robolectric-processor"
 include ":robolectric-resources"
