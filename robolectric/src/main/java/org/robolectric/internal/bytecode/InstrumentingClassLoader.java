@@ -24,8 +24,8 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
+import org.robolectric.internal.ShadowImpl;
 import org.robolectric.internal.ShadowedObject;
 import org.robolectric.util.Logger;
 
@@ -553,7 +553,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       }
 
       InsnList removedInstructions = extractCallToSuperConstructor(method);
-      method.name = Shadow.directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+      method.name = new ShadowImpl().directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
       classNode.methods.add(redirectorMethod(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
       String[] exceptions = exceptionArray(method);
@@ -631,7 +631,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       // todo figure out
       String originalName = method.name;
-      method.name = Shadow.directMethodName(originalName);
+      method.name = new ShadowImpl().directMethodName(originalName);
 
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
       delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;

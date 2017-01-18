@@ -77,9 +77,14 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldNotAcquireShadowClass() throws Exception {
+    assertThat(config.shouldAcquire("org.robolectric.internal.Shadow")).isTrue();
+  }
+
+  @Test
   public void shouldInstrumentCustomClasses() throws Exception {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
-    String notInstrumentName = "com.whatever.DoNotInstruementMe";
+    String notInstrumentName = "com.whatever.DoNotInstrumentMe";
     InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
     assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isTrue();
     assertThat(customConfig.shouldInstrument(wrap(notInstrumentName))).isFalse();

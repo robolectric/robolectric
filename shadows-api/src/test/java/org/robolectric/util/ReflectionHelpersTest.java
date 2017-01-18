@@ -1,12 +1,13 @@
 package org.robolectric.util;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 public class ReflectionHelpersTest {
 
@@ -29,10 +30,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.getField(example, "nonExistant");
-      Assertions.failBecauseExceptionWasNotThrown(RuntimeException.class);
+      failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistant")) {
-        Assertions.fail("poorly specified exception thrown", e);
+        fail("poorly specified exception thrown", e);
       }
     }
   }
@@ -58,10 +59,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.setField(example, "nonExistant", 6);
-      Assertions.failBecauseExceptionWasNotThrown(RuntimeException.class);
+      failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistant")) {
-        Assertions.fail("poorly specified exception thrown", e);
+        fail("poorly specified exception thrown", e);
       }
     }
   }
@@ -128,10 +129,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "nonExistant");
-      Assertions.failBecauseExceptionWasNotThrown(RuntimeException.class);
+      failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistant")) {
-        Assertions.fail("poorly specified exception thrown", e);
+        fail("poorly specified exception thrown", e);
       }
     }
   }
@@ -141,10 +142,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "throwUncheckedException");
-      Assertions.failBecauseExceptionWasNotThrown(TestRuntimeException.class);
+      failBecauseExceptionWasNotThrown(TestRuntimeException.class);
     } catch (TestRuntimeException e) {
     } catch (RuntimeException e) {
-      Assertions.fail("Unexpected exception thrown", e);
+      fail("Unexpected exception thrown", e);
     }
   }
 
@@ -153,9 +154,9 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "throwError");
-      Assertions.failBecauseExceptionWasNotThrown(TestError.class);
+      failBecauseExceptionWasNotThrown(TestError.class);
     } catch (RuntimeException e) {
-      Assertions.fail("Unexpected exception thrown", e);
+      fail("Unexpected exception thrown", e);
     } catch (TestError e) {
     }
   }
@@ -165,7 +166,7 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "throwCheckedException");
-      Assertions.failBecauseExceptionWasNotThrown(RuntimeException.class);
+      failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
       assertThat(e.getCause()).isInstanceOf(TestException.class);
     }
@@ -180,10 +181,10 @@ public class ReflectionHelpersTest {
   public void callStaticMethodReflectively_rethrowsUncheckedException() {
     try {
       ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "staticThrowUncheckedException");
-      Assertions.failBecauseExceptionWasNotThrown(TestRuntimeException.class);
+      failBecauseExceptionWasNotThrown(TestRuntimeException.class);
     } catch (TestRuntimeException e) {
     } catch (RuntimeException e) {
-      Assertions.fail("Unexpected exception thrown", e);
+      fail("Unexpected exception thrown", e);
     }
   }
 
@@ -191,9 +192,9 @@ public class ReflectionHelpersTest {
   public void callStaticMethodReflectively_rethrowsError() {
     try {
       ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "staticThrowError");
-      Assertions.failBecauseExceptionWasNotThrown(TestError.class);
+      failBecauseExceptionWasNotThrown(TestError.class);
     } catch (RuntimeException e) {
-      Assertions.fail("Unexpected exception thrown", e);
+      fail("Unexpected exception thrown", e);
     } catch (TestError e) {
     }
   }
@@ -202,7 +203,7 @@ public class ReflectionHelpersTest {
   public void callStaticMethodReflectively_wrapsCheckedException() {
     try {
       ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "staticThrowCheckedException");
-      Assertions.failBecauseExceptionWasNotThrown(RuntimeException.class);
+      failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
       assertThat(e.getCause()).isInstanceOf(TestException.class);
     }
@@ -218,10 +219,10 @@ public class ReflectionHelpersTest {
   public void callConstructorReflectively_rethrowsUncheckedException() {
     try {
       ReflectionHelpers.callConstructor(ThrowsUncheckedException.class);
-      Assertions.failBecauseExceptionWasNotThrown(TestRuntimeException.class);
+      failBecauseExceptionWasNotThrown(TestRuntimeException.class);
     } catch (TestRuntimeException e) {
     } catch (RuntimeException e) {
-      Assertions.fail("Unexpected exception thrown", e);
+      fail("Unexpected exception thrown", e);
     }
   }
 
@@ -229,9 +230,9 @@ public class ReflectionHelpersTest {
   public void callConstructorReflectively_rethrowsError() {
     try {
       ReflectionHelpers.callConstructor(ThrowsError.class);
-      Assertions.failBecauseExceptionWasNotThrown(TestError.class);
+      failBecauseExceptionWasNotThrown(TestError.class);
     } catch (RuntimeException e) {
-      Assertions.fail("Unexpected exception thrown", e);
+      fail("Unexpected exception thrown", e);
     } catch (TestError e) {
     }
   }
@@ -240,7 +241,7 @@ public class ReflectionHelpersTest {
   public void callConstructorReflectively_wrapsCheckedException() {
     try {
       ReflectionHelpers.callConstructor(ThrowsCheckedException.class);
-      Assertions.failBecauseExceptionWasNotThrown(RuntimeException.class);
+      failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
       assertThat(e.getCause()).isInstanceOf(TestException.class);
     }
