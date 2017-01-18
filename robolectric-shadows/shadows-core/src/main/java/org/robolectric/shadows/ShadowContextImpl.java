@@ -353,8 +353,13 @@ public class ShadowContextImpl {
     return Environment.getExternalStorageDirectory();
   }
 
-  @Implementation
+  @Implementation(maxSdk = JELLY_BEAN_MR2)
   public File getExternalFilesDir(String type) {
     return Environment.getExternalStoragePublicDirectory(type);
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public File[] getExternalFilesDirs(String type) {
+    return new File[] { Environment.getExternalStoragePublicDirectory(type) };
   }
 }

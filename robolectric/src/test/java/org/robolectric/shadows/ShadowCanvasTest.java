@@ -101,13 +101,21 @@ public class ShadowCanvasTest {
     path.lineTo(10, 10);
 
     Paint paint = new Paint();
+    paint.setColor(Color.RED);
     paint.setAlpha(7);
     canvas.drawPath(path, paint);
 
+    // changing the values on this Paint shouldn't affect recorded painted path
+    paint.setColor(Color.BLUE);
+    paint.setAlpha(8);
+
     ShadowCanvas shadow = shadowOf(canvas);
     assertThat(shadow.getPathPaintHistoryCount()).isEqualTo(1);
-    assertEquals(shadowOf(shadow.getDrawnPath(0)).getPoints().get(0), new ShadowPath.Point(10, 10, LINE_TO));
-    assertThat(shadow.getDrawnPathPaint(0)).isEqualTo(paint);
+    ShadowPath drawnPath = shadowOf(shadow.getDrawnPath(0));
+    assertEquals(drawnPath.getPoints().get(0), new ShadowPath.Point(10, 10, LINE_TO));
+    Paint drawnPathPaint = shadow.getDrawnPathPaint(0);
+    assertThat(drawnPathPaint.getColor()).isEqualTo(Color.RED);
+    assertThat(drawnPathPaint.getAlpha()).isEqualTo(7);
   }
 
   @Test

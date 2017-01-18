@@ -118,7 +118,7 @@ public class ConfigMergerTest {
             "libraries: libs/test, libs/test2\n" +
             "constants: " + ConfigMergerTest.BuildConfigConstants3.class.getName();
 
-    assertConfig(configFor(Test2.class, "withoutAnnotation", of("/robolectric.properties", properties)),
+    assertConfig(configFor(Test2.class, "withoutAnnotation", of("robolectric.properties", properties)),
         new int[] {432}, "--none", TestFakeApp.class, "com.example.test", "from-properties-file", "from/properties/file/res", "from/properties/file/assets", new Class[] {ShadowView.class, ShadowViewGroup.class}, new String[]{"com.example.test1", "com.example.test2"}, new String[]{"libs/test", "libs/test2"}, BuildConfigConstants3.class);
   }
 
@@ -134,7 +134,7 @@ public class ConfigMergerTest {
         of(
             "org/robolectric/robolectric.properties", "qualifiers: from-org-robolectric\nlibraries: FromOrgRobolectric\n",
             "org/robolectric.properties", "sdk: 123\nqualifiers: from-org\nlibraries: FromOrg\n",
-            "/robolectric.properties", "sdk: 456\nqualifiers: from-top-level\nlibraries: FromTopLevel\n"
+            "robolectric.properties", "sdk: 456\nqualifiers: from-top-level\nlibraries: FromTopLevel\n"
             )
         ),
         new int[] {123}, "AndroidManifest.xml", DEFAULT_APPLICATION, "", "from-org-robolectric", "res", "assets", new Class[] {}, new String[]{},
@@ -143,7 +143,7 @@ public class ConfigMergerTest {
 
   @Test
   public void withEmptyShadowList_shouldLoadDefaultsFromGlobalPropertiesFile() throws Exception {
-    assertConfig(configFor(Test2.class, "withoutAnnotation", of("/robolectric.properties", "shadows:")),
+    assertConfig(configFor(Test2.class, "withoutAnnotation", of("robolectric.properties", "shadows:")),
         new int[0],  "AndroidManifest.xml", DEFAULT_APPLICATION, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
   }
 

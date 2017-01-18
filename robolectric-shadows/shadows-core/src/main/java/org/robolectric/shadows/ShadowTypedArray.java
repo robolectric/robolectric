@@ -51,9 +51,10 @@ public class ShadowTypedArray {
     int[] data = ReflectionHelpers.getField(typedArray, "mData");
 
     StringBuilder result = new StringBuilder();
-    for (int index = 0;  index < data.length; index+= ShadowAssetManager.STYLE_NUM_ENTRIES) {
+    for (int index = 0; index < data.length; index+= ShadowAssetManager.STYLE_NUM_ENTRIES) {
       final int type = data[index+ShadowAssetManager.STYLE_TYPE];
-      result.append("Type: ").append(TYPE_MAP.get(type)).append(System.lineSeparator());
+      result.append("Index: ").append(index / ShadowAssetManager.STYLE_NUM_ENTRIES).append(System.lineSeparator());
+      result.append(Strings.padEnd("Type: ", 25, ' ')).append(TYPE_MAP.get(type)).append(System.lineSeparator());
       if (type != TypedValue.TYPE_NULL) {
         result.append(Strings.padEnd("Style data: ", 25, ' ')).append(data[index+ ShadowAssetManager.STYLE_DATA]).append(System.lineSeparator());
         result.append(Strings.padEnd("Asset cookie ", 25, ' ')).append(data[index+ShadowAssetManager.STYLE_ASSET_COOKIE]).append(System.lineSeparator());

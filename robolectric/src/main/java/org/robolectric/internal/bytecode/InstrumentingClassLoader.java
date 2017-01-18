@@ -1,5 +1,6 @@
 package org.robolectric.internal.bytecode;
 
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -133,7 +134,15 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   @Override
-  public InputStream getResourceAsStream(String resName) {
+  public URL getResource(String name) {
+    URL fromParent = super.getResource(name);
+    if (fromParent != null)  {
+      return fromParent;
+    }
+    return urls.getResource(name);
+  }
+
+  private InputStream getClassBytesAsStreamPreferringLocalUrls(String resName) {
     InputStream fromUrlsClassLoader = urls.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null)  {
       return fromUrlsClassLoader;
@@ -188,7 +197,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
     String classFilename = className.replace('.', '/') + ".class";
-    try (InputStream classBytesStream = getResourceAsStream(classFilename)) {
+    try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
       if (classBytesStream == null) throw new ClassNotFoundException(className);
 
       return readBytes(classBytesStream);
@@ -264,7 +273,11 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) throws ClassNotFoundException {
-    new ClassInstrumentor(classNode, containsStubs).instrument();
+    if (InvokeDynamic.ENABLED) {
+      new InvokeDynamicClassInstrumentor(classNode, containsStubs).instrument();
+    } else {
+      new OldClassInstrumentor(classNode, containsStubs).instrument();
+    }
     ClassWriter writer = new InstrumentingClassWriter(classNode);
     classNode.accept(writer);
     return writer.toByteArray();
@@ -345,12 +358,12 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
   }
 
-  private class ClassInstrumentor {
-    private final ClassNode classNode;
+  abstract class ClassInstrumentor {
+    final ClassNode classNode;
     private final boolean containsStubs;
-    private final String internalClassName;
+    final String internalClassName;
     private final String className;
-    private final Type classType;
+    final Type classType;
 
     public ClassInstrumentor(ClassNode classNode, boolean containsStubs) {
       this.classNode = classNode;
@@ -369,6 +382,30 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       // Need Java version >=7 to allow invokedynamic
       classNode.version = Math.max(classNode.version, V1_7);
 
+      classNode.fields.add(0, new FieldNode(ACC_PUBLIC | ACC_FINAL,
+          ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+
+      Set<String> foundMethods = instrumentMethods();
+
+      // If there is no constructor, adds one
+      addNoArgsConstructor(foundMethods);
+
+      addDirectCallConstructor();
+
+      // Do not override final #equals, #hashCode, and #toString for all classes
+      instrumentInheritedObjectMethod(classNode, foundMethods, "equals", "(Ljava/lang/Object;)Z");
+      instrumentInheritedObjectMethod(classNode, foundMethods, "hashCode", "()I");
+      instrumentInheritedObjectMethod(classNode, foundMethods, "toString", "()Ljava/lang/String;");
+
+      addRoboInitMethod();
+
+      addRoboGetDataMethod();
+
+      doSpecialHandling();
+    }
+
+    @NotNull
+    private Set<String> instrumentMethods() {
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
       for (MethodNode method : methods) {
@@ -385,12 +422,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
           instrumentNormalMethod(method);
         }
       }
+      return foundMethods;
+    }
 
-      classNode.fields.add(0, new FieldNode(ACC_PUBLIC | ACC_FINAL,
-          ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
-
-
-      // If there is no constructor, adds one
+    private void addNoArgsConstructor(Set<String> foundMethods) {
       if (!foundMethods.contains("<init>()V")) {
         MethodNode defaultConstructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", "()V", null);
         RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(defaultConstructor);
@@ -401,62 +436,42 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         generator.returnValue();
         classNode.methods.add(defaultConstructor);
       }
+    }
 
-      if (!InvokeDynamic.ENABLED) {
-        MethodNode directCallConstructor = new MethodNode(ACC_PUBLIC,
-            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + classType.getDescriptor() + ")V", null, null);
-        RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
-        generator.loadThis();
-        if (classNode.superName.equals("java/lang/Object")) {
-          generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
-        } else {
-          generator.loadArgs();
-          generator.visitMethodInsn(INVOKESPECIAL, classNode.superName,
-              "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V");
-        }
-        generator.loadThis();
-        generator.loadArg(1);
-        generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
-        generator.returnValue();
-        classNode.methods.add(directCallConstructor);
+    abstract protected void addDirectCallConstructor();
+
+    private void addRoboInitMethod() {
+      MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
+      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
+      Label alreadyInitialized = new Label();
+      generator.loadThis();                                         // this
+      generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+      generator.ifNonNull(alreadyInitialized);
+      generator.loadThis();                                         // this
+      generator.loadThis();                                         // this, this
+      if (InvokeDynamic.ENABLED) {
+        generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
+      } else {
+        generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
       }
+      // this, __robo_data__
+      generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+      generator.mark(alreadyInitialized);
+      generator.returnValue();
+      classNode.methods.add(initMethodNode);
+    }
 
-      // Do not override final #equals, #hashCode, and #toString for all classes
-      instrumentInheritedObjectMethod(classNode, foundMethods, "equals", "(Ljava/lang/Object;)Z");
-      instrumentInheritedObjectMethod(classNode, foundMethods, "hashCode", "()I");
-      instrumentInheritedObjectMethod(classNode, foundMethods, "toString", "()Ljava/lang/String;");
+    private void addRoboGetDataMethod() {
+      MethodNode initMethodNode = new MethodNode(ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
+      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
+      generator.loadThis();                                         // this
+      generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+      generator.returnValue();
+      generator.endMethod();
+      classNode.methods.add(initMethodNode);
+    }
 
-      {
-        MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
-        RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
-        Label alreadyInitialized = new Label();
-        generator.loadThis();                                         // this
-        generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-        generator.ifNonNull(alreadyInitialized);
-        generator.loadThis();                                         // this
-        generator.loadThis();                                         // this, this
-        if (InvokeDynamic.ENABLED) {
-          generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
-        } else {
-          generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
-        }
-        // this, __robo_data__
-        generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
-        generator.mark(alreadyInitialized);
-        generator.returnValue();
-        classNode.methods.add(initMethodNode);
-      }
-
-      {
-        MethodNode initMethodNode = new MethodNode(ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
-        RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
-        generator.loadThis();                                         // this
-        generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-        generator.returnValue();
-        generator.endMethod();
-        classNode.methods.add(initMethodNode);
-      }
-
+    private void doSpecialHandling() {
       if (className.equals("android.os.Build$VERSION")) {
         for (Object field : classNode.fields) {
           FieldNode fieldNode = (FieldNode) field;
@@ -731,128 +746,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
      * Decides to call through the appropriate method to intercept the method with an INVOKEVIRTUAL Opcode,
      * depending if the invokedynamic bytecode instruction is available (Java 7+)
      */
-    private void interceptInvokeVirtualMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
-      if (InvokeDynamic.ENABLED) {
-        interceptInvokeVirtualMethodWithInvokeDynamic(instructions, targetMethod);
-      } else {
-        interceptInvokeVirtualMethodWithoutInvokeDynamic(instructions, targetMethod);
-      }
-    }
-
-    /**
-     * Intercepts the method using the invokedynamic bytecode instruction available in Java 7+.
-     * Should be called through interceptInvokeVirtualMethod, not directly
-     */
-    private void interceptInvokeVirtualMethodWithInvokeDynamic(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
-      instructions.remove();  // remove the method invocation
-
-      Type type = Type.getObjectType(targetMethod.owner);
-      String description = targetMethod.desc;
-      String owner = type.getClassName();
-
-      if (targetMethod.getOpcode() != INVOKESTATIC) {
-        String thisType = type.getDescriptor();
-        description = "(" + thisType + description.substring(1, description.length());
-      }
-
-      instructions.add(new InvokeDynamicInsnNode(targetMethod.name, description, BOOTSTRAP_INTRINSIC, owner));
-    }
-
-    /**
-     * Intercepts the method without using the invokedynamic bytecode instruction.
-     * Should be called through interceptInvokeVirtualMethod, not directly
-     */
-    private void interceptInvokeVirtualMethodWithoutInvokeDynamic(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
-      boolean isStatic = targetMethod.getOpcode() == INVOKESTATIC;
-
-      instructions.remove(); // remove the method invocation
-
-      Type[] argumentTypes = Type.getArgumentTypes(targetMethod.desc);
-
-      instructions.add(new LdcInsnNode(argumentTypes.length));
-      instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-
-      // first, move any arguments into an Object[] in reverse order
-      for (int i = argumentTypes.length - 1; i >= 0 ; i--) {
-        Type type = argumentTypes[i];
-        int argWidth = type.getSize();
-
-        if (argWidth == 1) {                       // A B C []
-          instructions.add(new InsnNode(DUP_X1));  // A B [] C []
-          instructions.add(new InsnNode(SWAP));    // A B [] [] C
-          instructions.add(new LdcInsnNode(i));    // A B [] [] C 2
-          instructions.add(new InsnNode(SWAP));    // A B [] [] 2 C
-          box(type, instructions);                 // A B [] [] 2 (C)
-          instructions.add(new InsnNode(AASTORE)); // A B [(C)]
-        } else if (argWidth == 2) {                // A B _C_ []
-          instructions.add(new InsnNode(DUP_X2));  // A B [] _C_ []
-          instructions.add(new InsnNode(DUP_X2));  // A B [] [] _C_ []
-          instructions.add(new InsnNode(POP));     // A B [] [] _C_
-          box(type, instructions);                 // A B [] [] (C)
-          instructions.add(new LdcInsnNode(i));    // A B [] [] (C) 2
-          instructions.add(new InsnNode(SWAP));    // A B [] [] 2 (C)
-          instructions.add(new InsnNode(AASTORE)); // A B [(C)]
-        }
-      }
-
-      if (isStatic) { // []
-        instructions.add(new InsnNode(Opcodes.ACONST_NULL)); // [] null
-        instructions.add(new InsnNode(Opcodes.SWAP));        // null []
-      }
-
-      // instance []
-      instructions.add(new LdcInsnNode(targetMethod.owner + "/" + targetMethod.name + targetMethod.desc)); // target method signature
-      // instance [] signature
-      instructions.add(new InsnNode(DUP_X2));       // signature instance [] signature
-      instructions.add(new InsnNode(POP));          // signature instance []
-
-      instructions.add(new LdcInsnNode(classType)); // signature instance [] class
-      instructions.add(new MethodInsnNode(INVOKESTATIC,
-          Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
-          "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;"));
-
-      final Type returnType = Type.getReturnType(targetMethod.desc);
-      switch (returnType.getSort()) {
-        case ARRAY:
-          /* falls through */
-        case OBJECT:
-          instructions.add(new TypeInsnNode(CHECKCAST, remapType(returnType.getInternalName())));
-          break;
-        case VOID:
-          instructions.add(new InsnNode(POP));
-          break;
-        case Type.LONG:
-          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Long.class)));
-          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", Type.getMethodDescriptor(Type.LONG_TYPE), false));
-          break;
-        case Type.FLOAT:
-          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Float.class)));
-          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", Type.getMethodDescriptor(Type.FLOAT_TYPE), false));
-          break;
-        case Type.DOUBLE:
-          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Double.class)));
-          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", Type.getMethodDescriptor(Type.DOUBLE_TYPE), false));
-          break;
-        case Type.BOOLEAN:
-          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Boolean.class)));
-          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", Type.getMethodDescriptor(Type.BOOLEAN_TYPE), false));
-          break;
-        case Type.INT:
-          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Integer.class)));
-          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", Type.getMethodDescriptor(Type.INT_TYPE), false));
-          break;
-        case Type.SHORT:
-          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Short.class)));
-          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", Type.getMethodDescriptor(Type.SHORT_TYPE), false));
-          break;
-        case Type.BYTE:
-          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Byte.class)));
-          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", Type.getMethodDescriptor(Type.BYTE_TYPE), false));
-          break;
-        default:
-          throw new RuntimeException("Not implemented: " + getClass().getName() + " cannot intercept methods with return type " + returnType.getClassName());
-      }
-    }
+    abstract protected void interceptInvokeVirtualMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod);
 
     /**
      * Replaces protected and private class modifiers with public
@@ -886,35 +780,259 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     }
 
     // todo javadocs
-    private void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
-      if (InvokeDynamic.ENABLED) {
-        generateInvokeDynamic(originalMethod, originalMethodName, generator);
-      } else {
-        generateCallToClassHandler(originalMethod, originalMethodName, generator);
-      }
-    }
+    protected abstract void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator);
 
-    private int getTag(MethodNode m) {
+    int getTag(MethodNode m) {
       return Modifier.isStatic(m.access) ? H_INVOKESTATIC : H_INVOKESPECIAL;
     }
+  }
 
-    // todo javadocs
-    private void generateInvokeDynamic(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
-      Handle original =
-          new Handle(getTag(originalMethod), classType.getInternalName(), originalMethod.name,
-              originalMethod.desc);
+  /**
+   * ClassWriter implementation that verifies classes by comparing type information obtained
+   * from loading the classes as resources. This was taken from the ASM ClassWriter unit tests.
+   */
+  private class InstrumentingClassWriter extends ClassWriter {
 
-      if (generator.isStatic()) {
-        generator.loadArgs();
-        generator.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
-      } else {
-        String desc = "(" + classType.getDescriptor() + originalMethod.desc.substring(1);
-        generator.loadThis();
-        generator.loadArgs();
-        generator.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original);
+    /**
+     * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
+     * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
+     *
+     * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
+     * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
+     * present in legacy bytecode.
+     */
+    public InstrumentingClassWriter(ClassNode classNode) {
+      super(classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS);
+    }
+
+    @Override
+    public int newNameType(String name, String desc) {
+      return super.newNameType(name, desc.charAt(0) == ')' ? remapParams(desc) : remapParamType(desc));
+    }
+
+    @Override
+    public int newClass(String value) {
+      value = remapType(value);
+      return super.newClass(value);
+    }
+
+    @Override
+    protected String getCommonSuperClass(final String type1, final String type2) {
+      try {
+        ClassReader info1 = typeInfo(type1);
+        ClassReader info2 = typeInfo(type2);
+        if ((info1.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
+          if (typeImplements(type2, info2, type1)) {
+            return type1;
+          }
+          if ((info2.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
+            if (typeImplements(type1, info1, type2)) {
+              return type2;
+            }
+          }
+          return "java/lang/Object";
+        }
+        if ((info2.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
+          if (typeImplements(type1, info1, type2)) {
+            return type2;
+          } else {
+            return "java/lang/Object";
+          }
+        }
+        StringBuilder b1 = typeAncestors(type1, info1);
+        StringBuilder b2 = typeAncestors(type2, info2);
+        String result = "java/lang/Object";
+        int end1 = b1.length();
+        int end2 = b2.length();
+        while (true) {
+          int start1 = b1.lastIndexOf(";", end1 - 1);
+          int start2 = b2.lastIndexOf(";", end2 - 1);
+          if (start1 != -1 && start2 != -1
+              && end1 - start1 == end2 - start2) {
+            String p1 = b1.substring(start1 + 1, end1);
+            String p2 = b2.substring(start2 + 1, end2);
+            if (p1.equals(p2)) {
+              result = p1;
+              end1 = start1;
+              end2 = start2;
+            } else {
+              return result;
+            }
+          } else {
+            return result;
+          }
+        }
+      } catch (IOException e) {
+        return "java/lang/Object"; // Handle classes that may be obfuscated
       }
+    }
 
+    private StringBuilder typeAncestors(String type, ClassReader info) throws IOException {
+      StringBuilder b = new StringBuilder();
+      while (!"java/lang/Object".equals(type)) {
+        b.append(';').append(type);
+        type = info.getSuperName();
+        info = typeInfo(type);
+      }
+      return b;
+    }
+
+    private boolean typeImplements(String type, ClassReader info, String itf) throws IOException {
+      while (!"java/lang/Object".equals(type)) {
+        String[] itfs = info.getInterfaces();
+        for (String itf2 : itfs) {
+          if (itf2.equals(itf)) {
+            return true;
+          }
+        }
+        for (String itf1 : itfs) {
+          if (typeImplements(itf1, typeInfo(itf1), itf)) {
+            return true;
+          }
+        }
+        type = info.getSuperName();
+        info = typeInfo(type);
+      }
+      return false;
+    }
+
+    private ClassReader typeInfo(final String type) throws IOException {
+      try (InputStream is = getClassBytesAsStreamPreferringLocalUrls(type + ".class")) {
+        return new ClassReader(is);
+      }
+    }
+  }
+
+  /**
+   * GeneratorAdapter implementation specific to generate code for Robolectric purposes
+   */
+  private static class RobolectricGeneratorAdapter extends GeneratorAdapter {
+    private final boolean isStatic;
+    private final String desc;
+
+    public RobolectricGeneratorAdapter(MethodNode methodNode) {
+      super(Opcodes.ASM4, methodNode, methodNode.access, methodNode.name, methodNode.desc);
+      this.isStatic = Modifier.isStatic(methodNode.access);
+      this.desc = methodNode.desc;
+    }
+
+    public void loadThisOrNull() {
+      if (isStatic) {
+        loadNull();
+      } else {
+        loadThis();
+      }
+    }
+
+    public boolean isStatic() {
+      return isStatic;
+    }
+
+    public void loadNull() {
+      visitInsn(ACONST_NULL);
+    }
+
+    public Type getReturnType() {
+      return Type.getReturnType(desc);
+    }
+
+    /**
+     * Forces a return of a default value, depending on the method's return type
+     * @param type The method's return type
+     */
+    public void pushDefaultReturnValueToStack(Type type) {
+      if (type.equals(Type.BOOLEAN_TYPE)) {
+        push(false);
+      } else if (type.equals(Type.INT_TYPE) || type.equals(Type.SHORT_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)) {
+        push(0);
+      } else if (type.equals(Type.LONG_TYPE)) {
+        push(0l);
+      } else if (type.equals(Type.FLOAT_TYPE)) {
+        push(0f);
+      } else if (type.equals(Type.DOUBLE_TYPE)) {
+        push(0d);
+      } else if (type.getSort() == ARRAY || type.getSort() == OBJECT) {
+        loadNull();
+      }
+    }
+
+    private void invokeMethod(String internalClassName, MethodNode method) {
+      invokeMethod(internalClassName, method.name, method.desc);
+    }
+
+    private void invokeMethod(String internalClassName, String methodName, String methodDesc) {
+      if (isStatic()) {
+        loadArgs();                                             // this, [args]
+        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc);
+      } else {
+        loadThisOrNull();                                       // this
+        loadArgs();                                             // this, [args]
+        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc);
+      }
+    }
+
+    public TryCatch tryStart(Type exceptionType) {
+      return new TryCatch(this, exceptionType);
+    }
+  }
+
+  /**
+   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}
+   */
+  public static class TryCatch {
+    private final Label start;
+    private final Label end;
+    private final Label handler;
+    private final GeneratorAdapter generatorAdapter;
+
+    public TryCatch(GeneratorAdapter generatorAdapter, Type type) {
+      this.generatorAdapter = generatorAdapter;
+      this.start = generatorAdapter.mark();
+      this.end = new Label();
+      this.handler = new Label();
+      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
+    }
+
+    public void end() {
+      generatorAdapter.mark(end);
+    }
+
+    public void handler() {
+      generatorAdapter.mark(handler);
+    }
+  }
+
+  private static class MissingClassMarker {
+  }
+
+  public class OldClassInstrumentor extends InstrumentingClassLoader.ClassInstrumentor {
+    public OldClassInstrumentor(ClassNode classNode, boolean containsStubs) {
+      super(classNode, containsStubs);
+    }
+
+    @Override
+    protected void addDirectCallConstructor() {
+      MethodNode directCallConstructor = new MethodNode(ACC_PUBLIC,
+          "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + classType.getDescriptor() + ")V", null, null);
+      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
+      generator.loadThis();
+      if (classNode.superName.equals("java/lang/Object")) {
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+      } else {
+        generator.loadArgs();
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName,
+            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V");
+      }
+      generator.loadThis();
+      generator.loadArg(1);
+      generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
       generator.returnValue();
+      classNode.methods.add(directCallConstructor);
+    }
+
+    @Override
+    protected void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+      generateCallToClassHandler(originalMethod, originalMethodName, generator);
     }
 
     //TODO clean up & javadocs
@@ -1037,224 +1155,168 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       generator.returnValue();
     }
 
-  }
-
-  /**
-   * ClassWriter implementation that verifies classes by comparing type information obtained
-   * from loading the classes as resources. This was taken from the ASM ClassWriter unit tests.
-   */
-  private class InstrumentingClassWriter extends ClassWriter {
-
     /**
-     * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
-     * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
-     *
-     * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
-     * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
-     * present in legacy bytecode.
+     * Decides to call through the appropriate method to intercept the method with an INVOKEVIRTUAL Opcode,
+     * depending if the invokedynamic bytecode instruction is available (Java 7+)
      */
-    public InstrumentingClassWriter(ClassNode classNode) {
-      super(classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS);
-    }
-
     @Override
-    public int newNameType(String name, String desc) {
-      return super.newNameType(name, desc.charAt(0) == ')' ? remapParams(desc) : remapParamType(desc));
-    }
-
-    @Override
-    public int newClass(String value) {
-      value = remapType(value);
-      return super.newClass(value);
-    }
-
-    @Override
-    protected String getCommonSuperClass(final String type1, final String type2) {
-      try {
-        ClassReader info1 = typeInfo(type1);
-        ClassReader info2 = typeInfo(type2);
-        if ((info1.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
-          if (typeImplements(type2, info2, type1)) {
-            return type1;
-          }
-          if ((info2.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
-            if (typeImplements(type1, info1, type2)) {
-              return type2;
-            }
-          }
-          return "java/lang/Object";
-        }
-        if ((info2.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
-          if (typeImplements(type1, info1, type2)) {
-            return type2;
-          } else {
-            return "java/lang/Object";
-          }
-        }
-        StringBuilder b1 = typeAncestors(type1, info1);
-        StringBuilder b2 = typeAncestors(type2, info2);
-        String result = "java/lang/Object";
-        int end1 = b1.length();
-        int end2 = b2.length();
-        while (true) {
-          int start1 = b1.lastIndexOf(";", end1 - 1);
-          int start2 = b2.lastIndexOf(";", end2 - 1);
-          if (start1 != -1 && start2 != -1
-              && end1 - start1 == end2 - start2) {
-            String p1 = b1.substring(start1 + 1, end1);
-            String p2 = b2.substring(start2 + 1, end2);
-            if (p1.equals(p2)) {
-              result = p1;
-              end1 = start1;
-              end2 = start2;
-            } else {
-              return result;
-            }
-          } else {
-            return result;
-          }
-        }
-      } catch (IOException e) {
-        return "java/lang/Object"; // Handle classes that may be obfuscated
-      }
-    }
-
-    private StringBuilder typeAncestors(String type, ClassReader info) throws IOException {
-      StringBuilder b = new StringBuilder();
-      while (!"java/lang/Object".equals(type)) {
-        b.append(';').append(type);
-        type = info.getSuperName();
-        info = typeInfo(type);
-      }
-      return b;
-    }
-
-    private boolean typeImplements(String type, ClassReader info, String itf) throws IOException {
-      while (!"java/lang/Object".equals(type)) {
-        String[] itfs = info.getInterfaces();
-        for (String itf2 : itfs) {
-          if (itf2.equals(itf)) {
-            return true;
-          }
-        }
-        for (String itf1 : itfs) {
-          if (typeImplements(itf1, typeInfo(itf1), itf)) {
-            return true;
-          }
-        }
-        type = info.getSuperName();
-        info = typeInfo(type);
-      }
-      return false;
-    }
-
-    private ClassReader typeInfo(final String type) throws IOException {
-      try (InputStream is = getResourceAsStream(type + ".class")) {
-        return new ClassReader(is);
-      }
-    }
-  }
-
-  /**
-   * GeneratorAdapter implementation specific to generate code for Robolectric purposes
-   */
-  private static class RobolectricGeneratorAdapter extends GeneratorAdapter {
-    private final boolean isStatic;
-    private final String desc;
-
-    public RobolectricGeneratorAdapter(MethodNode methodNode) {
-      super(Opcodes.ASM4, methodNode, methodNode.access, methodNode.name, methodNode.desc);
-      this.isStatic = Modifier.isStatic(methodNode.access);
-      this.desc = methodNode.desc;
-    }
-
-    public void loadThisOrNull() {
-      if (isStatic) {
-        loadNull();
-      } else {
-        loadThis();
-      }
-    }
-
-    public boolean isStatic() {
-      return isStatic;
-    }
-
-    public void loadNull() {
-      visitInsn(ACONST_NULL);
-    }
-
-    public Type getReturnType() {
-      return Type.getReturnType(desc);
+    protected void interceptInvokeVirtualMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+      interceptInvokeVirtualMethodWithoutInvokeDynamic(instructions, targetMethod);
     }
 
     /**
-     * Forces a return of a default value, depending on the method's return type
-     * @param type The method's return type
+     * Intercepts the method without using the invokedynamic bytecode instruction.
+     * Should be called through interceptInvokeVirtualMethod, not directly
      */
-    public void pushDefaultReturnValueToStack(Type type) {
-      if (type.equals(Type.BOOLEAN_TYPE)) {
-        push(false);
-      } else if (type.equals(Type.INT_TYPE) || type.equals(Type.SHORT_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)) {
-        push(0);
-      } else if (type.equals(Type.LONG_TYPE)) {
-        push(0l);
-      } else if (type.equals(Type.FLOAT_TYPE)) {
-        push(0f);
-      } else if (type.equals(Type.DOUBLE_TYPE)) {
-        push(0d);
-      } else if (type.getSort() == ARRAY || type.getSort() == OBJECT) {
-        loadNull();
+    private void interceptInvokeVirtualMethodWithoutInvokeDynamic(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+      boolean isStatic = targetMethod.getOpcode() == INVOKESTATIC;
+
+      instructions.remove(); // remove the method invocation
+
+      Type[] argumentTypes = Type.getArgumentTypes(targetMethod.desc);
+
+      instructions.add(new LdcInsnNode(argumentTypes.length));
+      instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
+
+      // first, move any arguments into an Object[] in reverse order
+      for (int i = argumentTypes.length - 1; i >= 0 ; i--) {
+        Type type = argumentTypes[i];
+        int argWidth = type.getSize();
+
+        if (argWidth == 1) {                       // A B C []
+          instructions.add(new InsnNode(DUP_X1));  // A B [] C []
+          instructions.add(new InsnNode(SWAP));    // A B [] [] C
+          instructions.add(new LdcInsnNode(i));    // A B [] [] C 2
+          instructions.add(new InsnNode(SWAP));    // A B [] [] 2 C
+          box(type, instructions);                 // A B [] [] 2 (C)
+          instructions.add(new InsnNode(AASTORE)); // A B [(C)]
+        } else if (argWidth == 2) {                // A B _C_ []
+          instructions.add(new InsnNode(DUP_X2));  // A B [] _C_ []
+          instructions.add(new InsnNode(DUP_X2));  // A B [] [] _C_ []
+          instructions.add(new InsnNode(POP));     // A B [] [] _C_
+          box(type, instructions);                 // A B [] [] (C)
+          instructions.add(new LdcInsnNode(i));    // A B [] [] (C) 2
+          instructions.add(new InsnNode(SWAP));    // A B [] [] 2 (C)
+          instructions.add(new InsnNode(AASTORE)); // A B [(C)]
+        }
+      }
+
+      if (isStatic) { // []
+        instructions.add(new InsnNode(Opcodes.ACONST_NULL)); // [] null
+        instructions.add(new InsnNode(Opcodes.SWAP));        // null []
+      }
+
+      // instance []
+      instructions.add(new LdcInsnNode(targetMethod.owner + "/" + targetMethod.name + targetMethod.desc)); // target method signature
+      // instance [] signature
+      instructions.add(new InsnNode(DUP_X2));       // signature instance [] signature
+      instructions.add(new InsnNode(POP));          // signature instance []
+
+      instructions.add(new LdcInsnNode(classType)); // signature instance [] class
+      instructions.add(new MethodInsnNode(INVOKESTATIC,
+          Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
+          "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;"));
+
+      final Type returnType = Type.getReturnType(targetMethod.desc);
+      switch (returnType.getSort()) {
+        case ARRAY:
+          /* falls through */
+        case OBJECT:
+          instructions.add(new TypeInsnNode(CHECKCAST, remapType(returnType.getInternalName())));
+          break;
+        case VOID:
+          instructions.add(new InsnNode(POP));
+          break;
+        case Type.LONG:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Long.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", Type.getMethodDescriptor(Type.LONG_TYPE), false));
+          break;
+        case Type.FLOAT:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Float.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", Type.getMethodDescriptor(Type.FLOAT_TYPE), false));
+          break;
+        case Type.DOUBLE:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Double.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", Type.getMethodDescriptor(Type.DOUBLE_TYPE), false));
+          break;
+        case Type.BOOLEAN:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Boolean.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", Type.getMethodDescriptor(Type.BOOLEAN_TYPE), false));
+          break;
+        case Type.INT:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Integer.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", Type.getMethodDescriptor(Type.INT_TYPE), false));
+          break;
+        case Type.SHORT:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Short.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", Type.getMethodDescriptor(Type.SHORT_TYPE), false));
+          break;
+        case Type.BYTE:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Byte.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", Type.getMethodDescriptor(Type.BYTE_TYPE), false));
+          break;
+        default:
+          throw new RuntimeException("Not implemented: " + getClass().getName() + " cannot intercept methods with return type " + returnType.getClassName());
       }
     }
+  }
 
-    private void invokeMethod(String internalClassName, MethodNode method) {
-      invokeMethod(internalClassName, method.name, method.desc);
+  public class InvokeDynamicClassInstrumentor extends InstrumentingClassLoader.ClassInstrumentor {
+    public InvokeDynamicClassInstrumentor(ClassNode classNode, boolean containsStubs) {
+      super(classNode, containsStubs);
     }
 
-    private void invokeMethod(String internalClassName, String methodName, String methodDesc) {
-      if (isStatic()) {
-        loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc);
+    @Override
+    protected void addDirectCallConstructor() {
+      // not needed, for reasons.
+    }
+
+    @Override
+    protected void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+      generateInvokeDynamic(originalMethod, originalMethodName, generator);
+    }
+
+    // todo javadocs
+    private void generateInvokeDynamic(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+      Handle original =
+          new Handle(getTag(originalMethod), classType.getInternalName(), originalMethod.name,
+              originalMethod.desc);
+
+      if (generator.isStatic()) {
+        generator.loadArgs();
+        generator.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
       } else {
-        loadThisOrNull();                                       // this
-        loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc);
+        String desc = "(" + classType.getDescriptor() + originalMethod.desc.substring(1);
+        generator.loadThis();
+        generator.loadArgs();
+        generator.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original);
       }
+
+      generator.returnValue();
     }
 
-    public TryCatch tryStart(Type exceptionType) {
-      return new TryCatch(this, exceptionType);
-    }
-  }
-
-  /**
-   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}
-   */
-  public static class TryCatch {
-    private final Label start;
-    private final Label end;
-    private final Label handler;
-    private final GeneratorAdapter generatorAdapter;
-
-    public TryCatch(GeneratorAdapter generatorAdapter, Type type) {
-      this.generatorAdapter = generatorAdapter;
-      this.start = generatorAdapter.mark();
-      this.end = new Label();
-      this.handler = new Label();
-      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
+    @Override
+    protected void interceptInvokeVirtualMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+      interceptInvokeVirtualMethodWithInvokeDynamic(instructions, targetMethod);
     }
 
-    public void end() {
-      generatorAdapter.mark(end);
-    }
+    /**
+     * Intercepts the method using the invokedynamic bytecode instruction available in Java 7+.
+     * Should be called through interceptInvokeVirtualMethod, not directly
+     */
+    private void interceptInvokeVirtualMethodWithInvokeDynamic(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+      instructions.remove();  // remove the method invocation
 
-    public void handler() {
-      generatorAdapter.mark(handler);
+      Type type = Type.getObjectType(targetMethod.owner);
+      String description = targetMethod.desc;
+      String owner = type.getClassName();
+
+      if (targetMethod.getOpcode() != INVOKESTATIC) {
+        String thisType = type.getDescriptor();
+        description = "(" + thisType + description.substring(1, description.length());
+      }
+
+      instructions.add(new InvokeDynamicInsnNode(targetMethod.name, description, BOOTSTRAP_INTRINSIC, owner));
     }
   }
-
-  private static class MissingClassMarker {
-  }
-
 }

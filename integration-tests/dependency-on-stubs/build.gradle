@@ -1,3 +1,5 @@
+apply plugin: RoboJavaModulePlugin
+
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
 dependencies {

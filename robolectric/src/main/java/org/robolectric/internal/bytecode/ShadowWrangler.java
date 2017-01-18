@@ -1,18 +1,15 @@
 package org.robolectric.internal.bytecode;
 
-import android.content.Context;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Function;
 import org.robolectric.internal.ShadowConstants;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -51,7 +48,8 @@ public class ShadowWrangler implements ClassHandler {
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
-  private int apiLevel;
+  private final Interceptors interceptors;
+  private final int apiLevel;
   private final Map<Class, MetaShadow> metaShadowMap = new HashMap<>();
   private final Map<String, Plan> planCache =
       Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
@@ -68,8 +66,13 @@ public class ShadowWrangler implements ClassHandler {
   };
 
   public ShadowWrangler(ShadowMap shadowMap, int apiLevel) {
+    this(shadowMap, apiLevel, new AndroidInterceptors().build());
+  }
+
+  public ShadowWrangler(ShadowMap shadowMap, int apiLevel, Interceptors interceptors) {
     this.shadowMap = shadowMap;
     this.apiLevel = apiLevel;
+    this.interceptors = interceptors;
   }
 
   public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
@@ -298,96 +301,7 @@ public class ShadowWrangler implements ClassHandler {
   @Override
   public Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
     final MethodSignature methodSignature = MethodSignature.parse(signature);
-    return getInterceptionHandler(methodSignature).call(theClass, instance, params);
-  }
-
-  @SuppressWarnings("UnnecessaryBoxing")
-  public Function<Object, Object> getInterceptionHandler(final MethodSignature methodSignature) {
-    // TODO: move these somewhere else!
-    if (methodSignature.matches(LinkedHashMap.class.getName(), "eldest")) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          LinkedHashMap map = (LinkedHashMap) value;
-          return map.isEmpty() ? null : map.entrySet().iterator().next();
-        }
-      };
-    } else if (methodSignature.matches("com.android.internal.policy.PolicyManager", "makeNewWindow")) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          ClassLoader cl = theClass.getClassLoader();
-          Class<?> shadowWindowClass;
-
-          try {
-            shadowWindowClass = cl.loadClass("org.robolectric.shadows.ShadowWindow");
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-          }
-
-          Class<?> activityClass;
-
-          try {
-            activityClass = cl.loadClass(Context.class.getName());
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-          }
-
-          Object context = params[0];
-          return ReflectionHelpers.callStaticMethod(shadowWindowClass, "create", ClassParameter.from(activityClass, context));
-        }
-      };
-    } else if (methodSignature.matches("java.lang.System", "nanoTime") || methodSignature.matches("java.lang.System", "currentTimeMillis")) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          ClassLoader cl = theClass.getClassLoader();
-          Class<?> shadowSystemClockClass;
-          try {
-            shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-          }
-
-          return ReflectionHelpers.callStaticMethod(shadowSystemClockClass, methodSignature.methodName);
-        }
-      };
-    } else if (methodSignature.matches("java.lang.System", "arraycopy")) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          //noinspection SuspiciousSystemArraycopy
-          System.arraycopy(params[0], (Integer) params[1], params[2], (Integer) params[3], (Integer) params[4]);
-          return null;
-        }
-      };
-    } else if (methodSignature.matches("java.util.Locale", "adjustLanguageCode")) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          return params[0];
-        }
-      };
-    } else if (methodSignature.matches("java.lang.System", "logE")) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          String message = "System.logE: ";
-          for (Object param : params) {
-            message += param.toString();
-          }
-          System.err.println(message);
-          return null;
-        }
-      };
-    }
-
-    return new Function<Object, Object>() {
-      @Override
-      public Object call(Class<?> theClass, Object value, Object[] params) {
-        return ReflectionHelpers.PRIMITIVE_RETURN_VALUES.get(methodSignature.returnType);
-      }
-    };
+    return interceptors.getInterceptionHandler(methodSignature).call(theClass, instance, params);
   }
 
   @Override

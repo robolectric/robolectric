@@ -12,6 +12,7 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for {@link android.graphics.Paint}.
@@ -44,8 +45,29 @@ public class ShadowPaint {
 
   public void __constructor__(int flags) {
     this.flags = flags;
-    antiAlias = (flags & Paint.ANTI_ALIAS_FLAG) == Paint.ANTI_ALIAS_FLAG;
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(int.class, flags));
+  }
+
+  public void __constructor__(Paint otherPaint) {
+    ShadowPaint otherShadowPaint = shadowOf(otherPaint);
+    this.color = otherShadowPaint.color;
+    this.style = otherShadowPaint.style;
+    this.cap = otherShadowPaint.cap;
+    this.join = otherShadowPaint.join;
+    this.width = otherShadowPaint.width;
+    this.shadowRadius = otherShadowPaint.shadowRadius;
+    this.shadowDx = otherShadowPaint.shadowDx;
+    this.shadowDy = otherShadowPaint.shadowDy;
+    this.shadowColor = otherShadowPaint.shadowColor;
+    this.shader = otherShadowPaint.shader;
+    this.alpha = otherShadowPaint.alpha;
+    this.filter = otherShadowPaint.filter;
+    this.antiAlias = otherShadowPaint.antiAlias;
+    this.dither = otherShadowPaint.dither;
+    this.flags = otherShadowPaint.flags;
+    this.pathEffect = otherShadowPaint.pathEffect;
+
+    Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(Paint.class, otherPaint));
   }
 
   @Implementation(minSdk = N)
@@ -56,6 +78,11 @@ public class ShadowPaint {
   @Implementation
   public int getFlags() {
     return flags;
+  }
+
+  @Implementation
+  public void setFlags(int flags) {
+    this.flags = flags;
   }
 
   @Implementation
@@ -245,7 +272,7 @@ public class ShadowPaint {
 
   @Implementation
   public void setAntiAlias(boolean antiAlias) {
-    this.antiAlias = antiAlias;
+    this.flags = (flags & ~Paint.ANTI_ALIAS_FLAG) | (antiAlias ? Paint.ANTI_ALIAS_FLAG : 0);
   }
 
   @Implementation
@@ -260,7 +287,7 @@ public class ShadowPaint {
 
   @Implementation
   public final boolean isAntiAlias() {
-    return antiAlias;
+    return (flags & Paint.ANTI_ALIAS_FLAG) == Paint.ANTI_ALIAS_FLAG;
   }
 
   @Implementation

@@ -544,13 +544,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  class RobolectricFrameworkMethod extends FrameworkMethod {
-    private final AndroidManifest appManifest;
-    final SdkConfig sdkConfig;
-    final Config config;
+  static class RobolectricFrameworkMethod extends FrameworkMethod {
+    private final @NotNull AndroidManifest appManifest;
+    final @NotNull SdkConfig sdkConfig;
+    final @NotNull Config config;
     private boolean includeApiLevelInName = true;
 
-    RobolectricFrameworkMethod(Method method, AndroidManifest appManifest, SdkConfig sdkConfig, Config config) {
+    RobolectricFrameworkMethod(@NotNull Method method, @NotNull AndroidManifest appManifest, @NotNull SdkConfig sdkConfig, @NotNull Config config) {
       super(method);
       this.appManifest = appManifest;
       this.sdkConfig = sdkConfig;
@@ -569,8 +569,27 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       includeApiLevelInName = false;
     }
 
+    @NotNull
     public AndroidManifest getAppManifest() {
       return appManifest;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      if (!super.equals(o)) return false;
+
+      RobolectricFrameworkMethod that = (RobolectricFrameworkMethod) o;
+
+      return sdkConfig.equals(that.sdkConfig);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = super.hashCode();
+      result = 31 * result + sdkConfig.hashCode();
+      return result;
     }
   }
 }

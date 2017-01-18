@@ -74,7 +74,7 @@ public class InvokeDynamicSupport {
   public static CallSite bootstrapIntrinsic(MethodHandles.Lookup caller, String name,
       MethodType type, String callee) throws IllegalAccessException {
 
-    MethodHandle mh = Intrinsics.Impl.getIntrinsic(callee, name, type);
+    MethodHandle mh = new AndroidInterceptors().build().getMethodHandle(callee, name, type);
     if (mh == null) {
       throw new IllegalArgumentException("Could not find intrinsic for " + callee + ":" + name);
     }

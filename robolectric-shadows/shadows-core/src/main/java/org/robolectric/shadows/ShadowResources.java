@@ -137,6 +137,16 @@ public class ShadowResources {
     }
   }
 
+  @Implementation
+  public TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
+    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
+    if (typedArray != null) {
+      return typedArray;
+    }
+    throw new Resources.NotFoundException("Typed array resource ID #0x" + Integer.toHexString(id));
+  }
+
   public void setDensity(float density) {
     this.density = density;
     if (displayMetrics != null) {

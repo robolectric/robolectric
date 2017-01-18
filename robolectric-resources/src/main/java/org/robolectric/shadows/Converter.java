@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
-import android.content.res.Resources;
 import android.util.TypedValue;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.*;
-import org.robolectric.util.Logger;
+import org.robolectric.res.AttrData;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResType;
+import org.robolectric.res.TypedResource;
 import org.robolectric.util.Util;
 
 public class Converter<T> {
@@ -66,14 +66,17 @@ public class Converter<T> {
         return new FromFraction();
       case CHAR_SEQUENCE_ARRAY:
       case INTEGER_ARRAY:
+      case TYPED_ARRAY:
         return new FromArray();
+      case STYLE:
+        return new Converter();
       default:
-        throw new UnsupportedOperationException(resType.name());
+        throw new UnsupportedOperationException("can't convert from " + resType.name());
     }
   }
 
   public CharSequence asCharSequence(TypedResource typedResource) {
-    throw cantDo("asCharSequence");
+    return typedResource.asString();
   }
 
   public int asInt(TypedResource typedResource) {

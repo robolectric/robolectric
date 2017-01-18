@@ -33,6 +33,9 @@ class ResourceParser {
           new ValueResourceLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
           new ValueResourceLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
           new ValueResourceLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
+          new ValueResourceLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY),
+          new ValueResourceLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
+          new ValueResourceLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),                          
           new AttrResourceLoader(resourceTable),
           new StyleResourceLoader(resourceTable)
       );

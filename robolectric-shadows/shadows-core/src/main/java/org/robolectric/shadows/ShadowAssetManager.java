@@ -15,7 +15,21 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.*;
+import org.robolectric.res.AttrData;
+import org.robolectric.res.AttributeResource;
+import org.robolectric.res.DrawableResourceLoader;
+import org.robolectric.res.EmptyStyle;
+import org.robolectric.res.FileTypedResource;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceIds;
+import org.robolectric.res.ResourceTable;
+import org.robolectric.res.Style;
+import org.robolectric.res.StyleData;
+import org.robolectric.res.StyleResolver;
+import org.robolectric.res.ThemeStyleSet;
+import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
@@ -431,6 +445,109 @@ public final class ShadowAssetManager {
     return ints;
   }
 
+ protected TypedArray getTypedArrayResource(Resources resources, int resId) {
+    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
+    if (value == null) {
+      return null;
+    }
+    TypedResource[] items = getConverter(value).getItems(value);
+    return getTypedArray(resources, items, resId);
+  }
+
+  private TypedArray getTypedArray(Resources resources, TypedResource[] typedResources, int resId) {
+    final CharSequence[] stringData = new CharSequence[typedResources.length];
+    final int totalLen = typedResources.length * ShadowAssetManager.STYLE_NUM_ENTRIES;
+    final int[] data = new int[totalLen];
+
+    for (int i = 0; i < typedResources.length; i++) {
+      final int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+      TypedResource typedResource = typedResources[i];
+
+      // Classify the item.
+      int type = getResourceType(typedResource);
+      if (type == -1) {
+        // This type is unsupported; leave empty.
+        continue;
+      }
+
+      final TypedValue typedValue = new TypedValue();
+
+      if (type == TypedValue.TYPE_REFERENCE) {
+        final String reference = typedResource.asString();
+        ResName refResName = AttributeResource.getResourceReference(reference,
+            typedResource.getXmlContext().getPackageName(), null);
+        typedValue.resourceId = resourceTable.getResourceId(refResName);
+        typedValue.data = typedValue.resourceId;
+        typedResource = resolve(typedResource, RuntimeEnvironment.getQualifiers(), typedValue.resourceId);
+
+        if (typedResource != null) {
+          // Reclassify to a non-reference type.
+          type = getResourceType(typedResource);
+          if (type == TypedValue.TYPE_ATTRIBUTE) {
+            type = TypedValue.TYPE_REFERENCE;
+          } else if (type == -1) {
+            // This type is unsupported; leave empty.
+            continue;
+          }
+        }
+      }
+
+      if (type == TypedValue.TYPE_ATTRIBUTE) {
+        final String reference = typedResource.asString();
+        final ResName attrResName = AttributeResource.getStyleReference(reference,
+            typedResource.getXmlContext().getPackageName(), "attr");
+        typedValue.data = resourceTable.getResourceId(attrResName);
+      }
+
+      if (typedResource != null && type != TypedValue.TYPE_NULL && type != TypedValue.TYPE_ATTRIBUTE) {
+        getConverter(typedResource).fillTypedValue(typedResource.getData(), typedValue);
+      }
+
+      data[offset + ShadowAssetManager.STYLE_TYPE] = type;
+      data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
+      data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.data;
+      data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+      data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+      data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+      stringData[i] = typedResource == null ? null : typedResource.asString();
+    }
+
+    int[] indices = new int[typedResources.length + 1]; /* keep zeroed out */
+    return ShadowTypedArray.create(resources, null, data, indices, typedResources.length, stringData);
+  }
+
+  private int getResourceType(TypedResource typedResource) {
+    if (typedResource == null) {
+      return -1;
+    }
+    final ResType resType = typedResource.getResType();
+    int type;
+    if (typedResource.getData() == null || resType == ResType.NULL) {
+      type = TypedValue.TYPE_NULL;
+    } else if (typedResource.isReference()) {
+      type = TypedValue.TYPE_REFERENCE;
+    } else if (resType == ResType.STYLE) {
+      type = TypedValue.TYPE_ATTRIBUTE;
+    } else if (resType == ResType.CHAR_SEQUENCE || resType == ResType.DRAWABLE) {
+      type = TypedValue.TYPE_STRING;
+    } else if (resType == ResType.INTEGER) {
+      type = TypedValue.TYPE_INT_DEC;
+    } else if (resType == ResType.FLOAT || resType == ResType.FRACTION) {
+      type = TypedValue.TYPE_FLOAT;
+    } else if (resType == ResType.BOOLEAN) {
+      type = TypedValue.TYPE_INT_BOOLEAN;
+    } else if (resType == ResType.DIMEN) {
+      type = TypedValue.TYPE_DIMENSION;
+    } else if (resType == ResType.COLOR) {
+      type = TypedValue.TYPE_INT_COLOR_ARGB8;
+    } else if (resType == ResType.TYPED_ARRAY || resType == ResType.CHAR_SEQUENCE_ARRAY) {
+      type = TypedValue.TYPE_REFERENCE;
+    } else {
+      type = -1;
+    }
+    return type;
+  }
+
   @HiddenApi @Implementation
   public Number createTheme() {
     synchronized (nativeThemes) {
@@ -711,7 +828,6 @@ public final class ShadowAssetManager {
           if (AttributeResource.isResourceReference(attributeSet.getAttributeValue(i))) {
             referenceResId = attributeSet.getAttributeResourceValue(i, -1);
           }
-
           return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!", referenceResId);
         }
       }
