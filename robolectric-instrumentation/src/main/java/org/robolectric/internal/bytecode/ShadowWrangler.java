@@ -65,10 +65,6 @@ public class ShadowWrangler implements ClassHandler {
     }
   };
 
-  public ShadowWrangler(ShadowMap shadowMap, int apiLevel) {
-    this(shadowMap, apiLevel, new AndroidInterceptors().build());
-  }
-
   public ShadowWrangler(ShadowMap shadowMap, int apiLevel, Interceptors interceptors) {
     this.shadowMap = shadowMap;
     this.apiLevel = apiLevel;

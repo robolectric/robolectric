@@ -1,10 +1,8 @@
 package org.robolectric.internal;
 
-import org.robolectric.internal.bytecode.DirectObjectMarker;
-import org.robolectric.internal.bytecode.InvokeDynamic;
 import org.robolectric.util.ReflectionHelpers;
 
-public class ShadowImpl implements Shadow.IShadow {
+public class ShadowImpl implements IShadow {
 
   private final ProxyMaker PROXY_MAKER = new ProxyMaker(new ProxyMaker.MethodMapper() {
     @Override public String getName(String className, String methodName) {
@@ -16,6 +14,7 @@ public class ShadowImpl implements Shadow.IShadow {
     return ReflectionHelpers.callConstructor(clazz);
   }
 
+  @Deprecated
   public Object newInstanceOf(String className) {
     try {
       Class<?> clazz = Class.forName(className);

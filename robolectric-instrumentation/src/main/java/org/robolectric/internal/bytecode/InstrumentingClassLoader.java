@@ -24,10 +24,13 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.robolectric.internal.DirectObjectMarker;
+import org.robolectric.internal.InvokeDynamic;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.ShadowImpl;
 import org.robolectric.internal.ShadowedObject;
 import org.robolectric.util.Logger;
+import org.robolectric.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,45 +53,11 @@ import static java.lang.invoke.MethodType.methodType;
 import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
-import static org.robolectric.util.Util.readBytes;
 
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
  */
 public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
-  private static final Type OBJECT_TYPE = Type.getType(Object.class);
-  private static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
-  private static final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
-  private static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
-  private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
-
-  private static final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
-  private static final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
-  private static final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, OBJECT_TYPE, Type.getType(Object[].class)});
-  private static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
-  private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
-  private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
-  private static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
-  private static final Handle BOOTSTRAP_INIT;
-  private static final Handle BOOTSTRAP;
-  private static final Handle BOOTSTRAP_STATIC;
-  private static final Handle BOOTSTRAP_INTRINSIC;
-
-  static {
-    String className = Type.getInternalName(InvokeDynamicSupport.class);
-
-    MethodType bootstrap =
-        methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
-    String bootstrapMethod =
-        bootstrap.appendParameterTypes(MethodHandle.class).toMethodDescriptorString();
-    String bootstrapIntrinsic =
-        bootstrap.appendParameterTypes(String.class).toMethodDescriptorString();
-
-    BOOTSTRAP_INIT = new Handle(H_INVOKESTATIC, className, "bootstrapInit", bootstrap.toMethodDescriptorString());
-    BOOTSTRAP = new Handle(H_INVOKESTATIC, className, "bootstrap", bootstrapMethod);
-    BOOTSTRAP_STATIC = new Handle(H_INVOKESTATIC, className, "bootstrapStatic", bootstrapMethod);
-    BOOTSTRAP_INTRINSIC = new Handle(H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntrinsic);
-  }
 
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
@@ -200,7 +169,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
       if (classBytesStream == null) throw new ClassNotFoundException(className);
 
-      return readBytes(classBytesStream);
+      return Util.readBytes(classBytesStream);
     } catch (IOException e) {
       throw new ClassNotFoundException("couldn't load " + className, e);
     }
@@ -359,6 +328,11 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   abstract class ClassInstrumentor {
+    private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
+    static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
+    final Type OBJECT_TYPE = Type.getType(Object.class);
+    private final String OBJECT_DESC = Type.getDescriptor(Object.class);
+
     final ClassNode classNode;
     private final boolean containsStubs;
     final String internalClassName;
@@ -449,17 +423,15 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       generator.ifNonNull(alreadyInitialized);
       generator.loadThis();                                         // this
       generator.loadThis();                                         // this, this
-      if (InvokeDynamic.ENABLED) {
-        generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
-      } else {
-        generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
-      }
+      writeCallToInitializing(generator);
       // this, __robo_data__
       generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
       generator.mark(alreadyInitialized);
       generator.returnValue();
       classNode.methods.add(initMethodNode);
     }
+
+    abstract protected void writeCallToInitializing(RobolectricGeneratorAdapter generator);
 
     private void addRoboGetDataMethod() {
       MethodNode initMethodNode = new MethodNode(ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
@@ -1006,6 +978,15 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   public class OldClassInstrumentor extends InstrumentingClassLoader.ClassInstrumentor {
+    private final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
+    private final Type THROWABLE_TYPE = Type.getType(Throwable.class);
+    private final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
+    private final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
+    private final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, OBJECT_TYPE, Type.getType(Object[].class)});
+    private final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
+    private final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
+    private final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
+
     public OldClassInstrumentor(ClassNode classNode, boolean containsStubs) {
       super(classNode, containsStubs);
     }
@@ -1028,6 +1009,11 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
       generator.returnValue();
       classNode.methods.add(directCallConstructor);
+    }
+
+    @Override
+    protected void writeCallToInitializing(RobolectricGeneratorAdapter generator) {
+      generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
     }
 
     @Override
@@ -1262,13 +1248,37 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   public class InvokeDynamicClassInstrumentor extends InstrumentingClassLoader.ClassInstrumentor {
+    private final Handle BOOTSTRAP_INIT;
+    private final Handle BOOTSTRAP;
+    private final Handle BOOTSTRAP_STATIC;
+    private final Handle BOOTSTRAP_INTRINSIC;
+
     public InvokeDynamicClassInstrumentor(ClassNode classNode, boolean containsStubs) {
       super(classNode, containsStubs);
+
+      String className = Type.getInternalName(InvokeDynamicSupport.class);
+
+      MethodType bootstrap =
+          methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
+      String bootstrapMethod =
+          bootstrap.appendParameterTypes(MethodHandle.class).toMethodDescriptorString();
+      String bootstrapIntrinsic =
+          bootstrap.appendParameterTypes(String.class).toMethodDescriptorString();
+
+      BOOTSTRAP_INIT = new Handle(H_INVOKESTATIC, className, "bootstrapInit", bootstrap.toMethodDescriptorString());
+      BOOTSTRAP = new Handle(H_INVOKESTATIC, className, "bootstrap", bootstrapMethod);
+      BOOTSTRAP_STATIC = new Handle(H_INVOKESTATIC, className, "bootstrapStatic", bootstrapMethod);
+      BOOTSTRAP_INTRINSIC = new Handle(H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntrinsic);
     }
 
     @Override
     protected void addDirectCallConstructor() {
       // not needed, for reasons.
+    }
+
+    @Override
+    protected void writeCallToInitializing(RobolectricGeneratorAdapter generator) {
+      generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
     }
 
     @Override

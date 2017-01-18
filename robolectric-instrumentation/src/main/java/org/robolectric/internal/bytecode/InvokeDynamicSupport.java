@@ -19,6 +19,9 @@ import static org.robolectric.internal.bytecode.MethodCallSite.Kind.REGULAR;
 import static org.robolectric.internal.bytecode.MethodCallSite.Kind.STATIC;
 
 public class InvokeDynamicSupport {
+  @SuppressWarnings("unused")
+  private static Interceptors INTERCEPTORS;
+
   private static final MethodHandle BIND_CALL_SITE;
   private static final MethodHandle BIND_INIT_CALL_SITE;
   private static final MethodHandle EXCEPTION_HANDLER;
@@ -74,7 +77,7 @@ public class InvokeDynamicSupport {
   public static CallSite bootstrapIntrinsic(MethodHandles.Lookup caller, String name,
       MethodType type, String callee) throws IllegalAccessException {
 
-    MethodHandle mh = new AndroidInterceptors().build().getMethodHandle(callee, name, type);
+    MethodHandle mh = INTERCEPTORS.getMethodHandle(callee, name, type);
     if (mh == null) {
       throw new IllegalArgumentException("Could not find intrinsic for " + callee + ":" + name);
     }

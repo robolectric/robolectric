@@ -98,8 +98,13 @@ public class AndroidInterceptors {
 
     @Override
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
-      return lookup.findStatic(ShadowWindow.class, "create",
-          methodType(Window.class, Context.class));
+      Class<?> shadowWindowClass;
+      try {
+        shadowWindowClass = type.returnType().getClassLoader().loadClass(ShadowWindow.class.getName());
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+      return lookup.in(type.returnType()).findStatic(shadowWindowClass, "create", type);
     }
   }
 

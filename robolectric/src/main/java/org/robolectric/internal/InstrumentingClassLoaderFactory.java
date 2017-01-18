@@ -2,13 +2,17 @@ package org.robolectric.internal;
 
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
-import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.bytecode.Interceptors;
+import org.robolectric.internal.bytecode.InvokeDynamicSupport;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.util.Pair;
 
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.robolectric.util.ReflectionHelpers.newInstance;
+import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 public class InstrumentingClassLoaderFactory {
 
@@ -28,10 +32,12 @@ public class InstrumentingClassLoaderFactory {
 
   private final InstrumentationConfiguration instrumentationConfig;
   private final DependencyResolver dependencyResolver;
+  private final Interceptors interceptors;
 
-  public InstrumentingClassLoaderFactory(InstrumentationConfiguration instrumentationConfig, DependencyResolver dependencyResolver) {
+  public InstrumentingClassLoaderFactory(InstrumentationConfiguration instrumentationConfig, DependencyResolver dependencyResolver, Interceptors interceptors) {
     this.instrumentationConfig = instrumentationConfig;
     this.dependencyResolver = dependencyResolver;
+    this.interceptors = interceptors;
   }
 
   public synchronized SdkEnvironment getSdkEnvironment(SdkConfig sdkConfig) {
@@ -44,6 +50,12 @@ public class InstrumentingClassLoaderFactory {
 
       ClassLoader robolectricClassLoader = new InstrumentingClassLoader(instrumentationConfig, url);
       sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);
+
+      setStaticField(sdkEnvironment.bootstrappedClass(InvokeDynamicSupport.class), "INTERCEPTORS",
+          interceptors);
+      setStaticField(sdkEnvironment.bootstrappedClass(Shadow.class), "SHADOW_IMPL",
+          newInstance(sdkEnvironment.bootstrappedClass(ShadowImpl.class)));
+
       sdkToEnvironment.put(key, sdkEnvironment);
     }
     return sdkEnvironment;

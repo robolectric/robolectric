@@ -16,6 +16,9 @@ import static java.lang.invoke.MethodType.methodType;
 public class Interceptors {
   private final Map<MethodRef, Interceptor> interceptors = new HashMap<>();
 
+  public Interceptors() {
+  }
+
   public Interceptors(List<Interceptor> interceptorList) {
     for (Interceptor interceptor : interceptorList) {
       for (MethodRef methodRef : interceptor.getMethodRefs()) {

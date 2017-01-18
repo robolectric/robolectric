@@ -1,6 +1,8 @@
 package org.robolectric.internal;
 
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.internal.bytecode.AndroidInterceptors;
+import org.robolectric.internal.bytecode.InvokeDynamicSupport;
 import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.dependency.DependencyResolver;
@@ -23,10 +25,6 @@ public class SdkEnvironment {
     this.sdkConfig = sdkConfig;
     this.robolectricClassLoader = robolectricClassLoader;
     shadowInvalidator = new ShadowInvalidator();
-
-    Class<Object> shadowClazz = bootstrappedClass(Shadow.class);
-    setStaticField(shadowClazz, "SHADOW_IMPL",
-        newInstance(bootstrappedClass(ShadowImpl.class)));
   }
 
   public synchronized PackageResourceTable getSystemResourceTable(DependencyResolver dependencyResolver) {

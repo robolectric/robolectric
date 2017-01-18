@@ -17,24 +17,42 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.*;
-import org.robolectric.internal.bytecode.*;
+import org.robolectric.internal.AndroidConfigurer;
+import org.robolectric.internal.GradleManifestFactory;
+import org.robolectric.internal.InstrumentingClassLoaderFactory;
+import org.robolectric.internal.InvokeDynamic;
+import org.robolectric.internal.ManifestFactory;
+import org.robolectric.internal.ManifestIdentifier;
+import org.robolectric.internal.MavenManifestFactory;
+import org.robolectric.internal.ParallelUniverse;
+import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.bytecode.AndroidInterceptors;
+import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
-import org.robolectric.internal.dependency.*;
-import org.robolectric.internal.fakes.RoboCharsets;
-import org.robolectric.internal.fakes.RoboExtendedResponseCache;
-import org.robolectric.internal.fakes.RoboResponseSource;
+import org.robolectric.internal.bytecode.Interceptors;
+import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.internal.bytecode.ShadowInvalidator;
+import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.dependency.CachedDependencyResolver;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.dependency.LocalDependencyResolver;
+import org.robolectric.internal.dependency.MavenDependencyResolver;
+import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.*;
-import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.PackageResourceTable;
+import org.robolectric.res.ResourceMerger;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.res.ResourceTable;
+import org.robolectric.res.ResourceTableFactory;
+import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TempDirectory;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +61,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
@@ -59,6 +82,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private final SdkPicker sdkPicker;
   private final ConfigMerger configMerger;
+  private final Interceptors interceptors;
 
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -80,96 +104,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     super(testClass);
     this.configMerger = createConfigMerger();
     this.sdkPicker = createSdkPicker();
-  }
-
-  public static Builder withConfig(Builder builder, Config config) {
-    for (Class<?> clazz : config.shadows()) {
-      Implements annotation = clazz.getAnnotation(Implements.class);
-      if (annotation == null) {
-        throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
-      }
-
-      String className = annotation.className();
-      if (className.isEmpty()) {
-        className = annotation.value().getName();
-      }
-
-      if (!className.isEmpty()) {
-        builder.addInstrumentedClass(className);
-      }
-    }
-    for (String packageName : config.instrumentedPackages()) {
-      builder.addInstrumentedPackage(packageName);
-    }
-    return builder;
-  }
-
-  public static Builder configure(Builder builder) {
-    for (MethodRef methodRef : new AndroidInterceptors().build().getAllMethodRefs()) {
-      builder.addInterceptedMethod(methodRef);
-    }
-
-    builder.doNotAcquireClass(TestLifecycle.class)
-      .doNotAcquireClass(ShadowWrangler.class)
-      .doNotAcquireClass(AndroidManifest.class)
-      .doNotAcquireClass(InstrumentingClassLoader.class)
-      .doNotAcquireClass(SdkEnvironment.class)
-      .doNotAcquireClass(SdkConfig.class)
-      .doNotAcquireClass(RobolectricTestRunner.class)
-      .doNotAcquireClass(HelperTestRunner.class)
-      .doNotAcquireClass(ResourcePath.class)
-      .doNotAcquireClass(ResourceTable.class)
-      .doNotAcquireClass(XmlBlock.class)
-      .doNotAcquireClass(ClassHandler.class)
-      .doNotAcquireClass(ClassHandler.Plan.class)
-      .doNotAcquireClass(ShadowInvalidator.class)
-      .doNotAcquireClass(RealObject.class)
-      .doNotAcquireClass(Implements.class)
-      .doNotAcquireClass(Implementation.class)
-      .doNotAcquireClass(Instrument.class)
-      .doNotAcquireClass(DoNotInstrument.class)
-      .doNotAcquireClass(Config.class)
-      .doNotAcquireClass(DirectObjectMarker.class)
-      .doNotAcquireClass(DependencyJar.class)
-      .doNotAcquireClass(ParallelUniverseInterface.class)
-      .doNotAcquireClass(ShadowedObject.class)
-      .doNotAcquireClass(TempDirectory.class);
-
-    builder.doNotAcquirePackage("java.")
-      .doNotAcquirePackage("javax.")
-      .doNotAcquirePackage("sun.")
-      .doNotAcquirePackage("com.sun.")
-      .doNotAcquirePackage("org.w3c.")
-      .doNotAcquirePackage("org.xml.")
-      .doNotAcquirePackage("org.junit")
-      .doNotAcquirePackage("org.hamcrest")
-      .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
-      .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
-      .doNotAcquirePackage("kotlin.")
-      .doNotAcquirePackage("com.almworks.sqlite4java"); // Fix #958: SQLite native library must be loaded once.
-
-    builder.addClassNameTranslation("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
-       .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
-       .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName());
-
-    // Instrumenting these classes causes a weird failure.
-    builder.doNotInstrumentClass("android.R")
-        .doNotInstrumentClass("android.R$styleable");
-
-    builder.addInstrumentedPackage("dalvik.")
-      .addInstrumentedPackage("libcore.")
-      .addInstrumentedPackage("android.")
-      .addInstrumentedPackage("com.android.internal.")
-      .addInstrumentedPackage("org.apache.http.")
-      .addInstrumentedPackage("org.kxml2.");
-
-
-    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
-      for (String packagePrefix : provider.getProvidedPackageNames()) {
-        builder.addInstrumentedPackage(packagePrefix);
-      }
-    }
-    return builder;
+    this.interceptors = createInterceptors();
   }
 
   @SuppressWarnings("unchecked")
@@ -228,7 +163,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    */
   @NotNull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
-    return new ShadowWrangler(shadowMap, sdkConfig.getApiLevel());
+    return new ShadowWrangler(shadowMap, sdkConfig.getApiLevel(), interceptors);
   }
 
   /**
@@ -257,6 +192,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new SdkPicker();
   }
 
+  @NotNull // todo
+  private Interceptors createInterceptors() {
+    return new AndroidInterceptors().build();
+  }
+
   /**
    * Create an {@link InstrumentationConfiguration} suitable for the provided {@link Config}.
    *
@@ -268,8 +208,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   @NotNull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
     Builder builder = InstrumentationConfiguration.newBuilder();
-    builder = withConfig(builder, config);
-    return configure(builder).build();
+    builder = AndroidConfigurer.withConfig(builder, config);
+    return AndroidConfigurer.configure(builder, interceptors).build();
   }
 
   /**
@@ -357,7 +297,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       eachNotifier.fireTestStarted();
       try {
         SdkConfig sdkConfig = ((RobolectricFrameworkMethod) method).sdkConfig;
-        InstrumentingClassLoaderFactory instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver());
+        InstrumentingClassLoaderFactory instrumentingClassLoaderFactory =
+            new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver(), interceptors);
         SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig);
         methodBlock(method, config, roboMethod.getAppManifest(), sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {

@@ -6,27 +6,6 @@ public class Shadow {
   @SuppressWarnings("unused")
   private static IShadow SHADOW_IMPL;
 
-  interface IShadow {
-    <T> T newInstanceOf(Class<T> clazz);
-
-    Object newInstanceOf(String className);
-
-    <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params);
-
-    <T> T directlyOn(T shadowedObject, Class<T> clazz);
-
-    @SuppressWarnings("unchecked")
-    <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ClassParameter... paramValues);
-
-    <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ClassParameter... paramValues);
-
-    <R, T> R directlyOn(Class<T> clazz, String methodName, ClassParameter... paramValues);
-
-    <R> R invokeConstructor(Class<? extends R> clazz, R instance, ClassParameter... paramValues);
-
-    String directMethodName(String methodName);
-  }
-
   public static <T> T newInstanceOf(Class<T> clazz) {
     return SHADOW_IMPL.newInstanceOf(clazz);
   }

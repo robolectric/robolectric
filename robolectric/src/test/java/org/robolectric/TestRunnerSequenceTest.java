@@ -9,8 +9,10 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.bytecode.AndroidInterceptors;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -122,7 +124,7 @@ public class TestRunnerSequenceTest {
     @NotNull
     @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
       InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
-      RobolectricTestRunner.configure(builder);
+      AndroidConfigurer.configure(builder, new AndroidInterceptors().build());
       builder.doNotAcquireClass(StateHolder.class);
       return builder.build();
     }

@@ -18,7 +18,7 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(InstrumentingTestRunner.class)
 public class ShadowWranglerTest {
   private String name;
 
@@ -28,7 +28,7 @@ public class ShadowWranglerTest {
   }
 
   @Test
-  @Config(shadows = {ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class})
+  @RoboConfig(shadows = {ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class})
   public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
     AClassWithDefaultConstructor instance = new AClassWithDefaultConstructor();
     assertThat(ShadowExtractor.extract(instance)).isExactlyInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
@@ -36,14 +36,14 @@ public class ShadowWranglerTest {
   }
 
   @Test
-  @Config(shadows = { ShadowFoo.class })
+  @RoboConfig(shadows = { ShadowFoo.class })
   public void testConstructorInvocation() throws Exception {
     Foo foo = new Foo(name);
     assertSame(name, shadowOf(foo).name);
   }
 
   @Test
-  @Config(shadows = {ShadowFoo.class})
+  @RoboConfig(shadows = {ShadowFoo.class})
   public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
     Foo foo = new Foo(name);
     assertSame(name, shadowOf(foo).name);
@@ -54,14 +54,14 @@ public class ShadowWranglerTest {
   }
 
   @Test
-  @Config(shadows = {ShadowFoo.class})
+  @RoboConfig(shadows = {ShadowFoo.class})
   public void testMethodDelegation() throws Exception {
     Foo foo = new Foo(name);
     assertSame(name, foo.getName());
   }
 
   @Test
-  @Config(shadows = {WithEquals.class})
+  @RoboConfig(shadows = {WithEquals.class})
   public void testEqualsMethodDelegation() throws Exception {
     Foo foo1 = new Foo(name);
     Foo foo2 = new Foo(name);
@@ -69,28 +69,28 @@ public class ShadowWranglerTest {
   }
 
   @Test
-  @Config(shadows = {WithEquals.class})
+  @RoboConfig(shadows = {WithEquals.class})
   public void testHashCodeMethodDelegation() throws Exception {
     Foo foo = new Foo(name);
     assertEquals(42, foo.hashCode());
   }
 
   @Test
-  @Config(shadows = {WithToString.class})
+  @RoboConfig(shadows = {WithToString.class})
   public void testToStringMethodDelegation() throws Exception {
     Foo foo = new Foo(name);
     assertEquals("the expected string", foo.toString());
   }
 
   @Test
-  @Config(shadows = {ShadowFoo.class})
+  @RoboConfig(shadows = {ShadowFoo.class})
   public void testShadowSelectionSearchesSuperclasses() throws Exception {
     TextFoo textFoo = new TextFoo(name);
     assertEquals(ShadowFoo.class, ShadowExtractor.extract(textFoo).getClass());
   }
 
   @Test
-  @Config(shadows = {ShadowFoo.class, ShadowTextFoo.class})
+  @RoboConfig(shadows = {ShadowFoo.class, ShadowTextFoo.class})
   public void shouldUseMostSpecificShadow() throws Exception {
     TextFoo textFoo = new TextFoo(name);
     assertThat(shadowOf(textFoo)).isInstanceOf(ShadowTextFoo.class);
@@ -108,7 +108,7 @@ public class ShadowWranglerTest {
   }
 
   @Test
-  @Config(shadows = ShadowThrowInShadowMethod.class)
+  @RoboConfig(shadows = ShadowThrowInShadowMethod.class)
   public void shouldRemoveNoiseFromShadowedStackTraces() throws Exception {
     ThrowInShadowMethod instance = new ThrowInShadowMethod();
 
@@ -152,7 +152,7 @@ public class ShadowWranglerTest {
 
 
   @Test
-  @Config(shadows = ShadowThrowInRealMethod.class)
+  @RoboConfig(shadows = ShadowThrowInRealMethod.class)
   public void shouldRemoveNoiseFromUnshadowedStackTraces() throws Exception {
     ThrowInRealMethod instance = new ThrowInRealMethod();
 
@@ -188,12 +188,12 @@ public class ShadowWranglerTest {
   public static class ShadowThrowInRealMethod {
   }
 
-  @Test @Config(shadows = {ShadowOfChildWithInheritance.class, ShadowOfParent.class})
+  @Test @RoboConfig(shadows = {ShadowOfChildWithInheritance.class, ShadowOfParent.class})
   public void whenInheritanceIsEnabled_shouldUseShadowSuperclassMethods() throws Exception {
     assertThat(new Child().get()).isEqualTo("from shadow of parent");
   }
 
-  @Test @Config(shadows = {ShadowOfChildWithoutInheritance.class, ShadowOfParent.class})
+  @Test @RoboConfig(shadows = {ShadowOfChildWithoutInheritance.class, ShadowOfParent.class})
   public void whenInheritanceIsDisabled_shouldUseShadowSuperclassMethods() throws Exception {
     assertThat(new Child().get()).isEqualTo("from child (from shadow of parent)");
   }
@@ -302,7 +302,7 @@ public class ShadowWranglerTest {
   public static class ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate {
   }
 
-  @Config(shadows = ShadowAClassWithDifficultArgs.class)
+  @RoboConfig(shadows = ShadowAClassWithDifficultArgs.class)
   @Test public void shouldAllowLooseSignatureMatches() throws Exception {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("abc");
   }

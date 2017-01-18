@@ -4,8 +4,8 @@ new RoboJavaModulePlugin(
 
 dependencies {
     // Compile dependencies
-    compile "org.ow2.asm:asm:5.0.1"
-    compile "org.ow2.asm:asm-commons:5.0.1"
+//    compile "org.ow2.asm:asm:5.0.1"
+//    compile "org.ow2.asm:asm-commons:5.0.1"
     compile project(":robolectric-annotations")
 
     // Testing dependencies
