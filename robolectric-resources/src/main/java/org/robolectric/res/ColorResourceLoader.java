@@ -11,6 +11,6 @@ public class ColorResourceLoader extends XpathResourceXmlLoader {
   @Override
   protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
     TypedResource value = new FileTypedResource(xmlContext.getXmlFile(), ResType.COLOR_STATE_LIST, xmlContext);
-    resourceTable.addValue("color", xmlContext.getXmlFile().getBaseName(), value);
+    resourceTable.addResource("color", xmlContext.getXmlFile().getBaseName(), value);
   }
 }

@@ -10,7 +10,7 @@ import java.io.InputStream;
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
  */
 public class PackageResourceTable implements ResourceTable {
-  private final ResBunch values = new ResBunch();
+  private final ResBunch resources = new ResBunch();
   private final ResourceIndex resourceIndex;
 
   PackageResourceTable(String packageName) {
@@ -33,16 +33,16 @@ public class PackageResourceTable implements ResourceTable {
 
   @Override
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-    return values.get(resName, qualifiers);
+    return resources.get(resName, qualifiers);
   }
 
   @Override
   public TypedResource getValue(int resId, String qualifiers) {
-    return values.get(getResName(resId), qualifiers);
+    return resources.get(getResName(resId), qualifiers);
   }
 
   public XmlBlock getXml(ResName resName, String qualifiers) {
-    FileTypedResource typedResource = (FileTypedResource) values.get(resName, qualifiers);
+    FileTypedResource typedResource = (FileTypedResource) resources.get(resName, qualifiers);
     if (typedResource == null || !typedResource.isXml()) {
       return null;
     } else {
@@ -51,7 +51,7 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   public InputStream getRawValue(ResName resName, String qualifiers) {
-    FileTypedResource typedResource = (FileTypedResource) values.get(resName, qualifiers);
+    FileTypedResource typedResource = (FileTypedResource) resources.get(resName, qualifiers);
     FsFile file = typedResource == null ? null : typedResource.getFsFile();
     try {
       return file == null ? null : file.getInputStream();
@@ -71,7 +71,7 @@ public class PackageResourceTable implements ResourceTable {
 
   @Override
   public void receive(Visitor visitor) {
-    values.receive(visitor);
+    resources.receive(visitor);
   }
 
   @Override
@@ -85,7 +85,7 @@ public class PackageResourceTable implements ResourceTable {
     resourceIndex.addResource(resId, type, name);
   }
 
-  void addValue(String type, String name, TypedResource value) {
-    values.put(type, name, value);
+  void addResource(String type, String name, TypedResource value) {
+    resources.put(type, name, value);
   }
 }

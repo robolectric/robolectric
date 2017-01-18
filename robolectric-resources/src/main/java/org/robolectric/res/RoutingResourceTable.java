@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import org.robolectric.res.builder.XmlBlock;
 
-public class RoutingResourceTable extends ResourceTable {
+public class RoutingResourceTable implements ResourceTable {
   private static final PackageResourceTable EMPTY_RESOURCE_TABLE = ResourceTableFactory.newResourceTable("");
   private final Map<String, PackageResourceTable> resourceTables;
 

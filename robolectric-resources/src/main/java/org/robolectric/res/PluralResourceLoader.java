@@ -18,7 +18,7 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
       String quantity = item.getAttrValue("quantity");
       rules.add(new Plural(quantity, value));
     }
-    resourceTable.addValue("plurals", name, new PluralRules(rules, ResType.CHAR_SEQUENCE, xmlContext));
+    resourceTable.addResource("plurals", name, new PluralRules(rules, ResType.CHAR_SEQUENCE, xmlContext));
   }
 
   public static class PluralRules extends TypedResource<List<Plural>> {

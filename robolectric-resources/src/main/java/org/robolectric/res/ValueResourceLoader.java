@@ -14,6 +14,6 @@ public class ValueResourceLoader extends XpathResourceXmlLoader {
 
   @Override
   protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) {
-    resourceTable.addValue(attrType, name, resType.getValueWithType(xmlNode, xmlContext));
+    resourceTable.addResource(attrType, name, resType.getValueWithType(xmlNode, xmlContext));
   }
 }

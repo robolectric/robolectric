@@ -56,7 +56,7 @@ public class DrawableResourceLoader {
         }
 
         XmlContext fakeXmlContext = new XmlContext(packageName, f);
-        resourceTable.addValue(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
+        resourceTable.addResource(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
       }
     }
   }
