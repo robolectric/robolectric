@@ -4,7 +4,7 @@ new RoboJavaModulePlugin(
 
 dependencies {
     // Compile dependencies
-    compile project(":robolectric-instrumentation-annotations")
+    compile project(":shadows-api")
     compileOnly "com.intellij:annotations:12.0"
     compileOnly AndroidSdk.MAX_SDK.coordinates
 }
