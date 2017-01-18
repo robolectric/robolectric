@@ -41,7 +41,7 @@ public enum ResType {
   },
 
   TYPED_ARRAY {
-    @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
+    @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
       return extractTypedItems(xmlNode, TYPED_ARRAY, xmlContext);
     }
   },
@@ -61,7 +61,7 @@ public enum ResType {
     return new TypedResource<>(xmlNode.getTextContent(), this, xmlContext);
   }
   
-  private static TypedResource extractTypedItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, XmlLoader.XmlContext xmlContext) {
+  private static TypedResource extractTypedItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, XmlContext xmlContext) {
     final List<TypedResource> items = new ArrayList<>();
     for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
       final String itemString = item.getTextContent();
