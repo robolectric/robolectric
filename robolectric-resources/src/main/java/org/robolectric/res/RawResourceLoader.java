@@ -1,11 +1,9 @@
 package org.robolectric.res;
 
 public class RawResourceLoader {
-  private String packageName;
   private final ResourcePath resourcePath;
 
-  public RawResourceLoader(String packageName, ResourcePath resourcePath) {
-    this.packageName = packageName;
+  public RawResourceLoader(ResourcePath resourcePath) {
     this.resourcePath = resourcePath;
   }
 
@@ -31,7 +29,7 @@ public class RawResourceLoader {
       for (FsFile file : files) {
         String fileBaseName = file.getBaseName();
         resourceTable.addResource(resourceType, fileBaseName,
-            new FileTypedResource(file, ResType.FILE, new XmlContext(packageName, file)));
+            new FileTypedResource(file, ResType.FILE, new XmlContext(resourceTable.getPackageName(), file)));
       }
     }
   }

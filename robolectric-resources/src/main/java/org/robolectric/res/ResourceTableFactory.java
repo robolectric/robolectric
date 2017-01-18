@@ -18,7 +18,7 @@ public class ResourceTableFactory {
     }
 
     for (ResourcePath resourcePath : resourcePaths) {
-      ResourceParser.load(packageName, resourcePath, resourceTable);
+      ResourceParser.load(resourcePath, resourceTable);
     }
 
     return resourceTable;

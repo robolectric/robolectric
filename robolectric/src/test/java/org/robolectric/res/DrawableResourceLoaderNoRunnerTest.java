@@ -64,7 +64,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
-    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", resourceTable);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
     assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();
@@ -87,7 +87,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
-    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", resourceTable);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
     assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();
@@ -110,7 +110,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
-    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", resourceTable);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
     assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();
@@ -133,7 +133,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath resourcePath = new ResourcePath(null, mockTestBaseDir, null);
 
-    DrawableResourceLoader testLoader = new DrawableResourceLoader("org.robolectric", resourceTable);
+    DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
     assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();

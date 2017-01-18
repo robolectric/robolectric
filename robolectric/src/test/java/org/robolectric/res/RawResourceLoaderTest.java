@@ -18,7 +18,7 @@ public class RawResourceLoaderTest {
   @Before
   public void setUp() throws Exception {
     resourceTable = ResourceTableFactory.newResourceTable("packageName", testResources());
-    RawResourceLoader rawResourceLoader = new RawResourceLoader("packageName", TEST_RESOURCE_PATH);
+    RawResourceLoader rawResourceLoader = new RawResourceLoader(TEST_RESOURCE_PATH);
     rawResourceLoader.loadTo(resourceTable);
   }
 

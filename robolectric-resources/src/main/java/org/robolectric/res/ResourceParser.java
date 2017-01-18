@@ -3,15 +3,15 @@ package org.robolectric.res;
 import org.robolectric.util.Logger;
 
 class ResourceParser {
-  static void load(String packageName, ResourcePath resourcePath, PackageResourceTable resourceTable) {
+  static void load(ResourcePath resourcePath, PackageResourceTable resourceTable) {
     if (!resourcePath.hasResources()) {
-      Logger.debug("No resources for %s", packageName);
+      Logger.debug("No resources for %s", resourceTable.getPackageName());
       return;
     }
 
-    Logger.debug("Loading resources for %s from %s...", packageName, resourcePath.getResourceBase());
+    Logger.debug("Loading resources for %s from %s...", resourceTable.getPackageName(), resourcePath.getResourceBase());
 
-    DocumentLoader documentLoader = new DocumentLoader(packageName, resourcePath);
+    DocumentLoader documentLoader = new DocumentLoader(resourceTable.getPackageName(), resourcePath);
 
     try {
       documentLoader.load("values",
@@ -53,7 +53,7 @@ class ResourceParser {
       throw new RuntimeException(e);
     }
 
-    new DrawableResourceLoader(packageName, resourceTable).findDrawableResources(resourcePath);
-    new RawResourceLoader(packageName, resourcePath).loadTo(resourceTable);
+    new DrawableResourceLoader(resourceTable).findDrawableResources(resourcePath);
+    new RawResourceLoader(resourcePath).loadTo(resourceTable);
   }
 }
