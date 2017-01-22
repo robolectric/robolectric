@@ -13,7 +13,6 @@ import java.util.logging.Logger;
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
  */
 public class PackageResourceTable implements ResourceTable {
-
   private static final Logger LOGGER = Logger.getLogger(PackageResourceTable.class.getName());
 
   private final ResBunch resources = new ResBunch();
@@ -23,6 +22,7 @@ public class PackageResourceTable implements ResourceTable {
   private final String packageName;
   private int packageIdentifier;
 
+
   PackageResourceTable(String packageName) {
     this.packageName = packageName;
   }
@@ -31,18 +31,28 @@ public class PackageResourceTable implements ResourceTable {
     return packageName;
   }
 
-  public synchronized Integer getResourceId(ResName resName) {
+  int getPackageIdentifier() {
+    return packageIdentifier;
+  }
+
+  @Override
+  public Integer getResourceId(ResName resName) {
     if (resName == null) {
       return null;
     }
     Integer id = resourceTable.inverse().get(resName);
+    if (id == null && isAndroidPackage(resName)) {
+      id = androidResourceIdGenerator.generate(resName.type, resName.name);
+      resourceTable.put(id, resName);
+      LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
+    }
     if (id == null) return 0;
 
     return id;
   }
 
   @Override
-  public synchronized ResName getResName(int resourceId) {
+  public ResName getResName(int resourceId) {
     return resourceTable.get(resourceId);
   }
 
@@ -80,10 +90,6 @@ public class PackageResourceTable implements ResourceTable {
     return getRawValue(getResName(resId), qualifiers);
   }
 
-  int getPackageIdentifier() {
-    return packageIdentifier;
-  }
-
   @Override
   public void receive(Visitor visitor) {
     resources.receive(visitor);
@@ -96,44 +102,29 @@ public class PackageResourceTable implements ResourceTable {
         || getRawValue(resName, qualifiers) != null;
   }
 
-  // TODO: Merge this method with the addResource(String, String, TypedResource) so that the ID is provided by the
-  // caller. When we start to read arsc files the ID will already be provided so we want to write the id, name, type and
-  // value information in the same call rather than split up like this.
-  synchronized void addResource(int id, String type, String name) {
-    // We need to record the resource identifiers for Android as they are not generated with AAPT and are only selectively
-    // available in the android.R / com.android.internal.R so we will generate identifiers where they don't exist as they
-    // are written into the resource table.
-    if (ResourceIds.isFrameworkResource(id)) {
-      androidResourceIdGenerator.record(id, type, name);
-    }
-    ResName resName = new ResName(packageName, type, name);
-    int resIdPackageIdentifier = ResourceIds.getPackageIdentifier(id);
-    if (getPackageIdentifier() == 0) {
-      this.packageIdentifier = resIdPackageIdentifier;
-    } else if (getPackageIdentifier() != resIdPackageIdentifier) {
-      throw new IllegalArgumentException("Attempted to add resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
-    }
+  void addResource(int resId, String type, String name) {
+      if (ResourceIds.isFrameworkResource(resId)) {
+        androidResourceIdGenerator.record(resId, type, name);
+      }
+      ResName resName = new ResName(packageName, type, name);
+      int resIdPackageIdentifier = ResourceIds.getPackageIdentifier(resId);
+      if (getPackageIdentifier() == 0) {
+        this.packageIdentifier = resIdPackageIdentifier;
+      } else if (getPackageIdentifier() != resIdPackageIdentifier) {
+        throw new IllegalArgumentException("Attempted to add resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
+      }
 
-    ResName existingEntry = resourceTable.put(id, resName);
-    if (existingEntry != null && !existingEntry.equals(resName)) {
-      throw new IllegalArgumentException("ResId " + Integer.toHexString(id) + " mapped to both " + resName + " and " + existingEntry);
-    }
+      ResName existingEntry = resourceTable.put(resId, resName);
+      if (existingEntry != null && !existingEntry.equals(resName)) {
+        throw new IllegalArgumentException("ResId " + Integer.toHexString(resId) + " mapped to both " + resName + " and " + existingEntry);
+      }
   }
 
   void addResource(String type, String name, TypedResource value) {
-    if (isAndroidPackage(packageName)) {
-      ResName resName = new ResName(packageName, type, name);
-      if (!resourceTable.containsValue(resName)) {
-        int generatedId = androidResourceIdGenerator.generate(resName.type, resName.name);
-        resourceTable.put(generatedId, resName);
-        LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(generatedId));
-      }
-    }
-
     resources.put(type, name, value);
   }
 
-  private boolean isAndroidPackage(String packageName) {
-    return "android".equals(packageName) || "".equals(packageName);
+  private boolean isAndroidPackage(ResName resName) {
+    return "android".equals(resName.packageName) || "".equals(resName.packageName);
   }
 }
