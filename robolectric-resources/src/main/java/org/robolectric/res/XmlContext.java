@@ -18,11 +18,6 @@ public class XmlContext {
     return packageName;
   }
 
-  public String getDirPrefix() {
-    String parentDir = xmlFile.getParent().getName();
-    return parentDir.split("-")[0];
-  }
-
   public String getQualifiers() {
     FsFile parentDir = xmlFile.getParent();
     if (parentDir == null) {

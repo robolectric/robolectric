@@ -111,7 +111,7 @@ public class PackageResourceTable implements ResourceTable {
         throw new IllegalStateException(resName + " assigned ID to already existing " + existing);
       }
     }
-    resources.put(type, name, value);
+    resources.put(resName, value);
   }
 
   private boolean isAndroidPackage(ResName resName) {
