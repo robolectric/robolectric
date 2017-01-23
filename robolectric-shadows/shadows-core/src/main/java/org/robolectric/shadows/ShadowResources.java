@@ -17,10 +17,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.res.Plural;
-import org.robolectric.res.PluralResourceLoader;
-import org.robolectric.res.ResType;
-import org.robolectric.res.TypedResource;
+import org.robolectric.res.*;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 

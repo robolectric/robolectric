@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AttrResourceLoader extends XpathResourceXmlLoader {
-  private final ResBunch resBunch;
+  private final PackageResourceTable resourceTable;
 
-  public AttrResourceLoader(ResBunch resBunch) {
+  public AttrResourceLoader(PackageResourceTable resourceTable) {
     super("//attr");
-    this.resBunch = resBunch;
+    this.resourceTable = resourceTable;
   }
 
   @Override
@@ -45,6 +45,6 @@ public class AttrResourceLoader extends XpathResourceXmlLoader {
 //                    "you need a format, enums, or flags for \"" + name + "\" in " + xmlContext);
     }
     AttrData attrData = new AttrData(name, format, pairs);
-    resBunch.put("attr", name, new TypedResource<>(attrData, ResType.ATTR_DATA, xmlContext));
+    resourceTable.addResource("attr", name, new TypedResource<>(attrData, ResType.ATTR_DATA, xmlContext));
   }
 }

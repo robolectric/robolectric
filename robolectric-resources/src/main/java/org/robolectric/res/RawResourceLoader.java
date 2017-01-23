@@ -1,38 +1,35 @@
 package org.robolectric.res;
 
 public class RawResourceLoader {
-  private String packageName;
   private final ResourcePath resourcePath;
 
-  public RawResourceLoader(String packageName, ResourcePath resourcePath) {
-    this.packageName = packageName;
+  public RawResourceLoader(ResourcePath resourcePath) {
     this.resourcePath = resourcePath;
   }
 
-  public void loadTo(ResBundle rawResourceFiles) {
-    load(rawResourceFiles, "raw");
-    load(rawResourceFiles, "drawable");
+  public void loadTo(PackageResourceTable resourceTable) {
+    load(resourceTable, "raw");
+    load(resourceTable, "drawable");
   }
 
-  public void load(ResBundle rawResourceFiles, String folderBaseName) {
+  public void load(PackageResourceTable resourceTable, String folderBaseName) {
     FsFile resourceBase = resourcePath.getResourceBase();
     FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
     if (files == null) {
       throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
     }
     for (FsFile dir : files) {
-      loadRawFiles(rawResourceFiles, folderBaseName, dir);
+      loadRawFiles(resourceTable, folderBaseName, dir);
     }
   }
 
-  private void loadRawFiles(ResBundle rawResourceFiles, String resourceType, FsFile rawDir) {
+  private void loadRawFiles(PackageResourceTable resourceTable, String resourceType, FsFile rawDir) {
     FsFile[] files = rawDir.listFiles();
     if (files != null) {
       for (FsFile file : files) {
         String fileBaseName = file.getBaseName();
-        rawResourceFiles.put(resourceType, fileBaseName,
-            new TypedResource<>(file, ResType.FILE,
-                new XmlLoader.XmlContext(packageName, file)));
+        resourceTable.addResource(resourceType, fileBaseName,
+            new FileTypedResource(file, ResType.FILE, new XmlContext(resourceTable.getPackageName(), file)));
       }
     }
   }

@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import org.robolectric.res.builder.XmlBlock;
 
-public class RoutingResourceTable extends ResourceTable {
+public class RoutingResourceTable implements ResourceTable {
   private static final PackageResourceTable EMPTY_RESOURCE_TABLE = ResourceTableFactory.newResourceTable("");
   private final Map<String, PackageResourceTable> resourceTables;
 
@@ -33,11 +33,6 @@ public class RoutingResourceTable extends ResourceTable {
 
   @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
     return pickFor(resName).getValue(resName, qualifiers);
-  }
-
-  @Override
-  public void addResource(int resId, String type, String name) {
-    pickFor(resId).addResource(resId, type, name);
   }
 
   public TypedResource getValue(int resId, String qualifiers) {
@@ -70,7 +65,7 @@ public class RoutingResourceTable extends ResourceTable {
     }
   }
 
-  private ResourceTable pickFor(int resId) {
+  private PackageResourceTable pickFor(int resId) {
     for (PackageResourceTable resourceTable : resourceTables.values()) {
       if (resourceTable.getPackageIdentifier() == ResourceIds.getPackageIdentifier(resId)) {
         return resourceTable;

@@ -4,9 +4,9 @@ public class TypedResource<T> {
   private final T data;
   private final ResType resType;
   private final String qualifiers;
-  private final XmlLoader.XmlContext xmlContext;
+  private final XmlContext xmlContext;
 
-  public TypedResource(T data, ResType resType, XmlLoader.XmlContext xmlContext) {
+  public TypedResource(T data, ResType resType, XmlContext xmlContext) {
     this.data = data;
     this.resType = resType;
     this.xmlContext = xmlContext;
@@ -27,7 +27,7 @@ public class TypedResource<T> {
     return qualifiers;
   }
 
-  public XmlLoader.XmlContext getXmlContext() {
+  public XmlContext getXmlContext() {
     return xmlContext;
   }
 
@@ -51,9 +51,13 @@ public class TypedResource<T> {
 
   @Override public String toString() {
     return getClass().getSimpleName() + "{" +
-        "data=" + data +
+        "values=" + data +
         ", resType=" + resType +
         ", xmlContext=" + xmlContext +
         '}';
+  }
+
+  public boolean isXml() {
+    return false;
   }
 }

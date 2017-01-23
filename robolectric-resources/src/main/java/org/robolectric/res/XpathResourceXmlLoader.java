@@ -7,21 +7,22 @@ import com.ximpleware.XPathEvalException;
 import com.ximpleware.XPathParseException;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class XpathResourceXmlLoader extends XmlLoader {
+public abstract class XpathResourceXmlLoader implements XmlLoader {
   private final String expression;
 
   public XpathResourceXmlLoader(String expression) {
     this.expression = expression;
   }
 
-  @Override protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) {
+  @Override
+  public void processResourceXml(XmlNode xmlNode, XmlContext xmlContext) {
     try {
       for (XmlNode node : xmlNode.selectByXpath(expression)) {
         String name = node.getAttrValue("name");
         processNode(name, node, xmlContext);
       }
     } catch (Exception e) {
-      throw new RuntimeException("Error processing " + xmlFile, e);
+      throw new RuntimeException("Error processing " + xmlContext.getXmlFile(), e);
     }
   }
 

@@ -37,9 +37,6 @@ public final class R {
     public static final int grey_text_view_hint = 0x7f010019;
 
     public static final int textStyle = 0x7f01001a;
-    public static final int textStyle2 = 0x7f01001b;
-    public static final int textStyle3 = 0x7f01001c;
-
     public static final int test_menu_1 = 0x7f01001d;
     public static final int test_menu_2 = 0x7f01001e;
     public static final int test_menu_3 = 0x7f01001f;
@@ -280,18 +277,19 @@ public final class R {
     public static final int attrFromLib1 = 0x7f0b0a14;
     public static final int buttonStyle = 0x7f0b0a15;
     public static final int logoWidth = 0x7f0b0a16;
-    public static final int logoHeigh = 0x7f0b0a17;
-    public static final int averageSheepWidth = 0x7f0b0a18;
-    public static final int typeface = 0x7f0b0a19;
-    public static final int string1 = 0x7f0b0a1a;
-    public static final int string2 = 0x7f0b0a1b;
-    public static final int string3 = 0x7f0b0a1c;
-    public static final int parentStyleReference = 0x7f0b0a1d;
-    public static final int styleReference = 0x7f0b0a1e;
-    public static final int styleReferenceWithoutExplicitType = 0x7f0b0a1f;
-    public static final int styleNotSpecifiedInAnyTheme = 0x7f0b0a20;
-    public static int offsetX = 0x7f0b0a21;
-    public static int offsetY = 0x7f0b0a22;
+    public static final int averageSheepWidth = 0x7f0b0a17;
+    public static final int typeface = 0x7f0b0a18;
+    public static final int string1 = 0x7f0b0a19;
+    public static final int string2 = 0x7f0b0a1a;
+    public static final int string3 = 0x7f0b0a1b;
+    public static final int parentStyleReference = 0x7f0b0a1c;
+    public static final int styleReference = 0x7f0b0a1d;
+    public static final int styleReferenceWithoutExplicitType = 0x7f0b0a1e;
+    public static final int styleNotSpecifiedInAnyTheme = 0x7f0b0a1f;
+    public static final int offsetX = 0x7f0b0a20;
+    public static final int offsetY = 0x7f0b0a21;
+    public static final int textStyle2 = 0x7f0b0a22;
+    public static final int textStyle3 = 0x7f0b0a23;
   }
 
   public static final class menu {
@@ -309,8 +307,8 @@ public final class R {
   public static final class styleable {
 
     public static final int[] SomeStyleable = new int[]{attr.offsetX, attr.offsetY};
-    public static int SomeStyleable_attr_1 = 0;
-    public static int SomeStyleable_attr_2 = 1;
+    public static int SomeStyleable_offsetX = 0;
+    public static int SomeStyleable_offsetY = 1;
 
     public static final int[] CustomView = {
         attr.itemType,
@@ -333,7 +331,7 @@ public final class R {
     public static final int[] AnotherTheme = {
         attr.buttonStyle,
         attr.logoWidth,
-        attr.logoHeigh,
+        attr.logoHeight,
         attr.averageSheepWidth,
         attr.animalStyle,
         attr.typeface,
@@ -346,7 +344,7 @@ public final class R {
     public static final int AnotherTheme_animalStyle = 4;
     public static final int AnotherTheme_typeface = 5;
 
-    public static final int[] HeaderBar = {id.textStyle2, id.textStyle3};
+    public static final int[] HeaderBar = {attr.textStyle2, attr.textStyle3};
     public static final int HeaderBar_textStyle2 = 0;
     public static final int HeaderBar_textStyle3 = 1;
   }
