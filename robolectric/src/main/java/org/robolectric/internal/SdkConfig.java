@@ -15,7 +15,6 @@ import java.util.Properties;
 import java.util.Set;
 
 public class SdkConfig implements Comparable<SdkConfig> {
-  private static final String ROBOLECTRIC_VERSION = getRobolectricVersion();
 
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS = Collections.unmodifiableMap(new HashMap<Integer, SdkVersion>() {
     private final double jdkVersion = Double.parseDouble(System.getProperty("java.specification.version"));
@@ -66,10 +65,6 @@ public class SdkConfig implements Comparable<SdkConfig> {
     return createDependency("org.robolectric", "android-all", getSdkVersion().toString(), null);
   }
 
-  public DependencyJar getCoreShadowsDependency() {
-    return createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, null);
-  }
-
   @Override
   public boolean equals(Object that) {
     return that == this || that instanceof SdkConfig && ((SdkConfig) that).apiLevel == (apiLevel);
@@ -100,17 +95,6 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
   private DependencyJar createDependency(String groupId, String artifactId, String version, String classifier) {
     return new DependencyJar(groupId, artifactId, version, classifier);
-  }
-
-  private static String getRobolectricVersion() {
-    ClassLoader classLoader = SdkVersion.class.getClassLoader();
-    try (InputStream is = classLoader.getResourceAsStream("robolectric-version.properties")) {
-      final Properties properties = new Properties();
-      properties.load(is);
-      return properties.getProperty("robolectric.version");
-    } catch (IOException e) {
-      throw new RuntimeException("Error determining Robolectric version: " + e.getMessage());
-    }
   }
 
   private static final class SdkVersion {

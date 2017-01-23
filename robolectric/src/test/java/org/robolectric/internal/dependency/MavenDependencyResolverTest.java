@@ -106,39 +106,6 @@ public class MavenDependencyResolverTest {
     assertEquals("file:/path3", url.toExternalForm());
   }
 
-  @Test
-  public void getLocalArtifactUrls_shouldReturnEmptyArrayIfNoDependencyJarProvided() {
-    DependencyResolver dependencyResolver = createResolver();
-
-    URL[] urls = dependencyResolver.getLocalArtifactUrls();
-
-    assertEquals(0, urls.length);
-  }
-
-  @Test
-  public void getLocalArtifactUrls_shouldReturnURLsForEachDependencyJar() {
-    DependencyResolver dependencyResolver = createResolver();
-    DependencyJar dependencyJar1 = new DependencyJar("group1", "artifact1", "", null);
-    DependencyJar dependencyJar2 = new DependencyJar("group2", "artifact2", "", null);
-
-    URL[] urls = dependencyResolver.getLocalArtifactUrls(dependencyJar1, dependencyJar2);
-
-    assertEquals(2, urls.length);
-    assertEquals("file:/path1", urls[0].toExternalForm());
-    assertEquals("file:/path2", urls[1].toExternalForm());
-  }
-
-  @Test
-  public void getLocalArtifactUrls_shouldAddEachDependencyToDependenciesTask() {
-    DependencyResolver dependencyResolver = createResolver();
-    DependencyJar dependencyJar1 = new DependencyJar("group1", "artifact1", "", null);
-    DependencyJar dependencyJar2 = new DependencyJar("group2", "artifact2", "", null);
-
-    dependencyResolver.getLocalArtifactUrls(dependencyJar1, dependencyJar2);
-
-    verify(dependenciesTask, times(2)).addDependency(any(Dependency.class));
-  }
-
   private DependencyResolver createResolver() {
     return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID) {
       @Override
