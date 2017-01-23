@@ -5,15 +5,36 @@ import java.lang.reflect.Modifier;
 
 public class ResourceTableFactory {
 
+  /**
+   * Builds an Android framework resource table in the "android" package space.
+   */
+  public static PackageResourceTable newFrameworkResourceTable(ResourcePath resourcePath) {
+    PackageResourceTable resourceTable = new PackageResourceTable("android");
+
+      if (resourcePath.getRClass() != null) {
+        addRClassValues(resourceTable, resourcePath.getRClass());
+        addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
+      }
+      if (resourcePath.getInternalRClass() != null) {
+        addRClassValues(resourceTable, resourcePath.getInternalRClass());
+        addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
+      }
+
+      ResourceParser.load(resourcePath, resourceTable);
+
+    return resourceTable;
+  }
+
+  /**
+   * Creates an application resource table which can be constructed with multiple resources paths representing
+   * overlayed resource libraries.
+   */
   public static PackageResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
     PackageResourceTable resourceTable = new PackageResourceTable(packageName);
 
     for (ResourcePath resourcePath : resourcePaths) {
       if (resourcePath.getRClass() != null) {
         addRClassValues(resourceTable, resourcePath.getRClass());
-      }
-      if (resourcePath.getInternalRClass() != null) {
-        addRClassValues(resourceTable, resourcePath.getInternalRClass());
       }
     }
 
@@ -41,11 +62,19 @@ public class ResourceTableFactory {
             resourceTable.addResource(id, resourceType, resourceName);
           }
         }
-      } else {
-        // Check the stylable elements. Not for aapt generated R files but for framework R files it is possible to
-        // have attributes in the styleable array for which there is no corresponding R.attr field.
-        String styleableName = null;
-        int[] styleableArray = null;
+      }
+    }
+  }
+
+  /**
+   * Check the stylable elements. Not for aapt generated R files but for framework R files it is possible to
+   * have attributes in the styleable array for which there is no corresponding R.attr field.
+   */
+  private static void addMissingStyleableAttributes(PackageResourceTable resourceTable, Class<?> rClass) {
+    for (Class innerClass : rClass.getClasses()) {
+      if (innerClass.getSimpleName().equals("styleable")) {
+        String styleableName = null; // Current styleable name
+        int[] styleableArray = null; // Current styleable value array or references
         for (Field field : innerClass.getDeclaredFields()) {
           if (field.getType().equals(int[].class) && Modifier.isStatic(field.getModifiers())) {
             styleableName = field.getName();
