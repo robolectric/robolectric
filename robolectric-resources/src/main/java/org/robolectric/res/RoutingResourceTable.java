@@ -3,11 +3,8 @@ package org.robolectric.res;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.robolectric.res.builder.XmlBlock;
 
@@ -25,10 +22,6 @@ public class RoutingResourceTable implements ResourceTable {
 
   public InputStream getRawValue(int resId, String qualifiers) {
     return getRawValue(getResName(resId), qualifiers);
-  }
-
-  public boolean hasValue(ResName resName, String qualifiers) {
-    return pickFor(resName).hasValue(resName, qualifiers);
   }
 
   @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {

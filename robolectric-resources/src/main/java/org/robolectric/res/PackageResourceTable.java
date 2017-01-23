@@ -7,7 +7,6 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Logger;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
@@ -82,13 +81,6 @@ public class PackageResourceTable implements ResourceTable {
   @Override
   public void receive(Visitor visitor) {
     resources.receive(visitor);
-  }
-
-  @Override
-  public boolean hasValue(ResName resName, String qualifiers) {
-    return getValue(resName, qualifiers) != null
-        || getXml(resName, qualifiers) != null
-        || getRawValue(resName, qualifiers) != null;
   }
 
   void addResource(int resId, String type, String name) {

@@ -232,15 +232,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
-    ResName resName = ResName.qualifyResName(name, defPackage, defType);
-
-    // If the resource does not exist then return 0, otherwise ResourceIndex.getResourceId() will generate a placeholder.
-    if (!ResName.ID_TYPE.equals(resName.type)
-        && !resourceTable.hasValue(resName, RuntimeEnvironment.getQualifiers())) {
-      return 0;
-    }
-
-    Integer resourceId = resourceTable.getResourceId(resName);
+    Integer resourceId = resourceTable.getResourceId(ResName.qualifyResName(name, defPackage, defType));
     return resourceId == null ? 0 : resourceId;
   }
 
