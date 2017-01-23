@@ -56,43 +56,6 @@ public class CachedDependencyResolverTest {
   }
 
   @Test
-  public void getLocalArtifactUrls_shouldWriteLocalArtifactsUrlsWhenCacheMiss() throws Exception {
-    DependencyResolver res = createResolver();
-
-    when(internalResolver.getLocalArtifactUrls(dependencies)).thenReturn(urls);
-
-    URL[] urls = res.getLocalArtifactUrls(dependencies);
-
-    assertArrayEquals(this.urls, urls);
-    assertCacheContents(urls);
-  }
-
-  @Test
-  public void getLocalArtifactUrls_shouldReadLocalArtifactUrlsFromCacheIfExists() throws Exception {
-    DependencyResolver res = createResolver();
-    cache.write(CACHE_NAME, urls);
-
-    URL[] urls = res.getLocalArtifactUrls(dependencies);
-
-    verify(internalResolver, never()).getLocalArtifactUrls(dependencies);
-
-    assertArrayEquals(this.urls, urls);
-  }
-
-  @Test
-  public void getLocalArtifactUrls_whenCacheInvalid_shouldFetchDependencyInformation() {
-    CacheValidationStrategy failStrategy = mock(CacheValidationStrategy.class);
-    when(failStrategy.isValid(any(URL[].class))).thenReturn(false);
-
-    DependencyResolver res = new CachedDependencyResolver(internalResolver, cache, cacheNamingStrategy, failStrategy);
-    cache.write(CACHE_NAME, this.urls);
-
-    res.getLocalArtifactUrls(dependencies);
-
-    verify(internalResolver).getLocalArtifactUrls(dependencies);
-  }
-
-  @Test
   public void getLocalArtifactUrl_shouldWriteLocalArtifactUrlWhenCacheMiss() throws Exception{
     DependencyResolver res = createResolver();
 

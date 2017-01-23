@@ -32,17 +32,6 @@ public class LocalDependencyResolver implements DependencyResolver {
     return fileToUrl(validateFile(new File(offlineJarDir, filenameBuilder.toString())));
   }
 
-  @Override
-  public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
-    URL[] urls = new URL[dependencies.length];
-
-    for (int i=0; i<dependencies.length; i++) {
-      urls[i] = getLocalArtifactUrl(dependencies[i]);
-    }
-
-    return urls;
-  }
-
   /**
    * Validates {@code file} is an existing file that is readable.
    *
