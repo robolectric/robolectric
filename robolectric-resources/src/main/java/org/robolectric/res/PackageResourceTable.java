@@ -100,7 +100,7 @@ public class PackageResourceTable implements ResourceTable {
       if (getPackageIdentifier() == 0) {
         this.packageIdentifier = resIdPackageIdentifier;
       } else if (getPackageIdentifier() != resIdPackageIdentifier) {
-        throw new IllegalArgumentException("Attempted to add resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
+        throw new IllegalArgumentException("Incompatible package for " + packageName + ":" + type + "/" + name + " with resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
       }
 
       ResName existingEntry = resourceTable.put(resId, resName);
