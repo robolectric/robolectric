@@ -25,8 +25,6 @@ public interface ResourceTable {
 
   void receive(Visitor visitor);
 
-  boolean hasValue(ResName resName, String qualifiers);
-
   interface Visitor<T> {
 
     void visit(ResName key, Iterable<T> values);
