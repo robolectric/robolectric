@@ -43,8 +43,10 @@ public class DocumentLoader {
 
   private void loadResourceXmlFile(FsFile fsFile, XmlLoader... xmlLoaders) {
     VTDNav vtdNav = parse(fsFile);
+    XpathResourceXmlLoader.XmlNode xmlNode = new XpathResourceXmlLoader.XmlNode(vtdNav);
+    XmlContext xmlContext = new XmlContext(packageName, fsFile);
     for (XmlLoader xmlLoader : xmlLoaders) {
-      xmlLoader.processResourceXml(new XpathResourceXmlLoader.XmlNode(vtdNav), new XmlContext(packageName, fsFile));
+      xmlLoader.processResourceXml(xmlNode, xmlContext);
     }
   }
 
