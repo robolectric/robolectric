@@ -41,11 +41,6 @@ public class ResourceTableFactoryTest {
   }
 
   @Test
-  public void shouldHandleNull() throws Exception {
-    assertThat(appResourceTable.getResourceId(ResName.qualifyResName(AttributeResource.NULL_VALUE, null, null))).isEqualTo(null);
-  }
-
-  @Test
   public void shouldRetainPackageNameForFullyQualifiedQueries() throws Exception {
     assertThat(systemResourceTable.getResName(android.R.id.text1).getFullyQualifiedName()).isEqualTo("android:id/text1");
     assertThat(appResourceTable.getResName(R.id.burritos).getFullyQualifiedName()).isEqualTo("org.robolectric:id/burritos");

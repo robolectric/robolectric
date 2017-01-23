@@ -13,7 +13,6 @@ import java.util.logging.Logger;
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
  */
 public class PackageResourceTable implements ResourceTable {
-  private static final Logger LOGGER = Logger.getLogger(PackageResourceTable.class.getName());
 
   private final ResBunch resources = new ResBunch();
   private final BiMap<Integer, ResName> resourceTable = HashBiMap.create();
@@ -37,18 +36,8 @@ public class PackageResourceTable implements ResourceTable {
 
   @Override
   public Integer getResourceId(ResName resName) {
-    if (resName == null) {
-      return null;
-    }
     Integer id = resourceTable.inverse().get(resName);
-    if (id == null && isAndroidPackage(resName)) {
-      id = androidResourceIdGenerator.generate(resName.type, resName.name);
-      resourceTable.put(id, resName);
-      LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
-    }
-    if (id == null) return 0;
-
-    return id;
+    return id != null ? id : 0;
   }
 
   @Override
@@ -121,10 +110,19 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   void addResource(String type, String name, TypedResource value) {
+    ResName resName = new ResName(packageName, type, name);
+    Integer id = resourceTable.inverse().get(resName);
+    if (id == null && isAndroidPackage(resName)) {
+      id = androidResourceIdGenerator.generate(type, name);
+      ResName existing = resourceTable.put(id, resName);
+      if (existing != null) {
+        throw new IllegalStateException(resName + " assigned ID to already existing " + existing);
+      }
+    }
     resources.put(type, name, value);
   }
 
   private boolean isAndroidPackage(ResName resName) {
-    return "android".equals(resName.packageName) || "".equals(resName.packageName);
+    return "android".equals(resName.packageName);
   }
 }

@@ -14,8 +14,8 @@ public class R {
 
   public static final class styleable {
     public static final int[] SomeStyleable = new int[]{attr.offsetX, attr.offsetY};
-    public static final int SomeStyleable_attr_1 = 0;
-    public static final int SomeStyleable_attr_2 = 1;
+    public static final int SomeStyleable_offsetX = 0;
+    public static final int SomeStyleable_offsetY = 1;
   }
 
   public static final class attr {
