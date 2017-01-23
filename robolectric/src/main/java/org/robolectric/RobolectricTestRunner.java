@@ -273,7 +273,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   @NotNull
   private static PackageResourceTable getCompiletimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
-      compiletimeSdkResourceTable = ResourceTableFactory.newResourceTable("android", new ResourcePath(android.R.class, null, null));
+      compiletimeSdkResourceTable = ResourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
   }

@@ -25,8 +25,7 @@ public class ResourceTableFactoryTest {
         lib1Resources(),
         testResources());
 
-    systemResourceTable = ResourceTableFactory.newResourceTable("android",
-        systemResources());
+    systemResourceTable = ResourceTableFactory.newFrameworkResourceTable(systemResources());
   }
 
   @Test
