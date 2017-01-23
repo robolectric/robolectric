@@ -22,6 +22,7 @@ dependencies {
     compile project(":robolectric-annotations")
     compile project(":robolectric-resources")
     compile project(":robolectric-utils")
+    compile project(":robolectric-junit")
 
     // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.

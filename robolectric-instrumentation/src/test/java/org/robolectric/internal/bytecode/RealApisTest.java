@@ -2,15 +2,15 @@ package org.robolectric.internal.bytecode;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.testing.Pony;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
+import org.robolectric.internal.InstrumentingTestRunner;
+import org.robolectric.internal.bytecode.testing.Pony;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(InstrumentingTestRunner.class)
 public class RealApisTest {
   @Test
   @Config(shadows = {ShimmeryShadowPony.class})

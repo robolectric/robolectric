@@ -10,6 +10,7 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.DeepCloner;
+import org.robolectric.internal.InstrumentingTestRunner;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -101,13 +102,12 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    Statement methodBlock(FrameworkMethod method, Config config, AndroidManifest appManifest, SdkEnvironment environment) {
-      configureShadows(environment, config);
-
-      DeepCloner deepCloner = new DeepCloner(environment.getRobolectricClassLoader());
+    protected Statement methodBlock(FrameworkMethod method) {
+      // this should be the same sandbox as is used by test though! todo
+      SdkEnvironment sandbox = getSandbox(method);
+      DeepCloner deepCloner = new DeepCloner(sandbox.getRobolectricClassLoader());
       parameters = deepCloner.clone(parameters);
-
-      return super.methodBlock(method, config, appManifest, environment);
+      return super.methodBlock(method);
     }
 
     @Override
@@ -116,7 +116,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+    protected InstrumentingTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
       try {
         return new HelperTestRunner(bootstrappedTestClass) {
           @Override

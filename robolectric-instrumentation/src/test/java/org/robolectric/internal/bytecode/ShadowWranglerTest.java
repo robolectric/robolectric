@@ -3,15 +3,14 @@ package org.robolectric.internal.bytecode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.testing.Foo;
-import org.robolectric.internal.bytecode.testing.ShadowFoo;
+import org.robolectric.internal.InstrumentingTestRunner;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.internal.bytecode.testing.Foo;
+import org.robolectric.internal.bytecode.testing.ShadowFoo;
 
 import java.io.IOException;
 
