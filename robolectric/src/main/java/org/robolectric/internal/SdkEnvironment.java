@@ -12,7 +12,6 @@ public class SdkEnvironment {
   private final ShadowInvalidator shadowInvalidator;
   private ShadowMap shadowMap = ShadowMap.EMPTY;
   private PackageResourceTable systemResourceTable;
-  public static final String ANDROID_PACKAGE_NAME = android.R.class.getPackage().getName();
 
   public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
     this.sdkConfig = sdkConfig;
@@ -23,7 +22,7 @@ public class SdkEnvironment {
   public synchronized PackageResourceTable getSystemResourceTable(DependencyResolver dependencyResolver) {
     if (systemResourceTable == null) {
       ResourcePath resourcePath = createRuntimeSdkResourcePath(dependencyResolver);
-      systemResourceTable = ResourceTableFactory.newResourceTable(ANDROID_PACKAGE_NAME, resourcePath);
+      systemResourceTable = ResourceTableFactory.newFrameworkResourceTable(resourcePath);
     }
     return systemResourceTable;
   }

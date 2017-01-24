@@ -7,7 +7,6 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Logger;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
@@ -84,13 +83,6 @@ public class PackageResourceTable implements ResourceTable {
     resources.receive(visitor);
   }
 
-  @Override
-  public boolean hasValue(ResName resName, String qualifiers) {
-    return getValue(resName, qualifiers) != null
-        || getXml(resName, qualifiers) != null
-        || getRawValue(resName, qualifiers) != null;
-  }
-
   void addResource(int resId, String type, String name) {
       if (ResourceIds.isFrameworkResource(resId)) {
         androidResourceIdGenerator.record(resId, type, name);
@@ -100,7 +92,7 @@ public class PackageResourceTable implements ResourceTable {
       if (getPackageIdentifier() == 0) {
         this.packageIdentifier = resIdPackageIdentifier;
       } else if (getPackageIdentifier() != resIdPackageIdentifier) {
-        throw new IllegalArgumentException("Attempted to add resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
+        throw new IllegalArgumentException("Incompatible package for " + packageName + ":" + type + "/" + name + " with resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
       }
 
       ResName existingEntry = resourceTable.put(resId, resName);
