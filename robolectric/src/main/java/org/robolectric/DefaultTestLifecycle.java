@@ -3,9 +3,9 @@ package org.robolectric;
 import android.app.Application;
 
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ClassNameResolver;
+import org.robolectric.android.ClassNameResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.ApplicationTestUtil;
+import org.robolectric.android.ApplicationTestUtil;
 
 import java.lang.reflect.Method;
 

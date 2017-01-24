@@ -16,7 +16,9 @@ import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
+import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
+import org.robolectric.internal.bytecode.InvokeDynamicSupport;
 import org.robolectric.internal.bytecode.RoboConfig;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.internal.bytecode.Sandbox;
@@ -26,9 +28,15 @@ import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.robolectric.util.ReflectionHelpers.newInstance;
+import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
 
@@ -37,7 +45,17 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
 
   public InstrumentingTestRunner(Class<?> klass) throws InitializationError {
     super(klass);
-    interceptors = new Interceptors();
+    interceptors = new Interceptors(findInterceptors());
+  }
+
+  @NotNull
+  protected Collection<Interceptor> findInterceptors() {
+    return Collections.emptyList();
+  }
+
+  @NotNull
+  public Interceptors getInterceptors() {
+    return interceptors;
   }
 
   @Override
@@ -106,14 +124,53 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
 
   @NotNull
   protected Sandbox getSandbox(FrameworkMethod method) {
-    InstrumentationConfiguration instrumentationConfiguration =
-        InstrumentationConfiguration.newBuilder()
-            .build();
-    final InstrumentingClassLoader instrumentingClassLoader =
-        new InstrumentingClassLoader(instrumentationConfiguration, new URL[0]);
+    InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
+    ClassLoader instrumentingClassLoader = new InstrumentingClassLoader(instrumentationConfiguration);
     Sandbox sandbox = new Sandbox(instrumentingClassLoader);
     configureShadows(method, sandbox);
     return sandbox;
+  }
+
+  /**
+   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link FrameworkMethod}.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param method the test method that's about to run
+   * @return an {@link InstrumentationConfiguration}
+   */
+  @NotNull
+  protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
+    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder()
+        .doNotAcquirePackage("java.")
+        .doNotAcquirePackage("sun.")
+        .doNotAcquirePackage("org.robolectric.annotation.")
+        .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.util.")
+        .doNotAcquirePackage("org.junit.");
+
+    for (Class<?> shadowClass : getExtraShadows(method)) {
+      ShadowMap.ShadowInfo shadowInfo = ShadowMap.getShadowInfo(shadowClass);
+      builder.addInstrumentedClass(shadowInfo.getShadowedClassName());
+    }
+
+    return builder.build();
+  }
+
+  protected void configureShadows(FrameworkMethod method, Sandbox sandbox) {
+    ShadowMap.Builder builder = createShadowMap().newBuilder();
+
+    // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
+    // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
+    // not available once we install the Robolectric class loader.
+    Class<?>[] shadows = getExtraShadows(method);
+    if (shadows.length > 0) {
+      builder.addShadowClasses(shadows);
+    }
+    ShadowMap shadowMap = builder.build();
+    sandbox.replaceShadowMap(shadowMap);
+
+    sandbox.classHandler = createClassHandler(shadowMap, sandbox);
   }
 
   protected Statement methodBlock(final FrameworkMethod method) {
@@ -121,6 +178,7 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
       @Override
       public void evaluate() throws Throwable {
         Sandbox sandbox = getSandbox(method);
+        injectEnvironment(sandbox);
 
         final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
@@ -187,33 +245,45 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private void configureShadows(FrameworkMethod method, Sandbox sandbox) {
-    ShadowMap.Builder builder = ShadowMap.EMPTY.newBuilder();
-
-    // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
-    // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
-    // not available once we install the Robolectric class loader.
-    RoboConfig roboConfig = method.getAnnotation(RoboConfig.class);
-    if (roboConfig != null) {
-      builder.addShadowClasses(roboConfig.shadows());
-    }
-    ShadowMap shadowMap = builder.build();
-    sandbox.replaceShadowMap(shadowMap);
-
-    ClassHandler classHandler = createClassHandler(shadowMap);
-    injectEnvironment(sandbox.getRobolectricClassLoader(), classHandler, sandbox.getShadowInvalidator());
+  @NotNull
+  protected Class<?>[] getExtraShadows(FrameworkMethod method) {
+    List<Class<?>> shadowClasses = new ArrayList<>();
+    addShadows(shadowClasses, getTestClass().getAnnotation(RoboConfig.class));
+    addShadows(shadowClasses, method.getAnnotation(RoboConfig.class));
+    return shadowClasses.toArray(new Class[shadowClasses.size()]);
   }
 
-  private ClassHandler createClassHandler(ShadowMap shadowMap) {
+  private void addShadows(List<Class<?>> shadowClasses, RoboConfig annotation) {
+    if (annotation != null) {
+      shadowClasses.addAll(asList(annotation.shadows()));
+    }
+  }
+
+  protected ShadowMap createShadowMap() {
+    return ShadowMap.EMPTY;
+  }
+
+  @NotNull
+  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     return new ShadowWrangler(shadowMap, 0, interceptors);
   }
 
-  public static void injectEnvironment(ClassLoader robolectricClassLoader,
-                                       ClassHandler classHandler, ShadowInvalidator invalidator) {
-    String className = RobolectricInternals.class.getName();
-    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(robolectricClassLoader, className);
+  public void injectEnvironment(Sandbox sandbox) {
+    ClassLoader robolectricClassLoader = sandbox.getRobolectricClassLoader();
+    ClassHandler classHandler = sandbox.getClassHandler();
+    ShadowInvalidator invalidator = sandbox.getShadowInvalidator();
+
+    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(robolectricClassLoader, RobolectricInternals.class.getName());
     ReflectionHelpers.setStaticField(robolectricInternalsClass, "classHandler", classHandler);
     ReflectionHelpers.setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
+    ReflectionHelpers.setStaticField(robolectricInternalsClass, "classLoader", robolectricClassLoader);
+
+    Class<?> invokeDynamicSupportClass = ReflectionHelpers.loadClass(robolectricClassLoader, InvokeDynamicSupport.class.getName());
+    setStaticField(invokeDynamicSupportClass, "INTERCEPTORS", interceptors);
+
+    Class<?> shadowClass = ReflectionHelpers.loadClass(robolectricClassLoader, Shadow.class.getName());
+    setStaticField(shadowClass, "SHADOW_IMPL",
+        newInstance(ReflectionHelpers.loadClass(robolectricClassLoader, ShadowImpl.class.getName())));
   }
 
   protected boolean shouldIgnore(FrameworkMethod method) {

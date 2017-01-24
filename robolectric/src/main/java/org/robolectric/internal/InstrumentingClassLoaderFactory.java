@@ -32,12 +32,10 @@ public class InstrumentingClassLoaderFactory {
 
   private final InstrumentationConfiguration instrumentationConfig;
   private final DependencyResolver dependencyResolver;
-  private final Interceptors interceptors;
 
-  public InstrumentingClassLoaderFactory(InstrumentationConfiguration instrumentationConfig, DependencyResolver dependencyResolver, Interceptors interceptors) {
+  public InstrumentingClassLoaderFactory(InstrumentationConfiguration instrumentationConfig, DependencyResolver dependencyResolver) {
     this.instrumentationConfig = instrumentationConfig;
     this.dependencyResolver = dependencyResolver;
-    this.interceptors = interceptors;
   }
 
   public synchronized SdkEnvironment getSdkEnvironment(SdkConfig sdkConfig) {
@@ -50,11 +48,6 @@ public class InstrumentingClassLoaderFactory {
 
       ClassLoader robolectricClassLoader = new InstrumentingClassLoader(instrumentationConfig, url);
       sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);
-
-      setStaticField(sdkEnvironment.bootstrappedClass(InvokeDynamicSupport.class), "INTERCEPTORS",
-          interceptors);
-      setStaticField(sdkEnvironment.bootstrappedClass(Shadow.class), "SHADOW_IMPL",
-          newInstance(sdkEnvironment.bootstrappedClass(ShadowImpl.class)));
 
       sdkToEnvironment.put(key, sdkEnvironment);
     }

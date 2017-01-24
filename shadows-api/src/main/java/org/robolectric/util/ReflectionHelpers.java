@@ -359,6 +359,10 @@ public class ReflectionHelpers {
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
   }
 
+  public static Object defaultValueForType(String returnType) {
+    return PRIMITIVE_RETURN_VALUES.get(returnType);
+  }
+
   private interface InsideTraversal<R> {
     R run(Class<?> traversalClass) throws Exception;
   }

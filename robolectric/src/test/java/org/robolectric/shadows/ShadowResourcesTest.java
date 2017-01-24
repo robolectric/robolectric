@@ -465,7 +465,7 @@ public class ShadowResourcesTest {
 
     parser = resources.getXml(R.layout.custom_layout);
     assertThat(parser).isNotNull();
-    assertThat(findRootTag(parser)).isEqualTo("org.robolectric.util.CustomView");
+    assertThat(findRootTag(parser)).isEqualTo("org.robolectric.android.CustomView");
 
     parser = resources.getXml(R.menu.test);
     assertThat(parser).isNotNull();

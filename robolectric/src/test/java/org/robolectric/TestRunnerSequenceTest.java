@@ -6,14 +6,14 @@ import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.bytecode.AndroidInterceptors;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
 
 import java.lang.reflect.Method;
@@ -122,9 +122,9 @@ public class TestRunnerSequenceTest {
     }
 
     @NotNull
-    @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-      InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
-      AndroidConfigurer.configure(builder, new AndroidInterceptors().build());
+    @Override
+    protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
+      InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
       builder.doNotAcquireClass(StateHolder.class);
       return builder.build();
     }
@@ -139,9 +139,9 @@ public class TestRunnerSequenceTest {
       return MyTestLifecycle.class;
     }
 
-    @Override protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
+    @Override protected void configureShadows(FrameworkMethod frameworkMethod, Sandbox sandbox) {
       StateHolder.transcript.add("configureShadows");
-      super.configureShadows(sdkEnvironment, config);
+      super.configureShadows(frameworkMethod, sandbox);
     }
   }
 

@@ -26,7 +26,7 @@ import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TestOnClickListener;
+import org.robolectric.android.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

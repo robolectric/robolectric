@@ -2,11 +2,11 @@ package org.robolectric.internal.bytecode;
 
 import java.util.Arrays;
 
-class InvocationProfile {
-  final Class clazz;
-  final String methodName;
-  final boolean isStatic;
-  final String[] paramTypes;
+public class InvocationProfile {
+  public final Class clazz;
+  public final String methodName;
+  public final boolean isStatic;
+  public final String[] paramTypes;
   private final boolean isDeclaredOnObject;
 
   public InvocationProfile(String methodSignatureString, boolean isStatic, ClassLoader classLoader) {

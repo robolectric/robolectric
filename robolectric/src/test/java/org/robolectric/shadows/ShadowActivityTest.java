@@ -45,7 +45,7 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
-import org.robolectric.util.ActivityController;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.util.TestRunnable;
 
 import java.io.File;

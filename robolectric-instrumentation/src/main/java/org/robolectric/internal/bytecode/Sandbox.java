@@ -7,6 +7,7 @@ import java.util.Set;
 public class Sandbox {
   private final ClassLoader robolectricClassLoader;
   private final ShadowInvalidator shadowInvalidator;
+  public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
   public Sandbox(ClassLoader robolectricClassLoader) {
@@ -38,4 +39,7 @@ public class Sandbox {
     }
   }
 
+  public ClassHandler getClassHandler() {
+    return classHandler;
+  }
 }

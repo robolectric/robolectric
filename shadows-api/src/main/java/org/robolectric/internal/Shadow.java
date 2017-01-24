@@ -1,5 +1,6 @@
 package org.robolectric.internal;
 
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class Shadow {
@@ -11,7 +12,12 @@ public class Shadow {
   }
 
   public static Object newInstanceOf(String className) {
-    return SHADOW_IMPL.newInstanceOf(className);
+    try {
+      Class<?> aClass = Shadow.class.getClassLoader().loadClass(className);
+      return SHADOW_IMPL.newInstanceOf(aClass);
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
   }
 
   public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {

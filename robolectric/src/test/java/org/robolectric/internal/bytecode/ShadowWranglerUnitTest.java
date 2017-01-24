@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Function;
@@ -18,7 +19,7 @@ public class ShadowWranglerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    interceptors = new AndroidInterceptors().build();
+    interceptors = new Interceptors(AndroidInterceptors.all());
     shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, 23, interceptors);
   }
 

@@ -3,8 +3,10 @@ package org.robolectric.internal.bytecode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
+import org.robolectric.internal.Shadow;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,6 +23,12 @@ public class InstrumentationConfiguration {
   public static Builder newBuilder() {
     return new Builder();
   }
+
+  private static final Set<String> CLASSES_TO_ALWAYS_ACQUIRE = Sets.newHashSet(
+      RobolectricInternals.class.getName(),
+      InvokeDynamicSupport.class.getName(),
+      Shadow.class.getName()
+  );
 
   private final List<String> instrumentedPackages;
   private final Set<String> instrumentedClasses;
@@ -65,6 +73,10 @@ public class InstrumentationConfiguration {
    * @return  True if the class should be loaded.
    */
   public boolean shouldAcquire(String name) {
+    if (CLASSES_TO_ALWAYS_ACQUIRE.contains(name)) {
+      return true;
+    }
+
     // TODO: kill this:
     // the org.robolectric.res and org.robolectric.manifest packages live in the base classloader, but not its tests; yuck.
     int lastDot = name.lastIndexOf('.');
@@ -166,6 +178,19 @@ public class InstrumentationConfiguration {
     private final Collection<String> packagesToNotAcquire = new HashSet<>();
     private final Collection<String> instrumentedClasses = new HashSet<>();
     private final Collection<String> classesToNotInstrument = new HashSet<>();
+
+    public Builder() {
+    }
+
+    public Builder(InstrumentationConfiguration classLoaderConfig) {
+      instrumentedPackages.addAll(classLoaderConfig.instrumentedPackages);
+      interceptedMethods.addAll(classLoaderConfig.interceptedMethods);
+      classNameTranslations.putAll(classLoaderConfig.classNameTranslations);
+      classesToNotAcquire.addAll(classLoaderConfig.classesToNotAcquire);
+      packagesToNotAcquire.addAll(classLoaderConfig.packagesToNotAcquire);
+      instrumentedClasses.addAll(classLoaderConfig.instrumentedClasses);
+      classesToNotInstrument.addAll(classLoaderConfig.classesToNotInstrument);
+    }
 
     public Builder doNotAcquireClass(Class<?> clazz) {
       doNotAcquireClass(clazz.getName());

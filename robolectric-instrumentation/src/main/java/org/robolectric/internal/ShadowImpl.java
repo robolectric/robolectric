@@ -14,18 +14,6 @@ public class ShadowImpl implements IShadow {
     return ReflectionHelpers.callConstructor(clazz);
   }
 
-  @Deprecated
-  public Object newInstanceOf(String className) {
-    try {
-      Class<?> clazz = Class.forName(className);
-      if (clazz != null) {
-        return newInstanceOf(clazz);
-      }
-    } catch (ClassNotFoundException e) {
-    }
-    return null;
-  }
-
   public <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
     return ReflectionHelpers.callConstructor(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
   }

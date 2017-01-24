@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ParallelUniverse;
+import org.robolectric.android.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;

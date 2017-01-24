@@ -15,7 +15,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.CustomView;
+import org.robolectric.android.CustomView;
 
 import java.util.ArrayList;
 import java.util.List;

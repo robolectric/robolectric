@@ -1,14 +1,17 @@
 package org.robolectric.internal.bytecode;
 
+import org.robolectric.internal.ShadowedObject;
+import org.robolectric.util.ReflectionHelpers;
+
 import java.lang.invoke.CallSite;
 import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SwitchPoint;
-import org.robolectric.internal.ShadowedObject;
 
 import static java.lang.invoke.MethodHandles.catchException;
+import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.exactInvoker;
 import static java.lang.invoke.MethodHandles.filterArguments;
@@ -77,12 +80,36 @@ public class InvokeDynamicSupport {
   public static CallSite bootstrapIntrinsic(MethodHandles.Lookup caller, String name,
       MethodType type, String callee) throws IllegalAccessException {
 
-    MethodHandle mh = INTERCEPTORS.getMethodHandle(callee, name, type);
+    MethodHandle mh = getMethodHandle(callee, name, type);
     if (mh == null) {
       throw new IllegalArgumentException("Could not find intrinsic for " + callee + ":" + name);
     }
 
     return new ConstantCallSite(mh.asType(type));
+  }
+
+  private static final MethodHandle NOTHING = constant(Void.class, null).asType(methodType(void.class));
+
+  private static MethodHandle getMethodHandle(String className, String methodName, MethodType type) {
+    Interceptor interceptor = INTERCEPTORS.findInterceptor(className, methodName);
+    if (interceptor != null) {
+      try {
+        // reload interceptor in sandbox...
+        Class<Interceptor> theClass =
+            (Class<Interceptor>) ReflectionHelpers.loadClass(
+                RobolectricInternals.getClassLoader(),
+                interceptor.getClass().getName()).asSubclass(Interceptor.class);
+        return ReflectionHelpers.newInstance(theClass).getMethodHandle(methodName, type);
+      } catch (NoSuchMethodException | IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    if (type.parameterCount() != 0) {
+      return dropArguments(NOTHING, 0, type.parameterArray());
+    } else {
+      return NOTHING;
+    }
   }
 
   private static MethodHandle bindInitCallSite(RoboCallSite site) {

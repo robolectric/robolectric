@@ -5,8 +5,6 @@ import org.robolectric.util.ReflectionHelpers;
 public interface IShadow {
   <T> T newInstanceOf(Class<T> clazz);
 
-  Object newInstanceOf(String className);
-
   <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params);
 
   <T> T directlyOn(T shadowedObject, Class<T> clazz);

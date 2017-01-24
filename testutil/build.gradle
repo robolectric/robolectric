@@ -1,0 +1,9 @@
+new RoboJavaModulePlugin().apply(project)
+
+dependencies {
+    // Compile dependencies
+    compileOnly "junit:junit:4.12"
+    compileOnly "com.intellij:annotations:12.0"
+
+    // Testing dependencies
+}

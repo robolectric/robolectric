@@ -14,6 +14,9 @@ public class RobolectricInternals {
   private static ShadowInvalidator shadowInvalidator;
 
   @SuppressWarnings("UnusedDeclaration")
+  private static InstrumentingClassLoader classLoader;
+
+  @SuppressWarnings("UnusedDeclaration")
   public static void classInitializing(Class clazz) throws Exception {
     classHandler.classInitializing(clazz);
   }
@@ -56,5 +59,9 @@ public class RobolectricInternals {
 
   public static ShadowInvalidator getShadowInvalidator() {
     return shadowInvalidator;
+  }
+
+  public static InstrumentingClassLoader getClassLoader() {
+    return classLoader;
   }
 }

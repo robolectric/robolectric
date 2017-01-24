@@ -8,8 +8,8 @@ import android.widget.LinearLayout;
 
 import org.robolectric.Robolectric;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.util.ActivityController;
-import org.robolectric.util.ComponentController;
+import org.robolectric.android.controller.ActivityController;
+import org.robolectric.android.controller.ComponentController;
 
 /**
  * Version of FragmentController that can be used for android.support.v4.Fragment. Only

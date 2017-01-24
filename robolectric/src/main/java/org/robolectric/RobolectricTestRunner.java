@@ -5,7 +5,6 @@ import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.Ignore;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -17,18 +16,16 @@ import org.robolectric.internal.InstrumentingTestRunner;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
-import org.robolectric.internal.ParallelUniverse;
+import org.robolectric.android.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.bytecode.AndroidInterceptors;
+import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
-import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
@@ -56,6 +53,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +72,6 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
 
   private final SdkPicker sdkPicker;
   private final ConfigMerger configMerger;
-  private final Interceptors interceptors;
 
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -94,7 +91,6 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
     super(testClass);
     this.configMerger = createConfigMerger();
     this.sdkPicker = createSdkPicker();
-    this.interceptors = createInterceptors();
   }
 
   @SuppressWarnings("unchecked")
@@ -147,13 +143,14 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
-   * @param sdkConfig the {@link SdkConfig} in effect for this test
+   * @param sandbox the {@link SdkConfig} in effect for this test
    * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
    * @since 2.3
    */
+  @Override
   @NotNull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
-    return new ShadowWrangler(shadowMap, sdkConfig.getApiLevel(), interceptors);
+  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
+    return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdkConfig().getApiLevel(), getInterceptors());
   }
 
   /**
@@ -182,9 +179,10 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
     return new SdkPicker();
   }
 
+  @Override
   @NotNull // todo
-  private Interceptors createInterceptors() {
-    return new AndroidInterceptors().build();
+  protected Collection<Interceptor> findInterceptors() {
+    return AndroidInterceptors.all();
   }
 
   /**
@@ -192,14 +190,31 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
    *
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
-   * @param config the merged configuration for the test that's about to run
+   * @param config the merged configuration for the test that's about to run -- todo
    * @return an {@link InstrumentationConfiguration}
+   * @deprecated Override {@link #createClassLoaderConfig(FrameworkMethod)} instead
    */
+  @Deprecated
   @NotNull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-    Builder builder = InstrumentationConfiguration.newBuilder();
-    builder = AndroidConfigurer.withConfig(builder, config);
-    return AndroidConfigurer.configure(builder, interceptors).build();
+    FrameworkMethod method = ((MethodPassThrough) config).method;
+    Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
+    AndroidConfigurer.configure(builder, getInterceptors());
+    AndroidConfigurer.withConfig(builder, config);
+    return builder.build();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @NotNull
+  protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
+    return createClassLoaderConfig(new Config.Builder(((RobolectricFrameworkMethod) method).config) {
+      @Override
+      public Config.Implementation build() {
+        return new MethodPassThrough(method, sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+      }
+    }.build());
   }
 
   /**
@@ -212,14 +227,6 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
   @NotNull
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
-  }
-
-  public static void injectEnvironment(ClassLoader robolectricClassLoader,
-      ClassHandler classHandler, ShadowInvalidator invalidator) {
-    String className = RobolectricInternals.class.getName();
-    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(robolectricClassLoader, className);
-    ReflectionHelpers.setStaticField(robolectricInternalsClass, "classHandler", classHandler);
-    ReflectionHelpers.setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
   }
 
   @Override
@@ -273,18 +280,19 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
   private ParallelUniverseInterface parallelUniverseInterface;
 
   @Override
+  @NotNull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     final Config config = roboMethod.config;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
     InstrumentingClassLoaderFactory instrumentingClassLoaderFactory =
-        new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver(), interceptors);
-    final SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig);
+        new InstrumentingClassLoaderFactory(createClassLoaderConfig(method), getJarResolver());
+    SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig);
 
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
     // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
     // not available once we install the Robolectric class loader.
-    configureShadows(sdkEnvironment, config);
+    configureShadows(method, sdkEnvironment);
     return sdkEnvironment;
   }
 
@@ -409,20 +417,10 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
     return new Config.Builder().build();
   }
 
-  protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
-    ShadowMap shadowMap = createShadowMap();
-
-    if (config != null) {
-      Class<?>[] shadows = config.shadows();
-      if (shadows.length > 0) {
-        shadowMap = shadowMap.newBuilder().addShadowClasses(shadows).build();
-      }
-    }
-
-    sdkEnvironment.replaceShadowMap(shadowMap);
-
-    ClassHandler classHandler = createClassHandler(shadowMap, sdkEnvironment.getSdkConfig());
-    injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
+  @NotNull
+  protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
+    Config config = ((RobolectricFrameworkMethod) frameworkMethod).config;
+    return config.shadows();
   }
 
   ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
@@ -466,8 +464,13 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
     return resourceTable;
   }
 
-  protected ShadowMap createShadowMap() {
-    return ShadowMap.EMPTY;
+  private static class MethodPassThrough extends Config.Implementation {
+    private FrameworkMethod method;
+
+    private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+      super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+      this.method = method;
+    }
   }
 
   public class HelperTestRunner extends InstrumentingTestRunner.HelperTestRunner {

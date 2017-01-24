@@ -362,7 +362,7 @@ public class DefaultPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
   public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
-    ProviderInfo providerInfo = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.util.ContentProviderControllerTest$MyContentProvider"), 0);
+    ProviderInfo providerInfo = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
 
     assertThat(providerInfo.readPermission).isEqualTo("READ_PERMISSION");

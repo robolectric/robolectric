@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,7 +15,7 @@ public class InstrumentationConfigurationTest {
   @Before
   public void setUp() throws Exception {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
-    AndroidConfigurer.configure(builder, new AndroidInterceptors().build());
+    AndroidConfigurer.configure(builder, new Interceptors(AndroidInterceptors.all()));
     config = builder.build();
   }
 

@@ -4,6 +4,7 @@ import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
 
 import java.lang.reflect.Modifier;
@@ -30,7 +31,10 @@ public class AndroidInstrumentingClassLoaderTest {
 
   @NotNull
   private InstrumentationConfiguration.Builder configureBuilder() {
-    return AndroidConfigurer.configure(InstrumentationConfiguration.newBuilder(), new AndroidInterceptors().build());
+    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
+    builder.doNotAcquirePackage("java.");
+    AndroidConfigurer.configure(builder, new Interceptors(AndroidInterceptors.all()));
+    return builder;
   }
 
   private Class<?> loadClass(Class<?> clazz) throws ClassNotFoundException {

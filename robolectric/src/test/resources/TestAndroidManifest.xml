@@ -29,7 +29,7 @@
     <activity android:name=".shadows.ShadowActivityTest$LabelTestActivity3"
               android:label="@string/activity_name"/>
     
-    <activity android:name=".util.ActivityControllerTest$ConfigAwareActivity"
+    <activity android:name=".android.controller.ActivityControllerTest$ConfigAwareActivity"
               android:configChanges="fontScale" />
   </application>
 </manifest>

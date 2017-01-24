@@ -59,7 +59,7 @@ public class ShadowMap {
     return null;
   }
 
-  private static ShadowInfo getShadowInfo(Class<?> clazz) {
+  public static ShadowInfo getShadowInfo(Class<?> clazz) {
     Implements annotation = clazz.getAnnotation(Implements.class);
     if (annotation == null) {
       throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
@@ -177,7 +177,7 @@ public class ShadowMap {
     }
   }
 
-  private static class ShadowInfo {
+  public static class ShadowInfo {
     private final String shadowedClassName;
     private final ShadowConfig shadowConfig;
 
