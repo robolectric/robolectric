@@ -12,8 +12,7 @@ import java.util.Date;
 import java.util.zip.CRC32;
 
 public class CachedDependencyResolver implements DependencyResolver {
-  private final static String CACHE_PREFIX_1 = "localArtifactUrls";
-  private final static String CACHE_PREFIX_2 = "localArtifactUrl";
+  private final static String CACHE_PREFIX = "localArtifactUrl";
 
   private final DependencyResolver dependencyResolver;
   private final CacheNamingStrategy cacheNamingStrategy;
@@ -32,22 +31,8 @@ public class CachedDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
-    final String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
-    final URL[] urlsFromCache = cache.load(cacheName, URL[].class);
-
-    if (urlsFromCache != null && cacheValidationStrategy.isValid(urlsFromCache)) {
-      return urlsFromCache;
-    }
-
-    final URL[] urls = dependencyResolver.getLocalArtifactUrls(dependencies);
-    cache.write(cacheName, urls);
-    return urls;
-  }
-
-  @Override
   public URL getLocalArtifactUrl(DependencyJar dependency) {
-    final String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_2, dependency);
+    final String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX, dependency);
     final URL urlFromCache = cache.load(cacheName, URL.class);
 
     if (urlFromCache != null && cacheValidationStrategy.isValid(urlFromCache)) {
