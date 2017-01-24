@@ -177,8 +177,8 @@ public class ResBundleTest {
 
     TypedResource firstValue = new TypedResource<>("first_value", ResType.CHAR_SEQUENCE, xmlContext);
     TypedResource secondValue = new TypedResource<>("second_value", ResType.CHAR_SEQUENCE, xmlContext);
-    bundle.put("string", "resource_name", firstValue);
-    bundle.put("string", "resource_name", secondValue);
+    bundle.put(new ResName("org.robolectric", "string", "resource_name"), firstValue);
+    bundle.put(new ResName("org.robolectric", "string", "resource_name"), secondValue);
 
     assertThat(bundle.get(new ResName("org.robolectric", "string", "resource_name"), "").getData()).isEqualTo("first_value");
   }

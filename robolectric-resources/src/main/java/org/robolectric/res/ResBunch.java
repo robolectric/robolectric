@@ -7,9 +7,9 @@ import org.jetbrains.annotations.NotNull;
 public class ResBunch {
   private final Map<String, ResBundle> types = new LinkedHashMap<>();
 
-  public void put(String attrType, String name, TypedResource value) {
-    ResBundle bundle = getBundle(attrType);
-    bundle.put(attrType, name, value);
+  public void put(ResName resName, TypedResource value) {
+    ResBundle bundle = getBundle(resName.type);
+    bundle.put(resName, value);
   }
 
   private ResBundle getBundle(String attrType) {
