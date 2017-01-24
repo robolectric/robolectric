@@ -26,28 +26,21 @@ public class PropertiesDependencyResolverTest {
   }
 
   @Test
-  public void whenAbsolutePathIsProvidedInProperties_shouldReturnFileUrls() throws Exception {
+  public void whenAbsolutePathIsProvidedInProperties_shouldReturnFileUrl() throws Exception {
     DependencyResolver resolver = new PropertiesDependencyResolver(
-        propsFile("com.group\\:example\\:1.3: /path/1:/path/2\n"), mock);
+        propsFile("com.group\\:example\\:1.3: /path/1\n"), mock);
 
-    URL[] urls = resolver.getLocalArtifactUrls(new DependencyJar("com.group", "example", "1.3", null));
-    assertThat(urls).containsExactly(
-        new URL("file:///path/1"),
-        new URL("file:///path/2")
-    );
+    URL url = resolver.getLocalArtifactUrl(new DependencyJar("com.group", "example", "1.3", null));
+    assertThat(url).isEqualTo(new URL("file:///path/1"));
   }
 
   @Test
-  public void whenRelativePathIsProvidedInProperties_shouldReturnFileUrls() throws Exception {
+  public void whenRelativePathIsProvidedInProperties_shouldReturnFileUrl() throws Exception {
     DependencyResolver resolver = new PropertiesDependencyResolver(
-        propsFile("com.group\\:example\\:1.3: path/1:/path/2:path/3\n"), mock);
+        propsFile("com.group\\:example\\:1.3: path/1\n"), mock);
 
-    URL[] urls = resolver.getLocalArtifactUrls(new DependencyJar("com.group", "example", "1.3", null));
-    assertThat(urls).containsExactly(
-        new URL("file://" + temporaryFolder.getRoot() + "/path/1"),
-        new URL("file:///path/2"),
-        new URL("file://" + temporaryFolder.getRoot() + "/path/3")
-    );
+    URL url = resolver.getLocalArtifactUrl(new DependencyJar("com.group", "example", "1.3", null));
+    assertThat(url).isEqualTo(new URL("file://" + temporaryFolder.getRoot() + "/path/1"));
   }
 
   @Test
@@ -57,9 +50,8 @@ public class PropertiesDependencyResolverTest {
 
     DependencyJar dependencyJar =  new DependencyJar("com.group", "example", "1.3", null);
     when(mock.getLocalArtifactUrl(dependencyJar)).thenReturn(new URL("file:///path/3"));
-    URL[] urls = resolver.getLocalArtifactUrls(dependencyJar);
-    assertThat(urls).containsExactly(
-        new URL("file:///path/3")
+    URL url = resolver.getLocalArtifactUrl(dependencyJar);
+    assertThat(url).isEqualTo(new URL("file:///path/3")
     );
   }
 
@@ -70,7 +62,7 @@ public class PropertiesDependencyResolverTest {
 
     DependencyJar dependencyJar =  new DependencyJar("com.group", "example", "1.3", null);
     try {
-      resolver.getLocalArtifactUrls(dependencyJar);
+      resolver.getLocalArtifactUrl(dependencyJar);
       fail("should have failed");
     } catch (Exception e) {
       assertThat(e.getMessage()).contains("no artifacts found for " + dependencyJar);
