@@ -18,14 +18,10 @@ import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.InvokeDynamicSupport;
 import org.robolectric.internal.bytecode.RoboConfig;
-import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -35,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
@@ -180,7 +175,7 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
       @Override
       public void evaluate() throws Throwable {
         Sandbox sandbox = getSandbox(method);
-        injectEnvironment(sandbox);
+        sandbox.injectEnvironment(getInterceptors());
 
         final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
@@ -268,24 +263,6 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
   @NotNull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     return new ShadowWrangler(shadowMap, 0, interceptors);
-  }
-
-  public void injectEnvironment(Sandbox sandbox) {
-    ClassLoader robolectricClassLoader = sandbox.getRobolectricClassLoader();
-    ClassHandler classHandler = sandbox.getClassHandler();
-    ShadowInvalidator invalidator = sandbox.getShadowInvalidator();
-
-    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(robolectricClassLoader, RobolectricInternals.class.getName());
-    ReflectionHelpers.setStaticField(robolectricInternalsClass, "classHandler", classHandler);
-    ReflectionHelpers.setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
-    ReflectionHelpers.setStaticField(robolectricInternalsClass, "classLoader", robolectricClassLoader);
-
-    Class<?> invokeDynamicSupportClass = ReflectionHelpers.loadClass(robolectricClassLoader, InvokeDynamicSupport.class.getName());
-    setStaticField(invokeDynamicSupportClass, "INTERCEPTORS", interceptors);
-
-    Class<?> shadowClass = ReflectionHelpers.loadClass(robolectricClassLoader, Shadow.class.getName());
-    setStaticField(shadowClass, "SHADOW_IMPL",
-        newInstance(ReflectionHelpers.loadClass(robolectricClassLoader, ShadowImpl.class.getName())));
   }
 
   protected boolean shouldIgnore(FrameworkMethod method) {

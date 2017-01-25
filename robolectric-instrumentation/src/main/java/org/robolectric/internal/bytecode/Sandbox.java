@@ -1,8 +1,14 @@
 package org.robolectric.internal.bytecode;
 
 import org.robolectric.internal.InvokeDynamic;
+import org.robolectric.internal.Shadow;
+import org.robolectric.internal.ShadowImpl;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Set;
+
+import static org.robolectric.util.ReflectionHelpers.newInstance;
+import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 public class Sandbox {
   private final ClassLoader robolectricClassLoader;
@@ -30,6 +36,10 @@ public class Sandbox {
     return shadowInvalidator;
   }
 
+  public ClassHandler getClassHandler() {
+    return classHandler;
+  }
+
   public void replaceShadowMap(ShadowMap shadowMap) {
     if (InvokeDynamic.ENABLED) {
       ShadowMap oldShadowMap = this.shadowMap;
@@ -39,7 +49,20 @@ public class Sandbox {
     }
   }
 
-  public ClassHandler getClassHandler() {
-    return classHandler;
+  public void injectEnvironment(Interceptors interceptors) {
+    ClassLoader robolectricClassLoader = getRobolectricClassLoader();
+    ClassHandler classHandler = getClassHandler();
+    ShadowInvalidator invalidator = getShadowInvalidator();
+
+    Class<?> robolectricInternalsClass = bootstrappedClass(RobolectricInternals.class);
+    setStaticField(robolectricInternalsClass, "classHandler", classHandler);
+    setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
+    setStaticField(robolectricInternalsClass, "classLoader", robolectricClassLoader);
+
+    Class<?> invokeDynamicSupportClass = bootstrappedClass(InvokeDynamicSupport.class);
+    setStaticField(invokeDynamicSupportClass, "INTERCEPTORS", interceptors);
+
+    Class<?> shadowClass = bootstrappedClass(Shadow.class);
+    setStaticField(shadowClass, "SHADOW_IMPL", newInstance(bootstrappedClass(ShadowImpl.class)));
   }
 }
