@@ -1,13 +1,10 @@
-package org.robolectric.res.builder;
+package org.robolectric.android;
 
 import android.content.Intent;
-
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.robolectric.android.DefaultPackageManager;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DefaultPackageManagerIntentComparatorTest {
 

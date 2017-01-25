@@ -17,7 +17,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.res.builder.XmlResourceParserImpl;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 

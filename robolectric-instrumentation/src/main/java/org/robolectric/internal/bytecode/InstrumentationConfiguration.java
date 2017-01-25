@@ -77,14 +77,6 @@ public class InstrumentationConfiguration {
       return true;
     }
 
-    // TODO: kill this:
-    // the org.robolectric.res and org.robolectric.manifest packages live in the base classloader, but not its tests; yuck.
-    int lastDot = name.lastIndexOf('.');
-    String pkgName = name.substring(0, lastDot == -1 ? 0 : lastDot);
-    if (pkgName.equals("org.robolectric.res") || (pkgName.equals("org.robolectric.manifest"))) {
-      return name.contains("Test");
-    }
-
     // Internal android R class must be loaded from the framework resources in the framework jar.
     if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) {
       return true;

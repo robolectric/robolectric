@@ -17,7 +17,7 @@ import org.robolectric.android.controller.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.builder.XmlResourceParserImpl;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.*;
 import org.w3c.dom.Document;

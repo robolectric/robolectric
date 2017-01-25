@@ -1,4 +1,4 @@
-package org.robolectric.res.builder;
+package org.robolectric.android;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
@@ -35,14 +35,14 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   /**
    * All the parser features currently supported by Android.
    */
-  static final String[] AVAILABLE_FEATURES = {
+  public static final String[] AVAILABLE_FEATURES = {
       XmlResourceParser.FEATURE_PROCESS_NAMESPACES,
       XmlResourceParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES
   };
   /**
    * All the parser features currently NOT supported by Android.
    */
-  static final String[] UNAVAILABLE_FEATURES = {
+  public static final String[] UNAVAILABLE_FEATURES = {
       XmlResourceParser.FEATURE_PROCESS_DOCDECL,
       XmlResourceParser.FEATURE_VALIDATION
   };
@@ -248,7 +248,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     return map.item(index);
   }
 
-  String getAttribute(String namespace, String name) {
+  public String getAttribute(String namespace, String name) {
     if (currentNode == null) {
       return null;
     }

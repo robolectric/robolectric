@@ -29,7 +29,7 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
-import org.robolectric.res.builder.XmlResourceParserImpl;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 

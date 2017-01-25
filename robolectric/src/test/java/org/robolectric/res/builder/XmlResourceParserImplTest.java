@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;

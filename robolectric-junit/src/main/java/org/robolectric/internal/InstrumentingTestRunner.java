@@ -146,6 +146,8 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("sun.")
         .doNotAcquirePackage("org.robolectric.annotation.")
         .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.manifest.")
+        .doNotAcquirePackage("org.robolectric.res.")
         .doNotAcquirePackage("org.robolectric.util.")
         .doNotAcquirePackage("org.junit.");
 

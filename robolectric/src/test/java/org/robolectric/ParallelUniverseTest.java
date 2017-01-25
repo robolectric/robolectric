@@ -14,7 +14,7 @@ import org.robolectric.android.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;
-import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.android.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 

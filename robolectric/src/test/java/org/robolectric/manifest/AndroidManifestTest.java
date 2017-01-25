@@ -42,7 +42,7 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
     assertThat(config.getBroadcastReceivers()).hasSize(8);
 
-    assertThat(config.getBroadcastReceivers().get(0).getClassName()).isEqualTo("org.robolectric.manifest.AndroidManifestTest.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(0).getClassName()).isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
     assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
     assertThat(config.getBroadcastReceivers().get(1).getClassName()).isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
@@ -403,12 +403,5 @@ public class AndroidManifestTest {
 
   private boolean hasFlag(final int flags, final int flag) {
     return (flags & flag) != 0;
-  }
-
-  @SuppressWarnings("unused")
-  public static class ConfigTestReceiver extends BroadcastReceiver {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-    }
   }
 }

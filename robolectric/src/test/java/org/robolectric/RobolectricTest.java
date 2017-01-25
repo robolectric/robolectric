@@ -20,7 +20,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.android.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;

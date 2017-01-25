@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.android;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +11,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceTable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;

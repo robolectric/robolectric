@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.android;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;

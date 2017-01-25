@@ -3,7 +3,7 @@
   <uses-sdk android:targetSdkVersion="18"/>
 
   <application>
-    <receiver android:name="org.robolectric.manifest.AndroidManifestTest.ConfigTestReceiver"
+    <receiver android:name="org.robolectric.ConfigTestReceiver.InnerReceiver"
           android:permission="com.ignored.PERM">
       <intent-filter>
         <action android:name="org.robolectric.ACTION1"/>

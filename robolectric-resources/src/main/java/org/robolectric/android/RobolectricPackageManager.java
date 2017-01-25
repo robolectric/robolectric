@@ -1,4 +1,4 @@
-package org.robolectric.res.builder;
+package org.robolectric.android;
 
 import android.content.ComponentName;
 import android.content.Intent;

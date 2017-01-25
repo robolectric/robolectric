@@ -15,7 +15,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(MultiApiRobolectricTestRunner.class)
+@RunWith(RobolectricTestRunner.class) @Config(sdk = Config.ALL_SDKS)
 public class LoadWeirdClassesTest {
   @Test @Config(sdk = KITKAT)
   public void shouldLoadDisplay() throws Exception {

@@ -1,4 +1,4 @@
-package org.robolectric.res.builder;
+package org.robolectric.android;
 
 import android.app.PackageInstallObserver;
 import android.content.ComponentName;

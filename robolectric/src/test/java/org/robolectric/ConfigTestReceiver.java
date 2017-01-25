@@ -10,4 +10,10 @@ public class ConfigTestReceiver extends BroadcastReceiver {
   public void onReceive(Context context, Intent intent) {
   }
 
+  static public class InnerReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+
+    }
+  }
 }
