@@ -167,7 +167,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     ShadowMap shadowMap = builder.build();
     sandbox.replaceShadowMap(shadowMap);
 
-    sandbox.classHandler = createClassHandler(shadowMap, sandbox);
+    sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
   }
 
   protected Statement methodBlock(final FrameworkMethod method) {
@@ -175,7 +175,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       @Override
       public void evaluate() throws Throwable {
         Sandbox sandbox = getSandbox(method);
-        sandbox.injectEnvironment(getInterceptors());
+
+        // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
+        // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
+        // not available once we install the Robolectric class loader.
+        configureShadows(method, sandbox);
 
         final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());

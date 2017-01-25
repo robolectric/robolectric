@@ -60,8 +60,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Installs a {@link SandboxClassLoader} and
- * {@link ResourceTable} in order to provide a simulation of the Android runtime environment.
+ * Installs a {@link SandboxClassLoader} and {@link ResourceTable} in order to
+ * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends SandboxTestRunner {
 
@@ -285,15 +285,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
-    SandboxFactory sandboxFactory =
-        new SandboxFactory(createClassLoaderConfig(method), getJarResolver());
-    SdkEnvironment sdkEnvironment = sandboxFactory.getSdkEnvironment(sdkConfig);
-
-    // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
-    // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
-    // not available once we install the Robolectric class loader.
-    configureShadows(method, sdkEnvironment);
-    return sdkEnvironment;
+    return SandboxFactory.INSTANCE.getSdkEnvironment(
+        createClassLoaderConfig(method), getJarResolver(), sdkConfig);
   }
 
   @Override

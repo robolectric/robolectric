@@ -590,6 +590,7 @@ public class SandboxClassLoaderTest {
     builder.doNotAcquirePackage("java.")
         .doNotAcquirePackage("sun.")
         .doNotAcquirePackage("com.sun.")
+        .doNotAcquirePackage("org.robolectric.internal.")
         .doNotAcquireClass(ClassHandler.class)
         .doNotAcquireClass(ClassHandler.Plan.class)
         .doNotAcquireClass(Interceptors.class)

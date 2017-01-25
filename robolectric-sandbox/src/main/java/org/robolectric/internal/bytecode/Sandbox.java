@@ -36,10 +36,6 @@ public class Sandbox {
     return shadowInvalidator;
   }
 
-  public ClassHandler getClassHandler() {
-    return classHandler;
-  }
-
   public void replaceShadowMap(ShadowMap shadowMap) {
     if (InvokeDynamic.ENABLED) {
       ShadowMap oldShadowMap = this.shadowMap;
@@ -49,9 +45,10 @@ public class Sandbox {
     }
   }
 
-  public void injectEnvironment(Interceptors interceptors) {
+  public void configure(ClassHandler classHandler, Interceptors interceptors) {
+    this.classHandler = classHandler;
+
     ClassLoader robolectricClassLoader = getRobolectricClassLoader();
-    ClassHandler classHandler = getClassHandler();
     ShadowInvalidator invalidator = getShadowInvalidator();
 
     Class<?> robolectricInternalsClass = bootstrappedClass(RobolectricInternals.class);

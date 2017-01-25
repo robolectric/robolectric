@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.runner.Runner;
 import org.junit.runners.Parameterized;
@@ -99,13 +100,15 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       validateOnlyOneConstructor(errors);
     }
 
+    @NotNull
     @Override
-    protected Statement methodBlock(FrameworkMethod method) {
-      // this should be the same sandbox as is used by test though! todo
-      SdkEnvironment sandbox = getSandbox(method);
+    protected SdkEnvironment getSandbox(FrameworkMethod method) {
+      SdkEnvironment sandbox = super.getSandbox(method);
+
       DeepCloner deepCloner = new DeepCloner(sandbox.getRobolectricClassLoader());
       parameters = deepCloner.clone(parameters);
-      return super.methodBlock(method);
+
+      return sandbox;
     }
 
     @Override

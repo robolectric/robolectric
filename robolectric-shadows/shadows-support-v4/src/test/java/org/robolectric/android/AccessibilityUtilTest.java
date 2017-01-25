@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.android;
 
 import android.graphics.Rect;
 import android.text.SpannableString;
@@ -16,6 +16,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.AccessibilityUtil;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
