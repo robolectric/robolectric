@@ -5,7 +5,7 @@ new RoboJavaModulePlugin(
 dependencies {
     // Compile dependencies
     compile project(":robolectric-annotations")
-    compile project(":robolectric-instrumentation")
+    compile project(":robolectric-sandbox")
     compile project(":shadows-api")
 
     compileOnly "com.intellij:annotations:12.0"

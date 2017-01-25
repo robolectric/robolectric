@@ -18,11 +18,11 @@ project.sourceSets.test.compileClasspath += configurations.shadow
 
 dependencies {
     // Project dependencies
-    compile project(":robolectric-instrumentation")
     compile project(":robolectric-annotations")
-    compile project(":robolectric-resources")
-    compile project(":robolectric-utils")
     compile project(":robolectric-junit")
+    compile project(":robolectric-resources")
+    compile project(":robolectric-sandbox")
+    compile project(":robolectric-utils")
 
     // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
