@@ -6,10 +6,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.InstrumentingTestRunner;
+import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
-import org.robolectric.internal.bytecode.RoboConfig;
+import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.testing.AFinalClass;
 import org.robolectric.testing.Pony;
 
@@ -21,11 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
-@RunWith(InstrumentingTestRunner.class)
+@RunWith(SandboxTestRunner.class)
 public class ShadowingTest {
 
   @Test
-  @RoboConfig(shadows = {ShadowAccountManagerForTests.class})
+  @SandboxConfig(shadows = {ShadowAccountManagerForTests.class})
   public void testStaticMethodsAreDelegated() throws Exception {
     Object arg = mock(Object.class);
     AccountManager.get(arg);
@@ -55,7 +55,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(shadows = {ShadowClassWithProtectedMethod.class})
+  @SandboxConfig(shadows = {ShadowClassWithProtectedMethod.class})
   public void testProtectedMethodsAreDelegated() throws Exception {
     ClassWithProtectedMethod overlay = new ClassWithProtectedMethod();
     assertEquals("shadow name", overlay.getName());
@@ -77,7 +77,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(shadows = {ShadowPaintForTests.class})
+  @SandboxConfig(shadows = {ShadowPaintForTests.class})
   public void testNativeMethodsAreDelegated() throws Exception {
     Paint paint = new Paint();
     paint.setColor(1234);
@@ -127,7 +127,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(shadows = {Pony.ShadowPony.class})
+  @SandboxConfig(shadows = {Pony.ShadowPony.class})
   public void directlyOn_shouldCallThroughToOriginalMethodBody() throws Exception {
     Pony pony = new Pony();
 
@@ -138,7 +138,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(shadows = {Pony.ShadowPony.class})
+  @SandboxConfig(shadows = {Pony.ShadowPony.class})
   public void shouldCallRealForUnshadowedMethod() throws Exception {
     assertEquals("Off I saunter to the salon!", new Pony().saunter("the salon"));
   }
@@ -162,7 +162,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(shadows = ShadowOfClassWithSomeConstructors.class)
+  @SandboxConfig(shadows = ShadowOfClassWithSomeConstructors.class)
   public void shouldGenerateSeparatedConstructorBodies() throws Exception {
     ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
     assertNull(o.name);
@@ -190,7 +190,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(shadows = {ShadowApiImplementedClass.class})
+  @SandboxConfig(shadows = {ShadowApiImplementedClass.class})
   public void withNonApiSubclassesWhichExtendApi_shouldStillBeInvoked() throws Exception {
     assertEquals("did foo", new NonApiSubclass().doSomething("foo"));
   }
@@ -215,7 +215,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(shadows = {ShadowNonInstrumentedClass.class})
+  @SandboxConfig(shadows = {ShadowNonInstrumentedClass.class})
   public void shouldInstrumentClassIfAddedToConfig() {
     assertEquals(2, new NonInstrumentedClass().plus(0));
   }
@@ -240,7 +240,7 @@ public class ShadowingTest {
   }
 
   @Test
-  @RoboConfig(instrumentedPackages = {"org.robolectric.testing"})
+  @SandboxConfig(instrumentedPackages = {"org.robolectric.testing"})
   public void shouldInstrumentPackageIfAddedToConfig() throws Exception {
     Class<?> clazz = Class.forName(AFinalClass.class.getName());
     assertEquals(0, clazz.getModifiers() & Modifier.FINAL);

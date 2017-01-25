@@ -11,13 +11,13 @@ import java.lang.reflect.Modifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AndroidInstrumentingClassLoaderTest {
+public class AndroidSandboxClassLoaderTest {
 
   private ClassLoader classLoader;
 
   @Before
   public void setUp() throws Exception {
-    classLoader = new InstrumentingClassLoader(configureBuilder().build());
+    classLoader = new SandboxClassLoader(configureBuilder().build());
   }
 
   @Test

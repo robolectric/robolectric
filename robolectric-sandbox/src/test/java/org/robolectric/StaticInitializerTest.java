@@ -4,15 +4,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.InstrumentingTestRunner;
-import org.robolectric.internal.bytecode.RoboConfig;
+import org.robolectric.internal.SandboxTestRunner;
+import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(InstrumentingTestRunner.class)
+@RunWith(SandboxTestRunner.class)
 public class StaticInitializerTest {
   @Test
   public void whenClassIsUnshadowed_shouldPerformStaticInitialization() throws Exception {
@@ -26,7 +26,7 @@ public class StaticInitializerTest {
 
 
   @Test
-  @RoboConfig(shadows = {ShadowClassWithoutStaticInitializerOverride.class})
+  @SandboxConfig(shadows = {ShadowClassWithoutStaticInitializerOverride.class})
   public void whenClassHasShadowWithoutOverrideMethod_shouldPerformStaticInitialization() throws Exception {
     assertEquals("Floyd", ClassWithStaticInitializerB.name);
 
@@ -42,7 +42,7 @@ public class StaticInitializerTest {
   }
 
   @Test
-  @RoboConfig(shadows = {ShadowClassWithStaticInitializerOverride.class})
+  @SandboxConfig(shadows = {ShadowClassWithStaticInitializerOverride.class})
   public void whenClassHasShadowWithOverrideMethod_shouldDeferStaticInitialization() throws Exception {
     assertFalse(ShadowClassWithStaticInitializerOverride.initialized);
     assertEquals(null, ClassWithStaticInitializerC.name);

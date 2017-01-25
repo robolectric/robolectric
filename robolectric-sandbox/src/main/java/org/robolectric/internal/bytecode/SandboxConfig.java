@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface RoboConfig {
+public @interface SandboxConfig {
   /**
    * A list of shadow classes to enable, in addition to those that are already present.
    *

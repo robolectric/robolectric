@@ -40,7 +40,7 @@ public class AndroidTranslatorClassInstrumentedTest {
 
   /*
    * Test "foreign class" getting its methods shadowed whe it's
-   * in the InstrumentingClassLoader CustomClassNames arrayList
+   * in the SandboxClassLoader CustomClassNames arrayList
    */
   @Test
   @Config(shadows = {ShadowCustomPaint.class, ShadowPaintForTests.class})

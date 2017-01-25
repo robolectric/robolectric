@@ -8,11 +8,9 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.DeepCloner;
-import org.robolectric.internal.InstrumentingTestRunner;
+import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.manifest.AndroidManifest;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -116,7 +114,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    protected InstrumentingTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+    protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
       try {
         return new HelperTestRunner(bootstrappedTestClass) {
           @Override

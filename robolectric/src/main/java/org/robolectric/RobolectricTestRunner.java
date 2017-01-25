@@ -11,8 +11,8 @@ import org.junit.runners.model.Statement;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.GradleManifestFactory;
-import org.robolectric.internal.InstrumentingClassLoaderFactory;
-import org.robolectric.internal.InstrumentingTestRunner;
+import org.robolectric.internal.SandboxFactory;
+import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
@@ -26,6 +26,7 @@ import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Sandbox;
+import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
@@ -59,10 +60,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
+ * Installs a {@link SandboxClassLoader} and
  * {@link ResourceTable} in order to provide a simulation of the Android runtime environment.
  */
-public class RobolectricTestRunner extends InstrumentingTestRunner {
+public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
   
@@ -283,11 +284,10 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
   @NotNull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-    final Config config = roboMethod.config;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
-    InstrumentingClassLoaderFactory instrumentingClassLoaderFactory =
-        new InstrumentingClassLoaderFactory(createClassLoaderConfig(method), getJarResolver());
-    SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig);
+    SandboxFactory sandboxFactory =
+        new SandboxFactory(createClassLoaderConfig(method), getJarResolver());
+    SdkEnvironment sdkEnvironment = sandboxFactory.getSdkEnvironment(sdkConfig);
 
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
     // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
@@ -342,7 +342,7 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
     parallelUniverseInterface = null;
   }
 
-  protected InstrumentingTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+  protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
     try {
       return new HelperTestRunner(bootstrappedTestClass);
     } catch (InitializationError initializationError) {
@@ -473,7 +473,7 @@ public class RobolectricTestRunner extends InstrumentingTestRunner {
     }
   }
 
-  public class HelperTestRunner extends InstrumentingTestRunner.HelperTestRunner {
+  public class HelperTestRunner extends SandboxTestRunner.HelperTestRunner {
     public HelperTestRunner(Class bootstrappedTestClass) throws InitializationError {
       super(bootstrappedTestClass);
     }

@@ -57,7 +57,7 @@ import static org.objectweb.asm.Type.VOID;
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
  */
-public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
+public class SandboxClassLoader extends ClassLoader implements Opcodes {
 
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
@@ -65,8 +65,8 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private final Map<String, String> classesToRemap;
   private final Set<MethodRef> methodsToIntercept;
 
-  public InstrumentingClassLoader(InstrumentationConfiguration config, URL... urls) {
-    super(InstrumentingClassLoader.class.getClassLoader());
+  public SandboxClassLoader(InstrumentationConfiguration config, URL... urls) {
+    super(SandboxClassLoader.class.getClassLoader());
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(config.classNameTranslations());
@@ -977,7 +977,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private static class MissingClassMarker {
   }
 
-  public class OldClassInstrumentor extends InstrumentingClassLoader.ClassInstrumentor {
+  public class OldClassInstrumentor extends SandboxClassLoader.ClassInstrumentor {
     private final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
     private final Type THROWABLE_TYPE = Type.getType(Throwable.class);
     private final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
@@ -1247,7 +1247,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     }
   }
 
-  public class InvokeDynamicClassInstrumentor extends InstrumentingClassLoader.ClassInstrumentor {
+  public class InvokeDynamicClassInstrumentor extends SandboxClassLoader.ClassInstrumentor {
     private final Handle BOOTSTRAP_INIT;
     private final Handle BOOTSTRAP;
     private final Handle BOOTSTRAP_STATIC;

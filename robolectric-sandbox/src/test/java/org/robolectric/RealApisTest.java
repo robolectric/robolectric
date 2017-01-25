@@ -4,16 +4,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.InstrumentingTestRunner;
-import org.robolectric.internal.bytecode.RoboConfig;
+import org.robolectric.internal.SandboxTestRunner;
+import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.testing.Pony;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(InstrumentingTestRunner.class)
+@RunWith(SandboxTestRunner.class)
 public class RealApisTest {
   @Test
-  @RoboConfig(shadows = {ShimmeryShadowPony.class})
+  @SandboxConfig(shadows = {ShimmeryShadowPony.class})
   public void whenShadowHandlerIsInRealityBasedMode_shouldNotCallRealForUnshadowedMethod() throws Exception {
     assertEquals("Off I saunter to the salon!", new Pony().saunter("the salon"));
   }
@@ -23,7 +23,7 @@ public class RealApisTest {
   }
 
   @Test
-  @RoboConfig(shadows = {ShadowOfClassWithSomeConstructors.class})
+  @SandboxConfig(shadows = {ShadowOfClassWithSomeConstructors.class})
   public void shouldCallOriginalConstructorBodySomehow() throws Exception {
     ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
     assertEquals("my name", o.name);

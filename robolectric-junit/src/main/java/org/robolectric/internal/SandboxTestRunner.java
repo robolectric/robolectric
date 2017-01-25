@@ -15,10 +15,10 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InstrumentingClassLoader;
+import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.RoboConfig;
+import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
@@ -33,12 +33,12 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
-public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
+public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private final Interceptors interceptors;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
-  public InstrumentingTestRunner(Class<?> klass) throws InitializationError {
+  public SandboxTestRunner(Class<?> klass) throws InitializationError {
     super(klass);
     interceptors = new Interceptors(findInterceptors());
   }
@@ -120,8 +120,8 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
   @NotNull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    ClassLoader instrumentingClassLoader = new InstrumentingClassLoader(instrumentationConfiguration);
-    Sandbox sandbox = new Sandbox(instrumentingClassLoader);
+    ClassLoader sandboxClassLoader = new SandboxClassLoader(instrumentationConfiguration);
+    Sandbox sandbox = new Sandbox(sandboxClassLoader);
     configureShadows(method, sandbox);
     return sandbox;
   }
@@ -245,12 +245,12 @@ public class InstrumentingTestRunner extends BlockJUnit4ClassRunner {
   @NotNull
   protected Class<?>[] getExtraShadows(FrameworkMethod method) {
     List<Class<?>> shadowClasses = new ArrayList<>();
-    addShadows(shadowClasses, getTestClass().getAnnotation(RoboConfig.class));
-    addShadows(shadowClasses, method.getAnnotation(RoboConfig.class));
+    addShadows(shadowClasses, getTestClass().getAnnotation(SandboxConfig.class));
+    addShadows(shadowClasses, method.getAnnotation(SandboxConfig.class));
     return shadowClasses.toArray(new Class[shadowClasses.size()]);
   }
 
-  private void addShadows(List<Class<?>> shadowClasses, RoboConfig annotation) {
+  private void addShadows(List<Class<?>> shadowClasses, SandboxConfig annotation) {
     if (annotation != null) {
       shadowClasses.addAll(asList(annotation.shadows()));
     }

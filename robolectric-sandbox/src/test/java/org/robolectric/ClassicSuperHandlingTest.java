@@ -5,21 +5,21 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.InstrumentingTestRunner;
-import org.robolectric.internal.bytecode.RoboConfig;
+import org.robolectric.internal.SandboxTestRunner;
+import org.robolectric.internal.bytecode.SandboxConfig;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(InstrumentingTestRunner.class)
+@RunWith(SandboxTestRunner.class)
 public class ClassicSuperHandlingTest {
   @Test
-  @RoboConfig(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})
+  @SandboxConfig(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})
   public void uninstrumentedSubclassesShouldBeAbleToCallSuperWithoutLooping() throws Exception {
     assertEquals("4-3s-2s-1s-boof", new BabiesHavingBabies().method("boof"));
   }
 
   @Test
-  @RoboConfig(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})
+  @SandboxConfig(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})
   public void shadowInvocationWhenAllAreShadowed() throws Exception {
     assertEquals("3s-2s-1s-boof", new Child().method("boof"));
     assertEquals("2s-1s-boof", new Parent().method("boof"));

@@ -6,19 +6,19 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.InstrumentingTestRunner;
+import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.internal.bytecode.RoboConfig;
+import org.robolectric.internal.bytecode.SandboxConfig;
 
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(InstrumentingTestRunner.class)
+@RunWith(SandboxTestRunner.class)
 public class ThreadSafetyTest {
   @Test
-  @RoboConfig(shadows = {InstrumentedThreadShadow.class})
+  @SandboxConfig(shadows = {InstrumentedThreadShadow.class})
   public void shadowCreationShouldBeThreadsafe() throws Exception {
     Field field = InstrumentedThread.class.getDeclaredField("shadowFromOtherThread");
     field.setAccessible(true);

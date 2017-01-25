@@ -13,7 +13,7 @@ import org.robolectric.internal.ShadowedObject;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.ClassInfo;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InstrumentingClassLoader;
+import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.InvocationProfile;
@@ -75,7 +75,7 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
-public class InstrumentingClassLoaderTest {
+public class SandboxClassLoaderTest {
 
   private ClassLoader classLoader;
   private List<String> transcript = new ArrayList<>();
@@ -123,14 +123,14 @@ public class InstrumentingClassLoaderTest {
     InstrumentationConfiguration config = mock(InstrumentationConfiguration.class);
     when(config.shouldAcquire(anyString())).thenReturn(false);
     when(config.shouldInstrument(any(ClassInfo.class))).thenReturn(false);
-    ClassLoader classLoader = new InstrumentingClassLoader(config);
+    ClassLoader classLoader = new SandboxClassLoader(config);
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());
   }
 
   @Test
   public void shouldPerformClassLoadForAcquiredClasses() throws Exception {
-    ClassLoader classLoader = new InstrumentingClassLoader(configureBuilder().build());
+    ClassLoader classLoader = new SandboxClassLoader(configureBuilder().build());
     Class<?> exampleClass = classLoader.loadClass(AnUninstrumentedClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     try {
@@ -143,7 +143,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldPerformClassLoadAndInstrumentLoadForInstrumentedClasses() throws Exception {
-    ClassLoader classLoader = new InstrumentingClassLoader(configureBuilder().build());
+    ClassLoader classLoader = new SandboxClassLoader(configureBuilder().build());
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     Field roboDataField = exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME);
@@ -429,7 +429,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldRemapClasses() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(createRemappingConfig()));
+    setClassLoader(new SandboxClassLoader(createRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     assertEquals(loadClass(AClassToRemember.class), theClass.getField("someField").getType());
     assertEquals(Array.newInstance(loadClass(AClassToRemember.class), 0).getClass(), theClass.getField("someFields").getType());
@@ -443,7 +443,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldFixTypesInFieldAccess() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(createRemappingConfig()));
+    setClassLoader(new SandboxClassLoader(createRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
     Object instance = theClass.newInstance();
     Method method = theClass.getDeclaredMethod(shadow.directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME));
@@ -453,14 +453,14 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldFixTypesInMethodArgsAndReturn() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(createRemappingConfig()));
+    setClassLoader(new SandboxClassLoader(createRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCalls.class);
     assertNotNull(theClass.getDeclaredMethod("aMethod", int.class, loadClass(AClassToRemember.class), String.class));
   }
 
   @Test
   public void shouldInterceptFilteredMethodInvocations() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(configureBuilder()
+    setClassLoader(new SandboxClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "forgettableMethod"))
         .build()));
 
@@ -472,7 +472,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldInterceptFilteredStaticMethodInvocations() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(configureBuilder()
+    setClassLoader(new SandboxClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "forgettableStaticMethod"))
         .build()));
 
@@ -574,7 +574,7 @@ public class InstrumentingClassLoaderTest {
   }
 
   private Object invokeInterceptedMethodOnAClassToForget(String methodName) throws Exception {
-    setClassLoader(new InstrumentingClassLoader(configureBuilder()
+    setClassLoader(new SandboxClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "*"))
         .build()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
@@ -604,7 +604,7 @@ public class InstrumentingClassLoaderTest {
     if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = 10L;
 
-    setClassLoader(new InstrumentingClassLoader(configureBuilder()
+    setClassLoader(new SandboxClassLoader(configureBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "*"))
         .build()));
 
@@ -623,7 +623,7 @@ public class InstrumentingClassLoaderTest {
         .addInterceptedMethod(new MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))
         .build();
 
-    setClassLoader(new InstrumentingClassLoader(config));
+    setClassLoader(new SandboxClassLoader(config));
     Class<?> theClass = loadClass(AClassThatCallsAMethodReturningAForgettableClass.class);
     theClass.getMethod("callSomeMethod").invoke(shadow.directlyOn(theClass.newInstance(), (Class<Object>) theClass));
   }
@@ -644,7 +644,7 @@ public class InstrumentingClassLoaderTest {
   @Test public void shouldCacheMisses() throws Exception {
     final List<String> transcript = new ArrayList<>();
 
-    InstrumentingClassLoader classLoader = new InstrumentingClassLoader(configureBuilder().build()) {
+    SandboxClassLoader classLoader = new SandboxClassLoader(configureBuilder().build()) {
       @Override
       protected Class<?> findClass(String className) throws ClassNotFoundException {
         transcript.add("find " + className);
@@ -794,7 +794,7 @@ public class InstrumentingClassLoaderTest {
 
   private Class<?> loadClass(Class<?> clazz) throws ClassNotFoundException {
     if (classLoader == null) {
-      classLoader = new InstrumentingClassLoader(configureBuilder().build());
+      classLoader = new SandboxClassLoader(configureBuilder().build());
     }
 
     setStaticField(classLoader.loadClass(InvokeDynamicSupport.class.getName()), "INTERCEPTORS",

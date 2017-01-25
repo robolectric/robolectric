@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
+ * Configuration rules for {@link SandboxClassLoader}.
  */
 public class InstrumentationConfiguration {
   public static Builder newBuilder() {
@@ -51,7 +51,7 @@ public class InstrumentationConfiguration {
   }
 
   /**
-   * Determine if {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} should instrument a given class.
+   * Determine if {@link SandboxClassLoader} should instrument a given class.
    *
    * @param   classInfo The class to check.
    * @return  True if the class should be instrumented.
@@ -67,7 +67,7 @@ public class InstrumentationConfiguration {
   }
 
   /**
-   * Determine if {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} should load a given class.
+   * Determine if {@link SandboxClassLoader} should load a given class.
    *
    * @param   name The fully-qualified class name.
    * @return  True if the class should be loaded.
