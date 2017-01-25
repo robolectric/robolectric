@@ -125,7 +125,7 @@ public class ResourceTableFactory {
           new ValueResourceLoader(resourceTable, "/resources/integer-array", "array", ResType.INTEGER_ARRAY),
           new ValueResourceLoader(resourceTable, "/resources/fraction", "fraction", ResType.FRACTION),
           new ValueResourceLoader(resourceTable, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
-          new ValueResourceLoader(resourceTable, "/resources/item", "layout", ResType.LAYOUT),
+          new ValueResourceLoader(resourceTable, "/resources/item[@type='layout']", "layout", ResType.LAYOUT),
           new PluralResourceLoader(resourceTable),
           new ValueResourceLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
           new ValueResourceLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
