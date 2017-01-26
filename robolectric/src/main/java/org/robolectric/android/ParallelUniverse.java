@@ -24,6 +24,8 @@ import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;
+import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;

@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.pm.PackageManager;
 
 import org.robolectric.res.ResourceTable;
-import org.robolectric.android.RobolectricPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;

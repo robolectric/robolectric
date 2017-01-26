@@ -15,7 +15,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.android.RobolectricPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
