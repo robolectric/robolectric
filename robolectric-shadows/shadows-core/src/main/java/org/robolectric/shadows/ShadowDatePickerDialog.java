@@ -11,7 +11,7 @@ import java.util.Calendar;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
-import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 /**
  * Shadow for {@link android.app.DatePickerDialog}.

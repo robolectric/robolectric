@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.view.WindowManager;
-import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 
 import org.robolectric.annotation.Implementation;
@@ -9,7 +8,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.widget.PopupWindow}.

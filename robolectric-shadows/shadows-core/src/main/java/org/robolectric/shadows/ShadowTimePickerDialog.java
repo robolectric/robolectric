@@ -4,7 +4,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 

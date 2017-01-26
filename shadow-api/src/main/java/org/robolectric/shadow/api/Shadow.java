@@ -1,5 +1,6 @@
-package org.robolectric.internal;
+package org.robolectric.shadow.api;
 
+import org.robolectric.internal.IShadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class Shadow {

@@ -6,7 +6,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.shadows.ShadowViewGroup;
 
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.support.v4.widget.DrawerLayout}.

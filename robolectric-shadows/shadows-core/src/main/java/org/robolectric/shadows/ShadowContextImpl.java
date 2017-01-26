@@ -15,7 +15,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.FileUtils;
 import android.os.Handler;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
@@ -33,7 +32,7 @@ import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.internal.Shadow.newInstanceOf;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 /**
  * Shadow for {@code android.content.ContextImpl}.

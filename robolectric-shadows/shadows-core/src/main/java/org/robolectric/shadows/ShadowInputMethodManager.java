@@ -7,7 +7,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * Shadow for {@link android.view.inputmethod.InputMethodManager}.

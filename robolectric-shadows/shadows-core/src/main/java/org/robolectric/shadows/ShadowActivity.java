@@ -33,12 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 /**
  * Shadow for {@link android.app.Activity}.

@@ -4,7 +4,7 @@ import android.webkit.JsResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;

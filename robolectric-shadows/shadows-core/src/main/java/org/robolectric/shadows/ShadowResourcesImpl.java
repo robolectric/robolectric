@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)

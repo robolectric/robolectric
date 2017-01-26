@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

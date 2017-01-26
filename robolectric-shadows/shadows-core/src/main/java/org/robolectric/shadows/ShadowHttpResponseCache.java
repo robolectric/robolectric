@@ -12,7 +12,7 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 
-import static org.robolectric.internal.Shadow.newInstanceOf;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 /**
  * Shadow for {@link android.net.http.HttpResponseCache}.

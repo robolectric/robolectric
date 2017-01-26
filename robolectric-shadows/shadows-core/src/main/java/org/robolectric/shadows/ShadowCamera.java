@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.shadow.api.Shadow.*;
 
 /**
  * Shadow for {@link android.hardware.Camera}.

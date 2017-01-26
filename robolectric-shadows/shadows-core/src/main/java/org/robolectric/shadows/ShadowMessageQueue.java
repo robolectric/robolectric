@@ -14,7 +14,7 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.shadow.api.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 

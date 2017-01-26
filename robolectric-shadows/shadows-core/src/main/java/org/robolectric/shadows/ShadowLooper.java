@@ -19,7 +19,7 @@ import org.robolectric.util.Scheduler;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.shadow.api.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**

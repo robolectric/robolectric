@@ -7,7 +7,7 @@ import android.view.Choreographer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.SoftThreadLocal;
 import org.robolectric.util.TimeUtils;
 

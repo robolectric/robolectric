@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import java.util.Collection;
 import java.util.Collections;

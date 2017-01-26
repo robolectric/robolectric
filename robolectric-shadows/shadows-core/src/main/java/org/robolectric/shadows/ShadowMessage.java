@@ -12,7 +12,7 @@ import org.robolectric.annotation.Resetter;
 import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.shadow.api.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.*;
 
 /**

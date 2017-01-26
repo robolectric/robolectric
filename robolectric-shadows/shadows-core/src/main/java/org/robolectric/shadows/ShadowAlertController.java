@@ -13,9 +13,8 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.InvocationTargetException;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
 * Shadow for {@link com.android.internal.app.AlertController}.

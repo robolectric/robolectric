@@ -79,7 +79,7 @@ public class InstrumentationConfigurationTest {
 
   @Test
   public void shouldNotAcquireShadowClass() throws Exception {
-    assertThat(config.shouldAcquire("org.robolectric.internal.Shadow")).isTrue();
+    assertThat(config.shouldAcquire("org.robolectric.shadow.api.Shadow")).isTrue();
   }
 
   @Test

@@ -6,7 +6,7 @@ dependencies {
     // Compile dependencies
     compile project(":robolectric-annotations")
     compile project(":robolectric-utils")
-    compile project(":shadows-api")
+    compile project(":shadow-api")
 
     compile "org.ow2.asm:asm:5.0.1"
     compile "org.ow2.asm:asm-commons:5.0.1"

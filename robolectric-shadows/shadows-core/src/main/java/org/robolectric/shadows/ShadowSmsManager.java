@@ -8,7 +8,7 @@ import android.telephony.SmsManager;
 import android.text.TextUtils;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 

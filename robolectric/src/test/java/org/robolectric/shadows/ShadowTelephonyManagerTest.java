@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.RuntimeEnvironment.*;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.newInstanceOf;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowTelephonyManagerTest {

@@ -19,7 +19,7 @@ import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
 import org.robolectric.android.runtime.RuntimeAdapter;
 import org.robolectric.android.runtime.RuntimeAdapterFactory;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
 

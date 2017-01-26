@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.robolectric.internal.InvokeDynamic;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.ShadowImpl;

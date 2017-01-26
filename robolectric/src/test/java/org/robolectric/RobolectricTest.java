@@ -18,7 +18,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.android.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;

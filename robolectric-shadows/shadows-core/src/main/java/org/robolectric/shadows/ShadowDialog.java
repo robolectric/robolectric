@@ -20,7 +20,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.app.Dialog}.
