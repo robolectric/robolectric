@@ -1,9 +1,9 @@
-package org.robolectric.android;
+package org.robolectric.android.internal;
 
 import android.app.Application;
 import org.junit.Test;
 import org.robolectric.TestApplication;
-import org.robolectric.android.ClassNameResolver;
+import org.robolectric.android.internal.ClassNameResolver;
 
 import static org.junit.Assert.assertEquals;
 

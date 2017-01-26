@@ -27,7 +27,15 @@ public class InstrumentationConfiguration {
   private static final Set<String> CLASSES_TO_ALWAYS_ACQUIRE = Sets.newHashSet(
       RobolectricInternals.class.getName(),
       InvokeDynamicSupport.class.getName(),
-      Shadow.class.getName()
+      Shadow.class.getName(),
+
+      // these classes are deprecated and will be removed soon:
+      "org.robolectric.res.builder.ActivityController",
+      "org.robolectric.res.builder.ContentProviderController",
+      "org.robolectric.res.builder.DefaultPackageManager",
+      "org.robolectric.res.builder.FragmentController",
+      "org.robolectric.res.builder.IntentServiceController",
+      "org.robolectric.res.builder.ServiceController"
   );
 
   private final List<String> instrumentedPackages;

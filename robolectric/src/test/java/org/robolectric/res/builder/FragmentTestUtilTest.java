@@ -1,8 +1,8 @@
-package org.robolectric.android.controller;
+package org.robolectric.res.builder;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.android.controller.FragmentTestUtil.startFragment;
-import static org.robolectric.android.controller.FragmentTestUtil.startVisibleFragment;
+import static org.robolectric.res.builder.FragmentTestUtil.startFragment;
+import static org.robolectric.res.builder.FragmentTestUtil.startVisibleFragment;
 
 import android.widget.LinearLayout;
 import org.junit.Test;

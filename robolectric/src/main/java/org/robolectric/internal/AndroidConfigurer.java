@@ -13,6 +13,11 @@ import org.robolectric.android.fakes.RoboResponseSource;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.res.builder.ActivityController;
+import org.robolectric.res.builder.ContentProviderController;
+import org.robolectric.res.builder.FragmentController;
+import org.robolectric.res.builder.IntentServiceController;
+import org.robolectric.res.builder.ServiceController;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.util.ServiceLoader;

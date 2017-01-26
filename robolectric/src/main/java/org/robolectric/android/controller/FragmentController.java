@@ -7,13 +7,14 @@ import android.os.Bundle;
 import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
 import org.robolectric.ShadowsAdapter;
+import org.robolectric.res.builder.FragmentTestUtil;
 
 /**
  * Controller class for driving fragment lifecycles, similar to {@link ActivityController}. Only
  * necessary if more complex lifecycle management is needed, otherwise {@link FragmentTestUtil}
  * should be sufficient.
  */
-public class FragmentController<F extends Fragment> extends ComponentController<FragmentController<F>, F> {
+public class FragmentController<F extends Fragment> extends org.robolectric.res.builder.FragmentController<F> {
   private final F fragment;
   private final ActivityController<? extends Activity> activityController;
 

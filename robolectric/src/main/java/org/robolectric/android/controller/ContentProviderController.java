@@ -9,7 +9,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.util.Logger;
 
-public class ContentProviderController<T extends ContentProvider> {
+public class ContentProviderController<T extends ContentProvider> extends org.robolectric.res.builder.ContentProviderController<T> {
   private T contentProvider;
 
   private ContentProviderController(T contentProvider) {

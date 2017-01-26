@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.AccessibilityUtil;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
 import org.robolectric.util.TestRunnerWithManifest;

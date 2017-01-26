@@ -1,15 +1,5 @@
 package org.robolectric.android.controller;
 
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.ShadowsAdapter;
-import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
-import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.internal.Shadow;
-import org.robolectric.android.runtime.RuntimeAdapter;
-import org.robolectric.android.runtime.RuntimeAdapterFactory;
-import org.robolectric.manifest.AndroidManifest;
-
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
@@ -22,12 +12,21 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.ViewRootImpl;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.ShadowsAdapter;
+import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
+import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
+import org.robolectric.android.runtime.RuntimeAdapter;
+import org.robolectric.android.runtime.RuntimeAdapterFactory;
+import org.robolectric.internal.Shadow;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
 
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
+public class ActivityController<T extends Activity> extends org.robolectric.res.builder.ActivityController<T> {
   private final ShadowsAdapter shadowsAdapter;
   private ShadowActivityAdapter shadowReference;
 

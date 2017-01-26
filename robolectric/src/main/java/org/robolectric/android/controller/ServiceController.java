@@ -11,7 +11,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T>{
+public class ServiceController<T extends Service> extends org.robolectric.res.builder.ServiceController<T> {
 
   private String shadowActivityThreadClassName;
 
@@ -21,7 +21,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     return controller;
   }
 
-  private ServiceController(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
+  protected ServiceController(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
     super(shadowsAdapter, service, intent);
     shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }

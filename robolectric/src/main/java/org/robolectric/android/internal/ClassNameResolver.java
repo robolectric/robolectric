@@ -1,4 +1,4 @@
-package org.robolectric.android;
+package org.robolectric.android.internal;
 
 public class ClassNameResolver<T> {
   private String packageName;

@@ -13,7 +13,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class IntentServiceController<T extends IntentService> extends ComponentController<IntentServiceController<T>, T> {
+public class IntentServiceController<T extends IntentService> extends org.robolectric.res.builder.IntentServiceController<T> {
   private final String shadowActivityThreadClassName;
 
   public static <T extends IntentService> IntentServiceController<T> of(final ShadowsAdapter shadowsAdapter,
