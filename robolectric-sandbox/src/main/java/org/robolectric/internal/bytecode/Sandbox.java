@@ -1,8 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import org.robolectric.internal.InvokeDynamic;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowImpl;
 
 import java.util.Set;
 

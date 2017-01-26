@@ -1,4 +1,4 @@
-package org.robolectric.internal;
+package org.robolectric.internal.bytecode;
 
 import org.robolectric.util.JavaVersion;
 

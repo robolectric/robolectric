@@ -9,7 +9,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Function;
-import org.robolectric.internal.ShadowConstants;
 
 import java.lang.reflect.*;
 import java.util.*;

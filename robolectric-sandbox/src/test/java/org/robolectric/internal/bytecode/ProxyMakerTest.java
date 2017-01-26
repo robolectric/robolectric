@@ -1,6 +1,7 @@
-package org.robolectric.internal;
+package org.robolectric.internal.bytecode;
 
 import org.junit.Test;
+import org.robolectric.internal.bytecode.ProxyMaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

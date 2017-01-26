@@ -1,5 +1,6 @@
-package org.robolectric.internal;
+package org.robolectric.internal.bytecode;
 
+import org.robolectric.internal.IShadow;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ShadowImpl implements IShadow {

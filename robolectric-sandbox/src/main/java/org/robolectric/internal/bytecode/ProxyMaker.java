@@ -1,4 +1,4 @@
-package org.robolectric.internal;
+package org.robolectric.internal.bytecode;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

@@ -1,4 +1,4 @@
-package org.robolectric.internal;
+package org.robolectric.internal.bytecode;
 
 public class ShadowConstants {
   public static final String ROBO_PREFIX = "$$robo$$";
