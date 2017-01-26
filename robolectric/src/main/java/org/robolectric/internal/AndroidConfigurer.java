@@ -55,6 +55,8 @@ public class AndroidConfigurer {
 
     builder
       .doNotAcquirePackage("javax.")
+      .doNotAcquirePackage("org.robolectric.manifest.")
+      .doNotAcquirePackage("org.robolectric.res.")
       .doNotAcquirePackage("sun.")
       .doNotAcquirePackage("com.sun.")
       .doNotAcquirePackage("org.w3c.")
