@@ -15,7 +15,6 @@ dependencies {
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
-    testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "com.google.testing.compile:compile-testing:0.6"
     testCompile "org.mockito:mockito-core:2.5.4"
