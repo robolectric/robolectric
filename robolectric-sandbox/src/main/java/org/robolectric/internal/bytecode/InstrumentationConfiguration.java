@@ -34,6 +34,8 @@ public class InstrumentationConfiguration {
       "org.robolectric.res.builder.ContentProviderController",
       "org.robolectric.res.builder.DefaultPackageManager",
       "org.robolectric.res.builder.FragmentController",
+      "org.robolectric.res.builder.FragmentTestUtil",
+      "org.robolectric.res.builder.FragmentTestUtil$FragmentUtilActivity",
       "org.robolectric.res.builder.IntentServiceController",
       "org.robolectric.res.builder.ServiceController"
   );

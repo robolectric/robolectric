@@ -1,4 +1,4 @@
-package org.robolectric.res.builder;
+package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.res.builder.FragmentTestUtil.startFragment;
