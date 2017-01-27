@@ -11,6 +11,11 @@ public class ShadowImpl implements IShadow {
     }
   });
 
+  @Override
+  public <T> T extract(Object instance) {
+    return (T) ((ShadowedObject) instance).$$robo$getData();
+  }
+
   public <T> T newInstanceOf(Class<T> clazz) {
     return ReflectionHelpers.callConstructor(clazz);
   }

@@ -1,6 +1,5 @@
 package org.robolectric.internal.bytecode;
 
-import org.robolectric.internal.ShadowedObject;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.invoke.CallSite;

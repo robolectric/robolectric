@@ -4,23 +4,21 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.robolectric.internal.bytecode.InvokeDynamic;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.bytecode.ShadowConstants;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.internal.bytecode.ShadowImpl;
-import org.robolectric.internal.ShadowedObject;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.ClassInfo;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.InvocationProfile;
+import org.robolectric.internal.bytecode.InvokeDynamic;
 import org.robolectric.internal.bytecode.InvokeDynamicSupport;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.internal.bytecode.SandboxClassLoader;
+import org.robolectric.internal.bytecode.ShadowConstants;
+import org.robolectric.internal.bytecode.ShadowImpl;
 import org.robolectric.internal.bytecode.ShadowInvalidator;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.AChild;
 import org.robolectric.testing.AClassThatCallsAMethodReturningAForgettableClass;
 import org.robolectric.testing.AClassThatExtendsAClassWithFinalEqualsHashCode;
@@ -64,10 +62,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static java.lang.invoke.MethodHandles.*;
+import static java.lang.invoke.MethodHandles.constant;
+import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodHandles.insertArguments;
 import static java.lang.invoke.MethodType.methodType;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -99,7 +105,7 @@ public class SandboxClassLoaderTest {
     assertTrue(Modifier.isPublic(defaultCtor.getModifiers()));
     defaultCtor.setAccessible(true);
     Object instance = defaultCtor.newInstance();
-    assertThat(ShadowExtractor.extract(instance)).isNotNull();
+    assertThat(shadow.extract(instance)).isNotNull();
     assertThat(transcript).isEmpty();
   }
 
@@ -591,11 +597,6 @@ public class SandboxClassLoaderTest {
         .doNotAcquirePackage("sun.")
         .doNotAcquirePackage("com.sun.")
         .doNotAcquirePackage("org.robolectric.internal.")
-        .doNotAcquireClass(ClassHandler.class)
-        .doNotAcquireClass(ClassHandler.Plan.class)
-        .doNotAcquireClass(Interceptors.class)
-        .doNotAcquireClass(ShadowedObject.class)
-        .doNotAcquireClass(ShadowInvalidator.class)
     ;
     return builder;
   }

@@ -3,6 +3,8 @@ package org.robolectric.internal;
 import org.robolectric.util.ReflectionHelpers;
 
 public interface IShadow {
+  <T> T extract(Object instance);
+
   <T> T newInstanceOf(Class<T> clazz);
 
   <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params);

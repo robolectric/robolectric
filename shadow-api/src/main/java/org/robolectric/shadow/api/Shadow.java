@@ -7,6 +7,14 @@ public class Shadow {
   @SuppressWarnings("unused")
   private static IShadow SHADOW_IMPL;
 
+  /**
+   * Retrieve corresponding Shadow of the object.
+   * @since 3.3
+   */
+  public static <T> T extract(Object instance) {
+    return SHADOW_IMPL.extract(instance);
+  }
+
   public static <T> T newInstanceOf(Class<T> clazz) {
     return SHADOW_IMPL.newInstanceOf(clazz);
   }

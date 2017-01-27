@@ -24,7 +24,6 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.robolectric.internal.ShadowedObject;
 import org.robolectric.util.Logger;
 import org.robolectric.util.Util;
 
