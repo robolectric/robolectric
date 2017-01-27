@@ -26,7 +26,7 @@ import org.robolectric.util.ReflectionHelpers;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class ActivityController<T extends Activity> extends org.robolectric.res.builder.ActivityController<T> {
+public class ActivityController<T extends Activity> extends org.robolectric.util.ActivityController<T> {
   private final ShadowsAdapter shadowsAdapter;
   private ShadowActivityAdapter shadowReference;
 

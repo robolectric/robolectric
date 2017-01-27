@@ -11,7 +11,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class ServiceController<T extends Service> extends org.robolectric.res.builder.ServiceController<T> {
+public class ServiceController<T extends Service> extends org.robolectric.util.ServiceController<T> {
 
   private String shadowActivityThreadClassName;
 

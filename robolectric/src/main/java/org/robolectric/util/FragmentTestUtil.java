@@ -1,4 +1,4 @@
-package org.robolectric.res.builder;
+package org.robolectric.util;
 
 import org.robolectric.Robolectric;
 

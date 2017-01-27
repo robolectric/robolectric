@@ -1,4 +1,4 @@
-package org.robolectric.res.builder;
+package org.robolectric.util;
 
 import android.content.ContentProvider;
 import android.content.pm.ProviderInfo;
