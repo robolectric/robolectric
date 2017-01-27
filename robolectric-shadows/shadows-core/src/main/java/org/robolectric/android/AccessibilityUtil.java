@@ -43,7 +43,7 @@ public class AccessibilityUtil {
   /* Flag indicating if the support library's presence has been verified */
   private static boolean v4SupportPresenceVerified = false;
 
-  private AccessibilityUtil() {}
+  protected AccessibilityUtil() {}
 
   /**
    * Check a hierarchy of {@code View}s for accessibility. Only performs checks if (in decreasing
