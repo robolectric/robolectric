@@ -191,7 +191,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected Statement classBlock(RunNotifier notifier) {
-    final Statement statement = childrenInvoker(notifier);
+    final Statement statement = super.classBlock(notifier);
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
