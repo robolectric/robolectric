@@ -946,13 +946,13 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
   /**
    * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}
    */
-  public static class TryCatch {
+  static class TryCatch {
     private final Label start;
     private final Label end;
     private final Label handler;
     private final GeneratorAdapter generatorAdapter;
 
-    public TryCatch(GeneratorAdapter generatorAdapter, Type type) {
+    TryCatch(GeneratorAdapter generatorAdapter, Type type) {
       this.generatorAdapter = generatorAdapter;
       this.start = generatorAdapter.mark();
       this.end = new Label();
@@ -960,11 +960,11 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
       generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
     }
 
-    public void end() {
+    void end() {
       generatorAdapter.mark(end);
     }
 
-    public void handler() {
+    void handler() {
       generatorAdapter.mark(handler);
     }
   }

@@ -29,9 +29,6 @@ import org.robolectric.android.CustomStateView;
 import org.robolectric.android.CustomView;
 import org.robolectric.android.CustomView2;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.CustomStateView;
-import org.robolectric.util.CustomView;
-import org.robolectric.util.CustomView2;
 import org.robolectric.util.ReflectionHelpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
