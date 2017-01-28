@@ -7,9 +7,11 @@ import org.objectweb.asm.tree.MethodNode
 
 import java.util.jar.JarEntry
 import java.util.jar.JarInputStream
+import java.util.regex.Pattern
 
-import static java.util.Arrays.asList
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE
+import static org.objectweb.asm.Opcodes.ACC_PROTECTED
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC
+import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC
 
 class CheckApiChangesPlugin implements Plugin<Project> {
     @Override
@@ -17,13 +19,23 @@ class CheckApiChangesPlugin implements Plugin<Project> {
         project.extensions.create("checkApiChanges", CheckApiChangesExtension)
 
         project.configurations {
-            checkApiChanges
+            checkApiChangesFrom
+            checkApiChangesTo
         }
 
         project.afterEvaluate {
-            project.dependencies.checkApiChanges("${project.checkApiChanges.baseArtifact}@jar") {
-                transitive = false
-                force = true
+            project.checkApiChanges.from.each {
+                project.dependencies.checkApiChangesFrom(it) {
+                    transitive = false
+                    force = true
+                }
+            }
+
+            project.checkApiChanges.to.findAll { it instanceof String }.each {
+                project.dependencies.checkApiChangesTo(it) {
+                    transitive = false
+                    force = true
+                }
             }
         }
 
@@ -31,16 +43,24 @@ class CheckApiChangesPlugin implements Plugin<Project> {
             doLast {
                 Map<ClassMethod, Change> changedClassMethods = new TreeMap<>()
 
-                def baseUrls = project.configurations.checkApiChanges*.toURI()*.toURL()
-                Map<String, ClassMethod> prevClassMethods = findClassMethods(baseUrls)
-                Map<String, ClassMethod> curClassMethods = findClassMethods(asList(new URL("file://${project.jar.archivePath}")))
+                def fromUrls = project.configurations.checkApiChangesFrom*.toURI()*.toURL()
+                println "fromUrls = ${fromUrls*.toString()*.replaceAll("^.*/", "")}"
 
-                Set<String> allMethods = new TreeSet<>(prevClassMethods.keySet())
-                allMethods.addAll(curClassMethods.keySet())
+                def jarUrls = project.checkApiChanges.to
+                        .findAll { it instanceof Project }
+                        .collect { it.jar.archivePath.toURL() }
+                def toUrls = jarUrls + project.configurations.checkApiChangesTo*.toURI()*.toURL()
+                println "toUrls = ${toUrls*.toString()*.replaceAll("^.*/", "")}"
+
+                Analysis prev = new Analysis(fromUrls)
+                Analysis cur = new Analysis(toUrls)
+
+                Set<String> allMethods = new TreeSet<>(prev.classMethods.keySet())
+                allMethods.addAll(cur.classMethods.keySet())
 
                 for (String classMethodName : allMethods) {
-                    ClassMethod prevClassMethod = prevClassMethods.get(classMethodName)
-                    ClassMethod curClassMethod = curClassMethods.get(classMethodName)
+                    ClassMethod prevClassMethod = prev.classMethods.get(classMethodName)
+                    ClassMethod curClassMethod = cur.classMethods.get(classMethodName)
 
                     if (prevClassMethod == null) {
                         // added
@@ -48,8 +68,19 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                             changedClassMethods.put(curClassMethod, Change.ADDED)
                         }
                     } else if (curClassMethod == null) {
+                        def theClass = prevClassMethod.classNode.name.replace('/', '.')
+                        def methodDesc = prevClassMethod.methodDesc
+                        while (curClassMethod == null && cur.parents[theClass] != null) {
+                            theClass = cur.parents[theClass]
+                            def parentMethodName = "${theClass}#${methodDesc}"
+                            curClassMethod = cur.classMethods[parentMethodName]
+                        }
+
                         // removed
-                        if (prevClassMethod.visible && !prevClassMethod.deprecated) {
+                        if (curClassMethod == null && prevClassMethod.visible && !prevClassMethod.deprecated) {
+                            if (classMethodName.contains("getActivityTitle")) {
+                                println "hi!"
+                            }
                             changedClassMethods.put(prevClassMethod, Change.REMOVED)
                         }
                     } else {
@@ -75,21 +106,27 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                     return false
                 }
 
+                def expectedREs = project.checkApiChanges.expectedChanges.collect { Pattern.compile(it) }
+
                 for (Map.Entry<ClassMethod, Change> change : changedClassMethods.entrySet()) {
                     def classMethod = change.key
                     def changeType = change.value
 
                     def showAllChanges = true // todo: only show stuff that's interesting...
                     if (matchesEntryPoint(classMethod) || showAllChanges) {
-                        introClass(classMethod)
+                        String classMethodDesc = classMethod.desc
+                        def expected = expectedREs.any { it.matcher(classMethodDesc).find() }
+                        if (!expected) {
+                            introClass(classMethod)
 
-                        switch (changeType) {
-                            case Change.ADDED:
-                                println "+ ${classMethod.methodDesc}"
-                                break
-                            case Change.REMOVED:
-                                println "- ${classMethod.methodDesc} (not previously @Deprecated)"
-                                break
+                            switch (changeType) {
+                                case Change.ADDED:
+                                    println "+ ${classMethod.methodDesc}"
+                                    break
+                                case Change.REMOVED:
+                                    println "- ${classMethod.methodDesc}"
+                                    break
+                            }
                         }
                     }
 
@@ -99,44 +136,62 @@ class CheckApiChangesPlugin implements Plugin<Project> {
         }
     }
 
-    private Map<String, ClassMethod> findClassMethods(List<URL> baseUrls) {
-        Map<String, ClassMethod> classMethods = new HashMap<>()
-        for (URL url : baseUrls) {
-            if (url.protocol == 'file') {
-                def file = new File(url.path)
-                def stream = new FileInputStream(file)
-                def jarStream = new JarInputStream(stream)
-                while (true) {
-                    JarEntry entry = jarStream.nextJarEntry
-                    if (entry == null) break
+    static class Analysis {
+        final Map<String, String> parents = new HashMap<>()
+        final Map<String, ClassMethod> classMethods = new HashMap<>()
 
-                    if (!entry.directory && entry.name.endsWith(".class")) {
-                        def reader = new ClassReader(jarStream)
-                        def node = new ClassNode()
-                        reader.accept(node, ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES)
-                        for (MethodNode method : node.methods) {
-                            def classMethod = new ClassMethod(node, method)
-                            classMethods.put(classMethod.desc, classMethod)
+        Analysis(List<URL> baseUrls) {
+            for (URL url : baseUrls) {
+                if (url.protocol == 'file') {
+                    def file = new File(url.path)
+                    def stream = new FileInputStream(file)
+                    def jarStream = new JarInputStream(stream)
+                    while (true) {
+                        JarEntry entry = jarStream.nextJarEntry
+                        if (entry == null) break
+
+                        if (!entry.directory && entry.name.endsWith(".class")) {
+                            def reader = new ClassReader(jarStream)
+                            def classNode = new ClassNode()
+                            reader.accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES)
+
+                            def superName = classNode.superName.replace('/', '.')
+                            if (!"java.lang.Object".equals(superName)) {
+                                parents[classNode.name.replace('/', '.')] = superName
+                            }
+
+                            if (bitSet(classNode.access, ACC_PUBLIC) || bitSet(classNode.access, ACC_PROTECTED)) {
+                                for (MethodNode method : classNode.methods) {
+                                    def classMethod = new ClassMethod(classNode, method, url)
+                                    if (!bitSet(method.access, ACC_SYNTHETIC)) {
+                                        classMethods.put(classMethod.desc, classMethod)
+                                    }
+                                }
+                            }
                         }
                     }
+                    stream.close()
                 }
-                stream.close()
             }
+            classMethods
         }
-        classMethods
+
     }
 
     static enum Change {
-        ADDED, REMOVED
+        REMOVED,
+        ADDED,
     }
 
     static class ClassMethod implements Comparable<ClassMethod> {
-        ClassNode classNode
-        MethodNode methodNode
+        final ClassNode classNode
+        final MethodNode methodNode
+        final URL originUrl
 
-        ClassMethod(ClassNode classNode, MethodNode methodNode) {
+        ClassMethod(ClassNode classNode, MethodNode methodNode, URL originUrl) {
             this.classNode = classNode
             this.methodNode = methodNode
+            this.originUrl = originUrl
         }
 
         boolean equals(o) {
@@ -162,6 +217,14 @@ class CheckApiChangesPlugin implements Plugin<Project> {
 
         public String getDesc() {
             return "$className#$methodDesc"
+        }
+
+        boolean hasParent() {
+            parentClassName() != "java/lang/Object"
+        }
+
+        String parentClassName() {
+            classNode.superName
         }
 
         private String getMethodDesc() {
@@ -208,16 +271,20 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                     case 'V': write('void'); break;
                 }
             }
-            "${returnType.toString()} $methodNode.name(${args.toString()})"
+            "$methodNode.name(${args.toString()}): ${returnType.toString()}"
         }
 
         @Override
         public String toString() {
-            return internalName();
+            internalName
         }
 
-        private String internalName() {
-            classNode.name + "#$methodNode.name$methodNode.desc"
+        private String getInternalName() {
+            classNode.name + "#$methodInternalName"
+        }
+
+        private String getMethodInternalName() {
+            "$methodNode.name$methodNode.desc"
         }
 
         private String getSignature() {
@@ -229,27 +296,42 @@ class CheckApiChangesPlugin implements Plugin<Project> {
         }
 
         boolean isDeprecated() {
-            for (AnnotationNode annotationNode : methodNode.visibleAnnotations) {
-                if (annotationNode.desc == "Ljava/lang/Deprecated;") {
-                    return true
-                }
-            }
-            false
+            containsAnnotation(classNode.visibleAnnotations, "Ljava/lang/Deprecated;") ||
+                    containsAnnotation(methodNode.visibleAnnotations, "Ljava/lang/Deprecated;")
         }
 
         boolean isVisible() {
-            classNode.access != ACC_PRIVATE && !(classNode.name =~ /\$[0-9]/) && !(methodNode.name =~ /^access\$/)
+            (bitSet(classNode.access, ACC_PUBLIC) || bitSet(classNode.access, ACC_PROTECTED)) &&
+                    (bitSet(methodNode.access, ACC_PUBLIC) || bitSet(methodNode.access, ACC_PROTECTED)) &&
+                    !bitSet(classNode.access, ACC_SYNTHETIC) &&
+                    !(classNode.name =~ /\$[0-9]/) &&
+                    !(methodNode.name =~ /^access\$/ || methodNode.name == '<clinit>')
+        }
+
+        private static boolean containsAnnotation(List<AnnotationNode> annotations, String annotationInternalName) {
+            for (AnnotationNode annotationNode : annotations) {
+                if (annotationNode.desc == annotationInternalName) {
+                    return true
+                }
+            }
+            return false
         }
 
         @Override
         int compareTo(ClassMethod o) {
-            internalName() <=> o.internalName()
+            internalName <=> o.internalName
         }
+    }
+
+    private static boolean bitSet(int field, int bit) {
+        (field & bit) == bit
     }
 }
 
 class CheckApiChangesExtension {
-    String baseArtifact
+    String[] from
+    Object[] to
 
-    List<String> entryPoints = new ArrayList<>()
+    String[] entryPoints
+    String[] expectedChanges
 }
