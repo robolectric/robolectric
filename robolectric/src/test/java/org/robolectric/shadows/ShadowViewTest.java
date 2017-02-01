@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Binder;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.*;
@@ -804,6 +805,20 @@ public class ShadowViewTest {
     transcript.assertEventsSoFar("another child detached", "child detached");
   }
 
+  @Test @Config(sdk=22)
+  public void getWindowId() throws Exception {
+    Activity activity = Robolectric.setupActivity(ContentViewActivity.class);
+    View view = activity.findViewById(ContentViewActivity.contentViewId);
+    WindowId windowId = view.getWindowId();
+    assertThat(windowId).isNotNull();
+    assertThat(windowId).isEqualTo(windowId);
+
+    Binder target = new Binder();
+    target.attachInterface(ReflectionHelpers.createNullProxy(IWindowId.class), "android.view.IWindowId");
+
+    assertThat(windowId).isNotEqualTo(new WindowId(target));
+  }
+
   @Test
   public void capturesOnSystemUiVisibilityChangeListener() throws Exception {
     TestView testView = new TestView(buildActivity(Activity.class).create().get());
@@ -864,10 +879,14 @@ public class ShadowViewTest {
   }
 
   private static class ContentViewActivity extends Activity {
+    private static int contentViewId = View.generateViewId();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      setContentView(new FrameLayout(this));
+      FrameLayout view = new FrameLayout(this);
+      view.setId(contentViewId);
+      setContentView(view);
     }
   }
 }

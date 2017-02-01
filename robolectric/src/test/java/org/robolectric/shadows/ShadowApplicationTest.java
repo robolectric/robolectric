@@ -69,6 +69,12 @@ public class ShadowApplicationTest {
     assertThat(Robolectric.setupActivity(Activity.class).getApplication().getApplicationContext()).isSameAs(RuntimeEnvironment.application);
   }
 
+  @Test @Config(sdk = 16)
+  public void shouldBeAContext_16() throws Exception {
+    assertThat(Robolectric.setupActivity(Activity.class).getApplication()).isSameAs(RuntimeEnvironment.application);
+    assertThat(Robolectric.setupActivity(Activity.class).getApplication().getApplicationContext()).isSameAs(RuntimeEnvironment.application);
+  }
+
   @Test
   public void shouldProvideServices() throws Exception {
     checkSystemService(Context.ACTIVITY_SERVICE, android.app.ActivityManager.class);
@@ -549,6 +555,26 @@ public class ShadowApplicationTest {
     PopupWindow latestPopupWindow = ShadowApplication.getInstance().getLatestPopupWindow();
     assertThat(latestPopupWindow).isSameAs(pw);
   }
+
+//  @Test @Config(sdk = 16)
+//  public void getLatestPopupWindow_16() {
+//    PopupWindow pw = new PopupWindow(new LinearLayout(RuntimeEnvironment.application));
+//
+//    pw.showAtLocation(new LinearLayout(RuntimeEnvironment.application), Gravity.CENTER, 0, 0);
+//
+//    PopupWindow latestPopupWindow = ShadowApplication.getInstance().getLatestPopupWindow();
+//    assertThat(latestPopupWindow).isSameAs(pw);
+//  }
+//
+//  @Test @Config(sdk = 17)
+//  public void getLatestPopupWindow_17() {
+//    PopupWindow pw = new PopupWindow(new LinearLayout(RuntimeEnvironment.application));
+//
+//    pw.showAtLocation(new LinearLayout(RuntimeEnvironment.application), Gravity.CENTER, 0, 0);
+//
+//    PopupWindow latestPopupWindow = ShadowApplication.getInstance().getLatestPopupWindow();
+//    assertThat(latestPopupWindow).isSameAs(pw);
+//  }
 
   /////////////////////////////
 

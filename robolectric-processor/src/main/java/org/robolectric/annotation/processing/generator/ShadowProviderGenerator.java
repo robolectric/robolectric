@@ -18,7 +18,9 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Map;
+import java.util.TreeSet;
 
 /**
  * Generator that creates the "ShadowProvider" implementation for a shadow package.
@@ -174,9 +176,10 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("  public String[] getProvidedPackageNames() {");
     String providedPackages = "";
     if (shouldInstrumentPackages) {
-      providedPackages = Joiner.on(",").join(model.getShadowedPackages());
+      Collection<String> shadowedPackages = new TreeSet<>(model.getShadowedPackages());
+      providedPackages = Joiner.on(",\n        ").join(shadowedPackages);
     }
-    writer.println("    return new String[] {" + providedPackages + "};");
+    writer.println("    return new String[] {\n        " + providedPackages + "\n    };");
     writer.println("  }");
 
     writer.println('}');

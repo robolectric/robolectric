@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -65,5 +66,11 @@ public class ShadowHandler {
   @Deprecated
   public static void runMainLooperToNextTask() {
     shadowOf(Looper.myLooper()).runToNextTask();
+  }
+
+  @Implementation
+  public final boolean runWithScissors(final Runnable r, long timeout) {
+    r.run();
+    return true;
   }
 }

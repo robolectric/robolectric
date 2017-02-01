@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.accounts.AccountManager;
+import android.app.AppOpsManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -19,6 +20,7 @@ import android.os.FileUtils;
 import android.os.Handler;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
+import com.sun.corba.se.impl.corba.ContextImpl;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -119,61 +121,68 @@ public class ShadowContextImpl {
         return null;
       }
 
-      try {
-        Class<?> clazz = Class.forName(serviceClassName);
+      Class<?> ssrClazz = ReflectionHelpers.loadClass(getClassLoader(), "android.app.SystemServiceRegistry");
+      service = ReflectionHelpers.callStaticMethod(ssrClazz, "getSystemService",
+          ClassParameter.from(realObject.getClass(), realObject),
+          ClassParameter.from(String.class, name));
 
-        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
-          if (getApiLevel() >= N) {
-            service = ReflectionHelpers.callConstructor(clazz,
-                ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(IDevicePolicyManager.class, null),
-                ClassParameter.from(boolean.class, false));
-          } else {
-            service = ReflectionHelpers.callConstructor(clazz,
-                ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(Handler.class, null));
-          }
-        } else if (serviceClassName.equals("android.app.SearchManager")
-            || serviceClassName.equals("android.app.ActivityManager")
-            || serviceClassName.equals("android.app.WallpaperManager")) {
-
-          service = ReflectionHelpers.callConstructor(clazz,
-              ClassParameter.from(Context.class, RuntimeEnvironment.application),
-              ClassParameter.from(Handler.class, null));
-
-        } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
-          service = ReflectionHelpers.callConstructor(clazz);
-        } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
-          service = ReflectionHelpers.callConstructor(clazz,
-              ClassParameter.from(Context.class, RuntimeEnvironment.application));
-        } else if (serviceClassName.equals("android.hardware.display.DisplayManager") || serviceClassName.equals("android.telephony.SubscriptionManager")) {
-          service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
-        } else if (serviceClassName.equals("android.view.accessibility.AccessibilityManager")) {
-          service = AccessibilityManager.getInstance(realObject);
-        } else if (getApiLevel() >= JELLY_BEAN_MR1 && serviceClassName.equals("android.view.WindowManagerImpl")) {
-          Class<?> windowMgrImplClass = Class.forName("android.view.WindowManagerImpl");
-          if (getApiLevel() >= N) {
-            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
-                ClassParameter.from(Context.class, realObject));
-          } else {
-            Display display = newInstanceOf(Display.class);
-            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
-                ClassParameter.from(Display.class, display));
-          }
-        } else if (serviceClassName.equals("android.accounts.AccountManager")) {
-          service = AccountManager.get(null);
-        } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.print.PrintManager")) {
-          service = ReflectionHelpers.callConstructor(Class.forName("android.print.PrintManager"),
-            ClassParameter.from(Context.class, RuntimeEnvironment.application),
-            ClassParameter.from(android.print.IPrintManager.class, null),
-            ClassParameter.from(int.class, -1),
-            ClassParameter.from(int.class, -1));
-        } else {
-          service = newInstanceOf(clazz);
-        }
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+//      try {
+//        Class<?> clazz = Class.forName(serviceClassName);
+//
+//        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+//          if (getApiLevel() >= N) {
+//            service = ReflectionHelpers.callConstructor(clazz,
+//                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+//                ClassParameter.from(IDevicePolicyManager.class, null),
+//                ClassParameter.from(boolean.class, false));
+//          } else {
+//            service = ReflectionHelpers.callConstructor(clazz,
+//                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+//                ClassParameter.from(Handler.class, null));
+//          }
+//        } else if (serviceClassName.equals("android.app.SearchManager")
+//            || serviceClassName.equals("android.app.ActivityManager")
+//            || serviceClassName.equals("android.app.WallpaperManager")) {
+//
+//          service = ReflectionHelpers.callConstructor(clazz,
+//              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+//              ClassParameter.from(Handler.class, null));
+//
+//        } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
+//          service = ReflectionHelpers.callConstructor(clazz);
+//        } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
+//          service = ReflectionHelpers.callConstructor(clazz,
+//              ClassParameter.from(Context.class, RuntimeEnvironment.application));
+//        } else if (serviceClassName.equals("android.hardware.display.DisplayManager") || serviceClassName.equals("android.telephony.SubscriptionManager")) {
+//          service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
+//        } else if (serviceClassName.equals("android.view.accessibility.AccessibilityManager")) {
+//          service = AccessibilityManager.getInstance(realObject);
+//        } else if (getApiLevel() >= JELLY_BEAN_MR1 && serviceClassName.equals("android.view.WindowManagerImpl")) {
+//          Class<?> windowMgrImplClass = Class.forName("android.view.WindowManagerImpl");
+//          if (getApiLevel() >= N) {
+//            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
+//                ClassParameter.from(Context.class, realObject));
+//          } else {
+//            Display display = newInstanceOf(Display.class);
+//            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
+//                ClassParameter.from(Display.class, display));
+//          }
+//        } else if (serviceClassName.equals("android.accounts.AccountManager")) {
+//          service = AccountManager.get(null);
+////        } else if (serviceClassName.equals("appops")) {
+////          service = new AppOpsManager();
+//        } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.print.PrintManager")) {
+//          service = ReflectionHelpers.callConstructor(Class.forName("android.print.PrintManager"),
+//            ClassParameter.from(Context.class, RuntimeEnvironment.application),
+//            ClassParameter.from(android.print.IPrintManager.class, null),
+//            ClassParameter.from(int.class, -1),
+//            ClassParameter.from(int.class, -1));
+//        } else {
+//          service = newInstanceOf(clazz);
+//        }
+//      } catch (ClassNotFoundException e) {
+//        throw new RuntimeException(e);
+//      }
 
       systemServices.put(name, service);
     }

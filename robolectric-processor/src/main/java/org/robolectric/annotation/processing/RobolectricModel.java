@@ -345,7 +345,7 @@ public class RobolectricModel {
 
   public Collection<String> getShadowedPackages() {
     Set<String> packages = new HashSet<>();
-    for (TypeElement element : getVisibleShadowTypes().values()) {
+    for (TypeElement element : shadowTypes.values()) {
       packages.add("\"" + elements.getPackageOf(element).toString() + "\"");
     }
     return packages;

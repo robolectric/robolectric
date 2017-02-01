@@ -11,10 +11,10 @@ import org.robolectric.annotation.Implements;
 @Implements(value = ViewRootImpl.class, isInAndroidSdk = false)
 public class ShadowViewRootImpl {
 
-  @Implementation
-  public static Object getWindowSession(Looper mainLooper) {
-    return null;
-  }
+//  @Implementation
+//  public static Object getWindowSession(Looper mainLooper) {
+//    return null;
+//  }
 
   @Implementation
   public void playSoundEffect(int effectId) {

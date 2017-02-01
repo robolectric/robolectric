@@ -11,6 +11,11 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Looper;
 
+import android.os.PowerManagerInternal;
+import com.android.server.LocalServices;
+import com.android.server.input.InputManagerService;
+import com.android.server.power.PowerManagerService;
+import com.android.server.wm.WindowManagerService;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -143,6 +148,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
+
+      try {
+        Class<?> aClass = getClass().getClassLoader().loadClass("android.app.SystemServiceRegistry");
+        Method staticInitializer = aClass.getDeclaredMethod("__staticInitializer__");
+        staticInitializer.setAccessible(true);
+        staticInitializer.invoke(null);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      new PowerManagerService(application).onStart();
+      InputManagerService inputManagerService = new InputManagerService(RuntimeEnvironment.application);
+      WindowManagerService.main(RuntimeEnvironment.application, inputManagerService, true, true, true);
 
       application.onCreate();
     }

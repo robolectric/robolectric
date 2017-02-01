@@ -6,11 +6,13 @@ import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayAdjustments;
+import android.view.IWindowManager;
 import android.view.Surface;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
@@ -37,6 +39,12 @@ public class ShadowDisplay {
   private float refreshRate = 60.0f;
   private int rotation = Surface.ROTATION_0;
   private int pixelFormat = PixelFormat.RGBA_4444;
+
+//  @Implementation(maxSdk = JELLY_BEAN)
+//  public static Object getWindowManager() {
+//
+//    return ShadowWindowManagerGlobal.getWindowManagerService();
+//  }
 
   @Implementation
   public int getHeight() {

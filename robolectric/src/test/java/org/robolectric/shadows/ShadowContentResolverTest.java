@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -735,6 +736,14 @@ public class ShadowContentResolverTest {
       provider.getIContentProvider().getType(uri); // should not throw
     } finally {
       manifest.getContentProviders().remove(testProviderData);
+    }
+  }
+
+  @Test
+  public void copyOnWriteArraySet() throws Exception {
+    CopyOnWriteArraySet<ContentObserver> observers = new CopyOnWriteArraySet<>();
+    for (int i = 0; i < 1000; i++) {
+      observers.add(new TestContentObserver(null));
     }
   }
 
