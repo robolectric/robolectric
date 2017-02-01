@@ -9,20 +9,23 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Choreographer;
+import android.view.IWindowFocusObserver;
+import android.view.IWindowId;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.AccessibilityUtil;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -31,9 +34,12 @@ import org.robolectric.util.TimeUtils;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.getField;
+import static org.robolectric.util.ReflectionHelpers.setField;
 
 /**
  * Shadow for {@link android.view.View}.
@@ -516,7 +522,11 @@ public class ShadowView {
 
   @Implementation
   public boolean isAttachedToWindow() {
-    return ReflectionHelpers.getField(realView, "mAttachInfo") != null;
+    return getAttachInfo() != null;
+  }
+
+  private Object getAttachInfo() {
+    return getField(realView, "mAttachInfo");
   }
 
   public void callOnAttachedToWindow() {
@@ -525,6 +535,11 @@ public class ShadowView {
 
   public void callOnDetachedFromWindow() {
     invokeReflectively("onDetachedFromWindow");
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public Object getWindowId() {
+    return WindowIdHelper.getWindowId(this);
   }
 
   private void invokeReflectively(String methodName) {
@@ -575,5 +590,35 @@ public class ShadowView {
 
   private View directly() {
     return directlyOn(realView, View.class);
+  }
+
+  public static class WindowIdHelper {
+    public static Object getWindowId(ShadowView shadowView) {
+      if (shadowView.isAttachedToWindow()) {
+        Object attachInfo = shadowView.getAttachInfo();
+        if (getField(attachInfo, "mWindowId") == null) {
+          IWindowId iWindowId = new MyIWindowIdStub();
+          setField(attachInfo, "mWindowId", new WindowId(iWindowId));
+          setField(attachInfo, "mIWindowId", iWindowId);
+        }
+      }
+
+      return shadowView.directly().getWindowId();
+    }
+
+    private static class MyIWindowIdStub extends IWindowId.Stub {
+      @Override
+      public void registerFocusObserver(IWindowFocusObserver iWindowFocusObserver) throws RemoteException {
+      }
+
+      @Override
+      public void unregisterFocusObserver(IWindowFocusObserver iWindowFocusObserver) throws RemoteException {
+      }
+
+      @Override
+      public boolean isFocused() throws RemoteException {
+        return true;
+      }
+    }
   }
 }

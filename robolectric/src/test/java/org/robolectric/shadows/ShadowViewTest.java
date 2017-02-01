@@ -30,6 +30,7 @@ import org.robolectric.util.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -786,6 +787,31 @@ public class ShadowViewTest {
     parent.removeView(temporaryChild);
     transcript.assertEventsSoFar("temporary child detached");
     assertFalse(shadowOf(temporaryChild).isAttachedToWindow());
+  }
+
+  @Test @Config(minSdk = JELLY_BEAN_MR2)
+  public void getWindowId_shouldReturnValidObjectWhenAttached() throws Exception {
+    MyView parent = new MyView("parent", transcript);
+    MyView child = new MyView("child", transcript);
+    parent.addView(child);
+
+    assertThat(parent.getWindowId()).isNull();
+    assertThat(child.getWindowId()).isNull();
+
+    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
+
+    WindowId windowId = parent.getWindowId();
+    assertThat(windowId).isNotNull();
+    assertThat(child.getWindowId()).isSameAs(windowId);
+    assertThat(child.getWindowId()).isEqualTo(windowId); // equals must work!
+
+    MyView anotherChild = new MyView("another child", transcript);
+    parent.addView(anotherChild);
+    assertThat(anotherChild.getWindowId()).isEqualTo(windowId);
+
+    parent.removeView(anotherChild);
+    assertThat(anotherChild.getWindowId()).isNull();
   }
 
   // todo looks like this is flaky...
