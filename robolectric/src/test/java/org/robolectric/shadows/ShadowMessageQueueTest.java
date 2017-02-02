@@ -12,6 +12,7 @@ import android.os.MessageQueue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Scheduler;
 
@@ -70,21 +71,6 @@ public class ShadowMessageQueueTest {
     assertThat(shadowQueue.getHead()).as("getHead()").isSameAs(testMessage);
   }
 
-  private boolean enqueueMessage(Message msg, long when) {
-    return callInstanceMethod(queue, "enqueueMessage",
-        from(Message.class, msg),
-        from(long.class, when)
-        );    
-  }
-
-  private void removeMessages(Handler handler, int what, Object token) {
-    callInstanceMethod(queue, "removeMessages",
-        from(Handler.class, handler),
-        from(int.class, what),
-        from(Object.class, token)
-    );
-  }
-  
   @Test
   public void enqueueMessage_setsHead() {
     enqueueMessage(testMessage, 100);
@@ -179,5 +165,48 @@ public class ShadowMessageQueueTest {
     shadowQueue.reset();
     assertThat(handler.hasMessages(1234)).as("after-1234").isFalse();
     assertThat(handler.hasMessages(5678)).as("after-5678").isFalse();
+  }
+
+  @Test
+  public void postAtTime_fromDelayedMessage() throws Exception {
+    final Scheduler scheduler = Robolectric.getForegroundThreadScheduler();
+    scheduler.pause();
+
+    assertThat(scheduler.getCurrentTime()).isEqualTo(100); // assumption
+
+    final List<String> events = new ArrayList<>();
+    handler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        events.add("first at " + scheduler.getCurrentTime());
+        handler.postDelayed(new Runnable() {
+          @Override
+          public void run() {
+            events.add("second at " + scheduler.getCurrentTime());
+          }
+        }, 10);
+      }
+    }, 100);
+
+    scheduler.setIdleState(Scheduler.IdleState.CONSTANT_IDLE);
+
+    assertThat(events).containsExactly("first at 200", "second at 210");
+  }
+
+  /////////////////////////
+
+  private boolean enqueueMessage(Message msg, long when) {
+    return callInstanceMethod(queue, "enqueueMessage",
+        from(Message.class, msg),
+        from(long.class, when)
+    );
+  }
+
+  private void removeMessages(Handler handler, int what, Object token) {
+    callInstanceMethod(queue, "removeMessages",
+        from(Handler.class, handler),
+        from(int.class, what),
+        from(Object.class, token)
+    );
   }
 }

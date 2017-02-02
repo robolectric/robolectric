@@ -29,6 +29,14 @@ public class ShadowAccessibilityManagerTest {
   }
 
   @Test
+  public void getInstance() throws Exception {
+    AccessibilityManager accessibilityManager = AccessibilityManager.getInstance(RuntimeEnvironment.application);
+    assertThat(accessibilityManager).isNotNull();
+    assertThat(AccessibilityManager.getInstance(RuntimeEnvironment.application)).isSameAs(accessibilityManager);
+    assertThat(accessibilityManager).isSameAs(this.accessibilityManager);
+  }
+
+  @Test
   public void shouldReturnTrueWhenEnabled() {
     shadowAccessibilityManager.setEnabled(true);
     assertThat(accessibilityManager.isEnabled()).isTrue();

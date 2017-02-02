@@ -10,11 +10,12 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
 import com.android.server.accessibility.AccessibilityManagerService;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.util.List;
@@ -28,24 +29,51 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
 
+  private static final Object sInstanceSync = new Object();
+  private static AccessibilityManager sInstance;
+
   private boolean enabled;
   private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
   private List<ServiceInfo> accessibilityServiceList;
   private boolean touchExplorationEnabled;
 
+  @Resetter
+  public static void reset() {
+    synchronized (sInstanceSync) {
+      sInstance = null;
+    }
+  }
+
   @HiddenApi
   @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
-    if (getApiLevel() >= KITKAT) {
-      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[]{Context.class, IAccessibilityManager.class, int.class}, new Object[]{context, new AccessibilityManagerService(context), 0});
-      ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
-      return accessibilityManager;
-    } else {
-      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
-      ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
-      return accessibilityManager;
+//    if (getApiLevel() >= KITKAT) {
+//      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[]{Context.class, IAccessibilityManager.class, int.class}, new Object[]{context, new AccessibilityManagerService(context), 0});
+//      ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
+//      return accessibilityManager;
+//    } else {
+//      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
+//      ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
+//      return accessibilityManager;
+//    }
+
+    synchronized (sInstanceSync) {
+      if (sInstance == null) {
+        if (getApiLevel() >= KITKAT) {
+          sInstance = Shadow.newInstance(AccessibilityManager.class,
+              new Class[]{Context.class, IAccessibilityManager.class, int.class},
+              new Object[]{context, new AccessibilityManagerService(context), 0});
+        } else {
+          sInstance = Shadow.newInstance(AccessibilityManager.class,
+              new Class[0],
+              new Object[0]);
+        }
+        ReflectionHelpers.setField(sInstance, "mHandler", new MyHandler(context.getMainLooper(), sInstance));
+      }
     }
+    return sInstance;
+
   }
 
   @Implementation
