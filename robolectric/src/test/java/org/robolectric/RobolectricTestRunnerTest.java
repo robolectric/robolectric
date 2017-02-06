@@ -28,7 +28,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 public class RobolectricTestRunnerTest {
@@ -68,7 +67,7 @@ public class RobolectricTestRunnerTest {
       @Override
       ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
         Class<? extends ParallelUniverseInterface> clazz = sdkEnvironment.bootstrappedClass(MyParallelUniverse.class);
-        return callConstructor(clazz, from(RobolectricTestRunner.class, this));
+        return callConstructor(clazz);
       }
     };
     runner.run(notifier);
@@ -95,10 +94,6 @@ public class RobolectricTestRunnerTest {
   /////////////////////////////
 
   public static class MyParallelUniverse extends ParallelUniverse {
-    public MyParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
-      super(robolectricTestRunner);
-    }
-
     @Override
     public void resetStaticState(Config config) {
       throw new RuntimeException("fake error in resetStaticState");

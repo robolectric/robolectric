@@ -615,7 +615,7 @@ public class SandboxClassLoaderTest {
     shadow.directlyOn(instance, (Class<Object>) theClass, "longMethod");
     assertThat(transcript).containsExactly(
         "methodInvoked: AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
-        "intercept: org/robolectric/internal/bytecode/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");
+        "intercept: org/robolectric/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");
   }
 
   @Test

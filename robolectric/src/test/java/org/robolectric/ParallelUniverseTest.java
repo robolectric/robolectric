@@ -38,7 +38,7 @@ public class ParallelUniverseTest {
 
   @Before
   public void setUp() throws InitializationError {
-    pu = new ParallelUniverse(new RobolectricTestRunner(ParallelUniverseTest.class));
+    pu = new ParallelUniverse();
     pu.setSdkConfig(new SdkConfig(18));
   }
 

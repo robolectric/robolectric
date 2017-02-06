@@ -37,15 +37,10 @@ import java.util.Map;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
-
-  public ParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
-    this.robolectricTestRunner = robolectricTestRunner;
-  }
 
   @Override
   public void resetStaticState(Config config) {

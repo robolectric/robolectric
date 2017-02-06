@@ -49,7 +49,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @NotNull
-  public Interceptors getInterceptors() {
+  protected Interceptors getInterceptors() {
     return interceptors;
   }
 
@@ -182,6 +182,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
+        //noinspection unchecked
         Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
         HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
 
