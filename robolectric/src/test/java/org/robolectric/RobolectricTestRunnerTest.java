@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import android.os.Build;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,6 +9,7 @@ import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
@@ -19,13 +21,15 @@ import org.robolectric.manifest.AndroidManifest;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
-import static org.robolectric.util.ReflectionHelpers.newInstance;
 
 public class RobolectricTestRunnerTest {
 
@@ -50,7 +54,7 @@ public class RobolectricTestRunnerTest {
   }
 
   @Test public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
-    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class);
+    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
     assertThat(events).containsOnly(
         "failure: Robolectric does not support API level 11.",
@@ -60,7 +64,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithTwoMethods.class) {
+    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
       @Override
       ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
         Class<? extends ParallelUniverseInterface> clazz = sdkEnvironment.bootstrappedClass(MyParallelUniverse.class);
@@ -125,6 +129,18 @@ public class RobolectricTestRunnerTest {
 
     @Test
     public void second() throws Exception {
+    }
+  }
+
+  private static class MyRobolectricTestRunner extends RobolectricTestRunner {
+    public MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+      super(testClass);
+    }
+
+    @NotNull
+    @Override
+    protected SdkPicker createSdkPicker() {
+      return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), new Properties());
     }
   }
 }
