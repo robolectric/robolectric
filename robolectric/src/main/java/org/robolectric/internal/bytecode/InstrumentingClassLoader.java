@@ -97,7 +97,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private final Set<MethodRef> methodsToIntercept;
 
   public InstrumentingClassLoader(InstrumentationConfiguration config, URL... urls) {
-    super(InstrumentingClassLoader.class.getClassLoader());
+    super(InstrumentingClassLoader.class.getClassLoader().getParent());
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(config.classNameTranslations());
@@ -108,29 +108,35 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   }
 
   @Override
-  synchronized public Class loadClass(String name) throws ClassNotFoundException {
-    Class<?> theClass = classes.get(name);
-    if (theClass != null) {
-      if (theClass == MissingClassMarker.class) {
-        throw new ClassNotFoundException(name);
-      } else {
-        return theClass;
-      }
-    }
+  protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    synchronized (getClassLoadingLock(name)) {
 
-    try {
-      if (config.shouldAcquire(name)) {
-        theClass = findClass(name);
-      } else {
-        theClass = getParent().loadClass(name);
+      Class<?> theClass = classes.get(name);
+      if (theClass != null) {
+        if (theClass == MissingClassMarker.class) {
+          throw new ClassNotFoundException(name);
+        } else {
+          return theClass;
+        }
       }
-    } catch (ClassNotFoundException e) {
-      classes.put(name, MissingClassMarker.class);
-      throw e;
-    }
 
-    classes.put(name, theClass);
-    return theClass;
+      try {
+        try {
+          theClass = Class.forName(name, resolve, getParent());
+        } catch (ClassNotFoundException e) {
+          theClass = findClass(name);
+          if (resolve) {
+            resolveClass(theClass);
+          }
+        }
+      } catch (ClassNotFoundException e) {
+        classes.put(name, MissingClassMarker.class);
+        throw e;
+      }
+
+      classes.put(name, theClass);
+      return theClass;
+    }
   }
 
   @Override
@@ -147,7 +153,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     if (fromUrlsClassLoader != null)  {
       return fromUrlsClassLoader;
     }
-    return super.getResourceAsStream(resName);
+    return InstrumentingClassLoader.class.getResourceAsStream(resName);
   }
 
   @Override
