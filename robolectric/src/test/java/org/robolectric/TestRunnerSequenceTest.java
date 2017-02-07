@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.app.Application;
-
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.Result;
@@ -10,14 +9,16 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FsFile;
 import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Method;
+import java.util.Properties;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.resourceFile;
@@ -105,6 +106,12 @@ public class TestRunnerSequenceTest {
   public static class Runner extends RobolectricTestRunner {
     public Runner(Class<?> testClass) throws InitializationError {
       super(testClass);
+    }
+
+    @NotNull
+    @Override
+    protected SdkPicker createSdkPicker() {
+      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), new Properties());
     }
 
     @NotNull
