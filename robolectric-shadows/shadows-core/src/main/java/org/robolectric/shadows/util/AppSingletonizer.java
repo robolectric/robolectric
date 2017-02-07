@@ -3,7 +3,7 @@ package org.robolectric.shadows.util;
 import android.app.Application;
 import android.content.Context;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import static org.robolectric.Shadows.shadowOf;
 

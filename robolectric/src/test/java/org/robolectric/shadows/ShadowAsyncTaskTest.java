@@ -7,8 +7,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Join;
-import org.robolectric.util.Transcript;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -20,11 +21,11 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAsyncTaskTest {
-  private Transcript transcript;
+  private List<String> transcript;
 
   @Before
   public void setUp() throws Exception {
-    transcript = new Transcript();
+    transcript = new ArrayList<>();
     Robolectric.getBackgroundThreadScheduler().pause();
     Robolectric.getForegroundThreadScheduler().pause();
   }
@@ -34,14 +35,16 @@ public class ShadowAsyncTaskTest {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
 
     asyncTask.execute("a", "b");
-    transcript.assertEventsSoFar("onPreExecute");
+    assertThat(transcript).containsExactly("onPreExecute");
+    transcript.clear();
 
     ShadowApplication.runBackgroundTasks();
-    transcript.assertEventsSoFar("doInBackground a, b");
+    assertThat(transcript).containsExactly("doInBackground a, b");
+    transcript.clear();
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
     ShadowLooper.runUiThreadTasks();
-    transcript.assertEventsSoFar("onPostExecute c");
+    assertThat(transcript).containsExactly("onPostExecute c");
   }
 
   @Test
@@ -49,16 +52,17 @@ public class ShadowAsyncTaskTest {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
 
     asyncTask.execute("a", "b");
-    transcript.assertEventsSoFar("onPreExecute");
+    assertThat(transcript).containsExactly("onPreExecute");
+    transcript.clear();
 
     assertTrue(asyncTask.cancel(true));
     assertTrue(asyncTask.isCancelled());
 
     ShadowApplication.runBackgroundTasks();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
 
     ShadowLooper.runUiThreadTasks();
-    transcript.assertEventsSoFar("onCancelled");
+    assertThat(transcript).containsExactly("onCancelled");
   }
 
   @Test
@@ -66,17 +70,19 @@ public class ShadowAsyncTaskTest {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
 
     asyncTask.execute("a", "b");
-    transcript.assertEventsSoFar("onPreExecute");
+    assertThat(transcript).containsExactly("onPreExecute");
+    transcript.clear();
 
     ShadowApplication.runBackgroundTasks();
-    transcript.assertEventsSoFar("doInBackground a, b");
+    assertThat(transcript).containsExactly("doInBackground a, b");
+    transcript.clear();
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
     assertFalse(asyncTask.cancel(true));
     assertFalse(asyncTask.isCancelled());
 
     ShadowLooper.runUiThreadTasks();
-    transcript.assertEventsSoFar("onPostExecute c");
+    assertThat(transcript).containsExactly("onPostExecute c");
   }
 
   @Test
@@ -92,18 +98,20 @@ public class ShadowAsyncTaskTest {
     };
 
     asyncTask.execute("a", "b");
-    transcript.assertEventsSoFar("onPreExecute");
+    assertThat(transcript).containsExactly("onPreExecute");
+    transcript.clear();
 
     ShadowApplication.runBackgroundTasks();
-    transcript.assertNoEventsSoFar();
+    assertThat(transcript).isEmpty();
     assertEquals("Result should get stored in the AsyncTask", "done", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
     ShadowLooper.runUiThreadTasks();
-    transcript.assertEventsSoFar(
+    assertThat(transcript).containsExactly(
         "onProgressUpdate 33%",
         "onProgressUpdate 66%",
         "onProgressUpdate 99%",
-        "onPostExecute done");
+        "onPostExecute done"
+    );
   }
 
   @Test
@@ -157,11 +165,12 @@ public class ShadowAsyncTaskTest {
     asyncTask.executeOnExecutor(new ImmediateExecutor(), "a", "b");
 
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
-    transcript.assertEventsSoFar("onPreExecute", "doInBackground a, b");
+    assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
+    transcript.clear();
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get());
 
     ShadowLooper.runUiThreadTasks();
-    transcript.assertEventsSoFar("onPostExecute c");
+    assertThat(transcript).containsExactly("onPostExecute c");
   }
 
   private class MyAsyncTask extends AsyncTask<String, String, String> {

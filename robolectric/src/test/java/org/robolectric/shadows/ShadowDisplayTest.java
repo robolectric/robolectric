@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.junit.Assert.assertEquals;

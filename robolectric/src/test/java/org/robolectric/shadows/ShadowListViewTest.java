@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Transcript;
 
 import android.util.SparseBooleanArray;
 import android.view.View;
@@ -32,7 +31,7 @@ import android.widget.ListView;
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowListViewTest {
 
-  private Transcript transcript;
+  private List<String> transcript;
   private ListView listView;
   private int checkedItemPosition;
   private SparseBooleanArray checkedItemPositions;
@@ -40,7 +39,7 @@ public class ShadowListViewTest {
 
   @Before
   public void setUp() throws Exception {
-    transcript = new Transcript();
+    transcript = new ArrayList<>();
     listView = new ListView(RuntimeEnvironment.application);
   }
 
@@ -144,7 +143,7 @@ public class ShadowListViewTest {
     });
 
     listView.performItemClick(null, 0, -1);
-    transcript.assertEventsSoFar("item was clicked: 0");
+    assertThat(transcript).containsExactly("item was clicked: 0");
   }
 
   @Test
@@ -175,7 +174,7 @@ public class ShadowListViewTest {
       }
     });
     shadowListView.clickFirstItemContainingText("Item 1");
-    transcript.assertEventsSoFar("clicked on item 1");
+    assertThat(transcript).containsExactly("clicked on item 1");
   }
 
   @Test
@@ -195,7 +194,7 @@ public class ShadowListViewTest {
       }
     });
     shadowListView.clickFirstItemContainingText("Item 3");
-    transcript.assertEventsSoFar("clicked on item Item 3");
+    assertThat(transcript).containsExactly("clicked on item Item 3");
   }
 
   @Test(expected = IllegalArgumentException.class)

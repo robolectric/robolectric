@@ -20,14 +20,16 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
+import org.robolectric.android.CustomStateView;
+import org.robolectric.android.CustomView;
+import org.robolectric.android.CustomView2;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.*;
+import org.robolectric.util.ReflectionHelpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -55,7 +57,7 @@ public class ShadowLayoutInflaterTest {
   public void testCreatesCorrectClasses() throws Exception {
     int layoutResId = context.getResources().getIdentifier("media", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    TestUtil.assertInstanceOf(LinearLayout.class, view);
+    assertInstanceOf(LinearLayout.class, view);
 
     assertSame(context, view.getContext());
   }
@@ -108,7 +110,7 @@ public class ShadowLayoutInflaterTest {
   public void testFindsChildrenById() throws Exception {
     int layoutResId1 = context.getResources().getIdentifier("media", "layout", TEST_PACKAGE);
     ViewGroup mediaView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId1, null);
-    TestUtil.assertInstanceOf(TextView.class, mediaView.findViewById(R.id.title));
+    assertInstanceOf(TextView.class, mediaView.findViewById(R.id.title));
 
     int layoutResId = context.getResources().getIdentifier("main", "layout", TEST_PACKAGE);
     ViewGroup mainView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
@@ -206,7 +208,7 @@ public class ShadowLayoutInflaterTest {
   public void testMerge() throws Exception {
     int layoutResId = context.getResources().getIdentifier("outer", "layout", TEST_PACKAGE);
     ViewGroup mediaView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    TestUtil.assertInstanceOf(TextView.class, mediaView.findViewById(R.id.inner_text));
+    assertInstanceOf(TextView.class, mediaView.findViewById(R.id.inner_text));
   }
 
   @Test
@@ -327,7 +329,7 @@ public class ShadowLayoutInflaterTest {
     // Default screen orientation should be portrait.
     int layoutResId1 = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId1, null);
-    TestUtil.assertInstanceOf(LinearLayout.class, view);
+    assertInstanceOf(LinearLayout.class, view);
     assertEquals(view.getId(), R.id.portrait);
     assertSame(context, view.getContext());
 
@@ -335,7 +337,7 @@ public class ShadowLayoutInflaterTest {
     context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     int layoutResId = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
     view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    TestUtil.assertInstanceOf(LinearLayout.class, view);
+    assertInstanceOf(LinearLayout.class, view);
     assertEquals(view.getId(), R.id.portrait);
     assertSame(context, view.getContext());
   }
@@ -350,7 +352,7 @@ public class ShadowLayoutInflaterTest {
     int layoutResId = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
     assertEquals(view.getId(), R.id.landscape);
-    TestUtil.assertInstanceOf(LinearLayout.class, view);
+    assertInstanceOf(LinearLayout.class, view);
   }
 
   @Test
@@ -474,10 +476,10 @@ public class ShadowLayoutInflaterTest {
   public void testConverterAcceptsEnumOrdinal() throws Exception {
     int layoutResId = context.getResources().getIdentifier("ordinal_scrollbar", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    TestUtil.assertInstanceOf(RelativeLayout.class, view);
+    assertInstanceOf(RelativeLayout.class, view);
     ListView listView = (ListView)
         view.findViewById(org.robolectric.R.id.list_view_with_enum_scrollbar);
-    TestUtil.assertInstanceOf(ListView.class, listView);
+    assertInstanceOf(ListView.class, listView);
   }
 
   /////////////////////////

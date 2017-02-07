@@ -1,0 +1,13 @@
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+dependencies {
+    // Compile dependencies
+    compile project(":robolectric-annotations")
+    compile project(":robolectric-sandbox")
+    compile project(":shadow-api")
+
+    compileOnly "com.intellij:annotations:12.0"
+    compileOnly "junit:junit:4.12"
+}

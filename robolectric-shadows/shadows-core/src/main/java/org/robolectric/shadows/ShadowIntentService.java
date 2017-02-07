@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.app.IntentService}.

@@ -15,7 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.content.ClipboardManager}.

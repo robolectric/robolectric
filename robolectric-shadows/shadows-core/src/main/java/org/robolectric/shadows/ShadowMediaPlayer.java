@@ -22,7 +22,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.util.DataSource;
 
 import static org.robolectric.Shadows.shadowOf;

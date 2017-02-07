@@ -12,9 +12,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -522,28 +519,6 @@ public class ShadowAccountManagerTest {
     AccountManager systemService = (AccountManager) app.getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
-  }
-
-  private static class AccountManagerFutureMatcher<T> extends BaseMatcher<AccountManagerFuture<T>> {
-
-    private final Matcher<T> matcher;
-
-    AccountManagerFutureMatcher(Matcher<T> matcher) { this.matcher = matcher; }
-
-    @Override
-    public boolean matches(Object o) {
-      try {
-        return matcher.matches(((AccountManagerFuture) o).getResult());
-      } catch (Exception e) {
-        e.printStackTrace();
-        return false;
-      }
-    }
-
-    @Override
-    public void describeTo(Description description) {
-      matcher.describeTo(description);
-    }
   }
 
   private static class TestAccountManagerCallback implements AccountManagerCallback<Bundle> {

@@ -10,7 +10,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;

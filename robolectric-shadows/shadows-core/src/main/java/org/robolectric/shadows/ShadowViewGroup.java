@@ -14,7 +14,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.PrintStream;
 
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.view.ViewGroup}.

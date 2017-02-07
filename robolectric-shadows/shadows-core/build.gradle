@@ -53,6 +53,7 @@ dependencies {
     compile "com.almworks.sqlite4java:sqlite4java:0.282"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     compile "com.ibm.icu:icu4j:53.1"
+    compile "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"

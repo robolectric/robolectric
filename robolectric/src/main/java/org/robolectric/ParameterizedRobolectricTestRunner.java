@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.runner.Runner;
 import org.junit.runners.Parameterized;
@@ -8,10 +9,9 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.DeepCloner;
+import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.manifest.AndroidManifest;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -100,14 +100,15 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       validateOnlyOneConstructor(errors);
     }
 
+    @NotNull
     @Override
-    Statement methodBlock(FrameworkMethod method, Config config, AndroidManifest appManifest, SdkEnvironment environment) {
-      configureShadows(environment, config);
+    protected SdkEnvironment getSandbox(FrameworkMethod method) {
+      SdkEnvironment sandbox = super.getSandbox(method);
 
-      DeepCloner deepCloner = new DeepCloner(environment.getRobolectricClassLoader());
+      DeepCloner deepCloner = new DeepCloner(sandbox.getRobolectricClassLoader());
       parameters = deepCloner.clone(parameters);
 
-      return super.methodBlock(method, config, appManifest, environment);
+      return sandbox;
     }
 
     @Override
@@ -116,7 +117,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+    protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
       try {
         return new HelperTestRunner(bootstrappedTestClass) {
           @Override

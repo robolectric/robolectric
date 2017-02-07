@@ -55,7 +55,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.newInstanceOf;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 /**
  * Shadow for {@link android.app.Application}.
@@ -75,7 +75,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
   private Handler mainHandler;
   private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
-  private ArrayList<Toast> shownToasts = new ArrayList<>();
+  private List<android.widget.Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;
   private ShadowDialog latestDialog;

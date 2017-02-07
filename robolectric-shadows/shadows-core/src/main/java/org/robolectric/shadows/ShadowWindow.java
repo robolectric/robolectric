@@ -12,7 +12,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.view.Window}.

@@ -17,7 +17,7 @@ import android.os.Handler;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 /**

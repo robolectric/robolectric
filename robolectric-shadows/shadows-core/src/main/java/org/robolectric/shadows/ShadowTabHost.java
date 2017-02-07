@@ -13,7 +13,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import java.util.ArrayList;
 import java.util.List;

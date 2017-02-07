@@ -14,6 +14,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.StubPackageManager;
 import org.robolectric.manifest.*;
 import org.robolectric.util.TempDirectory;
 
@@ -38,7 +39,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private Map<Integer, String> namesForUid = new HashMap<>();
   private Map<Integer, String[]> packagesForUid = new HashMap<>();
 
-  static class IntentComparator implements Comparator<Intent> {
+  public static class IntentComparator implements Comparator<Intent> {
 
     @Override
     public int compare(Intent i1, Intent i2) {

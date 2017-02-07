@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import android.net.Network;
 
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 

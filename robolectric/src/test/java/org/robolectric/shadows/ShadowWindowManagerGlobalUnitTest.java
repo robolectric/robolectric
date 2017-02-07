@@ -5,7 +5,7 @@ import android.view.WindowManagerGlobal;
 import org.junit.Test;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.FailureListener;
+import org.robolectric.android.FailureListener;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

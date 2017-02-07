@@ -28,8 +28,8 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.Shadow;
-import org.robolectric.util.ActivityController;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.android.controller.ActivityController;
 
 import java.util.ArrayList;
 import java.util.List;

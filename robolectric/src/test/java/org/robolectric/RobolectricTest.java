@@ -18,7 +18,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
@@ -26,7 +26,7 @@ import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TestOnClickListener;
+import org.robolectric.android.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

@@ -2,164 +2,84 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
 import org.robolectric.ShadowsAdapter;
+import org.robolectric.android.controller.ComponentController;
 
 /**
- * Controller class for driving fragment lifecycles, similar to {@link org.robolectric.util.ActivityController}. Only
- * necessary if more complex lifecycle management is needed, otherwise {@link org.robolectric.util.FragmentTestUtil}
- * should be sufficient.
+ * @deprecated Use {@link org.robolectric.android.controller.FragmentController} instead.
+ * This will be removed in a forthcoming release.
  */
-public class FragmentController<F extends Fragment> extends ComponentController<FragmentController<F>, F> {
-  private final F fragment;
-  private final ActivityController<? extends Activity> activityController;
-
-  public static <F extends Fragment> FragmentController<F> of(F fragment) {
-    return of(fragment, FragmentControllerActivity.class, null);
+@Deprecated
+abstract public class FragmentController<F extends Fragment> extends ComponentController<org.robolectric.android.controller.FragmentController<F>, F> {
+  /**
+   * @deprecated Use {@link org.robolectric.android.controller.FragmentController#of(Fragment)} instead.
+   * This will be removed in a forthcoming release.
+   */
+  @Deprecated
+  public static <F extends Fragment> org.robolectric.android.controller.FragmentController<F> of(F fragment) {
+    return org.robolectric.android.controller.FragmentController.of(fragment);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass) {
-    return of(fragment, activityClass, null);
+  /**
+   * @deprecated Use {@link org.robolectric.android.controller.FragmentController#of(Fragment, Class)} instead.
+   * This will be removed in a forthcoming release.
+   */
+  @Deprecated
+  public static <F extends Fragment> org.robolectric.android.controller.FragmentController<F> of(F fragment, Class<? extends Activity> activityClass) {
+    return org.robolectric.android.controller.FragmentController.of(fragment, activityClass);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Intent intent) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, FragmentControllerActivity.class, intent);
+  /**
+   * @deprecated Use {@link org.robolectric.android.controller.FragmentController#of(Fragment, Intent)} instead.
+   * This will be removed in a forthcoming release.
+   */
+  @Deprecated
+  public static <F extends Fragment> org.robolectric.android.controller.FragmentController<F> of(F fragment, Intent intent) {
+    return org.robolectric.android.controller.FragmentController.of(fragment, intent);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Intent intent) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass, intent);
+  /**
+   * @deprecated Use {@link org.robolectric.android.controller.FragmentController#of(Fragment, Class, Intent)} instead.
+   * This will be removed in a forthcoming release.
+   */
+  @Deprecated
+  public static <F extends Fragment> org.robolectric.android.controller.FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Intent intent) {
+    return org.robolectric.android.controller.FragmentController.of(fragment, activityClass, intent);
   }
 
-  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass, Intent intent) {
-    super(shadowsAdapter, fragment, intent);
-    this.fragment = fragment;
-    this.activityController = Robolectric.buildActivity(activityClass);
-  }
-
-
-  @Override
-  public FragmentController<F> attach() {
-    return this;
+  protected FragmentController(ShadowsAdapter shadowsAdapter, F activity, Intent intent) {
+    super(shadowsAdapter, activity, intent);
   }
 
   /**
    * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code contentViewId}.
    */
-  public FragmentController<F> create(final int contentViewId, final Bundle bundle) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.create(bundle).get().getFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
-      }
-    });
-    return this;
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> create(final int contentViewId, final Bundle bundle);
 
   /**
    * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment will be added to the view with ID 1.
    */
-  public FragmentController<F> create(Bundle bundle) {
-    return create(1, bundle);
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> create(Bundle bundle);
 
   @Override
-  public FragmentController<F> create() {
-    return create(null);
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> create();
 
   @Override
-  public FragmentController<F> destroy() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.destroy();
-      }
-    });
-    return this;
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> destroy();
 
-  public FragmentController<F> start() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.start();
-      }
-    });
-    return this;
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> start();
 
-  public FragmentController<F> resume() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.resume();
-      }
-    });
-    return this;
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> resume();
 
-  public FragmentController<F> pause() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.pause();
-      }
-    });
-    return this;
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> pause();
 
-  public FragmentController<F> visible() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.visible();
-      }
-    });
-    return this;
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> visible();
 
-  public FragmentController<F> stop() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.stop();
-      }
-    });
-    return this;
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> stop();
 
-  public FragmentController<F> saveInstanceState(final Bundle outState) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.saveInstanceState(outState);
-      }
-    });
-    return this;
-  }
-
-  @Override
-  public FragmentController<F> withIntent(final Intent intent) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.withIntent(intent);
-      }
-    });
-    return this;
-  }
-
-  private static class FragmentControllerActivity extends Activity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      LinearLayout view = new LinearLayout(this);
-      view.setId(1);
-
-      setContentView(view);
-    }
-  }
+  abstract public org.robolectric.android.controller.FragmentController<F> saveInstanceState(final Bundle outState);
 }

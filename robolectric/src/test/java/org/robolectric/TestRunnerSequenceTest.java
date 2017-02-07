@@ -6,32 +6,36 @@ import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunnerSequenceTest {
   public static class StateHolder {
-    public static Transcript transcript;
+    public static List<String> transcript;
   }
 
   @Test public void shouldRunThingsInTheRightOrder() throws Exception {
-    StateHolder.transcript = new Transcript();
+    StateHolder.transcript = new ArrayList<>();
     assertNoFailures(run(new Runner(SimpleTest.class)));
-    StateHolder.transcript.assertEventsSoFar(
+    assertThat(StateHolder.transcript).containsExactly(
         "configureShadows",
 //                "resetStaticState", // no longer an overridable hook
 //                "setupApplicationState", // no longer an overridable hook
@@ -46,10 +50,11 @@ public class TestRunnerSequenceTest {
         "afterTest",
         "application.afterTest"
     );
+    StateHolder.transcript.clear();
   }
 
   @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
-    StateHolder.transcript = new Transcript();
+    StateHolder.transcript = new ArrayList<>();
     assertNoFailures(run(new Runner(SimpleTest.class) {
       @Override protected AndroidManifest getAppManifest(Config config) {
         return new AndroidManifest(null, null, null, "package") {
@@ -60,7 +65,7 @@ public class TestRunnerSequenceTest {
         };
       }
     }));
-    StateHolder.transcript.assertEventsSoFar(
+    assertThat(StateHolder.transcript).containsExactly(
         "configureShadows",
         "createApplication",
         "application.onCreate",
@@ -73,6 +78,7 @@ public class TestRunnerSequenceTest {
         "afterTest",
         "application.afterTest"
     );
+    StateHolder.transcript.clear();
   }
 
   @Test public void shouldReleaseAllStateAfterClassSoWeDontLeakMemory() throws Exception {
@@ -115,10 +121,11 @@ public class TestRunnerSequenceTest {
     }
 
     @NotNull
-    @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-      return InstrumentationConfiguration.newBuilder()
-          .doNotAcquireClass(StateHolder.class.getName())
-          .build();
+    @Override
+    protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
+      InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
+      builder.doNotAcquireClass(StateHolder.class);
+      return builder.build();
     }
 
     @Override
@@ -131,12 +138,13 @@ public class TestRunnerSequenceTest {
       return MyTestLifecycle.class;
     }
 
-    @Override protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
+    @Override protected void configureShadows(FrameworkMethod frameworkMethod, Sandbox sandbox) {
       StateHolder.transcript.add("configureShadows");
-      super.configureShadows(sdkEnvironment, config);
+      super.configureShadows(frameworkMethod, sandbox);
     }
   }
 
+  @DoNotInstrument
   public static class MyTestLifecycle extends DefaultTestLifecycle {
     @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
       StateHolder.transcript.add("createApplication");

@@ -11,8 +11,8 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
+import org.robolectric.android.ParallelUniverse;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
@@ -28,7 +28,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 public class RobolectricTestRunnerTest {
@@ -68,13 +67,13 @@ public class RobolectricTestRunnerTest {
       @Override
       ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
         Class<? extends ParallelUniverseInterface> clazz = sdkEnvironment.bootstrappedClass(MyParallelUniverse.class);
-        return callConstructor(clazz, from(RobolectricTestRunner.class, this));
+        return callConstructor(clazz);
       }
     };
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "failure: java.lang.RuntimeException: fake error in resetStaticState",
-        "failure: java.lang.RuntimeException: fake error in resetStaticState"
+        "failure: fake error in resetStaticState",
+        "failure: fake error in resetStaticState"
     );
   }
 
@@ -95,10 +94,6 @@ public class RobolectricTestRunnerTest {
   /////////////////////////////
 
   public static class MyParallelUniverse extends ParallelUniverse {
-    public MyParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
-      super(robolectricTestRunner);
-    }
-
     @Override
     public void resetStaticState(Config config) {
       throw new RuntimeException("fake error in resetStaticState");

@@ -19,7 +19,9 @@ project.sourceSets.test.compileClasspath += configurations.shadow
 dependencies {
     // Project dependencies
     compile project(":robolectric-annotations")
+    compile project(":robolectric-junit")
     compile project(":robolectric-resources")
+    compile project(":robolectric-sandbox")
     compile project(":robolectric-utils")
 
     // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
@@ -27,11 +29,6 @@ dependencies {
     compile project(":robolectric-shadows/shadows-core")
 
     // Compile dependencies
-    compile "org.ow2.asm:asm:5.0.1"
-    compile "org.ow2.asm:asm-util:5.0.1"
-    compile "org.ow2.asm:asm-commons:5.0.1"
-    compile "org.ow2.asm:asm-analysis:5.0.1"
-
     compile "org.bouncycastle:bcprov-jdk16:1.46"
     compile "com.ximpleware:vtd-xml:2.11"
     compile "com.thoughtworks.xstream:xstream:1.4.8"
@@ -46,9 +43,9 @@ dependencies {
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
-    testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "org.mockito:mockito-core:2.5.4"
+    testCompile project(":testutil")
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates // run against whatever this JDK supports
 }

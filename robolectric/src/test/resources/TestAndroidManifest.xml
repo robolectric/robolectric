@@ -19,7 +19,7 @@
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ChildActivity"
         android:parentActivityName="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
 
-    <activity android:name="org.robolectric.res.DefaultPackageManagerTest$ActivityWithMetadata">
+    <activity android:name="org.robolectric.android.DefaultPackageManagerTest$ActivityWithMetadata">
         <meta-data android:name="someName" android:value="someValue"/>
     </activity>
 
@@ -29,7 +29,7 @@
     <activity android:name=".shadows.ShadowActivityTest$LabelTestActivity3"
               android:label="@string/activity_name"/>
     
-    <activity android:name=".util.ActivityControllerTest$ConfigAwareActivity"
+    <activity android:name=".android.controller.ActivityControllerTest$ConfigAwareActivity"
               android:configChanges="fontScale" />
   </application>
 </manifest>

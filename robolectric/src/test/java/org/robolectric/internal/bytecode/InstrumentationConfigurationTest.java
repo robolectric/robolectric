@@ -1,13 +1,23 @@
 package org.robolectric.internal.bytecode;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.android.AndroidInterceptors;
+import org.robolectric.internal.AndroidConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class InstrumentationConfigurationTest {
-  private final InstrumentationConfiguration config = InstrumentationConfiguration.newBuilder().build();
+  private InstrumentationConfiguration config;
+
+  @Before
+  public void setUp() throws Exception {
+    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
+    AndroidConfigurer.configure(builder, new Interceptors(AndroidInterceptors.all()));
+    config = builder.build();
+  }
 
   @Test
   public void shouldNotInstrumentAndroidAppClasses() throws Exception {
@@ -42,6 +52,15 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldAcquireAndroidRClasses() throws Exception {
+    assertThat(config.shouldAcquire("android.Rfoo")).isTrue();
+    assertThat(config.shouldAcquire("android.fooR")).isTrue();
+    assertThat(config.shouldAcquire("android.R")).isTrue();
+    assertThat(config.shouldAcquire("android.R$anything")).isTrue();
+    assertThat(config.shouldAcquire("android.R$anything$else")).isTrue();
+  }
+
+  @Test
   public void shouldNotAcquireRClasses() throws Exception {
     assertThat(config.shouldAcquire("com.whatever.Rfoo")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.fooR")).isTrue();
@@ -59,9 +78,14 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldNotAcquireShadowClass() throws Exception {
+    assertThat(config.shouldAcquire("org.robolectric.shadow.api.Shadow")).isTrue();
+  }
+
+  @Test
   public void shouldInstrumentCustomClasses() throws Exception {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
-    String notInstrumentName = "com.whatever.DoNotInstruementMe";
+    String notInstrumentName = "com.whatever.DoNotInstrumentMe";
     InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
     assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isTrue();
     assertThat(customConfig.shouldInstrument(wrap(notInstrumentName))).isFalse();
@@ -76,6 +100,7 @@ public class InstrumentationConfigurationTest {
     assertThat(baseConfig).isNotEqualTo(customConfig);
   }
 
+  @Test
   public void shouldNotInstrumentListedClasses() throws Exception {
     String instrumentName = "android.foo.bar";
     InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();

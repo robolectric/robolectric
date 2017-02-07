@@ -22,7 +22,7 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMediaPlayer.InvalidStateBehavior;
 import org.robolectric.shadows.ShadowMediaPlayer.MediaEvent;
 import org.robolectric.shadows.ShadowMediaPlayer.MediaInfo;

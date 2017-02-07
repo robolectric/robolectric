@@ -4,7 +4,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**

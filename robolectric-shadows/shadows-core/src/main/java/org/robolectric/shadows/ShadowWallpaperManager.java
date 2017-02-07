@@ -7,7 +7,7 @@ import android.os.IBinder;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * Shadow for {@link android.app.WallpaperManager}.

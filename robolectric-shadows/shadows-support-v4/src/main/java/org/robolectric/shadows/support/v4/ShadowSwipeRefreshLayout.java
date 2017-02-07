@@ -1,6 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;

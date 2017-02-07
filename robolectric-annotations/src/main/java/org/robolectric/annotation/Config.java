@@ -374,21 +374,21 @@ public @interface Config {
   }
 
   class Builder {
-    private int[] sdk = new int[0];
-    private int minSdk = -1;
-    private int maxSdk = -1;
-    private String manifest = Config.DEFAULT_VALUE_STRING;
-    private String qualifiers = Config.DEFAULT_QUALIFIERS;
-    private String packageName = Config.DEFAULT_PACKAGE_NAME;
-    private String abiSplit = Config.DEFAULT_ABI_SPLIT;
-    private String resourceDir = Config.DEFAULT_RES_FOLDER;
-    private String assetDir = Config.DEFAULT_ASSET_FOLDER;
-    private String buildDir = Config.DEFAULT_BUILD_FOLDER;
-    private Class<?>[] shadows = new Class[0];
-    private String[] instrumentedPackages = new String[0];
-    private Class<? extends Application> application = DEFAULT_APPLICATION;
-    private String[] libraries = new String[0];
-    private Class<?> constants = Void.class;
+    protected int[] sdk = new int[0];
+    protected int minSdk = -1;
+    protected int maxSdk = -1;
+    protected String manifest = Config.DEFAULT_VALUE_STRING;
+    protected String qualifiers = Config.DEFAULT_QUALIFIERS;
+    protected String packageName = Config.DEFAULT_PACKAGE_NAME;
+    protected String abiSplit = Config.DEFAULT_ABI_SPLIT;
+    protected String resourceDir = Config.DEFAULT_RES_FOLDER;
+    protected String assetDir = Config.DEFAULT_ASSET_FOLDER;
+    protected String buildDir = Config.DEFAULT_BUILD_FOLDER;
+    protected Class<?>[] shadows = new Class[0];
+    protected String[] instrumentedPackages = new String[0];
+    protected Class<? extends Application> application = DEFAULT_APPLICATION;
+    protected String[] libraries = new String[0];
+    protected Class<?> constants = Void.class;
 
     public Builder() {
     }

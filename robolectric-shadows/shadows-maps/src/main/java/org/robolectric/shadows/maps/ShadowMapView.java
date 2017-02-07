@@ -17,15 +17,15 @@ import com.google.android.maps.Projection;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.maps.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
