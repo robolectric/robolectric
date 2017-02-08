@@ -23,6 +23,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.MetaData;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
@@ -145,7 +146,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   private void initializeAppManifest(AndroidManifest appManifest, ResourceTable appResourceTable, DefaultPackageManager packageManager) {
-    appManifest.initMetaData(appResourceTable);
+    try {
+      appManifest.initMetaData(appResourceTable);
+    } catch (MetaData.NotFoundException e) {
+      throw new Resources.NotFoundException(e.getMessage(), e);
+    }
 
     int labelRes = 0;
     if (appManifest.getLabelRef() != null) {
