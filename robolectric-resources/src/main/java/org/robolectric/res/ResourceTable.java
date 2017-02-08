@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
@@ -17,7 +18,7 @@ public interface ResourceTable {
 
   TypedResource getValue(@NotNull ResName resName, String qualifiers) ;
 
-  XmlBlock getXml(ResName resName, String qualifiers);
+  XmlBlock getXml(ResName resName, String qualifiers) throws RoboNotFoundException;
 
   InputStream getRawValue(ResName resName, String qualifiers);
 

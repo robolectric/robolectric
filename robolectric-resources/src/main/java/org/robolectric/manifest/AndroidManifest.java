@@ -401,7 +401,7 @@ public class AndroidManifest {
    * a resource index for initialising the resource attributes in all the metadata elements
    * @param resourceTable used for getting resource IDs from string identifiers
    */
-  public void initMetaData(ResourceTable resourceTable) throws MetaData.NotFoundException {
+  public void initMetaData(ResourceTable resourceTable) throws RoboNotFoundException {
     if (!packageNameIsOverridden()) {
       // packageName needs to be resolved
       parseAndroidManifest();

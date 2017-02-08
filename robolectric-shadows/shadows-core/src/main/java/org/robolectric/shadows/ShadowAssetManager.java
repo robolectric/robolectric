@@ -15,6 +15,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.android.XmlResourceParserImpl;
@@ -357,7 +358,11 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    return getXmlResourceParser(null, XmlBlock.create(Fs.fileFromPath(fileName), "fixme"), "fixme");
+    try {
+      return getXmlResourceParser(null, XmlBlock.create(Fs.fileFromPath(fileName), "fixme"), "fixme");
+    } catch (RoboNotFoundException e) {
+      throw new Resources.NotFoundException(e.getMessage(), e);
+    }
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
@@ -368,7 +373,12 @@ public final class ShadowAssetManager {
     }
     resName = resolvedResName;
 
-    XmlBlock block = resourceTable.getXml(resName, RuntimeEnvironment.getQualifiers());
+    XmlBlock block;
+    try {
+      block = resourceTable.getXml(resName, RuntimeEnvironment.getQualifiers());
+    } catch (RoboNotFoundException e) {
+      throw new Resources.NotFoundException(e.getMessage(), e);
+    }
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
     }

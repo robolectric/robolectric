@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.builder.XmlBlock;
 
 public class RoutingResourceTable implements ResourceTable {
@@ -33,7 +34,7 @@ public class RoutingResourceTable implements ResourceTable {
     return resName != null ? getValue(resName, qualifiers) : null;
   }
 
-  public XmlBlock getXml(ResName resName, String qualifiers) {
+  public XmlBlock getXml(ResName resName, String qualifiers) throws RoboNotFoundException {
     return pickFor(resName).getXml(resName, qualifiers);
   }
 

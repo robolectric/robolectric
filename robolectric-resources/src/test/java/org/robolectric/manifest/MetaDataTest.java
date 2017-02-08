@@ -1,6 +1,5 @@
 package org.robolectric.manifest;
 
-import android.content.res.Resources;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,8 +15,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import static org.mockito.Mockito.when;
-
 /**
  * Tests for {@link MetaData}
  */
@@ -31,8 +28,8 @@ public class MetaDataTest {
     MockitoAnnotations.initMocks(this);
   }
 
-  @Test(expected = Resources.NotFoundException.class)
-  public void testNonExistantResource_throwsResourceNotFoundException() {
+  @Test(expected = RoboNotFoundException.class)
+  public void testNonExistantResource_throwsResourceNotFoundException() throws Exception {
     Element metaDataElement = createMetaDataNode("aName", "@xml/non_existant_resource");
 
     MetaData metaData = new MetaData(ImmutableList.<Node>of(metaDataElement));

@@ -32,7 +32,7 @@ public final class MetaData {
     }
   }
 
-  public void init(ResourceTable resourceTable, String packageName) throws NotFoundException {
+  public void init(ResourceTable resourceTable, String packageName) throws RoboNotFoundException {
     if (!initialised) {
       for (Map.Entry<String,VALUE_TYPE> entry : typeMap.entrySet()) {
         String value = valueMap.get(entry.getKey()).toString();
@@ -49,7 +49,7 @@ public final class MetaData {
               TypedResource<?> typedRes = resourceTable.getValue(resName, "");
               // The typed resource's data is always a String, so need to inferFromValue the value.
               if (typedRes == null) {
-                throw new NotFoundException(resName.getFullyQualifiedName());
+                throw new RoboNotFoundException(resName.getFullyQualifiedName());
               }
               switch (typedRes.getResType()) {
                 case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
@@ -67,12 +67,6 @@ public final class MetaData {
       }
       // Finished parsing, mark as initialised
       initialised = true;
-    }
-  }
-
-  public class NotFoundException extends Exception {
-    public NotFoundException(String name) {
-      super(name);
     }
   }
 
