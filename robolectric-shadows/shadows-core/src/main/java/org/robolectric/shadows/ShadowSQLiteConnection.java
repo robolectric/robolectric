@@ -42,11 +42,9 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
  * Shadow for {@link android.database.sqlite.SQLiteConnection}.

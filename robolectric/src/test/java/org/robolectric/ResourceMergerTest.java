@@ -9,8 +9,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.shadows.ShadowApplication;
 
 import java.util.List;
 

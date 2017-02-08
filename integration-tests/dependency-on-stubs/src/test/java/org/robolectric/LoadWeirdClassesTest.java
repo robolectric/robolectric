@@ -8,11 +8,9 @@ import android.view.WindowManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowRenderNodeAnimator;
 import org.robolectric.util.ReflectionHelpers;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class) @Config(sdk = Config.ALL_SDKS)

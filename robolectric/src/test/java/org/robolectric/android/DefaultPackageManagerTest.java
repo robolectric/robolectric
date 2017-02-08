@@ -26,9 +26,7 @@ import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
@@ -39,7 +37,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 

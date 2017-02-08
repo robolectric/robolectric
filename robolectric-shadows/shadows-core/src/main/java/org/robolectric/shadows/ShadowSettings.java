@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.ContentResolver;
-import android.os.Build;
 import android.provider.Settings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;

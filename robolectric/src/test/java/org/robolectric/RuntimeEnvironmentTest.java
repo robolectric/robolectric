@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.robolectric.util.Scheduler;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;

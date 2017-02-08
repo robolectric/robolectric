@@ -5,8 +5,6 @@ import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
-import android.os.Build;
-import android.widget.ProgressBar;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

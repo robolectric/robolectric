@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import android.graphics.FontFamily;
-
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import org.robolectric.RuntimeEnvironment;
