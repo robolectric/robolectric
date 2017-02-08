@@ -1,19 +1,5 @@
 package org.robolectric.manifest;
 
-import android.app.Activity;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.Nullable;
 import org.robolectric.res.FsFile;
@@ -24,21 +10,17 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
-import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
-import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
-import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
-import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
-import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
-import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
@@ -64,12 +46,12 @@ public class AndroidManifest {
   private Integer maxSdkVersion;
   private int versionCode;
   private String versionName;
-  private int applicationFlags;
   private final List<ContentProviderData> providers = new ArrayList<>();
   private final List<BroadcastReceiverData> receivers = new ArrayList<>();
   private final Map<String, ServiceData> serviceDatas = new LinkedHashMap<>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<>();
   private final List<String> usedPermissions = new ArrayList<>();
+  private final Map<String, String> applicationAttributes = new HashMap<>();
   private MetaData applicationMetaData;
   private List<AndroidManifest> libraryManifests = new ArrayList<>();
 
@@ -101,8 +83,8 @@ public class AndroidManifest {
     this.packageName = overridePackageName;
   }
 
-  public String getThemeRef(Class<? extends Activity> activityClass) {
-    ActivityData activityData = getActivityData(activityClass.getName());
+  public String getThemeRef(String activityClassName) {
+    ActivityData activityData = getActivityData(activityClassName);
     String themeRef = activityData != null ? activityData.getThemeRef() : null;
     if (themeRef == null) {
       themeRef = getThemeRef();
@@ -193,7 +175,7 @@ public class AndroidManifest {
   }
 
   private void parseContentProviders(Document manifestDocument) {
-    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    Node application = findApplicationNode(manifestDocument);
     if (application == null) return;
 
     for (Node contentProviderNode : getChildrenTags(application, "provider")) {
@@ -227,7 +209,7 @@ public class AndroidManifest {
   }
 
   private void parseReceivers(final Document manifestDocument) {
-    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    Node application = findApplicationNode(manifestDocument);
     if (application == null) return;
 
     for (Node receiverNode : getChildrenTags(application, "receiver")) {
@@ -258,7 +240,7 @@ public class AndroidManifest {
   }
 
   private void parseServices(final Document manifestDocument) {
-    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    Node application = findApplicationNode(manifestDocument);
     if (application == null) return;
 
     for (Node serviceNode : getChildrenTags(application, "service")) {
@@ -288,7 +270,7 @@ public class AndroidManifest {
   }
 
   private void parseActivities(final Document manifestDocument) {
-    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    Node application = findApplicationNode(manifestDocument);
     if (application == null) return;
 
     for (Node activityNode : getChildrenTags(application, "activity")) {
@@ -298,6 +280,14 @@ public class AndroidManifest {
     for (Node activityNode : getChildrenTags(application, "activity-alias")) {
       parseActivity(activityNode, true);
     }
+  }
+
+  private Node findApplicationNode(Document manifestDocument) {
+    NodeList applicationNodes = manifestDocument.getElementsByTagName("application");
+    if (applicationNodes.getLength() > 1) {
+      throw new RuntimeException("found " + applicationNodes.getLength() + " application elements");
+    }
+    return applicationNodes.item(0);
   }
 
   private void parseActivity(Node activityNode, boolean isAlias) {
@@ -429,7 +419,7 @@ public class AndroidManifest {
   }
 
   private void parseApplicationMetaData(final Document manifestDocument) {
-    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    Node application = findApplicationNode(manifestDocument);
     if (application == null) {
       return;
     }
@@ -452,21 +442,15 @@ public class AndroidManifest {
   }
 
   private void parseApplicationFlags(final Document manifestDocument) {
-    applicationFlags = getApplicationFlag(manifestDocument, "android:allowBackup", FLAG_ALLOW_BACKUP);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:allowClearUserData", FLAG_ALLOW_CLEAR_USER_DATA);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:allowTaskReparenting", FLAG_ALLOW_TASK_REPARENTING);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:debuggable", FLAG_DEBUGGABLE);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:hasCode", FLAG_HAS_CODE);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:killAfterRestore", FLAG_KILL_AFTER_RESTORE);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:persistent", FLAG_PERSISTENT);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:resizeable", FLAG_RESIZEABLE_FOR_SCREENS);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:restoreAnyVersion", FLAG_RESTORE_ANY_VERSION);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:largeScreens", FLAG_SUPPORTS_LARGE_SCREENS);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:normalScreens", FLAG_SUPPORTS_NORMAL_SCREENS);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:anyDensity", FLAG_SUPPORTS_SCREEN_DENSITIES);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:smallScreens", FLAG_SUPPORTS_SMALL_SCREENS);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:testOnly", FLAG_TEST_ONLY);
-    applicationFlags += getApplicationFlag(manifestDocument, "android:vmSafeMode", FLAG_VM_SAFE_MODE);
+    Node applicationNode = findApplicationNode(manifestDocument);
+    if (applicationNode != null) {
+      NamedNodeMap attributes = applicationNode.getAttributes();
+      int attrCount = attributes.getLength();
+      for (int i = 0; i < attrCount; i++) {
+        Node attr = attributes.item(i);
+        applicationAttributes.put(attr.getNodeName(), attr.getTextContent());
+      }
+    }
   }
 
   private int getApplicationFlag(final Document doc, final String attribute, final int attributeValue) {
@@ -491,9 +475,9 @@ public class AndroidManifest {
     return applicationName;
   }
 
-  public String getActivityLabel(Class<? extends Activity> activity) {
+  public String getActivityLabel(String activityClassName) {
     parseAndroidManifest();
-    ActivityData data = getActivityData(activity.getName());
+    ActivityData data = getActivityData(activityClassName);
     return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
   }
 
@@ -534,9 +518,9 @@ public class AndroidManifest {
     return maxSdkVersion;
   }
 
-  public int getApplicationFlags() {
+  public Map<String, String> getApplicationAttributes() {
     parseAndroidManifest();
-    return applicationFlags;
+    return applicationAttributes;
   }
 
   public String getProcessName() {

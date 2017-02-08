@@ -82,7 +82,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     AndroidManifest appManifest = shadowApplication.getAppManifest();
     if (appManifest == null) return false;
 
-    String themeRef = appManifest.getThemeRef(realActivity.getClass());
+    String themeRef = appManifest.getThemeRef(realActivity.getClass().getName());
 
     if (themeRef != null) {
       int themeRes = realActivity.getResources().getIdentifier(themeRef.replace("@", ""), "style", appManifest.getPackageName());

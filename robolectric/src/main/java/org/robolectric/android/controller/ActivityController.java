@@ -105,7 +105,7 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     ShadowApplicationAdapter shadowApplicationAdapter = shadowsAdapter.getApplicationAdapter(component);
     AndroidManifest appManifest = shadowApplicationAdapter.getAppManifest();
     if (appManifest == null) return null;
-    String labelRef = appManifest.getActivityLabel(component.getClass());
+    String labelRef = appManifest.getActivityLabel(component.getClass().getName());
 
     if (labelRef != null) {
       if (labelRef.startsWith("@")) {

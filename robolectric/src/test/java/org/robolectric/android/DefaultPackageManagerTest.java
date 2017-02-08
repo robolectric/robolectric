@@ -4,14 +4,21 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.*;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PathPermission;
+import android.content.pm.ProviderInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +40,21 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
+import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
+import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
+import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
+import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
+import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
+import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -103,6 +125,28 @@ public class DefaultPackageManagerTest {
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
 
+  }
+
+  @Test @Config(manifest = "src/test/resources/TestAndroidManifestWithFlags.xml")
+  public void applicationFlags() throws Exception {
+    int flags = rpm.getApplicationInfo("org.robolectric", 0).flags;
+    assertThat(flags).isEqualTo(
+        FLAG_ALLOW_BACKUP
+        | FLAG_ALLOW_CLEAR_USER_DATA
+        | FLAG_ALLOW_TASK_REPARENTING
+        | FLAG_DEBUGGABLE
+        | FLAG_HAS_CODE
+        | FLAG_KILL_AFTER_RESTORE
+        | FLAG_PERSISTENT
+        | FLAG_RESIZEABLE_FOR_SCREENS
+        | FLAG_RESTORE_ANY_VERSION
+        | FLAG_SUPPORTS_LARGE_SCREENS
+        | FLAG_SUPPORTS_NORMAL_SCREENS
+        | FLAG_SUPPORTS_SCREEN_DENSITIES
+        | FLAG_SUPPORTS_SMALL_SCREENS
+        | FLAG_TEST_ONLY
+        | FLAG_VM_SAFE_MODE
+    );
   }
 
   @Test

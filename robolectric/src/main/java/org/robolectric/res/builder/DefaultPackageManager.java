@@ -3,19 +3,33 @@ package org.robolectric.res.builder;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.*;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
+import android.content.pm.PackageManager;
+import android.content.pm.PathPermission;
+import android.content.pm.ProviderInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.PatternMatcher;
-import android.util.Pair;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.StubPackageManager;
-import org.robolectric.manifest.*;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.PackageItemData;
+import org.robolectric.manifest.PathPermissionData;
+import org.robolectric.manifest.ServiceData;
+import org.robolectric.util.Pair;
 import org.robolectric.util.TempDirectory;
 
 import java.io.File;
@@ -32,7 +46,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
+import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
+import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
+import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
+import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
+import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
+import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.os.Build.VERSION_CODES.N;
+import static java.util.Arrays.asList;
 
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
@@ -555,7 +585,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     }
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
-    applicationInfo.flags = androidManifest.getApplicationFlags();
+    applicationInfo.flags = decodeFlags(androidManifest.getApplicationAttributes());
     applicationInfo.targetSdkVersion = androidManifest.getTargetSdkVersion();
     applicationInfo.packageName = androidManifest.getPackageName();
     applicationInfo.processName = androidManifest.getProcessName();
@@ -576,6 +606,32 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
     packageInfo.applicationInfo = applicationInfo;
     addPackage(packageInfo);
+  }
+
+  private int decodeFlags(Map<String, String> applicationAttributes) {
+    int applicationFlags = 0;
+    for (Pair<String, Integer> pair : asList(
+        Pair.create("android:allowBackup", FLAG_ALLOW_BACKUP),
+        Pair.create("android:allowClearUserData", FLAG_ALLOW_CLEAR_USER_DATA),
+        Pair.create("android:allowTaskReparenting", FLAG_ALLOW_TASK_REPARENTING),
+        Pair.create("android:debuggable", FLAG_DEBUGGABLE),
+        Pair.create("android:hasCode", FLAG_HAS_CODE),
+        Pair.create("android:killAfterRestore", FLAG_KILL_AFTER_RESTORE),
+        Pair.create("android:persistent", FLAG_PERSISTENT),
+        Pair.create("android:resizeable", FLAG_RESIZEABLE_FOR_SCREENS),
+        Pair.create("android:restoreAnyVersion", FLAG_RESTORE_ANY_VERSION),
+        Pair.create("android:largeScreens", FLAG_SUPPORTS_LARGE_SCREENS),
+        Pair.create("android:normalScreens", FLAG_SUPPORTS_NORMAL_SCREENS),
+        Pair.create("android:anyDensity", FLAG_SUPPORTS_SCREEN_DENSITIES),
+        Pair.create("android:smallScreens", FLAG_SUPPORTS_SMALL_SCREENS),
+        Pair.create("android:testOnly", FLAG_TEST_ONLY),
+        Pair.create("android:vmSafeMode", FLAG_VM_SAFE_MODE)
+    )) {
+      if ("true".equals(applicationAttributes.get(pair.first))) {
+        applicationFlags |= pair.second;
+      }
+    }
+    return applicationFlags;
   }
 
   @Override
