@@ -64,9 +64,12 @@ checkApiChanges {
     to = [
             project(":robolectric"),
             project(":robolectric-annotations"),
+            project(":robolectric-junit"),
             project(":robolectric-resources"),
-            project(":robolectric-utils"),
+            project(":robolectric-sandbox"),
             project(":robolectric-shadows/shadows-core"),
+            project(":robolectric-utils"),
+            project(":shadow-api"),
     ]
 
     entryPoints += "org.robolectric.RobolectricTestRunner"

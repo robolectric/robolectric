@@ -246,11 +246,13 @@ class CheckApiChangesPlugin implements Plugin<Project> {
 
             def readObj = {
                 if (buf.size() > 0) buf.append(", ")
+                def objNameBuf = new StringBuilder()
                 for (; i < chars.length; i++) {
                     char c = chars[i]
                     if (c == ';' as char) break
-                    buf.append((c == '/' as char) ? '.' : c)
+                    objNameBuf.append((c == '/' as char) ? '.' : c)
                 }
+                buf.append(objNameBuf.toString().replaceAll(/^java\.lang\./, ''))
             }
 
             for (; i < chars.length;) {
