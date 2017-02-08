@@ -1,7 +1,5 @@
 package org.robolectric.manifest;
 
-import android.content.pm.ActivityInfo;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,24 +73,8 @@ public class ActivityData {
     return getBooleanAttr(withXMLNS(CLEAR_TASK_ON_LAUNCH), false);
   }
 
-  /**
-   * @return Bit mask with the {@link android.content.pm.PackageManager} configuration changes flags.
-   */
-  public int getConfigChanges() {
-    final String v = attrs.get(withXMLNS(CONFIG_CHANGES));
-    final String[] options = {"mcc", "mnc", "locale",
-      "touchscreen", "keyboard", "keyboardHidden",
-      "navigation", "screenLayout", "fontScale",
-      "uiMode", "orientation", "screenSize",
-      "smallestScreenSize"};
-    final int[] flags = {
-      ActivityInfo.CONFIG_MCC, ActivityInfo.CONFIG_MNC, ActivityInfo.CONFIG_LOCALE,
-        ActivityInfo.CONFIG_TOUCHSCREEN, ActivityInfo.CONFIG_KEYBOARD, ActivityInfo.CONFIG_KEYBOARD_HIDDEN,
-        ActivityInfo.CONFIG_NAVIGATION, ActivityInfo.CONFIG_SCREEN_LAYOUT, ActivityInfo.CONFIG_FONT_SCALE,
-        ActivityInfo.CONFIG_UI_MODE, ActivityInfo.CONFIG_ORIENTATION, ActivityInfo.CONFIG_SCREEN_SIZE,
-        ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE
-    };
-    return decodeOptions(v, options, flags);
+  public String getConfigChanges() {
+    return attrs.get(withXMLNS(CONFIG_CHANGES));
   }
 
   public boolean isEnabled() {
@@ -189,33 +171,6 @@ public class ActivityData {
 
   private String withXMLNS(String attr) {
     return withXMLNS(xmlns, attr);
-  }
-
-  /**
-   * Convert a string like 'mcc|keyboard|touchscreen' into the
-   * correct integer.
-   * @param v String to decode
-   * @param possibleFlags Valid labels
-   * @param flagValues flags to or together for the result. Must be the same length as possibleFlags
-   * @return bitwise or of all the found flags
-   */
-  private int decodeOptions(String v, String[] possibleFlags, int[] flagValues) {
-    int res = 0;
-    //quick sanity check.
-    if (v == null || "".equals(v)) {
-      return res;
-    }
-    String[] pieces = v.split("\\|");
-    for(String s : pieces) {
-      s = s.trim();
-      for(int i = 0; i < possibleFlags.length; i++) {
-        if (s.equals(possibleFlags[i])) {
-          res |= flagValues[i];
-          break;
-        }
-      }
-    }
-    return res;
   }
 
   /**

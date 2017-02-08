@@ -26,7 +26,9 @@ import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
@@ -37,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -787,6 +790,26 @@ public class DefaultPackageManagerTest {
 
     ActivityInfo activityInfo = RuntimeEnvironment.getPackageManager().getActivityInfo(activity.getComponentName(), PackageManager.GET_ACTIVITIES|PackageManager.GET_META_DATA);
     assertThat(activityInfo.metaData.get("someName")).isEqualTo("someValue");
+  }
+
+  public static class ActivityWithConfigChanges extends Activity { }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void getActivityMetaData_configChanges() throws Exception {
+    Activity activity = setupActivity(ActivityWithConfigChanges.class);
+
+    ActivityInfo activityInfo = RuntimeEnvironment.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
+
+    int configChanges = activityInfo.configChanges;
+    assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
+    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_LAYOUT).isEqualTo(ActivityInfo.CONFIG_SCREEN_LAYOUT);
+    assertThat(configChanges & ActivityInfo.CONFIG_ORIENTATION).isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
+
+    // Spot check a few other possible values that shouldn't be in the flags.
+    assertThat(configChanges & ActivityInfo.CONFIG_MNC).isZero();
+    assertThat(configChanges & ActivityInfo.CONFIG_FONT_SCALE).isZero();
+    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_SIZE).isZero();
   }
 
   @Test

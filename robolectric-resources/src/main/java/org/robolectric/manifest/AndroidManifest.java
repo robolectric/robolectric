@@ -628,6 +628,7 @@ public class AndroidManifest {
   }
 
   public ActivityData getActivityData(String activityClassName) {
+    parseAndroidManifest();
     return activityDatas.get(activityClassName);
   }
 

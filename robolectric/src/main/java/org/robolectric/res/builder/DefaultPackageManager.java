@@ -184,7 +184,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
     ActivityData activityData = androidManifest.getActivityData(activityName);
     if (activityData != null) {
-      activityInfo.configChanges = activityData.getConfigChanges();
+      activityInfo.configChanges = getConfigChanges(activityData);
       activityInfo.parentActivityName = activityData.getParentActivityName();
       activityInfo.metaData = metaDataToBundle(activityData.getMetaData().getValueMap());
       String themeRef;
@@ -201,6 +201,47 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     }
     activityInfo.applicationInfo = getApplicationInfo(packageName, flags);
     return activityInfo;
+  }
+
+  final List<Pair<String, Integer>> CONFIG_OPTIONS = asList(
+      Pair.create("mcc", ActivityInfo.CONFIG_MCC),
+      Pair.create("mnc", ActivityInfo.CONFIG_MNC),
+      Pair.create("locale", ActivityInfo.CONFIG_LOCALE),
+      Pair.create("touchscreen", ActivityInfo.CONFIG_TOUCHSCREEN),
+      Pair.create("keyboard", ActivityInfo.CONFIG_KEYBOARD),
+      Pair.create("keyboardHidden", ActivityInfo.CONFIG_KEYBOARD_HIDDEN),
+      Pair.create("navigation", ActivityInfo.CONFIG_NAVIGATION),
+      Pair.create("screenLayout", ActivityInfo.CONFIG_SCREEN_LAYOUT),
+      Pair.create("fontScale", ActivityInfo.CONFIG_FONT_SCALE),
+      Pair.create("uiMode", ActivityInfo.CONFIG_UI_MODE),
+      Pair.create("orientation", ActivityInfo.CONFIG_ORIENTATION),
+      Pair.create("screenSize", ActivityInfo.CONFIG_SCREEN_SIZE),
+      Pair.create("smallestScreenSize", ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE)
+  );
+
+  private int getConfigChanges(ActivityData activityData) {
+    String s = activityData.getConfigChanges();
+
+    int res = 0;
+
+    //quick sanity check.
+    if (s == null || "".equals(s)) {
+      return res;
+    }
+
+    String[] pieces = s.split("\\|");
+
+    for(String s1 : pieces) {
+      s1 = s1.trim();
+
+      for (Pair<String, Integer> pair : CONFIG_OPTIONS) {
+        if (s1.equals(pair.first)) {
+          res |= pair.second;
+          break;
+        }
+      }
+    }
+    return res;
   }
 
   @Override
