@@ -71,9 +71,6 @@ public class RobolectricProcessor extends AbstractProcessor {
     processOptions(environment.getOptions());
     model = new RobolectricModel(environment.getElementUtils(), environment.getTypeUtils());
 
-    Messager messager = processingEnv.getMessager();
-    messager.printMessage(Kind.NOTE, "Initialising Robolectric annotation processor");
-
     addValidator(new ImplementationValidator(model, environment));
     addValidator(new ImplementsValidator(model, environment));
     addValidator(new RealObjectValidator(model, environment));

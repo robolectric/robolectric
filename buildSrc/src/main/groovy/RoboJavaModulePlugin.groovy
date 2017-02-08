@@ -33,7 +33,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             test.compileClasspath += project.configurations.compileOnly
         }
 
-        ext.mavenArtifactName = {
+        def mavenArtifactName = {
             def projNameParts = project.name.split(/\//) as List
             if (projNameParts[0] == "robolectric-shadows") {
                 projNameParts = projNameParts.drop(1)
@@ -41,7 +41,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             } else {
                 return project.name
             }
-        }
+        }()
+        ext.mavenArtifactName = mavenArtifactName
 
         task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
             File outDir = project.sourceSets['test'].output.resourcesDir
@@ -109,7 +110,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             uploadArchives {
                 repositories {
                     mavenDeployer {
-                        pom.artifactId = mavenArtifactName()
+                        pom.artifactId = mavenArtifactName
                         pom.project {
                             name project.name
                             description = "An alternative Android testing framework."

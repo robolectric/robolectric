@@ -5,7 +5,7 @@ allprojects {
     }
 
     group = "org.robolectric"
-    version = "3.3-SNAPSHOT"
+    version = thisVersion
 }
 
 buildscript {

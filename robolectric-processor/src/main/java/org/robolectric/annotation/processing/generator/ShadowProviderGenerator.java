@@ -42,7 +42,6 @@ public class ShadowProviderGenerator extends Generator {
   @Override
   public void generate(String shadowPackage) {
     final String shadowClassName = shadowPackage + '.' + GEN_CLASS;
-    messager.printMessage(Diagnostic.Kind.NOTE, "Generating output file: " + shadowClassName);
 
     // TODO: Because this was fairly simple to begin with I haven't
     // included a templating engine like Velocity but simply used
