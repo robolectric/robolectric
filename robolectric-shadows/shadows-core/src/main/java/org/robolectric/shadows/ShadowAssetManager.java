@@ -10,15 +10,29 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.*;
+import org.robolectric.res.AttrData;
+import org.robolectric.res.AttributeResource;
+import org.robolectric.res.DrawableResourceLoader;
+import org.robolectric.res.EmptyStyle;
+import org.robolectric.res.FileTypedResource;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceIds;
+import org.robolectric.res.ResourceTable;
+import org.robolectric.res.Style;
+import org.robolectric.res.StyleData;
+import org.robolectric.res.StyleResolver;
+import org.robolectric.res.ThemeStyleSet;
+import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -358,11 +372,11 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    try {
-      return getXmlResourceParser(null, XmlBlock.create(Fs.fileFromPath(fileName), "fixme"), "fixme");
-    } catch (RoboNotFoundException e) {
-      throw new Resources.NotFoundException(e.getMessage(), e);
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), "fixme");
+    if (xmlBlock == null) {
+      throw new Resources.NotFoundException(fileName);
     }
+    return getXmlResourceParser(null, xmlBlock, "fixme");
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
@@ -373,12 +387,7 @@ public final class ShadowAssetManager {
     }
     resName = resolvedResName;
 
-    XmlBlock block;
-    try {
-      block = resourceTable.getXml(resName, RuntimeEnvironment.getQualifiers());
-    } catch (RoboNotFoundException e) {
-      throw new Resources.NotFoundException(e.getMessage(), e);
-    }
+    XmlBlock block = resourceTable.getXml(resName, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
     }

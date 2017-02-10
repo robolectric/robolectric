@@ -3,7 +3,6 @@ package org.robolectric.res;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import org.jetbrains.annotations.NotNull;
-import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
@@ -55,7 +54,7 @@ public class PackageResourceTable implements ResourceTable {
     return resources.get(getResName(resId), qualifiers);
   }
 
-  public XmlBlock getXml(ResName resName, String qualifiers) throws RoboNotFoundException {
+  public XmlBlock getXml(ResName resName, String qualifiers) {
     FileTypedResource typedResource = (FileTypedResource) resources.get(resName, qualifiers);
     if (typedResource == null || !typedResource.isXml()) {
       return null;

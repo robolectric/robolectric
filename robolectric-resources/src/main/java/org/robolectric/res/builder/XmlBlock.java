@@ -1,7 +1,6 @@
 package org.robolectric.res.builder;
 
-import org.jetbrains.annotations.NotNull;
-import org.robolectric.manifest.RoboNotFoundException;
+import org.jetbrains.annotations.Nullable;
 import org.robolectric.res.FsFile;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -47,12 +46,13 @@ public class XmlBlock {
     }
   }
 
-  @NotNull public static XmlBlock create(FsFile fsFile, String packageName) throws RoboNotFoundException {
+  @Nullable
+  public static XmlBlock create(FsFile fsFile, String packageName) {
     Document document = parse(fsFile);
-    if (document == null) {
-      throw new RoboNotFoundException("couldn't find resource " + fsFile.getPath());
-    }
-    return new XmlBlock(document, fsFile.getPath(), packageName);
+
+    return document == null
+        ? null
+        : new XmlBlock(document, fsFile.getPath(), packageName);
   }
 
   private XmlBlock(Document document, String filename, String packageName) {

@@ -1,13 +1,11 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.builder.XmlBlock;
 
 public class RoutingResourceTable implements ResourceTable {
   private static final PackageResourceTable EMPTY_RESOURCE_TABLE = ResourceTableFactory.newResourceTable("");
@@ -34,7 +32,7 @@ public class RoutingResourceTable implements ResourceTable {
     return resName != null ? getValue(resName, qualifiers) : null;
   }
 
-  public XmlBlock getXml(ResName resName, String qualifiers) throws RoboNotFoundException {
+  public XmlBlock getXml(ResName resName, String qualifiers) {
     return pickFor(resName).getXml(resName, qualifiers);
   }
 
