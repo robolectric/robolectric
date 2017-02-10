@@ -38,9 +38,9 @@ public interface RobolectricPackageManager {
 
   void removeResolveInfosForIntent(Intent intent, String packageName);
 
-  Drawable getActivityIcon(Intent intent);
+  Drawable getActivityIcon(Intent intent) throws PackageManager.NameNotFoundException;
 
-  Drawable getActivityIcon(ComponentName componentName);
+  Drawable getActivityIcon(ComponentName componentName) throws PackageManager.NameNotFoundException;
 
   void addActivityIcon(ComponentName component, Drawable d);
 
