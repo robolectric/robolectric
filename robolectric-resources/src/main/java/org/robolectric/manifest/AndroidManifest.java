@@ -34,6 +34,7 @@ public class AndroidManifest {
 
   private boolean manifestIsParsed;
 
+  private Node applicationNode;
   private String applicationName;
   private String applicationLabel;
   private String rClassName;
@@ -127,25 +128,36 @@ public class AndroidManifest {
         versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
         versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
         rClassName = packageName + ".R";
-        applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-        applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
+
+        applicationNode = findApplicationNode(manifestDocument);
+        if (applicationNode != null) {
+          NamedNodeMap attributes = applicationNode.getAttributes();
+          int attrCount = attributes.getLength();
+          for (int i = 0; i < attrCount; i++) {
+            Node attr = attributes.item(i);
+            applicationAttributes.put(attr.getNodeName(), attr.getTextContent());
+          }
+
+          applicationName = applicationAttributes.get("android:name");
+          applicationLabel = applicationAttributes.get("android:label");
+          processName = applicationAttributes.get("android:process");
+          themeRef = applicationAttributes.get("android:theme");
+          labelRef = applicationAttributes.get("android:label");
+
+          parseReceivers();
+          parseServices();
+          parseActivities();
+          parseApplicationMetaData();
+          parseContentProviders();
+        }
+
         minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
         targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
         maxSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:maxSdkVersion");
-        processName = getTagAttributeText(manifestDocument, "application", "android:process");
         if (processName == null) {
           processName = packageName;
         }
 
-        themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
-        labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
-
-        parseApplicationFlags(manifestDocument);
-        parseReceivers(manifestDocument);
-        parseServices(manifestDocument);
-        parseActivities(manifestDocument);
-        parseApplicationMetaData(manifestDocument);
-        parseContentProviders(manifestDocument);
         parseUsedPermissions(manifestDocument);
       } catch (Exception ignored) {
         ignored.printStackTrace();
@@ -174,11 +186,8 @@ public class AndroidManifest {
     }
   }
 
-  private void parseContentProviders(Document manifestDocument) {
-    Node application = findApplicationNode(manifestDocument);
-    if (application == null) return;
-
-    for (Node contentProviderNode : getChildrenTags(application, "provider")) {
+  private void parseContentProviders() {
+    for (Node contentProviderNode : getChildrenTags(applicationNode, "provider")) {
       String name = getAttributeValue(contentProviderNode, "android:name");
       String authority = getAttributeValue(contentProviderNode, "android:authorities");
       MetaData metaData = new MetaData(getChildrenTags(contentProviderNode, "meta-data"));
@@ -208,11 +217,8 @@ public class AndroidManifest {
     return attributeNode == null ? null : attributeNode.getTextContent();
   }
 
-  private void parseReceivers(final Document manifestDocument) {
-    Node application = findApplicationNode(manifestDocument);
-    if (application == null) return;
-
-    for (Node receiverNode : getChildrenTags(application, "receiver")) {
+  private void parseReceivers() {
+    for (Node receiverNode : getChildrenTags(applicationNode, "receiver")) {
       Node namedItem = receiverNode.getAttributes().getNamedItem("android:name");
       if (namedItem == null) continue;
 
@@ -239,11 +245,8 @@ public class AndroidManifest {
     }
   }
 
-  private void parseServices(final Document manifestDocument) {
-    Node application = findApplicationNode(manifestDocument);
-    if (application == null) return;
-
-    for (Node serviceNode : getChildrenTags(application, "service")) {
+  private void parseServices() {
+    for (Node serviceNode : getChildrenTags(applicationNode, "service")) {
       Node namedItem = serviceNode.getAttributes().getNamedItem("android:name");
       if (namedItem == null) continue;
 
@@ -269,15 +272,12 @@ public class AndroidManifest {
     }
   }
 
-  private void parseActivities(final Document manifestDocument) {
-    Node application = findApplicationNode(manifestDocument);
-    if (application == null) return;
-
-    for (Node activityNode : getChildrenTags(application, "activity")) {
+  private void parseActivities() {
+    for (Node activityNode : getChildrenTags(applicationNode, "activity")) {
       parseActivity(activityNode, false);
     }
 
-    for (Node activityNode : getChildrenTags(application, "activity-alias")) {
+    for (Node activityNode : getChildrenTags(applicationNode, "activity-alias")) {
       parseActivity(activityNode, true);
     }
   }
@@ -418,12 +418,8 @@ public class AndroidManifest {
     }
   }
 
-  private void parseApplicationMetaData(final Document manifestDocument) {
-    Node application = findApplicationNode(manifestDocument);
-    if (application == null) {
-      return;
-    }
-    applicationMetaData = new MetaData(getChildrenTags(application, "meta-data"));
+  private void parseApplicationMetaData() {
+    applicationMetaData = new MetaData(getChildrenTags(applicationNode, "meta-data"));
   }
 
   private String resolveClassRef(String maybePartialClassName) {
@@ -439,23 +435,6 @@ public class AndroidManifest {
       }
     }
     return children;
-  }
-
-  private void parseApplicationFlags(final Document manifestDocument) {
-    Node applicationNode = findApplicationNode(manifestDocument);
-    if (applicationNode != null) {
-      NamedNodeMap attributes = applicationNode.getAttributes();
-      int attrCount = attributes.getLength();
-      for (int i = 0; i < attrCount; i++) {
-        Node attr = attributes.item(i);
-        applicationAttributes.put(attr.getNodeName(), attr.getTextContent());
-      }
-    }
-  }
-
-  private int getApplicationFlag(final Document doc, final String attribute, final int attributeValue) {
-    String flagString = getTagAttributeText(doc, "application", attribute);
-    return "true".equalsIgnoreCase(flagString) ? attributeValue : 0;
   }
 
   private Integer getTagAttributeIntValue(final Document doc, final String tag, final String attribute) {
