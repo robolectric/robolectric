@@ -106,7 +106,24 @@ public class ShadowToast {
   }
 
   /**
-   * Non-Android accessor that discards the recorded {@code Toast}s
+   * Non-Android accessor that discards the recorded {@code Toast}s. Shown toasts are automatically cleared between
+   * tests. This method allows the user to discard recorded toasts during the test in order to make assertions clearer
+   * e.g:
+   *
+   * <pre>
+   *
+   *   // Show a single toast
+   *   myClass.showToast();
+   *
+   *   assertThat(ShadowToast.shownToastCount()).isEqualTo(1);
+   *   ShadowToast.reset();
+   *
+   *    // Show another toast
+   *   myClass.showToast();
+   *
+   *   assertThat(ShadowToast.shownToastCount()).isEqualTo(1);
+   *
+   * </pre>
    */
   public static void reset() {
     shadowOf(RuntimeEnvironment.application).getShownToasts().clear();
