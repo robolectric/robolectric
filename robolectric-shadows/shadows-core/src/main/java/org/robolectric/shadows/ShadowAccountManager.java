@@ -42,7 +42,7 @@ public class ShadowAccountManager {
 
   private List<Account> accounts = new ArrayList<Account>();
   private Map<Account, Map<String, String>> authTokens = new HashMap<Account, Map<String,String>>();
-  private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<String, AuthenticatorDescription>();
+  private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
   private List<OnAccountsUpdateListener> listeners = new ArrayList<OnAccountsUpdateListener>();
   private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
   private Map<Account, String> passwords = new HashMap<Account, String>();
@@ -426,5 +426,27 @@ public class ShadowAccountManager {
   @Implementation(minSdk = LOLLIPOP)
   public String getPreviousName(Account account) {
     return previousNames.get(account);
+  }
+
+  @Implementation
+  public AccountManagerFuture<Bundle> getAuthToken(
+      final Account account, final String authTokenType, final Bundle options,
+      final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
+    Bundle result = new Bundle();
+
+    String authToken = blockingGetAuthToken(account, authTokenType, false);
+    result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+    result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+    result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+
+    final RoboAccountManagerFuture future = new RoboAccountManagerFuture(account.type, result);
+    handler.post(new Runnable() {
+      @Override
+      public void run() {
+        callback.run(future);
+      }
+    });
+
+    return future;
   }
 }

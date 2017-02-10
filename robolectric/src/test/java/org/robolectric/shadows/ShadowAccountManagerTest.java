@@ -12,9 +12,11 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
@@ -519,6 +521,23 @@ public class ShadowAccountManagerTest {
     AccountManager systemService = (AccountManager) app.getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
+  }
+
+  @Test
+  public void getAuthToken() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    am.setAuthToken(account, "auth_token_type", "token1");
+
+    TestAccountManagerCallback callback = new TestAccountManagerCallback();
+    AccountManagerFuture<Bundle> future = am.getAuthToken(account, "auth_token_type", new Bundle(), Robolectric.setupActivity(Activity.class), callback, new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
   }
 
   private static class TestAccountManagerCallback implements AccountManagerCallback<Bundle> {
