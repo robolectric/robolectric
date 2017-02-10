@@ -203,7 +203,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     return activityInfo;
   }
 
-  final List<Pair<String, Integer>> CONFIG_OPTIONS = asList(
+  private static final List<Pair<String, Integer>> CONFIG_OPTIONS = asList(
       Pair.create("mcc", ActivityInfo.CONFIG_MCC),
       Pair.create("mnc", ActivityInfo.CONFIG_MNC),
       Pair.create("locale", ActivityInfo.CONFIG_LOCALE),
@@ -649,25 +649,27 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     addPackage(packageInfo);
   }
 
+  private static final List<Pair<String, Integer>> APPLICATION_FLAGS = asList(
+      Pair.create("android:allowBackup", FLAG_ALLOW_BACKUP),
+      Pair.create("android:allowClearUserData", FLAG_ALLOW_CLEAR_USER_DATA),
+      Pair.create("android:allowTaskReparenting", FLAG_ALLOW_TASK_REPARENTING),
+      Pair.create("android:debuggable", FLAG_DEBUGGABLE),
+      Pair.create("android:hasCode", FLAG_HAS_CODE),
+      Pair.create("android:killAfterRestore", FLAG_KILL_AFTER_RESTORE),
+      Pair.create("android:persistent", FLAG_PERSISTENT),
+      Pair.create("android:resizeable", FLAG_RESIZEABLE_FOR_SCREENS),
+      Pair.create("android:restoreAnyVersion", FLAG_RESTORE_ANY_VERSION),
+      Pair.create("android:largeScreens", FLAG_SUPPORTS_LARGE_SCREENS),
+      Pair.create("android:normalScreens", FLAG_SUPPORTS_NORMAL_SCREENS),
+      Pair.create("android:anyDensity", FLAG_SUPPORTS_SCREEN_DENSITIES),
+      Pair.create("android:smallScreens", FLAG_SUPPORTS_SMALL_SCREENS),
+      Pair.create("android:testOnly", FLAG_TEST_ONLY),
+      Pair.create("android:vmSafeMode", FLAG_VM_SAFE_MODE)
+  );
+
   private int decodeFlags(Map<String, String> applicationAttributes) {
     int applicationFlags = 0;
-    for (Pair<String, Integer> pair : asList(
-        Pair.create("android:allowBackup", FLAG_ALLOW_BACKUP),
-        Pair.create("android:allowClearUserData", FLAG_ALLOW_CLEAR_USER_DATA),
-        Pair.create("android:allowTaskReparenting", FLAG_ALLOW_TASK_REPARENTING),
-        Pair.create("android:debuggable", FLAG_DEBUGGABLE),
-        Pair.create("android:hasCode", FLAG_HAS_CODE),
-        Pair.create("android:killAfterRestore", FLAG_KILL_AFTER_RESTORE),
-        Pair.create("android:persistent", FLAG_PERSISTENT),
-        Pair.create("android:resizeable", FLAG_RESIZEABLE_FOR_SCREENS),
-        Pair.create("android:restoreAnyVersion", FLAG_RESTORE_ANY_VERSION),
-        Pair.create("android:largeScreens", FLAG_SUPPORTS_LARGE_SCREENS),
-        Pair.create("android:normalScreens", FLAG_SUPPORTS_NORMAL_SCREENS),
-        Pair.create("android:anyDensity", FLAG_SUPPORTS_SCREEN_DENSITIES),
-        Pair.create("android:smallScreens", FLAG_SUPPORTS_SMALL_SCREENS),
-        Pair.create("android:testOnly", FLAG_TEST_ONLY),
-        Pair.create("android:vmSafeMode", FLAG_VM_SAFE_MODE)
-    )) {
+    for (Pair<String, Integer> pair : APPLICATION_FLAGS) {
       if ("true".equals(applicationAttributes.get(pair.first))) {
         applicationFlags |= pair.second;
       }
