@@ -120,42 +120,20 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  public AccountManagerFuture<Boolean> removeAccount (final Account account,
+  public AccountManagerFuture<Boolean> removeAccount(final Account account,
                                                       AccountManagerCallback<Boolean> callback,
                                                       Handler handler) {
 
-    if (account == null) throw new IllegalArgumentException("account is null");
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
 
-    final boolean accountRemoved = accounts.remove(account);
-	passwords.remove(account);
-	userData.remove(account);
-
-    return new AccountManagerFuture<Boolean>() {
+	  return new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
       @Override
-      public boolean cancel(boolean mayInterruptIfRunning) {
-        return false;
-      }
-
-      @Override
-      public boolean isCancelled() {
-        return false;
-      }
-
-      @Override
-      public boolean isDone() {
-        return false;
-      }
-
-      @Override
-      public Boolean getResult() throws OperationCanceledException, IOException,
-              AuthenticatorException {
-        return accountRemoved;
-      }
-
-      @Override
-      public Boolean getResult(long timeout, TimeUnit unit) throws OperationCanceledException,
-              IOException, AuthenticatorException {
-        return accountRemoved;
+      public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
+        passwords.remove(account);
+        userData.remove(account);
+        return accounts.remove(account);
       }
     };
   }
@@ -321,58 +299,6 @@ public class ShadowAccountManager {
     this.accountFeatures.put(account, featureSet);
   }
 
-  private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
-
-    private final AccountManagerCallback<T> callback;
-    private final Handler handler;
-    protected T result;
-
-    BaseRoboAccountManagerFuture(AccountManagerCallback<T> callback, Handler handler) {
-      this.callback = callback;
-      if (handler == null) {
-        this.handler = mainHandler;
-      } else {
-        this.handler = handler;
-      }
-    }
-
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-      return false;
-    }
-
-    @Override
-    public boolean isCancelled() {
-      return false;
-    }
-
-    @Override
-    public boolean isDone() {
-      return result != null;
-    }
-
-    @Override
-    public T getResult() throws OperationCanceledException, IOException, AuthenticatorException {
-      result = doWork();
-      if (callback != null) {
-        handler.post(new Runnable() {
-          @Override
-          public void run() {
-            callback.run(BaseRoboAccountManagerFuture.this);
-          }
-        });
-      }
-      return result;
-    }
-
-    @Override
-    public T getResult(long timeout, TimeUnit unit) throws OperationCanceledException, IOException, AuthenticatorException {
-      return getResult();
-    }
-
-    public abstract T doWork() throws OperationCanceledException, IOException, AuthenticatorException;
-  }
-
   @Implementation
   public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, final Bundle addAccountOptions, final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
     pendingAddFuture = new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
@@ -424,6 +350,7 @@ public class ShadowAccountManager {
   }
 
   private Map<Account, String> previousNames = new HashMap<Account, String>();
+
   /**
    * Non-android accessor.
    *
@@ -497,5 +424,57 @@ public class ShadowAccountManager {
         return result.toArray(new Account[result.size()]);
       }
     };
+  }
+
+  private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
+
+    private final AccountManagerCallback<T> callback;
+    private final Handler handler;
+    protected T result;
+
+    BaseRoboAccountManagerFuture(AccountManagerCallback<T> callback, Handler handler) {
+      this.callback = callback;
+      if (handler == null) {
+        this.handler = mainHandler;
+      } else {
+        this.handler = handler;
+      }
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+      return false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+      return false;
+    }
+
+    @Override
+    public boolean isDone() {
+      return result != null;
+    }
+
+    @Override
+    public T getResult() throws OperationCanceledException, IOException, AuthenticatorException {
+      result = doWork();
+      if (callback != null) {
+        handler.post(new Runnable() {
+          @Override
+          public void run() {
+            callback.run(BaseRoboAccountManagerFuture.this);
+          }
+        });
+      }
+      return result;
+    }
+
+    @Override
+    public T getResult(long timeout, TimeUnit unit) throws OperationCanceledException, IOException, AuthenticatorException {
+      return getResult();
+    }
+
+    public abstract T doWork() throws OperationCanceledException, IOException, AuthenticatorException;
   }
 }

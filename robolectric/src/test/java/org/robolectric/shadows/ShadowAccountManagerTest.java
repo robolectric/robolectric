@@ -297,9 +297,12 @@ public class ShadowAccountManagerTest {
     Account account = new Account("name", "type");
     shadowOf(am).addAccount(account);
 
-    AccountManagerFuture<Boolean> future = am.removeAccount(account, null, null);
+    TestAccountManagerCallback<Boolean> testAccountManagerCallback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Boolean> future = am.removeAccount(account, testAccountManagerCallback, null);
     assertThat(future.getResult()).isTrue();
     assertThat(am.getAccountsByType("type")).isEmpty();
+
+    assertThat(testAccountManagerCallback.accountManagerFuture).isNotNull();
   }
 
   private static class TestOnAccountsUpdateListener implements OnAccountsUpdateListener {
