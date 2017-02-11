@@ -635,20 +635,21 @@ public class ShadowContentResolverTest {
   @Test
   public void shouldRegisterContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
-    ShadowContentResolver scr = shadowOf(contentResolver);
 
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    assertThat(shadowContentResolver.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
 
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
 
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
+    assertThat(shadowContentResolver.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
+    assertThat(shadowContentResolver.getDescendantsObservers()).containsExactly(co);
 
     assertThat(co.changed).isFalse();
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isTrue();
 
-    scr.clearContentObservers();
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    shadowContentResolver.clearContentObservers();
+    assertThat(shadowContentResolver.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    assertThat(shadowContentResolver.getDescendantsObservers()).isEmpty();
   }
 
   @Test
@@ -665,6 +666,7 @@ public class ShadowContentResolverTest {
 
     assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
     assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
+    assertThat(shadowContentResolver.getDescendantsObservers()).containsExactly(co, co1, co2);
 
     assertThat(co.changed).isFalse();
     assertThat(co1.changed).isFalse();
@@ -676,17 +678,19 @@ public class ShadowContentResolverTest {
 
     shadowContentResolver.clearContentObservers();
     assertThat(shadowContentResolver.getContentObservers(uri21)).isEmpty();
+    assertThat(shadowContentResolver.getDescendantsObservers()).isEmpty();
   }
 
   @Test
   public void shouldUnregisterContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
-    ShadowContentResolver scr = shadowOf(contentResolver);
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
+    assertThat(shadowContentResolver.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
+    assertThat(shadowContentResolver.getDescendantsObservers()).containsExactly(co);
 
     contentResolver.unregisterContentObserver(co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    assertThat(shadowContentResolver.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    assertThat(shadowContentResolver.getDescendantsObservers()).isEmpty();
 
     assertThat(co.changed).isFalse();
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
@@ -705,6 +709,7 @@ public class ShadowContentResolverTest {
     contentResolver.registerContentObserver(uri22, true, co2);
     assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
     assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co, co2);
+    assertThat(shadowContentResolver.getDescendantsObservers()).containsExactly(co, co1, co2);
 
     contentResolver.unregisterContentObserver(co);
     assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
@@ -713,6 +718,7 @@ public class ShadowContentResolverTest {
     contentResolver.unregisterContentObserver(co2);
     assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
     assertThat(shadowContentResolver.getContentObservers(uri22)).isEmpty();
+    assertThat(shadowContentResolver.getDescendantsObservers()).containsExactly(co1);
 
     assertThat(co.changed).isFalse();
     assertThat(co1.changed).isFalse();
@@ -720,6 +726,59 @@ public class ShadowContentResolverTest {
     contentResolver.notifyChange(uri21, null);
     contentResolver.notifyChange(uri22, null);
     assertThat(co.changed).isFalse();
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isFalse();
+  }
+
+  @Test
+  public void shouldNotRegisterAsDescendantsObserver() throws Exception {
+    TestContentObserver co = new TestContentObserver(null);
+
+    contentResolver.registerContentObserver(uri21, false, co);
+    assertThat(shadowContentResolver.getDescendantsObservers()).isEmpty();
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co);
+  }
+
+  @Test
+  public void notifyChange_shouldNotifyDescendantsObservers() throws Exception {
+    TestContentObserver co = new TestContentObserver(null);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
+    contentResolver.notifyChange(uri21, null);
+    assertThat(co.changed).isTrue();
+  }
+
+  @Test
+  public void notifyChange_shouldNotNotifyIfNotifyForDescendantsFalse() throws Exception {
+    TestContentObserver co = new TestContentObserver(null);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, false, co);
+    contentResolver.notifyChange(uri21, null);
+    assertThat(co.changed).isFalse();
+  }
+
+  @Test
+  public void notifyChange_shouldNotifyMultipleObserversOnDescendantsChanges() throws Exception {
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co1);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co2);
+
+    contentResolver.notifyChange(uri21, null);
+
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isTrue();
+  }
+
+  @Test
+  public void notifyChange_shouldNotifyOnlyDescendantsObservers() throws Exception {
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co1);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, false, co2);
+    assertThat(shadowContentResolver.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly(co1, co2);
+    assertThat(shadowContentResolver.getDescendantsObservers()).containsExactly(co1);
+
+    contentResolver.notifyChange(uri21, null);
+
     assertThat(co1.changed).isTrue();
     assertThat(co2.changed).isFalse();
   }
