@@ -344,6 +344,24 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void testAccountsUpdateListener_listenerNotInvokedAfterRemoval() {
+    TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();
+    am.addOnAccountsUpdatedListener(listener, null, false);
+    assertThat(listener.getInvocationCount()).isEqualTo(0);
+
+    Account account = new Account("name", "type");
+    shadowOf(am).addAccount(account);
+
+    assertThat(listener.getInvocationCount()).isEqualTo(1);
+
+    am.removeOnAccountsUpdatedListener(listener);
+
+    shadowOf(am).addAccount(account);
+
+    assertThat(listener.getInvocationCount()).isEqualTo(1);
+  }
+
+  @Test
   public void testAddAuthenticator() {
     shadowOf(am).addAuthenticator("type");
     AuthenticatorDescription[] result = am.getAuthenticatorTypes();

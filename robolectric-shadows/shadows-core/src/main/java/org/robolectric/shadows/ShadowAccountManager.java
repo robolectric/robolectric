@@ -181,7 +181,12 @@ public class ShadowAccountManager {
       listener.onAccountsUpdated(getAccounts());
     }
   }
-  
+
+  @Implementation
+  public void removeOnAccountsUpdatedListener(OnAccountsUpdateListener listener) {
+    listeners.remove(listener);
+  }
+
   @Implementation
   public String getUserData(Account account, String key) {
     if (account == null) {
