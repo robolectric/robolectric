@@ -11,8 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.MultiApiRobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestApplication;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 @Config(manifest = Config.NONE)

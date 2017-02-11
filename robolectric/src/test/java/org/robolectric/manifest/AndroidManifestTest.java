@@ -1,8 +1,6 @@
 package org.robolectric.manifest;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import org.junit.Rule;
@@ -370,23 +368,9 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReadFlagsFromAndroidManifest() throws Exception {
+  public void shouldReadApplicationAttrsFromAndroidManifest() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithFlags.xml");
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_ALLOW_BACKUP));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_ALLOW_CLEAR_USER_DATA));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_ALLOW_TASK_REPARENTING));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_DEBUGGABLE));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_HAS_CODE));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_KILL_AFTER_RESTORE));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_PERSISTENT));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_RESIZEABLE_FOR_SCREENS));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_RESTORE_ANY_VERSION));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_SUPPORTS_LARGE_SCREENS));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_SUPPORTS_NORMAL_SCREENS));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_SUPPORTS_SCREEN_DENSITIES));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_SUPPORTS_SMALL_SCREENS));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_TEST_ONLY));
-    assertTrue(hasFlag(config.getApplicationFlags(), FLAG_VM_SAFE_MODE));
+    assertThat(config.getApplicationAttributes().get("android:allowBackup")).isEqualTo("true");
   }
 
   /////////////////////////////

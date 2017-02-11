@@ -3,9 +3,7 @@ package org.robolectric.res;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 
 public interface ResourceTable {
 

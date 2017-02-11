@@ -1,6 +1,5 @@
 package org.robolectric.shadows.support.v4;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.support.v4.content.CursorLoader;
 import org.junit.Test;

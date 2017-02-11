@@ -13,7 +13,6 @@ import android.os.Looper;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
@@ -23,6 +22,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
@@ -145,7 +145,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   private void initializeAppManifest(AndroidManifest appManifest, ResourceTable appResourceTable, DefaultPackageManager packageManager) {
-    appManifest.initMetaData(appResourceTable);
+    try {
+      appManifest.initMetaData(appResourceTable);
+    } catch (RoboNotFoundException e) {
+      throw new Resources.NotFoundException(e.getMessage(), e);
+    }
 
     int labelRes = 0;
     if (appManifest.getLabelRef() != null) {

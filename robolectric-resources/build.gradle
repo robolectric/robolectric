@@ -10,7 +10,6 @@ dependencies {
     // Compile dependencies
     compile "com.ximpleware:vtd-xml:2.11"
     compile "com.google.guava:guava:20.0"
-    compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "com.intellij:annotations:12.0"
 
     // Testing dependencies
@@ -19,5 +18,4 @@ dependencies {
     testCompile "com.google.testing.compile:compile-testing:0.6"
     testCompile "org.mockito:mockito-core:2.5.4"
     testCompile project(":testutil")
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
 }

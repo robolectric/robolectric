@@ -1,11 +1,11 @@
 package org.robolectric.manifest;
 
 import org.junit.Test;
-import java.util.HashMap;
-import java.util.ArrayList;
-import android.content.pm.ActivityInfo;
 
-import static org.assertj.core.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ActivityDataTest {
 
@@ -25,14 +25,6 @@ public class ActivityDataTest {
     attrs.put("android:configChanges", "mcc|screenLayout|orientation");
     ActivityData activityData = new ActivityData(attrs, new ArrayList<IntentFilterData>());
 
-    final int flags = activityData.getConfigChanges();
-    assertThat(flags & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
-    assertThat(flags & ActivityInfo.CONFIG_SCREEN_LAYOUT).isEqualTo(ActivityInfo.CONFIG_SCREEN_LAYOUT);
-    assertThat(flags & ActivityInfo.CONFIG_ORIENTATION).isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
-
-    // Spot check a few other possible values that shouldn't be in the flags.
-    assertThat(flags & ActivityInfo.CONFIG_MNC).isZero();
-    assertThat(flags & ActivityInfo.CONFIG_FONT_SCALE).isZero();
-    assertThat(flags & ActivityInfo.CONFIG_SCREEN_SIZE).isZero();
+    assertThat(activityData.getConfigChanges()).isEqualTo("mcc|screenLayout|orientation");
   }
 }

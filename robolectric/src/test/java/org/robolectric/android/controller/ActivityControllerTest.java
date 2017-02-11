@@ -31,7 +31,6 @@ import android.widget.LinearLayout;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
-import org.robolectric.util.TestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
