@@ -574,6 +574,30 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isTrue();
   }
 
+  @Test
+  public void getAccountsByTypeAndFeatures() throws Exception {
+
+    Account accountWithCorrectTypeAndFeatures = new Account("account_1", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeAndFeatures);
+    shadowOf(am).setFeatures(accountWithCorrectTypeAndFeatures, new String[] { "FEATURE_1", "FEATURE_2" });
+
+    Account accountWithCorrectTypeButNotFeatures = new Account("account_2", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeButNotFeatures);
+    shadowOf(am).setFeatures(accountWithCorrectTypeButNotFeatures, new String[] { "FEATURE_1" });
+
+    Account accountWithCorrectFeaturesButNotType = new Account("account_3", "facebook.com");
+    shadowOf(am).addAccount(accountWithCorrectFeaturesButNotType);
+    shadowOf(am).setFeatures(accountWithCorrectFeaturesButNotType, new String[] { "FEATURE_1", "FEATURE_2" });
+
+
+    TestAccountManagerCallback<Account[]> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Account[]> future = am.getAccountsByTypeAndFeatures("google.com", new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
+
+    assertThat(future.isDone()).isFalse();
+    assertThat(future.getResult()).containsOnly(accountWithCorrectTypeAndFeatures);
+    assertThat(future.isDone()).isTrue();
+  }
+
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {
     AccountManagerFuture<T> accountManagerFuture;
 

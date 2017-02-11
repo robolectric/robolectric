@@ -479,4 +479,25 @@ public class ShadowAccountManager {
       }
     };
   }
+
+  @Implementation
+  public AccountManagerFuture<Account[]> getAccountsByTypeAndFeatures(
+      final String type, final String[] features,
+      AccountManagerCallback<Account[]> callback, Handler handler) {
+    return new BaseRoboAccountManagerFuture<Account[]>() {
+      @Override
+      public Account[] doWork() throws OperationCanceledException, IOException, AuthenticatorException {
+        List<Account> result = new LinkedList<>();
+
+        Account[] accountsByType = getAccountsByType(type);
+        for (Account account : accountsByType) {
+          Set<String> featureSet = accountFeatures.get(account);
+          if (featureSet.containsAll(Arrays.asList(features))) {
+            result.add(account);
+          }
+        }
+        return result.toArray(new Account[result.size()]);
+      }
+    };
+  }
 }
