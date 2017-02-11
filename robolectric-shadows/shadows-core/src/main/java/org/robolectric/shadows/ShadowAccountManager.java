@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
 /**
  * Shadow for {@link android.accounts.AccountManager}.
@@ -136,11 +137,16 @@ public class ShadowAccountManager {
 	  return new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
       @Override
       public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        passwords.remove(account);
-        userData.remove(account);
-        return accounts.remove(account);
+        return removeAccountExplicitly(account);
       }
     };
+  }
+
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  public boolean removeAccountExplicitly(Account account) {
+    passwords.remove(account);
+    userData.remove(account);
+    return accounts.remove(account);
   }
 
   @Implementation

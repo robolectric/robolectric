@@ -25,6 +25,7 @@ import org.robolectric.annotation.Config;
 import java.io.IOException;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -661,6 +662,18 @@ public class ShadowAccountManagerTest {
 
     accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
     assertThat(accountsByTypeForPackage).containsOnly(accountVisibleToPackage);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void removeAccountExplicitly() {
+    assertThat(am.removeAccountExplicitly(new Account("non_existant_account@gmail.com", "gmail.com"))).isFalse();
+    assertThat(am.removeAccountExplicitly(null)).isFalse();
+
+    Account account = new Account("name@gmail.com", "gmail.com");
+    shadowOf(am).addAccount(account);
+
+    assertThat(am.removeAccountExplicitly(account)).isTrue();
   }
 
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {
