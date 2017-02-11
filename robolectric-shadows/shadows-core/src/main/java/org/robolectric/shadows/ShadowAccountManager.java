@@ -1,13 +1,6 @@
 package org.robolectric.shadows;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorDescription;
-import android.accounts.AuthenticatorException;
-import android.accounts.OnAccountsUpdateListener;
-import android.accounts.OperationCanceledException;
+import android.accounts.*;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -16,16 +9,9 @@ import android.os.Handler;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
@@ -36,35 +22,21 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
  */
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
-  private static final Object lock = new Object();
 
-  private static AccountManager instance;
-
-  private List<Account> accounts = new ArrayList<Account>();
-  private Map<Account, Map<String, String>> authTokens = new HashMap<Account, Map<String,String>>();
+  private List<Account> accounts = new ArrayList<>();
+  private Map<Account, Map<String, String>> authTokens = new HashMap<>();
   private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
-  private List<OnAccountsUpdateListener> listeners = new ArrayList<OnAccountsUpdateListener>();
-  private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
-  private Map<Account, String> passwords = new HashMap<Account, String>();
+  private List<OnAccountsUpdateListener> listeners = new ArrayList<>();
+  private Map<Account, Map<String, String>> userData = new HashMap<>();
+  private Map<Account, String> passwords = new HashMap<>();
+  private Map<Account, Set<String>> accountFeatures = new HashMap<>();
   private AccountManagerCallback<Bundle> pendingAddCallback;
   private RoboAccountManagerFuture pendingAddFuture;
-  private List<Bundle> addAccountOptionsList = new ArrayList<Bundle>();
+  private List<Bundle> addAccountOptionsList = new ArrayList<>();
+  private Handler mainHandler;
 
-  @Resetter
-  public static void reset() {
-    synchronized (lock) {
-      instance = null;
-    }
-  }
-
-  @Implementation
-  public static AccountManager get(Context context) {
-    synchronized (lock) {
-      if (instance == null) {
-        instance = Shadow.newInstanceOf(AccountManager.class);
-      }
-      return instance;
-    }
+  public void __constructor__(Context context, IAccountManager service) {
+    mainHandler = new Handler(context.getMainLooper());
   }
 
   @Implementation
@@ -341,6 +313,47 @@ public class ShadowAccountManager {
     }
   }
 
+  public void setFeatures(Account account, String[] accountFeatures) {
+    HashSet<String> featureSet = new HashSet<>();
+    featureSet.addAll(Arrays.asList(accountFeatures));
+    this.accountFeatures.put(account, featureSet);
+  }
+
+  private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
+
+
+    private T result;
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+      return false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+      return false;
+    }
+
+    @Override
+    public boolean isDone() {
+      return result != null;
+    }
+
+    @Override
+    public T getResult() throws OperationCanceledException, IOException, AuthenticatorException {
+      result = doWork();
+      return result;
+    }
+
+    @Override
+    public T getResult(long timeout, TimeUnit unit) throws OperationCanceledException, IOException, AuthenticatorException {
+      return getResult();
+    }
+
+    public abstract T doWork() throws OperationCanceledException, IOException, AuthenticatorException;
+  }
+
+
   private class RoboAccountManagerFuture implements AccountManagerFuture<Bundle> {
     private final String accountType;
     final Bundle resultBundle;
@@ -432,21 +445,38 @@ public class ShadowAccountManager {
   public AccountManagerFuture<Bundle> getAuthToken(
       final Account account, final String authTokenType, final Bundle options,
       final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
-    Bundle result = new Bundle();
 
-    String authToken = blockingGetAuthToken(account, authTokenType, false);
-    result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-    result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-    result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+    return new BaseRoboAccountManagerFuture<Bundle>() {
 
-    final RoboAccountManagerFuture future = new RoboAccountManagerFuture(account.type, result);
-    handler.post(new Runnable() {
       @Override
-      public void run() {
-        callback.run(future);
-      }
-    });
+      public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
+        Bundle result = new Bundle();
 
-    return future;
+        String authToken = blockingGetAuthToken(account, authTokenType, false);
+        result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+        result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+        result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+        return result;
+      }
+    };
+  }
+
+  @Implementation
+  public AccountManagerFuture<Boolean> hasFeatures(final Account account,
+                                                   final String[] features,
+                                                   AccountManagerCallback<Boolean> callback, Handler handler) {
+    return new BaseRoboAccountManagerFuture<Boolean>() {
+
+      @Override
+      public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
+        Set<String> availableFeatures = accountFeatures.get(account);
+        for (String feature : features) {
+          if (!availableFeatures.contains(feature)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    };
   }
 }

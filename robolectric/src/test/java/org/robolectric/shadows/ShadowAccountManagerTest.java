@@ -44,7 +44,7 @@ public class ShadowAccountManagerTest {
     assertThat(am).isNotNull();
     assertThat(am).isSameAs(AccountManager.get(app));
 
-    AccountManager activityAM = AccountManager.get(new Activity());
+    AccountManager activityAM = AccountManager.get(RuntimeEnvironment.application);
     assertThat(activityAM).isNotNull();
     assertThat(activityAM).isSameAs(am);
   }
@@ -454,7 +454,7 @@ public class ShadowAccountManagerTest {
   public void addAccount_shouldCallCallback() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
 
-    TestAccountManagerCallback callback = new TestAccountManagerCallback();
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, new Activity(), callback, null);
     assertThat(callback.accountManagerFuture).isNull();
     assertThat(result.isDone()).isFalse();
@@ -531,20 +531,54 @@ public class ShadowAccountManagerTest {
 
     am.setAuthToken(account, "auth_token_type", "token1");
 
-    TestAccountManagerCallback callback = new TestAccountManagerCallback();
-    AccountManagerFuture<Bundle> future = am.getAuthToken(account, "auth_token_type", new Bundle(), Robolectric.setupActivity(Activity.class), callback, new Handler());
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future = am.getAuthToken(account,
+        "auth_token_type",
+        new Bundle(),
+        Robolectric.setupActivity(Activity.class),
+        callback,
+        new Handler());
 
-    assertThat(future.isDone()).isTrue();
+    assertThat(future.isDone()).isFalse();
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo(account.name);
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
+    assertThat(future.isDone()).isTrue();
   }
 
-  private static class TestAccountManagerCallback implements AccountManagerCallback<Bundle> {
-    AccountManagerFuture<Bundle> accountManagerFuture;
+  @Test
+  public void getHasFeatures_returnsTrueWhenAllFeaturesSatisfied() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).setFeatures(account, new String[] { "FEATURE_1", "FEATURE_2" });
+
+    TestAccountManagerCallback<Boolean> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Boolean> future = am.hasFeatures(account, new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
+
+    assertThat(future.isDone()).isFalse();
+    assertThat(future.getResult().booleanValue()).isEqualTo(true);
+    assertThat(future.isDone()).isTrue();
+  }
+
+  @Test
+  public void getHasFeatures_returnsFalseWhenAllFeaturesNotSatisfied() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).setFeatures(account, new String[] { "FEATURE_1" });
+
+    TestAccountManagerCallback<Boolean> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Boolean> future = am.hasFeatures(account, new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
+
+    assertThat(future.isDone()).isFalse();
+    assertThat(future.getResult().booleanValue()).isEqualTo(false);
+    assertThat(future.isDone()).isTrue();
+  }
+
+  private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {
+    AccountManagerFuture<T> accountManagerFuture;
 
     @Override
-    public void run(AccountManagerFuture<Bundle> accountManagerFuture) {
+    public void run(AccountManagerFuture<T> accountManagerFuture) {
       this.accountManagerFuture = accountManagerFuture;
     }
   }
