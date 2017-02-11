@@ -16,6 +16,7 @@ import android.os.Handler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
@@ -473,11 +475,14 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAuthenticator("google.com");
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
-    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, new Activity(), callback, null);
+    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, Robolectric.setupActivity(Activity.class), callback, new Handler());
     assertThat(callback.accountManagerFuture).isNull();
     assertThat(result.isDone()).isFalse();
 
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
+
+    Bundle bundle = result.getResult();
+
     assertThat(result.isDone()).isTrue();
     assertThat(callback.accountManagerFuture).isNotNull();
 
@@ -504,7 +509,8 @@ public class ShadowAccountManagerTest {
 
     Bundle expectedAddAccountOptions = new Bundle();
     expectedAddAccountOptions.putString("option", "value");
-    am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, new Activity(), null, null);
+    AccountManagerFuture<Bundle> future = am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, new Activity(), null, null);
+    future.getResult();
 
     Bundle actualAddAccountOptions = shadowOf(am).getNextAddAccountOptions();
     assertThat(shadowOf(am).getNextAddAccountOptions()).isNull();
@@ -519,7 +525,8 @@ public class ShadowAccountManagerTest {
 
     Bundle expectedAddAccountOptions = new Bundle();
     expectedAddAccountOptions.putString("option", "value");
-    am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, new Activity(), null, null);
+    AccountManagerFuture<Bundle> futureResult = am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, new Activity(), null, null);
+    futureResult.getResult();
 
     Bundle actualAddAccountOptions = shadowOf(am).peekNextAddAccountOptions();
     assertThat(shadowOf(am).peekNextAddAccountOptions()).isNotNull();
@@ -562,6 +569,8 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
     assertThat(future.isDone()).isTrue();
+
+    assertThat(callback.accountManagerFuture).isNotNull();
   }
 
   @Test
@@ -576,6 +585,8 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isFalse();
     assertThat(future.getResult().booleanValue()).isEqualTo(true);
     assertThat(future.isDone()).isTrue();
+
+    assertThat(callback.accountManagerFuture).isNotNull();
   }
 
   @Test
@@ -590,6 +601,8 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isFalse();
     assertThat(future.getResult().booleanValue()).isEqualTo(false);
     assertThat(future.isDone()).isTrue();
+
+    assertThat(callback.accountManagerFuture).isNotNull();
   }
 
   @Test
@@ -609,11 +622,14 @@ public class ShadowAccountManagerTest {
 
 
     TestAccountManagerCallback<Account[]> callback = new TestAccountManagerCallback<>();
+
     AccountManagerFuture<Account[]> future = am.getAccountsByTypeAndFeatures("google.com", new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
 
     assertThat(future.isDone()).isFalse();
     assertThat(future.getResult()).containsOnly(accountWithCorrectTypeAndFeatures);
     assertThat(future.isDone()).isTrue();
+
+    assertThat(callback.accountManagerFuture).isNotNull();
   }
 
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {
