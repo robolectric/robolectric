@@ -70,6 +70,15 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void getAccountsByType_nullTypeReturnsAllAccounts() {
+    shadowOf(am).addAccount(new Account("name_1", "type_1"));
+    shadowOf(am).addAccount(new Account("name_2", "type_2"));
+    shadowOf(am).addAccount(new Account("name_3", "type_3"));
+
+    assertThat(am.getAccountsByType(null)).containsExactly(am.getAccounts());
+  }
+
+  @Test
   public void testGetAccountsByType() {
     assertThat(am.getAccountsByType("name_a")).isNotNull();
     assertThat(am.getAccounts().length).isEqualTo(0);
@@ -633,6 +642,25 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isTrue();
 
     assertThat(callback.accountManagerFuture).isNotNull();
+  }
+
+  @Test
+  public void getAccountsByTypeForPackage() {
+    Account[] accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
+
+    assertThat(accountsByTypeForPackage).isEmpty();
+
+    Account accountVisibleToPackage = new Account("user@gmail.com", "gmail.com");
+    shadowOf(am).addAccount(accountVisibleToPackage, "org.somepackage");
+
+    accountsByTypeForPackage = am.getAccountsByTypeForPackage("other_type", "org.somepackage");
+    assertThat(accountsByTypeForPackage).isEmpty();
+
+    accountsByTypeForPackage = am.getAccountsByTypeForPackage("gmail.com", "org.somepackage");
+    assertThat(accountsByTypeForPackage).containsOnly(accountVisibleToPackage);
+
+    accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
+    assertThat(accountsByTypeForPackage).containsOnly(accountVisibleToPackage);
   }
 
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {

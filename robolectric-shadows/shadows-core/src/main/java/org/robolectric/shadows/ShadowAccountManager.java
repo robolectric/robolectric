@@ -29,6 +29,8 @@ public class ShadowAccountManager {
   private Map<Account, Map<String, String>> userData = new HashMap<>();
   private Map<Account, String> passwords = new HashMap<>();
   private Map<Account, Set<String>> accountFeatures = new HashMap<>();
+  private Map<Account, Set<String>> packageVisibileAccounts = new HashMap<>();
+
   private BaseRoboAccountManagerFuture<Bundle> pendingAddFuture;
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
   private Handler mainHandler;
@@ -44,7 +46,10 @@ public class ShadowAccountManager {
 
   @Implementation
   public Account[] getAccountsByType(String type) {
-    List<Account> accountsByType = new ArrayList<Account>();
+    if (type == null) {
+      return getAccounts();
+    }
+    List<Account> accountsByType = new ArrayList<>();
 
     for (Account a : accounts) {
       if (type.equals(a.type)) {
@@ -60,7 +65,7 @@ public class ShadowAccountManager {
     if(accounts.contains(account)) {
       Map<String, String> tokenMap = authTokens.get(account);
       if(tokenMap == null) {
-        tokenMap = new HashMap<String, String>();
+        tokenMap = new HashMap<>();
         authTokens.put(account, tokenMap);
       }
       tokenMap.put(tokenType, authToken);
@@ -268,6 +273,21 @@ public class ShadowAccountManager {
   }
 
   /**
+   * Non-android accessor.
+   *
+   * Adds an account to the AccountManager but when {@link AccountManager#getAccountsByTypeForPackage(String, String)}
+   * is called will be included if is in one of the #visibileToPackages
+   *
+   * @param account User account.
+   */
+  public void addAccount(Account account, String... visibileToPackages) {
+    addAccount(account);
+    HashSet<String> value = new HashSet<>();
+    Collections.addAll(value, visibileToPackages);
+    packageVisibileAccounts.put(account, value);
+  }
+
+  /**
    * Non-Android accessor consumes and returns the next {@code addAccountOptions} passed to addAccount.
    *
    * @return the next {@code addAccountOptions}
@@ -424,6 +444,20 @@ public class ShadowAccountManager {
         return result.toArray(new Account[result.size()]);
       }
     };
+  }
+
+  @Implementation
+  public Account[] getAccountsByTypeForPackage (String type, String packageName) {
+    List<Account> result = new LinkedList<>();
+
+    Account[] accountsByType = getAccountsByType(type);
+    for (Account account : accountsByType) {
+      if (packageVisibileAccounts.containsKey(account) && packageVisibileAccounts.get(account).contains(packageName)) {
+        result.add(account);
+      }
+    }
+
+    return result.toArray(new Account[result.size()]);
   }
 
   private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
