@@ -9,18 +9,8 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.AndroidConfigurer;
-import org.robolectric.internal.BuckManifestFactory;
-import org.robolectric.internal.GradleManifestFactory;
-import org.robolectric.internal.SandboxFactory;
-import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.ManifestFactory;
-import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.internal.MavenManifestFactory;
+import org.robolectric.internal.*;
 import org.robolectric.android.ParallelUniverse;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -54,11 +44,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Installs a {@link SandboxClassLoader} and {@link ResourceTable} in order to
@@ -352,6 +338,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @param config Specification of the SDK version, manifest file, package name, etc.
    */
   protected ManifestFactory getManifestFactory(Config config) {
+    Properties buildSystemApiProperties = getBuildSystemApiProperties();
+    if (buildSystemApiProperties != null) {
+      return new DefaultManifestFactory(buildSystemApiProperties);
+    }
+
     Class<?> buildConstants = config.constants();
     //noinspection ConstantConditions
     if (BuckManifestFactory.isBuck()) {
@@ -361,6 +352,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     } else {
       return new MavenManifestFactory();
     }
+  }
+
+  protected Properties getBuildSystemApiProperties() {
+    return null;
   }
 
   protected AndroidManifest getAppManifest(Config config) {
