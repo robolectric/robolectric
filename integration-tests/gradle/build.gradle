@@ -1,0 +1,44 @@
+buildscript {
+    repositories { jcenter() }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.0'
+    }
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
+
+    defaultConfig {
+        applicationId "com.example.jongerrish.myapplication"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    println("inside android")
+}
+
+dependencies {
+    // Testing dependencies
+    testCompile "org.robolectric:robolectric:3.2"
+    testCompile "junit:junit:4.12"
+    testCompile "org.assertj:assertj-core:2.0.0"
+}
+
+project.afterEvaluate {
+    println(project.plugins)
+
+    println "sourcesets:"
+    println project.sourceSets
+}

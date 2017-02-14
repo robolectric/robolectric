@@ -2,7 +2,7 @@ apply plugin: "groovy"
 
 repositories {
     mavenLocal()
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
