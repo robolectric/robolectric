@@ -22,6 +22,7 @@ import android.view.ViewParent;
 import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -133,7 +134,7 @@ public class ShadowView {
   }
 
   protected String getQualifiers() {
-    return shadowOf(realView.getResources().getConfiguration()).getQualifiers();
+    return RuntimeEnvironment.getQualifiers();
   }
 
   /**

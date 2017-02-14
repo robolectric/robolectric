@@ -67,12 +67,6 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(RuntimeEnvironment.getQualifiers()).contains("fr");
   }
 
-  @Test
-  public void internalBeforeTest_resetsValuesResQualifiers() {
-    assertThat(shadowOf(RuntimeEnvironment.application.getResources().getConfiguration()).getQualifiers())
-      .isEqualTo("");
-  }
-
   @Before
   public void clearOrder() {
     onTerminateCalledFromMain = null;

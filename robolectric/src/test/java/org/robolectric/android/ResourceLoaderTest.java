@@ -54,7 +54,7 @@ public class ResourceLoaderTest {
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
-    Shadows.shadowOf(RuntimeEnvironment.application.getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
+    RuntimeEnvironment.setQualifiers("land"); // testing if this pollutes the other test
   }
 
   @Test

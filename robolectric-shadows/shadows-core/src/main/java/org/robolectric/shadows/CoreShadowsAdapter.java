@@ -67,11 +67,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public void overrideQualifiers(Configuration configuration, String qualifiers) {
-    shadowOf(configuration).overrideQualifiers(qualifiers);
-  }
-
-  @Override
   public void bind(Application application, AndroidManifest appManifest) {
     shadowOf(application).bind(appManifest);
   }
