@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+import java.io.InputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.Ignore;
@@ -355,7 +356,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected Properties getBuildSystemApiProperties() {
-    return null;
+    InputStream resourceAsStream = getClass()
+        .getResourceAsStream("/com/android/tools/test_config.properties");
+    Properties properties = new Properties();
+    try {
+      properties.load(resourceAsStream);
+    } catch (IOException e) {
+      return null;
+    }
+
+    return properties;
   }
 
   protected AndroidManifest getAppManifest(Config config) {
