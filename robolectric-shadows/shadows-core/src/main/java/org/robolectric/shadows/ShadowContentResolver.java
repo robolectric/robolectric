@@ -442,8 +442,9 @@ public class ShadowContentResolver {
       AndroidManifest manifest = shadowOf(RuntimeEnvironment.application).getAppManifest();
       if (manifest != null) {
         for (ContentProviderData providerData : manifest.getContentProviders()) {
-          if (providerData.getAuthority().equals(authority)) {
-            providers.put(providerData.getAuthority(), createAndInitialize(providerData));
+          // todo: handle multiple authorities
+          if (providerData.getAuthorities().equals(authority)) {
+            providers.put(providerData.getAuthorities(), createAndInitialize(providerData));
           }
         }
       }
@@ -614,16 +615,16 @@ public class ShadowContentResolver {
   private static ContentProvider createAndInitialize(ContentProviderData providerData) {
     try {
       ContentProvider provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
-      initialize(provider, providerData.getAuthority());
+      initialize(provider, providerData.getAuthorities());
       return provider;
     } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
       throw new RuntimeException("Error instantiating class " + providerData.getClassName());
     }
   }
 
-  private static void initialize(ContentProvider provider, String authority) {
+  private static void initialize(ContentProvider provider, String authorities) {
     ProviderInfo providerInfo = new ProviderInfo();
-    providerInfo.authority = authority;
+    providerInfo.authority = authorities; // todo: support multiple authorities
     providerInfo.grantUriPermissions = true;
     provider.attachInfo(RuntimeEnvironment.application, providerInfo);
     provider.onCreate();

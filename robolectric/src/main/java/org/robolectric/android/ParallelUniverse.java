@@ -72,6 +72,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
 
     initializeAppManifest(appManifest, appResourceTable, packageManager);
+    packageManager.setDependencies(appManifest, appResourceTable);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
