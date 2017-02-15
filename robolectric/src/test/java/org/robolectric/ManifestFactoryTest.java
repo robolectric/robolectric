@@ -17,6 +17,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -86,6 +87,34 @@ public class ManifestFactoryTest {
     assertThat(androidManifest.getAndroidManifestFile()).isEqualTo(Fs.fileFromPath("/path/to/MergedManifest.xml"));
     assertThat(androidManifest.getResDirectory()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
     assertThat(androidManifest.getAssetsDirectory()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
+  }
+
+  @Test
+  public void whenConfigSpecified_overridesValuesFromFile() throws Exception {
+    final Properties properties = new Properties();
+    properties.setProperty("android_sdk_home", "");
+    properties.setProperty("android_merged_manifest", "/path/to/MergedManifest.xml");
+    properties.setProperty("android_merged_resources", "/path/to/merged-resources");
+    properties.setProperty("android_merged_assets", "/path/to/merged-assets");
+
+    RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
+      protected Properties getBuildSystemApiProperties() {
+        return properties;
+      }
+    };
+
+    Config.Implementation config = Config.Builder.defaults()
+        .setManifest("/TestAndroidManifest.xml")
+        .setPackageName("another.package")
+        .build();
+    ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
+    assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
+    ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
+    assertThat(manifestIdentifier.getManifestFile()).isEqualTo(Fs.fileFromPath(getClass().getResource("/TestAndroidManifest.xml").getPath()));
+    assertThat(manifestIdentifier.getResDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
+    assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
+    assertThat(manifestIdentifier.getLibraryDirs()).isEmpty();
+    assertThat(manifestIdentifier.getPackageName()).isEqualTo("another.package");
   }
 
   private List<String> stringify(Collection<ResourcePath> resourcePaths) {
