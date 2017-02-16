@@ -40,4 +40,6 @@
   <item name="say_it_with_item" type="string">flowers</item>
   <string name="typed_array_a">apple</string>
   <string name="typed_array_b">banana</string>
+  <string name="test_permission_description">permission string</string>
+  <string name="test_permission_label">permission label</string>
 </resources>

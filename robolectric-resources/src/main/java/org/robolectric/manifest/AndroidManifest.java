@@ -47,6 +47,7 @@ public class AndroidManifest {
   private Integer maxSdkVersion;
   private int versionCode;
   private String versionName;
+  private final Map<String, PermissionItemData> permissions = new HashMap<>();
   private final List<ContentProviderData> providers = new ArrayList<>();
   private final List<BroadcastReceiverData> receivers = new ArrayList<>();
   private final Map<String, ServiceData> serviceDatas = new LinkedHashMap<>();
@@ -159,6 +160,7 @@ public class AndroidManifest {
         }
 
         parseUsedPermissions(manifestDocument);
+        parsePermissions(manifestDocument);
       } catch (Exception ignored) {
         ignored.printStackTrace();
       }
@@ -186,10 +188,29 @@ public class AndroidManifest {
     }
   }
 
+  private void parsePermissions(final Document manifestDocument) {
+    NodeList elementsByTagName = manifestDocument.getElementsByTagName("permission");
+
+    for (int i = 0; i < elementsByTagName.getLength(); i++) {
+      Node permissionNode = elementsByTagName.item(i);
+      final MetaData metaData = new MetaData(getChildrenTags(permissionNode, "meta-data"));
+      String name = getAttributeValue(permissionNode, "android:name");
+      permissions.put(name,
+          new PermissionItemData(
+              name,
+              getAttributeValue(permissionNode, "android:label"),
+              getAttributeValue(permissionNode, "android:description"),
+              getAttributeValue(permissionNode, "android:permissionGroup"),
+              getAttributeValue(permissionNode, "android:protectionLevel"),
+              metaData
+          ));
+    }
+  }
+
   private void parseContentProviders() {
     for (Node contentProviderNode : getChildrenTags(applicationNode, "provider")) {
       String name = getAttributeValue(contentProviderNode, "android:name");
-      String authority = getAttributeValue(contentProviderNode, "android:authorities");
+      String authorities = getAttributeValue(contentProviderNode, "android:authorities");
       MetaData metaData = new MetaData(getChildrenTags(contentProviderNode, "meta-data"));
 
       List<PathPermissionData> pathPermissionDatas = new ArrayList<>();
@@ -205,7 +226,7 @@ public class AndroidManifest {
 
       providers.add(new ContentProviderData(resolveClassRef(name),
               metaData,
-              authority,
+              authorities,
               getAttributeValue(contentProviderNode, "android:readPermission"),
               getAttributeValue(contentProviderNode, "android:writePermission"),
               pathPermissionDatas));
@@ -623,5 +644,10 @@ public class AndroidManifest {
   public List<String> getUsedPermissions() {
     parseAndroidManifest();
     return usedPermissions;
+  }
+
+  public Map<String, PermissionItemData> getPermissions() {
+    parseAndroidManifest();
+    return permissions;
   }
 }
