@@ -622,6 +622,14 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     packageInfo.versionName = androidManifest.getVersionName();
     packageInfo.versionCode = androidManifest.getVersionCode();
 
+    Map<String,ActivityData> activityDatas = androidManifest.getActivityDatas();
+
+    for (ActivityData data : activityDatas.values()) {
+      String name = data.getName();
+      String activityName = name.startsWith(".") ? androidManifest.getPackageName() + name : name;
+      addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
+    }
+
     ContentProviderData[] cpdata = androidManifest.getContentProviders().toArray(new ContentProviderData[]{});
     if (cpdata.length == 0) {
       packageInfo.providers = null;

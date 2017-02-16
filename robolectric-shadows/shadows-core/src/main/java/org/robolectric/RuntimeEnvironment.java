@@ -74,6 +74,10 @@ public class RuntimeEnvironment {
     activityThread = newActivityThread;
   }
 
+  /**
+   * @deprecated Prefer Android API {@link android.content.Context#getPackageManager()} instead.
+   */
+  @Deprecated
   public static PackageManager getPackageManager() {
     return (PackageManager) packageManager;
   }

@@ -794,7 +794,7 @@ public class DefaultPackageManagerTest {
   public void getActivityMetaData_configChanges() throws Exception {
     Activity activity = setupActivity(ActivityWithConfigChanges.class);
 
-    ActivityInfo activityInfo = RuntimeEnvironment.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
+    ActivityInfo activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
 
     int configChanges = activityInfo.configChanges;
     assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
