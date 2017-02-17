@@ -437,15 +437,19 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     permissionInfo.protectionLevel = decodeProtectionLevel(permissionItemData.getProtectionLevel());
 
     String descriptionRef = permissionItemData.getDescription();
-    ResName descResName = AttributeResource.getResourceReference(descriptionRef, packageName, "string");
-    permissionInfo.descriptionRes = appResourceTable.getResourceId(descResName);
+    if (descriptionRef != null) {
+      ResName descResName = AttributeResource.getResourceReference(descriptionRef, packageName, "string");
+      permissionInfo.descriptionRes = appResourceTable.getResourceId(descResName);
+    }
 
     String labelRefOrString = permissionItemData.getLabel();
-    if (AttributeResource.isResourceReference(labelRefOrString)) {
-      ResName labelResName = AttributeResource.getResourceReference(labelRefOrString, packageName, "string");
-      permissionInfo.labelRes = appResourceTable.getResourceId(labelResName);
-    } else {
-      permissionInfo.nonLocalizedLabel = labelRefOrString;
+    if (labelRefOrString != null) {
+      if (AttributeResource.isResourceReference(labelRefOrString)) {
+        ResName labelResName = AttributeResource.getResourceReference(labelRefOrString, packageName, "string");
+        permissionInfo.labelRes = appResourceTable.getResourceId(labelResName);
+      } else {
+        permissionInfo.nonLocalizedLabel = labelRefOrString;
+      }
     }
 
     if ((flags & GET_META_DATA) != 0) {

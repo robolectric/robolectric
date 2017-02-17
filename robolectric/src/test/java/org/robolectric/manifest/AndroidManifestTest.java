@@ -41,7 +41,10 @@ public class AndroidManifestTest {
   public void parseManifest_shouldReadPermissions() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
 
-    assertThat(config.getPermissions().keySet()).containsExactlyInAnyOrder("some_permission", "permission_with_literal_label");
+    assertThat(config.getPermissions().keySet())
+        .containsExactlyInAnyOrder("some_permission",
+            "permission_with_literal_label",
+            "permission_with_minimal_fields");
     PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
     assertThat(permissionItemData.getMetaData().getValueMap()).containsEntry("meta_data_name", "meta_data_value");
     assertThat(permissionItemData.getName()).isEqualTo("some_permission");
