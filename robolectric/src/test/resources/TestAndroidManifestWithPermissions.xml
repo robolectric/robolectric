@@ -21,6 +21,8 @@
                 android:icon="drawable resource"
                 android:label="Literal label"/>
 
+    <permission android:name="permission_with_minimal_fields"/>
+
     <application>
     </application>
 </manifest>
