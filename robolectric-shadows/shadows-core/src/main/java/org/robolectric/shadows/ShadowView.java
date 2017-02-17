@@ -23,10 +23,7 @@ import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.*;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.android.AccessibilityUtil;
 import org.robolectric.util.ReflectionHelpers;
@@ -133,6 +130,15 @@ public class ShadowView {
     return realView.getResources().getDrawable(resourceId);
   }
 
+  /**
+   * This will be removed in Robolectric 3.4 use {@link RuntimeEnvironment#getQualifiers()} instead, however
+   * the correct way to configure qualifiers is using {@link Config#qualifiers()} so a constant can be used if this
+   * is important to your tests. However, qualifier strings are typically just used to initialize the test environment
+   * in a certain configuration. {@link android.content.res.Configuration} changes should be managed through
+   * {@link org.robolectric.android.controller.ActivityController#configurationChange(android.content.res.Configuration)}
+   * @deprecated
+   */
+  @Deprecated
   protected String getQualifiers() {
     return RuntimeEnvironment.getQualifiers();
   }
