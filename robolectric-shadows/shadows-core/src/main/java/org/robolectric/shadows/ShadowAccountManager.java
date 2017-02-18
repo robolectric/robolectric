@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
@@ -452,7 +453,7 @@ public class ShadowAccountManager {
     };
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public Account[] getAccountsByTypeForPackage (String type, String packageName) {
     List<Account> result = new LinkedList<>();
 

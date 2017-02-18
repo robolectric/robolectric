@@ -11,6 +11,7 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import org.junit.Before;
@@ -24,6 +25,7 @@ import org.robolectric.annotation.Config;
 
 import java.io.IOException;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,19 +35,17 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccountManagerTest {
-  Application app;
-  AccountManager am;
+  private AccountManager am;
 
   @Before
   public void setUp() throws Exception {
-    app = RuntimeEnvironment.application;
-    am = AccountManager.get(app);
+    am = AccountManager.get(RuntimeEnvironment.application);
   }
 
   @Test
   public void testGet() {
     assertThat(am).isNotNull();
-    assertThat(am).isSameAs(AccountManager.get(app));
+    assertThat(am).isSameAs(AccountManager.get(RuntimeEnvironment.application));
 
     AccountManager activityAM = AccountManager.get(RuntimeEnvironment.application);
     assertThat(activityAM).isNotNull();
@@ -556,7 +556,7 @@ public class ShadowAccountManagerTest {
 
   @Test
   public void testGetAsSystemService() throws Exception {
-    AccountManager systemService = (AccountManager) app.getSystemService(Context.ACCOUNT_SERVICE);
+    AccountManager systemService = (AccountManager) RuntimeEnvironment.application.getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
   }
@@ -646,6 +646,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void getAccountsByTypeForPackage() {
     Account[] accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
 
