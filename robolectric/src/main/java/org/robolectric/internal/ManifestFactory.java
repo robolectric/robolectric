@@ -11,6 +11,7 @@ import org.robolectric.manifest.AndroidManifest;
  * <ul>
  *   <li>Maven</li>
  *   <li>Gradle</li>
+ *   <li>Buck</li>
  * </ul>
  */
 public interface ManifestFactory {

@@ -16,7 +16,7 @@ public class ContentProviderData extends PackageItemData {
     this.pathPermissionDatas = pathPermissionDatas;
   }
 
-  public String getAuthority() {
+  public String getAuthorities() {
     return authority;
   }
 

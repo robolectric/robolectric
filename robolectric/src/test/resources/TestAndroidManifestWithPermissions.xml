@@ -6,6 +6,23 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.GET_TASKS"/>
+
+    <permission android:name="some_permission"
+                android:description="@string/test_permission_description"
+                android:icon="drawable resource"
+                android:label="@string/test_permission_label"
+                android:permissionGroup="my_permission_group"
+                android:protectionLevel="dangerous">
+        <meta-data android:name="meta_data_name" android:value="meta_data_value"/>
+    </permission>
+
+    <permission android:name="permission_with_literal_label"
+                android:description="@string/test_permission_description"
+                android:icon="drawable resource"
+                android:label="Literal label"/>
+
+    <permission android:name="permission_with_minimal_fields"/>
+
     <application>
     </application>
 </manifest>

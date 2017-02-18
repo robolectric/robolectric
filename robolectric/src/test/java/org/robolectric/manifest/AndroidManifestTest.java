@@ -1,6 +1,8 @@
 package org.robolectric.manifest;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import org.junit.Rule;
@@ -29,10 +31,26 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
 
     assertThat(config.getContentProviders().get(0).getClassName()).isEqualTo("org.robolectric.tester.FullyQualifiedClassName");
-    assertThat(config.getContentProviders().get(0).getAuthority()).isEqualTo("org.robolectric.authority1");
+    assertThat(config.getContentProviders().get(0).getAuthorities()).isEqualTo("org.robolectric.authority1");
 
     assertThat(config.getContentProviders().get(1).getClassName()).isEqualTo("org.robolectric.tester.PartiallyQualifiedClassName");
-    assertThat(config.getContentProviders().get(1).getAuthority()).isEqualTo("org.robolectric.authority2");
+    assertThat(config.getContentProviders().get(1).getAuthorities()).isEqualTo("org.robolectric.authority2");
+  }
+
+  @Test
+  public void parseManifest_shouldReadPermissions() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
+
+    assertThat(config.getPermissions().keySet())
+        .containsExactlyInAnyOrder("some_permission",
+            "permission_with_literal_label",
+            "permission_with_minimal_fields");
+    PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
+    assertThat(permissionItemData.getMetaData().getValueMap()).containsEntry("meta_data_name", "meta_data_value");
+    assertThat(permissionItemData.getName()).isEqualTo("some_permission");
+    assertThat(permissionItemData.getPermissionGroup()).isEqualTo("my_permission_group");
+    assertThat(permissionItemData.getDescription()).isEqualTo("@string/test_permission_description");
+    assertThat(permissionItemData.getProtectionLevel()).isEqualTo("dangerous");
   }
 
   @Test
