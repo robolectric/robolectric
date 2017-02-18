@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.IOException;
 import java.util.*;
@@ -39,6 +41,15 @@ public class ShadowAccountManager {
 
   public void __constructor__(Context context, IAccountManager service) {
     mainHandler = new Handler(context.getMainLooper());
+  }
+
+  /**
+   * @deprecated This method will be removed in Robolectric 3.4 Use {@link AccountManager#get(Context)} instead.
+   */
+  @Deprecated
+  @Implementation
+  public static AccountManager get(Context context) {
+    return (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
   }
 
   @Implementation
