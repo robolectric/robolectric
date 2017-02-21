@@ -922,4 +922,13 @@ public class DefaultPackageManagerTest {
     assertThat(permission.descriptionRes).isEqualTo(0);
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
   }
+
+  @Test
+  public void getPermissionInfo_addedPermissions() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "manually_added_permission";
+    rpm.addPermissionInfo(permissionInfo);
+    PermissionInfo permission = packageManager.getPermissionInfo("manually_added_permission", 0);
+    assertThat(permission.name).isEqualTo("manually_added_permission");
+  }
 }
