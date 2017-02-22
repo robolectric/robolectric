@@ -794,7 +794,7 @@ public class DefaultPackageManagerTest {
   public void getActivityMetaData_configChanges() throws Exception {
     Activity activity = setupActivity(ActivityWithConfigChanges.class);
 
-    ActivityInfo activityInfo = RuntimeEnvironment.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
+    ActivityInfo activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
 
     int configChanges = activityInfo.configChanges;
     assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
@@ -921,5 +921,14 @@ public class DefaultPackageManagerTest {
     assertThat(permission.labelRes).isEqualTo(0);
     assertThat(permission.descriptionRes).isEqualTo(0);
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
+  }
+
+  @Test
+  public void getPermissionInfo_addedPermissions() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "manually_added_permission";
+    rpm.addPermissionInfo(permissionInfo);
+    PermissionInfo permission = packageManager.getPermissionInfo("manually_added_permission", 0);
+    assertThat(permission.name).isEqualTo("manually_added_permission");
   }
 }

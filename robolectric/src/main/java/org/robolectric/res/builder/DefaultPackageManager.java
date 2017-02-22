@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.IPackageInstaller;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
@@ -43,6 +44,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PatternMatcher;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -75,6 +77,7 @@ import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
 /**
@@ -101,11 +104,14 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private PackageInstaller packageInstaller;
   private AndroidManifest applicationManifest;
   private ResourceTable appResourceTable;
+  private Map<String, PermissionInfo> extraPermissions = new HashMap<>();
 
   @Override
   public PackageInstaller getPackageInstaller() {
     if (packageInstaller == null) {
-      packageInstaller = new RoboPackageInstaller();
+      packageInstaller = new PackageInstaller(RuntimeEnvironment.application, this, ReflectionHelpers.createNullProxy(
+          IPackageInstaller.class),
+          null, UserHandle.myUserId());
     }
     return packageInstaller;
   }
@@ -423,13 +429,23 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override
+  public void addPermissionInfo(PermissionInfo permissionInfo) {
+    extraPermissions.put(permissionInfo.name, permissionInfo);
+  }
+
+  @Override
   public PermissionInfo getPermissionInfo(String name, int flags) throws NameNotFoundException {
+    PermissionInfo permissionInfo = extraPermissions.get(name);
+    if (permissionInfo != null) {
+      return permissionInfo;
+    }
+
     PermissionItemData permissionItemData = applicationManifest.getPermissions().get(name);
     if (permissionItemData == null) {
       throw new NameNotFoundException(name);
     }
 
-    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo = new PermissionInfo();
     String packageName = applicationManifest.getPackageName();
     permissionInfo.packageName = packageName;
     permissionInfo.name = name;
@@ -625,6 +641,14 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     packageInfo.packageName = androidManifest.getPackageName();
     packageInfo.versionName = androidManifest.getVersionName();
     packageInfo.versionCode = androidManifest.getVersionCode();
+
+    Map<String,ActivityData> activityDatas = androidManifest.getActivityDatas();
+
+    for (ActivityData data : activityDatas.values()) {
+      String name = data.getName();
+      String activityName = name.startsWith(".") ? androidManifest.getPackageName() + name : name;
+      addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
+    }
 
     ContentProviderData[] cpdata = androidManifest.getContentProviders().toArray(new ContentProviderData[]{});
     if (cpdata.length == 0) {
@@ -1048,51 +1072,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   public void setDependencies(AndroidManifest applicationManifest, ResourceTable appResourceTable) {
     this.applicationManifest = applicationManifest;
     this.appResourceTable = appResourceTable;
-  }
-
-  private class RoboPackageInstaller extends PackageInstaller {
-    private int nextSessionId;
-    private Map<Integer, PackageInstaller.SessionInfo> sessionInfos = new HashMap<>();
-    private Set<CallbackInfo> callbackInfos = new HashSet<>();
-
-    private class CallbackInfo {
-      PackageInstaller.SessionCallback callback;
-      Handler handler;
-    }
-
-    public RoboPackageInstaller() {
-      super(RuntimeEnvironment.application, DefaultPackageManager.this, null, null, -1);
-    }
-
-    @Override
-    public List<SessionInfo> getAllSessions() {
-      List<SessionInfo> sessionInfos = new LinkedList<>();
-      for (String packageName : packageInfos.keySet()) {
-        SessionInfo sessionInfo = new SessionInfo();
-        sessionInfo.appPackageName = packageName;
-        sessionInfos.add(sessionInfo);
-      }
-
-      return ImmutableList.copyOf(sessionInfos);
-    }
-
-    public int createSession(PackageInstaller.SessionParams params) throws IOException {
-      final PackageInstaller.SessionInfo sessionInfo = new PackageInstaller.SessionInfo();
-      sessionInfo.sessionId = nextSessionId++;
-      sessionInfo.appPackageName = params.appPackageName;
-      sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
-
-      for (final CallbackInfo callbackInfo : callbackInfos) {
-        callbackInfo.handler.post(new Runnable() {
-          @Override
-          public void run() {
-            callbackInfo.callback.onCreated(sessionInfo.sessionId);
-          }
-        });
-      }
-
-      return sessionInfo.sessionId;
-    }
   }
 
   public static class IntentComparator implements Comparator<Intent> {

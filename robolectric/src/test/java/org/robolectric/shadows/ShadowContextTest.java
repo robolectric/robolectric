@@ -29,7 +29,7 @@ public class ShadowContextTest {
 
   @Before
   public void setUp() throws Exception {
-    File dataDir = new File(RuntimeEnvironment.getPackageManager()
+    File dataDir = new File(context.getPackageManager()
         .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir);
 
     File[] files = dataDir.listFiles();
@@ -54,7 +54,7 @@ public class ShadowContextTest {
 
   @Test
   public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() throws Exception {
-    File dataDir = new File(RuntimeEnvironment.getPackageManager()
+    File dataDir = new File(context.getPackageManager()
         .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir, "data");
 
     assertThat(dataDir).doesNotExist();
