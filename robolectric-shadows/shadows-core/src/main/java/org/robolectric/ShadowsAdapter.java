@@ -25,8 +25,6 @@ public interface ShadowsAdapter {
 
   String getShadowContextImplClassName();
 
-  void overrideQualifiers(Configuration configuration, String qualifiers);
-
   void bind(Application application, AndroidManifest appManifest);
 
   interface ShadowActivityAdapter {

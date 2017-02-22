@@ -1,8 +1,6 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
@@ -124,7 +122,6 @@ public class ParallelUniverseTest {
     String givenQualifiers = "";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c);
-    assertThat(getQualifiersfromSystemResources()).contains("v18");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v18");
   }
   
@@ -133,7 +130,6 @@ public class ParallelUniverseTest {
     String givenQualifiers = "land-v17";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c);
-    assertThat(getQualifiersfromSystemResources()).contains("land-v17");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
   }
   
@@ -142,7 +138,6 @@ public class ParallelUniverseTest {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c);
-    assertThat(getQualifiersfromSystemResources()).contains("large-land-v18");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v18");
   }
   
@@ -160,10 +155,5 @@ public class ParallelUniverseTest {
     pu.tearDownApplication();
     verify(RuntimeEnvironment.application).onTerminate();
   }
-  
-  private String getQualifiersfromSystemResources() {
-    Resources systemResources = Resources.getSystem();
-    Configuration configuration = systemResources.getConfiguration();
-    return Shadows.shadowOf(configuration).getQualifiers();
-  }
+
 }
