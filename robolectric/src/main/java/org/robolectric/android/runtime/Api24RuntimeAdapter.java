@@ -17,7 +17,7 @@ import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-public class Api24RuntimeAdapter implements RuntimeAdapter {
+class Api24RuntimeAdapter implements RuntimeAdapter {
 
   @Override
   public void callActivityAttach(Object component, Context baseContext, Class<?> activityThreadClass, Application application, Intent intent, ActivityInfo activityInfo, String activityTitle, Class<?> nonConfigurationInstancesClass) {
