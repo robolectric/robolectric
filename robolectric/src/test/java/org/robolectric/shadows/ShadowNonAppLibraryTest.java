@@ -25,7 +25,7 @@ public class ShadowNonAppLibraryTest {
   }
 
   @Test public void shouldHaveDefaultPackageInfo() throws Exception {
-    PackageInfo packageInfo = RuntimeEnvironment.getPackageManager().getPackageInfo("org.robolectric.default", 0);
+    PackageInfo packageInfo = RuntimeEnvironment.application.getPackageManager().getPackageInfo("org.robolectric.default", 0);
     assertThat(packageInfo).isNotNull();
 
     ApplicationInfo applicationInfo = packageInfo.applicationInfo;
