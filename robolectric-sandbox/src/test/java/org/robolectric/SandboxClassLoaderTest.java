@@ -643,31 +643,6 @@ public class SandboxClassLoaderTest {
     assertArrayEquals(new Integer[]{}, Util.reverse(new Integer[]{}));
   }
 
-  @Test public void shouldCacheMisses() throws Exception {
-    final List<String> transcript = new ArrayList<>();
-
-    SandboxClassLoader classLoader = new SandboxClassLoader(configureBuilder().build()) {
-      @Override
-      protected Class<?> findClass(String className) throws ClassNotFoundException {
-        transcript.add("find " + className);
-        throw new ClassNotFoundException(className);
-      }
-    };
-
-    try {
-      classLoader.loadClass("foo.AClass");
-    } catch (ClassNotFoundException e) {
-      // expected
-    }
-    try {
-      classLoader.loadClass("foo.AClass");
-    } catch (ClassNotFoundException e) {
-      // expected
-    }
-
-    assertThat(transcript).containsExactly("find foo.AClass");
-  }
-
   /////////////////////////////
 
   private Object getDeclaredFieldValue(Class<?> aClass, Object o, String fieldName) throws Exception {

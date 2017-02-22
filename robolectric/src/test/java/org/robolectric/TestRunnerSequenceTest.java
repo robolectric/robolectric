@@ -2,7 +2,10 @@ package org.robolectric;
 
 import android.app.Application;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.internal.TextListener;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
@@ -32,8 +35,12 @@ public class TestRunnerSequenceTest {
     public static List<String> transcript;
   }
 
-  @Test public void shouldRunThingsInTheRightOrder() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     StateHolder.transcript = new ArrayList<>();
+  }
+
+  @Test public void shouldRunThingsInTheRightOrder() throws Exception {
     assertNoFailures(run(new Runner(SimpleTest.class)));
     assertThat(StateHolder.transcript).containsExactly(
         "configureShadows",
@@ -54,7 +61,6 @@ public class TestRunnerSequenceTest {
   }
 
   @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
-    StateHolder.transcript = new ArrayList<>();
     assertNoFailures(run(new Runner(SimpleTest.class) {
       @Override protected AndroidManifest getAppManifest(Config config) {
         return new AndroidManifest(null, null, null, "package") {
@@ -82,9 +88,22 @@ public class TestRunnerSequenceTest {
   }
 
   @Test public void shouldReleaseAllStateAfterClassSoWeDontLeakMemory() throws Exception {
-    RobolectricTestRunner robolectricTestRunner = new Runner(SimpleTest.class);
+    final List<RobolectricTestRunner.RobolectricFrameworkMethod> methods = new ArrayList<>();
+
+    RobolectricTestRunner robolectricTestRunner = new Runner(SimpleTest.class) {
+      @Override
+      protected void finallyAfterTest(FrameworkMethod method) {
+        super.finallyAfterTest(method);
+
+        RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+        assertThat(roboMethod.parallelUniverseInterface).isNull();
+        assertThat(roboMethod.testLifecycle).isNull();
+        methods.add(roboMethod);
+      }
+    };
+
     robolectricTestRunner.run(new RunNotifier());
-    assertTrue(robolectricTestRunner.allStateIsCleared());
+    assertThat(methods).isNotEmpty();
   }
 
   public static class SimpleTest {

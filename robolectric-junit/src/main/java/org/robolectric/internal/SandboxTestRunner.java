@@ -15,15 +15,16 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.Sandbox;
+import org.robolectric.internal.bytecode.SandboxClassLoader;
+import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 
 import java.lang.reflect.Method;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
@@ -120,7 +120,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   @NotNull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    ClassLoader sandboxClassLoader = new SandboxClassLoader(instrumentationConfiguration);
+    URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+    ClassLoader sandboxClassLoader = new SandboxClassLoader(systemClassLoader, instrumentationConfiguration);
     Sandbox sandbox = new Sandbox(sandboxClassLoader);
     configureShadows(method, sandbox);
     return sandbox;
@@ -185,6 +186,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         //noinspection unchecked
         Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
         HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
+        helperTestRunner.frameworkMethod = method;
 
         final Method bootstrappedMethod;
         try {
@@ -210,7 +212,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           }
         } finally {
           Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-          finallyAfterTest();
+          finallyAfterTest(method);
         }
       }
     };
@@ -222,7 +224,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
   }
 
-  protected void finallyAfterTest() {
+  protected void finallyAfterTest(FrameworkMethod method) {
   }
 
   protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
@@ -234,6 +236,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected static class HelperTestRunner extends BlockJUnit4ClassRunner {
+    public FrameworkMethod frameworkMethod;
+
     public HelperTestRunner(Class<?> klass) throws InitializationError {
       super(klass);
     }
@@ -271,5 +275,4 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected boolean shouldIgnore(FrameworkMethod method) {
     return method.getAnnotation(Ignore.class) != null;
   }
-
 }

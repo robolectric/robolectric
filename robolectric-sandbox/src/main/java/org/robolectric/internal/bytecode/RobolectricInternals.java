@@ -60,7 +60,7 @@ public class RobolectricInternals {
     return shadowInvalidator;
   }
 
-  public static SandboxClassLoader getClassLoader() {
+  public static ClassLoader getClassLoader() {
     return classLoader;
   }
 }

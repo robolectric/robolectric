@@ -25,7 +25,7 @@ public class InstrumentationConfiguration {
     return new Builder();
   }
 
-  private static final Set<String> CLASSES_TO_ALWAYS_ACQUIRE = Sets.newHashSet(
+  static final Set<String> CLASSES_TO_ALWAYS_ACQUIRE = Sets.newHashSet(
       RobolectricInternals.class.getName(),
       InvokeDynamicSupport.class.getName(),
       Shadow.class.getName(),
@@ -99,15 +99,8 @@ public class InstrumentationConfiguration {
       return true;
     }
 
-    // Internal android R class must be loaded from the framework resources in the framework jar.
-    if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) {
-      return true;
-    }
-
-    // Android SDK code almost universally refers to com.android.internal.R, except
-    // when refering to android.R.stylable, as in HorizontalScrollView. arghgh.
-    // See https://github.com/robolectric/robolectric/issues/521
-    if (name.startsWith("android.R")) {
+    // android.R and com.android.internal.R classes must be loaded from the framework jar
+    if (name.matches("(android|com\\.android\\.internal)\\.R(\\$.+)?")) {
       return true;
     }
 
@@ -120,9 +113,9 @@ public class InstrumentationConfiguration {
       if (name.startsWith(packageName)) return false;
     }
 
+    // R classes must be loaded from system CP
     boolean isRClass = name.matches(".*\\.R(|\\$[a-z]+)$");
     return !isRClass && !classesToNotAcquire.contains(name);
-
   }
 
   public Set<MethodRef> methodsToIntercept() {

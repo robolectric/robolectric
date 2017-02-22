@@ -1,15 +1,15 @@
 package org.robolectric.internal;
 
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.util.Pair;
 
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 public class SandboxFactory {
   public static final SandboxFactory INSTANCE = new SandboxFactory();
@@ -35,11 +35,18 @@ public class SandboxFactory {
     if (sdkEnvironment == null) {
       URL url = dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency());
 
-      ClassLoader robolectricClassLoader = new SandboxClassLoader(instrumentationConfig, url);
+      ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, url);
       sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);
 
       sdkToEnvironment.put(key, sdkEnvironment);
     }
     return sdkEnvironment;
   }
+
+  @NotNull
+  public ClassLoader createClassLoader(InstrumentationConfiguration instrumentationConfig, URL... urls) {
+    URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+    return new SandboxClassLoader(systemClassLoader, instrumentationConfig, urls);
+  }
+
 }

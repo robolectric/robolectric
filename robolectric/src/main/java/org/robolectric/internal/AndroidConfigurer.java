@@ -54,34 +54,38 @@ public class AndroidConfigurer {
         .doNotAcquireClass(XmlBlock.class);
 
     builder
-      .doNotAcquirePackage("javax.")
-      .doNotAcquirePackage("org.robolectric.manifest.")
-      .doNotAcquirePackage("org.robolectric.res.")
-      .doNotAcquirePackage("sun.")
-      .doNotAcquirePackage("com.sun.")
-      .doNotAcquirePackage("org.w3c.")
-      .doNotAcquirePackage("org.xml.")
-      .doNotAcquirePackage("org.junit")
-      .doNotAcquirePackage("org.hamcrest")
-      .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
-      .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
-      .doNotAcquirePackage("kotlin.")
-      .doNotAcquirePackage("com.almworks.sqlite4java"); // Fix #958: SQLite native library must be loaded once.
+        .doNotAcquirePackage("javax.")
+        .doNotAcquirePackage("org.junit")
+        .doNotAcquirePackage("org.hamcrest")
+        .doNotAcquirePackage("org.robolectric.annotation.")
+        .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.manifest.")
+        .doNotAcquirePackage("org.robolectric.res.")
+        .doNotAcquirePackage("org.robolectric.util.")
+        .doNotAcquirePackage("org.robolectric.RobolectricTestRunner$")
+        .doNotAcquirePackage("sun.")
+        .doNotAcquirePackage("com.sun.")
+        .doNotAcquirePackage("org.w3c.")
+        .doNotAcquirePackage("org.xml.")
+        .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
+        .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+        .doNotAcquirePackage("kotlin.")
+        .doNotAcquirePackage("com.almworks.sqlite4java"); // Fix #958: SQLite native library must be loaded once.
 
     builder.addClassNameTranslation("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
-       .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
-       .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName());
+        .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
+        .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName());
 
     // Instrumenting these classes causes a weird failure.
     builder.doNotInstrumentClass("android.R")
         .doNotInstrumentClass("android.R$styleable");
 
     builder.addInstrumentedPackage("dalvik.")
-      .addInstrumentedPackage("libcore.")
-      .addInstrumentedPackage("android.")
-      .addInstrumentedPackage("com.android.internal.")
-      .addInstrumentedPackage("org.apache.http.")
-      .addInstrumentedPackage("org.kxml2.");
+        .addInstrumentedPackage("libcore.")
+        .addInstrumentedPackage("android.")
+        .addInstrumentedPackage("com.android.internal.")
+        .addInstrumentedPackage("org.apache.http.")
+        .addInstrumentedPackage("org.kxml2.");
 
 
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {

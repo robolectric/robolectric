@@ -25,6 +25,7 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.Logger;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
 import java.io.IOException;
@@ -48,20 +49,26 @@ import static java.lang.invoke.MethodType.methodType;
 import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
  */
-public class SandboxClassLoader extends ClassLoader implements Opcodes {
-
+public class SandboxClassLoader extends URLClassLoader implements Opcodes {
+  private final URLClassLoader systemClassLoader;
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
-  private final Map<String, Class> classes = new HashMap<>();
   private final Map<String, String> classesToRemap;
   private final Set<MethodRef> methodsToIntercept;
 
-  public SandboxClassLoader(InstrumentationConfiguration config, URL... urls) {
-    super(SandboxClassLoader.class.getClassLoader());
+  public SandboxClassLoader(InstrumentationConfiguration config) {
+    this(((URLClassLoader) ClassLoader.getSystemClassLoader()), config);
+  }
+
+  public SandboxClassLoader(URLClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
+    super(systemClassLoader.getURLs(), systemClassLoader.getParent());
+    this.systemClassLoader = systemClassLoader;
+
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(config.classNameTranslations());
@@ -72,35 +79,9 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
   }
 
   @Override
-  synchronized public Class loadClass(String name) throws ClassNotFoundException {
-    Class<?> theClass = classes.get(name);
-    if (theClass != null) {
-      if (theClass == MissingClassMarker.class) {
-        throw new ClassNotFoundException(name);
-      } else {
-        return theClass;
-      }
-    }
-
-    try {
-      if (config.shouldAcquire(name)) {
-        theClass = findClass(name);
-      } else {
-        theClass = getParent().loadClass(name);
-      }
-    } catch (ClassNotFoundException e) {
-      classes.put(name, MissingClassMarker.class);
-      throw e;
-    }
-
-    classes.put(name, theClass);
-    return theClass;
-  }
-
-  @Override
   public URL getResource(String name) {
     URL fromParent = super.getResource(name);
-    if (fromParent != null)  {
+    if (fromParent != null) {
       return fromParent;
     }
     return urls.getResource(name);
@@ -108,55 +89,70 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
 
   private InputStream getClassBytesAsStreamPreferringLocalUrls(String resName) {
     InputStream fromUrlsClassLoader = urls.getResourceAsStream(resName);
-    if (fromUrlsClassLoader != null)  {
+    if (fromUrlsClassLoader != null) {
       return fromUrlsClassLoader;
     }
     return super.getResourceAsStream(resName);
   }
 
   @Override
-  protected Class<?> findClass(final String className) throws ClassNotFoundException {
-    if (config.shouldAcquire(className)) {
-      final byte[] origClassBytes = getByteCode(className);
-
-      ClassNode classNode = new ClassNode(Opcodes.ASM4) {
-        @Override
-        public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-          desc = remapParamType(desc);
-          return super.visitField(access, name, desc, signature, value);
-        }
-
-        @Override
-        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-          MethodVisitor methodVisitor = super.visitMethod(access, name, remapParams(desc), signature, exceptions);
-          return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
-        }
-      };
-
-      final ClassReader classReader = new ClassReader(origClassBytes);
-      classReader.accept(classNode, 0);
-
-      classNode.interfaces.add(Type.getInternalName(ShadowedObject.class));
-
-      try {
-        byte[] bytes;
-        ClassInfo classInfo = new ClassInfo(className, classNode);
-        if (config.shouldInstrument(classInfo)) {
-          bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
-        } else {
-          bytes = origClassBytes;
-        }
-        ensurePackage(className);
-        return defineClass(className, bytes, 0, bytes.length);
-      } catch (Exception e) {
-        throw new ClassNotFoundException("couldn't load " + className, e);
-      } catch (OutOfMemoryError e) {
-        System.err.println("[ERROR] couldn't load " + className + " in " + this);
-        throw e;
-      }
+  protected Class<?> findClass(String name) throws ClassNotFoundException {
+    if (config.shouldAcquire(name)) {
+      return maybeInstrumentClass(name);
     } else {
-      throw new IllegalStateException("how did we get here? " + className);
+      return systemClassLoader.loadClass(name);
     }
+  }
+
+  protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
+    final byte[] origClassBytes = getByteCode(className);
+
+    ClassNode classNode = new ClassNode(Opcodes.ASM4) {
+      @Override
+      public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        desc = remapParamType(desc);
+        return super.visitField(access, name, desc, signature, value);
+      }
+
+      @Override
+      public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodVisitor methodVisitor = super.visitMethod(access, name, remapParams(desc), signature, exceptions);
+        return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
+      }
+    };
+
+    final ClassReader classReader = new ClassReader(origClassBytes);
+    classReader.accept(classNode, 0);
+
+    classNode.interfaces.add(Type.getInternalName(ShadowedObject.class));
+
+    try {
+      byte[] bytes;
+      ClassInfo classInfo = new ClassInfo(className, classNode);
+      if (config.shouldInstrument(classInfo)) {
+        bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
+      } else {
+        bytes = origClassBytes;
+      }
+      ensurePackage(className);
+      return defineClass(className, bytes, 0, bytes.length);
+    } catch (Exception e) {
+      throw new ClassNotFoundException("couldn't load " + className, e);
+    } catch (OutOfMemoryError e) {
+      System.err.println("[ERROR] couldn't load " + className + " in " + this);
+      throw e;
+    }
+  }
+
+  @Override
+  protected Package getPackage(String name) {
+    Package aPackage = super.getPackage(name);
+    if (aPackage != null) {
+      return aPackage;
+    }
+
+    return ReflectionHelpers.callInstanceMethod(systemClassLoader, "getPackage",
+        from(String.class, name));
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
@@ -452,18 +448,18 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
      * inheritance tree, a final method
      */
     private boolean isOverridingFinalMethod(ClassNode classNode, String methodName, String methodSignature) {
-      while(true) {
+      while (true) {
         List<MethodNode> methods = new ArrayList<>(classNode.methods);
 
         for (MethodNode method : methods) {
-          if(method.name.equals(methodName) && method.desc.equals(methodSignature)) {
+          if (method.name.equals(methodName) && method.desc.equals(methodSignature)) {
             if ((method.access & ACC_FINAL) != 0) {
               return true;
             }
           }
         }
 
-        if(classNode.superName == null) {
+        if (classNode.superName == null) {
           return false;
         }
 
@@ -763,7 +759,7 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
     /**
      * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
      * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
-     *
+     * <p>
      * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
      * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
      * present in legacy bytecode.
@@ -905,6 +901,7 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
 
     /**
      * Forces a return of a default value, depending on the method's return type
+     *
      * @param type The method's return type
      */
     public void pushDefaultReturnValueToStack(Type type) {
@@ -967,9 +964,6 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
     void handler() {
       generatorAdapter.mark(handler);
     }
-  }
-
-  private static class MissingClassMarker {
   }
 
   public class OldClassInstrumentor extends SandboxClassLoader.ClassInstrumentor {
@@ -1160,7 +1154,7 @@ public class SandboxClassLoader extends ClassLoader implements Opcodes {
       instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
 
       // first, move any arguments into an Object[] in reverse order
-      for (int i = argumentTypes.length - 1; i >= 0 ; i--) {
+      for (int i = argumentTypes.length - 1; i >= 0; i--) {
         Type type = argumentTypes[i];
         int argWidth = type.getSize();
 

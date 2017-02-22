@@ -18,9 +18,9 @@ public class Sandbox {
     this.shadowInvalidator = new ShadowInvalidator();
   }
 
-  public <T> Class<T> bootstrappedClass(Class<?> testClass) {
+  public <T> Class<T> bootstrappedClass(Class<?> clazz) {
     try {
-      return (Class<T>) robolectricClassLoader.loadClass(testClass.getName());
+      return (Class<T>) robolectricClassLoader.loadClass(clazz.getName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
