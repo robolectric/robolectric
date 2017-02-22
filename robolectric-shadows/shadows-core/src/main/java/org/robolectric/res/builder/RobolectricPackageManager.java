@@ -62,6 +62,8 @@ public interface RobolectricPackageManager {
 
   ComponentState getComponentState(ComponentName componentName);
 
+  void addPackage(PackageInfo packageInfo, PackageStats packageStats);
+
   void addPackage(PackageInfo packageInfo);
 
   void addPackage(String packageName);

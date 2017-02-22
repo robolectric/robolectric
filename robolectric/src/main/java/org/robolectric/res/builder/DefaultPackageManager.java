@@ -1018,6 +1018,11 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
   @Override
   public void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver callback) {
+    this.getPackageSizeInfoAsUser(pkgName, uid, callback);
+  }
+
+  @Override
+  public void getPackageSizeInfoAsUser(String pkgName, int uid, final IPackageStatsObserver callback) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override

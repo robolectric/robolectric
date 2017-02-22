@@ -82,10 +82,26 @@ public class RuntimeEnvironment {
     return (PackageManager) packageManager;
   }
 
+  /**
+   * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
+   * <pre>
+   *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
+   * </pre>
+   */
+  @Deprecated
   public static RobolectricPackageManager getRobolectricPackageManager() {
     return packageManager;
   }
 
+  /**
+   * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
+   * <pre>
+   *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
+   * </pre>
+   *
+   * If there is functionality you are missing you can extend ShadowPackageManager.
+   */
+  @Deprecated
   public static void setRobolectricPackageManager(RobolectricPackageManager newPackageManager) {
     if (packageManager != null) {
       packageManager.reset();

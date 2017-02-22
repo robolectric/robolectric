@@ -26,7 +26,6 @@ import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
-import android.content.pm.VerificationParams;
 import android.content.pm.VerifierDeviceIdentity;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
@@ -40,6 +39,14 @@ import android.os.storage.VolumeInfo;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
+ * <pre>
+ *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
+ * </pre>
+ *
+ * If there is functionality you are missing you can extend ShadowPackageManager.
+ */
 public class StubPackageManager extends PackageManager {
 
   @Override
