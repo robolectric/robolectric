@@ -81,7 +81,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
 /**
- * @deprecated use @{link ShadowPackageManager} instead.
+ * @deprecated use @{link ShadowPackageInstaller} instead.
  */
 @Deprecated
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
