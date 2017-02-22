@@ -94,6 +94,8 @@ public interface RobolectricPackageManager {
 
   PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags);
 
+  void addPermissionInfo(PermissionInfo permissionInfo);
+
   class ComponentState {
     public int newState;
     public int flags;

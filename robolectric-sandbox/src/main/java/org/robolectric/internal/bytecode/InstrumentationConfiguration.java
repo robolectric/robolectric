@@ -34,6 +34,7 @@ public class InstrumentationConfiguration {
       ShadowExtractor.class.getName(),
       "org.robolectric.internal.Shadow",
       "org.robolectric.res.builder.DefaultPackageManager",
+      "org.robolectric.res.builder.DefaultPackageManager$1",
       "org.robolectric.res.builder.DefaultPackageManager$IntentComparator",
       "org.robolectric.res.builder.DefaultPackageManager$RoboPackageInstaller",
       "org.robolectric.res.builder.DefaultPackageManager$RoboPackageInstaller$1",

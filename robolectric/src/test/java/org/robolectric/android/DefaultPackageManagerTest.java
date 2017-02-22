@@ -913,4 +913,22 @@ public class DefaultPackageManagerTest {
     assertThat(permission.nonLocalizedLabel).isEqualTo("Literal label");
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
   }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  public void getPermissionInfo_withMinimalFields() throws Exception {
+    PermissionInfo permission = packageManager.getPermissionInfo("permission_with_minimal_fields", 0);
+    assertThat(permission.labelRes).isEqualTo(0);
+    assertThat(permission.descriptionRes).isEqualTo(0);
+    assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
+  }
+
+  @Test
+  public void getPermissionInfo_addedPermissions() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "manually_added_permission";
+    rpm.addPermissionInfo(permissionInfo);
+    PermissionInfo permission = packageManager.getPermissionInfo("manually_added_permission", 0);
+    assertThat(permission.name).isEqualTo("manually_added_permission");
+  }
 }
