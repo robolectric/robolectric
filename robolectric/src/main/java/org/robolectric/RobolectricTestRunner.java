@@ -75,8 +75,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private final SdkPicker sdkPicker;
   private final ConfigMerger configMerger;
 
-  private TestLifecycle<Application> testLifecycle;
-  private DependencyResolver dependencyResolver;
+  private transient DependencyResolver dependencyResolver;
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
@@ -93,16 +92,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     super(testClass);
     this.configMerger = createConfigMerger();
     this.sdkPicker = createSdkPicker();
-  }
-
-  @SuppressWarnings("unchecked")
-  private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
-    try {
-      ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
-      testLifecycle = (TestLifecycle) robolectricClassLoader.loadClass(getTestLifecycleClass().getName()).newInstance();
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   protected DependencyResolver getJarResolver() {
@@ -279,8 +268,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return shouldIgnore(method, ((RobolectricFrameworkMethod) method).config);
   }
 
-  private ParallelUniverseInterface parallelUniverseInterface;
-
   @Override
   @NotNull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
@@ -292,48 +279,53 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
-    beforeTest((SdkEnvironment) sandbox, (RobolectricFrameworkMethod) method, bootstrappedMethod);
-  }
+    SdkEnvironment sdkEnvironment = (SdkEnvironment) sandbox;
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
-  private void beforeTest(SdkEnvironment sdkEnvironment, RobolectricFrameworkMethod method, Method bootstrappedMethod) throws Throwable {
-    parallelUniverseInterface = getHooksInterface(sdkEnvironment);
-    assureTestLifecycle(sdkEnvironment);
+    roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
+    Class<TestLifecycle> cl = sdkEnvironment.bootstrappedClass(getTestLifecycleClass());
+    roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
 
-    final Config config = method.config;
-    final AndroidManifest appManifest = method.getAppManifest();
+    final Config config = roboMethod.config;
+    final AndroidManifest appManifest = roboMethod.getAppManifest();
 
-    parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
-    parallelUniverseInterface.resetStaticState(config);
+    roboMethod.parallelUniverseInterface.setSdkConfig((sdkEnvironment).getSdkConfig());
+    roboMethod.parallelUniverseInterface.resetStaticState(config);
 
-    SdkConfig sdkConfig = method.sdkConfig;
-    Class<?> androidBuildVersionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
+    SdkConfig sdkConfig = roboMethod.sdkConfig;
+    Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
-    PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
+    PackageResourceTable systemResourceTable = (sdkEnvironment).getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
-    parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
-    testLifecycle.beforeTest(bootstrappedMethod);
+    roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, roboMethod.testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
+    roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
 
   @Override
   protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+
     try {
-      parallelUniverseInterface.tearDownApplication();
+      roboMethod.parallelUniverseInterface.tearDownApplication();
     } finally {
       try {
-        internalAfterTest(bootstrappedMethod);
+        internalAfterTest(method, bootstrappedMethod);
       } finally {
         Config config = ((RobolectricFrameworkMethod) method).config;
-        parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
+        roboMethod.parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
       }
     }
   }
 
   @Override
-  protected void finallyAfterTest() {
-    parallelUniverseInterface = null;
+  protected void finallyAfterTest(FrameworkMethod method) {
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+
+    roboMethod.testLifecycle = null;
+    roboMethod.parallelUniverseInterface = null;
   }
 
   protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
@@ -431,18 +423,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  public void internalAfterTest(final Method method) {
-    testLifecycle.afterTest(method);
+  protected void internalAfterTest(FrameworkMethod frameworkMethod, Method method) {
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) frameworkMethod;
+    roboMethod.testLifecycle.afterTest(method);
   }
 
   @Override
   protected void afterClass() {
-    testLifecycle = null;
-  }
-
-  @TestOnly
-  boolean allStateIsCleared() {
-    return testLifecycle == null;
   }
 
   @Override
@@ -450,7 +437,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
   }
 
-  private final PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
+  private PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
     PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
     if (resourceTable == null) {
       resourceTable = ResourceMerger.buildResourceTable(appManifest);
@@ -469,29 +456,31 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  public class HelperTestRunner extends SandboxTestRunner.HelperTestRunner {
+  public static class HelperTestRunner extends SandboxTestRunner.HelperTestRunner {
     public HelperTestRunner(Class bootstrappedTestClass) throws InitializationError {
       super(bootstrappedTestClass);
     }
 
     @Override protected Object createTest() throws Exception {
       Object test = super.createTest();
-      testLifecycle.prepareTest(test);
+      RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
+      roboMethod.testLifecycle.prepareTest(test);
       return test;
     }
 
     @Override
     protected Statement methodInvoker(FrameworkMethod method, Object test) {
       final Statement invoker = super.methodInvoker(method, test);
+      final RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
       return new Statement() {
         @Override
         public void evaluate() throws Throwable {
-          Thread orig = parallelUniverseInterface.getMainThread();
-          parallelUniverseInterface.setMainThread(Thread.currentThread());
+          Thread orig = roboMethod.parallelUniverseInterface.getMainThread();
+          roboMethod.parallelUniverseInterface.setMainThread(Thread.currentThread());
           try {
             invoker.evaluate();
           } finally {
-            parallelUniverseInterface.setMainThread(orig);
+            roboMethod.parallelUniverseInterface.setMainThread(orig);
           }
         }
       };
@@ -503,6 +492,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final @NotNull SdkConfig sdkConfig;
     final @NotNull Config config;
     private boolean includeApiLevelInName = true;
+    TestLifecycle testLifecycle;
+    ParallelUniverseInterface parallelUniverseInterface;
 
     RobolectricFrameworkMethod(@NotNull Method method, @NotNull AndroidManifest appManifest, @NotNull SdkConfig sdkConfig, @NotNull Config config) {
       super(method);

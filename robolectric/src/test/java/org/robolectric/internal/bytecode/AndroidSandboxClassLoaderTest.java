@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
+import org.robolectric.internal.SandboxFactory;
 
 import java.lang.reflect.Modifier;
 
@@ -17,7 +18,7 @@ public class AndroidSandboxClassLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    classLoader = new SandboxClassLoader(configureBuilder().build());
+    classLoader = SandboxFactory.INSTANCE.createClassLoader(configureBuilder().build());
   }
 
   @Test

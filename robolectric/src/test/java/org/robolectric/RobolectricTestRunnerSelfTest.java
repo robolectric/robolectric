@@ -3,8 +3,8 @@ package org.robolectric;
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
-
 import org.assertj.core.api.Assertions;
+import org.hamcrest.CoreMatchers;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -105,6 +105,11 @@ public class RobolectricTestRunnerSelfTest {
         .isEqualTo(Build.VERSION_CODES.KITKAT);
     assertThat(Build.VERSION.RELEASE)
         .isEqualTo("4.4_r1");
+  }
+
+
+  @Test public void assertThatz() throws Exception {
+    org.junit.Assert.assertThat(true, CoreMatchers.is(true));
   }
 
   @AfterClass

@@ -1,11 +1,21 @@
 package org.robolectric.shadow.api;
 
 import org.robolectric.internal.IShadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class Shadow {
   @SuppressWarnings("unused")
-  private static IShadow SHADOW_IMPL;
+  private final static IShadow SHADOW_IMPL;
+
+  static {
+    try {
+      SHADOW_IMPL = Class.forName("org.robolectric.internal.bytecode.ShadowImpl")
+          .asSubclass(IShadow.class).newInstance();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * Retrieve corresponding Shadow of the object.
