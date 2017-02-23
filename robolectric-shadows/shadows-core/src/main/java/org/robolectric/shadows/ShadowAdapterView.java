@@ -20,7 +20,6 @@ import static org.robolectric.Shadows.shadowOf;
 @Implements(AdapterView.class)
 public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   private static int ignoreRowsAtEndOfList = 0;
-  private static boolean automaticallyUpdateRowViews = true;
 
   @RealObject
   private AdapterView<T> realAdapterView;
@@ -47,20 +46,6 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   @Deprecated
   public boolean checkValidity() {
     throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Use this static method to turn off the feature of this class which calls getView() on all of the
-   * adapter's rows in setAdapter() and after notifyDataSetChanged() or notifyDataSetInvalidated() is
-   * called on the adapter. This feature is turned on by default. This sets a static on the class, so
-   * set it back to true at the end of your test to avoid test pollution.
-   *
-   * @param shouldUpdate false to turn off the feature, true to turn it back on
-   * @deprecated Not supported as of Robolectric 2.0-alpha-3.
-   */
-  @Deprecated
-  public static void automaticallyUpdateRowViews(boolean shouldUpdate) {
-    automaticallyUpdateRowViews = shouldUpdate;
   }
 
   public boolean performItemClick(int position) {
