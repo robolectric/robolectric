@@ -354,22 +354,20 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+  synchronized public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
 
     CopyOnWriteArraySet<ContentObserver> observers = new CopyOnWriteArraySet<>();
-    synchronized (this) {
-      Set<Uri> uris = contentObservers.keySet();
-      for (Uri registeredUri : uris) {
-        CopyOnWriteArraySet<ContentObserver> registeredObservers = contentObservers.get(registeredUri);
+    Set<Uri> uris = contentObservers.keySet();
+    for (Uri registeredUri : uris) {
+      CopyOnWriteArraySet<ContentObserver> registeredObservers = contentObservers.get(registeredUri);
 
-        if (uri.equals(registeredUri)) {
-          observers.addAll(registeredObservers);
-        } else if (uri.toString().startsWith(registeredUri.toString())) {
-          for (ContentObserver registeredObserver : registeredObservers) {
-            if (descendantsObservers.contains(registeredObserver)) {
-              observers.add(registeredObserver);
-            }
+      if (uri.equals(registeredUri)) {
+        observers.addAll(registeredObservers);
+      } else if (uri.toString().startsWith(registeredUri.toString())) {
+        for (ContentObserver registeredObserver : registeredObservers) {
+          if (descendantsObservers.contains(registeredObserver)) {
+            observers.add(registeredObserver);
           }
         }
       }
