@@ -436,10 +436,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   @Override
-  protected void afterClass() {
-  }
-
-  @Override
   public Object createTest() throws Exception {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
   }

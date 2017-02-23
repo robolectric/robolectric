@@ -54,48 +54,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @Override
-  protected Statement classBlock(RunNotifier notifier) {
-    final Statement statement = childrenInvoker(notifier);
-    return new Statement() {
-      @Override
-      public void evaluate() throws Throwable {
-        try {
-          statement.evaluate();
-          for (Class<?> testClass : loadedTestClasses) {
-            invokeAfterClass(testClass);
-          }
-        } finally {
-          afterClass();
-          loadedTestClasses.clear();
-        }
-      }
-    };
-  }
-
-  private void invokeBeforeClass(final Class clazz) throws Throwable {
-    if (!loadedTestClasses.contains(clazz)) {
-      loadedTestClasses.add(clazz);
-
-      final TestClass testClass = new TestClass(clazz);
-      final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
-      for (FrameworkMethod before : befores) {
-        before.invokeExplosively(null);
-      }
-    }
-  }
-
-  private static void invokeAfterClass(final Class<?> clazz) throws Throwable {
-    final TestClass testClass = new TestClass(clazz);
-    final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
-    for (FrameworkMethod after : afters) {
-      after.invokeExplosively(null);
-    }
-  }
-
-  protected void afterClass() {
-  }
-
-  @Override
   protected void runChild(FrameworkMethod method, RunNotifier notifier) {
     Description description = describeChild(method);
     EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
@@ -197,9 +155,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         }
 
         try {
-          // Only invoke @BeforeClass once per class
-          invokeBeforeClass(bootstrappedTestClass);
-
           beforeTest(sandbox, method, bootstrappedMethod);
 
           final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
