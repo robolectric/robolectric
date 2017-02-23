@@ -12,7 +12,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.android.runtime.Api19RuntimeAdapter;
 import org.robolectric.android.runtime.RuntimeAdapter;
 import org.robolectric.android.runtime.RuntimeAdapterFactory;
 import org.robolectric.shadows.CoreShadowsAdapter;
@@ -226,7 +225,7 @@ public class ActivityControllerTest {
     MyActivity activity = Robolectric.buildActivity(MyActivity.class).setup().get();
     assertThat(activity).isNotNull();
     RuntimeAdapter adapter = RuntimeAdapterFactory.getInstance();
-    assertThat(adapter.getClass().getName()).isEqualTo(Api19RuntimeAdapter.class.getName());
+    assertThat(adapter.getClass().getName()).isEqualTo("org.robolectric.android.runtime.Api19RuntimeAdapter");
   }
   
   @Test
