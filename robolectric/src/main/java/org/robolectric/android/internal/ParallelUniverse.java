@@ -1,4 +1,4 @@
-package org.robolectric.android;
+package org.robolectric.android.internal;
 
 import android.app.Application;
 import android.app.LoadedApk;
@@ -14,6 +14,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
+import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;

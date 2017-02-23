@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.android.internal;
 
 import android.app.Application;
 
@@ -7,8 +7,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.DefaultTestLifecycle;
+import org.robolectric.R;
+import org.robolectric.RoboSettings;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.android.ParallelUniverse;
+import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;
