@@ -346,7 +346,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  protected Properties getBuildSystemApiProperties() {
+  Properties getBuildSystemApiProperties() {
     InputStream resourceAsStream = getClass().getResourceAsStream("/com/android/tools/test_config.properties");
     if (resourceAsStream == null) {
       return null;

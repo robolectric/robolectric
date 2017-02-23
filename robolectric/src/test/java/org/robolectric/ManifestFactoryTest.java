@@ -17,7 +17,6 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -68,7 +67,7 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      protected Properties getBuildSystemApiProperties() {
+      Properties getBuildSystemApiProperties() {
         return properties;
       }
     };
@@ -98,7 +97,7 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      protected Properties getBuildSystemApiProperties() {
+      Properties getBuildSystemApiProperties() {
         return properties;
       }
     };
