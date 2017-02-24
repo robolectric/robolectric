@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.accounts.AccountManager;
+import android.accounts.IAccountManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -139,7 +140,6 @@ public class ShadowContextImpl {
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(Handler.class, null));
-
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
         } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
@@ -160,7 +160,9 @@ public class ShadowContextImpl {
                 ClassParameter.from(Display.class, display));
           }
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
-          service = AccountManager.get(null);
+          service = ReflectionHelpers.callConstructor(Class.forName("android.accounts.AccountManager"),
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(IAccountManager.class , null));
         } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.print.PrintManager")) {
           service = ReflectionHelpers.callConstructor(Class.forName("android.print.PrintManager"),
             ClassParameter.from(Context.class, RuntimeEnvironment.application),
