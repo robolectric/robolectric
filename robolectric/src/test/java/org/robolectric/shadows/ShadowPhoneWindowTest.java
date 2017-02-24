@@ -6,13 +6,13 @@ import android.view.Window;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.MultiApiRobolectricTestRunner;
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(MultiApiRobolectricTestRunner.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowPhoneWindowTest {
 
   private Window window;
