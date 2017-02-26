@@ -37,6 +37,7 @@ import android.os.Handler;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
 
+import java.util.Collections;
 import java.util.List;
 
 public class StubPackageManager extends PackageManager {
@@ -724,12 +725,12 @@ public class StubPackageManager extends PackageManager {
 
   @Override
   public List<ResolveInfo> queryIntentContentProvidersAsUser(Intent intent, int flags, int userId) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
