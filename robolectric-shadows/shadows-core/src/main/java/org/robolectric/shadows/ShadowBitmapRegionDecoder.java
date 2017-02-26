@@ -40,10 +40,12 @@ public class ShadowBitmapRegionDecoder {
   }
 
   private static BitmapRegionDecoder fillWidthAndHeight(BitmapRegionDecoder bitmapRegionDecoder, InputStream is) {
-    Point imageSize = ImageUtil.getImageSizeFromStream(is);
     ShadowBitmapRegionDecoder shadowDecoder = shadowOf(bitmapRegionDecoder);
-    shadowDecoder.width = imageSize.x;
-    shadowDecoder.height = imageSize.y;
+    Point imageSize = ImageUtil.getImageSizeFromStream(is);
+    if (imageSize != null) {
+      shadowDecoder.width = imageSize.x;
+      shadowDecoder.height = imageSize.y;
+    }
     return bitmapRegionDecoder;
   }
 
