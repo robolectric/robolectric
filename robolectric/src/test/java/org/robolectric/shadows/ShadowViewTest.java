@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -26,9 +27,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.android.TestOnClickListener;
 import org.robolectric.android.TestOnLongClickListener;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.*;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.TestRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -866,6 +869,45 @@ public class ShadowViewTest {
 
     testView.setOnCreateContextMenuListener(null);
     assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isNull();
+  }
+
+  @Test
+  public void setsGlobalVisibleRect() {
+    Rect globalVisibleRect = new Rect();
+    shadowOf(view).setGlobalVisibleRect(new Rect());
+    assertThat(view.getGlobalVisibleRect(globalVisibleRect))
+        .isFalse();
+    assertThat(globalVisibleRect.isEmpty())
+        .isTrue();
+    assertThat(view.getGlobalVisibleRect(globalVisibleRect, new Point(1, 1)))
+        .isFalse();
+    assertThat(globalVisibleRect.isEmpty())
+        .isTrue();
+
+    shadowOf(view).setGlobalVisibleRect(new Rect(1, 2, 3, 4));
+    assertThat(view.getGlobalVisibleRect(globalVisibleRect))
+        .isTrue();
+    assertThat(globalVisibleRect)
+        .isEqualTo(new Rect(1, 2, 3, 4));
+    assertThat(view.getGlobalVisibleRect(globalVisibleRect, new Point(1, 1)))
+        .isTrue();
+    assertThat(globalVisibleRect)
+        .isEqualTo(new Rect(0, 1, 2, 3));
+  }
+
+  @Test
+  public void usesDefaultGlobalVisibleRect() {
+    final ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
+    final Activity activity = activityController.get();
+    activity.setContentView(view, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT));
+    activityController.setup();
+
+    Rect globalVisibleRect = new Rect();
+    assertThat(view.getGlobalVisibleRect(globalVisibleRect))
+        .isTrue();
+    assertThat(globalVisibleRect)
+        .isEqualTo(new Rect(0, 25, 480, 800));
   }
 
   public static class MyActivity extends Activity {
