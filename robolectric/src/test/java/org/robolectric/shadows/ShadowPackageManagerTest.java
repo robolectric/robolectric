@@ -861,6 +861,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
   public void whenNotPreconfigured_getPackageSizeInfo_callsBackWithDefaults() throws Exception {
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
