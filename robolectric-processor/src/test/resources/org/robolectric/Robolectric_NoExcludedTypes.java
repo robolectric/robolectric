@@ -16,7 +16,7 @@ public class Shadows implements ShadowProvider {
   private static final Map<String, String> SHADOW_MAP = new HashMap<>(1);
 
   static {
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowExcludedFromAndroidSdk");
+    SHADOW_MAP.put("com.example.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowExcludedFromAndroidSdk");
   }
 
   public void reset() {
@@ -29,6 +29,6 @@ public class Shadows implements ShadowProvider {
 
   @Override
   public String[] getProvidedPackageNames() {
-    return new String[] {};
+    return new String[] {"com.example.objects"};
   }
 }

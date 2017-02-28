@@ -75,7 +75,7 @@ public class RealObjectValidatorTest {
     ASSERT.about(singleClass())
       .that(testClass)
       .failsToCompile()
-      .withErrorContaining("@RealObject with type <org.robolectric.annotation.processing.objects.UniqueDummy>; expected <org.robolectric.annotation.processing.objects.Dummy>")
+      .withErrorContaining("@RealObject with type <com.example.objects.UniqueDummy>; expected <com.example.objects.Dummy>")
       .onLine(11);
   }
 
@@ -85,7 +85,7 @@ public class RealObjectValidatorTest {
     ASSERT.about(singleClass())
       .that(testClass)
       .failsToCompile()
-      .withErrorContaining("@RealObject with type <org.robolectric.annotation.processing.objects.UniqueDummy>; expected <org.robolectric.annotation.processing.objects.Dummy>")
+      .withErrorContaining("@RealObject with type <com.example.objects.UniqueDummy>; expected <com.example.objects.Dummy>")
       .onLine(10);
   }
 

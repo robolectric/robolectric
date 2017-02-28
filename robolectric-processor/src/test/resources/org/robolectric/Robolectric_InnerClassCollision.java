@@ -1,13 +1,12 @@
 package org.robolectric;
 
+import com.example.objects.Dummy;
+import com.example.objects.OuterDummy;
+import com.example.objects.UniqueDummy;
+import com.example.objects.UniqueDummy.UniqueInnerDummy;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Generated;
-
-import org.robolectric.annotation.processing.objects.Dummy;
-import org.robolectric.annotation.processing.objects.OuterDummy;
-import org.robolectric.annotation.processing.objects.UniqueDummy;
-import org.robolectric.annotation.processing.objects.UniqueDummy.UniqueInnerDummy;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy;
@@ -21,12 +20,12 @@ public class Shadows implements ShadowProvider {
   private static final Map<String, String> SHADOW_MAP = new HashMap<>(6);
 
   static {
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowDummy");
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.OuterDummy", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy");
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.OuterDummy.InnerDummy", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy$ShadowInnerDummy");
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.UniqueDummy", "org.robolectric.annotation.processing.shadows.ShadowUniqueDummy");
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.UniqueDummy.InnerDummy", "org.robolectric.annotation.processing.shadows.ShadowUniqueDummy$ShadowInnerDummy");
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.UniqueDummy.UniqueInnerDummy", "org.robolectric.annotation.processing.shadows.ShadowUniqueDummy$ShadowUniqueInnerDummy");
+    SHADOW_MAP.put("com.example.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowDummy");
+    SHADOW_MAP.put("com.example.objects.OuterDummy", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy");
+    SHADOW_MAP.put("com.example.objects.OuterDummy.InnerDummy", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy$ShadowInnerDummy");
+    SHADOW_MAP.put("com.example.objects.UniqueDummy", "org.robolectric.annotation.processing.shadows.ShadowUniqueDummy");
+    SHADOW_MAP.put("com.example.objects.UniqueDummy.InnerDummy", "org.robolectric.annotation.processing.shadows.ShadowUniqueDummy$ShadowInnerDummy");
+    SHADOW_MAP.put("com.example.objects.UniqueDummy.UniqueInnerDummy", "org.robolectric.annotation.processing.shadows.ShadowUniqueDummy$ShadowUniqueInnerDummy");
   }
 
   public static ShadowDummy shadowOf(Dummy actual) {
@@ -64,6 +63,6 @@ public class Shadows implements ShadowProvider {
 
   @Override
   public String[] getProvidedPackageNames() {
-    return new String[]{"org.robolectric.annotation.processing.objects"};
+    return new String[] {"com.example.objects"};
   }
 }
