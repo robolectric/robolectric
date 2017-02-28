@@ -563,13 +563,7 @@ public class ShadowView {
   @Implementation
   public boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
     if (globalVisibleRect == null) {
-      /*
-       * The global visible rect is not initialized. The value is not reliable as Robolectric does
-       * not perform layouts in most cases. Use a substitute concept of visibility if no rect
-       * had been set explicitly.
-       */
-      rect.setEmpty();
-      return realView.isShown();
+      return directly().getGlobalVisibleRect(rect, globalOffset);
     }
 
     if (!globalVisibleRect.isEmpty()) {
@@ -584,8 +578,12 @@ public class ShadowView {
   }
 
   public void setGlobalVisibleRect(Rect rect) {
-    globalVisibleRect = new Rect();
-    globalVisibleRect.set(rect);
+    if (rect != null) {
+      globalVisibleRect = new Rect();
+      globalVisibleRect.set(rect);
+    } else {
+      globalVisibleRect = null;
+    }
   }
 
   public int lastHapticFeedbackPerformed() {
