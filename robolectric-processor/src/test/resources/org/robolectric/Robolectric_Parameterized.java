@@ -1,11 +1,10 @@
 package org.robolectric;
 
+import com.example.objects.Dummy;
+import com.example.objects.ParameterizedDummy;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Generated;
-
-import org.robolectric.annotation.processing.objects.Dummy;
-import org.robolectric.annotation.processing.objects.ParameterizedDummy;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.annotation.processing.shadows.ShadowParameterizedDummy;
 import org.robolectric.internal.ShadowExtractor;
@@ -17,8 +16,8 @@ public class Shadows implements ShadowProvider {
   private static final Map<String, String> SHADOW_MAP = new HashMap<>(2);
 
   static {
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowDummy");
-    SHADOW_MAP.put("org.robolectric.annotation.processing.objects.ParameterizedDummy", "org.robolectric.annotation.processing.shadows.ShadowParameterizedDummy");
+    SHADOW_MAP.put("com.example.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowDummy");
+    SHADOW_MAP.put("com.example.objects.ParameterizedDummy", "org.robolectric.annotation.processing.shadows.ShadowParameterizedDummy");
   }
 
   public static ShadowDummy shadowOf(Dummy actual) {
@@ -40,6 +39,6 @@ public class Shadows implements ShadowProvider {
 
   @Override
   public String[] getProvidedPackageNames() {
-    return new String[] {"org.robolectric.annotation.processing.objects"};
+    return new String[] {"com.example.objects"};
   }
 }

@@ -23,6 +23,10 @@
         <meta-data android:name="someName" android:value="someValue"/>
     </activity>
 
+    <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithMetadata">
+      <meta-data android:name="someName" android:value="someValue"/>
+    </activity>
+
     <activity android:name="org.robolectric.android.DefaultPackageManagerTest$ActivityWithConfigChanges"
               android:configChanges="mcc|screenLayout|orientation"/>
 

@@ -51,7 +51,7 @@ public class ImplementsValidatorTest {
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("@Implements: cannot specify both <value> and <className> attributes")
-      .onLine(7);
+      .onLine(6);
   }
 
   @Test

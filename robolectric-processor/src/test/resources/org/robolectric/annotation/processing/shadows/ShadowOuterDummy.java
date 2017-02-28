@@ -1,7 +1,7 @@
 package org.robolectric.annotation.processing.shadows;
 
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.processing.objects.OuterDummy;
+import com.example.objects.OuterDummy;
 
 @Implements(OuterDummy.class)
 public class ShadowOuterDummy {

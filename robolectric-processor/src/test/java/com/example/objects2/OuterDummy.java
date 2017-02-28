@@ -1,4 +1,4 @@
-package org.robolectric.annotation.processing.objects2;
+package com.example.objects2;
 
 public class OuterDummy {
 

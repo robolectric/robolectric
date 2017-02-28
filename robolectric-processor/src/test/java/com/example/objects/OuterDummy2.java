@@ -1,4 +1,4 @@
-package org.robolectric.annotation.processing.objects;
+package com.example.objects;
 
 public class OuterDummy2 {
   protected class InnerProtected {

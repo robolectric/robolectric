@@ -5,7 +5,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 @Implements(value = Robolectric.Anything.class,
-            className = "org.robolectric.annotation.processing.objects.AnyObject")
+            className = "com.example.objects.AnyObject")
 public class ShadowAnything {
   public static int resetCount = 0;
   @Resetter

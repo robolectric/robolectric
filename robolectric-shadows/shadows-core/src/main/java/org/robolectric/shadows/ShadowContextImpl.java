@@ -307,11 +307,6 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public PackageManager getPackageManager() {
-    return RuntimeEnvironment.getPackageManager();
-  }
-
-  @Implementation
   public boolean stopService(Intent name) {
     return ShadowApplication.getInstance().stopService(name);
   }
