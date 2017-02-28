@@ -192,7 +192,7 @@ abstract public class ShadowPackageManager implements RobolectricPackageManager 
 
   public abstract void getPackageSizeInfo(String pkgName, int uid, IPackageStatsObserver callback);
 
-  @Implements(StubPackageManager.class)
+  @Implements(value = StubPackageManager.class, isInAndroidSdk = false)
   public static class ShadowStubPackageManager extends ShadowPackageManager {
     @Override
     public PackageInfo getPackageInfo(String packageName, int flags) throws PackageManager.NameNotFoundException {

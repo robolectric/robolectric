@@ -35,6 +35,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
+import org.robolectric.annotation.internal.Instrument;
 
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,7 @@ import java.util.List;
  *
  * If there is functionality you are missing you can extend ShadowPackageManager.
  */
+@Instrument
 public class StubPackageManager extends PackageManager {
 
   @Override
