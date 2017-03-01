@@ -635,13 +635,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public void addOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
-    getDelegatePackageManager().addOnPermissionsChangeListener(listener);
+  public void addOnPermissionsChangeListener(Object listener) {
+    getDelegatePackageManager().addOnPermissionsChangeListener((OnPermissionsChangedListener) listener);
   }
 
   @Implementation
-  public void removeOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
-    getDelegatePackageManager().removeOnPermissionsChangeListener(listener);
+  public void removeOnPermissionsChangeListener(Object listener) {
+    getDelegatePackageManager().removeOnPermissionsChangeListener((OnPermissionsChangedListener) listener);
   }
 
   @Implementation
@@ -857,23 +857,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public KeySet getKeySetByAlias(String packageName, String alias) {
+  public Object getKeySetByAlias(String packageName, String alias) {
     return getDelegatePackageManager().getKeySetByAlias(packageName, alias);
   }
 
   @Implementation
-  public KeySet getSigningKeySet(String packageName) {
+  public Object getSigningKeySet(String packageName) {
     return getDelegatePackageManager().getSigningKeySet(packageName);
   }
 
   @Implementation
-  public boolean isSignedBy(String packageName, KeySet ks) {
-    return getDelegatePackageManager().isSignedBy(packageName, ks);
+  public boolean isSignedBy(String packageName, Object ks) {
+    return getDelegatePackageManager().isSignedBy(packageName, (KeySet) ks);
   }
 
   @Implementation
-  public boolean isSignedByExactly(String packageName, KeySet ks) {
-    return getDelegatePackageManager().isSignedByExactly(packageName, ks);
+  public boolean isSignedByExactly(String packageName, Object ks) {
+    return getDelegatePackageManager().isSignedByExactly(packageName, (KeySet) ks);
   }
 
   @Implementation
