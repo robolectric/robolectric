@@ -58,6 +58,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
   private static PackageResourceTable compiletimeSdkResourceTable;
 
+  private final Injector injector;
+
   private final SdkPicker sdkPicker;
   private final ConfigMerger configMerger;
 
@@ -78,6 +80,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     super(testClass);
     this.configMerger = createConfigMerger();
     this.sdkPicker = createSdkPicker();
+    injector = new ServiceLoaderInjector();
   }
 
   protected DependencyResolver getJarResolver() {
@@ -330,6 +333,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @param config Specification of the SDK version, manifest file, package name, etc.
    */
   protected ManifestFactory getManifestFactory(Config config) {
+    for (ManifestFactory manifestFactory : injector.getManifestFactories()) {
+      manifestFactory
+    }
+    return ;
     Properties buildSystemApiProperties = getBuildSystemApiProperties();
     if (buildSystemApiProperties != null) {
       return new DefaultManifestFactory(buildSystemApiProperties);
