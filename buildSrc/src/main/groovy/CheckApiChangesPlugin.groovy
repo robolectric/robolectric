@@ -58,6 +58,9 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                 Set<String> allMethods = new TreeSet<>(prev.classMethods.keySet())
                 allMethods.addAll(cur.classMethods.keySet())
 
+                Set<ClassMethod> deprecatedNotRemoved = new TreeSet<>()
+                Set<ClassMethod> newlyDeprecated = new TreeSet<>()
+
                 for (String classMethodName : allMethods) {
                     ClassMethod prevClassMethod = prev.classMethods.get(classMethodName)
                     ClassMethod curClassMethod = cur.classMethods.get(classMethodName)
@@ -84,6 +87,11 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                             changedClassMethods.put(prevClassMethod, Change.REMOVED)
                         }
                     } else {
+                        if (prevClassMethod.deprecated) {
+                            deprecatedNotRemoved << prevClassMethod;
+                        } else if (curClassMethod.deprecated) {
+                            newlyDeprecated << prevClassMethod;
+                        }
 //                        println "changed: $classMethodName"
                     }
                 }
@@ -129,8 +137,22 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                             }
                         }
                     }
+                }
 
+                if (!deprecatedNotRemoved.empty) {
+                    println "\nDeprecated but not removed:"
+                    for (ClassMethod classMethod : deprecatedNotRemoved) {
+                        introClass(classMethod)
+                        println "* ${classMethod.methodDesc}"
+                    }
+                }
 
+                if (!newlyDeprecated.empty) {
+                    println "\nNewly deprecated:"
+                    for (ClassMethod classMethod : newlyDeprecated) {
+                        introClass(classMethod)
+                        println "* ${classMethod.methodDesc}"
+                    }
                 }
             }
         }
