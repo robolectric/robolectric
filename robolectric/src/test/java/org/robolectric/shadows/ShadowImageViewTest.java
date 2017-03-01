@@ -26,6 +26,6 @@ public class ShadowImageViewTest {
     imageView.setImageBitmap(bitmap);
 
     imageView.setImageResource(R.drawable.an_image);
-    assertThat(shadowOf(imageView).getImageResourceId()).isEqualTo(R.drawable.an_image);
+    assertThat(shadowOf(imageView.getDrawable()).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
   }
 }

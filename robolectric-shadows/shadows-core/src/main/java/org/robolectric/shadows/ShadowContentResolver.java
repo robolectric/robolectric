@@ -453,7 +453,8 @@ public class ShadowContentResolver {
   }
 
   /**
-   * @deprecated
+   * Internal-only method, do not use!
+   *
    * Instead, use
    * <pre>
    * {@code
@@ -462,12 +463,6 @@ public class ShadowContentResolver {
    * Robolectric.buildContentProvider(ContentProvider.class).create(info);
    * }</pre>
    */
-  @Deprecated
-  synchronized public static void registerProvider(String authority, ContentProvider provider) {
-    initialize(provider, authority);
-    providers.put(authority, provider);
-  }
-
   synchronized public static void registerProviderInternal(String authority, ContentProvider provider) {
     providers.put(authority, provider);
   }
@@ -576,21 +571,6 @@ public class ShadowContentResolver {
   synchronized public void clearContentObservers() {
     contentObservers.clear();
   }
-
-  /**
-   * Non-Android accessor.  Returns one (which one is unspecified) of the content observers registered with
-   * the given URI, or null if none is registered.
-   * @param uri Given URI
-   * @return The content observer
-   *
-   * @deprecated This method return random observer, {@link #getContentObservers} should be used instead.
-   */
-  @Deprecated
-  public ContentObserver getContentObserver( Uri uri ) {
-    Collection<ContentObserver> observers = getContentObservers(uri);
-    return observers.isEmpty() ? null : observers.iterator().next();
-  }
-
 
   /**
    * Non-Android accessor. Returns the content observers registered with

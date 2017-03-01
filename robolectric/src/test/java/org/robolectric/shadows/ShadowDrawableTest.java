@@ -53,7 +53,7 @@ public class ShadowDrawableTest {
     String src = "source1";
     ShadowDrawable.addCorruptStreamSource(src);
     assertTrue(ShadowDrawable.corruptStreamSources.contains(src));
-    ShadowDrawable.reset();
+    ShadowDrawable.clearCorruptStreamSources();
     assertFalse(ShadowDrawable.corruptStreamSources.contains(src));
   }
 

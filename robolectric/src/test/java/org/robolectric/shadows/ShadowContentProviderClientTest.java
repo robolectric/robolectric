@@ -43,7 +43,7 @@ public class ShadowContentProviderClientTest {
   @Before
   public void setUp() {
     initMocks(this);
-    ShadowContentResolver.registerProvider(AUTHORITY, provider);
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, provider);
   }
 
   @Test
