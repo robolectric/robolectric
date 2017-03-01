@@ -1,20 +1,34 @@
 package org.robolectric.shadows;
 
+import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.*;
+import android.content.IntentSender;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.FeatureInfo;
+import android.content.pm.IPackageDataObserver;
+import android.content.pm.IPackageStatsObserver;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageStats;
+import android.content.pm.PermissionInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Drawable;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.StubPackageManager;
-import org.robolectric.annotation.Implements;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.builder.RobolectricPackageManager;
-
+import android.os.UserHandle;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.StubPackageManager;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.builder.RobolectricPackageManager;
 
 @Implements(PackageManager.class)
 abstract public class ShadowPackageManager implements RobolectricPackageManager {
@@ -41,12 +55,12 @@ abstract public class ShadowPackageManager implements RobolectricPackageManager 
   }
 
   @Override
-  public Drawable getActivityIcon(Intent intent) {
+  public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
     return RuntimeEnvironment.getRobolectricPackageManager().getActivityIcon(intent);
   }
 
   @Override
-  public Drawable getActivityIcon(ComponentName componentName) {
+  public Drawable getActivityIcon(ComponentName componentName) throws NameNotFoundException {
     return RuntimeEnvironment.getRobolectricPackageManager().getActivityIcon(componentName);
   }
 
@@ -155,11 +169,6 @@ abstract public class ShadowPackageManager implements RobolectricPackageManager 
     RuntimeEnvironment.getRobolectricPackageManager().setPackagesForUid(uid, packagesForCallingUid);
   }
 
-  @Override
-  public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
-    return RuntimeEnvironment.getRobolectricPackageManager().getPackageArchiveInfo(archiveFilePath, flags);
-  }
-
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
     packageArchiveInfo.put(archiveFilePath, packageInfo);
   }
@@ -190,78 +199,125 @@ abstract public class ShadowPackageManager implements RobolectricPackageManager 
     currentToCanonicalNames.put(currentName, canonicalName);
   }
 
-  public abstract void getPackageSizeInfo(String pkgName, int uid, IPackageStatsObserver callback);
+  @Implementation
+  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
+    return getDelegatePackageManager().queryBroadcastReceiversAsUser(intent, flags, userHandle);
+  }
+
+  @Implementation
+  public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags, @UserIdInt int userId) {
+    return getDelegatePackageManager().queryBroadcastReceivers(intent, flags, userId);
+  }
+
+  @Implementation
+  public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    return getDelegatePackageManager().getPackageArchiveInfo(archiveFilePath, flags);
+  }
+
+  @Implementation
+  public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
+    getDelegatePackageManager().freeStorageAndNotify(freeStorageSize, observer);
+  }
+
+  @Implementation
+  public void freeStorage(long freeStorageSize, IntentSender pi) {
+    getDelegatePackageManager().freeStorage(freeStorageSize, pi);
+  }
+
+  @Implementation
+  public void getPackageSizeInfo(String packageName, IPackageStatsObserver observer) {
+    getDelegatePackageManager().getPackageSizeInfo(packageName, observer);
+  }
+
+  @Implementation
+  public void addPreferredActivityAsUser(IntentFilter filter, int match,
+      ComponentName[] set, ComponentName activity, @UserIdInt int userId) {
+    getDelegatePackageManager().addPreferredActivityAsUser(filter, match, set, activity, userId);
+  }
+
+  @Implementation
+  public void replacePreferredActivityAsUser(IntentFilter filter, int match,
+      ComponentName[] set, ComponentName activity, @UserIdInt int userId) {
+    getDelegatePackageManager().replacePreferredActivityAsUser(filter, match, set, activity, userId);
+  }
 
   @Implements(value = StubPackageManager.class, isInAndroidSdk = false)
   public static class ShadowStubPackageManager extends ShadowPackageManager {
+
     @Override
-    public PackageInfo getPackageInfo(String packageName, int flags) throws PackageManager.NameNotFoundException {
-      return null;
+    public PackageInfo getPackageInfo(String packageName, int flags)
+        throws PackageManager.NameNotFoundException {
+      return getDelegatePackageManager().getPackageInfo(packageName, flags);
     }
 
     @Override
-    public ApplicationInfo getApplicationInfo(String packageName, int flags) throws PackageManager.NameNotFoundException {
-      return null;
+    public ApplicationInfo getApplicationInfo(String packageName, int flags)
+        throws PackageManager.NameNotFoundException {
+      return getDelegatePackageManager().getApplicationInfo(packageName, flags);
     }
 
     @Override
-    public ActivityInfo getActivityInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException {
-      return null;
+    public ActivityInfo getActivityInfo(ComponentName className, int flags)
+        throws PackageManager.NameNotFoundException {
+      return getDelegatePackageManager().getActivityInfo(className, flags);
     }
 
     @Override
-    public ActivityInfo getReceiverInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException {
-      return null;
+    public ActivityInfo getReceiverInfo(ComponentName className, int flags)
+        throws PackageManager.NameNotFoundException {
+      return getDelegatePackageManager().getReceiverInfo(className, flags);
     }
 
     @Override
-    public ServiceInfo getServiceInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException {
-      return null;
+    public ServiceInfo getServiceInfo(ComponentName className, int flags)
+        throws PackageManager.NameNotFoundException {
+      return getDelegatePackageManager().getServiceInfo(className, flags);
     }
 
     @Override
     public List<PackageInfo> getInstalledPackages(int flags) {
-      return null;
+      return getDelegatePackageManager().getInstalledPackages(flags);
     }
 
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-      return null;
+      return getDelegatePackageManager().queryIntentActivities(intent, flags);
     }
 
     @Override
     public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-      return null;
+      return getDelegatePackageManager().queryIntentServices(intent, flags);
     }
 
     @Override
     public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
-      return null;
+      return getDelegatePackageManager().queryBroadcastReceivers(intent, flags);
     }
 
     @Override
     public ResolveInfo resolveActivity(Intent intent, int flags) {
-      return null;
+      return getDelegatePackageManager().resolveActivity(intent, flags);
     }
 
     @Override
     public ResolveInfo resolveService(Intent intent, int flags) {
-      return null;
+      return getDelegatePackageManager().resolveService(intent, flags);
     }
 
     @Override
-    public Drawable getApplicationIcon(String packageName) throws PackageManager.NameNotFoundException {
-      return null;
+    public Drawable getApplicationIcon(String packageName)
+        throws PackageManager.NameNotFoundException {
+      return getDelegatePackageManager().getApplicationIcon(packageName);
     }
 
     @Override
     public Intent getLaunchIntentForPackage(String packageName) {
-      return null;
+      return getDelegatePackageManager().getLaunchIntentForPackage(packageName);
     }
 
     @Override
     public CharSequence getApplicationLabel(ApplicationInfo info) {
-      return null;
+      return getDelegatePackageManager().getApplicationLabel(info);
     }
 
     @Override
@@ -271,17 +327,16 @@ abstract public class ShadowPackageManager implements RobolectricPackageManager 
 
     @Override
     public boolean hasSystemFeature(String name) {
-      return false;
+      return getDelegatePackageManager().hasSystemFeature(name);
     }
 
     @Override
     public int checkPermission(String permName, String pkgName) {
-      return 0;
+      return getDelegatePackageManager().checkPermission(permName, pkgName);
     }
+  }
 
-    @Override
-    public void getPackageSizeInfo(String pkgName, int uid, IPackageStatsObserver callback) {
-
-    }
+  protected static PackageManager getDelegatePackageManager() {
+    return (PackageManager) RuntimeEnvironment.getRobolectricPackageManager();
   }
 }

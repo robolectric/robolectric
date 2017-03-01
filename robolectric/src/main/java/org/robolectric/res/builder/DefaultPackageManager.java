@@ -35,6 +35,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
@@ -114,6 +115,19 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
           null, UserHandle.myUserId());
     }
     return packageInstaller;
+  }
+
+  @Override
+  public Resources getResourcesForApplication(ApplicationInfo applicationInfo) throws NameNotFoundException {
+    return getResourcesForApplication(applicationInfo.packageName);
+  }
+
+  @Override
+  public Resources getResourcesForApplication(String appPackageName) throws NameNotFoundException {
+    if (RuntimeEnvironment.application.getPackageName().equals(appPackageName)) {
+      return RuntimeEnvironment.application.getResources();
+    }
+    throw new PackageManager.NameNotFoundException(appPackageName);
   }
 
   @Override
@@ -384,6 +398,12 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         iterator.remove();
       }
     }
+  }
+
+  @Override
+  public Drawable getDefaultActivityIcon() {
+    return Resources.getSystem().getDrawable(
+        com.android.internal.R.drawable.sym_def_app_icon);
   }
 
   @Override
