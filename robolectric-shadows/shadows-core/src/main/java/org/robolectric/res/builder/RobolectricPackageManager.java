@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.*;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -38,9 +39,9 @@ public interface RobolectricPackageManager {
 
   void removeResolveInfosForIntent(Intent intent, String packageName);
 
-  Drawable getActivityIcon(Intent intent);
+  Drawable getActivityIcon(Intent intent) throws NameNotFoundException;
 
-  Drawable getActivityIcon(ComponentName componentName);
+  Drawable getActivityIcon(ComponentName componentName) throws NameNotFoundException;
 
   void addActivityIcon(ComponentName component, Drawable d);
 
