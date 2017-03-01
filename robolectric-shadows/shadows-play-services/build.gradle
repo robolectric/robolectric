@@ -9,8 +9,7 @@ shadows {
 }
 
 dependencies {
-    compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core")
+    compileOnly project(":robolectric-shadows/shadows-core")
 
     compileOnly "com.android.support:support-v4:23.2.0"
     compileOnly "com.google.android.gms:play-services-base:8.4.0"
@@ -19,6 +18,7 @@ dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     // Testing dependencies
+    testCompile project(":robolectric")
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "org.mockito:mockito-core:2.5.4"

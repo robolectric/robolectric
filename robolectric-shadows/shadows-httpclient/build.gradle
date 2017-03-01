@@ -14,8 +14,7 @@ configurations {
 
 dependencies {
     // Project dependencies
-    compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core")
+    compileOnly project(":robolectric-shadows/shadows-core")
 
     // Compile dependencies
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
@@ -23,6 +22,7 @@ dependencies {
     compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
 
     // Testing dependencies
+    testCompile project(":robolectric")
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "org.mockito:mockito-core:2.5.4"

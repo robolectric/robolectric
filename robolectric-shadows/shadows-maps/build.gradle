@@ -9,14 +9,14 @@ shadows {
 }
 
 dependencies {
-    compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core")
+    compileOnly project(":robolectric-shadows/shadows-core")
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compile "com.ibm.icu:icu4j:53.1"
 
     compileOnly "com.google.android.maps:maps:23_r1"
 
+    testCompile project(":robolectric")
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "org.mockito:mockito-core:2.5.4"

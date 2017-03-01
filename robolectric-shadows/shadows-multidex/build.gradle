@@ -9,12 +9,13 @@ shadows {
 }
 
 dependencies {
-    compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core")
+    compileOnly project(":robolectric-shadows/shadows-core")
 
     compileOnly "com.android.support:multidex:1.0.1"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    testCompile project(":robolectric")
 }
 
 // change local artifact name to match dependencies

@@ -14,8 +14,8 @@ configurations {
 
 dependencies {
     // Project dependencies
-    compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core")
+    compileOnly project(":robolectric")
+    compileOnly project(":robolectric-shadows/shadows-core")
 
     // Compile dependencies
     compileOnly AndroidSdk.MAX_SDK.coordinates
@@ -23,6 +23,7 @@ dependencies {
     compileOnly "com.android.support:internal_impl:23.2.0"
 
     // Testing dependencies
+    testCompile project(":robolectric")
     testCompile "junit:junit:4.12"
     testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
     testCompile "org.assertj:assertj-core:2.6.0"
