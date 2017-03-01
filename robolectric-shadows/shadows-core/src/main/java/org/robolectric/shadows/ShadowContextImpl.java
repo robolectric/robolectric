@@ -14,6 +14,8 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.wifi.p2p.IWifiP2pManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -83,6 +85,7 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
     SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
+    SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
       SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
@@ -163,6 +166,8 @@ public class ShadowContextImpl {
           service = ReflectionHelpers.callConstructor(Class.forName("android.accounts.AccountManager"),
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
                 ClassParameter.from(IAccountManager.class , null));
+        } else if (serviceClassName.equals("android.net.wifi.p2p.WifiP2pManager")) {
+          service = new WifiP2pManager(ReflectionHelpers.createNullProxy(IWifiP2pManager.class));
         } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.print.PrintManager")) {
           service = ReflectionHelpers.callConstructor(Class.forName("android.print.PrintManager"),
             ClassParameter.from(Context.class, RuntimeEnvironment.application),
