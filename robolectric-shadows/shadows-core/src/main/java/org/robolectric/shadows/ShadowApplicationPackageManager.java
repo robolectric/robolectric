@@ -42,6 +42,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.VerifierDeviceIdentity;
+import android.content.res.ObbInfo;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.Rect;
@@ -55,7 +56,7 @@ import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false)
+@Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -659,8 +660,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public void installPackage(Uri packageURI, PackageInstallObserver observer, int flags, String installerPackageName) {
-    getDelegatePackageManager().installPackage(packageURI, observer, flags, installerPackageName);
+  public void installPackage(Object packageURI, Object observer, Object flags, Object installerPackageName) {
+    getDelegatePackageManager().installPackage((Uri) packageURI, (PackageInstallObserver) observer, (int) flags, (String) installerPackageName);
   }
 
   @Implementation
@@ -719,23 +720,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public void registerMoveCallback(MoveCallback callback, Handler handler) {
-    getDelegatePackageManager().registerMoveCallback(callback, handler);
+  public void registerMoveCallback(Object callback, Object handler) {
+    getDelegatePackageManager().registerMoveCallback((MoveCallback) callback, (Handler) handler);
   }
 
   @Implementation
-  public void unregisterMoveCallback(MoveCallback callback) {
-    getDelegatePackageManager().unregisterMoveCallback(callback);
+  public void unregisterMoveCallback(Object callback) {
+    getDelegatePackageManager().unregisterMoveCallback((MoveCallback) callback);
   }
 
   @Implementation
-  public int movePackage(String packageName, VolumeInfo vol) {
-    return getDelegatePackageManager().movePackage(packageName, vol);
+  public Object movePackage(Object packageName, Object vol) {
+    return getDelegatePackageManager().movePackage((String) packageName, (VolumeInfo) vol);
   }
 
   @Implementation
-  public VolumeInfo getPackageCurrentVolume(ApplicationInfo app) {
-    return getDelegatePackageManager().getPackageCurrentVolume(app);
+  public Object getPackageCurrentVolume(Object app) {
+    return getDelegatePackageManager().getPackageCurrentVolume((ApplicationInfo) app);
   }
 
   @Implementation
@@ -744,12 +745,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public int movePrimaryStorage(VolumeInfo vol) {
-    return getDelegatePackageManager().movePrimaryStorage(vol);
+  public Object movePrimaryStorage(Object vol) {
+    return getDelegatePackageManager().movePrimaryStorage((VolumeInfo) vol);
   }
 
   @Implementation
-  public @Nullable VolumeInfo getPrimaryStorageCurrentVolume() {
+  public @Nullable Object getPrimaryStorageCurrentVolume() {
     return getDelegatePackageManager().getPrimaryStorageCurrentVolume();
   }
 
