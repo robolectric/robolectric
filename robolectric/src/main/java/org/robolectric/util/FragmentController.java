@@ -2,10 +2,8 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
-import org.robolectric.Robolectric;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.android.controller.ComponentController;
 

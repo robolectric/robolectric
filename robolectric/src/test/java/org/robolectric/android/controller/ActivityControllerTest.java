@@ -95,7 +95,7 @@ public class ActivityControllerTest {
 
   @Test
   public void shouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
-    MyActivity myActivity = controller.withIntent(new Intent(Intent.ACTION_VIEW)).create().get();
+    MyActivity myActivity = Robolectric.buildActivity(MyActivity.class, new Intent(Intent.ACTION_VIEW)).create().get();
     assertThat(myActivity.getIntent().getAction()).isEqualTo(Intent.ACTION_VIEW);
     assertThat(myActivity.getIntent().getComponent()).isEqualTo(componentName);
   }
