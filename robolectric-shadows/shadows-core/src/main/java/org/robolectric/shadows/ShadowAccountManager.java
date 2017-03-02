@@ -38,7 +38,7 @@ public class ShadowAccountManager {
 
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
   private Handler mainHandler;
-  private String accountNameFromPrompt;
+  private RoboAccountManagerFuture pendingAddFuture;
 
   public void __constructor__(Context context, IAccountManager service) {
     mainHandler = new Handler(context.getMainLooper());
@@ -150,12 +150,12 @@ public class ShadowAccountManager {
       throw new IllegalArgumentException("account is null");
     }
 
-	  return new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
+	  return start(new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
       @Override
       public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
         return removeAccountExplicitly(account);
       }
-    };
+    });
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
@@ -291,28 +291,18 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Synchronously add an account.
+   * Non-android accessor.
    *
    * @param account User account.
-   * @deprecated Use {@link AccountManager#addAccount(String, String, String[], Bundle, Activity, AccountManagerCallback, Handler)}
-   *   instead.
    */
-  @Deprecated
   public void addAccount(Account account) {
     accounts.add(account);
+    if (pendingAddFuture != null) {
+      pendingAddFuture.resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+      start(pendingAddFuture);
+      pendingAddFuture = null;
+    }
     notifyListeners();
-  }
-
-  /**
-   * Provides simulated user input, specifying the account name to be used with
-   * {@link AccountManager#addAccount(String, String, String[], Bundle, Activity, AccountManagerCallback, Handler)}.
-   * Note that if {@link IdleState} is {@link IdleState#UNPAUSED} or {@link IdleState#CONSTANT_IDLE} then this
-   * must be called prior to the calling {@link AccountManager#addAccount(String, String, String[], Bundle, Activity, AccountManagerCallback, Handler)}
-   *
-   * @param accountName The account name.
-   */
-  public void provideResponseForAccountPrompt(String accountName) {
-    accountNameFromPrompt = accountName;
   }
 
   /**
@@ -356,51 +346,49 @@ public class ShadowAccountManager {
     }
   }
 
+  private class RoboAccountManagerFuture extends BaseRoboAccountManagerFuture<Bundle> {
+    private final String accountType;
+    private final Activity activity;
+    private final Bundle resultBundle;
+
+    RoboAccountManagerFuture(AccountManagerCallback<Bundle> callback, Handler handler, String accountType, Activity activity) {
+      super(callback, handler);
+
+      this.accountType = accountType;
+      this.activity = activity;
+      this.resultBundle = new Bundle();
+    }
+
+    @Override
+    public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
+      if (!authenticators.containsKey(accountType)) {
+        throw new AuthenticatorException("No authenticator specified for " + accountType);
+      }
+
+      resultBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+
+      if (activity == null) {
+        Intent resultIntent = new Intent();
+        resultBundle.putParcelable(AccountManager.KEY_INTENT, resultIntent);
+      } else if (callback == null) {
+        resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
+      }
+
+      return resultBundle;
+    }
+  }
+
+  @Implementation
+  public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, Bundle addAccountOptions, Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
+    addAccountOptionsList.add(addAccountOptions);
+    pendingAddFuture = new RoboAccountManagerFuture(callback, handler, accountType, activity);
+    return pendingAddFuture;
+  }
+
   public void setFeatures(Account account, String[] accountFeatures) {
     HashSet<String> featureSet = new HashSet<>();
     featureSet.addAll(Arrays.asList(accountFeatures));
     this.accountFeatures.put(account, featureSet);
-  }
-
-  /**
-   * If {@code activity} is non-null, account details may be provided subsequently by
-   *   calling {@link #provideResponseForAccountPrompt(String)}.
-   */
-  @Implementation
-  public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, final Bundle addAccountOptions, final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
-    return new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
-
-      public boolean isDone() {
-        if (activity == null) {
-          return super.isDone();
-        } else {
-          return super.isDone() && result.containsKey(AccountManager.KEY_ACCOUNT_NAME);
-        }
-      }
-
-      @Override
-      public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        result = new Bundle();
-        if (activity == null) {
-          Intent resultIntent = new Intent();
-          result.putParcelable(AccountManager.KEY_INTENT, resultIntent);
-        } else {
-          if (!result.containsKey(AccountManager.KEY_ACCOUNT_NAME)) {
-            result.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
-          }
-        }
-        if (!authenticators.containsKey(accountType)) {
-          throw new AuthenticatorException("No authenticator specified for " + accountType);
-        }
-
-        if (accountNameFromPrompt != null) {
-          result.putString(AccountManager.KEY_ACCOUNT_NAME, accountNameFromPrompt);
-        }
-        result.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
-        addAccountOptionsList.add(addAccountOptions);
-        return result;
-      }
-    };
   }
 
   /**
@@ -438,8 +426,7 @@ public class ShadowAccountManager {
       final Account account, final String authTokenType, final Bundle options,
       final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
 
-    return new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
-
+    return start(new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
       @Override
       public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
         Bundle result = new Bundle();
@@ -450,15 +437,14 @@ public class ShadowAccountManager {
         result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
         return result;
       }
-    };
+    });
   }
 
   @Implementation
   public AccountManagerFuture<Boolean> hasFeatures(final Account account,
                                                    final String[] features,
                                                    AccountManagerCallback<Boolean> callback, Handler handler) {
-    return new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
-
+    return start(new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
       @Override
       public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
         Set<String> availableFeatures = accountFeatures.get(account);
@@ -469,14 +455,14 @@ public class ShadowAccountManager {
         }
         return true;
       }
-    };
+    });
   }
 
   @Implementation
   public AccountManagerFuture<Account[]> getAccountsByTypeAndFeatures(
       final String type, final String[] features,
       AccountManagerCallback<Account[]> callback, Handler handler) {
-    return new BaseRoboAccountManagerFuture<Account[]>(callback, handler) {
+    return start(new BaseRoboAccountManagerFuture<Account[]>(callback, handler) {
       @Override
       public Account[] doWork() throws OperationCanceledException, IOException, AuthenticatorException {
         List<Account> result = new LinkedList<>();
@@ -490,7 +476,12 @@ public class ShadowAccountManager {
         }
         return result.toArray(new Account[result.size()]);
       }
-    };
+    });
+  }
+
+  private <T extends BaseRoboAccountManagerFuture> T start(T future) {
+    future.start();
+    return future;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -509,19 +500,21 @@ public class ShadowAccountManager {
 
 
   private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
-
-    private final AccountManagerCallback<T> callback;
+    protected final AccountManagerCallback<T> callback;
     private final Handler handler;
     protected T result;
     private Exception exception;
+    private boolean started = false;
 
     BaseRoboAccountManagerFuture(AccountManagerCallback<T> callback, Handler handler) {
       this.callback = callback;
       this.handler = handler == null ? mainHandler : handler;
-      start();
     }
 
-    private void start() {
+    void start() {
+      if (started) return;
+      started = true;
+
       handler.post(new Runnable() {
         @Override
         public void run() {
@@ -554,6 +547,8 @@ public class ShadowAccountManager {
 
     @Override
     public T getResult() throws OperationCanceledException, IOException, AuthenticatorException {
+      start();
+
       if (exception instanceof OperationCanceledException) {
         throw new OperationCanceledException(exception);
       } else if (exception instanceof IOException) {
@@ -562,9 +557,6 @@ public class ShadowAccountManager {
         throw new AuthenticatorException(exception);
       }
       return result;
-    }
-
-    private void run() {
     }
 
     @Override
