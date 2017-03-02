@@ -38,7 +38,7 @@ public class ShadowAccountManager {
 
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
   private Handler mainHandler;
-  private String accountNameFromPrompt;
+  private AddAccountDialog addAccountDialog;
 
   public void __constructor__(Context context, IAccountManager service) {
     mainHandler = new Handler(context.getMainLooper());
@@ -304,30 +304,21 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Provides simulated user input, specifying the account name to be used with
-   * {@link AccountManager#addAccount(String, String, String[], Bundle, Activity, AccountManagerCallback, Handler)}.
-   * Note that if {@link IdleState} is {@link IdleState#UNPAUSED} or {@link IdleState#CONSTANT_IDLE} then this
-   * must be called prior to the calling {@link AccountManager#addAccount(String, String, String[], Bundle, Activity, AccountManagerCallback, Handler)}
-   *
-   * @param accountName The account name.
-   */
-  public void provideResponseForAccountPrompt(String accountName) {
-    accountNameFromPrompt = accountName;
-  }
-
-  /**
-   * Non-android accessor.
-   *
    * Adds an account to the AccountManager but when {@link AccountManager#getAccountsByTypeForPackage(String, String)}
    * is called will be included if is in one of the #visibileToPackages
    *
    * @param account User account.
+   * @param visibleToPackages Set of Android packages to which this account will be visible.
    */
-  public void addAccount(Account account, String... visibileToPackages) {
+  public void addAccount(Account account, String... visibleToPackages) {
     addAccount(account);
     HashSet<String> value = new HashSet<>();
-    Collections.addAll(value, visibileToPackages);
+    Collections.addAll(value, visibleToPackages);
     packageVisibileAccounts.put(account, value);
+
+    if (addAccountDialog != null) {
+      getAddAccountDialog().enterAccountName(account.name);
+    }
   }
 
   /**
@@ -362,45 +353,101 @@ public class ShadowAccountManager {
     this.accountFeatures.put(account, featureSet);
   }
 
+  public AddAccountDialog getAddAccountDialog() {
+    if (addAccountDialog == null) {
+      throw new IllegalStateException("no dialog showing");
+    }
+    return addAccountDialog;
+  }
+
+  public interface AddAccountDialog {
+    void enterAccountName(String accountName);
+
+    void cancel();
+  }
+
   /**
    * If {@code activity} is non-null, account details may be provided subsequently by
-   *   calling {@link #provideResponseForAccountPrompt(String)}.
+   *   calling {@link #getAddAccountDialog()}.
    */
   @Implementation
-  public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, final Bundle addAccountOptions, final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
-    return new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
+  public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures,
+                                                 final Bundle addAccountOptions, final Activity activity,
+                                                 final AccountManagerCallback<Bundle> callback, Handler handler) {
+    AddAccountDialogFuture addAccountDialogFuture =
+        new AddAccountDialogFuture(callback, handler, activity, accountType, addAccountOptions);
+    this.addAccountDialog = addAccountDialogFuture;
+    return addAccountDialogFuture;
+  }
 
-      public boolean isDone() {
-        if (activity == null) {
-          return super.isDone();
-        } else {
-          return super.isDone() && result.containsKey(AccountManager.KEY_ACCOUNT_NAME);
-        }
+  public class AddAccountDialogFuture extends BaseRoboAccountManagerFuture<Bundle> implements AddAccountDialog {
+    private final Activity activity;
+    private final String accountType;
+    private final Bundle addAccountOptions;
+    private String accountNameFromPrompt;
+    private boolean cancelled;
+
+    public AddAccountDialogFuture(AccountManagerCallback<Bundle> callback, Handler handler, Activity activity, String accountType, Bundle addAccountOptions) {
+      super(callback, handler);
+      this.activity = activity;
+      this.accountType = accountType;
+      this.addAccountOptions = addAccountOptions;
+    }
+
+    @Override
+    protected void start() {
+      // don't start yet
+    }
+
+    public boolean isDone() {
+      if (activity == null) {
+        return super.isDone();
+      } else {
+        return super.isDone() && result.containsKey(AccountManager.KEY_ACCOUNT_NAME);
+      }
+    }
+
+    @Override
+    public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
+      if (cancelled) {
+        throw new OperationCanceledException("cancelled by user");
       }
 
-      @Override
-      public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        result = new Bundle();
-        if (activity == null) {
-          Intent resultIntent = new Intent();
-          result.putParcelable(AccountManager.KEY_INTENT, resultIntent);
-        } else {
-          if (!result.containsKey(AccountManager.KEY_ACCOUNT_NAME)) {
-            result.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
-          }
+      result = new Bundle();
+      if (activity == null) {
+        Intent resultIntent = new Intent();
+        result.putParcelable(AccountManager.KEY_INTENT, resultIntent);
+      } else {
+        if (!result.containsKey(AccountManager.KEY_ACCOUNT_NAME)) {
+          result.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
         }
-        if (!authenticators.containsKey(accountType)) {
-          throw new AuthenticatorException("No authenticator specified for " + accountType);
-        }
-
-        if (accountNameFromPrompt != null) {
-          result.putString(AccountManager.KEY_ACCOUNT_NAME, accountNameFromPrompt);
-        }
-        result.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
-        addAccountOptionsList.add(addAccountOptions);
-        return result;
       }
-    };
+      if (!authenticators.containsKey(accountType)) {
+        throw new AuthenticatorException("No authenticator specified for " + accountType);
+      }
+
+      result.putString(AccountManager.KEY_ACCOUNT_NAME, accountNameFromPrompt);
+      result.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+      addAccountOptionsList.add(addAccountOptions);
+      return result;
+    }
+
+    @Override
+    public void enterAccountName(String accountName) {
+      accountNameFromPrompt = accountName;
+      submit();
+    }
+
+    @Override
+    public void cancel() {
+      cancelled = true;
+      submit();
+    }
+
+    private void submit() {
+      addAccountDialog = null;
+      super.start();
+    }
   }
 
   /**
@@ -521,7 +568,7 @@ public class ShadowAccountManager {
       start();
     }
 
-    private void start() {
+    protected void start() {
       handler.post(new Runnable() {
         @Override
         public void run() {

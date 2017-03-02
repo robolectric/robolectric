@@ -479,8 +479,9 @@ public class ShadowAccountManagerTest {
   public void addAccount_activitySpecified_usesAccountPromptResponse() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
 
-    shadowOf(am).provideResponseForAccountPrompt("user_entered@prompt.com");
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, null, null);
+    shadowOf(am).getAddAccountDialog().enterAccountName("user_entered@prompt.com");
+
     Bundle resultBundle = result.getResult();
 
     assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
@@ -491,20 +492,22 @@ public class ShadowAccountManagerTest {
   public void addAccount_shouldClearAccountPromptResponseOnUse() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
 
-    shadowOf(am).provideResponseForAccountPrompt("user_entered@prompt.com");
     am.addAccount("google.com", "auth_token_type", null, null, activity, null, null);
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, null, null);
-    Bundle resultBundle = result.getResult();
+    shadowOf(am).getAddAccountDialog().enterAccountName("user_entered@prompt.com");
 
-    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
-    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("user_entered@prompt.com");
+    try {
+      shadowOf(am).getAddAccountDialog();
+      fail("should fail");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).isEqualTo("no dialog showing");
+    }
   }
 
   @Test
-  public void addAccount_shouldUseAccountPromptResponseAndCallCallback() throws Exception {
+  public void deprecatedAddAccount_shouldProvidePromptResponseAndCallCallback() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
-
-    shadowOf(am).provideResponseForAccountPrompt("thebomb@google.com");
+    shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
@@ -518,6 +521,49 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void addAccountWithUiPrompt_ok() throws Exception {
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
+
+    shadowOf(am).getAddAccountDialog().enterAccountName("thebomb@google.com");
+
+    assertThat(result.isDone()).isTrue();
+    assertThat(callback.hasBeenCalled()).isTrue();
+
+    Bundle resultBundle = callback.getResult();
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("thebomb@google.com");
+    assertThat(am.getAccounts()).containsExactly(new Account("thebomb@google.com", "google.com"));
+  }
+
+  @Test
+  public void addAccountWithUiPrompt_cancel_shouldCauseGetResultToThrow() throws Exception {
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
+
+    shadowOf(am).getAddAccountDialog().cancel();
+
+    assertThat(result.isDone()).isTrue();
+    assertThat(callback.hasBeenCalled()).isTrue();
+    try {
+      callback.getResult();
+      fail("should have thrown");
+    } catch (OperationCanceledException e) {
+      assertThat(e.getMessage()).isEqualTo("cancelled by user");
+    }
+    assertThat(am.getAccounts()).isEmpty();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void addAccountWithUiPrompt_notShowing() throws Exception {
+    shadowOf(am).getAddAccountDialog();
+  }
+
+  @Test
   public void addAccount_whenSchedulerPaused_shouldCallCallbackAfterSchedulerUnpaused() throws Exception {
     scheduler.pause();
     shadowOf(am).addAuthenticator("google.com");
@@ -527,7 +573,7 @@ public class ShadowAccountManagerTest {
     assertThat(callback.hasBeenCalled()).isFalse();
     assertThat(result.isDone()).isFalse();
 
-    shadowOf(am).provideResponseForAccountPrompt("thebomb@google.com");
+    shadowOf(am).getAddAccountDialog().enterAccountName("thebomb@google.com");
 
     scheduler.unPause();
 
@@ -541,10 +587,25 @@ public class ShadowAccountManagerTest {
 
   @Test
   public void addAccount_noAuthenticatorDefined() throws Exception {
+    AccountManagerFuture<Bundle> future = am.addAccount("unknown_account_type", "auth_token_type", null, null, activity, null, null);
+    shadowOf(am).getAddAccountDialog().enterAccountName("me@google.com");
+
     try {
-      am.addAccount("unknown_account_type", "auth_token_type", null, null, activity, null, null).getResult();
+      future.getResult();
       fail("addAccount() should throw an authenticator exception if no authenticator was registered for this account type");
     } catch(AuthenticatorException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void addAccount_noResponseForTest_shouldThrowIllegalStateException() throws Exception {
+    AccountManagerFuture<Bundle> future = am.addAccount("unknown_account_type", "auth_token_type", null, null, activity, null, null);
+
+    try {
+      future.getResult();
+      fail("getResult() should throw an exception if no test behavior has been indicated");
+    } catch(IllegalStateException e) {
       // Expected
     }
   }
