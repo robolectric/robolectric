@@ -52,6 +52,19 @@ public class GradleManifestFactoryTest {
   }
 
   @Test
+  public void getAppManifest_withOverriddenConfigAssetDir_shouldCreateManifest() throws Exception {
+    final AndroidManifest manifest = createManifest(
+            configBuilder.setConstants(BuildConfig.class)
+                    .setAssetDir("../../src/test/resources/assets")
+                    .build());
+
+    assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
+    assertThat(manifest.getResDirectory()).isEqualTo(file("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(file("build/intermediates/../../src/test/resources/assets"));
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(file("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+  }
+
+  @Test
   public void getAppManifest_withOverriddenConfigManifest_shouldCreateManifest() throws Exception {
     final AndroidManifest manifest = createManifest(
         configBuilder.setConstants(BuildConfig.class)
