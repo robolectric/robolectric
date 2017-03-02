@@ -91,7 +91,7 @@ public class ShadowContentResolverTest {
 
   @Test
   public void getType_shouldReturnProviderValue() throws Exception {
-    ShadowContentResolver.registerProvider(AUTHORITY, new ContentProvider() {
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, new ContentProvider() {
       @Override public boolean onCreate() {
         return false;
       }
@@ -239,7 +239,7 @@ public class ShadowContentResolverTest {
   @Test
   public void acquireUnstableProvider_shouldReturnWithUri() throws Exception {
     ContentProvider cp = mock(ContentProvider.class);
-    ShadowContentResolver.registerProvider(AUTHORITY, cp);
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
     final Uri uri = Uri.parse("content://" + AUTHORITY);
     assertThat(contentResolver.acquireUnstableProvider(uri)).isSameAs(cp.getIContentProvider());
   }
@@ -247,7 +247,7 @@ public class ShadowContentResolverTest {
   @Test
   public void acquireUnstableProvider_shouldReturnWithString() throws Exception {
     ContentProvider cp = mock(ContentProvider.class);
-    ShadowContentResolver.registerProvider(AUTHORITY, cp);
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
     assertThat(contentResolver.acquireUnstableProvider(AUTHORITY)).isSameAs(cp.getIContentProvider());
   }
 
@@ -260,7 +260,7 @@ public class ShadowContentResolverTest {
 
     ContentProvider provider = mock(ContentProvider.class);
     doReturn(null).when(provider).call(METHOD, ARG, EXTRAS);
-    ShadowContentResolver.registerProvider(AUTHORITY, provider);
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, provider);
 
     contentResolver.call(uri, METHOD, ARG, EXTRAS);
     verify(provider).call(METHOD, ARG, EXTRAS);
@@ -269,7 +269,13 @@ public class ShadowContentResolverTest {
   @Test
   public void registerProvider_shouldAttachProviderInfo() throws Exception {
     ContentProvider mock = mock(ContentProvider.class);
-    ShadowContentResolver.registerProvider("the-authority", mock);
+
+    ProviderInfo providerInfo0 = new ProviderInfo();
+    providerInfo0.authority = "the-authority"; // todo: support multiple authorities
+    providerInfo0.grantUriPermissions = true;
+    mock.attachInfo(RuntimeEnvironment.application, providerInfo0);
+    mock.onCreate();
+
     ArgumentCaptor<ProviderInfo> captor = ArgumentCaptor.forClass(ProviderInfo.class);
     verify(mock).attachInfo(same(RuntimeEnvironment.application), captor.capture());
     ProviderInfo providerInfo = captor.getValue();
@@ -321,7 +327,7 @@ public class ShadowContentResolverTest {
   @Test
   public void applyBatchForRegisteredProvider() throws RemoteException, OperationApplicationException {
     final ArrayList<String> operations = new ArrayList<>();
-    ShadowContentResolver.registerProvider("registeredProvider", new ContentProvider() {
+    ShadowContentResolver.registerProviderInternal("registeredProvider", new ContentProvider() {
       @Override
       public boolean onCreate() {
         return true;
@@ -565,7 +571,7 @@ public class ShadowContentResolverTest {
 
   @Test
   public void shouldDelegateCallsToRegisteredProvider() throws Exception {
-    ShadowContentResolver.registerProvider(AUTHORITY, new ContentProvider() {
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, new ContentProvider() {
       @Override
       public boolean onCreate() {
         return false;
@@ -616,18 +622,18 @@ public class ShadowContentResolverTest {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
 
-    assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
 
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
 
-    assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isSameAs((ContentObserver) co);
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
 
     assertThat(co.changed).isFalse();
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isTrue();
 
     scr.clearContentObservers();
-    assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
   }
     
   @Test
@@ -662,10 +668,10 @@ public class ShadowContentResolverTest {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
-    assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isSameAs((ContentObserver) co);
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
 
     contentResolver.unregisterContentObserver(co);
-    assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
 
     assertThat(co.changed).isFalse();
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
@@ -760,7 +766,7 @@ public class ShadowContentResolverTest {
     final File file = new File(RuntimeEnvironment.application.getFilesDir(), "test_file");
     file.createNewFile();
 
-    ShadowContentResolver.registerProvider(AUTHORITY, new ContentProvider() {
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, new ContentProvider() {
       @Override
       public boolean onCreate() {
         return true;

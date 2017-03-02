@@ -97,31 +97,26 @@ public class ShadowNotification {
         || findView(applyContentView(), "time").getVisibility() == View.VISIBLE;
   }
 
-  /**
-   * This method does not work on API > {@link Build.VERSION_CODES#N}
-   * @deprecated Use {@link #isIndeterminate()}, {@link #getMax()} ()}, {@link #getProgress()} ()} instead.
-   */
-  @Deprecated
-  public ProgressBar getProgressBar() {
+  private ProgressBar getProgressBar_PreN() {
     return ((ProgressBar) findView(applyContentView(), "progress"));
   }
 
   public boolean isIndeterminate() {
     return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
         ? realNotification.extras.getBoolean(Notification.EXTRA_PROGRESS_INDETERMINATE)
-        : getProgressBar().isIndeterminate();
+        : getProgressBar_PreN().isIndeterminate();
   }
 
   public int getMax() {
     return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
         ? realNotification.extras.getInt(Notification.EXTRA_PROGRESS_MAX)
-        : getProgressBar().getMax();
+        : getProgressBar_PreN().getMax();
   }
 
   public int getProgress() {
     return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
         ? realNotification.extras.getInt(Notification.EXTRA_PROGRESS)
-        : getProgressBar().getProgress();
+        : getProgressBar_PreN().getProgress();
   }
 
   public boolean usesChronometer() {

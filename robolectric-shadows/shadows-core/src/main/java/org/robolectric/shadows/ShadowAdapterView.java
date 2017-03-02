@@ -36,18 +36,6 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
     return itemSelectedListener;
   }
 
-  /**
-   * Check if our adapter's items have changed without {@code onChanged()} or {@code onInvalidated()} having been called.
-   *
-   * @deprecated No longer supported.
-   * @return true if the object is valid, false if not
-   * @throws RuntimeException if the items have been changed without notification
-   */
-  @Deprecated
-  public boolean checkValidity() {
-    throw new UnsupportedOperationException();
-  }
-
   public boolean performItemClick(int position) {
     return realAdapterView.performItemClick(realAdapterView.getChildAt(position),
         position, realAdapterView.getItemIdAtPosition(position));
