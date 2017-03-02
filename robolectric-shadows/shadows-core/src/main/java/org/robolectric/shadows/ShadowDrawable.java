@@ -185,12 +185,6 @@ public class ShadowDrawable {
     return alpha;
   }
 
-  /** @deprecated Use {@link #clearCorruptStreamSources()}. */
-  @Deprecated
-  public static void reset() {
-    clearCorruptStreamSources();
-  }
-
   public int getCreatedFromResId() {
     return createdFromResId;
   }

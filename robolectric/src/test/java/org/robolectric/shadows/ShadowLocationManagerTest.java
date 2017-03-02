@@ -396,25 +396,29 @@ public class ShadowLocationManagerTest {
 
     shadowLocationManager.simulateLocation(location1);
     shadowLocationManager.simulateLocation(location2);
-    assertThat(listener.location).isEqualTo(location1);
+    assertThat(listener.location.getTime()).isEqualTo(location1.getTime());
   }
 
   @Test
   public void simulateLocation_shouldNotNotifyListenerIfLessThanMinimumDistance() throws Exception {
     TestLocationListener listener = new TestLocationListener();
-    shadowLocationManager.requestLocationUpdates(GPS_PROVIDER, 0, 200000, listener);
+    locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 200000, listener);
 
     Location location1 = new Location(GPS_PROVIDER);
-    location1.setLatitude(0);
-    location1.setLongitude(0);
+    location1.setLatitude(1);
+    location1.setLongitude(2);
+    location1.setTime(0);
 
     Location location2 = new Location(GPS_PROVIDER);
-    location2.setLatitude(1);
-    location2.setLongitude(1);
+    location2.setLatitude(1.5);
+    location2.setLongitude(2.5);
+    location2.setTime(1000);
 
     shadowLocationManager.simulateLocation(location1);
     shadowLocationManager.simulateLocation(location2);
-    assertThat(listener.location).isEqualTo(location1);
+
+    assertThat(listener.location.getLatitude()).isEqualTo(1);
+    assertThat(listener.location.getLongitude()).isEqualTo(2);
   }
 
   @Test
