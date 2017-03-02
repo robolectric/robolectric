@@ -133,18 +133,14 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                                 developer {
                                     name "Christian Williams"
                                     email "christianw@google.com"
-                                    organization {
-                                        name "Google Inc."
-                                    }
+                                    organization = "Google Inc."
                                     organizationUrl "http://google.com"
                                 }
 
                                 developer {
                                     name "Jonathan Gerrish"
                                     email "jongerrish@google.com"
-                                    organization {
-                                        name "Google Inc."
-                                    }
+                                    organization = "Google Inc."
                                     organizationUrl "http://google.com"
                                 }
                             }
