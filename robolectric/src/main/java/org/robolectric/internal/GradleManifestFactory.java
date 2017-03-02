@@ -44,7 +44,10 @@ public class GradleManifestFactory implements ManifestFactory {
       res = FileFsFile.from(buildOutputDir, "bundles", flavor, type, "res");
     }
 
-    if (FileFsFile.from(buildOutputDir, "assets").exists()) {
+    if (!Config.DEFAULT_ASSET_FOLDER.equals(config.assetDir())
+            && FileFsFile.from(buildOutputDir, config.assetDir()).exists()) {
+      assets = FileFsFile.from(buildOutputDir, config.assetDir());
+    } else if (FileFsFile.from(buildOutputDir, "assets").exists()) {
       assets = FileFsFile.from(buildOutputDir, "assets", flavor, type);
     } else {
       assets = FileFsFile.from(buildOutputDir, "bundles", flavor, type, "assets");
