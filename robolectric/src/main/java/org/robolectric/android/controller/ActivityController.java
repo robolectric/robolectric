@@ -44,6 +44,12 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     shadowReference = shadowsAdapter.getShadowActivityAdapter(this.component);
   }
 
+  /**
+   * @deprecated Use {@link org.robolectric.Robolectric#buildActivity(Class, Intent)} instead.
+   *
+   * This method will be removed in Robolectric 3.4.
+   */
+  @Deprecated
   public ActivityController<T> withIntent(Intent intent) {
     super.withIntent(intent);
 
@@ -53,6 +59,12 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     return myself;
   }
 
+  /**
+   * @deprecated This is a no-op, it's safe to remove this call.
+   *
+   * This method will be removed in Robolectric 3.4.
+   */
+  @Deprecated
   public ActivityController<T> attach() {
     if (attached) {
       return this;

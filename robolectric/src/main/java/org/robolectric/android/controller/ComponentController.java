@@ -35,9 +35,9 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   }
 
   /**
-   * @deprecated Prefer passing the Intent through the constructor instead, it is safer as this
-   * method is broken for ActivityController where it is called after attach(). This method will be
-   * removed in a forthcoming release.
+   * @deprecated Use the appropriate builder in {@link org.robolectric.Robolectric} instead.
+   *
+   * This method will be removed in Robolectric 3.4.
    */
   @Deprecated
   public C withIntent(Intent intent) {
@@ -50,6 +50,8 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
    *
    * TODO(jongerrish): Make this method private so that it can only be called internally, should not
    * be part of the API.
+   *
+   * This method will be removed in Robolectric 3.4.
    */
   @Deprecated
   public abstract C attach();

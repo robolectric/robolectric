@@ -51,7 +51,7 @@ public class IntentServiceControllerTest {
 
   @Test
   public void onBindShouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
-    MyService myService = controller.withIntent(new Intent(Intent.ACTION_VIEW)).bind().get();
+    MyService myService = Robolectric.buildIntentService(MyService.class, new Intent(Intent.ACTION_VIEW)).bind().get();
     assertThat(myService.boundIntent.getAction()).isEqualTo(Intent.ACTION_VIEW);
     assertThat(myService.boundIntent.getComponent()).isEqualTo(componentName);
   }

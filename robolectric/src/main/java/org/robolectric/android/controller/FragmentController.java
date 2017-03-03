@@ -37,10 +37,15 @@ public class FragmentController<F extends Fragment> extends org.robolectric.util
   private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass, Intent intent) {
     super(shadowsAdapter, fragment, intent);
     this.fragment = fragment;
-    this.activityController = Robolectric.buildActivity(activityClass);
+    this.activityController = Robolectric.buildActivity(activityClass, intent);
   }
 
-
+  /**
+   * @deprecated This is a no-op, it's safe to remove this call.
+   *
+   * This method will be removed in Robolectric 3.4.
+   */
+  @Deprecated
   @Override
   public FragmentController<F> attach() {
     return this;
@@ -142,6 +147,12 @@ public class FragmentController<F extends Fragment> extends org.robolectric.util
     return this;
   }
 
+  /**
+   * @deprecated Use {@link org.robolectric.Robolectric#buildFragment(Class, Class, Intent)} instead.
+   *
+   * This method will be removed in Robolectric 3.4.
+   */
+  @Deprecated
   @Override
   public FragmentController<F> withIntent(final Intent intent) {
     shadowMainLooper.runPaused(new Runnable() {
