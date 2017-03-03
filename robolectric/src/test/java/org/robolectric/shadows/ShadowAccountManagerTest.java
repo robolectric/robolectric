@@ -9,29 +9,25 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.Scheduler;
 
 import java.io.IOException;
-import org.robolectric.util.Scheduler;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
@@ -44,6 +40,7 @@ public class ShadowAccountManagerTest {
   public void setUp() throws Exception {
     am = AccountManager.get(RuntimeEnvironment.application);
     scheduler = Robolectric.getForegroundThreadScheduler();
+    activity = new Activity();
   }
 
   @Test
@@ -476,41 +473,29 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void addAccount_activitySpecified_usesAccountPromptResponse() throws Exception {
+  public void addAccount_activitySpecified() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
 
-    shadowOf(am).provideResponseForAccountPrompt("user_entered@prompt.com");
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, null, null);
     Bundle resultBundle = result.getResult();
 
     assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
-    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("user_entered@prompt.com");
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("some_user@gmail.com");
   }
 
   @Test
-  public void addAccount_shouldClearAccountPromptResponseOnUse() throws Exception {
+  public void addAccount_shouldCallCallback() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
-
-    shadowOf(am).provideResponseForAccountPrompt("user_entered@prompt.com");
-    am.addAccount("google.com", "auth_token_type", null, null, activity, null, null);
-    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, null, null);
-    Bundle resultBundle = result.getResult();
-
-    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
-    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("user_entered@prompt.com");
-  }
-
-  @Test
-  public void addAccount_shouldUseAccountPromptResponseAndCallCallback() throws Exception {
-    shadowOf(am).addAuthenticator("google.com");
-
-    shadowOf(am).provideResponseForAccountPrompt("thebomb@google.com");
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
 
+    assertThat(callback.hasBeenCalled()).isFalse();
+    assertThat(result.isDone()).isFalse();
+
+    shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
     assertThat(result.isDone()).isTrue();
-    assertThat(callback.hasBeenCalled()).isTrue();
+    assertThat(callback.accountManagerFuture).isNotNull();
 
     Bundle resultBundle = callback.getResult();
     assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
@@ -527,7 +512,7 @@ public class ShadowAccountManagerTest {
     assertThat(callback.hasBeenCalled()).isFalse();
     assertThat(result.isDone()).isFalse();
 
-    shadowOf(am).provideResponseForAccountPrompt("thebomb@google.com");
+    shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
 
     scheduler.unPause();
 
@@ -541,8 +526,9 @@ public class ShadowAccountManagerTest {
 
   @Test
   public void addAccount_noAuthenticatorDefined() throws Exception {
+    AccountManagerFuture<Bundle> future = am.addAccount("unknown_account_type", "auth_token_type", null, null, activity, null, null);
     try {
-      am.addAccount("unknown_account_type", "auth_token_type", null, null, activity, null, null).getResult();
+      future.getResult();
       fail("addAccount() should throw an authenticator exception if no authenticator was registered for this account type");
     } catch(AuthenticatorException e) {
       // Expected
@@ -557,7 +543,8 @@ public class ShadowAccountManagerTest {
 
     Bundle expectedAddAccountOptions = new Bundle();
     expectedAddAccountOptions.putString("option", "value");
-    AccountManagerFuture<Bundle> future = am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, activity, null, null);
+
+    am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, activity, null, null);
 
     Bundle actualAddAccountOptions = shadowOf(am).getNextAddAccountOptions();
     assertThat(shadowOf(am).getNextAddAccountOptions()).isNull();
@@ -572,7 +559,7 @@ public class ShadowAccountManagerTest {
 
     Bundle expectedAddAccountOptions = new Bundle();
     expectedAddAccountOptions.putString("option", "value");
-    AccountManagerFuture<Bundle> futureResult = am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, activity, null, null);
+    am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, activity, null, null);
 
     Bundle actualAddAccountOptions = shadowOf(am).peekNextAddAccountOptions();
     assertThat(shadowOf(am).peekNextAddAccountOptions()).isNotNull();
