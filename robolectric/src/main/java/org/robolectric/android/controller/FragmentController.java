@@ -41,17 +41,6 @@ public class FragmentController<F extends Fragment> extends org.robolectric.util
   }
 
   /**
-   * @deprecated This is a no-op, it's safe to remove this call.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  @Override
-  public FragmentController<F> attach() {
-    return this;
-  }
-
-  /**
    * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code contentViewId}.
    */
   public FragmentController<F> create(final int contentViewId, final Bundle bundle) {
@@ -142,23 +131,6 @@ public class FragmentController<F extends Fragment> extends org.robolectric.util
       @Override
       public void run() {
         activityController.saveInstanceState(outState);
-      }
-    });
-    return this;
-  }
-
-  /**
-   * @deprecated Use {@link org.robolectric.Robolectric#buildFragment(Class, Class, Intent)} instead.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  @Override
-  public FragmentController<F> withIntent(final Intent intent) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.withIntent(intent);
       }
     });
     return this;
