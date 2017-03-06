@@ -1,10 +1,7 @@
 package org.robolectric.manifest;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.robolectric.annotation.Config;
@@ -13,13 +10,13 @@ import org.robolectric.test.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static android.content.pm.ApplicationInfo.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -188,7 +185,7 @@ public class AndroidManifestTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
-  public void shouldReturnApplicationMetaData() throws PackageManager.NameNotFoundException {
+  public void shouldReturnApplicationMetaData() throws Exception {
     Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
 
     Object metaValue = meta.get("org.robolectric.metaName1");
@@ -391,9 +388,28 @@ public class AndroidManifestTest {
     assertThat(config.getApplicationAttributes().get("android:allowBackup")).isEqualTo("true");
   }
 
+  @Test
+  public void allFieldsShouldBePrimitivesOrJavaLangOrRobolectric() throws Exception {
+    List<Field> wrongFields = new ArrayList<>();
+    for (Field field : AndroidManifest.class.getDeclaredFields()) {
+      Class<?> type = field.getType();
+      if (type.isPrimitive()) continue;
+
+      String packageName = type.getPackage().getName();
+      if (packageName.startsWith("java.")
+          || packageName.equals("org.robolectric.res")
+          || packageName.equals("org.robolectric.manifest")
+          ) continue;
+
+      wrongFields.add(field);
+    }
+
+    assertThat(wrongFields).isEmpty();
+  }
+
   /////////////////////////////
 
-  public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
+  private AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
     File f = temporaryFolder.newFile("whatever.xml",
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
@@ -401,9 +417,5 @@ public class AndroidManifestTest {
             "    <uses-sdk " + usesSdkAttrs + "/>\n" +
             "</manifest>\n");
     return new AndroidManifest(Fs.newFile(f), null, null);
-  }
-
-  private boolean hasFlag(final int flags, final int flag) {
-    return (flags & flag) != 0;
   }
 }
