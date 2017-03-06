@@ -650,11 +650,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public XmlResourceParser getXml(String packageName, @XmlRes int resid, ApplicationInfo appInfo) {
-    return getDelegatePackageManager().getXml(packageName, resid, appInfo);
-  }
-
-  @Implementation
   public void installPackage(Uri packageURI, IPackageInstallObserver observer, int flags, String installerPackageName) {
     getDelegatePackageManager().installPackage(packageURI, observer, flags, installerPackageName);
   }

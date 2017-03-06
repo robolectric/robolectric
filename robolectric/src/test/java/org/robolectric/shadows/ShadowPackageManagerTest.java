@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.*;
 import android.content.pm.PackageManager;
+import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -1068,5 +1069,13 @@ public class ShadowPackageManagerTest {
     packageManager.setInstallerPackageName("target.package", "installer.package");
 
     assertThat(packageManager.getInstallerPackageName("target.package")).isEqualTo("installer.package");
+  }
+
+  @Test
+  public void getXml() throws Exception {
+    XmlResourceParser in = packageManager.getXml(RuntimeEnvironment.application.getPackageName(),
+        R.xml.dialog_preferences,
+        RuntimeEnvironment.application.getApplicationInfo());
+    assertThat(in).isNotNull();
   }
 }
