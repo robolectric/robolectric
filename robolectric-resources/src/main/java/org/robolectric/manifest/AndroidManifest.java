@@ -34,7 +34,6 @@ public class AndroidManifest {
 
   private boolean manifestIsParsed;
 
-  private Node applicationNode;
   private String applicationName;
   private String applicationLabel;
   private String rClassName;
@@ -130,7 +129,7 @@ public class AndroidManifest {
         versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
         rClassName = packageName + ".R";
 
-        applicationNode = findApplicationNode(manifestDocument);
+        Node applicationNode = findApplicationNode(manifestDocument);
         if (applicationNode != null) {
           NamedNodeMap attributes = applicationNode.getAttributes();
           int attrCount = attributes.getLength();
@@ -145,11 +144,11 @@ public class AndroidManifest {
           themeRef = applicationAttributes.get("android:theme");
           labelRef = applicationAttributes.get("android:label");
 
-          parseReceivers();
-          parseServices();
-          parseActivities();
-          parseApplicationMetaData();
-          parseContentProviders();
+          parseReceivers(applicationNode);
+          parseServices(applicationNode);
+          parseActivities(applicationNode);
+          parseApplicationMetaData(applicationNode);
+          parseContentProviders(applicationNode);
         }
 
         minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
@@ -207,7 +206,7 @@ public class AndroidManifest {
     }
   }
 
-  private void parseContentProviders() {
+  private void parseContentProviders(Node applicationNode) {
     for (Node contentProviderNode : getChildrenTags(applicationNode, "provider")) {
       String name = getAttributeValue(contentProviderNode, "android:name");
       String authorities = getAttributeValue(contentProviderNode, "android:authorities");
@@ -238,7 +237,7 @@ public class AndroidManifest {
     return attributeNode == null ? null : attributeNode.getTextContent();
   }
 
-  private void parseReceivers() {
+  private void parseReceivers(Node applicationNode) {
     for (Node receiverNode : getChildrenTags(applicationNode, "receiver")) {
       Node namedItem = receiverNode.getAttributes().getNamedItem("android:name");
       if (namedItem == null) continue;
@@ -266,7 +265,7 @@ public class AndroidManifest {
     }
   }
 
-  private void parseServices() {
+  private void parseServices(Node applicationNode) {
     for (Node serviceNode : getChildrenTags(applicationNode, "service")) {
       Node namedItem = serviceNode.getAttributes().getNamedItem("android:name");
       if (namedItem == null) continue;
@@ -293,7 +292,7 @@ public class AndroidManifest {
     }
   }
 
-  private void parseActivities() {
+  private void parseActivities(Node applicationNode) {
     for (Node activityNode : getChildrenTags(applicationNode, "activity")) {
       parseActivity(activityNode, false);
     }
@@ -439,7 +438,7 @@ public class AndroidManifest {
     }
   }
 
-  private void parseApplicationMetaData() {
+  private void parseApplicationMetaData(Node applicationNode) {
     applicationMetaData = new MetaData(getChildrenTags(applicationNode, "meta-data"));
   }
 
