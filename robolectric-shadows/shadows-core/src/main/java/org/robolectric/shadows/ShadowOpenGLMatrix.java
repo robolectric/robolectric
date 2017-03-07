@@ -13,10 +13,11 @@ public class ShadowOpenGLMatrix {
    * matrix multiplication works, the result matrix will have the same
    * effect as first multiplying by the rhs matrix, then multiplying by
    * the lhs matrix. This is the opposite of what you might expect.
-   * <p>
+   *
    * The same float array may be passed for result, lhs, and/or rhs. However,
    * the result element values are undefined if the result elements overlap
    * either the lhs or rhs elements.
+   * ## blah
    *
    * @param result       The float array that holds the result.
    * @param resultOffset The offset into the result array where the result is
@@ -26,8 +27,8 @@ public class ShadowOpenGLMatrix {
    * @param rhs          The float array that holds the right-hand-side matrix.
    * @param rhsOffset    The offset into the rhs array where the rhs is stored.
    * @throws IllegalArgumentException if result, lhs, or rhs are null, or if
-   *                                  resultOffset + 16 > result.length or lhsOffset + 16 > lhs.length or
-   *                                  rhsOffset + 16 > rhs.length.
+   *                     <code>resultOffset + 16 &gt; result.length</code> or <code>lhsOffset + 16 &gt; lhs.length</code> or
+   *                     <code>rhsOffset + 16 &gt; rhs.length</code>.
    */
   @Implementation
   public static void multiplyMM(float[] result, int resultOffset,

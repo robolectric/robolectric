@@ -169,6 +169,9 @@ public class ShadowView {
     return drawable instanceof ColorDrawable ? ((ColorDrawable) drawable).getColor() : 0;
   }
 
+  /**
+   * @strategy foo
+   */
   @HiddenApi
   @Implementation
   public void computeOpaqueFlags() {

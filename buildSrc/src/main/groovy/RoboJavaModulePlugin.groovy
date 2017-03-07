@@ -86,7 +86,27 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 from sourceSets.main.allJava
             }
 
-            javadoc.failOnError = false
+            configurations {
+                doclet
+            }
+
+            dependencies {
+                doclet project(":doclet")
+            }
+
+            javadoc {
+                dependsOn ":doclet:jar"
+
+                failOnError = false
+
+                options {
+//                    docletpath = configurations.doclet.files.asType(List)
+//                    doclet = "org.robolectric.doclet.RoboDoclet"
+
+                    taglets = ["org.robolectric.doclet.RoboTaglet"]
+                    addStringOption('tagletpath', configurations.doclet.files.join(':'))
+                }
+            }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {
                 classifier "javadoc"
