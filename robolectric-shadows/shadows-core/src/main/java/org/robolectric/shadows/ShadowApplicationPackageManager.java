@@ -55,6 +55,7 @@ import android.os.storage.VolumeInfo;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
@@ -243,14 +244,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
-  public void getPackageSizeInfo(String packageName, IPackageStatsObserver observer) {
-    getDelegatePackageManager()
-        .getPackageSizeInfoAsUser(packageName, UserHandle.myUserId(), observer);
+  public void getPackageSizeInfo(String pkgName, IPackageStatsObserver callback) {
+    ReflectionHelpers.callInstanceMethod(getDelegatePackageManager(), "getPackageSizeInfo",
+        ReflectionHelpers.ClassParameter.from(String.class, pkgName),
+        ReflectionHelpers.ClassParameter.from(IPackageStatsObserver.class, callback));
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
   public void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver callback) {
-    getDelegatePackageManager().getPackageSizeInfoAsUser(pkgName, uid, callback);
+    ReflectionHelpers.callInstanceMethod(getDelegatePackageManager(), "getPackageSizeInfo",
+        ReflectionHelpers.ClassParameter.from(String.class, pkgName),
+        ReflectionHelpers.ClassParameter.from(int.class, uid),
+        ReflectionHelpers.ClassParameter.from(IPackageStatsObserver.class, callback));
   }
 
   @Implementation(minSdk = N)

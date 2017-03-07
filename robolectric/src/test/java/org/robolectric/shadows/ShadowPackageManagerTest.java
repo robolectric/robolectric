@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.UserHandle;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,14 +25,14 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.test.TemporaryFolder;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.pm.PackageManager.*;
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -836,6 +837,27 @@ public class ShadowPackageManagerTest {
     packageManager.verifyPendingInstall(1234, VERIFICATION_ALLOW);
 
     assertThat(shadowPackageManager.getVerificationResult(1234)).isEqualTo(VERIFICATION_ALLOW);
+  }
+
+  @Test
+  @Config(maxSdk = JELLY_BEAN)
+  public void whenPackageNotPresent_getPackageSizeInfo_worksOnJellyBean() throws Exception {
+    packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
+
+    verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(false));
+    assertThat(packageStatsCaptor.getValue()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1, maxSdk = M)
+  public void whenPackageNotPresent_getPackageSizeInfo_worksOnJellyBeanMr1_to_Marshmallow() throws Exception {
+    ReflectionHelpers.callInstanceMethod(packageManager, "getPackageSizeInfo",
+        ReflectionHelpers.ClassParameter.from(String.class, "nonexistant.package"),
+        ReflectionHelpers.ClassParameter.from(int.class, 0),
+        ReflectionHelpers.ClassParameter.from(IPackageStatsObserver.class, packageStatsObserver));
+
+    verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(false));
+    assertThat(packageStatsCaptor.getValue()).isNull();
   }
 
   @Test
