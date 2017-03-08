@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 
@@ -8,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -517,6 +519,17 @@ public class ShadowHandlerTest {
     h.sendMessageAtFrontOfQueue(h.obtainMessage());
   }
 
+  @Test
+  public void runToEndOfTasks_shouldRunAllTasks() {
+    HandlerThread handlerThread = new HandlerThread("name");
+    handlerThread.start();
+    Handler handler = new Handler(handlerThread.getLooper());
+    handler.postDelayed(new Say("one"), 2000);
+    Shadows.shadowOf(handler.getLooper()).runToEndOfTasks();
+    handler.post(new Say("two"));
+    Shadows.shadowOf(handler.getLooper()).runToEndOfTasks();
+    assertThat(transcript).containsExactly("one", "two");
+  }
 
   private class Say implements Runnable {
     private String event;

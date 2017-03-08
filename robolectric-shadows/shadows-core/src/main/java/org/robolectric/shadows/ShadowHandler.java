@@ -2,9 +2,14 @@ package org.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
@@ -12,17 +17,14 @@ import static org.robolectric.Shadows.shadowOf;
  * {@link #idleMainLooper()}.
  * todo: add utility method to advance time and trigger execution of Runnables scheduled for a time in the future
  * 
- * @deprecated There is no special shadow implementation for the {@link android.os.Handler} class. The special
- * handling is all done by {@link ShadowLooper} and {@link ShadowMessageQueue}. This class has been retained
- * for backward compatibility with the various static method implementations.
+ * Most of the special handling is all done by {@link ShadowLooper} and
+ * {@link ShadowMessageQueue}.
  */
-// <b>Note</b>: If this shadow is ever completely removed it will still probably make sense to keep
-// the associated tests - if necessary we can copy them into ShadowLooperTest or ShadowMessageQueueTest.
-@Deprecated
-// Even though it doesn't implement anything, some parts of the system will fail if we don't have the
-// @Implements tag (ShadowWrangler).
 @Implements(Handler.class)
 public class ShadowHandler {
+  @RealObject
+  private Handler realHandler;
+
   /**
    * @deprecated use {@link ShadowLooper#idleMainLooper()} instead
    */
@@ -65,5 +67,16 @@ public class ShadowHandler {
   @Deprecated
   public static void runMainLooperToNextTask() {
     shadowOf(Looper.myLooper()).runToNextTask();
+  }
+
+  @Implementation
+  public final boolean sendMessageDelayed(Message msg, long delayMillis) {
+    if (delayMillis < 0L) {
+      delayMillis = 0L;
+    }
+    long time = delayMillis + shadowOf(realHandler.getLooper()).getScheduler().getCurrentTime();
+    return directlyOn(realHandler, Handler.class, "sendMessageAtTime",
+        ClassParameter.from(Message.class, msg),
+        ClassParameter.from(long.class, time));
   }
 }
