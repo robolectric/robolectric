@@ -83,6 +83,16 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldAcquireDistinguishedNameParser_Issue1864() throws Exception {
+    assertThat(config.shouldAcquire("javax.net.ssl.DistinguishedNameParser")).isTrue();
+  }
+
+  @Test
+  public void shouldAcquireOpenglesGL_Issue2960() throws Exception {
+    assertThat(config.shouldAcquire("javax.microedition.khronos.opengles.GL")).isTrue();
+  }
+
+  @Test
   public void shouldInstrumentCustomClasses() throws Exception {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
     String notInstrumentName = "com.whatever.DoNotInstrumentMe";
