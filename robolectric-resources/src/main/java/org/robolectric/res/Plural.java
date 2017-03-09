@@ -23,4 +23,9 @@ public class Plural {
   public String getString() {
     return string;
   }
+
+  @Override
+  public String toString() {
+    return quantity + "(" + num + "): " + string;
+  }
 }

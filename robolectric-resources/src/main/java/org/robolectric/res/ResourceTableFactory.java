@@ -2,10 +2,17 @@ package org.robolectric.res;
 
 import org.robolectric.res.StaxDocLoader.StaxArrayLoader;
 import org.robolectric.res.StaxDocLoader.StaxLoader;
+import org.robolectric.res.StaxDocLoader.StaxPluralsLoader;
 import org.robolectric.util.Logger;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.robolectric.res.StaxDocLoader.addInnerHandler;
 
 public class ResourceTableFactory {
   private boolean useStax;
@@ -136,7 +143,7 @@ public class ResourceTableFactory {
             new StaxLoader(resourceTable, "/resources/fraction", "fraction", ResType.FRACTION),
             new StaxLoader(resourceTable, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
             new StaxLoader(resourceTable, "/resources/item[@type='layout']", "layout", ResType.LAYOUT),
-//          new PluralResourceLoader(resourceTable),
+            new StaxPluralsLoader(resourceTable, "/resources/plurals", "plurals", ResType.CHAR_SEQUENCE),
             new StaxLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
             new StaxLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
             new StaxArrayLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY, ResType.CHAR_SEQUENCE),
@@ -164,7 +171,7 @@ public class ResourceTableFactory {
           new ValueResourceLoader(resourceTable, "/resources/fraction", "fraction", ResType.FRACTION),
           new ValueResourceLoader(resourceTable, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
           new ValueResourceLoader(resourceTable, "/resources/item[@type='layout']", "layout", ResType.LAYOUT),
-//          new PluralResourceLoader(resourceTable),
+          new PluralResourceLoader(resourceTable),
           new ValueResourceLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
           new ValueResourceLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
           new ValueResourceLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),

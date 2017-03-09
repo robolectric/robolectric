@@ -244,7 +244,7 @@ public class StaxDocLoader {
     protected final ResType resType;
 
     private final StringBuilder buf = new StringBuilder();
-    private String name;
+    protected String name;
 
     public StaxLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
       this.resourceTable = resourceTable;
@@ -274,11 +274,15 @@ public class StaxDocLoader {
 
       nodeHandler.addListener(this);
 
+      typeSpecific(nodeHandler);
+
+      return nodeHandler;
+    }
+
+    protected void typeSpecific(NodeHandler nodeHandler) {
       if (resType == ResType.CHAR_SEQUENCE) {
         addInnerHandler(nodeHandler, buf);
       }
-
-      return nodeHandler;
     }
 
     @Override
@@ -352,7 +356,7 @@ public class StaxDocLoader {
     }
   }
 
-  private static void addInnerHandler(NodeHandler nodeHandler, final StringBuilder buf) {
+  public static void addInnerHandler(NodeHandler nodeHandler, final StringBuilder buf) {
     final NodeHandler innerNodeHandler = nodeHandler.findMatchFor(null, null);
     innerNodeHandler.addListener(new NodeListener() {
       @Override
@@ -369,5 +373,50 @@ public class StaxDocLoader {
       public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
       }
     });
+  }
+
+  public static class StaxPluralsLoader extends StaxLoader {
+    final StringBuilder buf;
+    List<Plural> plurals;
+    String quantity;
+
+    public StaxPluralsLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType charSequence) {
+      super(resourceTable, xpathExpr, attrType, charSequence);
+      buf = new StringBuilder();
+    }
+
+    @Override
+    protected void typeSpecific(final StaxDocLoader.NodeHandler nodeHandler) {
+      final StaxDocLoader.NodeHandler itemNodeHandler = nodeHandler.findMatchFor("item", null);
+      itemNodeHandler.addListener(new StaxDocLoader.NodeListener() {
+        @Override
+        public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          quantity = xml.getAttributeValue(null, "quantity");
+          buf.setLength(0);
+          addInnerHandler(itemNodeHandler, buf);
+        }
+
+        @Override
+        public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          buf.append(xml.getText());
+        }
+
+        @Override
+        public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          plurals.add(new Plural(quantity, buf.toString()));
+        }
+      });
+    }
+
+    @Override
+    public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+      super.onStart(xml, xmlContext);
+      plurals = new ArrayList<>();
+    }
+
+    @Override
+    public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+      resourceTable.addResource(attrType, name, new PluralResourceLoader.PluralRules(plurals, resType, xmlContext));
+    }
   }
 }

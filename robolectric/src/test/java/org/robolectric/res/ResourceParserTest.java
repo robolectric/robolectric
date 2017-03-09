@@ -5,7 +5,13 @@ import org.junit.Test;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.MavenDependencyResolver;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -43,20 +49,28 @@ public class ResourceParserTest {
     PackageResourceTable staxResources;
     PackageResourceTable oldResources;
     staxResources = new ResourceTableFactory(true).newResourceTable("android", sdkRes);
-    oldResources = new ResourceTableFactory().newResourceTable("android", sdkRes);
+    oldResources = new ResourceTableFactory(false).newResourceTable("android", sdkRes);
 
-    time("old", new Runnable() {
-      @Override
-      public void run() {
-        new ResourceTableFactory().newResourceTable("android", sdkRes);
-      }
-    });
-    time("new", new Runnable() {
-      @Override
-      public void run() {
-        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
-      }
-    });
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("vtd.txt")))) {
+      out.write(stringify(oldResources));
+    }
+
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
+      out.write(stringify(staxResources));
+    }
+
+//    time("old", new Runnable() {
+//      @Override
+//      public void run() {
+//        new ResourceTableFactory().newResourceTable("android", sdkRes);
+//      }
+//    });
+//    time("new", new Runnable() {
+//      @Override
+//      public void run() {
+//        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+//      }
+//    });
 
     assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
   }
@@ -71,19 +85,37 @@ public class ResourceParserTest {
   }
 
   private static String stringify(ResourceTable resourceTable) {
-    Map<String, List<Object>> map = ((PackageResourceTable) resourceTable).everything();
+    Map<String, List<TypedResource>> map = ((PackageResourceTable) resourceTable).everything();
     StringBuilder buf = new StringBuilder();
     TreeSet<String> keys = new TreeSet<>(map.keySet());
     for (String key : keys) {
-      if (!key.contains("/c")) {
-        continue;
-      }
+//      if (!key.contains(":plurals/")) {
+//        continue;
+//      }
       buf.append(key).append(":\n");
-      for (Object o : map.get(key)) {
-        buf.append("  ").append(((TypedResource) o).getData()).append("\n");
+      for (TypedResource typedResource : map.get(key)) {
+        Object data = typedResource.getData();
+        if (data instanceof List) {
+          ArrayList<String> newList = new ArrayList<>();
+          for (Object item : ((List) data)) {
+            if (item.getClass().equals(TypedResource.class)) {
+              TypedResource typedResourceItem = (TypedResource) item;
+              newList.add(typedResourceItem.getData().toString() + " (" + typedResourceItem.getResType() + ")");
+            } else {
+              newList.add(item.toString());
+            }
+          }
+          data = newList.toString();
+        }
+        buf.append("  ").append(data).append(" {").append(typedResource.getQualifiers()).append(": ")
+            .append(shortPath(typedResource)).append("}").append("\n");
       }
     }
     return buf.toString();
+  }
+
+  private static String shortPath(TypedResource typedResource) {
+    return typedResource.getXmlContext().getXmlFile().getPath().replaceAll("jar:/usr/local/google/home/.*\\.jar\\!", "jar:");
   }
 
   @Test
