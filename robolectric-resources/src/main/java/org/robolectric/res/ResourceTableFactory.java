@@ -1,18 +1,12 @@
 package org.robolectric.res;
 
-import org.robolectric.res.StaxDocLoader.StaxArrayLoader;
 import org.robolectric.res.StaxDocLoader.StaxLoader;
-import org.robolectric.res.StaxDocLoader.StaxPluralsLoader;
 import org.robolectric.util.Logger;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 
-import static org.robolectric.res.StaxDocLoader.addInnerHandler;
+import static org.robolectric.res.StaxDocLoader.*;
 
 public class ResourceTableFactory {
   private boolean useStax;
@@ -149,11 +143,24 @@ public class ResourceTableFactory {
             new StaxArrayLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY, ResType.CHAR_SEQUENCE),
             new StaxArrayLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY, ResType.CHAR_SEQUENCE),
             new StaxLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
-            new StaxLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE)
-            //          new AttrResourceLoader(resourceTable),
-//            new StyleResourceLoader(resourceTable)
+            new StaxLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),
+            new StaxAttrLoader(resourceTable, "/resources/attr", "attr", ResType.ATTR_DATA),
+            new StaxAttrLoader(resourceTable, "/resources/declare-styleable/attr", "attr", ResType.ATTR_DATA),
+            new StaxStyleLoader(resourceTable, "/resources/style", "style", ResType.STYLE)
         ).load("values");
 
+        loadOpaque(resourcePath, resourceTable, "layout", ResType.LAYOUT);
+        loadOpaque(resourcePath, resourceTable, "menu", ResType.LAYOUT);
+        loadOpaque(resourcePath, resourceTable, "drawable", ResType.DRAWABLE);
+        loadOpaque(resourcePath, resourceTable, "anim", ResType.LAYOUT);
+        loadOpaque(resourcePath, resourceTable, "animator", ResType.LAYOUT);
+        loadOpaque(resourcePath, resourceTable, "color", ResType.COLOR_STATE_LIST);
+        loadOpaque(resourcePath, resourceTable, "xml", ResType.LAYOUT);
+        loadOpaque(resourcePath, resourceTable, "transition", ResType.LAYOUT);
+        loadOpaque(resourcePath, resourceTable, "interpolator", ResType.LAYOUT);
+
+        new DrawableResourceLoader(resourceTable).findDrawableResources(resourcePath);
+        new RawResourceLoader(resourcePath).loadTo(resourceTable);
       } else {
         DocumentLoader documentLoader = new DocumentLoader(resourceTable.getPackageName(), resourcePath);
         documentLoader.load("values",
@@ -177,26 +184,32 @@ public class ResourceTableFactory {
           new ValueResourceLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
           new ValueResourceLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY),
           new ValueResourceLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE)
-//          new AttrResourceLoader(resourceTable),
-//            new StyleResourceLoader(resourceTable)
+          new ValueResourceLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),
+          new AttrResourceLoader(resourceTable),
+          new StyleResourceLoader(resourceTable)
         );
 
-//        documentLoader.load("layout", new OpaqueFileLoader(resourceTable, "layout"));
-//        documentLoader.load("menu", new OpaqueFileLoader(resourceTable, "menu"));
-//        documentLoader.load("drawable", new OpaqueFileLoader(resourceTable, "drawable", ResType.DRAWABLE));
-//        documentLoader.load("anim", new OpaqueFileLoader(resourceTable, "anim"));
-//        documentLoader.load("animator", new OpaqueFileLoader(resourceTable, "animator"));
-//        documentLoader.load("color", new ColorResourceLoader(resourceTable));
-//        documentLoader.load("xml", new OpaqueFileLoader(resourceTable, "xml"));
-//        documentLoader.load("transition", new OpaqueFileLoader(resourceTable, "transition"));
-//        documentLoader.load("interpolator", new OpaqueFileLoader(resourceTable, "interpolator"));
+        documentLoader.load("layout", new OpaqueFileLoader(resourceTable, "layout"));
+        documentLoader.load("menu", new OpaqueFileLoader(resourceTable, "menu"));
+        documentLoader.load("drawable", new OpaqueFileLoader(resourceTable, "drawable", ResType.DRAWABLE));
+        documentLoader.load("anim", new OpaqueFileLoader(resourceTable, "anim"));
+        documentLoader.load("animator", new OpaqueFileLoader(resourceTable, "animator"));
+        documentLoader.load("color", new ColorResourceLoader(resourceTable));
+        documentLoader.load("xml", new OpaqueFileLoader(resourceTable, "xml"));
+        documentLoader.load("transition", new OpaqueFileLoader(resourceTable, "transition"));
+        documentLoader.load("interpolator", new OpaqueFileLoader(resourceTable, "interpolator"));
 
-//        new DrawableResourceLoader(resourceTable).findDrawableResources(resourcePath);
-//        new RawResourceLoader(resourcePath).loadTo(resourceTable);
+        new DrawableResourceLoader(resourceTable).findDrawableResources(resourcePath);
+        new RawResourceLoader(resourcePath).loadTo(resourceTable);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void loadOpaque(ResourcePath resourcePath, PackageResourceTable resourceTable, String type, ResType resType) {
+    new StaxDocLoader(resourceTable.getPackageName(), resourcePath, false,
+        new OpaqueLoader(resourceTable, "/*", type, resType)
+    ).load(type);
   }
 }

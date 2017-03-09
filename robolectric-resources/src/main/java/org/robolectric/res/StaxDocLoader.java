@@ -1,7 +1,6 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
-import org.robolectric.util.Join;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -27,12 +26,20 @@ public class StaxDocLoader {
 
   private final String packageName;
   private final ResourcePath resourcePath;
+  private final boolean parse;
+  private final StaxLoader[] staxLoaders;
   private final NodeHandler topLevelNodeHandler;
   private final XMLInputFactory factory;
 
   public StaxDocLoader(String packageName, ResourcePath resourcePath, StaxLoader... staxLoaders) {
+    this(packageName, resourcePath, true, staxLoaders);
+  }
+
+  public StaxDocLoader(String packageName, ResourcePath resourcePath, boolean parse, StaxLoader... staxLoaders) {
     this.packageName = packageName;
     this.resourcePath = resourcePath;
+    this.parse = parse;
+    this.staxLoaders = staxLoaders;
 
     topLevelNodeHandler = new NodeHandler();
     for (StaxLoader staxLoader : staxLoaders) {
@@ -70,11 +77,26 @@ public class StaxDocLoader {
 //    }
 //    System.out.println("\n" + xmlFile + ":");
 
+    XMLStreamReader xmlStreamReader = null;
     try {
-      XMLStreamReader xmlStreamReader = factory.createXMLStreamReader(xmlFile.getInputStream());
-      doParse(xmlStreamReader, xmlContext);
+      if (parse) {
+        xmlStreamReader = factory.createXMLStreamReader(xmlFile.getInputStream());
+        doParse(xmlStreamReader, xmlContext);
+      } else {
+        for (StaxLoader staxLoader : staxLoaders) {
+          staxLoader.onStart(null, xmlContext);
+          staxLoader.onEnd(null, xmlContext);
+        }
+      }
     } catch (Exception e) {
       throw new RuntimeException("error parsing " + xmlFile, e);
+    }
+    if (xmlStreamReader != null) {
+      try {
+        xmlStreamReader.close();
+      } catch (XMLStreamException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -125,7 +147,7 @@ public class StaxDocLoader {
     private final List<NodeListener> listeners = new ArrayList<>();
 
     NodeHandler(String elementName, Map<String, String> attrs) {
-      this.elementName = elementName;
+      this.elementName = "*".equals(elementName) ? null : elementName;
       this.attrs = attrs == null ? Collections.<String, String>emptyMap() : attrs;
     }
 
@@ -386,6 +408,12 @@ public class StaxDocLoader {
     }
 
     @Override
+    public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+      super.onStart(xml, xmlContext);
+      plurals = new ArrayList<>();
+    }
+
+    @Override
     protected void typeSpecific(final StaxDocLoader.NodeHandler nodeHandler) {
       final StaxDocLoader.NodeHandler itemNodeHandler = nodeHandler.findMatchFor("item", null);
       itemNodeHandler.addListener(new StaxDocLoader.NodeListener() {
@@ -409,14 +437,143 @@ public class StaxDocLoader {
     }
 
     @Override
+    public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+      resourceTable.addResource(attrType, name, new PluralResourceLoader.PluralRules(plurals, resType, xmlContext));
+    }
+  }
+
+  public static class StaxAttrLoader extends StaxLoader {
+    private String format;
+    private List<AttrData.Pair> pairs;
+
+    public StaxAttrLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
+      super(resourceTable, xpathExpr, attrType, resType);
+    }
+
+    @Override
     public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
       super.onStart(xml, xmlContext);
-      plurals = new ArrayList<>();
+      format = xml.getAttributeValue(null, "format");
+      pairs = new ArrayList<>();
+    }
+
+    @Override
+    protected void typeSpecific(StaxDocLoader.NodeHandler nodeHandler) {
+      nodeHandler.findMatchFor(null, null).addListener(new StaxDocLoader.NodeListener() {
+        private String value;
+        private String name;
+
+        @Override
+        public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          String type = xml.getLocalName();
+          if (pairs.isEmpty()) {
+            if (format == null) {
+              format = type;
+            } else {
+              format = format + "|" + type;
+            }
+          }
+          name = xml.getAttributeValue(null, "name");
+          value = xml.getAttributeValue(null, "value");
+          pairs.add(new AttrData.Pair(name, value));
+        }
+
+        @Override
+        public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+        }
+
+        @Override
+        public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+        }
+      });
     }
 
     @Override
     public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-      resourceTable.addResource(attrType, name, new PluralResourceLoader.PluralRules(plurals, resType, xmlContext));
+      AttrData attrData = new AttrData(name, format, pairs);
+//      xmlContext = xmlContext.withLineNumber(xml.getLocation().getLineNumber());
+      if (attrData.getFormat() != null) {
+        resourceTable.addResource(attrType, name, new TypedResource<>(attrData, resType, xmlContext));
+      }
+    }
+  }
+
+  public static class StaxStyleLoader extends StaxLoader {
+    private String name;
+    private String parent;
+    private StyleData styleData;
+
+    public StaxStyleLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
+      super(resourceTable, xpathExpr, attrType, resType);
+    }
+
+    @Override
+    public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+      name = xml.getAttributeValue(null, "name");
+      parent = xml.getAttributeValue(null, "parent");
+
+      String styleNameWithUnderscores = underscorize(name);
+      styleData = new StyleData(xmlContext.getPackageName(), styleNameWithUnderscores, underscorize(parent));
+    }
+
+    @Override
+    protected void typeSpecific(StaxDocLoader.NodeHandler nodeHandler) {
+      nodeHandler.findMatchFor("item", null).addListener(new StaxDocLoader.NodeListener() {
+        private String attrName;
+        private StringBuilder buf = new StringBuilder();
+
+        @Override
+        public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          attrName = xml.getAttributeValue(null, "name");
+          buf.setLength(0);
+        }
+
+        @Override
+        public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          buf.append(xml.getText());
+        }
+
+        @Override
+        public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          ResName attrResName = ResName.qualifyResName(attrName, xmlContext.getPackageName(), "attr");
+          styleData.add(attrResName, new AttributeResource(attrResName, buf.toString(), xmlContext.getPackageName()));
+        }
+      });
+    }
+
+    @Override
+    public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+      if (parent == null) {
+        int lastDot = name.lastIndexOf('.');
+        if (lastDot != -1) {
+          parent = name.substring(0, lastDot);
+        }
+      }
+
+      resourceTable.addResource("style", styleData.getName(), new TypedResource<>(styleData, resType, xmlContext));
+    }
+
+    private String underscorize(String s) {
+      return s == null ? null : s.replace('.', '_');
+    }
+  }
+
+  public static class OpaqueLoader extends StaxLoader {
+    public OpaqueLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
+      super(resourceTable, xpathExpr, attrType, resType);
+    }
+
+    @Override
+    public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+    }
+
+    @Override
+    public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+    }
+
+    @Override
+    public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+      resourceTable.addResource(attrType, xmlContext.getXmlFile().getBaseName(), new FileTypedResource(xmlContext.getXmlFile(), resType, xmlContext));
     }
   }
 }

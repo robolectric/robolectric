@@ -5,12 +5,9 @@ import org.junit.Test;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.MavenDependencyResolver;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,33 +43,47 @@ public class ResourceParserTest {
     Fs sdkResFs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(new SdkConfig(25).getAndroidSdkDependency()));
     final ResourcePath sdkRes = new ResourcePath(null, sdkResFs.join("res"), null, null);
 
-    PackageResourceTable staxResources;
     PackageResourceTable oldResources;
-    staxResources = new ResourceTableFactory(true).newResourceTable("android", sdkRes);
-    oldResources = new ResourceTableFactory(false).newResourceTable("android", sdkRes);
+//    oldResources = new ResourceTableFactory(false).newResourceTable("android", sdkRes);
 
-    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("vtd.txt")))) {
-      out.write(stringify(oldResources));
-    }
+    PackageResourceTable staxResources;
+    staxResources = new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+
+//    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("vtd.txt")))) {
+//      out.write(stringify(oldResources));
+//    }
 
     try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
-      out.write(stringify(staxResources));
+//      out.write(stringify(staxResources));
     }
 
-//    time("old", new Runnable() {
-//      @Override
-//      public void run() {
-//        new ResourceTableFactory().newResourceTable("android", sdkRes);
-//      }
-//    });
-//    time("new", new Runnable() {
-//      @Override
-//      public void run() {
-//        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
-//      }
-//    });
+    time("old", new Runnable() {
+      @Override
+      public void run() {
+        new ResourceTableFactory().newResourceTable("android", sdkRes);
+      }
+    });
+    time("new", new Runnable() {
+      @Override
+      public void run() {
+        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+      }
+    });
 
-    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
+    time("old", new Runnable() {
+      @Override
+      public void run() {
+        new ResourceTableFactory().newResourceTable("android", sdkRes);
+      }
+    });
+    time("new", new Runnable() {
+      @Override
+      public void run() {
+        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+      }
+    });
+
+//    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
   }
 
   private void time(String message, Runnable runnable) {
@@ -107,15 +118,16 @@ public class ResourceParserTest {
           }
           data = newList.toString();
         }
-        buf.append("  ").append(data).append(" {").append(typedResource.getQualifiers()).append(": ")
-            .append(shortPath(typedResource)).append("}").append("\n");
+        buf.append("  ").append(data).append(" {").append(typedResource.getResType())
+            .append("/").append(typedResource.getQualifiers()).append(": ")
+            .append(shortContext(typedResource)).append("}").append("\n");
       }
     }
     return buf.toString();
   }
 
-  private static String shortPath(TypedResource typedResource) {
-    return typedResource.getXmlContext().getXmlFile().getPath().replaceAll("jar:/usr/local/google/home/.*\\.jar\\!", "jar:");
+  private static String shortContext(TypedResource typedResource) {
+    return typedResource.getXmlContext().toString().replaceAll("jar:/usr/local/google/home/.*\\.jar\\!", "jar:");
   }
 
   @Test
