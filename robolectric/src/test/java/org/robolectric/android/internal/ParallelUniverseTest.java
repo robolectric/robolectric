@@ -47,8 +47,8 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationState(Config defaultConfig) {
-    ResourceTable sdkResourceProvider = ResourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
-    final RoutingResourceTable routingResourceTable = new RoutingResourceTable(ResourceTableFactory.newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
+    ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
+    final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     pu.setUpApplicationState(null, new DefaultTestLifecycle(),
         new AndroidManifest(null, null, null, "package"), defaultConfig,
         sdkResourceProvider,

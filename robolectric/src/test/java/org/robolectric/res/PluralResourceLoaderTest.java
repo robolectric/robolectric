@@ -15,7 +15,7 @@ public class PluralResourceLoaderTest {
   @Before
   public void setUp() throws Exception {
     resBunch = new ResBunch();
-    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric");
+    resourceTable = new ResourceTableFactory().newResourceTable("org.robolectric");
     PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(resourceTable);
 
     new DocumentLoader(R.class.getPackage().getName(), testResources()).load("values", pluralResourceLoader);

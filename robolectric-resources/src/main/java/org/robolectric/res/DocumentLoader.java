@@ -37,14 +37,13 @@ public class DocumentLoader {
     }
 
     for (FsFile file : dir.listFiles(ENDS_WITH_XML)) {
-      loadResourceXmlFile(file, xmlLoaders);
+      loadResourceXmlFile(new XmlContext(packageName, file), xmlLoaders);
     }
   }
 
-  private void loadResourceXmlFile(FsFile fsFile, XmlLoader... xmlLoaders) {
-    VTDNav vtdNav = parse(fsFile);
+  protected void loadResourceXmlFile(XmlContext xmlContext, XmlLoader... xmlLoaders) {
+    VTDNav vtdNav = parse(xmlContext.getXmlFile());
     XpathResourceXmlLoader.XmlNode xmlNode = new XpathResourceXmlLoader.XmlNode(vtdNav);
-    XmlContext xmlContext = new XmlContext(packageName, fsFile);
     for (XmlLoader xmlLoader : xmlLoaders) {
       xmlLoader.processResourceXml(xmlNode, xmlContext);
     }

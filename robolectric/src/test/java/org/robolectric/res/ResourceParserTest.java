@@ -2,6 +2,14 @@ package org.robolectric.res;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.dependency.MavenDependencyResolver;
+
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+
 import static org.robolectric.util.TestUtil.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -12,8 +20,70 @@ public class ResourceParserTest {
 
   @Before
   public void setUp() {
-    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric", testResources());
-    gradleResourceTable = ResourceTableFactory.newResourceTable("org.robolectric.gradleapp", gradleAppResources());
+    ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
+    resourceTable = resourceTableFactory.newResourceTable("org.robolectric", testResources());
+    gradleResourceTable = resourceTableFactory.newResourceTable("org.robolectric.gradleapp", gradleAppResources());
+  }
+
+  @Test
+  public void compareApp() throws Exception {
+    Fs sdkResFs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(new SdkConfig(25).getAndroidSdkDependency()));
+    ResourcePath sdkRes = new ResourcePath(null, sdkResFs.join("res"), null, null);
+
+    PackageResourceTable staxResources = new ResourceTableFactory(true)
+        .newResourceTable("org.robolectric", testResources());
+    assertThat(stringify(staxResources)).isEqualTo(stringify(resourceTable));
+  }
+
+  @Test
+  public void compareSdk() throws Exception {
+    Fs sdkResFs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(new SdkConfig(25).getAndroidSdkDependency()));
+    final ResourcePath sdkRes = new ResourcePath(null, sdkResFs.join("res"), null, null);
+
+    PackageResourceTable staxResources;
+    PackageResourceTable oldResources;
+    staxResources = new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+    oldResources = new ResourceTableFactory().newResourceTable("android", sdkRes);
+
+    time("old", new Runnable() {
+      @Override
+      public void run() {
+        new ResourceTableFactory().newResourceTable("android", sdkRes);
+      }
+    });
+    time("new", new Runnable() {
+      @Override
+      public void run() {
+        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+      }
+    });
+
+    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
+  }
+
+  private void time(String message, Runnable runnable) {
+    long startTime = System.nanoTime();
+    for (int i = 0; i < 10; i++) {
+      runnable.run();
+    }
+    long elapsed = System.nanoTime() - startTime;
+    System.out.println("elapsed " + message + ": " + (elapsed / 1000000.0) + "ms");
+  }
+
+  private static String stringify(ResourceTable resourceTable) {
+    Map<String, List<Object>> map = ((PackageResourceTable) resourceTable).everything();
+    StringBuilder buf = new StringBuilder();
+    TreeSet<String> keys = new TreeSet<>(map.keySet());
+    for (String key : keys) {
+      if (!key.contains("/c")) {
+        continue;
+      }
+      buf.append(key).append(":\n");
+      for (Object o : map.get(key)) {
+        buf.append("  ").append(((TypedResource) o).getData()).append("\n");
+      }
+    }
+    return buf.toString();
   }
 
   @Test

@@ -1,7 +1,10 @@
 package org.robolectric.res;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public enum ResType {
   DRAWABLE,
@@ -53,8 +56,7 @@ public enum ResType {
     for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
       items.add(new TypedResource<>(item.getTextContent(), itemResType, xmlContext));
     }
-    TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
-    return new TypedResource<>(typedResources, arrayResType, xmlContext);
+    return new TypedResource<>(items, arrayResType, xmlContext);
   }
 
   public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) {
@@ -65,22 +67,30 @@ public enum ResType {
     final List<TypedResource> items = new ArrayList<>();
     for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
       final String itemString = item.getTextContent();
-      ResType itemResType = inferFromValue(itemString);
-      if (itemResType == ResType.CHAR_SEQUENCE) {
-        if (AttributeResource.isStyleReference(itemString)) {
-          itemResType = ResType.STYLE;
-        } else if (itemString.equals("@null")) {
-          itemResType = ResType.NULL;
-        } else if (AttributeResource.isResourceReference(itemString)) {
-          // This is a reference; no type info needed.
-          itemResType = null;
-        }
-      }
-      items.add(new TypedResource<>(itemString, itemResType, xmlContext));
+      ResType itemResType = inferType(itemString);
+      TypedResource<String> typedResource = new TypedResource<>(itemString, itemResType, xmlContext);
+      items.add(typedResource);
     }
-    final TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
-    return new TypedResource<>(typedResources, arrayResType, xmlContext);
+    return new TypedResource<>(items, arrayResType, xmlContext);
   }
+
+  @Nullable
+  public static ResType inferType(String itemString) {
+    ResType itemResType = inferFromValue(itemString);
+    if (itemResType == ResType.CHAR_SEQUENCE) {
+      if (AttributeResource.isStyleReference(itemString)) {
+        itemResType = ResType.STYLE;
+      } else if (itemString.equals("@null")) {
+        itemResType = ResType.NULL;
+      } else if (AttributeResource.isResourceReference(itemString)) {
+        // This is a reference; no type info needed.
+        itemResType = null;
+      }
+    }
+    return itemResType;
+  }
+
+  private static final Pattern DIMEN_RE = Pattern.compile("^\\d+(dp|dip|sp|pt|px|mm|in)$");
 
   /**
    * Parses a resource value to infer the type
@@ -90,7 +100,7 @@ public enum ResType {
       return ResType.COLOR;
     } else if ("true".equals(value) || "false".equals(value)) {
       return ResType.BOOLEAN;
-    } else if (value.endsWith("dp") || value.endsWith("sp") || value.endsWith("pt") || value.endsWith("px") || value.endsWith("mm") || value.endsWith("in") || value.endsWith("dip")) {
+    } else if (DIMEN_RE.matcher(value).find()) {
       return ResType.DIMEN;
     } else {
       try {

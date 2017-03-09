@@ -20,7 +20,7 @@ public class SdkEnvironment extends Sandbox {
   public synchronized PackageResourceTable getSystemResourceTable(DependencyResolver dependencyResolver) {
     if (systemResourceTable == null) {
       ResourcePath resourcePath = createRuntimeSdkResourcePath(dependencyResolver);
-      systemResourceTable = ResourceTableFactory.newFrameworkResourceTable(resourcePath);
+      systemResourceTable = new ResourceTableFactory().newFrameworkResourceTable(resourcePath);
     }
     return systemResourceTable;
   }

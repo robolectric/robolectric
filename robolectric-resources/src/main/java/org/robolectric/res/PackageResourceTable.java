@@ -7,6 +7,10 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
@@ -116,5 +120,22 @@ public class PackageResourceTable implements ResourceTable {
 
   private boolean isAndroidPackage(ResName resName) {
     return "android".equals(resName.packageName);
+  }
+
+  public Map<String, List<Object>> everything() {
+    final HashMap<String, List<Object>> map = new HashMap<>();
+
+    resources.receive(new Visitor() {
+      @Override
+      public void visit(ResName key, Iterable values) {
+        ArrayList<Object> v = new ArrayList<Object>();
+        for (Object value : values) {
+          v.add(value);
+        }
+        map.put(key.getFullyQualifiedName(), v);
+      }
+    });
+
+    return map;
   }
 }
