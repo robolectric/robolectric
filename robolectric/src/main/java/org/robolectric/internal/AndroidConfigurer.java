@@ -85,6 +85,7 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("android.")
         .addInstrumentedPackage("com.android.internal.")
         .addInstrumentedPackage("org.apache.http.")
+        .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
 
