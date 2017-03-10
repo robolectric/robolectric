@@ -1,6 +1,10 @@
 package org.robolectric.res;
 
-public class Plural {
+import java.io.Serializable;
+
+public class Plural implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   final String quantity, string;
   final int num;
 

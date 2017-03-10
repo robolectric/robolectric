@@ -10,9 +10,12 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.regex.Pattern;
 
-public class FileFsFile implements FsFile {
+public class FileFsFile implements FsFile, Serializable {
+  private static final long serialVersionUID = 42L;
+
   @VisibleForTesting
   static String FILE_SEPARATOR = File.separator;
 

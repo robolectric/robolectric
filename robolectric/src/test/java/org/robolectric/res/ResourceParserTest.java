@@ -4,6 +4,14 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,17 +88,100 @@ public class ResourceParserTest {
 //    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
   }
 
+  @Test
+  public void serialize() throws Exception {
+    final ResourcePath sdkRes = sdkResources(N_MR1);
+
+    time("parse", new Runnable() {
+      @Override
+      public void run() {
+        new ResourceTableFactory().newResourceTable("android", sdkRes);
+      }
+    });
+
+    final PackageResourceTable staxResources = new ResourceTableFactory().newResourceTable("android", sdkRes);
+
+    time("serialize", new Runnable() {
+      @Override
+      public void run() {
+        try {
+          ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(new File("resources.data")));
+          out.writeObject(staxResources);
+          out.close();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+
+    time("deserialize", new Runnable() {
+      @Override
+      public void run() {
+        try {
+          ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File("resources.data")));
+          in.readObject();
+          in.close();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+  }
+
+  @Test
+  public void customSerialize() throws Exception {
+    final ResourcePath sdkRes = sdkResources(N_MR1);
+    final PackageResourceTable resourceTable = new ResourceTableFactory()
+        .newResourceTable("android", sdkRes);
+    final ResStore resStore = new ResStore();
+    final File file = new File("out.dat");
+    resStore.save(resourceTable, file);
+
+    time("save", new Runnable() {
+      @Override
+      public void run() {
+        try {
+          resStore.save(resourceTable, file);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+
+    time("load", new Runnable() {
+      @Override
+      public void run() {
+        try {
+          resStore.load(file);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+    ResourceTable reloaded = resStore.load(file);
+
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
+      out.write(stringify(resourceTable));
+    }
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax2.txt")))) {
+      out.write(stringify(reloaded));
+    }
+  }
+
   private void time(String message, Runnable runnable) {
+    int count = 10;
     long startTime = System.nanoTime();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < count; i++) {
       runnable.run();
     }
     long elapsed = System.nanoTime() - startTime;
-    System.out.println("elapsed " + message + ": " + (elapsed / 1000000.0) + "ms");
+    System.out.println("elapsed " + message + ": " + (elapsed / 1000000.0 / count) + "ms");
   }
 
   private static String stringify(ResourceTable resourceTable) {
-    final HashMap<String, List<TypedResource>> map = new HashMap<>();
+    final Map<String, List<TypedResource>> map = new HashMap<>();
     resourceTable.receive(new ResourceTable.Visitor() {
       @Override
       public void visit(ResName key, Iterable<TypedResource> values) {
@@ -106,6 +197,9 @@ public class ResourceParserTest {
     for (String key : keys) {
       buf.append(key).append(":\n");
       for (TypedResource typedResource : map.get(key)) {
+        if (typedResource == null) {
+          continue;
+        }
         Object data = typedResource.getData();
         if (data instanceof List) {
           ArrayList<String> newList = new ArrayList<>();

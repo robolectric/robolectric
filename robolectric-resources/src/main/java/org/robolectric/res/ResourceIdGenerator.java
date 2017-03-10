@@ -1,17 +1,21 @@
 package org.robolectric.res;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Tracks resource ids and generates new unique values.
  */
-public class ResourceIdGenerator {
+public class ResourceIdGenerator implements Serializable {
+  private static final long serialVersionUID = 42L;
 
   private final Map<String, TypeTracker> typeInfo = new HashMap<>();
   private int packageIdentifier;
 
-  private class TypeTracker {
+  private class TypeTracker implements Serializable {
+    private static final long serialVersionUID = 42L;
+
     private int typeIdentifier;
     private int currentMaxEntry;
 

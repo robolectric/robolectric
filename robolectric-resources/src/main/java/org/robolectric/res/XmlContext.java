@@ -1,9 +1,12 @@
 package org.robolectric.res;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class XmlContext {
+public class XmlContext implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
 
   private final String packageName;

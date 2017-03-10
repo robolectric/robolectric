@@ -2,7 +2,11 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 
-public class AttributeResource {
+import java.io.Serializable;
+
+public class AttributeResource implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 

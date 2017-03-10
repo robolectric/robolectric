@@ -1,8 +1,11 @@
 package org.robolectric.res;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class ResBundle {
+public class ResBundle implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   private final ResMap valuesMap = new ResMap();
 
   public void put(ResName resName, TypedResource value) {
@@ -19,7 +22,9 @@ public class ResBundle {
     }
   }
 
-  static class ResMap {
+  static class ResMap implements Serializable {
+    private static final long serialVersionUID = 42L;
+
     private final Map<ResName, Map<String, TypedResource>> map = new HashMap<>();
 
     public TypedResource pick(ResName resName, String qualifiersStr) {

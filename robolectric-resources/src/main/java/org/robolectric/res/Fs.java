@@ -7,6 +7,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -52,7 +53,9 @@ abstract public class Fs {
     return newFile(new File("."));
   }
 
-  static class JarFs extends Fs {
+  static class JarFs extends Fs implements Serializable {
+    private static final long serialVersionUID = 42L;
+
     private static final Map<File, NavigableMap<String, JarEntry>> CACHE =
         new LinkedHashMap<File, NavigableMap<String, JarEntry>>() {
           @Override
@@ -61,10 +64,17 @@ abstract public class Fs {
           }
         };
 
-    private final JarFile jarFile;
-    private final NavigableMap<String, JarEntry> jarEntryMap;
+    private final File file;
+    transient private JarFile jarFile;
+    transient private NavigableMap<String, JarEntry> jarEntryMap;
 
     public JarFs(File file) {
+      this.file = file;
+    }
+
+    private synchronized void hydrate() {
+      if (jarFile != null) return;
+
       try {
         jarFile = new JarFile(file);
       } catch (IOException e) {
@@ -92,10 +102,13 @@ abstract public class Fs {
     }
 
     @Override public FsFile join(String folderBaseName) {
+      hydrate();
       return new JarFsFile(folderBaseName);
     }
 
-    class JarFsFile implements FsFile {
+    class JarFsFile implements FsFile, Serializable {
+      private static final long serialVersionUID = 42L;
+
       private final String path;
 
       public JarFsFile(String path) {

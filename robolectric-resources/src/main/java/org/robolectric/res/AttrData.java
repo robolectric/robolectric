@@ -1,8 +1,11 @@
 package org.robolectric.res;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class AttrData {
+public class AttrData implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   private final String name;
   private final String format;
   private final List<Pair> pairs;
@@ -63,7 +66,9 @@ public class AttrData {
     return builder.toString();
   }
 
-  public static class Pair {
+  public static class Pair implements Serializable {
+    private static final long serialVersionUID = 42L;
+
     private final String name;
     private final String value;
 

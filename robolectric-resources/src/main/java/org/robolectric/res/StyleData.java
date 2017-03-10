@@ -2,12 +2,15 @@ package org.robolectric.res;
 
 import org.robolectric.util.Strings;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class StyleData implements Style {
+public class StyleData implements Style, Serializable {
+  private static final long serialVersionUID = 42L;
+
   private final String packageName;
   private final String name;
   private final String parent;

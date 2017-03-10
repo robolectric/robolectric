@@ -1,10 +1,13 @@
 package org.robolectric.res;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
-public class ResBunch {
+public class ResBunch implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   private final Map<String, ResBundle> types = new LinkedHashMap<>();
 
   public void put(ResName resName, TypedResource value) {

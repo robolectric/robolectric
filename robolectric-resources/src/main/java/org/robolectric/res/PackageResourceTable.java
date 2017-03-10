@@ -7,15 +7,13 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
  */
-public class PackageResourceTable implements ResourceTable {
+public class PackageResourceTable implements ResourceTable, Serializable {
+  private static final long serialVersionUID = 42L;
 
   private final ResBunch resources = new ResBunch();
   private final BiMap<Integer, ResName> resourceTable = HashBiMap.create();

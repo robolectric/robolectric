@@ -1,6 +1,10 @@
 package org.robolectric.res;
 
-public class TypedResource<T> {
+import java.io.Serializable;
+
+public class TypedResource<T> implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   private final T data;
   private final ResType resType;
   private final String qualifiers;
