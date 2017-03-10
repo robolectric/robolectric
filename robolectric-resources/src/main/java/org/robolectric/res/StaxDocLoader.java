@@ -329,12 +329,14 @@ public class StaxDocLoader {
   }
 
   public static class StaxArrayLoader extends StaxLoader {
+    private final ResType scalarResType;
     private String name;
     private List<TypedResource> items;
     private final StringBuilder buf = new StringBuilder();
 
     public StaxArrayLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType arrayResType, ResType scalarResType) {
       super(resourceTable, xpathExpr, attrType, arrayResType);
+      this.scalarResType = scalarResType;
     }
 
     @Override
@@ -372,8 +374,8 @@ public class StaxDocLoader {
 
       @Override
       public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-        ResType scalarResType = ResType.inferType(buf.toString());
-        items.add(new TypedResource(buf.toString(), scalarResType, xmlContext));
+        ResType resType = scalarResType == null ? ResType.inferType(buf.toString()) : scalarResType;
+        items.add(new TypedResource<>(buf.toString(), resType, xmlContext));
       }
     }
   }

@@ -12,7 +12,7 @@ public class ResourceTableFactory {
   private boolean useStax;
 
   public ResourceTableFactory() {
-    this(true);
+    this(false);
   }
 
   public ResourceTableFactory(boolean useStax) {
@@ -141,7 +141,7 @@ public class ResourceTableFactory {
             new StaxLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
             new StaxLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
             new StaxArrayLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY, ResType.CHAR_SEQUENCE),
-            new StaxArrayLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY, ResType.CHAR_SEQUENCE),
+            new StaxArrayLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY, null),
             new StaxLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
             new StaxLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),
             new StaxAttrLoader(resourceTable, "/resources/attr", "attr", ResType.ATTR_DATA),

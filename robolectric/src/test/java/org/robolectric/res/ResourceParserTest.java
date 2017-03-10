@@ -54,7 +54,7 @@ public class ResourceParserTest {
 //    }
 
     try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
-//      out.write(stringify(staxResources));
+      out.write(stringify(staxResources));
     }
 
     time("old", new Runnable() {
