@@ -31,7 +31,7 @@ public class ResourceParserTest {
 
   @Test
   public void compareApp() throws Exception {
-    PackageResourceTable staxResources = new ResourceTableFactory(true)
+    PackageResourceTable staxResources = new ResourceTableFactory()
         .newResourceTable("org.robolectric", testResources());
     assertThat(stringify(staxResources)).isEqualTo(stringify(resourceTable));
   }
@@ -40,11 +40,8 @@ public class ResourceParserTest {
   public void compareSdk() throws Exception {
     final ResourcePath sdkRes = sdkResources(N_MR1);
 
-    PackageResourceTable oldResources;
-    oldResources = new ResourceTableFactory(false).newResourceTable("android", sdkRes);
-
     PackageResourceTable staxResources;
-    staxResources = new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+    staxResources = new ResourceTableFactory().newResourceTable("android", sdkRes);
 
 //    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("vtd.txt")))) {
 //      out.write(stringify(oldResources));
@@ -80,7 +77,7 @@ public class ResourceParserTest {
 //      }
 //    });
 
-    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
+//    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
   }
 
   private void time(String message, Runnable runnable) {

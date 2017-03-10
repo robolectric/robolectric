@@ -9,16 +9,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.testResources;
 
 public class PluralResourceLoaderTest {
-  private ResBunch resBunch;
   private PackageResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {
-    resBunch = new ResBunch();
     resourceTable = new ResourceTableFactory().newResourceTable("org.robolectric");
-    PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(resourceTable);
+    StaxPluralsLoader pluralsLoader = new StaxPluralsLoader(resourceTable,
+        "/resources/plurals", "plurals", ResType.CHAR_SEQUENCE);
 
-    new DocumentLoader(R.class.getPackage().getName(), testResources()).load("values", pluralResourceLoader);
+    new StaxDocumentLoader(R.class.getPackage().getName(), testResources(), pluralsLoader).load("values");
   }
 
   @Test
