@@ -9,12 +9,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
-import static org.robolectric.util.TestUtil.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.gradleAppResources;
+import static org.robolectric.util.TestUtil.testResources;
 
 public class ResourceParserTest {
 
@@ -96,7 +97,17 @@ public class ResourceParserTest {
   }
 
   private static String stringify(ResourceTable resourceTable) {
-    Map<String, List<TypedResource>> map = ((PackageResourceTable) resourceTable).everything();
+    final HashMap<String, List<TypedResource>> map = new HashMap<>();
+    resourceTable.receive(new ResourceTable.Visitor() {
+      @Override
+      public void visit(ResName key, Iterable<TypedResource> values) {
+        List<TypedResource> v = new ArrayList<>();
+        for (TypedResource value : values) {
+          v.add(value);
+        }
+        map.put(key.getFullyQualifiedName(), v);
+      }
+    });
     StringBuilder buf = new StringBuilder();
     TreeSet<String> keys = new TreeSet<>(map.keySet());
     for (String key : keys) {

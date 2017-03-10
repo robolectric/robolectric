@@ -121,21 +121,4 @@ public class PackageResourceTable implements ResourceTable {
   private boolean isAndroidPackage(ResName resName) {
     return "android".equals(resName.packageName);
   }
-
-  public Map<String, List<TypedResource>> everything() {
-    final HashMap<String, List<TypedResource>> map = new HashMap<>();
-
-    resources.receive(new Visitor<TypedResource>() {
-      @Override
-      public void visit(ResName key, Iterable<TypedResource> values) {
-        List<TypedResource> v = new ArrayList<>();
-        for (TypedResource value : values) {
-          v.add(value);
-        }
-        map.put(key.getFullyQualifiedName(), v);
-      }
-    });
-
-    return map;
-  }
 }
