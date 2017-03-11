@@ -17,11 +17,20 @@ public enum ResType {
   INTEGER,
   LAYOUT,
   STYLE,
-  CHAR_SEQUENCE,
+  CHAR_SEQUENCE {
+    @Override
+    public <T> T transform(T data) {
+      return (T) StringResources.proccessStringResources((String) data);
+    }
+  },
   CHAR_SEQUENCE_ARRAY,
   INTEGER_ARRAY,
   TYPED_ARRAY,
   NULL;
+
+  public <T> T transform(T data) {
+    return data;
+  }
 
   private static final Pattern DIMEN_RE = Pattern.compile("^\\d+(dp|dip|sp|pt|px|mm|in)$");
 

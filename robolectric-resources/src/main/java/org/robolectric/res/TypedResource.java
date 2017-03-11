@@ -16,7 +16,7 @@ public class TypedResource<T> {
   }
 
   public T getData() {
-    return data;
+    return resType.transform(data);
   }
 
   public ResType getResType() {

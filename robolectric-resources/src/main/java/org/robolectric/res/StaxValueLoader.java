@@ -34,9 +34,6 @@ public class StaxValueLoader extends StaxLoader {
   @Override
   public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
     String s = buf.toString();
-    if (resType == ResType.CHAR_SEQUENCE) {
-      s = StringResources.proccessStringResources(s);
-    }
     resourceTable.addResource(attrType, name, new TypedResource<>(s, resType, xmlContext));
   }
 }
