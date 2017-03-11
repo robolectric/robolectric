@@ -1,18 +1,15 @@
 package org.robolectric.res;
 
-import org.robolectric.res.StaxDocLoader.StaxLoader;
 import org.robolectric.util.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import static org.robolectric.res.StaxDocLoader.*;
-
 public class ResourceTableFactory {
   private boolean useStax;
 
   public ResourceTableFactory() {
-    this(true);
+    this(false);
   }
 
   public ResourceTableFactory(boolean useStax) {
@@ -122,28 +119,28 @@ public class ResourceTableFactory {
 
     try {
       if (useStax) {
-        new StaxDocLoader(resourceTable.getPackageName(), resourcePath,
-            new StaxLoader(resourceTable, "/resources/bool", "bool", ResType.BOOLEAN),
-            new StaxLoader(resourceTable, "/resources/item[@type='bool']", "bool", ResType.BOOLEAN),
-            new StaxLoader(resourceTable, "/resources/color", "color", ResType.COLOR),
-            new StaxLoader(resourceTable, "/resources/drawable", "drawable", ResType.DRAWABLE),
-            new StaxLoader(resourceTable, "/resources/item[@type='color']", "color", ResType.COLOR),
-            new StaxLoader(resourceTable, "/resources/item[@type='drawable']", "drawable", ResType.DRAWABLE),
-            new StaxLoader(resourceTable, "/resources/dimen", "dimen", ResType.DIMEN),
-            new StaxLoader(resourceTable, "/resources/item[@type='dimen']", "dimen", ResType.DIMEN),
-            new StaxLoader(resourceTable, "/resources/integer", "integer", ResType.INTEGER),
-            new StaxLoader(resourceTable, "/resources/item[@type='integer']", "integer", ResType.INTEGER),
+        new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath,
+            new StaxValueLoader(resourceTable, "/resources/bool", "bool", ResType.BOOLEAN),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='bool']", "bool", ResType.BOOLEAN),
+            new StaxValueLoader(resourceTable, "/resources/color", "color", ResType.COLOR),
+            new StaxValueLoader(resourceTable, "/resources/drawable", "drawable", ResType.DRAWABLE),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='color']", "color", ResType.COLOR),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='drawable']", "drawable", ResType.DRAWABLE),
+            new StaxValueLoader(resourceTable, "/resources/dimen", "dimen", ResType.DIMEN),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='dimen']", "dimen", ResType.DIMEN),
+            new StaxValueLoader(resourceTable, "/resources/integer", "integer", ResType.INTEGER),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='integer']", "integer", ResType.INTEGER),
             new StaxArrayLoader(resourceTable, "/resources/integer-array", "array", ResType.INTEGER_ARRAY, ResType.INTEGER),
-            new StaxLoader(resourceTable, "/resources/fraction", "fraction", ResType.FRACTION),
-            new StaxLoader(resourceTable, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
-            new StaxLoader(resourceTable, "/resources/item[@type='layout']", "layout", ResType.LAYOUT),
+            new StaxValueLoader(resourceTable, "/resources/fraction", "fraction", ResType.FRACTION),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='layout']", "layout", ResType.LAYOUT),
             new StaxPluralsLoader(resourceTable, "/resources/plurals", "plurals", ResType.CHAR_SEQUENCE),
-            new StaxLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
-            new StaxLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
+            new StaxValueLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
             new StaxArrayLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY, ResType.CHAR_SEQUENCE),
             new StaxArrayLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY, null),
-            new StaxLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
-            new StaxLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),
+            new StaxValueLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
+            new StaxValueLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),
             new StaxAttrLoader(resourceTable, "/resources/attr", "attr", ResType.ATTR_DATA),
             new StaxAttrLoader(resourceTable, "/resources/declare-styleable/attr", "attr", ResType.ATTR_DATA),
             new StaxStyleLoader(resourceTable, "/resources/style", "style", ResType.STYLE)
@@ -208,7 +205,7 @@ public class ResourceTableFactory {
   }
 
   private void loadOpaque(ResourcePath resourcePath, PackageResourceTable resourceTable, String type, ResType resType) {
-    new StaxDocLoader(resourceTable.getPackageName(), resourcePath, false,
+    new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath, false,
         new OpaqueLoader(resourceTable, "/*", type, resType)
     ).load(type);
   }
