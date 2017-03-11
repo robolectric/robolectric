@@ -1,5 +1,8 @@
 package org.robolectric.res;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StyleResourceLoader extends XpathResourceXmlLoader {
   private final PackageResourceTable resourceTable;
 
@@ -19,16 +22,18 @@ public class StyleResourceLoader extends XpathResourceXmlLoader {
       }
     }
 
-    String styleNameWithUnderscores = underscorize(styleName);
-    StyleData styleData = new StyleData(xmlContext.getPackageName(), styleNameWithUnderscores, underscorize(styleParent));
-
+    List<AttributeResource> attributeResources = new ArrayList<>();
     for (XmlNode item : xmlNode.selectElements("item")) {
       String attrName = item.getAttrValue("name");
       String value = item.getTextContent();
 
       ResName attrResName = ResName.qualifyResName(attrName, xmlContext.getPackageName(), "attr");
-      styleData.add(attrResName, new AttributeResource(attrResName, value, xmlContext.getPackageName()));
+      attributeResources.add(new AttributeResource(attrResName, value, xmlContext.getPackageName()));
     }
+
+    String styleNameWithUnderscores = underscorize(styleName);
+    StyleData styleData = new StyleData(xmlContext.getPackageName(), styleNameWithUnderscores, underscorize(styleParent),
+        attributeResources);
 
     resourceTable.addResource("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE, xmlContext));
   }

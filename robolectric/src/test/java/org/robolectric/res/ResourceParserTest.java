@@ -2,8 +2,6 @@ package org.robolectric.res;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,8 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
 
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.gradleAppResources;
+import static org.robolectric.util.TestUtil.sdkResources;
 import static org.robolectric.util.TestUtil.testResources;
 
 public class ResourceParserTest {
@@ -31,9 +31,6 @@ public class ResourceParserTest {
 
   @Test
   public void compareApp() throws Exception {
-    Fs sdkResFs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(new SdkConfig(25).getAndroidSdkDependency()));
-    ResourcePath sdkRes = new ResourcePath(null, sdkResFs.join("res"), null, null);
-
     PackageResourceTable staxResources = new ResourceTableFactory(true)
         .newResourceTable("org.robolectric", testResources());
     assertThat(stringify(staxResources)).isEqualTo(stringify(resourceTable));
@@ -41,8 +38,7 @@ public class ResourceParserTest {
 
   @Test
   public void compareSdk() throws Exception {
-    Fs sdkResFs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(new SdkConfig(25).getAndroidSdkDependency()));
-    final ResourcePath sdkRes = new ResourcePath(null, sdkResFs.join("res"), null, null);
+    final ResourcePath sdkRes = sdkResources(N_MR1);
 
     PackageResourceTable oldResources;
 //    oldResources = new ResourceTableFactory(false).newResourceTable("android", sdkRes);

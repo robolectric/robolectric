@@ -503,7 +503,7 @@ public class StaxDocLoader {
   public static class StaxStyleLoader extends StaxLoader {
     private String name;
     private String parent;
-    private StyleData styleData;
+    private List<AttributeResource> attributeResources;
 
     public StaxStyleLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
       super(resourceTable, xpathExpr, attrType, resType);
@@ -513,9 +513,7 @@ public class StaxDocLoader {
     public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
       name = xml.getAttributeValue(null, "name");
       parent = xml.getAttributeValue(null, "parent");
-
-      String styleNameWithUnderscores = underscorize(name);
-      styleData = new StyleData(xmlContext.getPackageName(), styleNameWithUnderscores, underscorize(parent));
+      attributeResources = new ArrayList<>();
     }
 
     @Override
@@ -538,19 +536,24 @@ public class StaxDocLoader {
         @Override
         public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
           ResName attrResName = ResName.qualifyResName(attrName, xmlContext.getPackageName(), "attr");
-          styleData.add(attrResName, new AttributeResource(attrResName, buf.toString(), xmlContext.getPackageName()));
+          attributeResources.add(new AttributeResource(attrResName, buf.toString(), xmlContext.getPackageName()));
         }
       });
     }
 
     @Override
     public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-      if (parent == null) {
+      String styleParent = parent;
+
+      if (styleParent == null) {
         int lastDot = name.lastIndexOf('.');
         if (lastDot != -1) {
-          parent = name.substring(0, lastDot);
+          styleParent = name.substring(0, lastDot);
         }
       }
+
+      String styleNameWithUnderscores = underscorize(name);
+      StyleData styleData = new StyleData(xmlContext.getPackageName(), styleNameWithUnderscores, underscorize(styleParent), attributeResources);
 
       resourceTable.addResource("style", styleData.getName(), new TypedResource<>(styleData, resType, xmlContext));
     }

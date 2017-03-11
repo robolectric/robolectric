@@ -3,6 +3,7 @@ package org.robolectric.res;
 import org.robolectric.util.Strings;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -12,10 +13,14 @@ public class StyleData implements Style {
   private final String parent;
   private final Map<ResName, AttributeResource> items = new LinkedHashMap<>();
 
-  public StyleData(String packageName, String name, String parent) {
+  public StyleData(String packageName, String name, String parent, List<AttributeResource> attributeResources) {
     this.packageName = packageName;
     this.name = name;
     this.parent = parent;
+
+    for (AttributeResource attributeResource : attributeResources) {
+      add(attributeResource.resName, attributeResource);
+    }
   }
 
   public String getName() {
@@ -26,7 +31,7 @@ public class StyleData implements Style {
     return parent;
   }
 
-  public void add(ResName attrName, AttributeResource attribute) {
+  private void add(ResName attrName, AttributeResource attribute) {
     attrName.mustBe("attr");
     items.put(attrName, attribute);
   }

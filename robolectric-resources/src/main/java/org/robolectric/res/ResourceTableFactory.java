@@ -12,7 +12,7 @@ public class ResourceTableFactory {
   private boolean useStax;
 
   public ResourceTableFactory() {
-    this(false);
+    this(true);
   }
 
   public ResourceTableFactory(boolean useStax) {
