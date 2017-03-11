@@ -5,8 +5,6 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.res.StaxLoader.addInnerHandler;
-
 public class StaxPluralsLoader extends StaxLoader {
   protected String name;
   final StringBuilder buf;
@@ -50,6 +48,6 @@ public class StaxPluralsLoader extends StaxLoader {
 
   @Override
   public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-    resourceTable.addResource(attrType, name, new PluralResourceLoader.PluralRules(plurals, resType, xmlContext));
+    resourceTable.addResource(attrType, name, new PluralRules(plurals, resType, xmlContext));
   }
 }

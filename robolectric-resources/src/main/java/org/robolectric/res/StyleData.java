@@ -62,6 +62,16 @@ public class StyleData implements Style {
     return false;
   }
 
+  public void visit(Visitor visitor) {
+    for (AttributeResource attributeResource : items.values()) {
+      visitor.visit(attributeResource);
+    }
+  }
+
+  public interface Visitor {
+    void visit(AttributeResource attributeResource);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof StyleData)) {

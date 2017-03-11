@@ -24,8 +24,7 @@ public class PluralResourceLoaderTest {
   @Test
   public void testPluralsAreResolved() throws Exception {
     ResName resName = new ResName(TestUtil.TEST_PACKAGE, "plurals", "beer");
-    PluralResourceLoader.PluralRules pluralRules =
-        (PluralResourceLoader.PluralRules) resourceTable.getValue(resName, "");
+    PluralRules pluralRules = (PluralRules) resourceTable.getValue(resName, "");
     assertThat(pluralRules.find(0).string).isEqualTo("@string/howdy");
     assertThat(pluralRules.find(1).string).isEqualTo("One beer");
     assertThat(pluralRules.find(2).string).isEqualTo("Two beers");

@@ -105,8 +105,8 @@ public class ShadowResources {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
 
     TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
-    if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
-      PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) typedResource;
+    if (typedResource != null && typedResource instanceof PluralRules) {
+      PluralRules pluralRules = (PluralRules) typedResource;
       Plural plural = pluralRules.find(quantity);
 
       if (plural == null) {

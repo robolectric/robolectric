@@ -1,14 +1,14 @@
 package org.robolectric.res;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -36,12 +36,12 @@ public class ResourceParserTest {
     assertThat(stringify(staxResources)).isEqualTo(stringify(resourceTable));
   }
 
-  @Test
+  @Test @Ignore
   public void compareSdk() throws Exception {
     final ResourcePath sdkRes = sdkResources(N_MR1);
 
     PackageResourceTable oldResources;
-//    oldResources = new ResourceTableFactory(false).newResourceTable("android", sdkRes);
+    oldResources = new ResourceTableFactory(false).newResourceTable("android", sdkRes);
 
     PackageResourceTable staxResources;
     staxResources = new ResourceTableFactory(true).newResourceTable("android", sdkRes);
@@ -49,38 +49,38 @@ public class ResourceParserTest {
 //    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("vtd.txt")))) {
 //      out.write(stringify(oldResources));
 //    }
+//
+//    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
+//      out.write(stringify(staxResources));
+//    }
 
-    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
-      out.write(stringify(staxResources));
-    }
+//    time("old", new Runnable() {
+//      @Override
+//      public void run() {
+//        new ResourceTableFactory().newResourceTable("android", sdkRes);
+//      }
+//    });
+//    time("new", new Runnable() {
+//      @Override
+//      public void run() {
+//        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+//      }
+//    });
+//
+//    time("old", new Runnable() {
+//      @Override
+//      public void run() {
+//        new ResourceTableFactory().newResourceTable("android", sdkRes);
+//      }
+//    });
+//    time("new", new Runnable() {
+//      @Override
+//      public void run() {
+//        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
+//      }
+//    });
 
-    time("old", new Runnable() {
-      @Override
-      public void run() {
-        new ResourceTableFactory().newResourceTable("android", sdkRes);
-      }
-    });
-    time("new", new Runnable() {
-      @Override
-      public void run() {
-        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
-      }
-    });
-
-    time("old", new Runnable() {
-      @Override
-      public void run() {
-        new ResourceTableFactory().newResourceTable("android", sdkRes);
-      }
-    });
-    time("new", new Runnable() {
-      @Override
-      public void run() {
-        new ResourceTableFactory(true).newResourceTable("android", sdkRes);
-      }
-    });
-
-//    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
+    assertThat(stringify(staxResources)).isEqualTo(stringify(oldResources));
   }
 
   private void time(String message, Runnable runnable) {
@@ -107,9 +107,6 @@ public class ResourceParserTest {
     StringBuilder buf = new StringBuilder();
     TreeSet<String> keys = new TreeSet<>(map.keySet());
     for (String key : keys) {
-//      if (!key.contains(":plurals/")) {
-//        continue;
-//      }
       buf.append(key).append(":\n");
       for (TypedResource typedResource : map.get(key)) {
         Object data = typedResource.getData();
@@ -124,6 +121,16 @@ public class ResourceParserTest {
             }
           }
           data = newList.toString();
+        } else if (data instanceof StyleData) {
+          StyleData styleData = (StyleData) data;
+          final Map<String, String> attrs = new TreeMap<>();
+          styleData.visit(new StyleData.Visitor() {
+            @Override
+            public void visit(AttributeResource attributeResource) {
+              attrs.put(attributeResource.resName.getFullyQualifiedName(), attributeResource.value);
+            }
+          });
+          data = data.toString() + "^" + styleData.getParent() + " " + attrs;
         }
         buf.append("  ").append(data).append(" {").append(typedResource.getResType())
             .append("/").append(typedResource.getQualifiers()).append(": ")
