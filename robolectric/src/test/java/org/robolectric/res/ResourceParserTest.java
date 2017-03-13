@@ -200,13 +200,13 @@ public class ResourceParserTest {
         if (typedResource == null) {
           continue;
         }
-        Object data = typedResource.getData();
+        Object data = typedResource.getRawData();
         if (data instanceof List) {
           ArrayList<String> newList = new ArrayList<>();
           for (Object item : ((List) data)) {
             if (item.getClass().equals(TypedResource.class)) {
               TypedResource typedResourceItem = (TypedResource) item;
-              newList.add(typedResourceItem.getData().toString() + " (" + typedResourceItem.getResType() + ")");
+              newList.add(typedResourceItem.getRawData().toString() + " (" + typedResourceItem.getResType() + ")");
             } else {
               newList.add(item.toString());
             }

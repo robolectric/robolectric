@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.util.Join;
 import org.robolectric.util.Util;
 
@@ -7,6 +8,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
@@ -54,55 +56,69 @@ abstract public class Fs {
   }
 
   static class JarFs extends Fs implements Serializable {
-    private static final long serialVersionUID = 42L;
 
-    private static final Map<File, NavigableMap<String, JarEntry>> CACHE =
-        new LinkedHashMap<File, NavigableMap<String, JarEntry>>() {
+    private static final long serialVersionUID = 42L;
+    
+    private static final Map<File, Jar> CACHE =
+        new LinkedHashMap<File, Jar>() {
           @Override
-          protected boolean removeEldestEntry(Map.Entry<File, NavigableMap<String, JarEntry>> fileNavigableMapEntry) {
+          protected boolean removeEldestEntry(Map.Entry<File, Jar> fileNavigableMapEntry) {
             return size() > 10;
           }
         };
 
-    private final File file;
-    transient private JarFile jarFile;
-    transient private NavigableMap<String, JarEntry> jarEntryMap;
+    private static class Jar {
+      private final JarFile jarFile;
+      private final NavigableMap<String, JarEntry> entryMap;
+
+      public Jar(JarFile jarFile, NavigableMap<String, JarEntry> entryMap) {
+        this.jarFile = jarFile;
+        this.entryMap = entryMap;
+      }
+    }
+
+    private File file;
+    private transient Jar jar;
 
     public JarFs(File file) {
       this.file = file;
+      this.jar = bindJar(file);
     }
 
-    private synchronized void hydrate() {
-      if (jarFile != null) return;
-
-      try {
-        jarFile = new JarFile(file);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      NavigableMap<String, JarEntry> cachedMap;
+    @NotNull
+    private Jar bindJar(File file) {
+      Jar jar;
+      
       synchronized (CACHE) {
-        cachedMap = CACHE.get(file.getAbsoluteFile());
+        jar = CACHE.get(file.getAbsoluteFile());
       }
 
-      if (cachedMap == null) {
+      if (jar == null) {
+        JarFile jarFile;
+        try {
+          jarFile = new JarFile(file);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+
+        NavigableMap<String, JarEntry> cachedMap;
         cachedMap = new TreeMap<>();
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
           JarEntry jarEntry = entries.nextElement();
           cachedMap.put(jarEntry.getName(), jarEntry);
         }
+
+        jar = new Jar(jarFile, cachedMap);
+
         synchronized (CACHE) {
-          CACHE.put(file.getAbsoluteFile(), cachedMap);
+          CACHE.put(file.getAbsoluteFile(), jar);
         }
       }
-
-      jarEntryMap = cachedMap;
+      return jar;
     }
 
     @Override public FsFile join(String folderBaseName) {
-      hydrate();
       return new JarFsFile(folderBaseName);
     }
 
@@ -115,21 +131,25 @@ abstract public class Fs {
         this.path = path;
       }
 
+      public Object readResolve() throws ObjectStreamException {
+        return new JarFs(file).new JarFsFile(path);
+      }
+
       @Override public boolean exists() {
         return isFile() || isDirectory();
       }
 
       @Override public boolean isDirectory() {
-        return jarEntryMap.containsKey(path + "/");
+        return jar.entryMap.containsKey(path + "/");
       }
 
       @Override public boolean isFile() {
-        return jarEntryMap.containsKey(path);
+        return jar.entryMap.containsKey(path);
       }
 
       @Override public FsFile[] listFiles() {
         if (!isDirectory()) return null;
-        NavigableSet<String> strings = jarEntryMap.navigableKeySet().subSet(path + "/", false, path + "0", false);
+        NavigableSet<String> strings = jar.entryMap.navigableKeySet().subSet(path + "/", false, path + "0", false);
         List<FsFile> fsFiles = new ArrayList<>();
         int startOfFilename = path.length() + 2;
         for (String string : strings) {
@@ -175,11 +195,11 @@ abstract public class Fs {
       }
 
       @Override public InputStream getInputStream() throws IOException {
-        return new BufferedInputStream(jarFile.getInputStream(jarEntryMap.get(path)));
+        return new BufferedInputStream(jar.jarFile.getInputStream(jar.entryMap.get(path)));
       }
 
       @Override public byte[] getBytes() throws IOException {
-        return Util.readBytes(jarFile.getInputStream(jarEntryMap.get(path)));
+        return Util.readBytes(jar.jarFile.getInputStream(jar.entryMap.get(path)));
       }
 
       @Override public FsFile join(String... pathParts) {
@@ -210,7 +230,7 @@ abstract public class Fs {
       }
 
       private String getJarFileName() {
-        return jarFile.getName();
+        return jar.jarFile.getName();
       }
 
       @Override

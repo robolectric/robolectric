@@ -3,20 +3,29 @@ package org.robolectric.res;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ResStore {
 
   public static final int TYPE_STRING = -1;
+  public static final int TYPE_OTHER = -2;
 
   public void save(PackageResourceTable resourceTable, File file) throws IOException {
     final SaveContext saveContext = new SaveContext();
@@ -56,12 +65,14 @@ public class ResStore {
 
       private void bytesOf(TypedResource value, ByteArrayOutputStream bytes) throws IOException {
         DataOutputStream out = new DataOutputStream(bytes);
-        writeTypedResource(value, out);
+        saveContext.writeTypedResource(value, out);
       }
 
     });
 
     final RandomAccessFile f = new RandomAccessFile(file, "rw");
+    f.setLength(0);
+
     f.writeInt(-1);
     f.writeInt(saveContext.resources.size());
     long resOffsetPos = f.getFilePointer();
@@ -87,6 +98,8 @@ public class ResStore {
     f.seek(resOffsetPos);
     f.writeLong(dataOffset);
     f.writeLong(stringOffset);
+
+    saveContext.doThingsWithStrings();
   }
 
   public ResourceTable load(File file) throws IOException {
@@ -228,7 +241,32 @@ public class ResStore {
     int nextIndex = 0;
 
     public void resource(ResName resName, byte[] bytes) {
+    }
 
+    private void writeTypedResource(TypedResource typedResource, DataOutputStream out) throws IOException {
+      Object data = typedResource.getRawData();
+      boolean isStringValue = typedResource.getClass().equals(TypedResource.class) && data instanceof String;
+
+      if (isStringValue) {
+        out.writeByte(TYPE_STRING);
+        writeString(out, typedResource.getXmlContext().getPackageName());
+        writeString(out, typedResource.getResType().name());
+        writeString(out, typedResource.getXmlContext().getXmlFile().getPath());
+        writeString(out, (String) data);
+      } else {
+        out.writeByte(TYPE_OTHER);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream objOut = new ObjectOutputStream(baos);
+        objOut.writeObject(typedResource);
+        out.writeInt(baos.size());
+        out.write(baos.toByteArray());
+      }
+    }
+
+    private void writeString(DataOutputStream out, String s) throws IOException {
+//      out.writeShort(1);
+      out.writeUTF(s);
+      string(s);
     }
 
     public int string(String s) {
@@ -241,39 +279,55 @@ public class ResStore {
       stringEntry.count++;
       return stringEntry.index;
     }
-  }
 
-  private void writeTypedResource(TypedResource value, DataOutputStream out) throws IOException {
-    if (value.getClass().equals(TypedResource.class)) {
-      Object data = value.getData();
-      if (data instanceof String) {
-        out.writeByte(TYPE_STRING);
-        writeString(out, value.getXmlContext().getPackageName());
-        writeString(out, value.getResType().name());
-        writeString(out, value.getXmlContext().getXmlFile().getPath());
-        writeString(out, (String) data);
-      } else {
-        // handle other things!
+    public void doThingsWithStrings() {
+      Collection<StringEntry> values = strings.values();
+      StringEntry[] stringEntries = values.toArray(new StringEntry[values.size()]);
+      Arrays.sort(stringEntries, new Comparator<StringEntry>() {
+        @Override
+        public int compare(StringEntry a, StringEntry b) {
+          return b.count - a.count;
+        }
+      });
+
+      int i = 0;
+      int iBefore1m = 0;
+      int m = 0;
+      for (StringEntry stringEntry : stringEntries) {
+        i++;
+        if (m < 64 * 1024) {
+          iBefore1m++;
+        }
+        m += stringEntry.string.length() + 1;
       }
+      System.out.println(i + " total strings");
+      System.out.println(iBefore1m + " before 1M");
+      System.out.println(m + " total bytes");
     }
-  }
-
-  private void writeString(DataOutputStream out, String s) throws IOException {
-    out.writeUTF(s);
-//        out.writeInt(saveContext.string(s));
   }
 
   private TypedResource readTypedResource(RandomAccessFile f, ResQPtr resQPtr) throws IOException {
     f.seek(resQPtr.offset);
     byte b = f.readByte();
-    if (b == TYPE_STRING) {
-      String packageName = readString(f);
-      ResType resType = ResType.valueOf(readString(f));
-      String file = readString(f);
-      String data = readString(f);
-      return new TypedResource<>(data, resType, new XmlContext(packageName, Fs.fileFromPath(file)));
+    switch (b) {
+      case TYPE_STRING:
+        String packageName = readString(f);
+        ResType resType = ResType.valueOf(readString(f));
+        String file = readString(f);
+        String data = readString(f);
+        return new TypedResource<>(data, resType, new XmlContext(packageName, Fs.fileFromPath(file)));
+      case TYPE_OTHER:
+        int objSize = f.readInt();
+        byte[] bytes = new byte[objSize];
+        f.read(bytes);
+        try {
+          return (TypedResource) new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
     }
-    return null;
+
+    throw new IllegalStateException("unknown type " + b);
   }
 
   private String readString(RandomAccessFile f) throws IOException {

@@ -20,7 +20,11 @@ public class TypedResource<T> implements Serializable {
   }
 
   public T getData() {
-    return resType.transform(data);
+    return resType == null ? data : resType.transform(data);
+  }
+
+  public T getRawData() {
+    return data;
   }
 
   public ResType getResType() {
