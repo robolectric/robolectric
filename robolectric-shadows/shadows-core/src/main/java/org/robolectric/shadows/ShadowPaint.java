@@ -2,9 +2,13 @@ package org.robolectric.shadows;
 
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetrics;
+import android.graphics.Paint.FontMetricsInt;
 import android.graphics.PathEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -13,6 +17,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.graphics.Paint}.
@@ -20,6 +25,9 @@ import static org.robolectric.Shadows.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)
 public class ShadowPaint {
+
+  @RealObject
+  private Paint paint;
 
   private int color;
   private Paint.Style style;
@@ -37,8 +45,6 @@ public class ShadowPaint {
   private boolean dither;
   private int flags;
   private PathEffect pathEffect;
-
-  @RealObject Paint paint;
   private Typeface typeface;
   private float textSize;
   private Paint.Align textAlign = Paint.Align.LEFT;
@@ -49,25 +55,34 @@ public class ShadowPaint {
   }
 
   public void __constructor__(Paint otherPaint) {
-    ShadowPaint otherShadowPaint = shadowOf(otherPaint);
-    this.color = otherShadowPaint.color;
-    this.style = otherShadowPaint.style;
-    this.cap = otherShadowPaint.cap;
-    this.join = otherShadowPaint.join;
-    this.width = otherShadowPaint.width;
-    this.shadowRadius = otherShadowPaint.shadowRadius;
-    this.shadowDx = otherShadowPaint.shadowDx;
-    this.shadowDy = otherShadowPaint.shadowDy;
-    this.shadowColor = otherShadowPaint.shadowColor;
-    this.shader = otherShadowPaint.shader;
-    this.alpha = otherShadowPaint.alpha;
-    this.filter = otherShadowPaint.filter;
-    this.antiAlias = otherShadowPaint.antiAlias;
-    this.dither = otherShadowPaint.dither;
-    this.flags = otherShadowPaint.flags;
-    this.pathEffect = otherShadowPaint.pathEffect;
-
+    set(otherPaint);
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(Paint.class, otherPaint));
+  }
+
+  @Implementation
+  public void set(Paint src) {
+    ShadowPaint shadowSrc = shadowOf(src);
+    this.color = shadowSrc.color;
+    this.style = shadowSrc.style;
+    this.cap = shadowSrc.cap;
+    this.join = shadowSrc.join;
+    this.width = shadowSrc.width;
+    this.shadowRadius = shadowSrc.shadowRadius;
+    this.shadowDx = shadowSrc.shadowDx;
+    this.shadowDy = shadowSrc.shadowDy;
+    this.shadowColor = shadowSrc.shadowColor;
+    this.shader = shadowSrc.shader;
+    this.alpha = shadowSrc.alpha;
+    this.filter = shadowSrc.filter;
+    this.antiAlias = shadowSrc.antiAlias;
+    this.dither = shadowSrc.dither;
+    this.flags = shadowSrc.flags;
+    this.pathEffect = shadowSrc.pathEffect;
+    this.typeface = shadowSrc.typeface;
+    this.textSize = shadowSrc.textSize;
+    this.textAlign = shadowSrc.textAlign;
+
+    directlyOn(paint, Paint.class).set(src);
   }
 
   @Implementation(minSdk = N)
@@ -320,4 +335,36 @@ public class ShadowPaint {
   public float measureText(char[] text, int index, int count) {
     return count;
   }
+
+  @Implementation
+  public float getFontMetrics(FontMetrics metrics) {
+    if (metrics != null) {
+      metrics.top = 1;
+      metrics.ascent = 0;
+      metrics.leading = textSize * 1.2f;
+      metrics.bottom = textSize;
+    }
+
+    return textSize * 1.2f;
+  }
+
+  @Implementation
+  public int getFontMetricsInt(FontMetricsInt fmi) {
+    if (fmi != null) {
+      fmi.top = 1;
+      fmi.ascent = 0;
+      fmi.leading = (int) (textSize * 1.2f);
+      fmi.bottom = (int) textSize;
+    }
+
+    return (int) (textSize * 1.2f);
+  }
+
+  @Implementation
+  public static float nGetRunAdvance(long paintPtr, long typefacePtr,
+      char[] text, int start, int end, int contextStart, int contextEnd, boolean isRtl,
+      int offset) {
+    return 10.0f * (end - start);
+  }
+
 }

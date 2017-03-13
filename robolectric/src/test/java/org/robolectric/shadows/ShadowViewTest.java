@@ -14,10 +14,12 @@ import android.view.*;
 import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -908,6 +910,30 @@ public class ShadowViewTest {
         .isTrue();
     assertThat(globalVisibleRect)
         .isEqualTo(new Rect(0, 25, 480, 800));
+
+  }
+
+  @Test
+  public void usesDefaultGlobalVisibleRect_onTextView() {
+    final ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
+    final Activity activity = activityController.get();
+    TextView textView = new TextView(activity);
+    textView.setText("OK");
+
+    LinearLayout parent = new LinearLayout(activity);
+    parent.addView(textView);
+    activity.setContentView(parent, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT));
+    activityController.setup();
+
+    Rect globalVisibleRect = new Rect();
+    boolean wasVisible = textView.getGlobalVisibleRect(globalVisibleRect);
+    assertThat(globalVisibleRect)
+        .isEqualTo(new Rect(0, 25, 480, 800));
+    assertThat(wasVisible)
+        .isTrue();
+
+    // Test cases with TextView
   }
 
   public static class MyActivity extends Activity {

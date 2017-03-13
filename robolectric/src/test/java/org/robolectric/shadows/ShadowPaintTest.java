@@ -51,11 +51,13 @@ public class ShadowPaintTest {
     paint.setColor(Color.RED);
     paint.setAlpha(72);
     paint.setFlags(2345);
+    paint.setTextSize(8);
 
     Paint other = new Paint(paint);
     assertThat(other.getColor()).isEqualTo(Color.RED);
     assertThat(other.getAlpha()).isEqualTo(72);
     assertThat(other.getFlags()).isEqualTo(2345);
+    assertThat(other.getTextSize()).isEqualTo(8);
   }
 
   @Test
