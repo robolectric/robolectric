@@ -152,9 +152,13 @@ public class ResourceTableFactory {
     }
   }
 
-  private void loadOpaque(ResourcePath resourcePath, PackageResourceTable resourceTable, String type, ResType resType) {
-    new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath, false,
-        new OpaqueLoader(resourceTable, "/*", type, resType)
-    ).load(type);
+  private void loadOpaque(ResourcePath resourcePath, final PackageResourceTable resourceTable, final String type, final ResType resType) {
+    new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath) {
+      @Override
+      protected void loadResourceXmlFile(XmlContext xmlContext) {
+        resourceTable.addResource(type, xmlContext.getXmlFile().getBaseName(),
+            new FileTypedResource(xmlContext.getXmlFile(), resType, xmlContext));
+      }
+    }.load(type);
   }
 }

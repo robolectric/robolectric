@@ -27,19 +27,13 @@ public class StaxDocumentLoader {
 
   private final String packageName;
   private final ResourcePath resourcePath;
-  private final boolean parse;
   private final StaxLoader[] staxLoaders;
   private final NodeHandler topLevelNodeHandler;
   private final XMLInputFactory factory;
 
   public StaxDocumentLoader(String packageName, ResourcePath resourcePath, StaxLoader... staxLoaders) {
-    this(packageName, resourcePath, true, staxLoaders);
-  }
-
-  public StaxDocumentLoader(String packageName, ResourcePath resourcePath, boolean parse, StaxLoader... staxLoaders) {
     this.packageName = packageName;
     this.resourcePath = resourcePath;
-    this.parse = parse;
     this.staxLoaders = staxLoaders;
 
     topLevelNodeHandler = new NodeHandler();
@@ -76,15 +70,8 @@ public class StaxDocumentLoader {
 
     XMLStreamReader xmlStreamReader = null;
     try {
-      if (parse) {
-        xmlStreamReader = factory.createXMLStreamReader(xmlFile.getInputStream());
-        doParse(xmlStreamReader, xmlContext);
-      } else {
-        for (StaxLoader staxLoader : staxLoaders) {
-          staxLoader.onStart(null, xmlContext);
-          staxLoader.onEnd(null, xmlContext);
-        }
-      }
+      xmlStreamReader = factory.createXMLStreamReader(xmlFile.getInputStream());
+      doParse(xmlStreamReader, xmlContext);
     } catch (Exception e) {
       throw new RuntimeException("error parsing " + xmlFile, e);
     }
@@ -111,12 +98,6 @@ public class StaxDocumentLoader {
           nodeHandlerStack.push(nodeHandler);
           NodeHandler elementHandler = nodeHandler.findMatchFor(reader);
           nodeHandler = elementHandler == null ? NO_OP_HANDLER : elementHandler;
-
-          List<NodeHandler> stack = new ArrayList<>();
-          stack.addAll(nodeHandlerStack);
-          Collections.reverse(stack);
-          stack.remove(0);
-
           nodeHandler.onStart(reader, xmlContext);
           break;
 
