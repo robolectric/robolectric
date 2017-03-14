@@ -8,16 +8,19 @@ import org.robolectric.util.TestUtil;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.testResources;
 
-public class PluralResourceLoaderTest {
+public class StaxPluralsLoaderTest {
   private PackageResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {
     resourceTable = new ResourceTableFactory().newResourceTable("org.robolectric");
-    StaxPluralsLoader pluralsLoader = new StaxPluralsLoader(resourceTable,
-        "plurals", ResType.CHAR_SEQUENCE);
+    StaxPluralsLoader pluralsLoader = new StaxPluralsLoader(resourceTable, "plurals", ResType.CHAR_SEQUENCE);
 
-    new StaxDocumentLoader(R.class.getPackage().getName(), testResources().getResourceBase(), pluralsLoader).load("values");
+    new StaxDocumentLoader(R.class.getPackage().getName(), testResources().getResourceBase(),
+        new NodeHandler().addHandler("resources", new NodeHandler()
+            .addHandler("plurals", pluralsLoader)
+        )
+    ).load("values");
   }
 
   @Test
