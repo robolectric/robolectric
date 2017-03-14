@@ -8,22 +8,12 @@ import java.util.List;
 public class StaxAttrLoader extends StaxLoader {
   private String name;
   private String format;
-  private List<AttrData.Pair> pairs;
+  private final List<AttrData.Pair> pairs = new ArrayList<>();
 
-  public StaxAttrLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
-    super(resourceTable, xpathExpr, attrType, resType);
-  }
+  public StaxAttrLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
+    super(resourceTable, attrType, resType);
 
-  @Override
-  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-    name = xml.getAttributeValue(null, "name");
-    format = xml.getAttributeValue(null, "format");
-    pairs = new ArrayList<>();
-  }
-
-  @Override
-  protected void addInnerHandlers(StaxDocumentLoader.NodeHandler nodeHandler) {
-    nodeHandler.findMatchFor(null, null).addListener(new StaxDocumentLoader.NodeListener() {
+    addHandler("*", new NodeHandler() {
       private String value;
       private String name;
 
@@ -53,8 +43,16 @@ public class StaxAttrLoader extends StaxLoader {
   }
 
   @Override
+  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+    name = xml.getAttributeValue(null, "name");
+    format = xml.getAttributeValue(null, "format");
+  }
+
+  @Override
   public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-    AttrData attrData = new AttrData(name, format, pairs);
+    AttrData attrData = new AttrData(name, format, new ArrayList<>(pairs));
+    pairs.clear();
+
 //      xmlContext = xmlContext.withLineNumber(xml.getLocation().getLineNumber());
     if (attrData.getFormat() != null) {
       resourceTable.addResource(attrType, name, new TypedResource<>(attrData, resType, xmlContext));

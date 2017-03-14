@@ -15,7 +15,7 @@ public class PluralResourceLoaderTest {
   public void setUp() throws Exception {
     resourceTable = new ResourceTableFactory().newResourceTable("org.robolectric");
     StaxPluralsLoader pluralsLoader = new StaxPluralsLoader(resourceTable,
-        "/resources/plurals", "plurals", ResType.CHAR_SEQUENCE);
+        "plurals", ResType.CHAR_SEQUENCE);
 
     new StaxDocumentLoader(R.class.getPackage().getName(), testResources().getResourceBase(), pluralsLoader).load("values");
   }

@@ -4,6 +4,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,9 +50,9 @@ public class ResourceParserTest {
 //      out.write(stringify(oldResources));
 //    }
 //
-//    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
-//      out.write(stringify(staxResources));
-//    }
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(new File("stax.txt")))) {
+      out.write(stringify(staxResources));
+    }
 
 //    time("old", new Runnable() {
 //      @Override

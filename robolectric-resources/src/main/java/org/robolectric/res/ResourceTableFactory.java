@@ -109,31 +109,35 @@ public class ResourceTableFactory {
 
     try {
       new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase(),
-          new StaxValueLoader(resourceTable, "/resources/bool", "bool", ResType.BOOLEAN),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='bool']", "bool", ResType.BOOLEAN),
-          new StaxValueLoader(resourceTable, "/resources/color", "color", ResType.COLOR),
-          new StaxValueLoader(resourceTable, "/resources/drawable", "drawable", ResType.DRAWABLE),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='color']", "color", ResType.COLOR),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='drawable']", "drawable", ResType.DRAWABLE),
-          new StaxValueLoader(resourceTable, "/resources/dimen", "dimen", ResType.DIMEN),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='dimen']", "dimen", ResType.DIMEN),
-          new StaxValueLoader(resourceTable, "/resources/integer", "integer", ResType.INTEGER),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='integer']", "integer", ResType.INTEGER),
-          new StaxArrayLoader(resourceTable, "/resources/integer-array", "array", ResType.INTEGER_ARRAY, ResType.INTEGER),
-          new StaxValueLoader(resourceTable, "/resources/fraction", "fraction", ResType.FRACTION),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='layout']", "layout", ResType.LAYOUT),
-          new StaxPluralsLoader(resourceTable, "/resources/plurals", "plurals", ResType.CHAR_SEQUENCE),
-          new StaxValueLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
-          new StaxArrayLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY, ResType.CHAR_SEQUENCE),
-          new StaxArrayLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY, null),
-          new StaxValueLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
-          new StaxValueLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),
-          new StaxAttrLoader(resourceTable, "/resources/attr", "attr", ResType.ATTR_DATA),
-          new StaxAttrLoader(resourceTable, "/resources/declare-styleable/attr", "attr", ResType.ATTR_DATA),
-          new StaxStyleLoader(resourceTable, "/resources/style", "style", ResType.STYLE)
-      ).load("values");
+          new NodeHandler()
+              .addHandler("resources", new NodeHandler()
+                  .addHandler("bool", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
+                  .addHandler("item[@type='bool']", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
+                  .addHandler("color", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
+                  .addHandler("drawable", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
+                  .addHandler("item[@type='color']", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
+                  .addHandler("item[@type='drawable']", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
+                  .addHandler("dimen", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
+                  .addHandler("item[@type='dimen']", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
+                  .addHandler("integer", new StaxValueLoader(resourceTable, "integer", ResType.INTEGER))
+                  .addHandler("item[@type='integer']", new StaxValueLoader(resourceTable, "integer", ResType.INTEGER))
+                  .addHandler("integer-array", new StaxArrayLoader(resourceTable, "array", ResType.INTEGER_ARRAY, ResType.INTEGER))
+                  .addHandler("fraction", new StaxValueLoader(resourceTable, "fraction", ResType.FRACTION))
+                  .addHandler("item[@type='fraction']", new StaxValueLoader(resourceTable, "fraction", ResType.FRACTION))
+                  .addHandler("item[@type='layout']", new StaxValueLoader(resourceTable, "layout", ResType.LAYOUT))
+                  .addHandler("plurals", new StaxPluralsLoader(resourceTable, "plurals", ResType.CHAR_SEQUENCE))
+                  .addHandler("string", new StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
+                  .addHandler("item[@type='string']", new StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
+                  .addHandler("string-array", new StaxArrayLoader(resourceTable, "array", ResType.CHAR_SEQUENCE_ARRAY, ResType.CHAR_SEQUENCE))
+                  .addHandler("array", new StaxArrayLoader(resourceTable, "array", ResType.TYPED_ARRAY, null))
+                  .addHandler("id", new StaxValueLoader(resourceTable, "id", ResType.CHAR_SEQUENCE))
+                  .addHandler("item[@type='id']", new StaxValueLoader(resourceTable, "id", ResType.CHAR_SEQUENCE))
+                  .addHandler("attr", new StaxAttrLoader(resourceTable, "attr", ResType.ATTR_DATA))
+                  .addHandler("declare-styleable", new NodeHandler()
+                      .addHandler("attr", new StaxAttrLoader(resourceTable, "attr", ResType.ATTR_DATA))
+                  )
+                  .addHandler("style", new StaxStyleLoader(resourceTable, "style", ResType.STYLE))
+              )).load("values");
 
       loadOpaque(resourcePath, resourceTable, "layout", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "menu", ResType.LAYOUT);

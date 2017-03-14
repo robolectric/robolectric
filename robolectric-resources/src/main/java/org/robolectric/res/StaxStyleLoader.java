@@ -10,20 +10,10 @@ public class StaxStyleLoader extends StaxLoader {
   private String parent;
   private List<AttributeResource> attributeResources;
 
-  public StaxStyleLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
-    super(resourceTable, xpathExpr, attrType, resType);
-  }
+  public StaxStyleLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
+    super(resourceTable, attrType, resType);
 
-  @Override
-  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-    name = xml.getAttributeValue(null, "name");
-    parent = xml.getAttributeValue(null, "parent");
-    attributeResources = new ArrayList<>();
-  }
-
-  @Override
-  protected void addInnerHandlers(StaxDocumentLoader.NodeHandler nodeHandler) {
-    nodeHandler.findMatchFor("item", null).addListener(new StaxDocumentLoader.NodeListener() {
+    addHandler("item", new NodeHandler() {
       private String attrName;
       private StringBuilder buf = new StringBuilder();
 
@@ -44,6 +34,13 @@ public class StaxStyleLoader extends StaxLoader {
         attributeResources.add(new AttributeResource(attrResName, buf.toString(), xmlContext.getPackageName()));
       }
     });
+  }
+
+  @Override
+  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+    name = xml.getAttributeValue(null, "name");
+    parent = xml.getAttributeValue(null, "parent");
+    attributeResources = new ArrayList<>();
   }
 
   @Override

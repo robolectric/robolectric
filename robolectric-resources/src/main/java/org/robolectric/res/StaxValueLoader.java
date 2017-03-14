@@ -3,20 +3,15 @@ package org.robolectric.res;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import static org.robolectric.res.StaxLoader.addInnerHandler;
-
 public class StaxValueLoader extends StaxLoader {
   private final StringBuilder buf = new StringBuilder();
   protected String name;
 
-  public StaxValueLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType resType) {
-    super(resourceTable, xpathExpr, attrType, resType);
-  }
+  public StaxValueLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
+    super(resourceTable, attrType, resType);
 
-  @Override
-  protected void addInnerHandlers(StaxDocumentLoader.NodeHandler nodeHandler) {
     if (resType == ResType.CHAR_SEQUENCE) {
-      addInnerHandler(nodeHandler, buf);
+      addHandler("*", new TextCollectingNodeHandler(buf));
     }
   }
 

@@ -7,31 +7,19 @@ import java.util.List;
 
 public class StaxPluralsLoader extends StaxLoader {
   protected String name;
-  final StringBuilder buf;
-  List<Plural> plurals;
-  String quantity;
+  private String quantity;
+  private final List<Plural> plurals = new ArrayList<>();
 
-  public StaxPluralsLoader(PackageResourceTable resourceTable, String xpathExpr, String attrType, ResType charSequence) {
-    super(resourceTable, xpathExpr, attrType, charSequence);
-    buf = new StringBuilder();
-  }
+  public StaxPluralsLoader(PackageResourceTable resourceTable, String attrType, ResType charSequence) {
+    super(resourceTable, attrType, charSequence);
 
-  @Override
-  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-    name = xml.getAttributeValue(null, "name");
-    plurals = new ArrayList<>();
-  }
+    addHandler("item", new NodeHandler() {
+      private final StringBuilder buf = new StringBuilder();
 
-  @Override
-  protected void addInnerHandlers(final StaxDocumentLoader.NodeHandler nodeHandler) {
-    final StaxDocumentLoader.NodeHandler itemNodeHandler = nodeHandler.findMatchFor("item", null);
-    itemNodeHandler.addListener(new StaxDocumentLoader.NodeListener() {
       @Override
       public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
         quantity = xml.getAttributeValue(null, "quantity");
         buf.setLength(0);
-
-        addInnerHandler(itemNodeHandler, buf);
       }
 
       @Override
@@ -43,11 +31,22 @@ public class StaxPluralsLoader extends StaxLoader {
       public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
         plurals.add(new Plural(quantity, buf.toString()));
       }
+
+      @Override
+      NodeHandler findMatchFor(XMLStreamReader xml) {
+        return new TextCollectingNodeHandler(buf);
+      }
     });
   }
 
   @Override
+  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+    name = xml.getAttributeValue(null, "name");
+  }
+
+  @Override
   public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-    resourceTable.addResource(attrType, name, new PluralRules(plurals, resType, xmlContext));
+    resourceTable.addResource(attrType, name, new PluralRules(new ArrayList<>(plurals), resType, xmlContext));
+    plurals.clear();
   }
 }
