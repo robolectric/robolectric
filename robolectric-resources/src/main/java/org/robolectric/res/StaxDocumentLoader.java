@@ -1,8 +1,5 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -14,27 +11,15 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class StaxDocumentLoader {
-  private static final FsFile.Filter ENDS_WITH_XML = new FsFile.Filter() {
-    @Override public boolean accept(@NotNull FsFile fsFile) {
-      return fsFile.getName().endsWith(".xml");
-    }
-  };
+public class StaxDocumentLoader extends DocumentLoader {
   private static final NodeHandler NO_OP_HANDLER = new NodeHandler();
 
-  private final String packageName;
-  private final ResourcePath resourcePath;
-  private final StaxLoader[] staxLoaders;
   private final NodeHandler topLevelNodeHandler;
   private final XMLInputFactory factory;
 
-  public StaxDocumentLoader(String packageName, ResourcePath resourcePath, StaxLoader... staxLoaders) {
-    this.packageName = packageName;
-    this.resourcePath = resourcePath;
-    this.staxLoaders = staxLoaders;
+  public StaxDocumentLoader(String packageName, FsFile resourceBase, StaxLoader... staxLoaders) {
+    super(packageName, resourceBase);
 
     topLevelNodeHandler = new NodeHandler();
     for (StaxLoader staxLoader : staxLoaders) {
@@ -44,27 +29,7 @@ public class StaxDocumentLoader {
     factory = XMLInputFactory.newFactory();
   }
 
-  public void load(String folderBaseName) {
-    FsFile resourceBase = resourcePath.getResourceBase();
-    FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
-    if (files == null) {
-      throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
-    }
-    for (FsFile dir : files) {
-      loadFile(dir);
-    }
-  }
-
-  private void loadFile(FsFile dir) {
-    if (!dir.exists()) {
-      throw new RuntimeException("no such directory " + dir);
-    }
-
-    for (FsFile file : dir.listFiles(ENDS_WITH_XML)) {
-      loadResourceXmlFile(new XmlContext(packageName, file));
-    }
-  }
-
+  @Override
   protected void loadResourceXmlFile(XmlContext xmlContext) {
     FsFile xmlFile = xmlContext.getXmlFile();
 

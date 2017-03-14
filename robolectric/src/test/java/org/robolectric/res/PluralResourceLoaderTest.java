@@ -17,7 +17,7 @@ public class PluralResourceLoaderTest {
     StaxPluralsLoader pluralsLoader = new StaxPluralsLoader(resourceTable,
         "/resources/plurals", "plurals", ResType.CHAR_SEQUENCE);
 
-    new StaxDocumentLoader(R.class.getPackage().getName(), testResources(), pluralsLoader).load("values");
+    new StaxDocumentLoader(R.class.getPackage().getName(), testResources().getResourceBase(), pluralsLoader).load("values");
   }
 
   @Test

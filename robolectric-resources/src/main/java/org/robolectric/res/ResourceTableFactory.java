@@ -108,7 +108,7 @@ public class ResourceTableFactory {
     Logger.debug("Loading resources for %s from %s...", resourceTable.getPackageName(), resourcePath.getResourceBase());
 
     try {
-      new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath,
+      new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase(),
           new StaxValueLoader(resourceTable, "/resources/bool", "bool", ResType.BOOLEAN),
           new StaxValueLoader(resourceTable, "/resources/item[@type='bool']", "bool", ResType.BOOLEAN),
           new StaxValueLoader(resourceTable, "/resources/color", "color", ResType.COLOR),
@@ -153,7 +153,7 @@ public class ResourceTableFactory {
   }
 
   private void loadOpaque(ResourcePath resourcePath, final PackageResourceTable resourceTable, final String type, final ResType resType) {
-    new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath) {
+    new DocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase()) {
       @Override
       protected void loadResourceXmlFile(XmlContext xmlContext) {
         resourceTable.addResource(type, xmlContext.getXmlFile().getBaseName(),
