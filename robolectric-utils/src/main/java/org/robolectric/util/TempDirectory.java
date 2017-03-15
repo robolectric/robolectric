@@ -15,11 +15,11 @@ import java.util.Set;
 public class TempDirectory {
   private static final TempDirectory instance = new TempDirectory();
 
-  private final Queue<Path> paths;
+  private final Queue<Path> reusableDirs;
   private final Set<String> deletePaths;
 
   TempDirectory() {
-    paths = new ArrayDeque<>();
+    reusableDirs = new ArrayDeque<>();
     deletePaths = new LinkedHashSet<>();
 
     // Use a manual hook that actually clears the directory
@@ -38,9 +38,13 @@ public class TempDirectory {
   }
 
   public static Path create() {
-    return instance.createImpl(false);
+    return instance.createImpl(true);
   }
 
+  /**
+   * @deprecated Use {@link #create()} instead.
+   */
+  @Deprecated
   public static Path createDeleteOnExit() {
     return instance.createImpl(true);
   }
@@ -52,11 +56,11 @@ public class TempDirectory {
   }
 
   Path createImpl(boolean deleteOnExit) {
-    Path empty = paths.poll();
+    Path empty = reusableDirs.poll();
     if (empty != null && Files.exists(empty)) return empty;
 
     try {
-      Path directory = createTempDir("android-tmp");
+      Path directory = createTempDir("robolectric");
       if (deleteOnExit) deleteOnExit(directory);
       return directory;
     } catch (IOException e) {
@@ -69,7 +73,7 @@ public class TempDirectory {
 
     try {
       clearDirectory(path);
-      paths.add(path);
+      reusableDirs.add(path);
     } catch (IOException ignored) {
       // We failed to clear the directory, just try again at exit
     }
@@ -100,6 +104,6 @@ public class TempDirectory {
   }
 
   private Path createTempDir(String name) throws IOException {
-    return Files.createTempDirectory(name + "-robolectric");
+    return Files.createTempDirectory(name);
   }
 }
