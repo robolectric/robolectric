@@ -10,7 +10,7 @@ public class StaxPluralsLoader extends StaxLoader {
   private String quantity;
   private final List<Plural> plurals = new ArrayList<>();
 
-  public StaxPluralsLoader(PackageResourceTable resourceTable, String attrType, ResType charSequence) {
+  public StaxPluralsLoader(InMemoryPackageResourceTable resourceTable, String attrType, ResType charSequence) {
     super(resourceTable, attrType, charSequence);
 
     addHandler("item", new NodeHandler() {

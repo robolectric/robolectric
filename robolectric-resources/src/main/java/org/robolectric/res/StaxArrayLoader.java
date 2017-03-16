@@ -10,7 +10,7 @@ public class StaxArrayLoader extends StaxLoader {
   private List<TypedResource> items;
   private final StringBuilder buf = new StringBuilder();
 
-  public StaxArrayLoader(PackageResourceTable resourceTable, String attrType, ResType arrayResType, final ResType scalarResType) {
+  public StaxArrayLoader(InMemoryPackageResourceTable resourceTable, String attrType, ResType arrayResType, final ResType scalarResType) {
     super(resourceTable, attrType, arrayResType);
 
     addHandler("item", new NodeHandler() {

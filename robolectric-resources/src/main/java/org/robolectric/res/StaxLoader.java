@@ -5,11 +5,11 @@ import javax.xml.stream.XMLStreamReader;
 
 public abstract class StaxLoader extends NodeHandler {
 
-  protected final PackageResourceTable resourceTable;
+  protected final InMemoryPackageResourceTable resourceTable;
   protected final String attrType;
   protected final ResType resType;
 
-  public StaxLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
+  public StaxLoader(InMemoryPackageResourceTable resourceTable, String attrType, ResType resType) {
     this.resourceTable = resourceTable;
     this.attrType = attrType;
     this.resType = resType;

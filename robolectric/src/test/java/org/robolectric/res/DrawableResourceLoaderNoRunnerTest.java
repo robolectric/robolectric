@@ -31,7 +31,7 @@ public class DrawableResourceLoaderNoRunnerTest {
       + JAR_SEPARATOR + DRAWABLE_DIR;
 
   private String originalSeparator;
-  private PackageResourceTable resourceTable;
+  private InMemoryPackageResourceTable resourceTable;
 
   @Before
   public void setUp() {

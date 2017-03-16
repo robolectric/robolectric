@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
+import java.util.Collection;
 
 public interface ResourceTable {
 
@@ -24,6 +25,6 @@ public interface ResourceTable {
   void receive(Visitor visitor);
 
   interface Visitor {
-    void visit(ResName key, Iterable<TypedResource> values);
+    void visit(ResName key, Collection<TypedResource> values);
   }
 }

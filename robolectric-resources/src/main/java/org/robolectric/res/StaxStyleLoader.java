@@ -10,7 +10,7 @@ public class StaxStyleLoader extends StaxLoader {
   private String parent;
   private List<AttributeResource> attributeResources;
 
-  public StaxStyleLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
+  public StaxStyleLoader(InMemoryPackageResourceTable resourceTable, String attrType, ResType resType) {
     super(resourceTable, attrType, resType);
 
     addHandler("item", new NodeHandler() {

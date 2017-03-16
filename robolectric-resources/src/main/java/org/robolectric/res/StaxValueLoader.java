@@ -7,7 +7,7 @@ public class StaxValueLoader extends StaxLoader {
   private final StringBuilder buf = new StringBuilder();
   protected String name;
 
-  public StaxValueLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
+  public StaxValueLoader(InMemoryPackageResourceTable resourceTable, String attrType, ResType resType) {
     super(resourceTable, attrType, resType);
 
     if (resType == ResType.CHAR_SEQUENCE) {

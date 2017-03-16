@@ -13,13 +13,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class StaxValueLoaderTest {
 
-  private PackageResourceTable resourceTable;
+  private InMemoryPackageResourceTable resourceTable;
   private NodeHandler topLevelNodeHandler;
   private StaxDocumentLoader staxDocumentLoader;
 
   @Before
   public void setUp() throws Exception {
-    resourceTable = new PackageResourceTable("pkg");
+    resourceTable = new InMemoryPackageResourceTable("pkg");
 
     topLevelNodeHandler = new NodeHandler();
     staxDocumentLoader = new StaxDocumentLoader("pkg", null, topLevelNodeHandler);

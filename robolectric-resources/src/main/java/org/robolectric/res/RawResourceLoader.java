@@ -7,12 +7,12 @@ public class RawResourceLoader {
     this.resourcePath = resourcePath;
   }
 
-  public void loadTo(PackageResourceTable resourceTable) {
+  public void loadTo(InMemoryPackageResourceTable resourceTable) {
     load(resourceTable, "raw");
     load(resourceTable, "drawable");
   }
 
-  public void load(PackageResourceTable resourceTable, String folderBaseName) {
+  public void load(InMemoryPackageResourceTable resourceTable, String folderBaseName) {
     FsFile resourceBase = resourcePath.getResourceBase();
     FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
     if (files == null) {
@@ -23,7 +23,7 @@ public class RawResourceLoader {
     }
   }
 
-  private void loadRawFiles(PackageResourceTable resourceTable, String resourceType, FsFile rawDir) {
+  private void loadRawFiles(InMemoryPackageResourceTable resourceTable, String resourceType, FsFile rawDir) {
     FsFile[] files = rawDir.listFiles();
     if (files != null) {
       for (FsFile file : files) {

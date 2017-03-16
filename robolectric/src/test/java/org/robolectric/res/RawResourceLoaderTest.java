@@ -13,7 +13,7 @@ import static org.robolectric.util.TestUtil.testResources;
 @RunWith(JUnit4.class)
 public class RawResourceLoaderTest {
 
-  private PackageResourceTable resourceTable;
+  private InMemoryPackageResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {

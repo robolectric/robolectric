@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class ResourceParserTest {
     final HashMap<String, List<TypedResource>> map = new HashMap<>();
     resourceTable.receive(new ResourceTable.Visitor() {
       @Override
-      public void visit(ResName key, Iterable<TypedResource> values) {
+      public void visit(ResName key, Collection<TypedResource> values) {
         List<TypedResource> v = new ArrayList<>();
         for (TypedResource value : values) {
           v.add(value);

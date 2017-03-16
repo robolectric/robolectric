@@ -4,13 +4,13 @@ package org.robolectric.res;
  * DrawableResourceLoader
  */
 public class DrawableResourceLoader {
-  private final PackageResourceTable resourceTable;
+  private final InMemoryPackageResourceTable resourceTable;
 
   public static boolean isStillHandledHere(String type) {
     return "drawable".equals(type) || "anim".equals(type) || "mipmap".equals(type);
   }
 
-  DrawableResourceLoader(PackageResourceTable resourceTable) {
+  DrawableResourceLoader(InMemoryPackageResourceTable resourceTable) {
     this.resourceTable = resourceTable;
   }
 

@@ -10,7 +10,7 @@ public class StaxAttrLoader extends StaxLoader {
   private String format;
   private final List<AttrData.Pair> pairs = new ArrayList<>();
 
-  public StaxAttrLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
+  public StaxAttrLoader(InMemoryPackageResourceTable resourceTable, String attrType, ResType resType) {
     super(resourceTable, attrType, resType);
 
     addHandler("*", new NodeHandler() {

@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.testResources;
 
 public class StaxPluralsLoaderTest {
-  private PackageResourceTable resourceTable;
+  private InMemoryPackageResourceTable resourceTable;
 
   @Before
   public void setUp() throws Exception {

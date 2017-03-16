@@ -2,51 +2,98 @@ package org.robolectric.res;
 
 import org.robolectric.util.Logger;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class ResourceTableFactory {
   /**
    * Builds an Android framework resource table in the "android" package space.
    */
-  public PackageResourceTable newFrameworkResourceTable(ResourcePath resourcePath) {
-    PackageResourceTable resourceTable = new PackageResourceTable("android");
+  public PackageResourceTable newFrameworkResourceTable(final ResourcePath resourcePath) {
+    return cache("android", new ResourcePath[] {resourcePath}, new Builder() {
+      @Override
+      public PackageResourceTable build() {
+        InMemoryPackageResourceTable resourceTable = new InMemoryPackageResourceTable("android");
 
-    if (resourcePath.getRClass() != null) {
-      addRClassValues(resourceTable, resourcePath.getRClass());
-      addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
-    }
-    if (resourcePath.getInternalRClass() != null) {
-      addRClassValues(resourceTable, resourcePath.getInternalRClass());
-      addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
-    }
+        if (resourcePath.getRClass() != null) {
+          addRClassValues(resourceTable, resourcePath.getRClass());
+          addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
+        }
+        if (resourcePath.getInternalRClass() != null) {
+          addRClassValues(resourceTable, resourcePath.getInternalRClass());
+          addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
+        }
 
-    parseResourceFiles(resourcePath, resourceTable);
-
-    return resourceTable;
+        parseResourceFiles(resourcePath, resourceTable);
+        return resourceTable;
+      }
+    });
   }
 
   /**
    * Creates an application resource table which can be constructed with multiple resources paths representing
    * overlayed resource libraries.
    */
-  public PackageResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
-    PackageResourceTable resourceTable = new PackageResourceTable(packageName);
+  public PackageResourceTable newResourceTable(final String packageName, final ResourcePath... resourcePaths) {
+    return cache(packageName, resourcePaths, new Builder() {
+      @Override
+      public PackageResourceTable build() {
+        InMemoryPackageResourceTable resourceTable = new InMemoryPackageResourceTable(packageName);
 
-    for (ResourcePath resourcePath : resourcePaths) {
-      if (resourcePath.getRClass() != null) {
-        addRClassValues(resourceTable, resourcePath.getRClass());
+        for (ResourcePath resourcePath : resourcePaths) {
+          if (resourcePath.getRClass() != null) {
+            addRClassValues(resourceTable, resourcePath.getRClass());
+          }
+        }
+
+        for (ResourcePath resourcePath : resourcePaths) {
+          parseResourceFiles(resourcePath, resourceTable);
+        }
+
+        return resourceTable;
       }
-    }
-
-    for (ResourcePath resourcePath : resourcePaths) {
-      parseResourceFiles(resourcePath, resourceTable);
-    }
-
-    return resourceTable;
+    });
   }
 
-  private void addRClassValues(PackageResourceTable resourceTable, Class<?> rClass) {
+  private PackageResourceTable cache(String packageName, ResourcePath[] resourcePaths, Builder builder) {
+    Path cacheDirPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".robolectric", "cache", "resource-tables");
+    Path resCachePath = cacheDirPath.resolve(packageName + "-" + hash(resourcePaths) + ".res");
+    ResStore resStore = new ResStore();
+    try {
+      if (Files.exists(resCachePath)) {
+        return resStore.load(resCachePath);
+      } else {
+        PackageResourceTable packageResourceTable = builder.build();
+        Files.createDirectories(resCachePath.getParent());
+        resStore.save(packageResourceTable, resCachePath);
+        return packageResourceTable;
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String hash(ResourcePath[] resourcePaths) {
+    int hash = 7;
+    for (ResourcePath resourcePath : resourcePaths) {
+      String path = resourcePath.getResourceBase().getPath();
+      int length = path.length();
+      for (int i = 0; i < length; i++) {
+        hash = hash * 31 + path.charAt(i);
+      }
+    }
+    return Integer.toHexString(hash);
+  }
+
+  interface Builder {
+    PackageResourceTable build();
+  }
+
+  private void addRClassValues(InMemoryPackageResourceTable resourceTable, Class<?> rClass) {
     for (Class innerClass : rClass.getClasses()) {
       String resourceType = innerClass.getSimpleName();
       if (!resourceType.equals("styleable")) {
@@ -71,7 +118,7 @@ public class ResourceTableFactory {
    * Check the stylable elements. Not for aapt generated R files but for framework R files it is possible to
    * have attributes in the styleable array for which there is no corresponding R.attr field.
    */
-  private void addMissingStyleableAttributes(PackageResourceTable resourceTable, Class<?> rClass) {
+  private void addMissingStyleableAttributes(InMemoryPackageResourceTable resourceTable, Class<?> rClass) {
     for (Class innerClass : rClass.getClasses()) {
       if (innerClass.getSimpleName().equals("styleable")) {
         String styleableName = null; // Current styleable name
@@ -99,7 +146,7 @@ public class ResourceTableFactory {
     }
   }
 
-  private void parseResourceFiles(ResourcePath resourcePath, PackageResourceTable resourceTable) {
+  private void parseResourceFiles(ResourcePath resourcePath, InMemoryPackageResourceTable resourceTable) {
     if (!resourcePath.hasResources()) {
       Logger.debug("No resources for %s", resourceTable.getPackageName());
       return;
@@ -156,7 +203,7 @@ public class ResourceTableFactory {
     }
   }
 
-  private void loadOpaque(ResourcePath resourcePath, final PackageResourceTable resourceTable, final String type, final ResType resType) {
+  private void loadOpaque(ResourcePath resourcePath, final InMemoryPackageResourceTable resourceTable, final String type, final ResType resType) {
     new DocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase()) {
       @Override
       protected void loadResourceXmlFile(XmlContext xmlContext) {

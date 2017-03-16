@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(JUnit4.class)
 public class ResourceTableTest {
 
-  private PackageResourceTable resourceTable;
+  private InMemoryPackageResourceTable resourceTable;
 
   @Before
   public void setUp() {
