@@ -29,7 +29,7 @@ public class RawResourceLoader {
       for (FsFile file : files) {
         String fileBaseName = file.getBaseName();
         resourceTable.addResource(resourceType, fileBaseName,
-            new FileTypedResource(file, ResType.FILE, new XmlContext(resourceTable.getPackageName(), file)));
+            new TypedResource(file, ResType.FILE, new XmlContext(resourceTable.getPackageName(), file)));
       }
     }
   }

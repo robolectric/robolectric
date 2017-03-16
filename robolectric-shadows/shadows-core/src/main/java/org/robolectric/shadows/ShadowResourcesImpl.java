@@ -92,8 +92,8 @@ public class ShadowResourcesImpl {
     ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
 
     TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
-    if (typedResource != null && typedResource instanceof PluralRules) {
-      PluralRules pluralRules = (PluralRules) typedResource;
+    if (typedResource != null) {
+      PluralRules pluralRules = new PluralRules((List<Plural>) typedResource.getData());
       Plural plural = pluralRules.find(quantity);
 
       if (plural == null) {
@@ -101,7 +101,8 @@ public class ShadowResourcesImpl {
       }
 
       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()), RuntimeEnvironment.getQualifiers(), resId);
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, typedResource.getXmlContext()),
+          RuntimeEnvironment.getQualifiers(), resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
       return null;

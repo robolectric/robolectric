@@ -20,7 +20,6 @@ import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.EmptyStyle;
-import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResName;
@@ -262,9 +261,7 @@ public final class ShadowAssetManager {
   }
 
   private Converter getConverter(TypedResource value) {
-    if (value instanceof FileTypedResource.Image
-        || (value instanceof FileTypedResource
-            && ((FileTypedResource) value).getFsFile().getName().endsWith(".xml"))) {
+    if (value.isFile()) {
       return new Converter.FromFilePath();
     }
     return Converter.getConverter(value.getResType());
@@ -343,8 +340,7 @@ public final class ShadowAssetManager {
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
 
-    final FileTypedResource typedResource =
-        (FileTypedResource) resourceTable.getValue(resName, RuntimeEnvironment.getQualifiers());
+    TypedResource typedResource = resourceTable.getValue(resName, RuntimeEnvironment.getQualifiers());
 
     if (typedResource == null) {
       throw new IOException("Unable to find resource for " + fileName);

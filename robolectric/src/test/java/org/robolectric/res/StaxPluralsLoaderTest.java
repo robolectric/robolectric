@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.robolectric.R;
 import org.robolectric.util.TestUtil;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -26,7 +28,8 @@ public class StaxPluralsLoaderTest {
   @Test
   public void testPluralsAreResolved() throws Exception {
     ResName resName = new ResName(TestUtil.TEST_PACKAGE, "plurals", "beer");
-    PluralRules pluralRules = (PluralRules) resourceTable.getValue(resName, "");
+    TypedResource typedResource = resourceTable.getValue(resName, "");
+    PluralRules pluralRules = new PluralRules((List<Plural>) typedResource.getData());
     assertThat(pluralRules.find(0).string).isEqualTo("@string/howdy");
     assertThat(pluralRules.find(1).string).isEqualTo("One beer");
     assertThat(pluralRules.find(2).string).isEqualTo("Two beers");

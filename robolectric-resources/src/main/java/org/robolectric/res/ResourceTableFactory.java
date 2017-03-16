@@ -161,7 +161,7 @@ public class ResourceTableFactory {
       @Override
       protected void loadResourceXmlFile(XmlContext xmlContext) {
         resourceTable.addResource(type, xmlContext.getXmlFile().getBaseName(),
-            new FileTypedResource(xmlContext.getXmlFile(), resType, xmlContext));
+            new TypedResource(xmlContext.getXmlFile(), resType, xmlContext));
       }
     }.load(type);
   }

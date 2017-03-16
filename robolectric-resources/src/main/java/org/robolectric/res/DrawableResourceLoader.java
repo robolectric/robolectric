@@ -40,21 +40,18 @@ public class DrawableResourceLoader {
         if (name.startsWith(".")) continue;
 
         String shortName;
-        boolean isNinePatch;
         if (name.endsWith(".xml")) {
           // already handled, do nothing...
           continue;
         } else if (name.endsWith(".9.png")) {
           String[] tokens = name.split("\\.9\\.png$");
           shortName = tokens[0];
-          isNinePatch = true;
         } else {
           shortName = f.getBaseName();
-          isNinePatch = false;
         }
 
         XmlContext fakeXmlContext = new XmlContext(resourceTable.getPackageName(), f);
-        resourceTable.addResource(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
+        resourceTable.addResource(type, shortName, new TypedResource(f, ResType.DRAWABLE, fakeXmlContext));
       }
     }
   }

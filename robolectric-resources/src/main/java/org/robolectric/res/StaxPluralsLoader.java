@@ -46,7 +46,7 @@ public class StaxPluralsLoader extends StaxLoader {
 
   @Override
   public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-    resourceTable.addResource(attrType, name, new PluralRules(new ArrayList<>(plurals), resType, xmlContext));
+    resourceTable.addResource(attrType, name, new TypedResource(new ArrayList<>(plurals), resType, xmlContext));
     plurals.clear();
   }
 }

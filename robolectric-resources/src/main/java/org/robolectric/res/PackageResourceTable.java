@@ -7,10 +7,6 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
@@ -59,7 +55,7 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   public XmlBlock getXml(ResName resName, String qualifiers) {
-    FileTypedResource typedResource = (FileTypedResource) resources.get(resName, qualifiers);
+    TypedResource typedResource = resources.get(resName, qualifiers);
     if (typedResource == null || !typedResource.isXml()) {
       return null;
     } else {
@@ -68,7 +64,7 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   public InputStream getRawValue(ResName resName, String qualifiers) {
-    FileTypedResource typedResource = (FileTypedResource) resources.get(resName, qualifiers);
+    TypedResource typedResource = resources.get(resName, qualifiers);
     FsFile file = typedResource == null ? null : typedResource.getFsFile();
     try {
       return file == null ? null : file.getInputStream();
