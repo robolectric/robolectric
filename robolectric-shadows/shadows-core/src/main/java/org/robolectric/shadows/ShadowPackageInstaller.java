@@ -58,6 +58,7 @@ public class ShadowPackageInstaller {
   public int createSession(@NonNull PackageInstaller.SessionParams params) throws IOException {
     final PackageInstaller.SessionInfo sessionInfo = new PackageInstaller.SessionInfo();
     sessionInfo.sessionId = nextSessionId++;
+    sessionInfo.active = true;
     sessionInfo.appPackageName = params.appPackageName;
     sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
 
@@ -164,6 +165,11 @@ public class ShadowPackageInstaller {
       if (outputStreamOpen) {
         throw new SecurityException("OutputStream still open");
       }
+    }
+
+    @Implementation
+    public void close() {
+
     }
   }
 }

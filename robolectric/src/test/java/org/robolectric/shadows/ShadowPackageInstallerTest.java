@@ -77,6 +77,7 @@ public class ShadowPackageInstallerTest {
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
 
     PackageInstaller.SessionInfo sessionInfo = packageInstaller.getSessionInfo(sessionId);
+    assertThat(sessionInfo.isActive()).isTrue();
 
     assertThat(sessionInfo.appPackageName).isEqualTo("packageName");
 

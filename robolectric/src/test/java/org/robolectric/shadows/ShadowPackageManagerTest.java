@@ -1078,4 +1078,14 @@ public class ShadowPackageManagerTest {
         RuntimeEnvironment.application.getApplicationInfo());
     assertThat(in).isNotNull();
   }
+
+  @Test
+  public void addPackageShouldNotCreateSessions() {
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "test.package";
+    shadowPackageManager.addPackage(packageInfo);
+
+    assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
+  }
 }
