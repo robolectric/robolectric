@@ -7,6 +7,9 @@ import org.junit.Test;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,8 +32,8 @@ public class ResourceParserTest {
   @Before
   public void setUp() {
     ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
-    resourceTable = resourceTableFactory.newResourceTable("org.robolectric", testResources());
-    gradleResourceTable = resourceTableFactory.newResourceTable("org.robolectric.gradleapp", gradleAppResources());
+//    resourceTable = resourceTableFactory.newResourceTable("org.robolectric", testResources());
+//    gradleResourceTable = resourceTableFactory.newResourceTable("org.robolectric.gradleapp", gradleAppResources());
   }
 
   @Test
@@ -38,6 +41,27 @@ public class ResourceParserTest {
     PackageResourceTable staxResources = new ResourceTableFactory()
         .newResourceTable("org.robolectric", testResources());
     assertThat(stringify(staxResources)).isEqualTo(stringify(resourceTable));
+  }
+
+  @Test
+  public void serialization() throws Exception {
+    final ResourcePath sdkRes = sdkResources(N_MR1);
+    Path resCachePath = FileSystems.getDefault().getPath("/tmp/android-sdk.bin");
+
+    if (Files.exists(resCachePath)) {
+      Files.delete(resCachePath);
+    }
+
+    PackageResourceTable origResourceTable;
+    origResourceTable = new ResourceTableFactory().newResourceTable("android", sdkRes);
+
+    ResStore resStore = new ResStore();
+    resStore.save(origResourceTable, resCachePath);
+    assertThat(resCachePath).exists();
+
+    ResourceTable loadedResourceTable = resStore.load(resCachePath);
+    assertThat(loadedResourceTable.getValue(new ResName("package:strings/a_string"), "").getData())
+        .isEqualTo("value");
   }
 
   @Test @Ignore

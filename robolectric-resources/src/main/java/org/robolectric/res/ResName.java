@@ -3,10 +3,11 @@ package org.robolectric.res;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ResName {
+public class ResName implements Serializable {
   public static final String ID_TYPE = "id";
 
   private static final Pattern FQN_PATTERN = Pattern.compile("^([^:]*):([^/]+)/(.+)$");

@@ -2,6 +2,7 @@ package org.robolectric.res;
 
 import org.robolectric.util.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -65,11 +66,13 @@ public class ResourceTableFactory {
     ResStore resStore = new ResStore();
     try {
       if (Files.exists(resCachePath)) {
+        System.out.println("Read " + packageName + " resources from " + resCachePath + " -- " + (Files.size(resCachePath) / 1024 / 1024) + "mb");
         return resStore.load(resCachePath);
       } else {
         PackageResourceTable packageResourceTable = builder.build();
         Files.createDirectories(resCachePath.getParent());
         resStore.save(packageResourceTable, resCachePath);
+        System.out.println("Wrote " + packageName + " resources to " + resCachePath + " -- " + (Files.size(resCachePath) / 1024 / 1024) + "mb");
         return packageResourceTable;
       }
     } catch (IOException e) {
@@ -78,15 +81,22 @@ public class ResourceTableFactory {
   }
 
   private String hash(ResourcePath[] resourcePaths) {
-    int hash = 7;
+    long hash = 7;
     for (ResourcePath resourcePath : resourcePaths) {
-      String path = resourcePath.getResourceBase().getPath();
+      FsFile resourceBase = resourcePath.getResourceBase();
+      String path = resourceBase == null ? "" : resourceBase.getPath();
+
+      File file = new File(path);
+      if (!file.isAbsolute()) {
+        path = file.getAbsolutePath();
+      }
+
       int length = path.length();
       for (int i = 0; i < length; i++) {
         hash = hash * 31 + path.charAt(i);
       }
     }
-    return Integer.toHexString(hash);
+    return Long.toHexString(hash);
   }
 
   interface Builder {

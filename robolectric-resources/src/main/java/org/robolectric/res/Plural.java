@@ -1,6 +1,8 @@
 package org.robolectric.res;
 
-public class Plural {
+import java.io.Serializable;
+
+public class Plural implements Serializable {
   final String quantity, string;
   final int num;
 

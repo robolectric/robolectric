@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Display;
@@ -121,8 +122,9 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
 
     if (labelRef != null) {
       if (labelRef.startsWith("@")) {
+        Resources resources = RuntimeEnvironment.application.getResources();
         /* Label refers to a string value, get the resource identifier */
-        int labelRes = RuntimeEnvironment.application.getResources().getIdentifier(labelRef.replace("@", ""), "string", appManifest.getPackageName());
+        int labelRes = resources.getIdentifier(labelRef.replace("@", ""), "string", appManifest.getPackageName());
         /* Get the resource ID, use the activity to look up the actual string */
         title = RuntimeEnvironment.application.getString(labelRes);
       } else {

@@ -27,6 +27,12 @@ public class Qualifiers {
   // Set of all the qualifiers which need exact matching.
   private final List<String> mDefaults = new ArrayList<>();
 
+  private final String str;
+
+  public Qualifiers(String str) {
+    this.str = str;
+  }
+
   public boolean matches(Qualifiers other) {
     if (!passesRequirements(other)) {
       return false;
@@ -74,7 +80,7 @@ public class Qualifiers {
         return result;
       }
       StringTokenizer st = new StringTokenizer(qualifiersStr, "-");
-      result = new Qualifiers();
+      result = new Qualifiers(qualifiersStr);
       // Version qualifiers are also allowed to match when only one of the qualifiers
       // defines a version restriction.
       result.mWeights[ORDER_VERSION] = -1;
@@ -178,5 +184,9 @@ public class Qualifiers {
       qualifiers += "w" + screenWidth + "dp";
     }
     return qualifiers;
+  }
+
+  public String getStr() {
+    return str;
   }
 }

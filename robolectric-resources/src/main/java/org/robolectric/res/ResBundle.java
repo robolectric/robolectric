@@ -28,47 +28,16 @@ public class ResBundle {
 
       TreeSet<TypedResource> typedResources = new TreeSet<>(new QualifierSort());
       typedResources.addAll(values.values());
-
-      // This should really follow the android algorithm specified at:
-      // http://developer.android.com/guide/topics/resources/providing-resources.html#BestMatch
-      //
-      // 1: eliminate resources that contradict the qualifiersStr
-      // 2: pick the (next) highest-precedence qualifier type in "table 2" of the reference above
-      // 3: check if any resource values use this qualifier, if no, back to 2, else move on to 4.
-      // 4: eliminate resources values that don't use this qualifier.
-      // 5: if more than one resource is left, go back to 2.
-      //
-      // However, we currently only model the smallest/available width/height and version qualifiers
-      // rather than all of the possibly qualifier classes in table 2.
-
-      Qualifiers toMatch = Qualifiers.parse(qualifiersStr);
-
-      List<TypedResource> passesRequirements = new ArrayList<>();
-      for (TypedResource candidate : typedResources) {
-        Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
-        if (qualifiers.passesRequirements(toMatch)) {
-          passesRequirements.add(candidate);
-        }
+      Map<String, TypedResource> byQual = new HashMap<>();
+      List<String> quals = new ArrayList<>(values.size());
+      for (TypedResource typedResource : typedResources) {
+        quals.add(typedResource.getQualifiers());
+        byQual.put(typedResource.getQualifiers(), typedResource);
       }
 
-      Qualifiers bestMatchQualifiers = null;
-      TypedResource bestMatch = null;
-      for (TypedResource candidate : passesRequirements) {
-        Qualifiers qualifiers = Qualifiers.parse(candidate.getQualifiers());
-        if (qualifiers.matches(toMatch)) {
-          if (bestMatchQualifiers == null || qualifiers.isBetterThan(bestMatchQualifiers, toMatch)) {
-            bestMatchQualifiers = qualifiers;
-            bestMatch =  candidate;
-          }
-        }
-      }
-      if (bestMatch != null) {
-        return bestMatch;
-      }
-      if (!passesRequirements.isEmpty()) {
-        return passesRequirements.get(0);
-      }
-      return null;
+      String q = pickBestMatchingQualifier(qualifiersStr, quals);
+      if (q == null) return null;
+      return byQual.get(q);
     }
 
     public void put(ResName resName, TypedResource value) {
@@ -89,5 +58,45 @@ public class ResBundle {
         return o1.getQualifiers().compareTo(o2.getQualifiers());
       }
     }
+  }
+
+  public static String pickBestMatchingQualifier(String qualifiersStr, List<String> quals) {
+    // This should really follow the android algorithm specified at:
+    // http://developer.android.com/guide/topics/resources/providing-resources.html#BestMatch
+    //
+    // 1: eliminate resources that contradict the qualifiersStr
+    // 2: pick the (next) highest-precedence qualifier type in "table 2" of the reference above
+    // 3: check if any resource values use this qualifier, if no, back to 2, else move on to 4.
+    // 4: eliminate resources values that don't use this qualifier.
+    // 5: if more than one resource is left, go back to 2.
+    //
+    // However, we currently only model the smallest/available width/height and version qualifiers
+    // rather than all of the possibly qualifier classes in table 2.
+
+    Qualifiers toMatch = Qualifiers.parse(qualifiersStr);
+
+    List<Qualifiers> passesRequirements = new ArrayList<>();
+    for (String q : quals) {
+      Qualifiers qualifiers = Qualifiers.parse(q);
+      if (qualifiers.passesRequirements(toMatch)) {
+        passesRequirements.add(qualifiers);
+      }
+    }
+
+    Qualifiers bestMatchQualifiers = null;
+    for (Qualifiers qualifiers : passesRequirements) {
+      if (qualifiers.matches(toMatch)) {
+        if (bestMatchQualifiers == null || qualifiers.isBetterThan(bestMatchQualifiers, toMatch)) {
+          bestMatchQualifiers = qualifiers;
+        }
+      }
+    }
+    if (bestMatchQualifiers != null) {
+      return bestMatchQualifiers.getStr();
+    }
+    if (!passesRequirements.isEmpty()) {
+      return passesRequirements.get(0).getStr();
+    }
+    return null;
   }
 }

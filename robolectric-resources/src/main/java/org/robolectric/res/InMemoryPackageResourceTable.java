@@ -7,6 +7,7 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
@@ -101,6 +102,10 @@ public class InMemoryPackageResourceTable implements PackageResourceTable {
       if (existingEntry != null && !existingEntry.equals(resName)) {
         throw new IllegalArgumentException("ResId " + Integer.toHexString(resId) + " mapped to both " + resName + " and " + existingEntry);
       }
+
+//      if (resources.get(resName, "") == null) {
+//        resources.put(resName, new TypedResource(null, ResType.NULL, new XmlContext(packageName, Fs.fileFromPath("")), false));
+//      }
   }
 
   void addResource(String type, String name, TypedResource value) {
