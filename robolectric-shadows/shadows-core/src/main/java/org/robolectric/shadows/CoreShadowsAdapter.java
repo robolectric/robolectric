@@ -2,13 +2,12 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.res.Configuration;
 import android.os.Looper;
 
 import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import static org.robolectric.Shadows.shadowOf;
 

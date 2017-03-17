@@ -15,7 +15,7 @@ import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;

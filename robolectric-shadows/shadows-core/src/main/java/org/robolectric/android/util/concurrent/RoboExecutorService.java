@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 /**
  * Executor service that runs all operations on the background scheduler.

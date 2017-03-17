@@ -28,7 +28,7 @@ import android.os.Looper;
 import android.view.Window;
 import android.widget.LinearLayout;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 import org.robolectric.util.TestRunnable;
 
 import java.util.ArrayList;

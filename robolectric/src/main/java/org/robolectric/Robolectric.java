@@ -9,6 +9,7 @@ import android.content.Intent;
 
 import android.util.AttributeSet;
 import android.view.View;
+import org.robolectric.android.Scheduler;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ContentProviderController;
 import org.robolectric.android.controller.FragmentController;

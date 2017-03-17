@@ -25,7 +25,7 @@ import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import java.lang.reflect.Method;
 import java.security.Security;

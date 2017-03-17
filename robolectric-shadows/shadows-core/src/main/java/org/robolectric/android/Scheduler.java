@@ -1,4 +1,7 @@
-package org.robolectric.util;
+package org.robolectric.android;
+
+import android.os.SystemClock;
+import org.robolectric.shadows.ShadowSystemClock;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,7 +9,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
 
-import static org.robolectric.util.Scheduler.IdleState.*;
+import static org.robolectric.android.Scheduler.IdleState.*;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
@@ -47,7 +50,6 @@ public class Scheduler {
     CONSTANT_IDLE
   }
 
-  private long currentTime = 100;
   private boolean isExecutingRunnable = false;
   private final Thread associatedThread = Thread.currentThread();
   private final List<ScheduledRunnable> runnables = new ArrayList<>();
@@ -90,7 +92,7 @@ public class Scheduler {
    * @return  Current time in milliseconds.
    */
   public synchronized long getCurrentTime() {
-    return currentTime;
+    return SystemClock.uptimeMillis();
   }
 
   /**
@@ -147,9 +149,9 @@ public class Scheduler {
   public synchronized void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
     long delayMillis = unit.toMillis(delay);
     if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      queueRunnableAndSort(runnable, currentTime + delayMillis);
+      queueRunnableAndSort(runnable, getCurrentTime() + delayMillis);
     } else {
-      runOrQueueRunnable(runnable, currentTime + delayMillis);
+      runOrQueueRunnable(runnable, getCurrentTime() + delayMillis);
     }
   }
 
@@ -160,9 +162,9 @@ public class Scheduler {
    */
   public synchronized void postAtFrontOfQueue(Runnable runnable) {
     if (isPaused() || Thread.currentThread() != associatedThread) {
-      runnables.add(0, new ScheduledRunnable(runnable, currentTime));
+      runnables.add(0, new ScheduledRunnable(runnable, getCurrentTime()));
     } else {
-      runOrQueueRunnable(runnable, currentTime);
+      runOrQueueRunnable(runnable, getCurrentTime());
     }
   }
 
@@ -187,7 +189,12 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceToLastPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(runnables.size() - 1).scheduledTime);
+    if (runnables.isEmpty()) {
+      return false;
+    }
+
+    ScheduledRunnable lastScheduledRunnable = runnables.get(runnables.size() - 1);
+    return advanceTo(lastScheduledRunnable.scheduledTime);
   }
 
   /**
@@ -217,28 +224,27 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceBy(long amount, TimeUnit unit) {
-    long endingTime = currentTime + unit.toMillis(amount);
+    long endingTime = getCurrentTime() + unit.toMillis(amount);
     return advanceTo(endingTime);
   }
 
   /**
    * Run all runnables that are scheduled before the endTime.
    *
-   * @param   endTime   Future time.
+   * @param   newCurrentTime   Future time.
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceTo(long endTime) {
-    if (endTime - currentTime < 0 || size() < 1) {
-      currentTime = endTime;
-      return false;
-    }
+  public synchronized boolean advanceTo(long newCurrentTime) {
+    ShadowSystemClock.advanceToWithNoSideEffects(newCurrentTime);
+    return runAllReady();
+  }
 
+  public boolean runAllReady() {
     int runCount = 0;
-    while (nextTaskIsScheduledBefore(endTime)) {
+    while (nextTaskIsScheduledBefore(getCurrentTime())) {
       runOneTask();
       ++runCount;
     }
-    currentTime = endTime;
     return runCount > 0;
   }
 
@@ -253,7 +259,7 @@ public class Scheduler {
     }
 
     ScheduledRunnable postedRunnable = runnables.remove(0);
-    currentTime = postedRunnable.scheduledTime;
+    ShadowSystemClock.advanceToWithNoSideEffects(postedRunnable.scheduledTime);
     postedRunnable.run();
     return true;
   }
@@ -264,7 +270,7 @@ public class Scheduler {
    * @return  True if any runnables can be executed.
    */
   public synchronized boolean areAnyRunnable() {
-    return nextTaskIsScheduledBefore(currentTime);
+    return nextTaskIsScheduledBefore(getCurrentTime());
   }
 
   /**
@@ -273,6 +279,7 @@ public class Scheduler {
   public synchronized void reset() {
     runnables.clear();
     idleState = UNPAUSED;
+    isExecutingRunnable = false;
   }
 
   /**
@@ -314,8 +321,8 @@ public class Scheduler {
     } finally {
       isExecutingRunnable = false;
     }
-    if (scheduledTime > currentTime) {
-      currentTime = scheduledTime;
+    if (scheduledTime > getCurrentTime()) {
+      ShadowSystemClock.advanceToWithNoSideEffects(scheduledTime);
     }
     // The runnable we just ran may have queued other runnables. If there are
     // any pending immediate execution we should run these now too, unless we are

@@ -16,15 +16,20 @@ import org.robolectric.annotation.HiddenApi;
 public class ShadowSystemClock {
   private static long bootedAt = 0;
   private static long nanoTime = 0;
+  private static long currentTime = 100;
   private static final int MILLIS_PER_NANO = 1000000;
 
-  static long now() {
-    if (ShadowApplication.getInstance() == null) {
-      return 0;
+  synchronized public static void advanceToWithNoSideEffects(long millis) {
+    if (currentTime < millis) {
+      currentTime = millis;
     }
-    return ShadowApplication.getInstance().getForegroundThreadScheduler().getCurrentTime();
   }
 
+  synchronized static long now() {
+    return currentTime;
+  }
+
+  /* should this make all schedulers do stuff? */
   @Implementation
   public static void sleep(long millis) {
     if (ShadowApplication.getInstance() == null) {
@@ -37,15 +42,13 @@ public class ShadowSystemClock {
 
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
-    if (ShadowApplication.getInstance() == null) {
-      return false;
-    }
-
     if (now() > millis) {
       return false;
     }
+
+    advanceToWithNoSideEffects(millis);
+
     nanoTime = millis * MILLIS_PER_NANO;
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceTo(millis);
     return true;
   }
 

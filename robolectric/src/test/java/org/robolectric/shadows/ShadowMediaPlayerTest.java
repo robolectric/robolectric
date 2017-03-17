@@ -29,7 +29,7 @@ import org.robolectric.shadows.ShadowMediaPlayer.MediaInfo;
 import org.robolectric.shadows.ShadowMediaPlayer.State;
 import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;

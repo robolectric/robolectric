@@ -1,16 +1,19 @@
 package org.robolectric.shadows;
 
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 
+import android.os.SystemClock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 import org.robolectric.util.TestRunnable;
 
 import java.util.ArrayList;
@@ -54,7 +57,7 @@ public class ShadowHandlerTest {
 
     shadowOf(looper).idle();
 
-    assertThat(transcript).containsExactly("first thing", "second thing");
+    assertThat(transcript).containsExactly("first thing at 100", "second thing at 100");
   }
 
   @Test
@@ -92,7 +95,7 @@ public class ShadowHandlerTest {
 
     shadowOf(looper2).idle();
 
-    assertThat(transcript).containsExactly("second thing");
+    assertThat(transcript).containsExactly("second thing at 100");
   }
 
   @Test
@@ -170,7 +173,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testPostDelayedMultipleThenRunMainLooperOneTask_shouldRunMultipleTask() throws Exception {
+  public void testPostDelayedMultipleThenRunMainLooperTasks_shouldRunMultipleTasks() throws Exception {
     TestRunnable task1 = new TestRunnable();
     TestRunnable task2 = new TestRunnable();
     TestRunnable task3 = new TestRunnable();
@@ -517,6 +520,17 @@ public class ShadowHandlerTest {
     h.sendMessageAtFrontOfQueue(h.obtainMessage());
   }
 
+  @Test
+  public void runToEndOfTasks_shouldRunAllTasks() {
+    HandlerThread handlerThread = new HandlerThread("name");
+    handlerThread.start();
+    Handler handler = new Handler(handlerThread.getLooper());
+    handler.postDelayed(new Say("one"), 2000);
+    Shadows.shadowOf(handler.getLooper()).runToEndOfTasks();
+    handler.post(new Say("two"));
+    Shadows.shadowOf(handler.getLooper()).runToEndOfTasks();
+    assertThat(transcript).containsExactly("one", "two");
+  }
 
   private class Say implements Runnable {
     private String event;
@@ -527,7 +541,7 @@ public class ShadowHandlerTest {
 
     @Override
     public void run() {
-      transcript.add(event);
+      transcript.add(event + " at " + SystemClock.uptimeMillis());
     }
   }
 }

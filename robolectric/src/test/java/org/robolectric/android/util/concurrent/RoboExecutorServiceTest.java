@@ -5,9 +5,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import java.util.ArrayList;
 import java.util.List;

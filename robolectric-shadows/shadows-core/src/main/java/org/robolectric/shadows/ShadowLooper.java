@@ -14,7 +14,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
@@ -347,10 +347,10 @@ public class ShadowLooper {
   }
 
   /**
-   * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   * Returns the {@link Scheduler} that is being used to manage the enqueued tasks.
    * This scheduler is managed by the Looper's associated queue.
    *
-   * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   * @return the {@link Scheduler} that is being used to manage the enqueued tasks.
    */
   public Scheduler getScheduler() {
     return shadowOf(realObject.getQueue()).getScheduler();

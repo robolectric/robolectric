@@ -35,7 +35,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import java.util.ArrayList;
 import java.util.Collections;

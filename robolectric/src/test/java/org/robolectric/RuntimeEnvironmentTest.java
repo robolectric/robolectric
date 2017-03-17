@@ -1,7 +1,7 @@
 package org.robolectric;
 
 import org.junit.Test;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;

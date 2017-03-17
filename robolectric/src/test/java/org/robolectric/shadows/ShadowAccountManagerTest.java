@@ -23,8 +23,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import org.robolectric.android.Scheduler;
 import java.io.IOException;
-import org.robolectric.util.Scheduler;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;

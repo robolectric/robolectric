@@ -31,7 +31,7 @@ import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
-import org.robolectric.util.Scheduler;
+import org.robolectric.android.Scheduler;
 import org.robolectric.android.TestBroadcastReceiver;
 
 import java.io.File;

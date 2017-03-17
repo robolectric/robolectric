@@ -6,16 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import org.robolectric.android.Scheduler;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
-import org.robolectric.util.Scheduler.IdleState;
+import org.robolectric.android.Scheduler.IdleState;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -140,7 +139,7 @@ public class ShadowAccountManager {
 
   /**
    * The remove operation is posted to the given {@code handler}, and will be
-   * executed according to the {@link IdleState} of the corresponding {@link org.robolectric.util.Scheduler}.
+   * executed according to the {@link IdleState} of the corresponding {@link Scheduler}.
    */
   @Implementation
   public AccountManagerFuture<Boolean> removeAccount(final Account account,
