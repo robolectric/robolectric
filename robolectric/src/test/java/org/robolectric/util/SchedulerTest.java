@@ -2,12 +2,15 @@ package org.robolectric.util;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.android.Scheduler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.Scheduler.IdleState.*;
+import static org.robolectric.android.Scheduler.IdleState.CONSTANT_IDLE;
+import static org.robolectric.android.Scheduler.IdleState.PAUSED;
+import static org.robolectric.android.Scheduler.IdleState.UNPAUSED;
 
 public class SchedulerTest {
   private final Scheduler scheduler = new Scheduler();

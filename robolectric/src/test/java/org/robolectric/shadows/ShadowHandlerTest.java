@@ -70,7 +70,7 @@ public class ShadowHandlerTest {
 
     shadowOf(Looper.myLooper()).idle();
 
-    assertThat(transcript).containsExactly("first thing", "second thing");
+    assertThat(transcript).containsExactly("first thing at 100", "second thing at 100");
   }
 
   private static Looper newLooper(boolean canQuit) {

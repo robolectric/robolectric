@@ -4,6 +4,7 @@ import android.os.SystemClock;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Shadow for {@link android.os.SystemClock}.
@@ -18,6 +19,13 @@ public class ShadowSystemClock {
   private static long nanoTime = 0;
   private static long currentTime = 100;
   private static final int MILLIS_PER_NANO = 1000000;
+
+  @Resetter
+  public static void reset() {
+    bootedAt = 0;
+    nanoTime = 0;
+    currentTime = 100;
+  }
 
   synchronized public static void advanceToWithNoSideEffects(long millis) {
     if (currentTime < millis) {
