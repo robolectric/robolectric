@@ -8,11 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
-import org.robolectric.android.controller.FragmentController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
@@ -119,6 +119,22 @@ public class FragmentControllerTest {
     verify(fragment).onResume();
     verify(fragment).onPause();
     verify(fragment).onStop();
+  }
+
+  @Test
+  public void hasSavedState() {
+    final LoginFragment fragment = spy(new LoginFragment());
+    final Bundle outState = new Bundle();
+    outState.putString("test_key", "test_value");
+
+    FragmentController.of(fragment, LoginActivity.class).create().start().resume().saveInstanceState(outState);
+
+    assertThat(fragment.getView()).isNotNull();
+    assertThat(fragment.getActivity()).isNotNull();
+    assertThat(fragment.isAdded()).isTrue();
+    assertThat(fragment.isResumed()).isTrue();
+
+    verify(fragment).onSaveInstanceState(outState);
   }
 
   @Test
