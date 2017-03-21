@@ -1,12 +1,14 @@
 package org.robolectric.shadows;
 
 import android.app.ActivityManager;
+import android.app.IActivityManager;
 import android.content.pm.ConfigurationInfo;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Shadow for {@link android.app.ActivityManager}.
@@ -120,5 +122,10 @@ public class ShadowActivityManager {
    */
   public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
     this.memoryInfo = memoryInfo;
+  }
+
+  @Implementation
+  public static IActivityManager getService() {
+    return ReflectionHelpers.createNullProxy(IActivityManager.class);
   }
 }
