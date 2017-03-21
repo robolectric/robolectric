@@ -40,36 +40,8 @@ public class ShadowPackageInstallerTest {
   }
 
   @Test
-  public void getPackageInstaller() {
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo = new ApplicationInfo();
-    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageInfo);
-
-    List<PackageInstaller.SessionInfo> allSessions = packageInstaller.getAllSessions();
-
-    List<String> allPackageNames = new LinkedList<>();
-    for (PackageInstaller.SessionInfo session : allSessions) {
-      allPackageNames.add(session.appPackageName);
-    }
-
-    assertThat(allPackageNames).contains(TEST_PACKAGE_NAME);
-  }
-
-  @Test
-  public void packageInstallerAndGetInstalledPackagesAreConsistent() {
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo = new ApplicationInfo();
-    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageInfo);
-
-    List<PackageInstaller.SessionInfo> allSessions = packageInstaller.getAllSessions();
-
-    assertThat(allSessions).hasSameSizeAs(RuntimeEnvironment.application.getPackageManager().getInstalledPackages(0));
+  public void shouldBeNoInProcessSessionsOnRobolectricStartup() {
+    assertThat(packageInstaller.getAllSessions()).isEmpty();
   }
 
   @Test
