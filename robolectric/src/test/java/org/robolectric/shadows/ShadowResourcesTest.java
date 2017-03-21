@@ -812,6 +812,13 @@ public class ShadowResourcesTest {
     }
   }
 
+  @Test
+  public void stringWithSpaces() throws Exception {
+    // this differs from actual Android behavior, which collapses whitespace as "Up to 25 USD"
+    assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
+        .isEqualTo("Up to 25   USD");
+  }
+
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {

@@ -30,7 +30,7 @@ public class StaxValueLoader extends StaxLoader {
   public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
     String s = buf.toString();
     if (resType == ResType.CHAR_SEQUENCE) {
-      s = StringResources.proccessStringResources(s);
+      s = StringResources.processStringResources(s);
     }
     resourceTable.addResource(attrType, name, new TypedResource<>(s, resType, xmlContext));
   }
