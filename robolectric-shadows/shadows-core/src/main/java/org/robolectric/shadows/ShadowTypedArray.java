@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.util.TypedValue;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -28,11 +30,21 @@ public class ShadowTypedArray {
   public String positionDescription;
 
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
-    TypedArray typedArray = ReflectionHelpers.callConstructor(TypedArray.class,
-        ClassParameter.from(Resources.class, realResources),
-        ClassParameter.from(int[].class, data),
-        ClassParameter.from(int[].class, indices),
-        ClassParameter.from(int.class, len));
+    TypedArray typedArray;
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
+      typedArray = ReflectionHelpers.callConstructor(TypedArray.class,
+          ClassParameter.from(Resources.class, realResources));
+      ReflectionHelpers.setField(typedArray, "mData", data);
+      ReflectionHelpers.setField(typedArray, "mLength", len);
+      ReflectionHelpers.setField(typedArray, "mIndices", indices);
+    } else {
+      typedArray = ReflectionHelpers.callConstructor(TypedArray.class,
+          ClassParameter.from(Resources.class, realResources),
+          ClassParameter.from(int[].class, data),
+          ClassParameter.from(int[].class, indices),
+          ClassParameter.from(int.class, len));
+    }
+
     Shadows.shadowOf(typedArray).stringData = stringData;
     return typedArray;
   }

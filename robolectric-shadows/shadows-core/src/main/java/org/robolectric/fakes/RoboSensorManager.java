@@ -1,11 +1,14 @@
 package org.robolectric.fakes;
 
+import android.hardware.HardwareBuffer;
 import android.hardware.Sensor;
+import android.hardware.SensorDirectChannel;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.TriggerEventListener;
 import android.os.Handler;
 
+import android.os.MemoryFile;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +34,22 @@ public class RoboSensorManager extends SensorManager {
   @Override
   protected boolean flushImpl(SensorEventListener listener) {
     return false;
+  }
+
+  @Override
+  protected SensorDirectChannel createDirectChannelImpl(long size, MemoryFile ashmemFile,
+      HardwareBuffer hardwareBuffer) {
+    return null;
+  }
+
+  @Override
+  protected void destroyDirectChannelImpl(SensorDirectChannel channel) {
+
+  }
+
+  @Override
+  protected int configureDirectChannelImpl(SensorDirectChannel channel, Sensor s, int rate) {
+    return 0;
   }
 
   protected boolean registerListenerImpl(SensorEventListener listener, Sensor sensor, int delayUs, Handler handler) {
