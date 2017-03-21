@@ -8,7 +8,6 @@ dependencies {
     compile project(":robolectric-annotations")
 
     // Compile dependencies
-    compile "com.ximpleware:vtd-xml:2.11"
     compile "com.google.guava:guava:20.0"
     compileOnly "com.intellij:annotations:12.0"
 

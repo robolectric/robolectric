@@ -35,9 +35,15 @@ public class XmlContext {
   }
 
   @Override public String toString() {
-    return "XmlContext{" +
-        "packageName='" + packageName + '\'' +
-        ", xmlFile=" + xmlFile +
-        '}';
+    return '{' + packageName + ':' + xmlFile + '}';
+  }
+
+  public XmlContext withLineNumber(final int lineNumber) {
+    return new XmlContext(packageName, xmlFile) {
+      @Override
+      public String toString() {
+        return '{' + packageName + ':' + xmlFile + ':' + lineNumber + '}';
+      }
+    };
   }
 }

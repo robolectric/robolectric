@@ -30,7 +30,6 @@ dependencies {
 
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk16:1.46"
-    compile "com.ximpleware:vtd-xml:2.11"
     compile "com.thoughtworks.xstream:xstream:1.4.8"
     compileOnly "com.intellij:annotations:12.0"
 

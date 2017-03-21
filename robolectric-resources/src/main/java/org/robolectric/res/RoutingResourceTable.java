@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RoutingResourceTable implements ResourceTable {
-  private static final PackageResourceTable EMPTY_RESOURCE_TABLE = ResourceTableFactory.newResourceTable("");
+  private static final PackageResourceTable EMPTY_RESOURCE_TABLE = new ResourceTableFactory().newResourceTable("");
   private final Map<String, PackageResourceTable> resourceTables;
 
   public RoutingResourceTable(PackageResourceTable... resourceTables) {

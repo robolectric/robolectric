@@ -45,7 +45,6 @@ public class AttrData {
   }
 
   @Override public String toString() {
-
     StringBuilder builder = new StringBuilder("AttrData{name='")
         .append(name)
         .append("', format='")
