@@ -35,7 +35,7 @@ public class DrawableResourceLoaderNoRunnerTest {
 
   @Before
   public void setUp() {
-    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric");
+    resourceTable = new ResourceTableFactory().newResourceTable("org.robolectric");
   }
 
   @After

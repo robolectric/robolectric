@@ -6,9 +6,9 @@ import org.robolectric.manifest.AndroidManifest;
 import java.util.ArrayList;
 import java.util.List;
 
-public class  ResourceMerger {
+public class ResourceMerger {
   @NotNull
-  public static PackageResourceTable buildResourceTable(AndroidManifest appManifest) {
+  public PackageResourceTable buildResourceTable(AndroidManifest appManifest) {
     ResourceRemapper resourceRemapper = new ResourceRemapper(appManifest.getRClass());
 
     ResourcePath appResourcePath = appManifest.getResourcePath();
@@ -19,7 +19,7 @@ public class  ResourceMerger {
       }
     }
 
-    return ResourceTableFactory.newResourceTable(appManifest.getPackageName(),
+    return new ResourceTableFactory().newResourceTable(appManifest.getPackageName(),
         allResourcePaths.toArray(new ResourcePath[allResourcePaths.size()]));
   }
 }

@@ -23,8 +23,7 @@ public interface ResourceTable {
 
   void receive(Visitor visitor);
 
-  interface Visitor<T> {
-
-    void visit(ResName key, Iterable<T> values);
+  interface Visitor {
+    void visit(ResName key, Iterable<TypedResource> values);
   }
 }

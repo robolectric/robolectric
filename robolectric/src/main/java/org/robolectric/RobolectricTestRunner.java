@@ -237,7 +237,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @NotNull
   private static PackageResourceTable getCompiletimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
-      compiletimeSdkResourceTable = ResourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
+      ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
+      compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
   }
@@ -446,7 +447,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
     PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
     if (resourceTable == null) {
-      resourceTable = ResourceMerger.buildResourceTable(appManifest);
+      resourceTable = new ResourceMerger().buildResourceTable(appManifest);
 
       appResourceTableCache.put(appManifest, resourceTable);
     }

@@ -1,64 +1,41 @@
 package org.robolectric.res;
 
-import com.ximpleware.VTDGen;
-import com.ximpleware.VTDNav;
 import org.jetbrains.annotations.NotNull;
 
-public class DocumentLoader {
+public abstract class DocumentLoader {
   private static final FsFile.Filter ENDS_WITH_XML = new FsFile.Filter() {
     @Override public boolean accept(@NotNull FsFile fsFile) {
       return fsFile.getName().endsWith(".xml");
     }
   };
 
+  protected final String packageName;
   private final FsFile resourceBase;
-  private final String packageName;
-  private final VTDGen vtdGen;
 
-  public DocumentLoader(String packageName, ResourcePath resourcePath) {
-    this.resourceBase = resourcePath.getResourceBase();
+  public DocumentLoader(String packageName, FsFile resourceBase) {
     this.packageName = packageName;
-    vtdGen = new VTDGen();
+    this.resourceBase = resourceBase;
   }
 
-  public void load(String folderBaseName, XmlLoader... xmlLoaders) {
+  public void load(String folderBaseName) {
     FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
     if (files == null) {
       throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
     }
     for (FsFile dir : files) {
-      loadFile(dir, xmlLoaders);
+      loadFile(dir);
     }
   }
 
-  private void loadFile(FsFile dir, XmlLoader[] xmlLoaders) {
+  private void loadFile(FsFile dir) {
     if (!dir.exists()) {
       throw new RuntimeException("no such directory " + dir);
     }
 
     for (FsFile file : dir.listFiles(ENDS_WITH_XML)) {
-      loadResourceXmlFile(file, xmlLoaders);
+      loadResourceXmlFile(new XmlContext(packageName, file));
     }
   }
 
-  private void loadResourceXmlFile(FsFile fsFile, XmlLoader... xmlLoaders) {
-    VTDNav vtdNav = parse(fsFile);
-    XpathResourceXmlLoader.XmlNode xmlNode = new XpathResourceXmlLoader.XmlNode(vtdNav);
-    XmlContext xmlContext = new XmlContext(packageName, fsFile);
-    for (XmlLoader xmlLoader : xmlLoaders) {
-      xmlLoader.processResourceXml(xmlNode, xmlContext);
-    }
-  }
-
-  private VTDNav parse(FsFile xmlFile) {
-    try {
-      byte[] bytes = xmlFile.getBytes();
-      vtdGen.setDoc(bytes);
-      vtdGen.parse(true);
-
-      return vtdGen.getNav();
-    } catch (Exception e) {
-      throw new RuntimeException("Error parsing " + xmlFile, e);
-    }
-  }
+  protected abstract void loadResourceXmlFile(XmlContext xmlContext);
 }

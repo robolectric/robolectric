@@ -10,6 +10,7 @@ import static org.robolectric.util.TestUtil.*;
 public class ResourceTableFactoryTest {
   private ResourceTable appResourceTable;
   private ResourceTable systemResourceTable;
+  private ResourceTableFactory resourceTableFactory;
 
   @Before
   public void setUp() throws Exception {
@@ -19,13 +20,14 @@ public class ResourceTableFactoryTest {
     resourceRemapper.remapRClass(lib3Resources().getRClass());
 
 
-    appResourceTable = ResourceTableFactory.newResourceTable("org.robolectric",
+    resourceTableFactory = new ResourceTableFactory();
+    appResourceTable = resourceTableFactory.newResourceTable("org.robolectric",
         lib3Resources(),
         lib2Resources(),
         lib1Resources(),
         testResources());
 
-    systemResourceTable = ResourceTableFactory.newFrameworkResourceTable(systemResources());
+    systemResourceTable = resourceTableFactory.newFrameworkResourceTable(systemResources());
   }
 
   @Test
