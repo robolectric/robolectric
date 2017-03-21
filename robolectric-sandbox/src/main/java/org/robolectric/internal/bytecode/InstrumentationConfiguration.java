@@ -105,7 +105,8 @@ public class InstrumentationConfiguration {
     }
 
     // Hack. Fixes https://github.com/robolectric/robolectric/issues/1864
-    if (name.equals("javax.net.ssl.DistinguishedNameParser")) {
+    if (name.equals("javax.net.ssl.DistinguishedNameParser")
+        || name.equals("javax.microedition.khronos.opengles.GL")) {
       return true;
     }
 
