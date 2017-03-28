@@ -40,9 +40,9 @@ public class BuckManifestFactory implements ManifestFactory {
     final List<String> buckAssets = buckAssetsDirs == null ? null :
               Arrays.asList(buckAssetsDirs.split(File.pathSeparator));
 
-    final FsFile resDir = (buckResources == null || "".equals(buckResources)) ? null :
+    final FsFile resDir = (buckResources == null || buckResources.isEmpty()) ? null :
             Fs.fileFromPath(buckResources.get(buckResources.size() - 1));
-    final FsFile assetsDir = (buckAssets == null || "".equals(buckAssets)) ? null :
+    final FsFile assetsDir = (buckAssets == null || buckAssets.isEmpty()) ? null :
             Fs.fileFromPath(buckAssets.get(buckAssets.size() - 1));
 
     Logger.debug("Robolectric assets directory: " + (assetsDir == null ? null : assetsDir.getPath()));

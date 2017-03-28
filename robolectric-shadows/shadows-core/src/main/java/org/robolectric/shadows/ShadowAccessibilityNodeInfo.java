@@ -938,7 +938,7 @@ public class ShadowAccessibilityNodeInfo {
             (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(otherShadow.children.get(i));
         visitedNodes.add(childShadow);
         childShadow.visitedWhenCheckingChildren = true;
-        if (!childShadow.equals(otherShadow.children.get(i))) {
+        if (!childShadow.equals(shadowOf(otherShadow.children.get(i)))) {
            childrenEquality = false;
            break;
         }
@@ -973,7 +973,7 @@ public class ShadowAccessibilityNodeInfo {
       if (parent == null) {
         areEqual &= (otherShadow.parent == null);
       } else if (!shadowOf(parent).visitedWhenCheckingChildren){
-        areEqual &= (shadowOf(parent).equals(otherShadow.parent));
+        areEqual &= (shadowOf(parent).equals(shadowOf(otherShadow.parent)));
       }
 
       while (!visitedNodes.isEmpty()) {
