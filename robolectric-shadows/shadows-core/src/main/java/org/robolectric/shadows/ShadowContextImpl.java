@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.accounts.AccountManager;
 import android.accounts.IAccountManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
@@ -13,12 +12,12 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.UserHandle;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
 import org.robolectric.RuntimeEnvironment;
@@ -303,6 +302,12 @@ public class ShadowContextImpl {
 
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+    return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
+  }
+
+  @Implementation
+  public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
+      IntentFilter filter, String broadcastPermission, Handler scheduler) {
     return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
   }
 

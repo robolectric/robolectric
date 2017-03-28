@@ -27,7 +27,7 @@ public class StringResources {
    * 2) Converts code points.
    * 3) Escapes
    */
-  public static String proccessStringResources(String inputValue) {
+  public static String processStringResources(String inputValue) {
     return escape(convertCodePoints(inputValue.trim()
             .replace("\\n", String.valueOf('\n'))
             .replace("\\t", String.valueOf('\t'))

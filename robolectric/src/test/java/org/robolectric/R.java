@@ -129,6 +129,7 @@ public final class R {
     public static final int typed_array_b = 0x7f020124;
     public static final int test_permission_description = 0x7f020125;
     public static final int test_permission_label = 0x7f020126;
+    public static final int string_with_spaces = 0x7f020127;
   }
 
   public static final class plurals {

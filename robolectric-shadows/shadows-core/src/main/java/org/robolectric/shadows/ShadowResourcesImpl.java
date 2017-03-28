@@ -11,7 +11,7 @@ import android.view.Display;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.*;
 import org.robolectric.res.Plural;
-import org.robolectric.res.PluralResourceLoader;
+import org.robolectric.res.PluralRules;
 import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.ReflectionHelpers;
@@ -92,8 +92,8 @@ public class ShadowResourcesImpl {
     ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
 
     TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
-    if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
-      PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) typedResource;
+    if (typedResource != null && typedResource instanceof PluralRules) {
+      PluralRules pluralRules = (PluralRules) typedResource;
       Plural plural = pluralRules.find(quantity);
 
       if (plural == null) {

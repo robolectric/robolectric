@@ -6,23 +6,22 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 public class ResourceTableFactory {
-
   /**
    * Builds an Android framework resource table in the "android" package space.
    */
-  public static PackageResourceTable newFrameworkResourceTable(ResourcePath resourcePath) {
+  public PackageResourceTable newFrameworkResourceTable(ResourcePath resourcePath) {
     PackageResourceTable resourceTable = new PackageResourceTable("android");
 
-      if (resourcePath.getRClass() != null) {
-        addRClassValues(resourceTable, resourcePath.getRClass());
-        addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
-      }
-      if (resourcePath.getInternalRClass() != null) {
-        addRClassValues(resourceTable, resourcePath.getInternalRClass());
-        addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
-      }
+    if (resourcePath.getRClass() != null) {
+      addRClassValues(resourceTable, resourcePath.getRClass());
+      addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
+    }
+    if (resourcePath.getInternalRClass() != null) {
+      addRClassValues(resourceTable, resourcePath.getInternalRClass());
+      addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
+    }
 
-      parseResourceFiles(resourcePath, resourceTable);
+    parseResourceFiles(resourcePath, resourceTable);
 
     return resourceTable;
   }
@@ -31,7 +30,7 @@ public class ResourceTableFactory {
    * Creates an application resource table which can be constructed with multiple resources paths representing
    * overlayed resource libraries.
    */
-  public static PackageResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
+  public PackageResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
     PackageResourceTable resourceTable = new PackageResourceTable(packageName);
 
     for (ResourcePath resourcePath : resourcePaths) {
@@ -47,7 +46,7 @@ public class ResourceTableFactory {
     return resourceTable;
   }
 
-  private static void addRClassValues(PackageResourceTable resourceTable, Class<?> rClass) {
+  private void addRClassValues(PackageResourceTable resourceTable, Class<?> rClass) {
     for (Class innerClass : rClass.getClasses()) {
       String resourceType = innerClass.getSimpleName();
       if (!resourceType.equals("styleable")) {
@@ -72,7 +71,7 @@ public class ResourceTableFactory {
    * Check the stylable elements. Not for aapt generated R files but for framework R files it is possible to
    * have attributes in the styleable array for which there is no corresponding R.attr field.
    */
-  private static void addMissingStyleableAttributes(PackageResourceTable resourceTable, Class<?> rClass) {
+  private void addMissingStyleableAttributes(PackageResourceTable resourceTable, Class<?> rClass) {
     for (Class innerClass : rClass.getClasses()) {
       if (innerClass.getSimpleName().equals("styleable")) {
         String styleableName = null; // Current styleable name
@@ -100,7 +99,7 @@ public class ResourceTableFactory {
     }
   }
 
-  private static void parseResourceFiles(ResourcePath resourcePath, PackageResourceTable resourceTable) {
+  private void parseResourceFiles(ResourcePath resourcePath, PackageResourceTable resourceTable) {
     if (!resourcePath.hasResources()) {
       Logger.debug("No resources for %s", resourceTable.getPackageName());
       return;
@@ -108,49 +107,62 @@ public class ResourceTableFactory {
 
     Logger.debug("Loading resources for %s from %s...", resourceTable.getPackageName(), resourcePath.getResourceBase());
 
-    DocumentLoader documentLoader = new DocumentLoader(resourceTable.getPackageName(), resourcePath);
-
     try {
-      documentLoader.load("values",
-          new ValueResourceLoader(resourceTable, "/resources/bool", "bool", ResType.BOOLEAN),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='bool']", "bool", ResType.BOOLEAN),
-          new ValueResourceLoader(resourceTable, "/resources/color", "color", ResType.COLOR),
-          new ValueResourceLoader(resourceTable, "/resources/drawable", "drawable", ResType.DRAWABLE),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='color']", "color", ResType.COLOR),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='drawable']", "drawable", ResType.DRAWABLE),
-          new ValueResourceLoader(resourceTable, "/resources/dimen", "dimen", ResType.DIMEN),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='dimen']", "dimen", ResType.DIMEN),
-          new ValueResourceLoader(resourceTable, "/resources/integer", "integer", ResType.INTEGER),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='integer']", "integer", ResType.INTEGER),
-          new ValueResourceLoader(resourceTable, "/resources/integer-array", "array", ResType.INTEGER_ARRAY),
-          new ValueResourceLoader(resourceTable, "/resources/fraction", "fraction", ResType.FRACTION),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='layout']", "layout", ResType.LAYOUT),
-          new PluralResourceLoader(resourceTable),
-          new ValueResourceLoader(resourceTable, "/resources/string", "string", ResType.CHAR_SEQUENCE),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
-          new ValueResourceLoader(resourceTable, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
-          new ValueResourceLoader(resourceTable, "/resources/array", "array", ResType.TYPED_ARRAY),
-          new ValueResourceLoader(resourceTable, "/resources/id", "id", ResType.CHAR_SEQUENCE),
-          new ValueResourceLoader(resourceTable, "/resources/item[@type='id']", "id", ResType.CHAR_SEQUENCE),
-          new AttrResourceLoader(resourceTable),
-          new StyleResourceLoader(resourceTable)
-      );
+      new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase(),
+          new NodeHandler()
+              .addHandler("resources", new NodeHandler()
+                  .addHandler("bool", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
+                  .addHandler("item[@type='bool']", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
+                  .addHandler("color", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
+                  .addHandler("drawable", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
+                  .addHandler("item[@type='color']", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
+                  .addHandler("item[@type='drawable']", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
+                  .addHandler("dimen", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
+                  .addHandler("item[@type='dimen']", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
+                  .addHandler("integer", new StaxValueLoader(resourceTable, "integer", ResType.INTEGER))
+                  .addHandler("item[@type='integer']", new StaxValueLoader(resourceTable, "integer", ResType.INTEGER))
+                  .addHandler("integer-array", new StaxArrayLoader(resourceTable, "array", ResType.INTEGER_ARRAY, ResType.INTEGER))
+                  .addHandler("fraction", new StaxValueLoader(resourceTable, "fraction", ResType.FRACTION))
+                  .addHandler("item[@type='fraction']", new StaxValueLoader(resourceTable, "fraction", ResType.FRACTION))
+                  .addHandler("item[@type='layout']", new StaxValueLoader(resourceTable, "layout", ResType.LAYOUT))
+                  .addHandler("plurals", new StaxPluralsLoader(resourceTable, "plurals", ResType.CHAR_SEQUENCE))
+                  .addHandler("string", new StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
+                  .addHandler("item[@type='string']", new StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
+                  .addHandler("string-array", new StaxArrayLoader(resourceTable, "array", ResType.CHAR_SEQUENCE_ARRAY, ResType.CHAR_SEQUENCE))
+                  .addHandler("array", new StaxArrayLoader(resourceTable, "array", ResType.TYPED_ARRAY, null))
+                  .addHandler("id", new StaxValueLoader(resourceTable, "id", ResType.CHAR_SEQUENCE))
+                  .addHandler("item[@type='id']", new StaxValueLoader(resourceTable, "id", ResType.CHAR_SEQUENCE))
+                  .addHandler("attr", new StaxAttrLoader(resourceTable, "attr", ResType.ATTR_DATA))
+                  .addHandler("declare-styleable", new NodeHandler()
+                      .addHandler("attr", new StaxAttrLoader(resourceTable, "attr", ResType.ATTR_DATA))
+                  )
+                  .addHandler("style", new StaxStyleLoader(resourceTable, "style", ResType.STYLE))
+              )).load("values");
 
-      documentLoader.load("layout", new OpaqueFileLoader(resourceTable, "layout"));
-      documentLoader.load("menu", new OpaqueFileLoader(resourceTable, "menu"));
-      documentLoader.load("drawable", new OpaqueFileLoader(resourceTable, "drawable", ResType.DRAWABLE));
-      documentLoader.load("anim", new OpaqueFileLoader(resourceTable, "anim"));
-      documentLoader.load("animator", new OpaqueFileLoader(resourceTable, "animator"));
-      documentLoader.load("color", new ColorResourceLoader(resourceTable));
-      documentLoader.load("xml", new OpaqueFileLoader(resourceTable, "xml"));
-      documentLoader.load("transition", new OpaqueFileLoader(resourceTable, "transition"));
-      documentLoader.load("interpolator", new OpaqueFileLoader(resourceTable, "interpolator"));
+      loadOpaque(resourcePath, resourceTable, "layout", ResType.LAYOUT);
+      loadOpaque(resourcePath, resourceTable, "menu", ResType.LAYOUT);
+      loadOpaque(resourcePath, resourceTable, "drawable", ResType.DRAWABLE);
+      loadOpaque(resourcePath, resourceTable, "anim", ResType.LAYOUT);
+      loadOpaque(resourcePath, resourceTable, "animator", ResType.LAYOUT);
+      loadOpaque(resourcePath, resourceTable, "color", ResType.COLOR_STATE_LIST);
+      loadOpaque(resourcePath, resourceTable, "xml", ResType.LAYOUT);
+      loadOpaque(resourcePath, resourceTable, "transition", ResType.LAYOUT);
+      loadOpaque(resourcePath, resourceTable, "interpolator", ResType.LAYOUT);
+
+      new DrawableResourceLoader(resourceTable).findDrawableResources(resourcePath);
+      new RawResourceLoader(resourcePath).loadTo(resourceTable);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
 
-    new DrawableResourceLoader(resourceTable).findDrawableResources(resourcePath);
-    new RawResourceLoader(resourcePath).loadTo(resourceTable);
+  private void loadOpaque(ResourcePath resourcePath, final PackageResourceTable resourceTable, final String type, final ResType resType) {
+    new DocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase()) {
+      @Override
+      protected void loadResourceXmlFile(XmlContext xmlContext) {
+        resourceTable.addResource(type, xmlContext.getXmlFile().getBaseName(),
+            new FileTypedResource(xmlContext.getXmlFile(), resType, xmlContext));
+      }
+    }.load(type);
   }
 }

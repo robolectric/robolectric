@@ -5,8 +5,19 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.*;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.FeatureInfo;
+import android.content.pm.IPackageStatsObserver;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageStats;
+import android.content.pm.PathPermission;
+import android.content.pm.PermissionInfo;
+import android.content.pm.ProviderInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.content.pm.Signature;
 import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -29,12 +40,26 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.content.pm.PackageManager.*;
+import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_MATCH;
+import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
+import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -1077,5 +1102,15 @@ public class ShadowPackageManagerTest {
         R.xml.dialog_preferences,
         RuntimeEnvironment.application.getApplicationInfo());
     assertThat(in).isNotNull();
+  }
+
+  @Test @Config(minSdk = LOLLIPOP)
+  public void addPackageShouldNotCreateSessions() {
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "test.package";
+    shadowPackageManager.addPackage(packageInfo);
+
+    assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
   }
 }

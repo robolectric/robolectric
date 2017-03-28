@@ -1,9 +1,24 @@
 package org.robolectric.res;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import static org.robolectric.util.TestUtil.*;
-import static org.assertj.core.api.Assertions.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.gradleAppResources;
+import static org.robolectric.util.TestUtil.sdkResources;
+import static org.robolectric.util.TestUtil.testResources;
 
 public class ResourceParserTest {
 
@@ -12,9 +27,11 @@ public class ResourceParserTest {
 
   @Before
   public void setUp() {
-    resourceTable = ResourceTableFactory.newResourceTable("org.robolectric", testResources());
-    gradleResourceTable = ResourceTableFactory.newResourceTable("org.robolectric.gradleapp", gradleAppResources());
+    ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
+    resourceTable = resourceTableFactory.newResourceTable("org.robolectric", testResources());
+    gradleResourceTable = resourceTableFactory.newResourceTable("org.robolectric.gradleapp", gradleAppResources());
   }
+
 
   @Test
   public void shouldLoadDrawableXmlResources() throws Exception {
