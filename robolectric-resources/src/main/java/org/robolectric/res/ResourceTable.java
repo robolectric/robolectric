@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
@@ -13,7 +13,7 @@ public interface ResourceTable {
 
   TypedResource getValue(int resId, String qualifiers);
 
-  TypedResource getValue(@NotNull ResName resName, String qualifiers) ;
+  TypedResource getValue(@Nonnull ResName resName, String qualifiers) ;
 
   XmlBlock getXml(ResName resName, String qualifiers);
 

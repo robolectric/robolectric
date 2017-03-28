@@ -1,7 +1,7 @@
 package org.robolectric.util;
 
 import android.app.Application;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.R;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
@@ -104,7 +104,7 @@ public abstract class TestUtil {
     return SYSTEM_RESOURCE_PATH;
   }
 
-  @NotNull
+  @Nonnull
   public static ResourcePath sdkResources(int apiLevel) {
     Fs sdkResFs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
     return new ResourcePath(null, sdkResFs.join("res"), null, null);

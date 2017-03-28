@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.util.Util;
 
 import java.io.BufferedInputStream;
@@ -176,7 +176,7 @@ public class FileFsFile implements FsFile {
    * @param paths Array of path components.
    * @return New FileFsFile.
    */
-  @NotNull
+  @Nonnull
   public static FileFsFile from(String... paths) {
     File file = null;
     for (String path : paths) {

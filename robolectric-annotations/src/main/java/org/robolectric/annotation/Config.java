@@ -2,7 +2,7 @@ package org.robolectric.annotation;
 
 import android.app.Application;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -367,7 +367,7 @@ public @interface Config {
       return libraries;
     }
 
-    @NotNull @Override
+    @Nonnull @Override
     public Class<? extends Annotation> annotationType() {
       return Config.class;
     }

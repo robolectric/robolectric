@@ -49,7 +49,7 @@ dependencies {
     compile project(":robolectric-utils")
 
     // Compile dependencies
-    compileOnly "com.intellij:annotations:12.0"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
     compile "com.almworks.sqlite4java:sqlite4java:0.282"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     compile "com.ibm.icu:icu4j:53.1"

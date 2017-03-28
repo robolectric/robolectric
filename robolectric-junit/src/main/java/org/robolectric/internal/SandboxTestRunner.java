@@ -1,6 +1,6 @@
 package org.robolectric.internal;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -43,12 +43,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     interceptors = new Interceptors(findInterceptors());
   }
 
-  @NotNull
+  @Nonnull
   protected Collection<Interceptor> findInterceptors() {
     return Collections.emptyList();
   }
 
-  @NotNull
+  @Nonnull
   protected Interceptors getInterceptors() {
     return interceptors;
   }
@@ -117,7 +117,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  @NotNull
+  @Nonnull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
     URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
@@ -135,7 +135,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
    * @param method the test method that's about to run
    * @return an {@link InstrumentationConfiguration}
    */
-  @NotNull
+  @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder()
         .doNotAcquirePackage("java.")
@@ -249,7 +249,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  @NotNull
+  @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod method) {
     List<Class<?>> shadowClasses = new ArrayList<>();
     addShadows(shadowClasses, getTestClass().getAnnotation(SandboxConfig.class));
@@ -267,7 +267,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return ShadowMap.EMPTY;
   }
 
-  @NotNull
+  @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     return new ShadowWrangler(shadowMap, 0, interceptors);
   }

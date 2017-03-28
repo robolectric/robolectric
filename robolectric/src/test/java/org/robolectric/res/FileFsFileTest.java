@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.emory.mathcs.backport.java.util.Collections;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +85,7 @@ public class FileFsFileTest {
     return parts;
   }
 
-  @NotNull
+  @Nonnull
   private String safe(String path) {
     return path.replace("/", File.separator);
   }

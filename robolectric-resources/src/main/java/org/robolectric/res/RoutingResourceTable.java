@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
@@ -23,7 +23,7 @@ public class RoutingResourceTable implements ResourceTable {
     return getRawValue(getResName(resId), qualifiers);
   }
 
-  @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
+  @Override public TypedResource getValue(@Nonnull ResName resName, String qualifiers) {
     return pickFor(resName).getValue(resName, qualifiers);
   }
 

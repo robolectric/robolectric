@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 public class ResBunch {
   private final Map<String, ResBundle> types = new LinkedHashMap<>();
@@ -21,7 +21,7 @@ public class ResBunch {
     return bundle;
   }
 
-  public TypedResource get(@NotNull ResName resName, String qualifiers) {
+  public TypedResource get(@Nonnull ResName resName, String qualifiers) {
     ResBundle bundle = getBundle(resName.type);
     return bundle.get(resName, qualifiers);
   }

@@ -5,7 +5,7 @@ import android.content.res.Resources;
 import android.os.Build;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.CoreMatchers;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,7 +124,7 @@ public class RobolectricTestRunnerSelfTest {
       instance = this;
     }
 
-    @NotNull
+    @Nonnull
     @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
       return MyTestLifecycle.class;
     }

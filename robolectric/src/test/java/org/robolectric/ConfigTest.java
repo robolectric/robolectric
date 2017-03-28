@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.robolectric.annotation.Config;
 
@@ -151,7 +151,7 @@ public class ConfigTest {
     return "sdk=" + Arrays.toString(config.sdk()) + ", minSdk=" + config.minSdk() + ", maxSdk=" + config.maxSdk();
   }
 
-  @NotNull
+  @Nonnull
   private Config overlay(Config.Implementation base, Config.Implementation build) {
     return new Config.Builder(base).overlay(build).build();
   }
