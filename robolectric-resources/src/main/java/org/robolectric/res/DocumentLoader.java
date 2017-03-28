@@ -1,10 +1,10 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 public abstract class DocumentLoader {
   private static final FsFile.Filter ENDS_WITH_XML = new FsFile.Filter() {
-    @Override public boolean accept(@NotNull FsFile fsFile) {
+    @Override public boolean accept(@Nonnull FsFile fsFile) {
       return fsFile.getName().endsWith(".xml");
     }
   };

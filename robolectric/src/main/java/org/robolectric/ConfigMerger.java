@@ -1,8 +1,8 @@
 package org.robolectric;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Join;
 
@@ -93,7 +93,7 @@ public class ConfigMerger {
     }
   }
 
-  @NotNull @VisibleForTesting
+  @Nonnull @VisibleForTesting
   List<String> packageHierarchyOf(Class<?> javaClass) {
     Package aPackage = javaClass.getPackage();
     String testPackageName = aPackage == null ? "" : aPackage.getName();
@@ -107,7 +107,7 @@ public class ConfigMerger {
     return packageHierarchy;
   }
 
-  @NotNull
+  @Nonnull
   private List<Class> parentClassesFor(Class testClass) {
     List<Class> testClassHierarchy = new ArrayList<>();
     while (testClass != null && !testClass.equals(Object.class)) {

@@ -1,6 +1,6 @@
 package org.robolectric.res.builder;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 import org.robolectric.res.FsFile;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;

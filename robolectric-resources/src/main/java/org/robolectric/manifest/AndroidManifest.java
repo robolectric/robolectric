@@ -1,7 +1,7 @@
 package org.robolectric.manifest;
 
 import com.google.common.base.Preconditions;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;

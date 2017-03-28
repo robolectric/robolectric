@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Assert;
 import org.junit.runner.Runner;
 import org.junit.runners.Parameterized;
@@ -99,7 +99,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       validateOnlyOneConstructor(errors);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     protected SdkEnvironment getSandbox(FrameworkMethod method) {
       SdkEnvironment sandbox = super.getSandbox(method);

@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 public class AttributeResource {
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
@@ -9,16 +9,16 @@ public class AttributeResource {
   public static final String NULL_VALUE = "@null";
   public static final String EMPTY_VALUE = "@empty";
 
-  public final @NotNull ResName resName;
-  public final @NotNull String value;
-  public final @NotNull String contextPackageName;
+  public final @Nonnull ResName resName;
+  public final @Nonnull String value;
+  public final @Nonnull String contextPackageName;
   private final Integer referenceResId;
 
-  public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
+  public AttributeResource(@Nonnull ResName resName, @Nonnull String value, @Nonnull String contextPackageName) {
     this(resName, value, contextPackageName, null);
   }
 
-  public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName, Integer referenceResId) {
+  public AttributeResource(@Nonnull ResName resName, @Nonnull String value, @Nonnull String contextPackageName, Integer referenceResId) {
     this.referenceResId = referenceResId;
     if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
 
@@ -31,7 +31,7 @@ public class AttributeResource {
     return isResourceReference(value);
   }
 
-  public @NotNull ResName getResourceReference() {
+  public @Nonnull ResName getResourceReference() {
     if (!isResourceReference()) throw new RuntimeException("not a resource reference: " + this);
     return ResName.qualifyResName(value.substring(1).replace("+", ""), contextPackageName, "style");
   }
@@ -66,7 +66,7 @@ public class AttributeResource {
     return value.startsWith("@") && !isNull(value);
   }
 
-  public static @NotNull ResName getResourceReference(String value, String defPackage, String defType) {
+  public static @Nonnull ResName getResourceReference(String value, String defPackage, String defType) {
     if (!isResourceReference(value)) throw new IllegalArgumentException("not a resource reference: " + value);
     return ResName.qualifyResName(value.substring(1).replace("+", ""), defPackage, defType);
   }

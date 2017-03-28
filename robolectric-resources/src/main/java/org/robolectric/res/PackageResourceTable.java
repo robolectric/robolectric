@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   @Override
-  public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
+  public TypedResource getValue(@Nonnull ResName resName, String qualifiers) {
     return resources.get(resName, qualifiers);
   }
 

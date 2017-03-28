@@ -1,13 +1,13 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.manifest.AndroidManifest;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ResourceMerger {
-  @NotNull
+  @Nonnull
   public PackageResourceTable buildResourceTable(AndroidManifest appManifest) {
     ResourceRemapper resourceRemapper = new ResourceRemapper(appManifest.getRClass());
 
