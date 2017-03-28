@@ -399,7 +399,7 @@ public class RoboWebSettings extends WebSettings {
 
   @Override
   public void setDefaultZoom(ZoomDensity zoom) {
-    this.defaultZoom = defaultZoom;
+    this.defaultZoom = zoom;
   }
 
   @Override
