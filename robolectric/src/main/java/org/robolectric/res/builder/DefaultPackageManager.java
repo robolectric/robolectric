@@ -626,16 +626,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
-      PackageInstaller.SessionParams sessionParams = new PackageInstaller.SessionParams(0);
-      sessionParams.setAppPackageName(packageInfo.packageName);
-      try {
-        getPackageInstaller().createSession(sessionParams);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   @Override
