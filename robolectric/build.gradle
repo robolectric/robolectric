@@ -55,8 +55,11 @@ checkApiChanges {
     from = [
             "org.robolectric:robolectric:${apiCompatVersion}@jar",
             "org.robolectric:robolectric-annotations:${apiCompatVersion}@jar",
+            "org.robolectric:robolectric-junit:${apiCompatVersion}@jar",
             "org.robolectric:robolectric-resources:${apiCompatVersion}@jar",
+            "org.robolectric:robolectric-sandbox:${apiCompatVersion}@jar",
             "org.robolectric:robolectric-utils:${apiCompatVersion}@jar",
+            "org.robolectric:shadow-api:${apiCompatVersion}@jar",
             "org.robolectric:shadows-core:${apiCompatVersion}@jar",
     ]
 
