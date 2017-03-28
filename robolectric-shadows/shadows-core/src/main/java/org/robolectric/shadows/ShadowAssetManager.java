@@ -7,6 +7,7 @@ import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.RuntimeEnvironment;
@@ -887,6 +888,11 @@ public final class ShadowAssetManager {
   @Implementation
   public String getResourceEntryName(int resid) {
    return getResName(resid).name;
+  }
+
+  @Implementation
+  public final SparseArray<String> getAssignedPackageIdentifiers() {
+    return new SparseArray<>();
   }
 
   @Resetter
