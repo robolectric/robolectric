@@ -181,7 +181,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
-    final ShadowAccessibilityNodeInfo shadowInfo = (shadowOf(info));
+    final ShadowAccessibilityNodeInfo shadowInfo = shadowOf(info);
     final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
 
     sAllocationCount++;
@@ -198,7 +198,7 @@ public class ShadowAccessibilityNodeInfo {
     // non-shadow objects.
     final AccessibilityNodeInfo obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
-    final ShadowAccessibilityNodeInfo shadowObtained = (shadowOf(obtainedInstance));
+    final ShadowAccessibilityNodeInfo shadowObtained = shadowOf(obtainedInstance);
 
     /*
      * We keep a separate list of actions for each object newly obtained
@@ -242,7 +242,7 @@ public class ShadowAccessibilityNodeInfo {
   public static boolean areThereUnrecycledNodes(boolean printUnrecycledNodesToSystemErr) {
     if (printUnrecycledNodesToSystemErr) {
       for (final StrictEqualityNodeWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityNodeInfo shadow = (shadowOf(wrapper.mInfo));
+        final ShadowAccessibilityNodeInfo shadow = shadowOf(wrapper.mInfo);
 
         System.err.println(String.format(
             "Leaked contentDescription = %s. Stack trace:", shadow.getContentDescription()));
