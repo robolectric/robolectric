@@ -81,6 +81,7 @@ public class Scheduler {
       case CONSTANT_IDLE:
         advanceToLastPostedRunnable();
         break;
+      default:
     }
   }
 
@@ -327,6 +328,7 @@ public class Scheduler {
       case UNPAUSED:
         advanceBy(0);
         break;
+      default:
     }
   }
 
