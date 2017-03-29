@@ -23,7 +23,6 @@ import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
@@ -88,11 +87,17 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
 
+        DependencyResolver dependencyResolver = null;
+        try {
+          dependencyResolver = (DependencyResolver) Class.forName("org.robolectric.internal.dependency.MavenDependencyResolver").newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+          throw new RuntimeException("Error creating MavenDependencyResolver");
+        }
         if (cacheDir.exists() || cacheDir.mkdir()) {
           Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
-          dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
+          this.dependencyResolver = new CachedDependencyResolver(dependencyResolver, cacheDir, 60 * 60 * 24 * 1000);
         } else {
-          dependencyResolver = new MavenDependencyResolver();
+          this.dependencyResolver = dependencyResolver;
         }
       }
 
