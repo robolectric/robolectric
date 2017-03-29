@@ -11,7 +11,7 @@ dependencies {
     compile "org.ow2.asm:asm:5.0.1"
     compile "org.ow2.asm:asm-commons:5.0.1"
     compile "com.google.guava:guava:20.0"
-    compileOnly "com.intellij:annotations:12.0"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:2.6.0"

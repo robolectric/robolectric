@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.generator;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.annotation.Implements;
@@ -57,7 +57,7 @@ public class ShadowProviderGeneratorTest {
     return shadowType;
   }
 
-  @NotNull
+  @Nonnull
   private ExecutableElement element(String reset) {
     ExecutableElement resetterExecutable = mock(ExecutableElement.class);
     Name mock = mock(Name.class);

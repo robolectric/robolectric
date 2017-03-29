@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -369,7 +369,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       doSpecialHandling();
     }
 
-    @NotNull
+    @Nonnull
     private Set<String> instrumentMethods() {
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);

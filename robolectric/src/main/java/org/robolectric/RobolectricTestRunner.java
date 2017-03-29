@@ -3,7 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.os.Build;
 import java.io.InputStream;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -125,7 +125,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @since 2.3
    */
   @Override
-  @NotNull
+  @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdkConfig().getApiLevel(), getInterceptors());
   }
@@ -138,7 +138,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return an {@link ConfigMerger}.
    * @since 3.2
    */
-  @NotNull
+  @Nonnull
   private ConfigMerger createConfigMerger() {
     return new ConfigMerger();
   }
@@ -151,13 +151,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return an {@link SdkPicker}.
    * @since 3.2
    */
-  @NotNull
+  @Nonnull
   protected SdkPicker createSdkPicker() {
     return new SdkPicker();
   }
 
   @Override
-  @NotNull // todo
+  @Nonnull // todo
   protected Collection<Interceptor> findInterceptors() {
     return AndroidInterceptors.all();
   }
@@ -172,7 +172,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @deprecated Override {@link #createClassLoaderConfig(FrameworkMethod)} instead
    */
   @Deprecated
-  @NotNull
+  @Nonnull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
     FrameworkMethod method = ((MethodPassThrough) config).method;
     Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
@@ -184,7 +184,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * {@inheritDoc}
    */
-  @NotNull
+  @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
     return createClassLoaderConfig(new Config.Builder(((RobolectricFrameworkMethod) method).config) {
       @Override
@@ -201,7 +201,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    *
    * @return a class which implements {@link TestLifecycle}. This implementation returns a {@link DefaultTestLifecycle}.
    */
-  @NotNull
+  @Nonnull
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
   }
@@ -234,7 +234,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Returns the ResourceProvider for the compile time SDK.
    */
-  @NotNull
+  @Nonnull
   private static PackageResourceTable getCompiletimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
       ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
@@ -256,7 +256,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   @Override
-  @NotNull
+  @Nonnull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
@@ -412,7 +412,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return new Config.Builder().build();
   }
 
-  @NotNull
+  @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
     Config config = ((RobolectricFrameworkMethod) frameworkMethod).config;
     return config.shadows();
@@ -495,14 +495,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   static class RobolectricFrameworkMethod extends FrameworkMethod {
-    private final @NotNull AndroidManifest appManifest;
-    final @NotNull SdkConfig sdkConfig;
-    final @NotNull Config config;
+    private final @Nonnull AndroidManifest appManifest;
+    final @Nonnull SdkConfig sdkConfig;
+    final @Nonnull Config config;
     private boolean includeApiLevelInName = true;
     TestLifecycle testLifecycle;
     ParallelUniverseInterface parallelUniverseInterface;
 
-    RobolectricFrameworkMethod(@NotNull Method method, @NotNull AndroidManifest appManifest, @NotNull SdkConfig sdkConfig, @NotNull Config config) {
+    RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest, @Nonnull SdkConfig sdkConfig, @Nonnull Config config) {
       super(method);
       this.appManifest = appManifest;
       this.sdkConfig = sdkConfig;
@@ -521,7 +521,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       includeApiLevelInName = false;
     }
 
-    @NotNull
+    @Nonnull
     public AndroidManifest getAppManifest() {
       return appManifest;
     }

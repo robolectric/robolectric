@@ -9,7 +9,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.HiddenApi;
@@ -613,7 +613,7 @@ public final class ShadowAssetManager {
     return resolveStyle(getResName(resId), themeStyleSet);
   }
 
-  private Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
+  private Style resolveStyle(@Nonnull ResName themeStyleName, Style themeStyleSet) {
     TypedResource themeStyleResource = resourceTable.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
@@ -817,7 +817,7 @@ public final class ShadowAssetManager {
     return typedArray;
   }
 
-  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @NotNull Style themeStyleSet) {
+  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @Nonnull Style themeStyleSet) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
@@ -861,7 +861,7 @@ public final class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  @NotNull private ResName getResName(int id) {
+  @Nonnull private ResName getResName(int id) {
     ResName resName = resourceTable.getResName(id);
     if (resName == null) {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id)

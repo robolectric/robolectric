@@ -1,7 +1,7 @@
 package org.robolectric;
 
 import android.app.Application;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -133,13 +133,13 @@ public class TestRunnerSequenceTest {
       super(testClass);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
       return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), new Properties());
     }
 
-    @NotNull
+    @Nonnull
     @Override
     protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
       InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
@@ -152,7 +152,7 @@ public class TestRunnerSequenceTest {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
-    @NotNull
+    @Nonnull
     @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
       return MyTestLifecycle.class;
     }

@@ -1,6 +1,6 @@
 package org.robolectric.internal;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.dependency.DependencyResolver;
@@ -43,7 +43,7 @@ public class SandboxFactory {
     return sdkEnvironment;
   }
 
-  @NotNull
+  @Nonnull
   public ClassLoader createClassLoader(InstrumentationConfiguration instrumentationConfig, URL... urls) {
     URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
     return new SandboxClassLoader(systemClassLoader, instrumentationConfig, urls);

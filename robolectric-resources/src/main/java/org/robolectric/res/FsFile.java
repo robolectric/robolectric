@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +39,6 @@ public interface FsFile {
   String getPath();
 
   public interface Filter {
-    boolean accept(@NotNull FsFile fsFile);
+    boolean accept(@Nonnull FsFile fsFile);
   }
 }

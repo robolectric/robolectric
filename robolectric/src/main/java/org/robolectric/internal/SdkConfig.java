@@ -1,7 +1,7 @@
 package org.robolectric.internal;
 
 import android.os.Build;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.util.Logger;
 
@@ -79,7 +79,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
   }
 
   @Override
-  public int compareTo(@NotNull SdkConfig o) {
+  public int compareTo(@Nonnull SdkConfig o) {
     return apiLevel - o.apiLevel;
   }
 
