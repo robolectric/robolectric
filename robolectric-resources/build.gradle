@@ -9,7 +9,7 @@ dependencies {
 
     // Compile dependencies
     compile "com.google.guava:guava:20.0"
-    compileOnly "com.intellij:annotations:12.0"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
     // Testing dependencies
     testCompile "junit:junit:4.12"

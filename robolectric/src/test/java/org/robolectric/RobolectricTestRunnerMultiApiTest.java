@@ -1,7 +1,7 @@
 package org.robolectric;
 
 import android.os.Build;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -205,10 +205,10 @@ public class RobolectricTestRunnerMultiApiTest {
 
   ///////////////////////////
 
-  @NotNull
+  @Nonnull
   private RobolectricTestRunner runnerOf(Class<?> testClass) throws InitializationError {
     return new RobolectricTestRunner(testClass) {
-      @NotNull @Override
+      @Nonnull @Override
       protected SdkPicker createSdkPicker() {
         return sdkPicker;
       }

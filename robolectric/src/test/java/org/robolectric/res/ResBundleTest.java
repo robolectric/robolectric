@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -195,7 +195,7 @@ public class ResBundleTest {
     return createStringTypedResource("title from resourceLoader1", qualifiers);
   }
 
-  @NotNull
+  @Nonnull
   private static TypedResource<String> createStringTypedResource(String str, String qualifiers) {
     XmlContext mockXmlContext = mock(XmlContext.class);
     when(mockXmlContext.getQualifiers()).thenReturn(qualifiers);

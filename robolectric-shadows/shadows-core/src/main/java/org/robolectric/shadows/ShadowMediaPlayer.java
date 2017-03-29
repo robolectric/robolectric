@@ -82,7 +82,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  * @author Fr Jeremy Krieg, Holy Monastery of St Nectarios, Adelaide, Australia
  */
 @Implements(MediaPlayer.class)
-public class ShadowMediaPlayer {
+public class ShadowMediaPlayer extends ShadowPlayerBase {
   public static void __staticInitializer__() {
     // don't bind the JNI library
   }

@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import android.app.ActivityThread;
 import android.content.pm.PackageManager;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -30,7 +30,7 @@ public class ShadowActivityThread {
     }
     return Proxy.newProxyInstance(classLoader, new Class[]{iPackageManagerClass}, new InvocationHandler() {
       @Override
-      public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Exception {
+      public Object invoke(Object proxy, @Nonnull Method method, Object[] args) throws Exception {
         if (method.getName().equals("getApplicationInfo")) {
           String packageName = (String) args[0];
           int flags = (Integer) args[1];

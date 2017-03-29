@@ -2,8 +2,8 @@ package org.robolectric;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
@@ -48,7 +48,7 @@ public class SdkPicker {
    * @return the list of {@link SdkConfig}s.
    * @since 3.2
    */
-  @NotNull
+  @Nonnull
   public List<SdkConfig> selectSdks(Config config, AndroidManifest appManifest) {
     Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, appManifest));
     Set<SdkConfig> enabledSdks = enumerateEnabledSdks();
@@ -125,7 +125,7 @@ public class SdkPicker {
     }
   }
 
-  @NotNull
+  @Nonnull
   protected Set<SdkConfig> sdkRange(int minSdk, int maxSdk) {
     if (maxSdk < minSdk) {
       throw new IllegalArgumentException("minSdk=" + minSdk + " is greater than maxSdk=" + maxSdk);
@@ -146,7 +146,7 @@ public class SdkPicker {
     return sdkConfigs;
   }
 
-  @NotNull
+  @Nonnull
   private static List<SdkConfig> map(Collection<Integer> supportedSdks) {
     ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
     for (int supportedSdk : supportedSdks) {
@@ -155,7 +155,7 @@ public class SdkPicker {
     return sdkConfigs;
   }
 
-  @NotNull
+  @Nonnull
   private static List<SdkConfig> map(int[] supportedSdks) {
     ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
     for (int supportedSdk : supportedSdks) {

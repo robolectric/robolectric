@@ -16,4 +16,12 @@ public class ShadowVMRuntime {
   public Object newUnpaddedArray(Class<?> klass, int size) {
     return Array.newInstance(klass, size);
   }
+
+  @Implementation
+  public Object newNonMovableArray(Class<?> type, int size) {
+    if (type.equals(int.class)) {
+      return new int[size];
+    }
+    return null;
+  }
 }

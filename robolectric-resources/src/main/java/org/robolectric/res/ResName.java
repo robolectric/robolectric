@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 import java.io.File;
 import java.util.regex.Matcher;
@@ -14,13 +14,13 @@ public class ResName {
   private static final int TYPE = 2;
   private static final int NAME = 3;
 
-  public final @NotNull String packageName;
-  public final @NotNull String type;
-  public final @NotNull String name;
+  public final @Nonnull String packageName;
+  public final @Nonnull String type;
+  public final @Nonnull String name;
 
   public final int hashCode;
 
-  public ResName(@NotNull String packageName, @NotNull String type, @NotNull String name) {
+  public ResName(@Nonnull String packageName, @Nonnull String type, @Nonnull String name) {
     this.packageName = packageName;
     this.type = type.trim();
     this.name = name.indexOf('.') != -1 ? name.replace('.', '_').trim() : name.trim();
@@ -28,7 +28,7 @@ public class ResName {
     hashCode = computeHashCode();
   }
 
-  public ResName(@NotNull String fullyQualifiedName) {
+  public ResName(@Nonnull String fullyQualifiedName) {
     Matcher matcher = FQN_PATTERN.matcher(fullyQualifiedName.trim());
     if (!matcher.find()) {
       throw new IllegalStateException("\"" + fullyQualifiedName + "\" is not fully qualified");
@@ -45,16 +45,16 @@ public class ResName {
   /**
    * @return null if the resource could not be qualified.
    */
-  public static String qualifyResourceName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+  public static String qualifyResourceName(@Nonnull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
     ResName resName = qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
     return resName != null ? resName.getFullyQualifiedName() : null;
   }
 
-  public static ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, ResName defaults) {
+  public static ResName qualifyResName(@Nonnull String possiblyQualifiedResourceName, ResName defaults) {
     return qualifyResName(possiblyQualifiedResourceName, defaults.packageName, defaults.type);
   }
 
-  public static ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+  public static ResName qualifyResName(@Nonnull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
     int indexOfColon = possiblyQualifiedResourceName.indexOf(':');
     int indexOfSlash = possiblyQualifiedResourceName.indexOf('/');
     String type = null;
@@ -101,7 +101,7 @@ public class ResName {
     return fullyQualifiedResourceName.replaceAll("[@+]", "");
   }
 
-  public static ResName qualifyFromFilePath(@NotNull final String packageName, @NotNull final String filePath) {
+  public static ResName qualifyFromFilePath(@Nonnull final String packageName, @Nonnull final String filePath) {
     final FileFsFile filePathFile = new FileFsFile(new File(filePath));
     final String type = filePathFile.getParent().getName().split("-")[0];
     final String name = filePathFile.getBaseName();

@@ -75,36 +75,34 @@ public class DefaultPackageManagerTest {
   }
 
   @Test
-  public void getPackageInstaller() {
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo = new ApplicationInfo();
-    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
-    rpm.addPackage(packageInfo);
+  public void packageInstallerCreateSession() throws Exception {
+    PackageInstaller packageInstaller = RuntimeEnvironment.application.getPackageManager().getPackageInstaller();
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
 
-    List<PackageInstaller.SessionInfo> allSessions = packageManager.getPackageInstaller().getAllSessions();
+    PackageInstaller.SessionInfo sessionInfo = packageInstaller.getSessionInfo(sessionId);
+    assertThat(sessionInfo.isActive()).isTrue();
 
-    List<String> allPackageNames = new LinkedList<>();
-    for (PackageInstaller.SessionInfo session : allSessions) {
-      allPackageNames.add(session.appPackageName);
-    }
+    assertThat(sessionInfo.appPackageName).isEqualTo("packageName");
 
-    assertThat(allPackageNames).contains(TEST_PACKAGE_NAME);
+    packageInstaller.abandonSession(sessionId);
+
+    assertThat(packageInstaller.getSessionInfo(sessionId)).isNull();
   }
 
   @Test
-  public void packageInstallerAndGetInstalledPackagesAreConsistent() {
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo = new ApplicationInfo();
-    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
-    rpm.addPackage(packageInfo);
+  public void packageInstallerOpenSession() throws Exception {
+    PackageInstaller packageInstaller = RuntimeEnvironment.application.getPackageManager().getPackageInstaller();
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
 
-    List<PackageInstaller.SessionInfo> allSessions = packageManager.getPackageInstaller().getAllSessions();
+    PackageInstaller.Session session = packageInstaller.openSession(sessionId);
 
-    assertThat(allSessions).hasSameSizeAs(rpm.getInstalledPackages(0));
+    assertThat(session).isNotNull();
+  }
+
+  private static PackageInstaller.SessionParams createSessionParams(String appPackageName) {
+    PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+    params.setAppPackageName(appPackageName);
+    return params;
   }
 
   @Test

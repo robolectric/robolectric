@@ -31,7 +31,7 @@ dependencies {
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk16:1.46"
     compile "com.thoughtworks.xstream:xstream:1.4.8"
-    compileOnly "com.intellij:annotations:12.0"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
     compile "org.apache.ant:ant:1.8.0"
     compile("org.apache.maven:maven-ant-tasks:2.1.3") {
@@ -55,8 +55,11 @@ checkApiChanges {
     from = [
             "org.robolectric:robolectric:${apiCompatVersion}@jar",
             "org.robolectric:robolectric-annotations:${apiCompatVersion}@jar",
+            "org.robolectric:robolectric-junit:${apiCompatVersion}@jar",
             "org.robolectric:robolectric-resources:${apiCompatVersion}@jar",
+            "org.robolectric:robolectric-sandbox:${apiCompatVersion}@jar",
             "org.robolectric:robolectric-utils:${apiCompatVersion}@jar",
+            "org.robolectric:shadow-api:${apiCompatVersion}@jar",
             "org.robolectric:shadows-core:${apiCompatVersion}@jar",
     ]
 
