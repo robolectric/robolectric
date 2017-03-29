@@ -910,7 +910,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       } else if (type.equals(Type.INT_TYPE) || type.equals(Type.SHORT_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)) {
         push(0);
       } else if (type.equals(Type.LONG_TYPE)) {
-        push(0l);
+        push(0L);
       } else if (type.equals(Type.FLOAT_TYPE)) {
         push(0f);
       } else if (type.equals(Type.DOUBLE_TYPE)) {
