@@ -3,18 +3,18 @@ new RoboJavaModulePlugin(
 ).apply(project)
 
 dependencies {
-    // Compile dependencies
-    compile project(":robolectric-annotations")
-    compile project(":robolectric-utils")
-    compile project(":shadow-api")
+    // Project dependencies
+    compile project(":utils")
+    compile project(":annotations")
 
-    compile "org.ow2.asm:asm:5.0.1"
-    compile "org.ow2.asm:asm-commons:5.0.1"
+    // Compile dependencies
     compile "com.google.guava:guava:20.0"
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
+    // Testing dependencies
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:2.6.0"
+    testCompile "com.google.testing.compile:compile-testing:0.6"
     testCompile "org.mockito:mockito-core:2.5.4"
-    testCompile project(":robolectric-junit")
+    testCompile project(":testutil")
 }

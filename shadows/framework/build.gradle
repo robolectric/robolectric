@@ -44,9 +44,9 @@ install {
 
 dependencies {
     // Project dependencies
-    compile project(":robolectric-annotations")
-    compile project(":robolectric-resources")
-    compile project(":robolectric-utils")
+    compile project(":annotations")
+    compile project(":resources")
+    compile project(":utils")
 
     // Compile dependencies
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"

@@ -9,7 +9,7 @@ shadows {
 }
 
 dependencies {
-    compileOnly project(":robolectric-shadows/shadows-core")
+    compileOnly project(":shadows/framework")
 
     compileOnly "com.android.support:multidex:1.0.1"
 

@@ -5,7 +5,7 @@ new RoboJavaModulePlugin(
 
 dependencies {
     // Project dependencies
-    compile project(":robolectric-annotations")
+    compile project(":annotations")
 
     // Compile dependencies
     compile "com.google.guava:guava:20.0"

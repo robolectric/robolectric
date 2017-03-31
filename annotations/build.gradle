@@ -4,7 +4,7 @@ new RoboJavaModulePlugin(
 
 dependencies {
     // Compile dependencies
-    compile project(":shadow-api")
+    compile project(":shadowapi")
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
     compileOnly AndroidSdk.MAX_SDK.coordinates
 }

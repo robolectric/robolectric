@@ -14,7 +14,7 @@ configurations {
 
 dependencies {
     // Project dependencies
-    compileOnly project(":robolectric-shadows/shadows-core")
+    compileOnly project(":shadows/framework")
 
     // Compile dependencies
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"

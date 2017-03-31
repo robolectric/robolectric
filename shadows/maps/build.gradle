@@ -9,7 +9,7 @@ shadows {
 }
 
 dependencies {
-    compileOnly project(":robolectric-shadows/shadows-core")
+    compileOnly project(":shadows/framework")
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compile "com.ibm.icu:icu4j:53.1"

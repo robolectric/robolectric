@@ -4,9 +4,9 @@ new RoboJavaModulePlugin(
 
 dependencies {
     // Compile dependencies
-    compile project(":robolectric-annotations")
-    compile project(":robolectric-sandbox")
-    compile project(":shadow-api")
+    compile project(":annotations")
+    compile project(":sandbox")
+    compile project(":shadowapi")
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
     compileOnly "junit:junit:4.12"
