@@ -239,7 +239,8 @@ public final class ShadowAssetManager {
     if (resourceTextArray == null) return null;
     String[] strings = new String[resourceTextArray.length];
     for (int i = 0; i < strings.length; i++) {
-      strings[i] = resourceTextArray[i].toString();
+      CharSequence charSequence = resourceTextArray[i];
+      strings[i] = charSequence == null ? null : charSequence.toString();
     }
     return strings;
   }
@@ -276,7 +277,11 @@ public final class ShadowAssetManager {
     CharSequence[] charSequences = new CharSequence[items.size()];
     for (int i = 0; i < items.size(); i++) {
       TypedResource typedResource = resolve(items.get(i), RuntimeEnvironment.getQualifiers(), resId);
-      charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
+      if (typedResource.getResType() == ResType.CHAR_SEQUENCE) {
+        charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
+      } else {
+        charSequences[i] = null;
+      }
     }
     return charSequences;
   }
@@ -436,7 +441,11 @@ public final class ShadowAssetManager {
     int[] ints = new int[items.size()];
     for (int i = 0; i < items.size(); i++) {
       TypedResource typedResource = resolve(items.get(i), RuntimeEnvironment.getQualifiers(), resId);
-      ints[i] = getConverter(typedResource).asInt(typedResource);
+      if (typedResource.getResType() == ResType.INTEGER) {
+        ints[i] = getConverter(typedResource).asInt(typedResource);
+      } else {
+        ints[i] = 0;
+      }
     }
     return ints;
   }

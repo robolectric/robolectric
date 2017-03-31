@@ -1,0 +1,8 @@
+apply plugin: 'java'
+
+dependencies {
+    compile project(":robolectric")
+    compile AndroidSdk.N_MR1.coordinates
+    compile "junit:junit:4.12"
+    compile fileTree(dir: 'libs', include: '*.jar')
+}

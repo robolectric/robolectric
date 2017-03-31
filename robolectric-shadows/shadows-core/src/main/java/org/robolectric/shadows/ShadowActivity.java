@@ -576,4 +576,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       }
     }
   }
+
+  @Implementation
+  public boolean hasWindowFocus() {
+    return true;
+  }
 }

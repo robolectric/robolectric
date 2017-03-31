@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 

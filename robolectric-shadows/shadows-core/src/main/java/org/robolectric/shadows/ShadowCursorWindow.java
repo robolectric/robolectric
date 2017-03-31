@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import android.database.CharArrayBuffer;
 import android.database.Cursor;
 import android.database.CursorWindow;
 import com.almworks.sqlite4java.SQLiteConstants;
@@ -94,6 +95,33 @@ public class ShadowCursorWindow {
   @Implementation(minSdk = LOLLIPOP)
   public static double nativeGetDouble(long windowPtr, int row, int column) {
     return nativeGetNumber(windowPtr, row, column).doubleValue();
+  }
+
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static void nativeCopyStringToBuffer(int windowPtr, int row, int column, CharArrayBuffer buffer) {
+    nativeCopyStringToBuffer((long) windowPtr, row, column, buffer);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public static void nativeCopyStringToBuffer(long windowPtr, int row, int column, CharArrayBuffer buffer) {
+    Value val = WINDOW_DATA.get(windowPtr).value(row, column);
+    switch (val.type) {
+      case Cursor.FIELD_TYPE_STRING:
+        buffer.data = ((String) val.value).toCharArray();
+        break;
+      case Cursor.FIELD_TYPE_INTEGER:
+        buffer.data = String.format("%d", (Integer) val.value).toCharArray();
+        break;
+      case Cursor.FIELD_TYPE_FLOAT:
+        buffer.data = String.format("%g", (Float) val.value).toCharArray();
+        break;
+      case Cursor.FIELD_TYPE_NULL:
+        buffer.data = new char[0];
+        break;
+      case Cursor.FIELD_TYPE_BLOB:
+        throw new RuntimeException("Unable to convert BLOB to string");
+    }
+    buffer.sizeCopied = buffer.data.length;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)

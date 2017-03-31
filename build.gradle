@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 allprojects {
     repositories {
         mavenLocal()
@@ -35,3 +37,85 @@ task aggregateTestReports(type: TestReport) {
 
 // for use of external initialization scripts...
 project.ext.allSdks = AndroidSdk.ALL_SDKS
+
+project(":cts:common:util") {
+    apply plugin: "java"
+
+    sourceSets.main.java.srcDirs = ['src']
+
+    dependencies {
+        compile 'com.google.guava:guava:20.0'
+        compile project(':cts-support')
+        compile AndroidSdk.N_MR1.coordinates
+    }
+}
+
+// naming this :cts:common:device-side:util causes gradle to report a circular dependency... why?!?
+project(":cts:common:device-side") {
+    apply plugin: "java"
+
+    sourceSets.main.java.srcDirs = ['util/src']
+
+    dependencies {
+//        compile project(':cts-support')
+        compile project(':cts:common:util')
+        compile AndroidSdk.N_MR1.coordinates
+        compile "junit:junit:4.12"
+    }
+}
+
+project(":cts:libs:deviceutil") {
+    apply plugin: "java"
+
+    sourceSets.main.java.srcDirs = ['src']
+
+    dependencies {
+        compile project(':cts-support')
+        compile project(':cts:common:device-side')
+        compile project(':cts:common:util')
+        compile AndroidSdk.N_MR1.coordinates
+    }
+}
+
+project(":cts:tests:tests").childProjects.values().each { ctsProject ->
+    configure(ctsProject) {
+        apply plugin: "java"
+
+        def generatedSrcDir = new File("${buildDir}/generated/src/java")
+
+        sourceSets {
+            test.java.srcDirs = ['src', generatedSrcDir]
+        }
+
+        task aapt(type: Exec) {
+            onlyIf { new File('res').isDirectory() }
+
+            doFirst { generatedSrcDir.mkdirs() }
+
+            commandLine '/usr/local/google/home/christianw/Android/Sdk/build-tools/25.0.2/aapt',
+                    'package',
+                    '-S', 'res',
+                    '-M', 'AndroidManifest.xml',
+                    '--non-constant-id',
+                    '-J', generatedSrcDir.toString(),
+                    '-m',
+                    '-I', '/usr/local/google/home/christianw/Android/Sdk/platforms/android-25/android.jar'
+        }
+
+        tasks['compileJava'].dependsOn('aapt')
+
+        dependencies {
+            compile project(":cts-support")
+            compile project(":robolectric")
+            compile project(":cts:libs:deviceutil")
+            compile project(":cts:common:device-side")
+            compile AndroidSdk.N_MR1.coordinates
+
+            // Testing dependencies
+            compile "junit:junit:4.12"
+//        testCompile "org.assertj:assertj-core:2.6.0"
+            compile "org.mockito:mockito-core:2.5.4"
+
+        }
+    }
+}

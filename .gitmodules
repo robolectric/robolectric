@@ -1,0 +1,3 @@
+[submodule "cts"]
+	path = cts
+	url = https://android.googlesource.com/platform/cts

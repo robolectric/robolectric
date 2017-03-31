@@ -19,3 +19,15 @@ include ":integration-tests/libphonenumber"
 include ":integration-tests/mockito"
 include ":integration-tests/mockito-experimental"
 include ":integration-tests/powermock"
+
+include ":cts-support"
+include ":cts:libs:deviceutil"
+include ":cts:common:util"
+include ":cts:common:device-side"
+
+new File("cts/tests/tests").listFiles().each { f ->
+    if (f.isDirectory()) {
+        def projectName = ":${f.toString().replace('/', ':')}"
+        include projectName
+    }
+}
