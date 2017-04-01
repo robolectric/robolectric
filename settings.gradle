@@ -27,7 +27,8 @@ include ":cts:common:device-side"
 
 new File("cts/tests/tests").listFiles().each { f ->
     if (f.isDirectory()) {
-        def projectName = ":${f.toString().replace('/', ':')}"
-        include projectName
+        include ":cts:tests:tests/${f.name}"
     }
 }
+
+include ":cts:all"

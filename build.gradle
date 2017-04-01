@@ -77,7 +77,13 @@ project(":cts:libs:deviceutil") {
     }
 }
 
-project(":cts:tests:tests").childProjects.values().each { ctsProject ->
+project(':cts:all') {
+    task test
+}
+
+def BUILD_TOOLS = '/usr/local/google/home/christianw/Android/Sdk/build-tools/25.0.2'
+
+project(":cts:tests").childProjects.values().each { ctsProject ->
     configure(ctsProject) {
         apply plugin: "java"
 
@@ -88,11 +94,11 @@ project(":cts:tests:tests").childProjects.values().each { ctsProject ->
         }
 
         task aapt(type: Exec) {
-            onlyIf { new File('res').isDirectory() }
+            onlyIf { new File(project.projectDir, 'res').isDirectory() }
 
             doFirst { generatedSrcDir.mkdirs() }
 
-            commandLine '/usr/local/google/home/christianw/Android/Sdk/build-tools/25.0.2/aapt',
+            commandLine "$BUILD_TOOLS/aapt",
                     'package',
                     '-S', 'res',
                     '-M', 'AndroidManifest.xml',
@@ -102,7 +108,31 @@ project(":cts:tests:tests").childProjects.values().each { ctsProject ->
                     '-I', '/usr/local/google/home/christianw/Android/Sdk/platforms/android-25/android.jar'
         }
 
-        tasks['compileJava'].dependsOn('aapt')
+        task renderscript(type: Exec) {
+            def files = fileTree(dir: 'src').matching { include '**/*.rs' }
+
+            onlyIf { files.any() }
+
+            workingDir generatedSrcDir
+
+            def cmd = ["$BUILD_TOOLS/llvm-rs-cc",
+                       '-I', "$BUILD_TOOLS/renderscript/include",
+                       '-I', "$BUILD_TOOLS/renderscript/clang-include"]
+            cmd += files.files*.toString()
+
+            commandLine(*cmd)
+        }
+
+        tasks['compileJava'].dependsOn('aapt', 'renderscript')
+        
+        test {
+            afterTest { TestDescriptor descriptor, TestResult result ->
+                println "descriptor = $descriptor.className $descriptor.name"
+                println "result = $result"
+                def r = new TestResult(descriptor.className, result.runCount, result.failureCount, result.errorCount)
+
+            }
+        }
 
         dependencies {
             compile project(":cts-support")
@@ -117,5 +147,21 @@ project(":cts:tests:tests").childProjects.values().each { ctsProject ->
             compile "org.mockito:mockito-core:2.5.4"
 
         }
+
+        findProject(':cts:all').tasks['test'].dependsOn(tasks['test'])
+    }
+}
+
+class TestResult {
+    String className;
+    int runCount;
+    int failureCount;
+    int errorCount;
+
+    TestResult(String className, int runCount, int failureCount, int errorCount) {
+        this.className = className
+        this.runCount = runCount
+        this.failureCount = failureCount
+        this.errorCount = errorCount
     }
 }

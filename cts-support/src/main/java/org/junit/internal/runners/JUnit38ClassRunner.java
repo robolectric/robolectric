@@ -12,6 +12,7 @@ public class JUnit38ClassRunner extends Runner {
     private volatile Test test;
     private CtsRobolectricTestRunner ctsRobolectricTestRunner;
 
+    @SuppressWarnings("unused")
     public JUnit38ClassRunner(Class<?> klass) {
         this(new TestSuite(klass.asSubclass(TestCase.class)));
         try {

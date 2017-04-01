@@ -8,7 +8,6 @@ import org.junit.internal.runners.JUnit38ClassRunner;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.cts.CtsRobolectricTestRunner;
 
 /**
