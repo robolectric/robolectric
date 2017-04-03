@@ -33,7 +33,6 @@ import java.util.Set;
   RobolectricProcessor.PACKAGE_OPT, 
   RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT})
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
   static final String SHOULD_INSTRUMENT_PKG_OPT = 
@@ -113,5 +112,10 @@ public class RobolectricProcessor extends AbstractProcessor {
           "false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT)) 
           ? false : true;
     }
+  }
+
+  @Override
+  public SourceVersion getSupportedSourceVersion() {
+    return SourceVersion.latest();
   }
 }
