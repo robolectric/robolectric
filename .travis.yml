@@ -31,7 +31,7 @@ before_install:
 script:
   - ./gradlew clean assemble install compileTest --info --stacktrace
   - jdk_switcher use $JDK
-  - ./gradlew test --no-rebuild --continue --info --stacktrace -Drobolectric.enabledSdks=$APIs
+  - NO_REBUILD=true ./gradlew test --no-rebuild --continue --info --stacktrace -Drobolectric.enabledSdks=$APIs
   - jdk_switcher use oraclejdk8
 
 after_success:
