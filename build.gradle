@@ -152,6 +152,12 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
     }
 }
 
+project(':cts:all') {
+    task assemble {
+        dependsOn project(':cts:tests').subprojects.collect { it.tasks['assemble'] }
+    }
+}
+
 class TestResult {
     String className;
     int runCount;
