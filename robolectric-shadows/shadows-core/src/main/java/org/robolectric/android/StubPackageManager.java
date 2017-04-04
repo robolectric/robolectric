@@ -52,6 +52,7 @@ import java.util.List;
  * If there is functionality you are missing you can extend ShadowPackageManager.
  */
 @Instrument
+@Deprecated
 public class StubPackageManager extends PackageManager {
 
   @Override
