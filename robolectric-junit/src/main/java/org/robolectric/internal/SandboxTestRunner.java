@@ -252,7 +252,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod method) {
     List<Class<?>> shadowClasses = new ArrayList<>();
-    addShadows(shadowClasses, getTestClass().getAnnotation(SandboxConfig.class));
+    addShadows(shadowClasses, getTestClass().getJavaClass().getAnnotation(SandboxConfig.class));
     addShadows(shadowClasses, method.getAnnotation(SandboxConfig.class));
     return shadowClasses.toArray(new Class[shadowClasses.size()]);
   }

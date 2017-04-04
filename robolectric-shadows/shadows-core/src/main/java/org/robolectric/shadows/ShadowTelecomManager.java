@@ -146,6 +146,7 @@ public class ShadowTelecomManager {
   }
 
   /** @deprecated */
+  @Deprecated
   @Implementation
   public void clearAccounts() {
     accounts.clear();
@@ -168,6 +169,7 @@ public class ShadowTelecomManager {
   }
 
   /** @deprecated */
+  @Deprecated
   @Implementation
   public ComponentName getDefaultPhoneApp() {
     return null;

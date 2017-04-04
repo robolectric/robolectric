@@ -456,7 +456,7 @@ public class ShadowLocationManager {
   private static float distanceBetween(Location location1, Location location2) {
     double earthRadius = 3958.75;
     double latDifference = Math.toRadians(location2.getLatitude() - location1.getLatitude());
-    double lonDifference = Math.toRadians(location2.getLongitude() - location2.getLongitude());
+    double lonDifference = Math.toRadians(location2.getLongitude() - location1.getLongitude());
     double a = Math.sin(latDifference/2) * Math.sin(latDifference/2) +
         Math.cos(Math.toRadians(location1.getLatitude())) * Math.cos(Math.toRadians(location2.getLatitude())) *
             Math.sin(lonDifference/2) * Math.sin(lonDifference/2);

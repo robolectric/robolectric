@@ -181,8 +181,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
-    final ShadowAccessibilityNodeInfo shadowInfo =
-        ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(info));
+    final ShadowAccessibilityNodeInfo shadowInfo = shadowOf(info);
     final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
 
     sAllocationCount++;
@@ -199,8 +198,7 @@ public class ShadowAccessibilityNodeInfo {
     // non-shadow objects.
     final AccessibilityNodeInfo obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
-    final ShadowAccessibilityNodeInfo shadowObtained =
-        ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(obtainedInstance));
+    final ShadowAccessibilityNodeInfo shadowObtained = shadowOf(obtainedInstance);
 
     /*
      * We keep a separate list of actions for each object newly obtained
@@ -244,8 +242,7 @@ public class ShadowAccessibilityNodeInfo {
   public static boolean areThereUnrecycledNodes(boolean printUnrecycledNodesToSystemErr) {
     if (printUnrecycledNodesToSystemErr) {
       for (final StrictEqualityNodeWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityNodeInfo shadow =
-            ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(wrapper.mInfo));
+        final ShadowAccessibilityNodeInfo shadow = shadowOf(wrapper.mInfo);
 
         System.err.println(String.format(
             "Leaked contentDescription = %s. Stack trace:", shadow.getContentDescription()));
@@ -931,18 +928,17 @@ public class ShadowAccessibilityNodeInfo {
     }
     boolean childrenEquality = true;
     for (int i = 0; i < children.size(); i++) {
-      ShadowAccessibilityNodeInfo childShadow =
-          (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(children.get(i));
+      AccessibilityNodeInfo child = children.get(i);
+      ShadowAccessibilityNodeInfo childShadow = shadowOf(child);
       if (!childShadow.visitedWhenCheckingChildren) {
-        ShadowAccessibilityNodeInfo otherChildShadow =
-            (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(otherShadow.children.get(i));
+        AccessibilityNodeInfo otherChild = otherShadow.children.get(i);
         visitedNodes.add(childShadow);
         childShadow.visitedWhenCheckingChildren = true;
-        if (!childShadow.equals(otherShadow.children.get(i))) {
+        if (!child.equals(otherChild)) {
            childrenEquality = false;
            break;
         }
-        childrenEquality = childShadow.childrenEqualityCheck(otherChildShadow, visitedNodes);
+        childrenEquality = childShadow.childrenEqualityCheck(shadowOf(otherChild), visitedNodes);
       }
     }
     return childrenEquality;
@@ -960,8 +956,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     final AccessibilityNodeInfo info = (AccessibilityNodeInfo) object;
-    final ShadowAccessibilityNodeInfo otherShadow =
-        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(info);
+    final ShadowAccessibilityNodeInfo otherShadow = shadowOf(info);
 
     boolean areEqual = true;
     if (children == null) {
@@ -973,7 +968,7 @@ public class ShadowAccessibilityNodeInfo {
       if (parent == null) {
         areEqual &= (otherShadow.parent == null);
       } else if (!shadowOf(parent).visitedWhenCheckingChildren){
-        areEqual &= (shadowOf(parent).equals(otherShadow.parent));
+        areEqual &= (shadowOf(parent).equals(shadowOf(otherShadow.parent)));
       }
 
       while (!visitedNodes.isEmpty()) {
@@ -1099,8 +1094,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     children.add(child);
-    ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child)).parent =
-        realAccessibilityNodeInfo;
+    (shadowOf(child)).parent = realAccessibilityNodeInfo;
   }
 
   @Implementation
@@ -1152,8 +1146,7 @@ public class ShadowAccessibilityNodeInfo {
     // non-shadow objects.
     final AccessibilityNodeInfo newInfo =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
-    final ShadowAccessibilityNodeInfo newShadow =
-        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(newInfo);
+    final ShadowAccessibilityNodeInfo newShadow = shadowOf(newInfo);
 
     newShadow.boundsInScreen = new Rect(boundsInScreen);
     newShadow.propertyFlags = propertyFlags;

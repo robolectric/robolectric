@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -68,32 +69,26 @@ public class ShadowAccessibilityNodeInfoTest {
   @Test
   public void shouldNotHaveInfiniteLoopWithSameLoopedChildren() {
     node = AccessibilityNodeInfo.obtain();
-    shadow = (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(node);
     AccessibilityNodeInfo child = AccessibilityNodeInfo.obtain();
-    shadow.addChild(child);
-    ShadowAccessibilityNodeInfo childShadow =
-        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child);
-    childShadow.addChild(node);
-    AccessibilityNodeInfo anotherNode = ShadowAccessibilityNodeInfo.obtain(node);
+    shadowOf(node).addChild(child);
+    shadowOf(child).addChild(node);
+    AccessibilityNodeInfo anotherNode = AccessibilityNodeInfo.obtain(node);
     assertThat(node.equals(anotherNode)).isEqualTo(true);
   }
 
   @Test
   public void shouldNotHaveInfiniteLoopWithDifferentLoopedChildren() {
     node = AccessibilityNodeInfo.obtain();
-    shadow = (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(node);
+    shadow = shadowOf(node);
     AccessibilityNodeInfo child1 = AccessibilityNodeInfo.obtain();
     shadow.addChild(child1);
-    ShadowAccessibilityNodeInfo child1Shadow =
-        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child1);
+    ShadowAccessibilityNodeInfo child1Shadow = shadowOf(child1);
     child1Shadow.addChild(node);
     AccessibilityNodeInfo anotherNode = ShadowAccessibilityNodeInfo.obtain(node);
     AccessibilityNodeInfo child2 = ShadowAccessibilityNodeInfo.obtain();
     child2.setText("test");
-    ShadowAccessibilityNodeInfo child2Shadow =
-        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child2);
-    ShadowAccessibilityNodeInfo anotherNodeShadow =
-        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(anotherNode);
+    ShadowAccessibilityNodeInfo child2Shadow = shadowOf(child2);
+    ShadowAccessibilityNodeInfo anotherNodeShadow = shadowOf(anotherNode);
     anotherNodeShadow.addChild(child2);
     child2Shadow.addChild(anotherNode);
     assertThat(node.equals(anotherNode)).isEqualTo(false);
@@ -104,7 +99,7 @@ public class ShadowAccessibilityNodeInfoTest {
   public void shouldRecordFlagsProperly() {
     node = AccessibilityNodeInfo.obtain();
     node.setClickable(false);
-    shadow = (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(node);
+    shadow = shadowOf(node);
     shadow.setPasteable(false);
     assertThat(shadow.isClickable()).isEqualTo(false);
     assertThat(shadow.isPasteable()).isEqualTo(false);
@@ -139,7 +134,7 @@ public class ShadowAccessibilityNodeInfoTest {
   public void shouldRecordActionsPerformed() {
     node.setClickable(true);
     node.addAction(AccessibilityNodeInfo.ACTION_CLICK);
-    shadow = (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(node);
+    shadow = shadowOf(node);
     shadow.setOnPerformActionListener(new ShadowAccessibilityNodeInfo.OnPerformActionListener() {
       @Override
       public boolean onPerformAccessibilityAction(int action, Bundle arguments) {
