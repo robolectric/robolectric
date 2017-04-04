@@ -47,3 +47,16 @@ cache:
   directories:
     - $HOME/.m2
     - $HOME/.gradle
+
+deploy:
+  provider: s3
+  access_key_id: AKIAIYSWQCNR2HRSMA3Q
+  secret_access_key:
+    secure: XLa8jI7kH7W8nxt60HrFwPvGwALfC5xfiQxamuX3ZONF+YVrE7Fp6Ms0v7Z5I7w8TGNeqSld70hRTZG/k8/eV7wTI+eDcyi1URo3t76OvPV8JxrXgLCtl/yzJgqPuA8RwXZMtcPb0cbEttuPAHyiS3St5Q4Llda9ge20qMJ2yds=
+  bucket: robolectric
+  acl: public_read
+  upload-dir: test-results
+  local_dir: build/reports/allTests
+  skip_cleanup: true
+  on:
+    all_branches: true

@@ -27,7 +27,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 incremental = true
             }
 
-            def noRebuild = System.getenv()["NO_REBUILD"] == "true"
+            def noRebuild = System.getenv('NO_REBUILD') == "true"
             if (noRebuild) {
                 println "[NO_REBUILD] $task will be skipped!"
                 task.outputs.upToDateWhen { true }
@@ -82,6 +82,9 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                     println "Running tests with ${forwardedSystemProperties}"
                 }
             }
+
+            rootProject.tasks['aggregateTestReports'].reportOn binResultsDir
+            finalizedBy ':aggregateTestReports'
         }
 
         if (owner.deploy) {
@@ -105,7 +108,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 sign configurations.archives
             }
 
-            def skipJavadoc = System.getenv()["SKIP_JAVADOC"] == "true"
+            def skipJavadoc = System.getenv('SKIP_JAVADOC') == "true"
             artifacts {
                 archives jar
                 archives sourcesJar
