@@ -4,5 +4,6 @@ dependencies {
     compile project(":robolectric")
     compile AndroidSdk.N_MR1.coordinates
     compile "junit:junit:4.12"
+    compile "org.yaml:snakeyaml:1.18"
     compile fileTree(dir: 'libs', include: '*.jar')
 }

@@ -125,15 +125,6 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
 
         tasks['compileJava'].dependsOn('aapt', 'renderscript')
         
-        test {
-            afterTest { TestDescriptor descriptor, TestResult result ->
-                println "descriptor = $descriptor.className $descriptor.name"
-                println "result = $result"
-                def r = new TestResult(descriptor.className, result.runCount, result.failureCount, result.errorCount)
-
-            }
-        }
-
         dependencies {
             compile project(":cts-support")
             compile project(":robolectric")
@@ -146,6 +137,12 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
 //        testCompile "org.assertj:assertj-core:2.6.0"
             compile "org.mockito:mockito-core:2.5.4"
 
+        }
+
+        test {
+            testLogging {
+                showStandardStreams = true
+            }
         }
 
         findProject(':cts:all').tasks['test'].dependsOn(tasks['test'])

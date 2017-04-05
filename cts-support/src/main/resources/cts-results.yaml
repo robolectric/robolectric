@@ -1,0 +1,277 @@
+classes:
+  android.content.cts.AsyncQueryHandlerTest:
+    failed:
+    - testStartDelete
+    - testStartInsert
+    - testStartQuery
+    - testStartUpdate
+
+  android.content.cts.AvailableIntentsTest:
+    failed:
+    - testAlarmClock
+    - testCalendarAddAppointment
+    - testCreateDocument
+    - testGetContentAny
+    - testGetContentImage
+    - testManageStorage
+    - testMusicPlayback
+    - testOpenDocumentAny
+    - testOpenDocumentImage
+    - testRingtonePicker
+    - testSettings
+    - testViewDownloads
+    - testViewNormalUrl
+    - testViewSecureUrl
+    - testVoiceCommand
+    - testVoiceSearchHandsFree
+    - testWebSearchNormalUrl
+    - testWebSearchPlainText
+    - testWebSearchSecureUrl
+
+  android.content.cts.BroadcastReceiverTest:
+    failed:
+    - testAbortBroadcast
+    - testDisabledBroadcastReceiver
+    - testPeekService
+
+  android.content.cts.ClipboardManagerTest:
+    failed:
+    - testSetPrimaryClip_contentUri
+    - testSetPrimaryClip_intent
+    - testSetPrimaryClip_rawUri
+
+  android.content.cts.ContentResolverSyncTestCase:
+    failed:
+    - testCallMultipleAccounts
+    - testCancelSync
+    - testGetSyncAdapterTypes
+    - testRequestSync
+    - testStartSyncFailure
+
+  android.content.cts.ContentResolverTest:
+    failed:
+    - testBulkInsert
+    - testCancelableQuery_WhenCanceledDuringLongRunningQuery_CancelsQueryAndThrows
+    - testCrashingOpenAssetFileDescriptor
+    - testCrashingOpenTypedAssetFileDescriptor
+    - testCrashOnLaunch
+    - testDelete
+    - testGetType
+    - testOpenAssetFileDescriptor
+    - testOpenInputStream
+    - testOpenOutputStream
+    - testQuery
+    - testRegisterContentObserverDescendantBehavior
+    - testRegisterContentObserver
+    - testStableToUnstableRefs
+    - testStartSyncFailure
+    - testUnstableGetType
+    - testUnstableToStableRefs
+    - testUpdate
+
+  android.content.cts.ContentUrisTest:
+    failed:
+    - testParseIdFailure
+
+  android.content.cts.ContextTest:
+    failed:
+    - testMoveDatabaseFrom
+    - testMoveSharedPreferencesFrom
+    - testObtainStyledAttributes
+
+  android.content.cts.ContextWrapperTest:
+    failed:
+    - testAccessService
+    - testAccessStickyBroadcast
+    - testAccessWallpaper
+    - testCheckCallingOrSelfPermission
+    - testCheckCallingOrSelfUriPermission
+    - testCheckPermission
+    - testCheckUriPermission1
+    - testCheckUriPermission2
+    - testEnforceCallingOrSelfUriPermission
+    - testEnforceUriPermission1
+    - testEnforceUriPermission2
+    - testGetWallpaperDesiredMinimumHeightAndWidth
+    - testRegisterReceiver1
+    - testSendOrderedBroadcast1
+    - testStartActivity
+
+  android.content.cts.ImageCaptureUriExtraToClipDataTest:
+    failed:
+    - testUriExtraOutputMigratedToClipData_imageCaptureIntent
+    - testUriExtraOutputMigratedToClipData_imageCaptureSecureIntent
+    - testUriExtraOutputMigratedToClipData_videoCaptureIntent
+
+  android.content.cts.IntentFilterTest:
+    failed:
+    - testReadFromXml
+
+  android.content.cts.IntentTest:
+    failed:
+    - testParseIntent
+    - testRemoveUnsafeExtras
+    - testResolveActivityMultipleMatch
+    - testResolveActivitySingleMatch
+
+  android.content.cts.ReadableUriExtraToClipDataTest:
+    failed:
+    - testUriExtraStreamMigratedToClipData_sendIntent
+    - testUriExtraStreamMigratedToClipData_sendMultipleIntent
+
+  android.content.cts.SharedPreferencesTest:
+    failed:
+    - testCommitCreatesFiles
+    - testModeMultiProcess
+    - testNonRedundantClear
+    - testNonRedundantString
+    - testRedundantBoolean
+    - testRedundantClear
+    - testRedundantCommitWritesFileIfNotAlreadyExisting
+    - testRedundantRemove
+    - testRedundantString
+    - testTorture2
+
+  android.content.cts.SyncStorageEngineTest:
+    failed:
+    - testMalformedAuthority
+
+  android.content.pm.cts.ApplicationInfo_DisplayNameComparatorTest:
+    failed:
+    - testCompare
+
+  android.content.pm.cts.ApplicationInfoTest:
+    failed:
+    - testLoadDescription
+
+  android.content.pm.cts.ComponentInfoTest:
+    failed:
+    - testLoadIcon
+    - testLoadLabel
+
+  android.content.pm.cts.ConfigurationInfoTest:
+    failed:
+    - testConfigPreferences
+
+  android.content.pm.cts.FeatureGroupInfoTest:
+    failed:
+    - testFeatureGroupsAreCorrect
+
+  android.content.pm.cts.InstrumentationInfoTest:
+    failed:
+    - testInstrumentationInfo
+
+  android.content.pm.cts.PackageItemInfoTest:
+    failed:
+    - testLoadMethods
+    - testWriteToParcel
+
+  android.content.pm.cts.PackageManagerTest:
+    failed:
+    - testAddPreferredActivity
+    - testCheckMethods
+    - testGetIcon
+    - testGetInfo
+    - testGetPackageArchiveInfo
+    - testGetResources
+    - testQuery
+    - testResolveMethods
+
+  android.content.pm.cts.PermissionGroupInfoTest:
+    failed:
+    - testPermissionGroupInfo
+
+  android.content.pm.cts.PermissionInfoTest:
+    failed:
+    - testPermissionInfo
+
+  android.content.pm.cts.ProviderInfoTest:
+    failed:
+    - testProviderInfo
+    - testProviderMetaData
+
+  android.content.pm.cts.ResolveInfoTest:
+    failed:
+    - testDump
+    - testResolveInfo
+
+  android.content.res.cts.AssetFileDescriptorTest:
+    failed:
+    - testInputOutputStream
+    - testMiscMethod
+
+  android.content.res.cts.AssetManager_AssetInputStreamTest:
+    failed:
+    - testAndroidTestCaseSetupProperly
+    - testClose
+    - testGetAssetInt
+    - testMarkReset
+    - testReadMethods
+
+  android.content.res.cts.AssetManagerTest:
+    failed:
+    - testAssetOperations
+    - testClose
+    - testGetNonSystemLocales
+
+  android.content.res.cts.ColorStateListTest:
+    failed:
+    - testGetChangingConfigurations
+
+  android.content.res.cts.ConfigTest:
+    failed:
+    - testAllClassicConfigs
+    - testAllEmptyConfigs
+    - testCombinations
+    - testDensity
+    - testExtendedLocales
+    - testGetLocalesConvertsTlToFil
+    - testNewScreenSize
+    - testPrecidence
+    - testScreenSize
+    - testTlAndFilConversion
+    - testVersions
+
+  android.content.res.cts.FractionTest:
+    failed:
+    - testFractions
+
+  android.content.res.cts.PluralResourcesTest:
+    failed:
+    - testCzech
+    - testPlurals
+
+  android.content.res.cts.PrivateAttributeTest:
+    failed:
+    - testNoAttributesAfterLastPublicAttribute
+
+  android.content.res.cts.ResourcesTest:
+    failed:
+    - testGetAnimation
+    - testGetDrawable
+    - testGetDrawableForDensity
+    - testGetLayout
+    - testGetMovie
+    - testGetQuantityString1
+    - testGetQuantityString2
+    - testGetQuantityText
+    - testGetValue
+    - testGetValueForDensity
+    - testObtainAttributes
+    - testRawResource
+
+  android.content.res.cts.Resources_ThemeTest:
+    failed:
+    - testGetChangingConfigurations
+    - testGetDrawable
+    - testObtainStyledAttributes
+    - testRebase
+    - testResolveAttribute
+    - testSetMethods
+
+  android.content.res.cts.TypedArrayTest:
+    failed:
+    - testBasics
+    - testGetType
+    - testNonResourceString
+    - testPeekValue

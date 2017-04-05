@@ -2,7 +2,6 @@ package org.robolectric.cts;
 
 import android.app.Instrumentation;
 import junit.framework.Test;
-import org.junit.rules.Timeout;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -15,22 +14,41 @@ import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.manifest.AndroidManifest;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.introspector.BeanAccess;
 
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 
 public class CtsRobolectricTestRunner extends RobolectricTestRunner {
 
   private boolean isJunit3;
+  private final CtsResults ctsResults;
 
   public CtsRobolectricTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass);
 
+    Yaml yaml = new Yaml();
+    yaml.setBeanAccess(BeanAccess.FIELD);
+    InputStream in = getClass().getClassLoader().getResourceAsStream("cts-results.yaml");
+    ctsResults = yaml.loadAs(in, CtsResults.class);
+  }
+
+  public static class CtsResults {
+    Map<String, CtsTestClass> classes = new HashMap<>();
+  }
+
+  public static class CtsTestClass {
+    Set<String> failed = new HashSet<>();
   }
 
   @Override
@@ -113,6 +131,17 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
         return new Statement() {
           @Override
           public void evaluate() throws Throwable {
+            boolean expectFailure = false;
+            CtsTestClass ctsTestClass = ctsResults.classes.get(method.getDeclaringClass().getName());
+            if (ctsTestClass != null) {
+              if (ctsTestClass.failed.contains(method.getName())) {
+                expectFailure = true;
+              }
+            }
+
+            System.out.println("method = " + method);
+            System.out.println("expectFailure = " + expectFailure);
+
             Thread mainThread = Thread.currentThread();
             Thread warningThread = new Thread(() -> {
               try {
@@ -142,6 +171,18 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
 
             try {
               statement.evaluate();
+
+              if (expectFailure) {
+                throw new RuntimeException("Expected failure for " + method + ", but it passed!");
+              }
+            } catch (Exception e) {
+              if (expectFailure) {
+                System.out.println("Expected failure for " + method + ", and got it!");
+                e.printStackTrace();
+              } else {
+                System.out.println("Did not expect failure for " + method + "!");
+                throw e;
+              }
             } catch (ThreadDeath threadDeath) {
               threadDeath.printStackTrace();
             } finally {
