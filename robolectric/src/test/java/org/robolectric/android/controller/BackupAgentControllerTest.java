@@ -8,16 +8,14 @@ import android.os.ParcelFileDescriptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
+import org.robolectric.TestRunners;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = 23)
+@RunWith(TestRunners.SelfTest.class)
 public class BackupAgentControllerTest {
   private final BackupAgentController<MyBackupAgent> backupAgentController = Robolectric.buildBackupAgent(MyBackupAgent.class);
 
