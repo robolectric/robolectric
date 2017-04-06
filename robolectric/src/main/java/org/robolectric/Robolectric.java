@@ -85,6 +85,10 @@ public class Robolectric {
     return buildContentProvider(contentProviderClass).create().get();
   }
 
+  public static <T extends ContentProvider> T setupContentProvider(String authority, Class<T> contentProviderClass) {
+    return buildContentProvider(contentProviderClass).create(authority).get();
+  }
+
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
     return buildActivity(activityClass, null);
   }
