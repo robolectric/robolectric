@@ -57,11 +57,12 @@ public class ContentProviderController<T extends ContentProvider> extends org.ro
    * @return this {@link ContentProviderController}
    */
   public ContentProviderController<T> create(ProviderInfo providerInfo) {
+    Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    contentProvider.attachInfo(baseContext, providerInfo);
+
     if (providerInfo != null) {
       ShadowContentResolver.registerProviderInternal(providerInfo.authority, contentProvider);
     }
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
-    contentProvider.attachInfo(baseContext, providerInfo);
 
     return this;
   }
