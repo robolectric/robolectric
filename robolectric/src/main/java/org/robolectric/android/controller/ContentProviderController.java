@@ -23,6 +23,7 @@ public class ContentProviderController<T extends ContentProvider> extends org.ro
   /**
    * Create and register {@link ContentProvider} using {@link ProviderInfo} found from manifest.
    */
+  @Override
   public ContentProviderController<T> create() {
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
@@ -56,6 +57,7 @@ public class ContentProviderController<T extends ContentProvider> extends org.ro
    * @param providerInfo the {@link ProviderInfo} to use
    * @return this {@link ContentProviderController}
    */
+  @Override
   public ContentProviderController<T> create(ProviderInfo providerInfo) {
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
     contentProvider.attachInfo(baseContext, providerInfo);
@@ -67,10 +69,12 @@ public class ContentProviderController<T extends ContentProvider> extends org.ro
     return this;
   }
 
+  @Override
   public T get() {
     return contentProvider;
   }
 
+  @Override
   public ContentProviderController<T> shutdown() {
     contentProvider.shutdown();
     return this;

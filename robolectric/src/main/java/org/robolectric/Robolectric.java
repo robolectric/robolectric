@@ -85,7 +85,7 @@ public class Robolectric {
     return buildContentProvider(contentProviderClass).create().get();
   }
 
-  public static <T extends ContentProvider> T setupContentProvider(String authority, Class<T> contentProviderClass) {
+  public static <T extends ContentProvider> T setupContentProvider(Class<T> contentProviderClass, String authority) {
     return buildContentProvider(contentProviderClass).create(authority).get();
   }
 

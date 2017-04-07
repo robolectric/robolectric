@@ -4,7 +4,6 @@ import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.IContentProvider;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
@@ -98,7 +97,7 @@ public class ContentProviderControllerTest {
 
   @Test
   public void contentProviderShouldBeCreatedBeforeBeingRegistered() throws Exception {
-    XContentProvider xContentProvider = Robolectric.setupContentProvider("x-authority", XContentProvider.class);
+    XContentProvider xContentProvider = Robolectric.setupContentProvider(XContentProvider.class, "x-authority");
     assertThat(xContentProvider.transcript).containsExactly("x-authority not registered yet");
     ContentProviderClient contentProviderClient = contentResolver.acquireContentProviderClient("x-authority");
     assertThat(contentProviderClient.getLocalContentProvider()).isSameAs(xContentProvider);
