@@ -4,10 +4,12 @@ import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.IContentProvider;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.net.Uri;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -19,11 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 23)
 public class ContentProviderControllerTest {
   private final ContentProviderController<MyContentProvider> controller = Robolectric.buildContentProvider(MyContentProvider.class);
+  private ContentResolver contentResolver;
+
+  @Before
+  public void setUp() throws Exception {
+    contentResolver = RuntimeEnvironment.application.getContentResolver();
+  }
 
   @Test
   public void shouldSetBaseContext() throws Exception {
@@ -51,7 +60,6 @@ public class ContentProviderControllerTest {
   public void shouldRegisterWithContentResolver() throws Exception {
     controller.create().get();
 
-    ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
     ContentProviderClient client = contentResolver.acquireContentProviderClient("org.robolectric.authority2");
     client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
     assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
@@ -83,14 +91,33 @@ public class ContentProviderControllerTest {
     providerInfo.authority = "some-authority";
     controller.create(providerInfo);
 
-    ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
     ContentProviderClient client = contentResolver.acquireContentProviderClient(providerInfo.authority);
     client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
     assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
   }
 
+  @Test
+  public void contentProviderShouldBeCreatedBeforeBeingRegistered() throws Exception {
+    XContentProvider xContentProvider = Robolectric.setupContentProvider("x-authority", XContentProvider.class);
+    assertThat(xContentProvider.transcript).containsExactly("x-authority not registered yet");
+    ContentProviderClient contentProviderClient = contentResolver.acquireContentProviderClient("x-authority");
+    assertThat(contentProviderClient.getLocalContentProvider()).isSameAs(xContentProvider);
+  }
+
+  ////////////////////
+
+  static class XContentProvider extends MyContentProvider {
+    @Override
+    public boolean onCreate() {
+      ContentProviderClient contentProviderClient = RuntimeEnvironment.application.getContentResolver()
+          .acquireContentProviderClient("x-authority");
+      transcript.add(contentProviderClient == null ? "x-authority not registered yet" : "x-authority is registered");
+      return false;
+    }
+  }
+
   public static class MyContentProvider extends ContentProvider {
-    private final List<String> transcript = new ArrayList<>();
+    final List<String> transcript = new ArrayList<>();
 
     @Override
     public boolean onCreate() {
