@@ -21,11 +21,9 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 
 import static java.util.Arrays.asList;
 
@@ -44,11 +42,15 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
   }
 
   public static class CtsResults {
-    Map<String, CtsTestClass> classes = new HashMap<>();
+    Map<String, CtsTestClass> classes = new TreeMap<>();
   }
 
   public static class CtsTestClass {
-    Set<String> failed = new HashSet<>();
+    Map<String, CtsTestResult> methods = new TreeMap<>();
+  }
+
+  public enum CtsTestResult {
+    PASS, FAIL, TIMEOUT
   }
 
   @Override
@@ -131,16 +133,19 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
         return new Statement() {
           @Override
           public void evaluate() throws Throwable {
-            boolean expectFailure = false;
+            CtsTestResult expectedResult = null;
             CtsTestClass ctsTestClass = ctsResults.classes.get(method.getDeclaringClass().getName());
             if (ctsTestClass != null) {
-              if (ctsTestClass.failed.contains(method.getName())) {
-                expectFailure = true;
-              }
+              expectedResult = ctsTestClass.methods.get(method.getName());
             }
 
             System.out.println("method = " + method);
-            System.out.println("expectFailure = " + expectFailure);
+            System.out.println("expectedResult = " + expectedResult);
+
+            if (expectedResult == CtsTestResult.TIMEOUT) {
+              // don't run, it'll probably hang...
+              return;
+            }
 
             Thread mainThread = Thread.currentThread();
             Thread warningThread = new Thread(() -> {
@@ -169,13 +174,13 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
             });
             warningThread.start();
 
+            CtsTestResult actualResult = null;
             try {
               statement.evaluate();
 
-              if (expectFailure) {
-                throw new RuntimeException("Expected failure for " + method + ", but it passed!");
-              }
+              actualResult = CtsTestResult.PASS;
             } catch (Exception e) {
+              actualResult = CtsTestResult.FAIL;
               if (expectFailure) {
                 System.out.println("Expected failure for " + method + ", and got it!");
                 e.printStackTrace();

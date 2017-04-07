@@ -1,277 +1,277 @@
 classes:
   android.content.cts.AsyncQueryHandlerTest:
-    failed:
-    - testStartDelete
-    - testStartInsert
-    - testStartQuery
-    - testStartUpdate
+    methods:
+      testStartDelete: FAIL
+      testStartInsert: FAIL
+      testStartQuery: FAIL
+      testStartUpdate: FAIL
 
   android.content.cts.AvailableIntentsTest:
-    failed:
-    - testAlarmClock
-    - testCalendarAddAppointment
-    - testCreateDocument
-    - testGetContentAny
-    - testGetContentImage
-    - testManageStorage
-    - testMusicPlayback
-    - testOpenDocumentAny
-    - testOpenDocumentImage
-    - testRingtonePicker
-    - testSettings
-    - testViewDownloads
-    - testViewNormalUrl
-    - testViewSecureUrl
-    - testVoiceCommand
-    - testVoiceSearchHandsFree
-    - testWebSearchNormalUrl
-    - testWebSearchPlainText
-    - testWebSearchSecureUrl
+    methods:
+      testAlarmClock: FAIL
+      testCalendarAddAppointment: FAIL
+      testCreateDocument: FAIL
+      testGetContentAny: FAIL
+      testGetContentImage: FAIL
+      testManageStorage: FAIL
+      testMusicPlayback: FAIL
+      testOpenDocumentAny: FAIL
+      testOpenDocumentImage: FAIL
+      testRingtonePicker: FAIL
+      testSettings: FAIL
+      testViewDownloads: FAIL
+      testViewNormalUrl: FAIL
+      testViewSecureUrl: FAIL
+      testVoiceCommand: FAIL
+      testVoiceSearchHandsFree: FAIL
+      testWebSearchNormalUrl: FAIL
+      testWebSearchPlainText: FAIL
+      testWebSearchSecureUrl: FAIL
 
   android.content.cts.BroadcastReceiverTest:
-    failed:
-    - testAbortBroadcast
-    - testDisabledBroadcastReceiver
-    - testPeekService
+    methods:
+      testAbortBroadcast: FAIL
+      testDisabledBroadcastReceiver: FAIL
+      testPeekService: FAIL
 
   android.content.cts.ClipboardManagerTest:
-    failed:
-    - testSetPrimaryClip_contentUri
-    - testSetPrimaryClip_intent
-    - testSetPrimaryClip_rawUri
+    methods:
+      testSetPrimaryClip_contentUri: FAIL
+      testSetPrimaryClip_intent: FAIL
+      testSetPrimaryClip_rawUri: FAIL
 
   android.content.cts.ContentResolverSyncTestCase:
-    failed:
-    - testCallMultipleAccounts
-    - testCancelSync
-    - testGetSyncAdapterTypes
-    - testRequestSync
-    - testStartSyncFailure
+    methods:
+      testCallMultipleAccounts: FAIL
+      testCancelSync: FAIL
+      testGetSyncAdapterTypes: FAIL
+      testRequestSync: FAIL
+      testStartSyncFailure: FAIL
 
   android.content.cts.ContentResolverTest:
-    failed:
-    - testBulkInsert
-    - testCancelableQuery_WhenCanceledDuringLongRunningQuery_CancelsQueryAndThrows
-    - testCrashingOpenAssetFileDescriptor
-    - testCrashingOpenTypedAssetFileDescriptor
-    - testCrashOnLaunch
-    - testDelete
-    - testGetType
-    - testOpenAssetFileDescriptor
-    - testOpenInputStream
-    - testOpenOutputStream
-    - testQuery
-    - testRegisterContentObserverDescendantBehavior
-    - testRegisterContentObserver
-    - testStableToUnstableRefs
-    - testStartSyncFailure
-    - testUnstableGetType
-    - testUnstableToStableRefs
-    - testUpdate
+    methods:
+      testBulkInsert: FAIL
+      testCancelableQuery_WhenCanceledDuringLongRunningQuery_CancelsQueryAndThrows: FAIL
+      testCrashingOpenAssetFileDescriptor: FAIL
+      testCrashingOpenTypedAssetFileDescriptor: FAIL
+      testCrashOnLaunch: FAIL
+      testDelete: FAIL
+      testGetType: FAIL
+      testOpenAssetFileDescriptor: FAIL
+      testOpenInputStream: FAIL
+      testOpenOutputStream: FAIL
+      testQuery: FAIL
+      testRegisterContentObserverDescendantBehavior: FAIL
+      testRegisterContentObserver: FAIL
+      testStableToUnstableRefs: FAIL
+      testStartSyncFailure: FAIL
+      testUnstableGetType: FAIL
+      testUnstableToStableRefs: FAIL
+      testUpdate: FAIL
 
   android.content.cts.ContentUrisTest:
-    failed:
-    - testParseIdFailure
+    methods:
+      testParseIdFailure: FAIL
 
   android.content.cts.ContextTest:
-    failed:
-    - testMoveDatabaseFrom
-    - testMoveSharedPreferencesFrom
-    - testObtainStyledAttributes
+    methods:
+      testMoveDatabaseFrom: FAIL
+      testMoveSharedPreferencesFrom: FAIL
+      testObtainStyledAttributes: FAIL
 
   android.content.cts.ContextWrapperTest:
-    failed:
-    - testAccessService
-    - testAccessStickyBroadcast
-    - testAccessWallpaper
-    - testCheckCallingOrSelfPermission
-    - testCheckCallingOrSelfUriPermission
-    - testCheckPermission
-    - testCheckUriPermission1
-    - testCheckUriPermission2
-    - testEnforceCallingOrSelfUriPermission
-    - testEnforceUriPermission1
-    - testEnforceUriPermission2
-    - testGetWallpaperDesiredMinimumHeightAndWidth
-    - testRegisterReceiver1
-    - testSendOrderedBroadcast1
-    - testStartActivity
+    methods:
+      testAccessService: FAIL
+      testAccessStickyBroadcast: FAIL
+      testAccessWallpaper: FAIL
+      testCheckCallingOrSelfPermission: FAIL
+      testCheckCallingOrSelfUriPermission: FAIL
+      testCheckPermission: FAIL
+      testCheckUriPermission1
+      testCheckUriPermission2
+      testEnforceCallingOrSelfUriPermission: FAIL
+      testEnforceUriPermission1
+      testEnforceUriPermission2
+      testGetWallpaperDesiredMinimumHeightAndWidth: FAIL
+      testRegisterReceiver1
+      testSendOrderedBroadcast1
+      testStartActivity: FAIL
 
   android.content.cts.ImageCaptureUriExtraToClipDataTest:
-    failed:
-    - testUriExtraOutputMigratedToClipData_imageCaptureIntent
-    - testUriExtraOutputMigratedToClipData_imageCaptureSecureIntent
-    - testUriExtraOutputMigratedToClipData_videoCaptureIntent
+    methods:
+      testUriExtraOutputMigratedToClipData_imageCaptureIntent: FAIL
+      testUriExtraOutputMigratedToClipData_imageCaptureSecureIntent: FAIL
+      testUriExtraOutputMigratedToClipData_videoCaptureIntent: FAIL
 
   android.content.cts.IntentFilterTest:
-    failed:
-    - testReadFromXml
+    methods:
+      testReadFromXml: FAIL
 
   android.content.cts.IntentTest:
-    failed:
-    - testParseIntent
-    - testRemoveUnsafeExtras
-    - testResolveActivityMultipleMatch
-    - testResolveActivitySingleMatch
+    methods:
+      testParseIntent: FAIL
+      testRemoveUnsafeExtras: FAIL
+      testResolveActivityMultipleMatch: FAIL
+      testResolveActivitySingleMatch: FAIL
 
   android.content.cts.ReadableUriExtraToClipDataTest:
-    failed:
-    - testUriExtraStreamMigratedToClipData_sendIntent
-    - testUriExtraStreamMigratedToClipData_sendMultipleIntent
+    methods:
+      testUriExtraStreamMigratedToClipData_sendIntent: FAIL
+      testUriExtraStreamMigratedToClipData_sendMultipleIntent: FAIL
 
   android.content.cts.SharedPreferencesTest:
-    failed:
-    - testCommitCreatesFiles
-    - testModeMultiProcess
-    - testNonRedundantClear
-    - testNonRedundantString
-    - testRedundantBoolean
-    - testRedundantClear
-    - testRedundantCommitWritesFileIfNotAlreadyExisting
-    - testRedundantRemove
-    - testRedundantString
-    - testTorture2
+    methods:
+      testCommitCreatesFiles: FAIL
+      testModeMultiProcess: FAIL
+      testNonRedundantClear: FAIL
+      testNonRedundantString: FAIL
+      testRedundantBoolean: FAIL
+      testRedundantClear: FAIL
+      testRedundantCommitWritesFileIfNotAlreadyExisting: FAIL
+      testRedundantRemove: FAIL
+      testRedundantString: FAIL
+      testTorture2
 
   android.content.cts.SyncStorageEngineTest:
-    failed:
-    - testMalformedAuthority
+    methods:
+      testMalformedAuthority: FAIL
 
   android.content.pm.cts.ApplicationInfo_DisplayNameComparatorTest:
-    failed:
-    - testCompare
+    methods:
+      testCompare: FAIL
 
   android.content.pm.cts.ApplicationInfoTest:
-    failed:
-    - testLoadDescription
+    methods:
+      testLoadDescription: FAIL
 
   android.content.pm.cts.ComponentInfoTest:
-    failed:
-    - testLoadIcon
-    - testLoadLabel
+    methods:
+      testLoadIcon: FAIL
+      testLoadLabel: FAIL
 
   android.content.pm.cts.ConfigurationInfoTest:
-    failed:
-    - testConfigPreferences
+    methods:
+      testConfigPreferences: FAIL
 
   android.content.pm.cts.FeatureGroupInfoTest:
-    failed:
-    - testFeatureGroupsAreCorrect
+    methods:
+      testFeatureGroupsAreCorrect: FAIL
 
   android.content.pm.cts.InstrumentationInfoTest:
-    failed:
-    - testInstrumentationInfo
+    methods:
+      testInstrumentationInfo: FAIL
 
   android.content.pm.cts.PackageItemInfoTest:
-    failed:
-    - testLoadMethods
-    - testWriteToParcel
+    methods:
+      testLoadMethods: FAIL
+      testWriteToParcel: FAIL
 
   android.content.pm.cts.PackageManagerTest:
-    failed:
-    - testAddPreferredActivity
-    - testCheckMethods
-    - testGetIcon
-    - testGetInfo
-    - testGetPackageArchiveInfo
-    - testGetResources
-    - testQuery
-    - testResolveMethods
+    methods:
+      testAddPreferredActivity: FAIL
+      testCheckMethods: FAIL
+      testGetIcon: FAIL
+      testGetInfo: FAIL
+      testGetPackageArchiveInfo: FAIL
+      testGetResources: FAIL
+      testQuery: FAIL
+      testResolveMethods: FAIL
 
   android.content.pm.cts.PermissionGroupInfoTest:
-    failed:
-    - testPermissionGroupInfo
+    methods:
+      testPermissionGroupInfo: FAIL
 
   android.content.pm.cts.PermissionInfoTest:
-    failed:
-    - testPermissionInfo
+    methods:
+      testPermissionInfo: FAIL
 
   android.content.pm.cts.ProviderInfoTest:
-    failed:
-    - testProviderInfo
-    - testProviderMetaData
+    methods:
+      testProviderInfo: FAIL
+      testProviderMetaData: FAIL
 
   android.content.pm.cts.ResolveInfoTest:
-    failed:
-    - testDump
-    - testResolveInfo
+    methods:
+      testDump: FAIL
+      testResolveInfo: FAIL
 
   android.content.res.cts.AssetFileDescriptorTest:
-    failed:
-    - testInputOutputStream
-    - testMiscMethod
+    methods:
+      testInputOutputStream: FAIL
+      testMiscMethod: FAIL
 
   android.content.res.cts.AssetManager_AssetInputStreamTest:
-    failed:
-    - testAndroidTestCaseSetupProperly
-    - testClose
-    - testGetAssetInt
-    - testMarkReset
-    - testReadMethods
+    methods:
+      testAndroidTestCaseSetupProperly: FAIL
+      testClose: FAIL
+      testGetAssetInt: FAIL
+      testMarkReset: FAIL
+      testReadMethods: FAIL
 
   android.content.res.cts.AssetManagerTest:
-    failed:
-    - testAssetOperations
-    - testClose
-    - testGetNonSystemLocales
+    methods:
+      testAssetOperations: FAIL
+      testClose: FAIL
+      testGetNonSystemLocales: FAIL
 
   android.content.res.cts.ColorStateListTest:
-    failed:
-    - testGetChangingConfigurations
+    methods:
+      testGetChangingConfigurations: FAIL
 
   android.content.res.cts.ConfigTest:
-    failed:
-    - testAllClassicConfigs
-    - testAllEmptyConfigs
-    - testCombinations
-    - testDensity
-    - testExtendedLocales
-    - testGetLocalesConvertsTlToFil
-    - testNewScreenSize
-    - testPrecidence
-    - testScreenSize
-    - testTlAndFilConversion
-    - testVersions
+    methods:
+      testAllClassicConfigs: FAIL
+      testAllEmptyConfigs: FAIL
+      testCombinations: FAIL
+      testDensity: FAIL
+      testExtendedLocales: FAIL
+      testGetLocalesConvertsTlToFil: FAIL
+      testNewScreenSize: FAIL
+      testPrecidence: FAIL
+      testScreenSize: FAIL
+      testTlAndFilConversion: FAIL
+      testVersions: FAIL
 
   android.content.res.cts.FractionTest:
-    failed:
-    - testFractions
+    methods:
+      testFractions: FAIL
 
   android.content.res.cts.PluralResourcesTest:
-    failed:
-    - testCzech
-    - testPlurals
+    methods:
+      testCzech: FAIL
+      testPlurals: FAIL
 
   android.content.res.cts.PrivateAttributeTest:
-    failed:
-    - testNoAttributesAfterLastPublicAttribute
+    methods:
+      testNoAttributesAfterLastPublicAttribute: FAIL
 
   android.content.res.cts.ResourcesTest:
-    failed:
-    - testGetAnimation
-    - testGetDrawable
-    - testGetDrawableForDensity
-    - testGetLayout
-    - testGetMovie
-    - testGetQuantityString1
-    - testGetQuantityString2
-    - testGetQuantityText
-    - testGetValue
-    - testGetValueForDensity
-    - testObtainAttributes
-    - testRawResource
+    methods:
+      testGetAnimation: FAIL
+      testGetDrawable: FAIL
+      testGetDrawableForDensity: FAIL
+      testGetLayout: FAIL
+      testGetMovie: FAIL
+      testGetQuantityString1
+      testGetQuantityString2
+      testGetQuantityText: FAIL
+      testGetValue: FAIL
+      testGetValueForDensity: FAIL
+      testObtainAttributes: FAIL
+      testRawResource: FAIL
 
   android.content.res.cts.Resources_ThemeTest:
-    failed:
-    - testGetChangingConfigurations
-    - testGetDrawable
-    - testObtainStyledAttributes
-    - testRebase
-    - testResolveAttribute
-    - testSetMethods
+    methods:
+      testGetChangingConfigurations: FAIL
+      testGetDrawable: FAIL
+      testObtainStyledAttributes: FAIL
+      testRebase: FAIL
+      testResolveAttribute: FAIL
+      testSetMethods: FAIL
 
   android.content.res.cts.TypedArrayTest:
-    failed:
-    - testBasics
-    - testGetType
-    - testNonResourceString
-    - testPeekValue
+    methods:
+      testBasics: FAIL
+      testGetType: FAIL
+      testNonResourceString: FAIL
+      testPeekValue: FAIL

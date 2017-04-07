@@ -1,5 +1,3 @@
-import java.nio.file.Files
-
 allprojects {
     repositories {
         mavenLocal()
@@ -152,19 +150,5 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
 project(':cts:all') {
     task assemble {
         dependsOn project(':cts:tests').subprojects.collect { it.tasks['assemble'] }
-    }
-}
-
-class TestResult {
-    String className;
-    int runCount;
-    int failureCount;
-    int errorCount;
-
-    TestResult(String className, int runCount, int failureCount, int errorCount) {
-        this.className = className
-        this.runCount = runCount
-        this.failureCount = failureCount
-        this.errorCount = errorCount
     }
 }
