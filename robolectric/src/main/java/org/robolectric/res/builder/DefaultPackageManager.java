@@ -241,6 +241,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         providerInfo.readPermission = contentProviderData.getReadPermission();
         providerInfo.writePermission = contentProviderData.getWritePermission();
         providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
+        providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
         if ((flags & GET_META_DATA) != 0) {
           providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
         }
@@ -680,6 +681,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         info.authority = cpdata[i].getAuthorities(); // todo: support multiple authorities
         info.name = cpdata[i].getClassName();
         info.packageName = androidManifest.getPackageName();
+        info.metaData = metaDataToBundle(cpdata[i].getMetaData().getValueMap());
         packageInfo.providers[i] = info;
       }
     }

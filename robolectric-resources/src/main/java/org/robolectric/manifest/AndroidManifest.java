@@ -437,6 +437,9 @@ public class AndroidManifest {
     for (ServiceData service : serviceDatas.values()) {
       service.getMetaData().init(resourceTable, packageName);
     }
+    for (ContentProviderData providerData : providers) {
+      providerData.getMetaData().init(resourceTable, packageName);
+    }
   }
 
   private void parseApplicationMetaData() {
