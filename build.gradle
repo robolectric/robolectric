@@ -131,7 +131,7 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
             compile AndroidSdk.N_MR1.coordinates
 
             // Testing dependencies
-            compile "junit:junit:4.12"
+            compile 0"junit:junit:4.12"
 //        testCompile "org.assertj:assertj-core:2.6.0"
             compile "org.mockito:mockito-core:2.5.4"
 

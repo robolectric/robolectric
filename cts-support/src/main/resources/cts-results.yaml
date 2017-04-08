@@ -1,277 +1,466 @@
+!!org.robolectric.cts.CtsResults
 classes:
   android.content.cts.AsyncQueryHandlerTest:
-    methods:
-      testStartDelete: FAIL
-      testStartInsert: FAIL
-      testStartQuery: FAIL
-      testStartUpdate: FAIL
-
+    methods: {testStartDelete: FAIL, testStartInsert: FAIL, testStartQuery: FAIL,
+      testStartUpdate: FAIL}
   android.content.cts.AvailableIntentsTest:
-    methods:
-      testAlarmClock: FAIL
-      testCalendarAddAppointment: FAIL
-      testCreateDocument: FAIL
-      testGetContentAny: FAIL
-      testGetContentImage: FAIL
-      testManageStorage: FAIL
-      testMusicPlayback: FAIL
-      testOpenDocumentAny: FAIL
-      testOpenDocumentImage: FAIL
-      testRingtonePicker: FAIL
-      testSettings: FAIL
-      testViewDownloads: FAIL
-      testViewNormalUrl: FAIL
-      testViewSecureUrl: FAIL
-      testVoiceCommand: FAIL
-      testVoiceSearchHandsFree: FAIL
-      testWebSearchNormalUrl: FAIL
-      testWebSearchPlainText: FAIL
-      testWebSearchSecureUrl: FAIL
-
+    methods: {testAlarmClock: FAIL, testCalendarAddAppointment: FAIL, testCreateDocument: FAIL,
+      testGetContentAny: FAIL, testGetContentImage: FAIL, testManageStorage: FAIL,
+      testMusicPlayback: FAIL, testOpenDocumentAny: FAIL, testOpenDocumentImage: FAIL,
+      testRingtonePicker: FAIL, testSettings: FAIL, testViewDownloads: FAIL, testViewNormalUrl: FAIL,
+      testViewSecureUrl: FAIL, testVoiceCommand: FAIL, testVoiceSearchHandsFree: FAIL,
+      testWebSearchNormalUrl: FAIL, testWebSearchPlainText: FAIL, testWebSearchSecureUrl: FAIL}
   android.content.cts.BroadcastReceiverTest:
-    methods:
-      testAbortBroadcast: FAIL
-      testDisabledBroadcastReceiver: FAIL
-      testPeekService: FAIL
-
+    methods: {testAbortBroadcast: FAIL, testDisabledBroadcastReceiver: FAIL, testPeekService: FAIL}
   android.content.cts.ClipboardManagerTest:
-    methods:
-      testSetPrimaryClip_contentUri: FAIL
-      testSetPrimaryClip_intent: FAIL
-      testSetPrimaryClip_rawUri: FAIL
-
+    methods: {testSetPrimaryClip_contentUri: FAIL, testSetPrimaryClip_intent: FAIL,
+      testSetPrimaryClip_rawUri: FAIL}
   android.content.cts.ContentResolverSyncTestCase:
-    methods:
-      testCallMultipleAccounts: FAIL
-      testCancelSync: FAIL
-      testGetSyncAdapterTypes: FAIL
-      testRequestSync: FAIL
-      testStartSyncFailure: FAIL
-
+    methods: {testCallMultipleAccounts: FAIL, testCancelSync: FAIL, testGetSyncAdapterTypes: FAIL,
+      testRequestSync: FAIL, testStartSyncFailure: FAIL}
   android.content.cts.ContentResolverTest:
-    methods:
-      testBulkInsert: FAIL
-      testCancelableQuery_WhenCanceledDuringLongRunningQuery_CancelsQueryAndThrows: FAIL
-      testCrashingOpenAssetFileDescriptor: FAIL
-      testCrashingOpenTypedAssetFileDescriptor: FAIL
-      testCrashOnLaunch: FAIL
-      testDelete: FAIL
-      testGetType: FAIL
-      testOpenAssetFileDescriptor: FAIL
-      testOpenInputStream: FAIL
-      testOpenOutputStream: FAIL
-      testQuery: FAIL
-      testRegisterContentObserverDescendantBehavior: FAIL
-      testRegisterContentObserver: FAIL
-      testStableToUnstableRefs: FAIL
-      testStartSyncFailure: FAIL
-      testUnstableGetType: FAIL
-      testUnstableToStableRefs: FAIL
-      testUpdate: FAIL
-
+    methods: {testBulkInsert: FAIL, testCancelableQuery_WhenCanceledDuringLongRunningQuery_CancelsQueryAndThrows: FAIL,
+      testCrashingOpenAssetFileDescriptor: FAIL, testCrashingOpenTypedAssetFileDescriptor: FAIL,
+      testCrashOnLaunch: FAIL, testDelete: FAIL, testGetType: FAIL, testOpenAssetFileDescriptor: FAIL,
+      testOpenInputStream: FAIL, testOpenOutputStream: FAIL, testQuery: FAIL, testRegisterContentObserverDescendantBehavior: FAIL,
+      testRegisterContentObserver: FAIL, testStableToUnstableRefs: FAIL, testStartSyncFailure: FAIL,
+      testUnstableGetType: FAIL, testUnstableToStableRefs: FAIL, testUpdate: FAIL}
   android.content.cts.ContentUrisTest:
-    methods:
-      testParseIdFailure: FAIL
-
+    methods: {testParseIdFailure: FAIL}
   android.content.cts.ContextTest:
-    methods:
-      testMoveDatabaseFrom: FAIL
-      testMoveSharedPreferencesFrom: FAIL
-      testObtainStyledAttributes: FAIL
-
+    methods: {testMoveDatabaseFrom: FAIL, testMoveSharedPreferencesFrom: FAIL, testObtainStyledAttributes: FAIL}
   android.content.cts.ContextWrapperTest:
-    methods:
-      testAccessService: FAIL
-      testAccessStickyBroadcast: FAIL
-      testAccessWallpaper: FAIL
-      testCheckCallingOrSelfPermission: FAIL
-      testCheckCallingOrSelfUriPermission: FAIL
-      testCheckPermission: FAIL
-      testCheckUriPermission1
-      testCheckUriPermission2
-      testEnforceCallingOrSelfUriPermission: FAIL
-      testEnforceUriPermission1
-      testEnforceUriPermission2
-      testGetWallpaperDesiredMinimumHeightAndWidth: FAIL
-      testRegisterReceiver1
-      testSendOrderedBroadcast1
-      testStartActivity: FAIL
-
+    methods: {testAccessService: FAIL, testAccessStickyBroadcast: FAIL, testAccessWallpaper: FAIL,
+      testCheckCallingOrSelfPermission: FAIL, testCheckCallingOrSelfUriPermission: FAIL,
+      testCheckPermission: FAIL, testCheckUriPermission1: FAIL, testCheckUriPermission2: FAIL,
+      testEnforceCallingOrSelfUriPermission: FAIL, testEnforceUriPermission1: FAIL,
+      testEnforceUriPermission2: FAIL, testGetWallpaperDesiredMinimumHeightAndWidth: FAIL,
+      testRegisterReceiver1: FAIL, testSendOrderedBroadcast1: FAIL, testStartActivity: FAIL}
   android.content.cts.ImageCaptureUriExtraToClipDataTest:
-    methods:
-      testUriExtraOutputMigratedToClipData_imageCaptureIntent: FAIL
-      testUriExtraOutputMigratedToClipData_imageCaptureSecureIntent: FAIL
-      testUriExtraOutputMigratedToClipData_videoCaptureIntent: FAIL
-
+    methods: {testUriExtraOutputMigratedToClipData_imageCaptureIntent: FAIL, testUriExtraOutputMigratedToClipData_imageCaptureSecureIntent: FAIL,
+      testUriExtraOutputMigratedToClipData_videoCaptureIntent: FAIL}
   android.content.cts.IntentFilterTest:
-    methods:
-      testReadFromXml: FAIL
-
+    methods: {testReadFromXml: FAIL}
   android.content.cts.IntentTest:
-    methods:
-      testParseIntent: FAIL
-      testRemoveUnsafeExtras: FAIL
-      testResolveActivityMultipleMatch: FAIL
-      testResolveActivitySingleMatch: FAIL
-
+    methods: {testParseIntent: FAIL, testRemoveUnsafeExtras: FAIL, testResolveActivityMultipleMatch: FAIL,
+      testResolveActivitySingleMatch: FAIL}
   android.content.cts.ReadableUriExtraToClipDataTest:
-    methods:
-      testUriExtraStreamMigratedToClipData_sendIntent: FAIL
-      testUriExtraStreamMigratedToClipData_sendMultipleIntent: FAIL
-
+    methods: {testUriExtraStreamMigratedToClipData_sendIntent: FAIL, testUriExtraStreamMigratedToClipData_sendMultipleIntent: FAIL}
   android.content.cts.SharedPreferencesTest:
-    methods:
-      testCommitCreatesFiles: FAIL
-      testModeMultiProcess: FAIL
-      testNonRedundantClear: FAIL
-      testNonRedundantString: FAIL
-      testRedundantBoolean: FAIL
-      testRedundantClear: FAIL
-      testRedundantCommitWritesFileIfNotAlreadyExisting: FAIL
-      testRedundantRemove: FAIL
-      testRedundantString: FAIL
-      testTorture2
-
+    methods: {testCommitCreatesFiles: FAIL, testModeMultiProcess: FAIL, testNonRedundantClear: FAIL,
+      testNonRedundantString: FAIL, testRedundantBoolean: FAIL, testRedundantClear: FAIL,
+      testRedundantCommitWritesFileIfNotAlreadyExisting: FAIL, testRedundantRemove: FAIL,
+      testRedundantString: FAIL, testTorture2: FAIL}
   android.content.cts.SyncStorageEngineTest:
-    methods:
-      testMalformedAuthority: FAIL
-
+    methods: {testMalformedAuthority: FAIL}
   android.content.pm.cts.ApplicationInfo_DisplayNameComparatorTest:
-    methods:
-      testCompare: FAIL
-
+    methods: {testCompare: FAIL}
   android.content.pm.cts.ApplicationInfoTest:
-    methods:
-      testLoadDescription: FAIL
-
+    methods: {testLoadDescription: FAIL}
   android.content.pm.cts.ComponentInfoTest:
-    methods:
-      testLoadIcon: FAIL
-      testLoadLabel: FAIL
-
+    methods: {testLoadIcon: FAIL, testLoadLabel: FAIL}
   android.content.pm.cts.ConfigurationInfoTest:
-    methods:
-      testConfigPreferences: FAIL
-
+    methods: {testConfigPreferences: FAIL}
   android.content.pm.cts.FeatureGroupInfoTest:
-    methods:
-      testFeatureGroupsAreCorrect: FAIL
-
+    methods: {testFeatureGroupsAreCorrect: FAIL}
   android.content.pm.cts.InstrumentationInfoTest:
-    methods:
-      testInstrumentationInfo: FAIL
-
+    methods: {testInstrumentationInfo: FAIL}
   android.content.pm.cts.PackageItemInfoTest:
-    methods:
-      testLoadMethods: FAIL
-      testWriteToParcel: FAIL
-
+    methods: {testLoadMethods: FAIL, testWriteToParcel: FAIL}
   android.content.pm.cts.PackageManagerTest:
-    methods:
-      testAddPreferredActivity: FAIL
-      testCheckMethods: FAIL
-      testGetIcon: FAIL
-      testGetInfo: FAIL
-      testGetPackageArchiveInfo: FAIL
-      testGetResources: FAIL
-      testQuery: FAIL
-      testResolveMethods: FAIL
-
+    methods: {testAddPreferredActivity: FAIL, testCheckMethods: FAIL, testGetIcon: FAIL,
+      testGetInfo: FAIL, testGetPackageArchiveInfo: FAIL, testGetResources: FAIL,
+      testQuery: FAIL, testResolveMethods: FAIL}
   android.content.pm.cts.PermissionGroupInfoTest:
-    methods:
-      testPermissionGroupInfo: FAIL
-
+    methods: {testPermissionGroupInfo: FAIL}
   android.content.pm.cts.PermissionInfoTest:
-    methods:
-      testPermissionInfo: FAIL
-
+    methods: {testPermissionInfo: FAIL}
   android.content.pm.cts.ProviderInfoTest:
-    methods:
-      testProviderInfo: FAIL
-      testProviderMetaData: FAIL
-
+    methods: {testProviderInfo: FAIL, testProviderMetaData: FAIL}
   android.content.pm.cts.ResolveInfoTest:
-    methods:
-      testDump: FAIL
-      testResolveInfo: FAIL
-
+    methods: {testDump: FAIL, testResolveInfo: FAIL}
   android.content.res.cts.AssetFileDescriptorTest:
-    methods:
-      testInputOutputStream: FAIL
-      testMiscMethod: FAIL
-
+    methods: {testInputOutputStream: FAIL, testMiscMethod: FAIL}
   android.content.res.cts.AssetManager_AssetInputStreamTest:
-    methods:
-      testAndroidTestCaseSetupProperly: FAIL
-      testClose: FAIL
-      testGetAssetInt: FAIL
-      testMarkReset: FAIL
-      testReadMethods: FAIL
-
+    methods: {testAndroidTestCaseSetupProperly: FAIL, testClose: FAIL, testGetAssetInt: FAIL,
+      testMarkReset: FAIL, testReadMethods: FAIL}
   android.content.res.cts.AssetManagerTest:
-    methods:
-      testAssetOperations: FAIL
-      testClose: FAIL
-      testGetNonSystemLocales: FAIL
-
+    methods: {testAssetOperations: FAIL, testClose: FAIL, testGetNonSystemLocales: FAIL}
   android.content.res.cts.ColorStateListTest:
-    methods:
-      testGetChangingConfigurations: FAIL
-
+    methods: {testGetChangingConfigurations: FAIL}
   android.content.res.cts.ConfigTest:
-    methods:
-      testAllClassicConfigs: FAIL
-      testAllEmptyConfigs: FAIL
-      testCombinations: FAIL
-      testDensity: FAIL
-      testExtendedLocales: FAIL
-      testGetLocalesConvertsTlToFil: FAIL
-      testNewScreenSize: FAIL
-      testPrecidence: FAIL
-      testScreenSize: FAIL
-      testTlAndFilConversion: FAIL
-      testVersions: FAIL
-
+    methods: {testAllClassicConfigs: FAIL, testAllEmptyConfigs: FAIL, testCombinations: FAIL,
+      testDensity: FAIL, testExtendedLocales: FAIL, testGetLocalesConvertsTlToFil: FAIL,
+      testNewScreenSize: FAIL, testPrecidence: FAIL, testScreenSize: FAIL, testTlAndFilConversion: FAIL,
+      testVersions: FAIL}
   android.content.res.cts.FractionTest:
-    methods:
-      testFractions: FAIL
-
+    methods: {testFractions: FAIL}
   android.content.res.cts.PluralResourcesTest:
-    methods:
-      testCzech: FAIL
-      testPlurals: FAIL
-
+    methods: {testCzech: FAIL, testPlurals: FAIL}
   android.content.res.cts.PrivateAttributeTest:
-    methods:
-      testNoAttributesAfterLastPublicAttribute: FAIL
-
+    methods: {testNoAttributesAfterLastPublicAttribute: FAIL}
   android.content.res.cts.ResourcesTest:
-    methods:
-      testGetAnimation: FAIL
-      testGetDrawable: FAIL
-      testGetDrawableForDensity: FAIL
-      testGetLayout: FAIL
-      testGetMovie: FAIL
-      testGetQuantityString1
-      testGetQuantityString2
-      testGetQuantityText: FAIL
-      testGetValue: FAIL
-      testGetValueForDensity: FAIL
-      testObtainAttributes: FAIL
-      testRawResource: FAIL
-
+    methods: {testGetAnimation: FAIL, testGetDrawable: FAIL, testGetDrawableForDensity: FAIL,
+      testGetLayout: FAIL, testGetMovie: FAIL, testGetQuantityString1: FAIL, testGetQuantityString2: FAIL,
+      testGetQuantityText: FAIL, testGetValue: FAIL, testGetValueForDensity: FAIL,
+      testObtainAttributes: FAIL, testRawResource: FAIL}
   android.content.res.cts.Resources_ThemeTest:
-    methods:
-      testGetChangingConfigurations: FAIL
-      testGetDrawable: FAIL
-      testObtainStyledAttributes: FAIL
-      testRebase: FAIL
-      testResolveAttribute: FAIL
-      testSetMethods: FAIL
-
+    methods: {testGetChangingConfigurations: FAIL, testGetDrawable: FAIL, testObtainStyledAttributes: FAIL,
+      testRebase: FAIL, testResolveAttribute: FAIL, testSetMethods: FAIL}
   android.content.res.cts.TypedArrayTest:
-    methods:
-      testBasics: FAIL
-      testGetType: FAIL
-      testNonResourceString: FAIL
-      testPeekValue: FAIL
+    methods: {testBasics: FAIL, testGetType: FAIL, testNonResourceString: FAIL, testPeekValue: FAIL}
+  android.view.inputmethod.cts.KeyboardTest:
+    methods: {testKeyOnPressedAndReleased: PASS}
+  android.test.AndroidTestCase:
+    methods: {testAndroidTestCaseSetupProperly: PASS}
+  android.view.cts.ViewTest:
+    methods: {testAccessBackground: PASS, testAccessClickable: PASS, testAccessContextClickable: PASS,
+      testAccessDrawingCacheBackgroundColor: PASS, testAccessDrawingCacheEnabled: PASS,
+      testAccessDrawingCacheQuality: PASS, testAccessDuplicateParentStateEnabled: PASS,
+      testAccessEnabled: PASS, testAccessId: PASS, testAccessKeepScreenOn: PASS, testAccessLayoutParams: PASS,
+      testAccessLongClickable: PASS, testAccessMeasuredDimension: PASS, testAccessNextFocusDownId: PASS,
+      testAccessNextFocusLeftId: PASS, testAccessNextFocusRightId: PASS, testAccessNextFocusUpId: PASS,
+      testAccessOnFocusChangeListener: PASS, testAccessPointerIcon: PASS, testAccessPressed: PASS,
+      testAccessSaveEnabled: PASS, testAccessScrollIndicators: PASS, testAccessSelected: PASS,
+      testAccessSoundEffectsEnabled: PASS, testAccessTag: PASS, testAccessTouchDelegate: FAIL,
+      testAccessWillNotCacheDrawing: PASS, testAccessWillNotDraw: PASS, testAddFocusables: PASS,
+      testAddFocusablesInTouchMode: PASS, testAddFocusablesWithoutTouchMode: PASS,
+      testAddTouchables: PASS, testBackgroundTint: PASS, testBringToFront: PASS, testCancelLongPress: PASS,
+      testClearAnimation: PASS, testConstructor: FAIL, testCreateContextMenu: PASS,
+      testCreatePointerIcons: PASS, testDispatchKeyEvent: PASS, testDispatchKeyShortcutEvent: PASS,
+      testDispatchSetPressed: PASS, testDispatchSetSelected: PASS, testDispatchTouchEvent: PASS,
+      testDispatchTrackballMoveEvent: PASS, testDispatchUnhandledMove: FAIL, testDrawableState: PASS,
+      testFindViewById: PASS, testFitSystemWindows: PASS, testForceLayout: PASS, testGetAnimation: PASS,
+      testGetApplicationWindowToken: PASS, testGetBaseline: PASS, testGetBottomPaddingOffset: PASS,
+      testGetContext: PASS, testGetContextMenuInfo: PASS, testGetDefaultSize: PASS,
+      testGetDrawingTime: PASS, testGetFocusables: PASS, testGetGlobalVisibleRect: PASS,
+      testGetGlobalVisibleRectPoint: PASS, testGetHandler: PASS, testGetHitRect: PASS,
+      testGetLeftPaddingOffset: PASS, testGetLocationInWindow: PASS, testGetLocationOnScreen: PASS,
+      testGetParent: PASS, testGetResources: PASS, testGetRightPaddingOffset: PASS,
+      testGetRootView: PASS, testGetSolidColor: PASS, testGetSuggestedMinimumHeight: PASS,
+      testGetSuggestedMinimumWidth: PASS, testGetTopPaddingOffset: PASS, testGetTouchables: PASS,
+      testGetViewTreeObserver: PASS, testGetWindowAttachCount: PASS, testGetWindowToken: PASS,
+      testGetWindowVisibleDisplayFrame: PASS, testInflate: PASS, testIsInEditMode: PASS,
+      testIsInTouchMode: PASS, testIsLayoutRequested: PASS, testIsPaddingOffsetRequired: PASS,
+      testIsShown: PASS, testKeyPreIme: FAIL, testLayout: PASS, testMeasure: PASS,
+      testMergeDrawableStates: PASS, testMouseEventCallsGetPointerIcon: FAIL, testOnAttachedToAndDetachedFromWindow: PASS,
+      testOnFocusChanged: PASS, testOnKeyDownOrUp: FAIL, testOnKeyMultiple: PASS,
+      testOnKeyShortcut: FAIL, testOnSaveAndRestoreInstanceState: PASS, testOnSizeChanged: PASS,
+      testOnStartAndFinishTemporaryDetach: PASS, testOnTouchEvent: FAIL, testOnTrackballEvent: FAIL,
+      testOverlappingRendering: PASS, testPerformClick: PASS, testPerformContextClick: PASS,
+      testPerformLongClick: PASS, testPerformLongClickXY: PASS, testPerformLongClickXY_WithListener: PASS,
+      testPlaySoundEffect: PASS, testPostInvalidate1: PASS, testPostInvalidate2: PASS,
+      testPostInvalidateDelayed: PASS, testRequestFocusFromTouch: PASS, testRequestLayout: PASS,
+      testRequestRectangleOnScreen1: PASS, testRequestRectangleOnScreen2: PASS, testRequestRectangleOnScreen3: PASS,
+      testRequestRectangleOnScreen4: PASS, testRequestRectangleOnScreen5: PASS, testRequestRectangleOnScreenWithScale: PASS,
+      testResolveSize: PASS, testSaveAndRestoreHierarchyState: PASS, testScheduleDrawable: PASS,
+      testScrollFading: PASS, testScrollIndicators: PASS, testScrollbarStyle: PASS,
+      testSetAnimation: PASS, testSetBackgroundColor: PASS, testSetBackgroundResource: PASS,
+      testSetMinimumHeight: PASS, testSetMinimumWidth: PASS, testSetOnClickListener: PASS,
+      testSetOnContextClickListener: PASS, testSetOnCreateContextMenuListener: PASS,
+      testSetOnLongClickListener: PASS, testSetScrollContainer: PASS, testSetScrollIndicators: PASS,
+      testShowContextMenu: PASS, testShowContextMenuXY: PASS, testStartActionModeTypedWithParent: PASS,
+      testStartActionModeTypedWithoutParent: PASS, testStartActionModeWithParent: PASS,
+      testStartActionModeWithoutParent: PASS, testTouchMode: FAIL, testTranslationSetter: PASS,
+      testUnscheduleDrawable: PASS, testVerifyDrawable: PASS, testXYZ: PASS, testConstructor2: FAIL,
+      testStartAnimation: FAIL, testOnAnimation: FAIL, testGetDrawingRect: FAIL, testGetFocusedRect: FAIL,
+      testComputeHorizontalScroll: FAIL, testComputeVerticalScroll: FAIL, testGetFadingEdgeStrength: FAIL,
+      testGetLeftFadingEdgeStrength: FAIL, testGetRightFadingEdgeStrength: FAIL, testGetBottomFadingEdgeStrength: FAIL,
+      testGetTopFadingEdgeStrength: FAIL, testGetDrawingCache: FAIL, testBuildAndDestroyDrawingCache: FAIL,
+      testGetWindowVisibility: FAIL, testHasWindowFocus: FAIL, testRemoveCallbacks: FAIL,
+      testPost: FAIL, testPostDelayed: FAIL, testWindowVisibilityChanged: FAIL, testGetLocalVisibleRect: FAIL,
+      testAddRemoveAffectsWrapContentLayout: FAIL, testInvalidate1: FAIL, testInvalidate2: FAIL,
+      testInvalidate3: FAIL, testInvalidateDrawable: FAIL, testWindowFocusChanged: FAIL,
+      testDraw: FAIL, testPadding: FAIL, testScrolling: FAIL, testInitializeScrollbarsAndFadingEdge: FAIL,
+      testHapticFeedback: FAIL, testInputConnection: FAIL, testFilterTouchesWhenObscured: FAIL,
+      testVisibilityAggregated: FAIL}
+  android.view.animation.cts.GridLayoutAnimationControllerTest:
+    methods: {testAccessDelay: FAIL, testAccessDirection: FAIL, testAccessDirectionPriority: FAIL,
+      testConstructor: PASS, testGetDelayForView: FAIL, testWillOverlap: PASS}
+  android.view.animation.cts.RotateAnimationTest:
+    methods: {testConstructors: PASS, testRotateAgainstOrigin: PASS, testRotateAgainstPoint: PASS}
+  android.view.animation.cts.AnimatorInflaterTest:
+    methods: {testLoadAnimator: FAIL, testLoadAnimatorWithDifferentInterpolators: FAIL,
+      testLoadChangingStateListAnimator: FAIL, testLoadStateListAnimator: PASS, testLoadStateListAnimatorWithChangingResetState: FAIL,
+      testReloadedAnimatorIsNotModified: FAIL}
+  android.view.animation.cts.AccelerateInterpolatorTest:
+    methods: {testAccelerateInterpolator: PASS, testConstructor: PASS, testGetInterpolation: PASS}
+  android.view.animation.cts.DecelerateInterpolatorTest:
+    methods: {testConstructor: PASS, testDecelerateInterpolator: PASS, testGetInterpolation: PASS}
+  android.view.animation.cts.TransformationTest:
+    methods: {testAccessAlpha: PASS, testAccessTransformationType: PASS, testClear: PASS,
+      testCompose: PASS, testConstructor: PASS, testGetMatrix: PASS, testSet: PASS,
+      testToString: PASS}
+  android.view.animation.cts.LayoutAnimationController_AnimationParametersTest:
+    methods: {testConstructor: PASS}
+  android.view.animation.cts.AnimationSetTest:
+    methods: {testAccessAnimations: PASS, testAccessDuration: PASS, testAccessRepeatMode: PASS,
+      testAccessStartOffset: PASS, testAccessStartTime: PASS, testClone: PASS, testComputeDurationHint: PASS,
+      testConstructor: PASS, testGetTransformation: PASS, testInitialize: PASS, testRestrictDuration: PASS,
+      testScaleCurrentDuration: PASS, testSetFillAfter: PASS, testSetFillBefore: PASS,
+      testWillChangeTransformationMatrix: PASS}
+  android.view.animation.cts.LayoutAnimationControllerTest:
+    methods: {testAccessAnimation: FAIL, testAccessDelay: FAIL, testAccessInterpolator: FAIL,
+      testAccessOrder: FAIL, testConstructor: PASS, testGetAnimationForView: FAIL,
+      testGetDelayForView: PASS, testGetTransformedIndex: PASS, testIsDone: PASS,
+      testStart: PASS, testWillOverlap: PASS}
+  android.view.animation.cts.AccelerateDecelerateInterpolatorTest:
+    methods: {testAccelerateDecelerateInterpolator: FAIL, testConstructor: PASS, testGetInterpolation: PASS}
+  android.view.animation.cts.LinearInterpolatorTest:
+    methods: {testConstructor: PASS, testGetInterpolation: PASS, testLinearInterpolator: PASS}
+  android.view.animation.cts.ScaleAnimationTest:
+    methods: {testApplyTransformation: PASS, testApplyTransformationIndirectly: PASS,
+      testConstructors: PASS}
+  android.view.animation.cts.AlphaAnimationTest:
+    methods: {testApplyTransformation: PASS, testConstructor: PASS, testWillChangeBounds: PASS,
+      testWillChangeTransformationMatrix: PASS}
+  android.view.animation.cts.AnimationUtilsTest:
+    methods: {testCurrentAnimationTimeMillis: FAIL, testLoad: FAIL, testMakeAnimation: PASS}
+  android.view.animation.cts.GridLayoutAnimationController_AnimationParametersTest:
+    methods: {testConstructor: PASS}
+  android.view.animation.cts.AnimationTest:
+    methods: {testAccessFill: PASS, testAccessInterpolator: FAIL, testAccessStartOffset: FAIL,
+      testAccessZAdjustment: PASS, testCancelDelayed: FAIL, testCancelImmediately: FAIL,
+      testClone: PASS, testComputeDurationHint: PASS, testConstructor: PASS, testDefaultFill: PASS,
+      testGetTransformation: FAIL, testInitialize: PASS, testRepeatAnimation: FAIL,
+      testRepeatingCancelDelayed: FAIL, testRepeatingCancelImmediately: FAIL, testResolveSize: PASS,
+      testRestrictDuration: PASS, testRunAccelerateAlpha: PASS, testScaleCurrentDuration: PASS,
+      testSetAnimationListener: PASS, testStart: PASS, testStartNow: PASS, testWillChangeBounds: PASS,
+      testWillChangeTransformationMatrix: PASS}
+  android.view.animation.cts.CycleInterpolatorTest:
+    methods: {testConstructors: PASS, testCycyleInterpolator: PASS, testGetInterpolation: PASS}
+  android.view.animation.cts.TranslateAnimationTest:
+    methods: {testApplyTransformation: PASS, testConstructors: PASS, testInitialize: PASS}
+  android.view.cts.OrientationListenerTest:
+    methods: {testConstructor: PASS, testOnAccuracyChanged: PASS, testOnOrientationChanged: PASS,
+      testOnSensorChanged: PASS, testRegisterationOfOrientationListener: PASS}
+  android.view.cts.ViewStubTest:
+    methods: {testAccessInflatedId: PASS, testAccessLayoutResource: PASS, testConstructor: FAIL,
+      testDraw: PASS, testInflate: PASS, testInflateError: PASS, testSetOnInflateListener: PASS,
+      testSetOnInflateListenerError: PASS, testSetVisibility: PASS, testViewStubHasNoDimensions: PASS}
+  android.test.ActivityInstrumentationTestCase:
+    methods: {testActivityTestCaseSetUpProperly: PASS}
+  android.view.cts.DisplayRefreshRateTest:
+    methods: {testRefreshRate: TIMEOUT}
+  android.view.cts.ScaleGestureDetectorTest:
+    methods: {testAccessStylusScaleEnabled: FAIL, testConstructor: PASS}
+  android.view.cts.SearchEventTest:
+    methods: {testTest: FAIL}
+  android.view.cts.ViewGroupOverlayTest:
+    methods: {testAddNullView: PASS, testBasics: FAIL, testOverlayReparenting: FAIL,
+      testOverlayViewNoClicks: FAIL, testOverlayWithNonOverlappingViewAndDrawable: FAIL,
+      testOverlayWithNonOverlappingViews: FAIL, testOverlayWithOneView: FAIL, testOverlayWithOverlappingViewAndDrawable: FAIL,
+      testOverlayWithOverlappingViews: FAIL, testRemoveNullView: PASS}
+  android.view.cts.KeyCharacterMapTest:
+    methods: {testGetEvents: FAIL, testGetKeyData: FAIL, testGetKeyboardType: PASS,
+      testGetMatch1: FAIL, testGetMatch2: FAIL, testGetNumber: FAIL, testIsPrintingKey: FAIL,
+      testLoad: PASS}
+  android.view.cts.ContextThemeWrapperTest:
+    methods: {testAccessTheme: PASS, testApplyOverrideConfiguration: PASS, testAttachBaseContext: PASS,
+      testConstructor: PASS, testGetSystemService: PASS}
+  android.view.cts.ViewDebugTest:
+    methods: {testConstructor: PASS, testHierarchyTracing: PASS, testRecyclerTracing: PASS}
+  android.view.cts.ContentPaneFocusTest:
+    methods: {testAccessActionBar: FAIL}
+  android.view.cts.SurfaceHolder_BadSurfaceTypeExceptionTest:
+    methods: {testBadSurfaceTypeException: PASS}
+  android.view.cts.TouchDelegateTest:
+    methods: {testOnTouchEvent: PASS}
+  android.view.cts.View_BaseSavedStateTest:
+    methods: {testConstructors: PASS}
+  android.view.cts.ViewGroupTest:
+    methods: {testAddFocusables: PASS, testAddStatesFromChildren: PASS, testAddTouchables: PASS,
+      testAddView: PASS, testAddViewInLayout: PASS, testAddViewInLayoutWithParamViewIntLayB: PASS,
+      testAddViewWidthParaViewIntLayoutParam: PASS, testAddViewWithParaViewInt: PASS,
+      testAddViewWithParaViewIntInt: PASS, testAddViewWithParaViewLayoutPara: PASS,
+      testAttachLayoutAnimationParameters: PASS, testAttachViewToParent: PASS, testBringChildToFront: PASS,
+      testCanAnimate: FAIL, testCheckLayoutParams: PASS, testChildDrawableStateChanged: PASS,
+      testCleanupLayoutState: PASS, testClearChildFocus: PASS, testClearDisappearingChildren: PASS,
+      testClearFocus: PASS, testConstructor: PASS, testDebug: PASS, testDetachAllViewsFromParent: PASS,
+      testDetachViewFromParent: PASS, testDetachViewFromParentWithParamView: PASS,
+      testDetachViewsFromParent: PASS, testDispatchDraw: FAIL, testDispatchFreezeSelfOnly: PASS,
+      testDispatchKeyEvent: PASS, testDispatchKeyEventPreIme: PASS, testDispatchSaveInstanceState: PASS,
+      testDispatchSetPressed: PASS, testDispatchSetSelected: PASS, testDispatchThawSelfOnly: PASS,
+      testDispatchTouchEvent: FAIL, testDispatchTrackballEvent: PASS, testDispatchUnhandledMove: PASS,
+      testDispatchWindowFocusChanged: PASS, testDispatchWindowVisibilityChanged: PASS,
+      testDrawChild: PASS, testDrawableStateChanged: PASS, testFindFocus: PASS, testFitSystemWindows: PASS,
+      testFocusSearch: PASS, testFocusableViewAvailable: PASS, testGatherTransparentRegion: PASS,
+      testGenerateDefaultLayoutParams: PASS, testGenerateLayoutParams: PASS, testGenerateLayoutParamsWithParaAttributeSet: PASS,
+      testGetChildDrawingOrder: PASS, testGetChildMeasureSpec: PASS, testGetChildStaticTransformation: PASS,
+      testGetChildVisibleRect: PASS, testGetDescendantFocusability: PASS, testGetLayoutAnimation: FAIL,
+      testGetLayoutAnimationListener: PASS, testGetPersistentDrawingCache: PASS, testHasFocus: PASS,
+      testHasFocusable: PASS, testIndexOfChild: PASS, testInvalidateChild: TIMEOUT,
+      testIsAlwaysDrawnWithCacheEnabled: PASS, testIsAnimationCacheEnabled: PASS,
+      testIsChildrenDrawnWithCacheEnabled: PASS, testMeasureChild: PASS, testMeasureChildWithMargins: PASS,
+      testMeasureChildren: PASS, testOffsetDescendantRectToMyCoords: PASS, testOffsetRectIntoDescendantCoords: PASS,
+      testOnAnimationEnd: PASS, testOnAnimationStart: PASS, testOnCreateDrawableState: PASS,
+      testOnInterceptTouchEvent: PASS, testOnLayout: PASS, testOnRequestFocusInDescendants: PASS,
+      testRemoveAllViews: PASS, testRemoveAllViewsInLayout: PASS, testRemoveDetachedView: PASS,
+      testRemoveView: PASS, testRemoveViewAt: PASS, testRemoveViewInLayout: PASS,
+      testRemoveViews: PASS, testRemoveViewsInLayout: PASS, testRequestChildFocus: PASS,
+      testRequestChildRectangleOnScreen: PASS, testRequestDisallowInterceptTouchEvent: FAIL,
+      testRequestFocus: PASS, testRequestTransparentRegion: PASS, testResetRtlProperties: PASS,
+      testScheduleLayoutAnimation: FAIL, testSetAddStatesFromChildren: PASS, testSetChildrenDrawingCacheEnabled: PASS,
+      testSetChildrenDrawnWithCacheEnabled: PASS, testSetClipChildren: FAIL, testSetClipToPadding: PASS,
+      testSetDescendantFocusability: PASS, testSetOnHierarchyChangeListener: PASS,
+      testSetPadding: FAIL, testSetPaddingRelative: FAIL, testSetPersistentDrawingCache: PASS,
+      testShowContextMenuForChild: PASS, testShowContextMenuForChild_WithXYCoords: PASS,
+      testStartActionModeForChildIgnoresSubclassModeOnFloating: PASS, testStartActionModeForChildRespectsSubclassModeOnPrimary: PASS,
+      testStartActionModeForChildTypedBubblesUpToParent: PASS, testStartActionModeForChildTypelessBubblesUpToParent: PASS,
+      testStartLayoutAnimation: FAIL, testTemporaryDetach: PASS, testUpdateViewLayout: PASS}
+  android.view.cts.MenuInflaterTest:
+    methods: {testConstructor: PASS, testInflate: PASS, testInflateFromXml: FAIL}
+  android.view.cts.MotionEventTest:
+    methods: {testAccessAction: PASS, testAccessEdgeFlags: FAIL, testAddBatch: FAIL,
+      testDescribeContents: PASS, testGetHistoricalEventTime: FAIL, testGetHistoricalPressure: FAIL,
+      testGetHistoricalSize: FAIL, testGetHistoricalX: FAIL, testGetHistoricalY: FAIL,
+      testGetHistorySize: FAIL, testObtain1: FAIL, testObtain2: PASS, testObtain3: FAIL,
+      testOffsetLocation: FAIL, testPointerCoordsCopyConstructor: PASS, testPointerCoordsCopyFrom: PASS,
+      testPointerCoordsDefaultConstructor: PASS, testPointerPropertiesCopyConstructor: PASS,
+      testPointerPropertiesCopyFrom: PASS, testPointerPropertiesDefaultConstructor: PASS,
+      testReadFromParcelWithInvalidPointerCountSize: FAIL, testReadFromParcelWithInvalidSampleSize: FAIL,
+      testRecycle: FAIL, testSetLocation: PASS, testToString: PASS, testTransformShouldApplyMatrixToPointsAndPreserveRawPosition: FAIL,
+      testTransformShouldThrowWhenMatrixIsNull: PASS, testWriteToParcel: PASS}
+  android.view.cts.FrameMetricsListenerTest:
+    methods: {testDropCount: FAIL, testMultipleListeners: FAIL, testReceiveData: FAIL}
+  android.view.cts.WindowManager_BadTokenExceptionTest:
+    methods: {testBadTokenException: PASS}
+  android.view.cts.VelocityTrackerTest:
+    methods: {testAcceleratingMovement: FAIL, testChangingAcceleration: FAIL, testDeceleratingMovement: FAIL,
+      testLinearMovement: PASS, testLinearSharpDirectionChange: FAIL, testLinearSharpDirectionChangeAfterALongPause: FAIL,
+      testNoMovement: PASS}
+  android.view.cts.View_FocusHandlingTest:
+    methods: {testFocusHandling: PASS}
+  android.view.cts.WindowTest:
+    methods: {testAccessAttributes: PASS, testAccessContainer: PASS, testAccessVolumeControlStream: PASS,
+      testAccessWindowManager: PASS, testAddContentView: PASS, testCloseAllPanels: PASS,
+      testConstructor: PASS, testDecorView: PASS, testFinalMethod: PASS, testFindViewById: PASS,
+      testGetCurrentFocus: PASS, testGetWindowStyle: PASS, testIsActive: PASS, testIsFloating: PASS,
+      testKeepHierarchyState: PASS, testOnConfigurationChanged: PASS, testOpFlags: PASS,
+      testPerformMethods: PASS, testRequestFeature: PASS, testSetBackgroundDrawable: PASS,
+      testSetChild: PASS, testSetContentView: PASS, testSetDefaultWindowFormat: PASS,
+      testSetFeature: PASS, testSetGravity: PASS, testSetLayout: PASS, testSetLocalFocus: FAIL,
+      testSetSoftInputMode: PASS, testSetTitle: PASS, testSetType: PASS, testSetWindowAnimations: PASS,
+      testSuperDispatchEvent: PASS, testTakeKeyEvents: PASS}
+  android.view.cts.GestureDetectorTest:
+    methods: {testConstructor: PASS, testLongpressEnabled: PASS, testOnContextClick: FAIL,
+      testOnGenericMotionEvent: FAIL, testOnSetContextClickListener: FAIL}
+  android.view.cts.AbsSavedStateTest:
+    methods: {testConstructor: PASS, testGetSuperState: PASS, testWriteToParcel: PASS}
+  android.view.cts.View_MeasureSpecTest:
+    methods: {testConstructor: PASS, testGetMode: PASS, testGetSize: PASS, testMakeMeasureSpec: PASS,
+      testToString: PASS}
+  android.view.cts.NumberPickerTest:
+    methods: {testSetDisplayedValues1: PASS, testSetDisplayedValues2: FAIL}
+  android.view.cts.Surface_OutOfResourcesExceptionTest:
+    methods: {testConstructor: PASS}
+  android.view.cts.ActionModeCallback2Test:
+    methods: {testCallbackOnGetContentRectDefaultWithView: PASS, testCallbackOnGetContentRectDefaultWithoutView: PASS}
+  android.view.cts.ViewTreeObserverTest:
+    methods: {testAccessOnScrollChangedListener: FAIL, testAddOnGlobalFocusChangeListener: PASS,
+      testAddOnGlobalLayoutListener: PASS, testAddOnPreDrawListener: PASS, testAddOnTouchModeChangeListener: FAIL,
+      testDispatchOnGlobalLayout: PASS, testDispatchOnPreDraw: PASS, testIsAlive: PASS,
+      testRemoveGlobalOnLayoutListener: PASS, testRemoveOnGlobalFocusChangeListener: PASS,
+      testRemoveOnPreDrawListener: PASS, testRemoveOnTouchModeChangeListener: FAIL}
+  android.view.cts.ViewGroup_LayoutParamsTest:
+    methods: {testConstructor: PASS, testSetBaseAttributes: PASS}
+  android.view.cts.GravityTest:
+    methods: {testApply: PASS, testApplyDisplay: PASS, testConstructor: PASS, testGetAbsoluteGravity: PASS,
+      testIsHorizontal: PASS, testIsVertical: PASS}
+  android.view.cts.FocusFinderTest:
+    methods: {testFindNearestTouchable: FAIL, testFindNextAndPrevFocusAvoidingChain: PASS,
+      testFindNextFocus: FAIL, testFindNextFocusFromRect: FAIL, testGetInstance: PASS}
+  android.view.cts.View_LayoutPositionTest:
+    methods: {testPadding: PASS, testPositionInParent: PASS}
+  android.view.cts.KeyboardShortcutInfoTest:
+    methods: {testCharacterConstructor: PASS, testConstructorChecksBaseCharacter: PASS,
+      testConstructorChecksKeycode: PASS, testKeycodeConstructor: PASS, testWriteToParcelAndReadCharacter: PASS,
+      testWriteToParcelAndReadKeycode: PASS}
+  android.view.cts.ViewConfigurationTest:
+    methods: {testConstructor: PASS, testInstanceValues: PASS, testStaticValues: PASS}
+  android.view.cts.View_AnimationTest:
+    methods: {testAnimation: PASS, testClearBeforeAnimation: FAIL, testClearDuringAnimation: PASS,
+      testStartAnimation: PASS}
+  android.view.cts.ChoreographerTest:
+    methods: {testFrameDelay: PASS, testPostCallbackDelayedThrowsIfRunnableIsNull: FAIL,
+      testPostCallbackThrowsIfRunnableIsNull: FAIL, testPostCallbackWithDelayEventuallyRunsCallbacksAfterDelay: FAIL,
+      testPostCallbackWithoutDelayEventuallyRunsCallbacks: FAIL, testPostFrameCallbackDelayedThrowsIfCallbackIsNull: FAIL,
+      testPostFrameCallbackThrowsIfCallbackIsNull: FAIL, testPostFrameCallbackWithDelayEventuallyRunsFrameCallbacksAfterDelay: FAIL,
+      testPostFrameCallbackWithoutDelayEventuallyRunsFrameCallbacks: FAIL, testRemoveFrameCallbackThrowsIfCallbackIsNull: FAIL}
+  android.view.cts.KeyboardShortcutGroupTest:
+    methods: {testAddItem: PASS, testConstructor: PASS, testConstructorChecksList: PASS,
+      testShortConstructor: PASS, testSystemConstructor: PASS, testSystemShortConstructor: PASS,
+      testWriteToParcelAndRead: PASS}
+  android.view.cts.View_IdsTest:
+    methods: {testIds: PASS}
+  android.view.cts.WindowManager_LayoutParamsTest:
+    methods: {testAccessTitle: PASS, testConstructor: PASS, testCopyFrom: PASS, testDebug: PASS,
+      testDescribeContents: PASS, testToString: PASS, testWriteToParcel: PASS}
+  android.view.cts.InflateExceptionTest:
+    methods: {testInflateException: PASS}
+  android.view.cts.SurfaceViewTest:
+    methods: {testConstructor: PASS, testOnDetachedFromWindow: FAIL, testOnScrollChanged: PASS,
+      testOnSizeChanged: PASS, testSurfaceView: FAIL}
+  android.view.cts.OrientationEventListenerTest:
+    methods: {testCanDetectOrientation: PASS, testConstructor: PASS, testEnableAndDisable: PASS}
+  android.view.cts.ViewGroup_MarginLayoutParamsTest:
+    methods: {testConstructor: PASS, testResolveMarginsExplicit: PASS, testResolveMarginsRelative: FAIL,
+      testSetMargins: PASS, testSetMarginsRelative: PASS}
+  android.view.cts.ViewOverlayTest:
+    methods: {testAddNullDrawable: PASS, testAddTheSameDrawableTwice: FAIL, testBasics: FAIL,
+      testOverlayDynamicChangesToDrawable: FAIL, testOverlayDynamicChangesToOverlappingDrawables: FAIL,
+      testOverlayWithNonOverlappingDrawables: FAIL, testOverlayWithOneDrawable: FAIL,
+      testOverlayWithOverlappingDrawables: FAIL, testRemoveNullDrawable: PASS, testRemoveTheSameDrawableTwice: FAIL}
+  android.view.cts.View_UsingViewsTest:
+    methods: {testSetFocus: PASS, testSetProperties: FAIL, testSetVisibility: PASS,
+      testSetupListeners: FAIL}
+  android.view.cts.KeyEventTest:
+    methods: {testChangeAction: PASS, testChangeFlags: PASS, testChangeTimeRepeat: PASS,
+      testConstructor: PASS, testDescribeContents: PASS, testDispatch: PASS, testGetAction: PASS,
+      testGetCharacters: PASS, testGetDeadChar: PASS, testGetDeviceId: PASS, testGetDisplayLabel: FAIL,
+      testGetDownTime: PASS, testGetEventTime: PASS, testGetFlags: PASS, testGetKeyCode: PASS,
+      testGetKeyData: FAIL, testGetMatch1: FAIL, testGetMaxKeyCode: PASS, testGetMetaState: PASS,
+      testGetModifierMetaStateMask: PASS, testGetNumber: FAIL, testGetRepeatCount: PASS,
+      testGetScanCode: PASS, testGetUnicodeChar1: FAIL, testGetUnicodeChar2: FAIL,
+      testHasModifiers: PASS, testHasNoModifiers: PASS, testIsAltPressed: PASS, testIsModifierKey: PASS,
+      testIsPrintingKey: FAIL, testIsShiftPressed: PASS, testIsSymPressed: PASS, testIsSystem: PASS,
+      testMetaStateHasModifiers: PASS, testMetaStateHasNoModifiers: PASS, testNormalizeMetaState: PASS,
+      testToString: PASS, testWriteToParcel: PASS}
+  android.view.cts.LayoutInflaterTest:
+    methods: {testAccessLayoutInflaterProperties: PASS, testCreateView: PASS, testFrom: PASS,
+      testInflate: PASS, testInflate2: PASS, testInflate3: FAIL, testInflate4: FAIL,
+      testInflateTags: PASS, testOverrideTheme: PASS}
+  android.view.cts.ActionModeTest:
+    methods: {testHide: PASS, testInvalidateContentRectDoesNotInvalidateFull: PASS,
+      testInvalidateContentRectOnFloatingCallsCallback: PASS, testIsTitleOptional: PASS,
+      testIsUiFocusable: PASS, testOnWindowFocusChanged: PASS, testSetAndGetTag: PASS,
+      testSetAndGetTitleOptionalHint: PASS, testSetType: PASS}
+  android.view.cts.SoundEffectConstantsTest:
+    methods: {testgetContantForFocusDirection: PASS}
+  android.view.inputmethod.cts.BaseInputConnectionTest:
+    methods: {testCloseConnection: PASS, testCommitContent: PASS, testDefaultMethods: PASS,
+      testDeleteSurroundingText: PASS, testDeleteSurroundingTextInCodePoints: PASS,
+      testFinishComposingText: FAIL, testGetHandler: PASS, testOpComposingSpans: PASS,
+      testOpTextMethods: FAIL, testReportFullscreenMode: PASS, testSendKeyEvent: FAIL}
+  android.view.inputmethod.cts.InputBindingTest:
+    methods: {testInputBinding: FAIL}
+  android.view.inputmethod.cts.InputMethodManagerTest:
+    methods: {testInputMethodManager: FAIL}
+  android.view.inputmethod.cts.InputConnectionWrapperTest:
+    methods: {testInputConnectionWrapper: PASS}
+  android.view.inputmethod.cts.ExtractedTextRequestTest:
+    methods: {testExtractedTextRequest: PASS}
+  android.view.inputmethod.cts.InputContentInfoTest:
+    methods: {testContentUri: PASS, testInputContentInfo: PASS, testLinkUri: PASS,
+      testMimeType: PASS, testOptionalConstructorParam: PASS, testRequestAndReleasePermission: PASS}
+  android.view.inputmethod.cts.EditorInfoTest:
+    methods: {testEditorInfo: PASS, testNullHintLocals: PASS}
+  android.view.inputmethod.cts.InputMethodInfoTest:
+    methods: {testAtLeastOneEncryptionAwareInputMethodIsAvailable: PASS, testDump: PASS,
+      testEquals: PASS, testInputMethodInfoProperties: PASS, testInputMethodInfoWriteToParcel: PASS,
+      testInputMethodSubtypeProperties: PASS, testInputMethodSubtypeWriteToParcel: PASS,
+      testInputMethodSubtypesOfSystemImes: PASS, testLoadIcon: FAIL, testLoadLabel: FAIL}
+  android.view.inputmethod.cts.ExtractedTextTest:
+    methods: {testWriteToParcel: PASS}
+  android.view.inputmethod.cts.CompletionInfoTest:
+    methods: {testCompletionInfo: PASS}

@@ -1,6 +1,7 @@
 package org.robolectric.cts;
 
 import android.app.Instrumentation;
+import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -14,43 +15,50 @@ import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.manifest.AndroidManifest;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.introspector.BeanAccess;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import static java.util.Arrays.asList;
 
 public class CtsRobolectricTestRunner extends RobolectricTestRunner {
 
   private boolean isJunit3;
-  private final CtsResults ctsResults;
+  private static final CtsResults ctsResults;
+
+  static {
+    CtsResults loadedCtsResults;
+    try {
+      InputStream in = CtsRobolectricTestRunner.class.getClassLoader().getResourceAsStream("cts-results.yaml");
+      loadedCtsResults = CtsResults.load(in);
+
+      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        @Override
+        public void run() {
+          if (ctsResults.changed()) {
+            try {
+              ctsResults.save(new PrintWriter(new FileWriter("cts-results-new.yaml")));
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+      }));
+    } catch (Exception e) {
+      loadedCtsResults = null;
+      e.printStackTrace();
+    }
+    ctsResults = loadedCtsResults;
+  }
 
   public CtsRobolectricTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass);
-
-    Yaml yaml = new Yaml();
-    yaml.setBeanAccess(BeanAccess.FIELD);
-    InputStream in = getClass().getClassLoader().getResourceAsStream("cts-results.yaml");
-    ctsResults = yaml.loadAs(in, CtsResults.class);
-  }
-
-  public static class CtsResults {
-    Map<String, CtsTestClass> classes = new TreeMap<>();
-  }
-
-  public static class CtsTestClass {
-    Map<String, CtsTestResult> methods = new TreeMap<>();
-  }
-
-  public enum CtsTestResult {
-    PASS, FAIL, TIMEOUT
   }
 
   @Override
@@ -69,7 +77,7 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
 
   @Override
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
-    return new Class[] {
+    return new Class[]{
         ShadowInstrumentation.class
     };
   }
@@ -134,16 +142,14 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
           @Override
           public void evaluate() throws Throwable {
             CtsTestResult expectedResult = null;
-            CtsTestClass ctsTestClass = ctsResults.classes.get(method.getDeclaringClass().getName());
+            CtsTestClass ctsTestClass = ctsResults.getCtsClass(method.getDeclaringClass().getName());
             if (ctsTestClass != null) {
               expectedResult = ctsTestClass.methods.get(method.getName());
             }
 
-            System.out.println("method = " + method);
-            System.out.println("expectedResult = " + expectedResult);
-
-            if (expectedResult == CtsTestResult.TIMEOUT) {
+            if (expectedResult == CtsTestResult.DISABLE) {
               // don't run, it'll probably hang...
+              System.out.println("Skipping " + method + ": disabled");
               return;
             }
 
@@ -174,25 +180,40 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
             });
             warningThread.start();
 
-            CtsTestResult actualResult = null;
+            CtsTestResult actualResult;
+            Throwable error = null;
             try {
               statement.evaluate();
 
               actualResult = CtsTestResult.PASS;
-            } catch (Exception e) {
-              actualResult = CtsTestResult.FAIL;
-              if (expectFailure) {
-                System.out.println("Expected failure for " + method + ", and got it!");
-                e.printStackTrace();
-              } else {
-                System.out.println("Did not expect failure for " + method + "!");
-                throw e;
-              }
+            } catch (AssertionFailedError e) {
+              error = e;
+              actualResult = CtsTestResult.ASSERT_FAIL;
             } catch (ThreadDeath threadDeath) {
               threadDeath.printStackTrace();
+              actualResult = CtsTestResult.TIMEOUT;
+            } catch (Throwable e) {
+              error = e;
+              actualResult = CtsTestResult.FAIL;
             } finally {
               warningThread.interrupt();
               warningThread.join();
+            }
+
+            if (actualResult == expectedResult) {
+              if (expectedResult != CtsTestResult.PASS) {
+                System.out.println("Expected " + expectedResult + " for " + method + " and got it.");
+              }
+            } else {
+              System.out.println("Expected " + expectedResult + " for " + method + ", but got " + actualResult + ".");
+
+              ctsResults.setResult(method.getDeclaringClass().getName(), method.getMethod().getName(), actualResult);
+
+              if (error != null) {
+                throw error;
+              } else if (actualResult == CtsTestResult.PASS) {
+                throw new RuntimeException(method + " unexpectedly passed (yay!)");
+              }
             }
           }
         };
