@@ -378,6 +378,15 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getProviderInfo_shouldMetaDataInProviderInfos() throws Exception {
+    ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
+
+    assertThat(providerInfo.metaData.getString("greeting")).isEqualTo("Hello");
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
   public void resolveContentProvider_shouldResolveByPackageName() throws Exception {
     ProviderInfo providerInfo = packageManager.resolveContentProvider("org.robolectric.authority1", 0);
     assertThat(providerInfo.packageName).isEqualTo("org.robolectric");

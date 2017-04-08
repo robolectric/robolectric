@@ -38,7 +38,9 @@ public class ShadowAccessibilityManager {
   @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     if (getApiLevel() >= KITKAT) {
-      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[]{Context.class, IAccessibilityManager.class, int.class}, new Object[]{context, new AccessibilityManagerService(context), 0});
+      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class,
+          new Class[]{Context.class, IAccessibilityManager.class, int.class},
+          new Object[]{context, ReflectionHelpers.createNullProxy(IAccessibilityManager.class), 0});
       ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
       return accessibilityManager;
     } else {
