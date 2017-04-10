@@ -1,5 +1,6 @@
 package org.robolectric.cts;
 
+import android.app.Activity;
 import android.app.Instrumentation;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
@@ -65,6 +66,11 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
   protected void collectInitializationErrors(List<Throwable> errors) {
     isJunit3 = Test.class.isAssignableFrom(getTestClass().getJavaClass());
 
+    // because of AlarmClockTestBase
+    if (isJunit3 && computeTestMethods().isEmpty()) {
+      return;
+    }
+
     super.collectInitializationErrors(errors);
   }
 
@@ -78,7 +84,8 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
   @Override
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
     return new Class[]{
-        ShadowInstrumentation.class
+        ShadowInstrumentation.class,
+        ShadowInstrumentation.ShadowActivityMonitor.class
     };
   }
 
@@ -277,6 +284,14 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
   public static class ShadowInstrumentation {
     @Implementation
     public final void validateNotAppThread() {
+    }
+
+    @Implements(Instrumentation.ActivityMonitor.class)
+    public static class ShadowActivityMonitor {
+      @Implementation
+      public final Activity waitForActivity() {
+        return null;
+      }
     }
   }
 }

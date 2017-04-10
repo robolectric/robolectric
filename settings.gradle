@@ -28,6 +28,10 @@ include ":cts:common:device-side"
 new File("cts/tests/tests").listFiles().each { f ->
     if (f.isDirectory()) {
         include ":cts:tests:tests/${f.name}"
+
+        if (new File(f, 'common/src').isDirectory()) {
+            include ":cts:tests:tests/${f.name}:common"
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 package org.robolectric.cts;
 
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
@@ -25,7 +26,9 @@ public class CtsResults {
   }
 
   private static Yaml getYaml() {
-    Yaml yaml = new Yaml();
+    DumperOptions dumperOptions = new DumperOptions();
+    dumperOptions.setWidth(10);
+    Yaml yaml = new Yaml(dumperOptions);
     yaml.setBeanAccess(BeanAccess.FIELD);
     return yaml;
   }

@@ -81,14 +81,22 @@ project(':cts:all') {
 
 def BUILD_TOOLS = '/usr/local/google/home/christianw/Android/Sdk/build-tools/25.0.2'
 
-project(":cts:tests").childProjects.values().each { ctsProject ->
+project(":cts:tests").subprojects.each { ctsProject ->
     configure(ctsProject) {
+        def isCommon = ctsProject.name == 'common'
+
         apply plugin: "java"
 
         def generatedSrcDir = new File("${buildDir}/generated/src/java")
 
-        sourceSets {
-            test.java.srcDirs = ['src', generatedSrcDir]
+        if (isCommon) {
+            sourceSets {
+                main.java.srcDirs = ['src', generatedSrcDir]
+            }
+        } else {
+            sourceSets {
+                test.java.srcDirs = ['src', generatedSrcDir]
+            }
         }
 
         task aapt(type: Exec) {
@@ -122,7 +130,7 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
         }
 
         tasks['compileJava'].dependsOn('aapt', 'renderscript')
-        
+
         dependencies {
             compile project(":cts-support")
             compile project(":robolectric")
@@ -131,10 +139,13 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
             compile AndroidSdk.N_MR1.coordinates
 
             // Testing dependencies
-            compile 0"junit:junit:4.12"
+            compile "junit:junit:4.12"
 //        testCompile "org.assertj:assertj-core:2.6.0"
             compile "org.mockito:mockito-core:2.5.4"
 
+            ctsProject.subprojects.each { p ->
+                compile project(p.path)
+            }
         }
 
         test {
@@ -147,8 +158,40 @@ project(":cts:tests").childProjects.values().each { ctsProject ->
     }
 }
 
+[
+        ':cts:tests:tests/car',
+        ':cts:tests:tests/dpi2',
+        ':cts:tests:tests/keystore',
+        ':cts:tests:tests/location',
+        ':cts:tests:tests/media',
+        ':cts:tests:tests/net',
+        ':cts:tests:tests/netsecpolicy',
+        ':cts:tests:tests/networksecurityconfig',
+        ':cts:tests:tests/os',
+        ':cts:tests:tests/renderscript',
+        ':cts:tests:tests/rsblas',
+        ':cts:tests:tests/rscpp',
+        ':cts:tests:tests/security',
+        ':cts:tests:tests/shortcutmanager',
+        ':cts:tests:tests/telecom',
+        ':cts:tests:tests/telecom2',
+        ':cts:tests:tests/telecom3',
+        ':cts:tests:tests/telephony',
+        ':cts:tests:tests/text',
+        ':cts:tests:tests/toast',
+        ':cts:tests:tests/toastlegacy',
+        ':cts:tests:tests/uidisolation',
+        ':cts:tests:tests/webkit',
+        ':cts:tests:tests/widget',
+].forEach { name ->
+    project(name) {
+        renderscript { onlyIf { false } }
+        compileTestJava { onlyIf { false } } // relies on missing classes
+    }
+}
+
 project(':cts:all') {
     task assemble {
-        dependsOn project(':cts:tests').subprojects.collect { it.tasks['assemble'] }
+        dependsOn project(':cts:tests').subprojects.findAll { it.name != 'common' }.collect { it.tasks['assemble'] }
     }
 }
