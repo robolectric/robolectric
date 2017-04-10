@@ -8,10 +8,8 @@ import org.robolectric.annotation.Resetter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Shadow for {@link android.util.Log}.
@@ -19,10 +17,12 @@ import java.util.Map;
 @Implements(Log.class)
 public class ShadowLog {
   private static final int extraLogLength = "l/: \n".length();
-  private static Map<String,List<LogItem>> logsByTag = new HashMap<>();
-  private static List<LogItem> logs = new ArrayList<>();
+  private static final Map<String, Queue<LogItem>> logsByTag = Collections.synchronizedMap(new
+      HashMap<String, Queue<LogItem>>());
+  private static final Queue<LogItem> logs = new ConcurrentLinkedQueue<>();
   public static PrintStream stream;
-  private static final Map<String, Integer> tagToLevel = new HashMap<>();
+  private static final Map<String, Integer> tagToLevel = Collections.synchronizedMap(new
+      HashMap<String, Integer>());
 
   @Implementation
   public static void e(String tag, String msg) {
@@ -91,9 +91,11 @@ public class ShadowLog {
   }
 
   @Implementation
-  public static synchronized boolean isLoggable(String tag, int level) {
-    if (tagToLevel.containsKey(tag)) {
-      return level >= tagToLevel.get(tag);
+  public static boolean isLoggable(String tag, int level) {
+    synchronized (tagToLevel) {
+      if (tagToLevel.containsKey(tag)) {
+        return level >= tagToLevel.get(tag);
+      }
     }
     return stream != null || level >= Log.INFO;
   }
@@ -111,23 +113,25 @@ public class ShadowLog {
    * @param tag A log tag
    * @param level A log level, from {@link android.util.Log}
    */
-  public static synchronized void setLoggable(String tag, int level) {
+  public static void setLoggable(String tag, int level) {
     tagToLevel.put(tag, level);
   }
 
-  private static synchronized void addLog(int level, String tag, String msg, Throwable throwable) {
+  private static void addLog(int level, String tag, String msg, Throwable throwable) {
     if (stream != null) {
       logToStream(stream, level, tag, msg, throwable);
     }
 
     LogItem item = new LogItem(level, tag, msg, throwable);
-    List<LogItem> itemList;
+    Queue<LogItem> itemList;
 
-    if (!logsByTag.containsKey(tag)) {
-      itemList = new ArrayList<>();
-      logsByTag.put(tag, itemList);
-    } else {
-      itemList = logsByTag.get(tag);
+    synchronized (logsByTag) {
+      if (!logsByTag.containsKey(tag)) {
+        itemList = new ConcurrentLinkedQueue<>();
+        logsByTag.put(tag, itemList);
+      } else {
+        itemList = logsByTag.get(tag);
+      }
     }
 
     itemList.add(item);
@@ -155,8 +159,8 @@ public class ShadowLog {
    * Non-Android accessor.  Returns ordered list of all log entries.
    * @return List of log items
    */
-  public static synchronized List<LogItem> getLogs() {
-    return logs;
+  public static List<LogItem> getLogs() {
+    return new ArrayList<>(logs);
   }
 
   /**
@@ -165,12 +169,13 @@ public class ShadowLog {
    * @param tag The tag to get logs for
    * @return The list of log items for the tag
    */
-  public static synchronized List<LogItem> getLogsForTag( String tag ) {
-    return logsByTag.get(tag);
+  public static List<LogItem> getLogsForTag( String tag ) {
+    Queue<LogItem> logs = logsByTag.get(tag);
+    return logs == null ? null : new ArrayList<>(logs);
   }
 
   @Resetter
-  public static synchronized void reset() {
+  public static void reset() {
     logs.clear();
     logsByTag.clear();
     tagToLevel.clear();
