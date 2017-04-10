@@ -99,6 +99,7 @@ public class ShadowContextImpl {
       SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
+      SYSTEM_SERVICE_MAP.put(Context.BATTERY_SERVICE, "android.os.BatteryManager");
     }
     if (getApiLevel() >= LOLLIPOP_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");

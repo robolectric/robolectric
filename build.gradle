@@ -21,5 +21,14 @@ rootProject.gradle.projectsEvaluated {
     rootProject.tasks['aggregateJavadocs'].failOnError = false
 }
 
+task aggregateTestReports(type: TestReport) {
+    def jobNumber = System.getenv('TRAVIS_JOB_NUMBER')
+    if (jobNumber == null) {
+        destinationDir = file("$buildDir/reports/allTests")
+    } else {
+        destinationDir = file("$buildDir/reports/allTests/$jobNumber")
+    }
+}
+
 // for use of external initialization scripts...
 project.ext.allSdks = AndroidSdk.ALL_SDKS

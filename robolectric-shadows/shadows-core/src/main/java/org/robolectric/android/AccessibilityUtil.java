@@ -245,7 +245,7 @@ public class AccessibilityUtil {
 
         /* If we've crawled up the stack far enough to find the test, stop looking */
         for (Annotation annotation : clazz.getAnnotations()) {
-          if (annotation.getClass().getName().equals("org.junit.Test")) {
+          if (annotation.annotationType().getName().equals("org.junit.Test")) {
             break;
           }
         }

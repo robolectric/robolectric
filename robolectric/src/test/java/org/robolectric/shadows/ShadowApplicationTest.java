@@ -112,6 +112,7 @@ public class ShadowApplicationTest {
   @Config(minSdk = LOLLIPOP)
   public void shouldProvideMediaSessionService() throws Exception {
     checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
+    checkSystemService(Context.BATTERY_SERVICE, BatteryManager.class);
   }
 
   @Test

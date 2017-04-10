@@ -22,6 +22,7 @@
               android:readPermission="PATH_READ_PERMISSION"
               android:writePermission="PATH_WRITE_PERMISSION"
       />
+      <meta-data android:name="greeting" android:value="@string/hello"/>
     </provider>
   </application>
 </manifest>

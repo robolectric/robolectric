@@ -23,6 +23,7 @@ public class ContentProviderController<T extends ContentProvider> extends org.ro
   /**
    * Create and register {@link ContentProvider} using {@link ProviderInfo} found from manifest.
    */
+  @Override
   public ContentProviderController<T> create() {
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
@@ -39,22 +40,41 @@ public class ContentProviderController<T extends ContentProvider> extends org.ro
   }
 
   /**
-   * Create and register {@link ContentProvider} using the given {@link ProviderInfo}.
+   * Create and register {@link ContentProvider} using {@link ProviderInfo} found from manifest.
+   *
+   * @param authority the authority to use
+   * @return this {@link ContentProviderController}
    */
+  public ContentProviderController<T> create(String authority) {
+    ProviderInfo providerInfo = new ProviderInfo();
+    providerInfo.authority = authority;
+    return create(providerInfo);
+  }
+
+  /**
+   * Create and register {@link ContentProvider} using the given {@link ProviderInfo}.
+   *
+   * @param providerInfo the {@link ProviderInfo} to use
+   * @return this {@link ContentProviderController}
+   */
+  @Override
   public ContentProviderController<T> create(ProviderInfo providerInfo) {
+    Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    contentProvider.attachInfo(baseContext, providerInfo);
+
     if (providerInfo != null) {
       ShadowContentResolver.registerProviderInternal(providerInfo.authority, contentProvider);
     }
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
-    contentProvider.attachInfo(baseContext, providerInfo);
 
     return this;
   }
 
+  @Override
   public T get() {
     return contentProvider;
   }
 
+  @Override
   public ContentProviderController<T> shutdown() {
     contentProvider.shutdown();
     return this;

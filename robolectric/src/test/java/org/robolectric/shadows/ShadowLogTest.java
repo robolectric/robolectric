@@ -255,4 +255,10 @@ public class ShadowLogTest {
     assertFalse(Log.isLoggable("Foo", Log.VERBOSE));
     ShadowLog.stream = old;
   }
+
+  @Test
+  public void getLogs_shouldReturnCopy() {
+    assertThat(ShadowLog.getLogs()).isNotSameAs(ShadowLog.getLogs());
+    assertThat(ShadowLog.getLogs()).isEqualTo(ShadowLog.getLogs());
+  }
 }
