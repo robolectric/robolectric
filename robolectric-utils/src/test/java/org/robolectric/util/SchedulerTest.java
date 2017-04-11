@@ -6,10 +6,13 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.Scheduler.IdleState.*;
 
+@RunWith(JUnit4.class)
 public class SchedulerTest {
   private final Scheduler scheduler = new Scheduler();
   private final List<String> transcript = new ArrayList<>();
