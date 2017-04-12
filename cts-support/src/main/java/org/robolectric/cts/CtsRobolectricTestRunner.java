@@ -2,11 +2,16 @@ package org.robolectric.cts;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.app.UiAutomation;
+import android.support.test.InstrumentationRegistry;
+import android.view.InputEvent;
+import android.view.KeyEvent;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkPicker;
 import org.robolectric.annotation.Config;
@@ -85,7 +90,8 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
     return new Class[]{
         ShadowInstrumentation.class,
-        ShadowInstrumentation.ShadowActivityMonitor.class
+        ShadowInstrumentation.ShadowActivityMonitor.class,
+        ShadowUiAutomation.class
     };
   }
 
@@ -124,15 +130,18 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
 
   @Override
   protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) throws InitializationError {
-    Method fixup;
-    Object junit3Adapter;
+    Method fixup3;
+    Method fixup4;
+    Object androidJUnitAdapter;
 
     try {
-      Class<?> junit3AdapterClass = bootstrappedTestClass.getClassLoader()
-          .loadClass(JUnit3Adapter.class.getName());
-      junit3Adapter = junit3AdapterClass.newInstance();
-      fixup = junit3AdapterClass.getMethod("fixup", Object.class);
+      Class<?> androidJUnitAdapterClass = bootstrappedTestClass.getClassLoader()
+          .loadClass(AndroidJUnitAdapter.class.getName());
+      androidJUnitAdapter = androidJUnitAdapterClass.newInstance();
+      fixup3 = androidJUnitAdapterClass.getMethod("fixup3", Object.class);
+      fixup4 = androidJUnitAdapterClass.getMethod("fixup4");
     } catch (Exception e) {
+      e.printStackTrace();
       throw new RuntimeException(e);
     }
 
@@ -144,6 +153,13 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
 
       @Override
       protected Statement methodBlock(FrameworkMethod method) {
+        try {
+          fixup4.invoke(androidJUnitAdapter);
+        } catch (Exception e) {
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        }
+
         Statement statement = super.methodBlock(method);
         return new Statement() {
           @Override
@@ -199,6 +215,7 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
             } catch (ThreadDeath threadDeath) {
               threadDeath.printStackTrace();
               actualResult = CtsTestResult.TIMEOUT;
+              error = threadDeath;
             } catch (Throwable e) {
               error = e;
               actualResult = CtsTestResult.FAIL;
@@ -212,13 +229,15 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
                 System.out.println("Expected " + expectedResult + " for " + method + " and got it.");
               }
             } else {
-              System.out.println("Expected " + expectedResult + " for " + method + ", but got " + actualResult + ".");
+              if (expectedResult != null) {
+                System.out.println("Expected " + expectedResult + " for " + method + ", but got " + actualResult + ".");
+              }
 
               ctsResults.setResult(method.getDeclaringClass().getName(), method.getMethod().getName(), actualResult);
 
               if (error != null) {
                 throw error;
-              } else if (actualResult == CtsTestResult.PASS) {
+              } else if (expectedResult != null && actualResult == CtsTestResult.PASS) {
                 throw new RuntimeException(method + " unexpectedly passed (yay!)");
               }
             }
@@ -229,10 +248,9 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
       @Override
       protected Statement withBefores(FrameworkMethod method, Object target, Statement statement) {
         try {
-          fixup.invoke(junit3Adapter, target);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
+          fixup3.invoke(androidJUnitAdapter, target);
+        } catch (Exception e) {
+          e.printStackTrace();
           throw new RuntimeException(e);
         }
 
@@ -292,6 +310,21 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
       public final Activity waitForActivity() {
         return null;
       }
+    }
+  }
+
+  @Implements(UiAutomation.class)
+  public static class ShadowUiAutomation {
+    @Implementation
+    public boolean injectInputEvent(InputEvent event, boolean sync) {
+      // todo: yeah, this doesn't work at all...
+      Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+      if (event instanceof KeyEvent) {
+        instrumentation.sendKeyDownUpSync(((KeyEvent) event).getKeyCode());
+      } else {
+        throw new UnsupportedOperationException(event.toString());
+      }
+      return true;
     }
   }
 }

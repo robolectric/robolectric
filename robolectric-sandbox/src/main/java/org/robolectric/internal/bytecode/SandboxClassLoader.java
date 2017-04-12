@@ -470,6 +470,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
           classReader.accept(classNode, 0);
         } catch (ClassNotFoundException e) {
           e.printStackTrace();
+          return false;
         }
 
       }

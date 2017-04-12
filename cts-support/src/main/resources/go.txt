@@ -1,3 +1,11 @@
+./gradlew :cts:tests:tests/accounts:test; mv ./cts/tests/tests/accounts/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
+./gradlew :cts:tests:tests/alarmclock:test; mv ./cts/tests/tests/alarmclock/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
+./gradlew :cts:tests:tests/animation:test; mv ./cts/tests/tests/animation/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
+./gradlew :cts:tests:tests/app:test; mv ./cts/tests/tests/app/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
+./gradlew :cts:tests:tests/app.usage:test; mv ./cts/tests/tests/app.usage/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
+./gradlew :cts:tests:tests/appwidget:test; mv ./cts/tests/tests/appwidget/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
+./gradlew :cts:tests:tests/assist:test; mv ./cts/tests/tests/assist/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
+./gradlew :cts:tests:tests/bionic:test; mv ./cts/tests/tests/bionic/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
 ./gradlew :cts:tests:tests/bluetooth:test; mv ./cts/tests/tests/bluetooth/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
 ./gradlew :cts:tests:tests/calendarcommon:test; mv ./cts/tests/tests/calendarcommon/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
 ./gradlew :cts:tests:tests/calllog:test; mv ./cts/tests/tests/calllog/cts-results-new.yaml ./cts-support/src/main/resources/cts-results.yaml
