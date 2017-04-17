@@ -2,11 +2,13 @@ package org.robolectric.manifest;
 
 import android.Manifest;
 import android.content.Intent;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
-import org.robolectric.test.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -420,12 +422,13 @@ public class AndroidManifestTest {
   /////////////////////////////
 
   private AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
-    File f = temporaryFolder.newFile("whatever.xml",
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-            "          package=\"org.robolectric\">\n" +
-            "    <uses-sdk " + usesSdkAttrs + "/>\n" +
-            "</manifest>\n");
+    String contents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+        "          package=\"org.robolectric\">\n" +
+        "    <uses-sdk " + usesSdkAttrs + "/>\n" +
+        "</manifest>\n";
+    File f = temporaryFolder.newFile("whatever.xml");
+    Files.write(contents, f, Charsets.UTF_8);
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 }

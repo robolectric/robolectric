@@ -11,8 +11,8 @@ import java.net.URL;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.robolectric.internal.dependency.CachedDependencyResolver.Cache;
-import org.robolectric.test.TemporaryFolder;
 
 import static org.junit.Assert.*;
 
@@ -24,8 +24,8 @@ public class CachedDependencyResolverFileCacheTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
-  public void shouldLoadNullWhenCacheIsEmpty() {
-    Cache cache = createCache();
+  public void shouldLoadNullWhenCacheIsEmpty() throws Exception {
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
 
     String value = cache.load(ID, String.class);
 
@@ -34,7 +34,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldLoadObjectWhenCacheExists() throws Exception {
-    Cache cache = createCache();
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
 
     String expectedValue = "some string";
 
@@ -47,7 +47,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldLoadNullWhenObjectInCacheHaveBadType() throws Exception {
-    Cache cache = createCache();
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
 
     writeToCacheFile(123L);
 
@@ -56,7 +56,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldWriteObjectToFile() throws Exception {
-    Cache cache = createCache();
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
 
     Long expectedValue = 421L;
 
@@ -69,7 +69,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldWriteUrlArrayToFile() throws Exception {
-    Cache cache = createCache();
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
 
     URL[] urls = { new URL("http://localhost") };
 
@@ -108,7 +108,4 @@ public class CachedDependencyResolverFileCacheTest {
     }
   }
 
-  private Cache createCache() {
-    return new CachedDependencyResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
-  }
 }

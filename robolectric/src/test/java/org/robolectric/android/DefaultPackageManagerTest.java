@@ -15,25 +15,18 @@ import android.os.Bundle;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.PermissionItemData;
-import org.robolectric.res.Fs;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDrawable;
-import org.robolectric.test.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;

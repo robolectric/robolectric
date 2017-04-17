@@ -9,11 +9,11 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.internal.dependency.CachedDependencyResolver.Cache;
 import org.robolectric.internal.dependency.CachedDependencyResolver.CacheNamingStrategy;
 import org.robolectric.internal.dependency.CachedDependencyResolver.CacheValidationStrategy;
-import org.robolectric.test.TemporaryFolder;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;

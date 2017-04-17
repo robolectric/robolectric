@@ -27,6 +27,7 @@ import android.os.Bundle;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
@@ -34,7 +35,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.test.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
