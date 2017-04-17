@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getRobolectricPackageManager;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
