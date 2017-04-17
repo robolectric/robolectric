@@ -116,7 +116,7 @@ public class ShadowDialogFragmentTest {
     assertTrue(shadowOf(dialog).hasBeenDismissed());
   }
 
-  private class TestDialogFragment extends DialogFragment {
+  public static class TestDialogFragment extends DialogFragment {
     final List<String> transcript = new ArrayList<>();
     Activity onAttachActivity;
     private Dialog returnThisDialogFromOnCreateDialog;

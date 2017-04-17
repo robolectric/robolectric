@@ -19,8 +19,11 @@ dependencies {
 
     // Compile dependencies
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compileOnly "com.android.support:support-v4:23.2.0"
-    compileOnly "com.android.support:internal_impl:23.2.0"
+    compileOnly "com.android.support:support-v4:26.0.0-alpha1"
+    compileOnly "com.android.support:support-compat:26.0.0-alpha1"
+    compileOnly "com.android.support:support-core-ui:26.0.0-alpha1"
+    compileOnly "com.android.support:support-core-utils:26.0.0-alpha1"
+    compileOnly "com.android.support:support-fragment:26.0.0-alpha1"
 
     // Testing dependencies
     testCompile project(":robolectric")
@@ -31,8 +34,11 @@ dependencies {
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
     testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
-    testRuntime "com.android.support:support-v4:23.2.0"
-    testRuntime "com.android.support:internal_impl:23.2.0"
+    testRuntime "com.android.support:support-v4:26.0.0-alpha1"
+    testRuntime "com.android.support:support-compat:26.0.0-alpha1"
+    testRuntime "com.android.support:support-core-ui:26.0.0-alpha1"
+    testRuntime "com.android.support:support-core-utils:26.0.0-alpha1"
+    testRuntime "com.android.support:support-fragment:26.0.0-alpha1"
 }
 
 // change local artifact name to match dependencies
