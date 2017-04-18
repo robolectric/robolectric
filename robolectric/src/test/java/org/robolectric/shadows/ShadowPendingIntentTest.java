@@ -214,4 +214,24 @@ public class ShadowPendingIntentTest {
     assertThat(pendingIntent1)
         .isNotEqualTo(PendingIntent.getActivity(ctx, 999, new Intent("activity"), 100));
   }
+
+  @Test
+  public void testGetCreatorPackage_nothingSet() {
+    Context ctx = RuntimeEnvironment.application;
+    PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
+
+    assertThat(pendingIntent.getCreatorPackage()).isEqualTo(ctx.getPackageName());
+    assertThat(pendingIntent.getTargetPackage()).isEqualTo(ctx.getPackageName());
+  }
+
+  @Test
+  public void testGetCreatorPackage_explicitlySetPackage() {
+    String fakePackage = "some.fake.package";
+    Context ctx = RuntimeEnvironment.application;
+    PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
+    shadowOf(pendingIntent).setCreatorPackage(fakePackage);
+
+    assertThat(pendingIntent.getCreatorPackage()).isEqualTo(fakePackage);
+    assertThat(pendingIntent.getTargetPackage()).isEqualTo(fakePackage);
+  }
 }
