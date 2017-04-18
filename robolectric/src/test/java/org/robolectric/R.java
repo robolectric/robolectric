@@ -161,7 +161,6 @@ public final class R {
     public static final int color_with_alpha = 0x7f050407;
     public static final int android_namespaced_black = 0x7f050408;
     public static final int android_namespaced_transparent = 0x7f050409;
-    public static final int android_red = 0x7f05040a;
     public static final int test_color_1 = 0x7f05040b;
     public static final int color_state_list = 0x7f05040c;
     public static final int list_separator = 0x7f05040d;
