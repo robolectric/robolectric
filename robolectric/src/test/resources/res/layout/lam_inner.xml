@@ -10,7 +10,7 @@
 
   <TextView
     android:id="@+id/lam_inner_contents"
-    android:layout_weight="fill_parent"
+    android:layout_weight="0.1"
     android:layout_height="fill_parent"
     />
 </LinearLayout>
