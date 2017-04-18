@@ -122,11 +122,10 @@ public class ShadowResourcesTest {
   @Test
   public void withIdReferenceEntry_obtainTypedArray() {
     TypedArray typedArray = resources.obtainTypedArray(R.array.typed_array_with_resource_id);
-    assertThat(typedArray.length()).isEqualTo(3);
+    assertThat(typedArray.length()).isEqualTo(2);
 
-    assertThat(typedArray.getResourceId(0, 0)).isEqualTo(R.id.id_declared_in_id_tag);
-    assertThat(typedArray.getResourceId(1, 0)).isEqualTo(R.id.id_declared_in_item_tag);
-    assertThat(typedArray.getResourceId(2, 0)).isEqualTo(R.id.id_declared_in_layout);
+    assertThat(typedArray.getResourceId(0, 0)).isEqualTo(R.id.id_declared_in_item_tag);
+    assertThat(typedArray.getResourceId(1, 0)).isEqualTo(R.id.id_declared_in_layout);
   }
 
   @Test

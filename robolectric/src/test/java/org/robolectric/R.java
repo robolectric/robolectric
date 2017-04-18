@@ -84,7 +84,6 @@ public final class R {
     public static final int id_declared_in_layout = 0x7f01003d;
     public static final int id_declared_in_item_tag = 0x7f01003e;
     public static final int id_with_string_value = 0x7f010042;
-    public static final int id_declared_in_id_tag = 0x7f010041;
     public static final int lib_button = 0x7f01003f;
     public static final int lib3_button = 0x7f010040;
   }
