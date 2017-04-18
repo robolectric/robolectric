@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
 import android.app.IntentService;
+import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
 
 import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
 import org.robolectric.android.controller.FragmentController;
 import org.robolectric.android.controller.IntentServiceController;
@@ -115,6 +117,14 @@ public class Robolectric {
 
   public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass, Intent intent) {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
+  }
+
+  public static <T extends BackupAgent> BackupAgentController<T> buildBackupAgent(Class<T> backupAgentClass) {
+    return BackupAgentController.of(ReflectionHelpers.callConstructor(backupAgentClass));
+  }
+
+  public static <T extends BackupAgent> T setupBackupAgent(Class<T> backupAgentClass) {
+    return buildBackupAgent(backupAgentClass).setUp().get();
   }
 
   /**
