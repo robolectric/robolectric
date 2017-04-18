@@ -151,14 +151,14 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.isVisible()).isTrue();
   }
 
-  private static class LoginFragment extends Fragment {
+  public static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
     }
   }
 
-  private static class LoginActivity extends FragmentActivity {
+  public static class LoginActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -169,7 +169,7 @@ public class SupportFragmentControllerTest {
     }
   }
 
-  private static class CustomizedViewIdLoginActivity extends FragmentActivity {
+  public static class CustomizedViewIdLoginActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
