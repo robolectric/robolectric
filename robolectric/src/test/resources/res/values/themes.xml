@@ -13,7 +13,6 @@
   </style>
 
   <style name="Theme.Robolectric.EmptyParent" parent=""/>
-  <style name="Theme.Robolectric.NullStringParent" parent="Null"/>
 
   <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
     <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>

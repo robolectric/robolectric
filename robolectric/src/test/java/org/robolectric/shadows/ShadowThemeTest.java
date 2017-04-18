@@ -191,12 +191,6 @@ public class ShadowThemeTest {
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
-  @Test public void whenAThemeHasNullStringParentAttr_shouldHaveNoParent() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_Robolectric_NullStringParent, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
-  }
-
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);

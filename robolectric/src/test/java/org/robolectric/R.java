@@ -395,7 +395,6 @@ public final class R {
     public static final int Theme_Robolectric = 0x7f111001;
     public static final int Theme_Robolectric_ImplicitChild = 0x7f111002;
     public static final int Theme_Robolectric_EmptyParent = 0x7f111003;
-    public static final int Theme_Robolectric_NullStringParent = 0x7f111004;
     public static final int Theme_AnotherTheme = 0x7f111005;
     public static final int MyCustomView = 0x7f111006;
     public static final int Widget_Robolectric_Button = 0x7f111007;
