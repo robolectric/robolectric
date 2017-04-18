@@ -35,6 +35,9 @@
     <item name="someLayoutTwo">?someLayoutOne</item>
   </style>
 
+  <style name="Theme">
+  </style>
+
   <style name="Theme.ThemeReferredToByParentAttrReference">
     <item name="parentStyleReference">@style/StyleReferredToByParentAttrReference</item>
   </style>
