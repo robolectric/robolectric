@@ -203,7 +203,6 @@ public class ShadowResourcesTest {
   @Test
   public void getBoolean() throws Exception {
     assertThat(resources.getBoolean(R.bool.false_bool_value)).isEqualTo(false);
-    assertThat(resources.getBoolean(R.bool.integers_are_true)).isEqualTo(true);
     assertThat(resources.getBoolean(R.bool.true_as_item)).isEqualTo(true);
   }
 

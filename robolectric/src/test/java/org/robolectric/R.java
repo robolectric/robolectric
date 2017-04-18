@@ -381,8 +381,6 @@ public final class R {
   public static final class bool {
     public static final int false_bool_value = 0x7f100f00;
     public static final int true_bool_value = 0x7f100f01;
-    public static final int zero_is_false = 0x7f100f02;
-    public static final int integers_are_true = 0x7f100f03;
     public static final int reference_to_true = 0x7f100f04;
     public static final int true_as_item = 0x7f100f05;
     public static final int different_resource_boolean=0x7f100f06;
