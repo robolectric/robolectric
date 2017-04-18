@@ -5,5 +5,5 @@
     xmlns:robolectric="http://schemas.android.com/apk/res/org.robolectric"
     android:gravity="center"
     robolectric:message="@string/hello"
-    robolectric:itemType="string"
+    robolectric:itemType="marsupial"
     />

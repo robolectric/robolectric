@@ -5,6 +5,7 @@
       <enum name="marsupial" value="0"/>
       <enum name="ungulate" value="1"/>
     </attr>
+    <attr name="message" format="string"/>
 
     <attr name="scrollBars">
       <flag name="horizontal" value="0x00000100" />

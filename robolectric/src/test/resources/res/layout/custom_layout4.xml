@@ -11,7 +11,7 @@
       android:layout_height="wrap_content"
       android:gravity="center"
       robolectric:message="@string/hello"
-      robolectric:itemType="string"
+      robolectric:itemType="marsupial"
       fakens:message="@layout/text_views"
       >
     <View
