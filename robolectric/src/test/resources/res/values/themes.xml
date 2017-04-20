@@ -43,7 +43,7 @@
 
   <style name="Theme.ThemeContainingStyleReferences" parent="">
     <item name="styleReference">@style/StyleReferredToByParentAttrReference</item>
-    <item name="styleReferenceWithoutExplicitType">@StyleReferredToByParentAttrReference</item>
+    <item name="styleReferenceWithoutExplicitType">@style/StyleReferredToByParentAttrReference</item>
   </style>
 
   <style name="StyleReferredToByParentAttrReference">
