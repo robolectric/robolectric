@@ -18,7 +18,7 @@
     <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
     <item name="logoWidth">?attr/averageSheepWidth</item>
     <item name="logoHeight">@dimen/test_dp_dimen</item>
-    <item name="averageSheepWidth">42px</item>
+    <item name="averageSheepWidth">@dimen/test_dp_dimen</item>
     <item name="animalStyle">@style/Gastropod</item>
     <item name="isSugary">?attr/isSugary</item>
     <item name="styleReference">?android:attr/buttonStyle</item>
