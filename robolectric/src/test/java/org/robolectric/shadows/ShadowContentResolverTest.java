@@ -172,6 +172,7 @@ public class ShadowContentResolverTest {
     assertThat(contentResolver.delete(uri21, "id", new String[]{"5"})).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri()).isEqualTo(uri21);
+    assertThat(shadowContentResolver.getDeleteStatements().get(0).getContentProvider()).isNull();
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere()).isEqualTo("id");
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0]).isEqualTo("5");
 
