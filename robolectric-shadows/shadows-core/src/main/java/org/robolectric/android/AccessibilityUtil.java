@@ -105,8 +105,8 @@ public class AccessibilityUtil {
   /**
    * Specify that a specific subset of accessibility checks be run. The subsets are specified based
    * on which Robolectric version particular checks were released with. By default, all checks are
-   * run ({@link ForRobolectricVersion}.
-   * <p>
+   * run {@link ForRobolectricVersion}.
+   *
    * If you call this method, the value you pass will take precedence over any value in any 
    * annotations. 
    * 

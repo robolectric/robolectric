@@ -80,7 +80,6 @@ public class ShadowNetworkInfo {
   /**
    * Non-Android accessor.
    *
-   * <p>
    * Sets up the return value of {@link #isConnectedOrConnecting()} and {@link #isConnected()}.
    *
    * @param isConnected the value that {@link #isConnectedOrConnecting()} and {@link #isConnected()} will return.

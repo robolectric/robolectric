@@ -118,7 +118,7 @@ public class ShadowBluetoothAdapter {
 
   /**
    * Validate a Bluetooth address, such as "00:43:A8:23:10:F0"
-   * <p>Alphabetic characters must be uppercase to be valid.
+   * Alphabetic characters must be uppercase to be valid.
    *
    * @param address
    *         Bluetooth address as string

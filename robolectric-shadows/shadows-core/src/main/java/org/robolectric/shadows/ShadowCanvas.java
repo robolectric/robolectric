@@ -22,9 +22,9 @@ import static org.robolectric.Shadows.shadowOf;
 /**
  * Shadow for {@link android.graphics.Canvas}.
  *
- * <p> Broken. This implementation is very specific to the application for which it was developed.
+ * Broken. This implementation is very specific to the application for which it was developed.
  * Todo: Reimplement. Consider using the same strategy of collecting a history of draw events
- * and providing methods for writing queries based on type, number, and order of events.</p>
+ * and providing methods for writing queries based on type, number, and order of events.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Canvas.class)

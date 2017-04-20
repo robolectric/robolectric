@@ -273,7 +273,6 @@ public class ShadowView {
   /**
    * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
    *
-   * <p>
    * Robolectric extension.
    * @return String representation of this view.
    */

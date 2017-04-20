@@ -105,7 +105,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   /**
    * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
    *
-   * <p>
    * Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runBackgroundTasks() {
