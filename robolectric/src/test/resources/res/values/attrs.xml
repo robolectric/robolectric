@@ -64,7 +64,6 @@
     <attr name="logoHeight" format="reference"/>
     <attr name="logoWidth" format="reference"/>
     <attr name="styleReference" format="reference"/>
-    <attr name="attrFromLib1" format="reference"/>
     <attr name="styleReferenceWithoutExplicitType" format="reference"/>
     <attr name="snail" format="reference"/>
     <attr name="averageSheepWidth" format="reference"/>
