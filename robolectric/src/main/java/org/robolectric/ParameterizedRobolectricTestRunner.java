@@ -33,7 +33,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
 
   /**
    * Annotation for a method which provides parameters to be injected into the test class constructor by
-   * <code>Parameterized</code>
+   * {@code Parameterized}
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)

@@ -65,7 +65,7 @@ public class ConfigMerger {
    *
    * The returned object is likely to be reused for many tests.
    *
-   * @param packageName the name of the package, or empty string (<code>""</code>) for the top level package
+   * @param packageName the name of the package, or empty string ({@code ""}) for the top level package
    * @return {@link Config} object for the specified package
    * @since 3.2
    */
@@ -75,7 +75,7 @@ public class ConfigMerger {
   }
 
   /**
-   * Return a {@link Properties} file for the given package name, or <code>null</code> if none is available.
+   * Return a {@link Properties} file for the given package name, or {@code null} if none is available.
    * 
    * @since 3.2
    */

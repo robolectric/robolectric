@@ -38,7 +38,7 @@ public class ShadowMessage {
   /**
    * Hook to unscheduled the callback when the message is recycled.
    * Invokes {@link #unschedule()} and then calls through to the
-   * package private method {@link Message}<code>.recycleUnchecked()
+   * package private method {@link Message#recycleUnchecked()}
    * on the real object.
    */
   @Implementation
@@ -53,25 +53,25 @@ public class ShadowMessage {
     }
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
   /**
    * Hook to unscheduled the callback when the message is recycled.
    * Invokes {@link #unschedule()} and then calls through to
    * {@link Message#recycle()} on the real object.
    */
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void recycle() {
     unschedule();
     directlyOn(realMessage, Message.class, "recycle");
   }
 
   /**
-   * Stores the <code>Runnable</code> instance that has been scheduled
+   * Stores the {@link Runnable} instance that has been scheduled
    * to invoke this message. This is called when the message is
    * enqueued by {@link ShadowMessageQueue#enqueueMessage} and is used when
    * the message is recycled to ensure that the correct
    * {@link Runnable} instance is removed from the associated scheduler.
    *
-   * @param r the <code>Runnable</code> instance that is scheduled to
+   * @param r the {@link Runnable} instance that is scheduled to
    * trigger this message.
    *
 #if ($api >= 21)   * @see #recycleUnchecked()
@@ -79,12 +79,11 @@ public class ShadowMessage {
 #end
    */
   public void setScheduledRunnable(Runnable r) {
-	scheduledRunnable = r;
+    scheduledRunnable = r;
   }
 
-  @Implementation
   /**
-   * Convenience method to provide access to the private <code>Message.isInUse()</code>
+   * Convenience method to provide access to the private {@code Message.isInUse()}
    * method. Note that the definition of "in use" changed with API 21:
    *
    * In API 19, a message was only considered "in use" during its dispatch. In API 21, the
@@ -92,16 +91,16 @@ public class ShadowMessage {
    * it is freshly obtained via a call to {@link Message#obtain()}. This means that
    * in API 21 messages that are in the recycled pool will still be marked as "in use". 
    *
-   * @return <code>true</code> if the message is currently "in use", <code>false</code>
-   * otherwise.
+   * @return {@code true} if the message is currently "in use", {@code false} otherwise.
    */
+  @Implementation
   public boolean isInUse() {
   	return directlyOn(realMessage, Message.class, "isInUse");
   }
 
   /**
    * Convenience method to provide getter access to the private field
-   * <code>Message.next</code>.
+   * {@code Message.next}.
    *
    * @return The next message in the current message chain.
    * @see #setNext(Message) 
@@ -112,7 +111,7 @@ public class ShadowMessage {
   
   /**
    * Convenience method to provide setter access to the private field
-   * <code>Message.next</code>.
+   * {@code Message.next}.
    *
    * @param next the new next message for the current message.
    * @see #getNext() 

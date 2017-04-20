@@ -488,7 +488,7 @@ public @interface Config {
 
     /**
      * This returns actual default values where they exist, in the sense that we could use
-     * the values, rather than markers like <code>-1</code> or <code>--default</code>.
+     * the values, rather than markers like {@code -1} or {@code --default}.
      */
     public static Builder defaults() {
       return new Builder()

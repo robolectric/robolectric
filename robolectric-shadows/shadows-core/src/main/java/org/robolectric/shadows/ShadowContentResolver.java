@@ -304,7 +304,7 @@ public class ShadowContentResolver {
    * or {@link #getDeletedUris()}.
    *
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
-   * <code>1</code> will be returned.
+   * {@code 1} will be returned.
    */
   @Implementation
   public final int delete(Uri url, String where, String[] selectionArgs) {
@@ -329,7 +329,7 @@ public class ShadowContentResolver {
    * {@link #getInsertStatements()}.
    *
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
-   * the number of rows in <code>values</code> will be returned.
+   * the number of rows in {@code values} will be returned.
    */
   @Implementation
   public final int bulkInsert(Uri url, ContentValues[] values) {
@@ -564,7 +564,7 @@ public class ShadowContentResolver {
    * Set the value to be returned by {@link ContentResolver#update(Uri, ContentValues, String, String[])}
    * when no appropriate {@link ContentProvider} can be found.
    *
-   * @deprecated This method will be removed in Robolectric 3.5. Instead, <code>1</code> will be returned.
+   * @deprecated This method will be removed in Robolectric 3.5. Instead, {@code 1} will be returned.
    *
    * @param nextId the number of rows to return
    */

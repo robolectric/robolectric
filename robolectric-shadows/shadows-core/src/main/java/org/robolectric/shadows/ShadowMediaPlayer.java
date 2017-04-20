@@ -30,12 +30,12 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 /**
- * Shadow for {@link android.media.MediaPlayer}.
+ * Shadow for {@link MediaPlayer}.
  * 
  * Automated testing of media playback can be a difficult thing - especially
  * testing that your code properly handles asynchronous errors and events. This
  * near impossible task is made quite straightforward using this implementation
- * of <code>ShadowMediaPlayer</code> with Robolectric.
+ * of {@link MediaPlayer} with Robolectric.
  * 
  * This shadow implementation provides much of the functionality needed to
  * emulate {@link MediaPlayer} initialization &amp; playback behavior without having
@@ -70,11 +70,12 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  *
  * <b>Note</b>: One gotcha with this shadow is that you need to either configure an
  * exception or a {@link ShadowMediaPlayer.MediaInfo} instance for that data source
- * (using {@link #addException} or {@link addMediaInfo} respectively) <i>before</i>
+ * (using {@link #addException(DataSource, IOException)} or
+ * {@link #addMediaInfo(DataSource, MediaInfo)} respectively) <i>before</i>
  * calling {@link #setDataSource}, otherwise you'll get an
  * {@link IllegalArgumentException}.
  * 
- * The current features of <code>ShadowMediaPlayer</code> were focussed on development
+ * The current features of {@code ShadowMediaPlayer} were focused on development
  * for testing playback of audio tracks. Thus support for emulating timed text and
  * video events is incomplete. None of these features would be particularly onerous
  * to add/fix - contributions welcome, of course!
@@ -104,7 +105,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Possible states for the media player to be in. These states are as defined
    * in the documentation for {@link android.media.MediaPlayer}.
    */
-  public static enum State {
+  public enum State {
     IDLE, INITIALIZED, PREPARING, PREPARED, STARTED, STOPPED, PAUSED, PLAYBACK_COMPLETED, END, ERROR
   }
 
@@ -162,7 +163,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     public TreeMap<Integer, RunList> events = new TreeMap<>();
 
     /**
-     * Creates a new <code>MediaInfo</code> object with default duration (1000ms)
+     * Creates a new {@code MediaInfo} object with default duration (1000ms)
      * and default preparation delay (0ms).
      */
     public MediaInfo() {
@@ -170,9 +171,9 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     }
     
     /**
-     * Creates a new <code>MediaInfo</code> object with the given duration and
+     * Creates a new {@code MediaInfo} object with the given duration and
      * preparation delay. A completion callback event is scheduled at
-     * <code>duration</code> ms from the end.
+     * {@code duration} ms from the end.
      * 
      * @param duration
      *          the duration (in ms) of this emulated media. A callback event
@@ -241,13 +242,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      *          the offset from the start of playback at which this error will
      *          trigger.
      * @param what
-     *          the value for the <code>what</code> parameter to use in the call
-     *          to
+     *          the value for the {@code what} parameter to use in the call to
      *          {@link android.media.MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)
      *          onError()}.
      * @param extra
-     *          the value for the <code>extra</code> parameter to use in the
-     *          call toH
+     *          the value for the {@code extra} parameter to use in the call to
      *          {@link android.media.MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)
      *          onError()}.
      * @return A reference to the MediaEvent object that was created &amp; scheduled.
@@ -267,13 +266,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      *          the offset from the start of playback at which this event will
      *          trigger.
      * @param what
-     *          the value for the <code>what</code> parameter to use in the call
-     *          to
+     *          the value for the {@code what} parameter to use in the call to
      *          {@link android.media.MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)
      *          onInfo()}.
      * @param extra
-     *          the value for the <code>extra</code> parameter to use in the
-     *          call to
+     *          the value for the {@code extra} parameter to use in the call to
      *          {@link android.media.MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)
      *          onInfo()}.
      * @return A reference to the MediaEvent object that was created &amp; scheduled.
@@ -300,7 +297,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      * onInfo()} callback with {@link MediaPlayer#MEDIA_INFO_BUFFERING_START} to
      * signal the start of buffering and then call {@link #doStop()} to
      * internally pause playback. Finally it will schedule an event to fire
-     * after <code>length</code> ms which fires a
+     * after {@code length} ms which fires a
      * {@link MediaPlayer#MEDIA_INFO_BUFFERING_END} info event and invokes
      * {@link #doStart()} to resume playback.
      * 
@@ -477,7 +474,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Callback to use when a method is invoked from an invalid state. Has
-   * <code>what = -38</code> and <code>extra = 0</code>, which are values that
+   * {@code what = -38} and {@code extra = 0}, which are values that
    * were determined by inspection.
    */
   private static final ErrorCallback invalidStateErrorCallback = new ErrorCallback(
@@ -560,12 +557,12 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Common code path for all <code>setDataSource()</code> implementations.
+   * Common code path for all {@code setDataSource()} implementations.
    * <ol><li>Checks for any specified exceptions for the specified data source and throws them.</li>
    * <li>Checks the current state and throws an exception if it is in an invalid state.</li>
    * <li>If no exception is thrown in either of the previous two steps, then {@link #doSetDataSource(DataSource)}
    * is called to set the data source.</li>
-   * <li>Sets the player state to <code>INITIALIZED</code>.</li>
+   * <li>Sets the player state to {@code INITIALIZED}.</li>
    * </ol>
    * Usually this method would not be called directly, but indirectly through one of the
    * other {@link #setDataSource(String)} implementations, which use {@link DataSource#toDataSource(String)}
@@ -685,11 +682,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Checks states for methods that asynchronously invoke
    * {@link android.media.MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)
    * onError()} when invoked in an illegal state. Such methods always throw
-   * {@link IllegalStateException} rather than invoke <code>onError()</code> if
+   * {@link IllegalStateException} rather than invoke {@code onError()} if
    * they are invoked from the END state.
    * 
    * This method will either emulate this behavior by posting an
-   * <code>onError()</code> callback to the current thread's message queue (or
+   * {@code onError()} callback to the current thread's message queue (or
    * throw an {@link IllegalStateException} if invoked from the END state), or
    * else it will generate an assertion if {@link #setAssertOnError
    * assertOnError} is set.
@@ -818,7 +815,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * {@link SystemClock#sleep(long)} before calling
    * {@link #invokePreparedListener()}.
    * 
-   * If <code>preparationDelay</code> is not positigetve and non-zero, there is no
+   * If {@code preparationDelay} is not positive and non-zero, there is no
    * sleep.
    * 
    * @see MediaInfo#setPreparationDelay(int)
@@ -906,8 +903,8 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * the STARTED state, this is not always the case - for example, if a pending
    * seek is in progress, or perhaps a buffer underrun is being simulated.
    * 
-   * @return <code>true</code> if the player is really playing or
-   *         <code>false</code> if the player is internally paused.
+   * @return {@code true} if the player is really playing or
+   *         {@code false} if the player is internally paused.
    * @see #doStart
    * @see #doStop
    */
@@ -1141,7 +1138,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Retrieves the {@link Handler} object used by this
-   * <code>ShadowMediaPlayer</code>. Can be used for posting custom asynchronous
+   * {@code ShadowMediaPlayer}. Can be used for posting custom asynchronous
    * events to the thread (eg, asynchronous errors). Use this for scheduling
    * events to take place at a particular "real" time (ie, time as measured by
    * the scheduler). For scheduling events to occur at a particular playback
@@ -1189,13 +1186,13 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * into three categories:
    * <ul>
    * <li>Those that log an error when invoked in an invalid state but don't
-   * throw an exception or invoke <code>onError()</code>. An example is
+   * throw an exception or invoke {@code onError()}. An example is
    * {@link #getVideoHeight()}.</li>
    * <li>Synchronous error handling: methods always throw an exception (usually
-   * {@link IllegalStateException} but don't invoke <code>onError()</code>.
+   * {@link IllegalStateException} but don't invoke {@code onError()}.
    * Examples are {@link #prepare()} and {@link #setDataSource(String)}.</li>
    * <li>Asynchronous error handling: methods don't throw an exception but
-   * invoke <code>onError()</code>.</li>
+   * invoke {@code onError()}.</li>
    * </ul>
    * Additionally, all three methods behave synchronously (throwing
    * {@link IllegalStateException} when invoked from the END state.
@@ -1229,7 +1226,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Retrieves the currently selected {@link MediaInfo}. This instance is used
    * to define current duration, preparation delay, exceptions for
-   * <code>setDataSource()</code>, playback events, etc.
+   * {@code setDataSource()}, playback events, etc.
    * 
    * @return The currently selected {@link MediaInfo}.
    * @see #addMediaInfo
@@ -1310,8 +1307,8 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Non-Android accessor. Note: This has a funny name at the
    * moment to avoid having to produce an API-specific shadow -
-   * if it were called <code>getAudioStreamType()</code> then
-   * the <code>RobolectricWiringTest</code> will inform us that
+   * if it were called {@code getAudioStreamType()} then
+   * the {@code RobolectricWiringTest} will inform us that
    * it should be annotated with {@link Implementation}, because
    * there is a private method in the later API versions with
    * the same name, however this would fail on earlier versions.
@@ -1347,7 +1344,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Non-Android accessor. Used for assertions.
    * 
-   * @return The current <code>auxEffect</code> setting.
+   * @return The current {@code auxEffect} setting.
    */
   public int getAuxEffect() {
     return auxEffect;
@@ -1358,7 +1355,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * 
    * @return The position to which the shadow player is seeking for the seek in
    *         progress (ie, after the call to {@link #seekTo} but before a call
-   *         to {@link #invokeSeekCompleteListener()}). Returns <code>-1</code>
+   *         to {@link #invokeSeekCompleteListener()}). Returns {@code -1}
    *         if no seek is in progress.
    */
   public int getPendingSeek() {
@@ -1371,7 +1368,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * 
    * Non-Android accessor. Use for assertions.
    * 
-   * @return The source passed in to <code>setDataSource</code>.
+   * @return The source passed in to {@code setDataSource}.
    */
   public DataSource getDataSource() {
     return dataSource;
@@ -1384,7 +1381,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * 
    * Non-Android accessor. Use for assertions.
    * 
-   * @return The source Uri passed in to <code>setDataSource</code>.
+   * @return The source Uri passed in to {@code setDataSource}.
    */
   public Uri getSourceUri() {
     return sourceUri;
@@ -1396,8 +1393,8 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * 
    * Non-Android accessor. Use for assertions.
    * 
-   * @return The resource ID passed in to <code>create()</code>, or
-   *         <code>-1</code> if a different method of setting the source was
+   * @return The resource ID passed in to {@code create()}, or
+   *         {@code -1} if a different method of setting the source was
    *         used.
    */
   public int getSourceResId() {
@@ -1432,7 +1429,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Use for assertions. This is mainly used for backward compatibility.
    * {@link #getState} may be more useful for new testing applications.
    * 
-   * @return <code>true</code> if the MediaPlayer is in the PREPARED state,
+   * @return {@code true} if the MediaPlayer is in the PREPARED state,
    *         false otherwise.
    */
   public boolean isPrepared() {
@@ -1502,10 +1499,10 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Allows test cases to directly simulate invocation of the OnInfo event.
    * 
    * @param what
-   *          parameter to pass in to <code>what</code> in
+   *          parameter to pass in to {@code what} in
    *          {@link MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)}.
    * @param extra
-   *          parameter to pass in to <code>extra</code> in
+   *          parameter to pass in to {@code extra} in
    *          {@link MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)}.
    */
   public void invokeInfoListener(int what, int extra) {
@@ -1518,10 +1515,10 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Allows test cases to directly simulate invocation of the OnError event.
    * 
    * @param what
-   *          parameter to pass in to <code>what</code> in
+   *          parameter to pass in to {@code what} in
    *          {@link MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)}.
    * @param extra
-   *          parameter to pass in to <code>extra</code> in
+   *          parameter to pass in to {@code extra} in
    *          {@link MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)}.
    */
   public void invokeErrorListener(int what, int extra) {

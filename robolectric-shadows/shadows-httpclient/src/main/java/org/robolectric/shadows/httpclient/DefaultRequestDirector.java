@@ -625,12 +625,12 @@ public class DefaultRequestDirector implements RequestDirector {
    * to determine the route for either the original or a followup request.
    *
    * @param target    the target host for the request.
-   *                  Implementations may accept <code>null</code>
+   *                  Implementations may accept {@code null}
    *                  if they can still determine a route, for example
    *                  to a default target or by inspecting the request.
    * @param request   the request to execute
    * @param context   the context to use for the execution,
-   *                  never <code>null</code>
+   *                  never {@code null}
    *
    * @return  the route the request should take
    *
@@ -733,9 +733,9 @@ public class DefaultRequestDirector implements RequestDirector {
    * @param route     the route to establish
    * @param context   the context for request execution
    *
-   * @return  <code>true</code> if the tunnelled route is secure,
-   *          <code>false</code> otherwise.
-   *          The implementation here always returns <code>false</code>,
+   * @return  {@code true} if the tunnelled route is secure,
+   *          {@code false} otherwise.
+   *          The implementation here always returns {@code false},
    *          but derived classes may override.
    *
    * @throws HttpException    in case of a problem
@@ -867,12 +867,12 @@ public class DefaultRequestDirector implements RequestDirector {
    *
    * @param route     the route to establish
    * @param hop       the hop in the route to establish now.
-   *                  <code>route.getHopTarget(hop)</code>
+   *                  {@code route.getHopTarget(hop)}
    *                  will return the proxy to tunnel to.
    * @param context   the context for request execution
    *
-   * @return  <code>true</code> if the partially tunnelled connection
-   *          is secure, <code>false</code> otherwise.
+   * @return  {@code true} if the partially tunnelled connection
+   *          is secure, {@code false} otherwise.
    *
    * @throws HttpException    in case of a problem
    * @throws IOException      in case of an IO problem
@@ -943,7 +943,7 @@ public class DefaultRequestDirector implements RequestDirector {
    * @param context   the context used for the current request execution
    *
    * @return  the followup request and route if there is a followup, or
-   *          <code>null</code> if the response should be returned as is
+   *          {@code null} if the response should be returned as is
    *
    * @throws HttpException    in case of a problem
    * @throws IOException      in case of an IO problem
@@ -1081,7 +1081,7 @@ public class DefaultRequestDirector implements RequestDirector {
 
   /**
    * Shuts down the connection.
-   * This method is called from a <code>catch</code> block in
+   * This method is called from a {@code catch} block in
    * {@link #execute execute} during exception handling.
    */
   private void abortConnection() {
