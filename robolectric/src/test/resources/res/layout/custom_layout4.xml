@@ -2,7 +2,7 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:robolectric="http://schemas.android.com/apk/res/org.robolectric"
+    xmlns:robolectric="http://schemas.android.com/apk/res-auto"
     xmlns:fakens="http://example.com/fakens"
     >
   <org.robolectric.android.CustomView
