@@ -160,7 +160,8 @@ public class ShadowContentResolver {
    *
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
    * the value set with {@link #setNextDatabaseIdForUpdates(int)} will be incremented and returned.
-   * *Note:* the return value in this case will be changed to 1 in a future release of Robolectric.
+   *
+   * *Note:* the return value in this case will be changed to {@code 1} in a future release of Robolectric.
    */
   @Implementation
   public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
@@ -518,12 +519,11 @@ public class ShadowContentResolver {
    * Internal-only method, do not use!
    *
    * Instead, use
-   * <pre>
-   * {@code
+   * ```java
    * ProviderInfo info = new ProviderInfo();
    * info.authority = authority;
    * Robolectric.buildContentProvider(ContentProvider.class).create(info);
-   * }</pre>
+   * ```
    */
   synchronized public static void registerProviderInternal(String authority, ContentProvider provider) {
     providers.put(authority, provider);
@@ -533,6 +533,14 @@ public class ShadowContentResolver {
     return getStatus(account, authority, false);
   }
 
+  /**
+   * Retrieve information on the status of the given account.
+   *
+   * @param account the account
+   * @param authority the authority
+   * @param create whether to create if no such account is found
+   * @return the account's status
+   */
   public static Status getStatus(Account account, String authority, boolean create) {
     Map<Account, Status> map = syncableAccounts.get(authority);
     if (map == null) {

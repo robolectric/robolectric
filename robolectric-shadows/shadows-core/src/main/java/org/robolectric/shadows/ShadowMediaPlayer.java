@@ -1120,7 +1120,9 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Sets a listener that is invoked whenever a new shadowed {@link MediaPlayer}
-   * object is constructed. Registering a listener gives you a chance to
+   * object is constructed.
+   *
+   * Registering a listener gives you a chance to
    * customize the shadowed object appropriately without needing to modify the
    * application-under-test to provide access to the instance at the appropriate
    * point in its life cycle. This is useful because normally a new
