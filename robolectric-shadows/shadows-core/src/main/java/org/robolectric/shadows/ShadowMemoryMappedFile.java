@@ -17,8 +17,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
- * Shadow for {@link libcore.io.MemoryMappedFile}.
- *
  * This is used by Android to load and inferFromValue time zone information. Robolectric emulates
  * this functionality by proxying to a time zone database file packaged into the android-all
  * jar.

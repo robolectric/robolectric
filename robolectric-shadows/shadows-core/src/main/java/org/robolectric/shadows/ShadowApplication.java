@@ -57,9 +57,6 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
-/**
- * Shadow for {@link android.app.Application}.
- */
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;

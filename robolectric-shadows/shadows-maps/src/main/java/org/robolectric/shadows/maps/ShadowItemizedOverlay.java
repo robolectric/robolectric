@@ -10,9 +10,6 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 
-/**
- * Shadow for {@link com.google.android.maps.ItemizedOverlay}.
- */
 @Implements(ItemizedOverlay.class)
 public class ShadowItemizedOverlay<Item extends OverlayItem> {
   private boolean isPopulated;

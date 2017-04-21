@@ -23,9 +23,6 @@ import java.util.Locale;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.widget.TextView}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextView.class)
 public class ShadowTextView extends ShadowView {

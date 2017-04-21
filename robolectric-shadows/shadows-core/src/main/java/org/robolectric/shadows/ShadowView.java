@@ -40,9 +40,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 
-/**
- * Shadow for {@link android.view.View}.
- */
 @Implements(View.class)
 public class ShadowView {
 

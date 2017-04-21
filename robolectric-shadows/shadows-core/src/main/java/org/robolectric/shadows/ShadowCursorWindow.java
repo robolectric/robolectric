@@ -19,9 +19,6 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
-/**
- * Shadow for {@link android.database.CursorWindow}.
- */
 @Implements(value = CursorWindow.class)
 public class ShadowCursorWindow {
   private static final WindowData WINDOW_DATA = new WindowData();

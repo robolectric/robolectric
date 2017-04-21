@@ -9,9 +9,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-/**
- * Shadow for {@link android.appwidget.AppWidgetHost}.
- */
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {
   @RealObject

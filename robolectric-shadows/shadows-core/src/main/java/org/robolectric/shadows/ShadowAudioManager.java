@@ -9,9 +9,6 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.media.AudioManager}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AudioManager.class)
 public class ShadowAudioManager {

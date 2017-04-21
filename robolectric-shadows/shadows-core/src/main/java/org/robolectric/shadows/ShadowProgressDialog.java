@@ -9,9 +9,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.app.ProgressDialog}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ProgressDialog.class)
 public class ShadowProgressDialog extends ShadowAlertDialog {

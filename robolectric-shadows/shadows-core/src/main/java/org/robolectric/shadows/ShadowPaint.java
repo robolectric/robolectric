@@ -14,9 +14,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.graphics.Paint}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)
 public class ShadowPaint {

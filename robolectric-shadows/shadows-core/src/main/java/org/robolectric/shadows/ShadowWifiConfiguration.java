@@ -6,9 +6,6 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.BitSet;
 
-/**
- * Shadow for {@link android.net.wifi.WifiConfiguration}.
- */
 @Implements(WifiConfiguration.class)
 public class ShadowWifiConfiguration {
   @RealObject private WifiConfiguration realObject;

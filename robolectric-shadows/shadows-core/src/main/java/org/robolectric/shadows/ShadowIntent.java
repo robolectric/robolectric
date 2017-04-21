@@ -4,9 +4,6 @@ import android.content.Intent;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-/**
- * Shadow for {@link android.content.Intent}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
 public class ShadowIntent {

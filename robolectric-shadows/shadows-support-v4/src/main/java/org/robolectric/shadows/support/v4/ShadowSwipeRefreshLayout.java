@@ -9,9 +9,6 @@ import org.robolectric.shadows.ShadowViewGroup;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 
-/**
- * Shadow for {@link android.support.v4.widget.SwipeRefreshLayout}
- */
 @Implements(SwipeRefreshLayout.class)
 public class ShadowSwipeRefreshLayout extends ShadowViewGroup {
   @RealObject SwipeRefreshLayout realObject;

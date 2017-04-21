@@ -6,9 +6,6 @@ import org.robolectric.annotation.Implements;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@link android.view.RenderNode}.
- */
 @Implements(value = RenderNode.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
 public class ShadowRenderNode {
   private float alpha = 1f;

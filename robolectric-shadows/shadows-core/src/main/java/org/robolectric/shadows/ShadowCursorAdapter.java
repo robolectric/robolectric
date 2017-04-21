@@ -37,9 +37,6 @@ import java.util.List;
 import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
 import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 
-/**
- * Shadow for {@link android.widget.CursorAdapter}.
- */
 @Implements(CursorAdapter.class)
 public class ShadowCursorAdapter extends ShadowBaseAdapter {
   @RealObject CursorAdapter realCursorAdapter;

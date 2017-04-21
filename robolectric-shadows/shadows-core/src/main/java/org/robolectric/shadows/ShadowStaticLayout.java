@@ -10,9 +10,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * Shadow for {@link android.text.StaticLayout}.
- */
 @Implements(value = StaticLayout.class, looseSignatures = true)
 public class ShadowStaticLayout {
 

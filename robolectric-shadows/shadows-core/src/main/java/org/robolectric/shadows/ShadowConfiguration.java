@@ -12,7 +12,6 @@ import org.robolectric.annotation.RealObject;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
- * Shadow for {@link android.content.res.Configuration}.
  * @deprecated This will be removed in Robolectric 3.4 - {@link Configuration} is pure Java so there is no need for a
  * shadow to exist. The methods have been preserved but marked deprecated to prevent build breakages but in this
  * version implementation has been modified to simply call through to the Framework code which may in some cases cause

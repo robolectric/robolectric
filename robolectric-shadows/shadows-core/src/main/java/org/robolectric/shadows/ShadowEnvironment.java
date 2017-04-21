@@ -16,9 +16,6 @@ import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@link android.os.Environment}.
- */
 @Implements(Environment.class)
 public class ShadowEnvironment {
   private static String externalStorageState = Environment.MEDIA_REMOVED;

@@ -20,9 +20,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
-/**
- * Shadow for {@link android.net.ConnectivityManager}.
- */
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
 

@@ -7,9 +7,6 @@ import org.robolectric.annotation.Implements;
 
 import java.util.List;
 
-/**
- * Shadow for {@link android.content.ContextWrapper}.
- */
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {
 

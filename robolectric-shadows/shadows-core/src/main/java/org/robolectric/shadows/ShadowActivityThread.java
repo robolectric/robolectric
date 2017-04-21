@@ -12,9 +12,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-/**
- * Shadow for {@link android.app.ActivityThread}.
- */
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
   public static final String CLASS_NAME = "android.app.ActivityThread";

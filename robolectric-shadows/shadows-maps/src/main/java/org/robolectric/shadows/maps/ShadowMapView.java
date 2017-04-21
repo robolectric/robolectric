@@ -29,9 +29,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.maps.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/**
- * Shadow for {@link com.google.android.maps.MapView}.
- */
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
   @SuppressWarnings("UnusedDeclaration") @RealObject

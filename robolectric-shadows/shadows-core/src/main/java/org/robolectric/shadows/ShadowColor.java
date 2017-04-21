@@ -4,9 +4,6 @@ import android.graphics.Color;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 
-/**
- * Shadow for {@link android.graphics.Color}.
- */
 @Implements(Color.class)
 public class ShadowColor {
   /**

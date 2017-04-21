@@ -13,9 +13,6 @@ import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.widget.Toast}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
 public class ShadowToast {

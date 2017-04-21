@@ -23,9 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Shadow for {@link android.location.LocationManager}.
- */
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
   private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<>();

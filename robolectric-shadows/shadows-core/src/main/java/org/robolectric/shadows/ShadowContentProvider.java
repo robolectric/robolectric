@@ -7,9 +7,6 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link ContentProvider}.
- */
 @Implements(ContentProvider.class)
 public class ShadowContentProvider {
   @RealObject private ContentProvider realContentProvider;

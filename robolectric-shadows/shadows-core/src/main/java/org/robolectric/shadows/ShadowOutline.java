@@ -7,9 +7,6 @@ import org.robolectric.annotation.Implementation;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@link android.graphics.Outline}.
- */
 @Implements(value = Outline.class, minSdk = LOLLIPOP)
 public class ShadowOutline {
 

@@ -13,9 +13,6 @@ import java.util.List;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * Shadow for {@link android.app.AlarmManager}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlarmManager.class)
 public class ShadowAlarmManager {

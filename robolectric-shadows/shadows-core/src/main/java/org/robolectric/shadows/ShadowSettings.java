@@ -12,9 +12,6 @@ import java.util.WeakHashMap;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
-/**
- * Shadow for {@link android.provider.Settings}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
 public class ShadowSettings {

@@ -14,9 +14,6 @@ import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.O;
 
-/**
- * Shadow for {@link android.hardware.SensorManager}.
- */
 @Implements(SensorManager.class)
 public class ShadowSensorManager {
   public boolean forceListenersToFail = false;

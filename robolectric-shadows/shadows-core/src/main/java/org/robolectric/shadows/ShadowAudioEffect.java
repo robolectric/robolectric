@@ -9,9 +9,6 @@ import org.robolectric.annotation.Resetter;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Shadow for {@link android.media.audiofx.AudioEffect}.
- */
 @Implements(AudioEffect.class)
 public class ShadowAudioEffect {
 

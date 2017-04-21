@@ -19,9 +19,7 @@ import static org.robolectric.util.ReflectionHelpers.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
- * Shadow for {@link android.os.MessageQueue}.
- *
- * This class puts {@link android.os.Message}s into the scheduler queue instead of sending
+ * Robolectric puts {@link android.os.Message}s into the scheduler queue instead of sending
  * them to be handled on a separate thread. {@link android.os.Message}s that are scheduled to
  * be dispatched can be triggered by calling {@link ShadowLooper#idleMainLooper}.
  *

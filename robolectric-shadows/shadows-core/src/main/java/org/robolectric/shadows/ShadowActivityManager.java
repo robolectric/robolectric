@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.app.ActivityManager}.
- */
 @Implements(ActivityManager.class)
 public class ShadowActivityManager {
   private int memoryClass = 16;

@@ -14,9 +14,6 @@ import java.util.UUID;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
-/**
- * Shadow for {@link android.bluetooth.BluetoothAdapter}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
 public class ShadowBluetoothAdapter {

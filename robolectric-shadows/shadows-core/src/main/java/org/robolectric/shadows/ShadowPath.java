@@ -12,8 +12,6 @@ import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 
 /**
- * Shadow for {@code android.graphics.Path}.
- *
  * The shadow only supports straight-line paths.
  */
 @SuppressWarnings({"UnusedDeclaration"})

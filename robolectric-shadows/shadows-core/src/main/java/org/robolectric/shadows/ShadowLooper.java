@@ -23,11 +23,11 @@ import static org.robolectric.shadow.api.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
- * Shadow for {@link android.os.Looper} that enqueues posted {@link Runnable}s to be run
+ * Robolectric enqueues posted {@link Runnable}s to be run
  * (on this thread) later. {@code Runnable}s that are scheduled to run immediately can be
  * triggered by calling {@link #idle()}.
  *
- * @see ShadowMessageQueue
+ * @see {@link ShadowMessageQueue}
  */
 @Implements(Looper.class)
 public class ShadowLooper {

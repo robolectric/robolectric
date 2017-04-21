@@ -42,9 +42,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.content.ContentResolver}.
- */
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
   private int nextDatabaseIdForInserts;

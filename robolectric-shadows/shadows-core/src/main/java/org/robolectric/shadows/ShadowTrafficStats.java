@@ -4,9 +4,6 @@ import android.net.TrafficStats;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.net.TrafficStats}.
- */
 @Implements(TrafficStats.class)
 public class ShadowTrafficStats {
 

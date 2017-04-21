@@ -13,9 +13,6 @@ import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
-/**
- * Shadow for {@link android.telephony.TelephonyManager}.
- */
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
   private PhoneStateListener listener;

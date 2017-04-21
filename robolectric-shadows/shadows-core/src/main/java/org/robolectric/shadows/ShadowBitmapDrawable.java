@@ -15,9 +15,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.graphics.drawable.BitmapDrawable}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {

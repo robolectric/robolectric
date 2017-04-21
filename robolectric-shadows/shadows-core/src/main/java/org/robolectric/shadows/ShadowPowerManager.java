@@ -16,9 +16,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
-/**
- * Shadow for {@link android.os.PowerManager}.
- */
 @Implements(PowerManager.class)
 public class ShadowPowerManager {
   private boolean isScreenOn = true;

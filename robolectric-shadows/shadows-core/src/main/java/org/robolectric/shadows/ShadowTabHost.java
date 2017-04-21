@@ -18,9 +18,6 @@ import org.robolectric.shadow.api.Shadow;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Shadow for {@link android.widget.TabHost}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
 public class ShadowTabHost extends ShadowFrameLayout {

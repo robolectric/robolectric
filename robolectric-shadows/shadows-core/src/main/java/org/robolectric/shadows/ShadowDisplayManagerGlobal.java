@@ -13,9 +13,6 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
-/**
- * Shadow for {@link android.hardware.display.DisplayManagerGlobal}.
- */
 @Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false, minSdk = JELLY_BEAN_MR1)
 public class ShadowDisplayManagerGlobal {
   private static final IDisplayManager displayManager = ReflectionHelpers.createNullProxy(IDisplayManager.class);

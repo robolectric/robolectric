@@ -6,9 +6,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@code android.net.NetworkInfo}.
- */
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
   private boolean isAvailable;

@@ -15,9 +15,6 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.*;
 
-/**
- * Shadow for {@link android.os.Message}.
- */
 @Implements(Message.class)
 public class ShadowMessage {
   @RealObject

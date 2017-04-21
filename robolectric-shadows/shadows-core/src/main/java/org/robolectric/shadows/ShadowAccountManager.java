@@ -21,9 +21,6 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
-/**
- * Shadow for {@link android.accounts.AccountManager}.
- */
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
 

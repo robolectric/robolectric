@@ -30,8 +30,6 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 /**
- * Shadow for {@link MediaPlayer}.
- * 
  * Automated testing of media playback can be a difficult thing - especially
  * testing that your code properly handles asynchronous errors and events. This
  * near impossible task is made quite straightforward using this implementation

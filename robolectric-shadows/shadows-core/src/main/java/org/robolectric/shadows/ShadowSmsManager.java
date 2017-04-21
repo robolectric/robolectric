@@ -12,9 +12,6 @@ import org.robolectric.shadow.api.Shadow;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
-/**
- * Shadow for {@link android.telephony.SmsManager}.
- */
 @Implements(value = SmsManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManager {
   private static SmsManager realManager = Shadow.newInstanceOf(SmsManager.class);

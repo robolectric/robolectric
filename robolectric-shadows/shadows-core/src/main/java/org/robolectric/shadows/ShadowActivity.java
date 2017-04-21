@@ -39,9 +39,6 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
-/**
- * Shadow for {@link android.app.Activity}.
- */
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 

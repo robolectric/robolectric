@@ -11,9 +11,6 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-/**
- * Shadow for {@link android.util.Log}.
- */
 @Implements(Log.class)
 public class ShadowLog {
   private static final int extraLogLength = "l/: \n".length();
