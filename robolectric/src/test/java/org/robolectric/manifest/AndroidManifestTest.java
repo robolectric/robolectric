@@ -173,6 +173,16 @@ public class AndroidManifestTest {
     assertEquals(1, newConfigWith("").getMinSdkVersion());
   }
 
+  /**
+   * For Android O preview, apps are encouraged to use targetSdkVersion="O".
+   *
+   * @see <a href="http://google.com">https://developer.android.com/preview/migration.html</a>
+   */
+  @Test
+  public void shouldReadTargetSDKVersionOPreview() throws Exception {
+    assertEquals(26, newConfigWith("android:targetSdkVersion=\"O\"").getTargetSdkVersion());
+  }
+
   @Test
   public void shouldReadProcessFromAndroidManifest() throws Exception {
     assertEquals("robolectricprocess", newConfig("TestAndroidManifestWithProcess.xml").getProcessName());
