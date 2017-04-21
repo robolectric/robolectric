@@ -270,8 +270,6 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return whether to use built in zoom map controls
    */
   public boolean getUseBuiltInZoomMapControls() {
@@ -279,8 +277,6 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return whether {@link #preLoad()} has been called on this {@code MapView}
    */
   public boolean preLoadWasCalled() {
@@ -288,7 +284,7 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   /**
-   * Non-Android accessor to set the latitude span (the absolute value of the difference between the Northernmost and
+   * Sets the latitude span (the absolute value of the difference between the Northernmost and
    * Southernmost latitudes visible on the map) of this {@code MapView}
    *
    * @param latitudeSpan the new latitude span for this {@code MapView}
@@ -298,7 +294,7 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   /**
-   * Non-Android accessor to set the longitude span (the absolute value of the difference between the Easternmost and
+   * Sets the longitude span (the absolute value of the difference between the Easternmost and
    * Westernmost longitude visible on the map) of this {@code MapView}
    *
    * @param longitudeSpan the new latitude span for this {@code MapView}
@@ -308,7 +304,7 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   /**
-   * Non-Android accessor that controls the value to be returned by {@link #canCoverCenter()}
+   * Controls the value to be returned by {@link #canCoverCenter()}
    *
    * @param canCoverCenter the value to be returned by {@link #canCoverCenter()}
    */

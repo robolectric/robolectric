@@ -129,7 +129,7 @@ public class ShadowTypeface {
   }
 
   /**
-   * Non-Android accessor. Return the font description.
+   * Returns the font description.
    *
    * @return Font description.
    */

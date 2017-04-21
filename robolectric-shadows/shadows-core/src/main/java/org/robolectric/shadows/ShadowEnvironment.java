@@ -32,7 +32,7 @@ public class ShadowEnvironment {
   }
 
   /**
-   * Non-Android accessor. Sets the return value of {@link #getExternalStorageState()}.
+   * Sets the return value of {@link #getExternalStorageState()}.
    *
    * @param externalStorageState Value to return from {@link #getExternalStorageState()}.
    */
@@ -41,7 +41,7 @@ public class ShadowEnvironment {
   }
 
   /**
-   * Non-Android accessor. Sets the return value of {@link #isExternalStorageEmulated()}.
+   * Sets the return value of {@link #isExternalStorageEmulated()}.
    *
    * @param emulated Value to return from {@link #isExternalStorageEmulated()}.
    */
@@ -120,7 +120,7 @@ public class ShadowEnvironment {
   }
 
   /**
-   * Non-Android accessor. Sets the "isRemovable" flag of a particular file.
+   * Sets the "isRemovable" flag of a particular file.
    *
    * @param file Target file.
    * @param isRemovable True if the filesystem is removable.
@@ -130,7 +130,7 @@ public class ShadowEnvironment {
   }
 
   /**
-   * Non-Android accessor. Sets the "isEmulated" flag of a particular file.
+   * Sets the "isEmulated" flag of a particular file.
    *
    * @param file Target file.
    * @param isEmulated True if the filesystem is emulated.

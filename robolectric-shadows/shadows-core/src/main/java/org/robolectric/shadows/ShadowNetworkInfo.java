@@ -65,7 +65,6 @@ public class ShadowNetworkInfo {
   }
 
   /**
-   * Non-Android accessor
    * Sets up the return value of {@link #isAvailable()}.
    *
    * @param isAvailable the value that {@link #isAvailable()} will return.
@@ -75,8 +74,6 @@ public class ShadowNetworkInfo {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * Sets up the return value of {@link #isConnectedOrConnecting()} and {@link #isConnected()}.
    *
    * @param isConnected the value that {@link #isConnectedOrConnecting()} and {@link #isConnected()} will return.
@@ -86,7 +83,6 @@ public class ShadowNetworkInfo {
   }
 
   /**
-   * Non-Android accessor
    * Sets up the return value of {@link #getType()}.
    *
    * @param connectionType the value that {@link #getType()} will return.

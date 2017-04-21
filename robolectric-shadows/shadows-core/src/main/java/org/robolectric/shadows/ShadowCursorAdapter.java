@@ -58,8 +58,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
   }
 
   /**
-   * Non-Android API.  Set a list of views to be returned for successive
-   * calls to getView().
+   * Sets a list of views to be returned for successive calls to {@link #getView(int, View, ViewGroup)}.
    *
    * @param views The list of views
    */

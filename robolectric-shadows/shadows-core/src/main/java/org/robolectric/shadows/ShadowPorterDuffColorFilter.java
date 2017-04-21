@@ -31,8 +31,6 @@ public class ShadowPorterDuffColorFilter {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Returns the ARGB color used to tint the source pixels when this filter
    * is applied.
    */
@@ -41,8 +39,6 @@ public class ShadowPorterDuffColorFilter {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Returns the Porter-Duff mode used to composite this color filter's
    * color with the source pixel when this filter is applied.
    */

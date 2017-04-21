@@ -60,8 +60,6 @@ public class ShadowSmsManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Parameters for last call to {@code sendDataMessage}.
    */
   public DataMessageParams getLastSentDataMessageParams() {
@@ -69,8 +67,6 @@ public class ShadowSmsManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * Clear last recorded parameters for {@code sendDataMessage}.
    */
   public void clearLastSentDataMessageParams() {
@@ -78,8 +74,6 @@ public class ShadowSmsManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Parameters for last call to {@code sendTextMessage}.
    */
   public TextSmsParams getLastSentTextMessageParams() {
@@ -87,8 +81,6 @@ public class ShadowSmsManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * Clear last recorded parameters for {@code sendTextMessage}.
    */
   public void clearLastSentTextMessageParams() {
@@ -96,8 +88,6 @@ public class ShadowSmsManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Parameters for last call to {@code sendMultipartTextMessage}.
    */
   public TextMultipartParams getLastSentMultipartTextMessageParams() {
@@ -105,8 +95,6 @@ public class ShadowSmsManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * Clear last recorded parameters for {@code sendMultipartTextMessage}.
    */
   public void clearLastSentMultipartTextMessageParams() {

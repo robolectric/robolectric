@@ -17,8 +17,6 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
   private int mProgressStyle;
 
   /**
-   * Non-Android accessor.
-   *
    * @return the message displayed in the dialog
    */
   @Override
@@ -38,8 +36,6 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the style of the progress dialog
    */
   public int getProgressStyle() {

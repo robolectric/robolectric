@@ -314,8 +314,6 @@ public class ShadowLocationManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * Gets the enabled value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}
    *
    * @return the enabled value used to find the best provider
@@ -389,8 +387,6 @@ public class ShadowLocationManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return lastRequestedLocationUpdatesLocationListener
    */
   public List<LocationListener> getRequestLocationUpdateListeners() {

@@ -194,8 +194,6 @@ public class ShadowPaint {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return shadow radius (Paint related shadow, not Robolectric Shadow)
    */
   public float getShadowRadius() {
@@ -203,8 +201,6 @@ public class ShadowPaint {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return shadow Dx (Paint related shadow, not Robolectric Shadow)
    */
   public float getShadowDx() {
@@ -212,8 +208,6 @@ public class ShadowPaint {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return shadow Dx (Paint related shadow, not Robolectric Shadow)
    */
   public float getShadowDy() {
@@ -221,37 +215,20 @@ public class ShadowPaint {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return shadow color (Paint related shadow, not Robolectric Shadow)
    */
   public int getShadowColor() {
     return shadowColor;
   }
 
-  /**
-   * Non-Android accessor.
-   *
-   * @return cap
-   */
   public Paint.Cap getCap() {
     return cap;
   }
 
-  /**
-   * Non-Android accessor.
-   *
-   * @return join
-   */
   public Paint.Join getJoin() {
     return join;
   }
 
-  /**
-   * Non-Android accessor.
-   *
-   * @return width
-   */
   public float getWidth() {
     return width;
   }

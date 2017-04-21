@@ -62,8 +62,6 @@ public class ShadowPath {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return all the points that have been added to the {@code Path}
    */
   public List<Point> getPoints() {
@@ -71,8 +69,6 @@ public class ShadowPath {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return whether the {@link #moveTo(float, float)} method was called
    */
   public Point getWasMovedTo() {

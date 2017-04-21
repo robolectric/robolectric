@@ -288,8 +288,6 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-android accessor.
-   *
    * @param account User account.
    */
   public void addAccount(Account account) {
@@ -303,8 +301,6 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-android accessor.
-   *
    * Adds an account to the AccountManager but when {@link AccountManager#getAccountsByTypeForPackage(String, String)}
    * is called will be included if is in one of the #visibileToPackages
    *
@@ -318,7 +314,7 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-Android accessor consumes and returns the next {@code addAccountOptions} passed to addAccount.
+   * Consumes and returns the next {@code addAccountOptions} passed to {@link #addAccount}.
    *
    * @return the next {@code addAccountOptions}
    */
@@ -331,7 +327,7 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-Android accessor returns the next {@code addAccountOptions} passed to addAccount without consuming it.
+   * Returns the next {@code addAccountOptions} passed to {@link #addAccount} without consuming it.
    *
    * @return the next {@code addAccountOptions}
    */
@@ -389,8 +385,6 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-android accessor.
-   *
    * @param authenticator System authenticator.
    */
   public void addAuthenticator(AuthenticatorDescription authenticator) {
@@ -404,7 +398,7 @@ public class ShadowAccountManager {
   private Map<Account, String> previousNames = new HashMap<Account, String>();
 
   /**
-   * Non-android accessor.
+   * Sets the previous name for an account, which will be returned by {@link AccountManager#getPreviousName(Account)}.
    *
    * @param account User account.
    * @param previousName Previous account name.
@@ -413,6 +407,9 @@ public class ShadowAccountManager {
     previousNames.put(account, previousName);
   }
 
+  /**
+   * @see #setPreviousAccountName(Account, String)
+   */
   @Implementation(minSdk = LOLLIPOP)
   public String getPreviousName(Account account) {
     return previousNames.get(account);

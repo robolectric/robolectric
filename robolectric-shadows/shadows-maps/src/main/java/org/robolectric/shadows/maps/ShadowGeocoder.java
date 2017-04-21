@@ -112,7 +112,7 @@ public class ShadowGeocoder {
   }
 
   /**
-   * Non-Android accessor that indicates whether {@link #getFromLocation(double, double, int)} was called.
+   * Indicates whether {@link #getFromLocation(double, double, int)} was called.
    *
    * @return whether {@link #getFromLocation(double, double, int)} was called.
    */

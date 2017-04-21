@@ -40,7 +40,7 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Non-Android accessor.  Returns the most recent listener passed to #listen().
+   * Returns the most recent listener passed to #listen().
    *
    * @return Phone state listener.
    */
@@ -49,7 +49,7 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Non-Android accessor.  Returns the most recent flags passed to #listen().
+   * Returns the most recent flags passed to #listen().
    *
    * @return Event flags.
    */

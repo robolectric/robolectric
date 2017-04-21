@@ -27,7 +27,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  * (on this thread) later. {@code Runnable}s that are scheduled to run immediately can be
  * triggered by calling {@link #idle()}.
  *
- * @see {@link ShadowMessageQueue}
+ * @see ShadowMessageQueue
  */
 @Implements(Looper.class)
 public class ShadowLooper {

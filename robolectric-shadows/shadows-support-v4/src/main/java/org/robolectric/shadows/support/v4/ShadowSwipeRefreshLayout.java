@@ -21,8 +21,6 @@ public class ShadowSwipeRefreshLayout extends ShadowViewGroup {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return OnRefreshListener that was previously set.
    */
   public OnRefreshListener getOnRefreshListener() {

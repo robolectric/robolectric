@@ -13,7 +13,7 @@ public class ShadowResolveInfo {
   private String label;
 
   /**
-   * Non-Android accessor used for creating ResolveInfo objects.
+   * Creates a {@link ResolveInfo}.
    *
    * @param displayName Display name.
    * @param packageName Package name.
@@ -24,7 +24,7 @@ public class ShadowResolveInfo {
   }
 
   /**
-   * Non-Android accessor used for creating ResolveInfo objects
+   * Creates a {@link ResolveInfo}.
    *
    * @param displayName Display name.
    * @param packageName Package name.
@@ -51,7 +51,7 @@ public class ShadowResolveInfo {
   }
 
   /**
-   * Non-Android accessor used to set the value returned by {@link #loadLabel}.
+   * Sets the value returned by {@link #loadLabel}.
    *
    * @param l Label.
    */

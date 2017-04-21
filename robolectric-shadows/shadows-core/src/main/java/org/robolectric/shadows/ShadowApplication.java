@@ -628,8 +628,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return list of {@link Wrapper}s for registered receivers
    */
   public List<Wrapper> getRegisteredReceivers() {
@@ -637,8 +635,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the layout inflater used by this {@code Application}
    */
   public LayoutInflater getLayoutInflater() {
@@ -646,8 +642,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the app widget manager used by this {@code Application}
    */
   public AppWidgetManager getAppWidgetManager() {

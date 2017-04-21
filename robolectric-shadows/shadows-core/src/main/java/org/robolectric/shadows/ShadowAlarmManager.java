@@ -68,7 +68,7 @@ public class ShadowAlarmManager {
   }
 
   /**
-   * Non-Android accessor consumes and returns the next scheduled alarm on the
+   * Consumes and returns the next scheduled alarm on the
    * AlarmManager's stack.
    *
    * @return the next scheduled alarm, wrapped in a
@@ -83,8 +83,7 @@ public class ShadowAlarmManager {
   }
 
   /**
-   * Non-Android accessor returns the most recent scheduled alarm without
-   * consuming it.
+   * Returns the most recent scheduled alarm without consuming it.
    *
    * @return the most recently scheduled alarm, wrapped in a
    *         {@link ShadowAlarmManager.ScheduledAlarm} object

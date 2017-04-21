@@ -60,7 +60,7 @@ public class ShadowViewGroup extends ShadowView {
   }
 
   /**
-   * Non-Android method that dumps the state of this {@code ViewGroup} to {@code System.out}
+   * Dumps the state of this {@code ViewGroup} to {@code System.out}.
    */
   @Override
   public void dump(PrintStream out, int indent) {

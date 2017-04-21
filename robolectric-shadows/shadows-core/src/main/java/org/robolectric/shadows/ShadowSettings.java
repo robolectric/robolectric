@@ -130,7 +130,7 @@ public class ShadowSettings {
   }
 
   /**
-   * Non-Android accessor that allows the value of the AIRPLANE_MODE_ON setting to be set.
+   * Sets the value of the {@link Settings.System#AIRPLANE_MODE_ON} setting.
    *
    * @param isAirplaneMode new status for airplane mode
    */
@@ -148,7 +148,7 @@ public class ShadowSettings {
   }
 
   /**
-   * Non-Android accessor thatallows the value of the TIME_12_24 setting to be set.
+   * Sets the value of the {@link Settings.System#TIME_12_24} setting.
    *
    * @param use24HourTimeFormat new status for the time setting
    */

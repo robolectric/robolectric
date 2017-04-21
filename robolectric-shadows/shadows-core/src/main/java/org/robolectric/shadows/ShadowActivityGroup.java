@@ -15,8 +15,6 @@ public class ShadowActivityGroup extends ShadowActivity {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param activity Current activity.
    */
   public void setCurrentActivity(Activity activity) {

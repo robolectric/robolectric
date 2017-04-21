@@ -153,7 +153,7 @@ public class ShadowLog {
   }
 
   /**
-   * Non-Android accessor.  Returns ordered list of all log entries.
+   * Returns ordered list of all log entries.
    * @return List of log items
    */
   public static List<LogItem> getLogs() {
@@ -161,7 +161,7 @@ public class ShadowLog {
   }
 
   /**
-   * Non-Android accessor.  Returns ordered list of all log items for a specific tag.
+   * Returns ordered list of all log items for a specific tag.
    *
    * @param tag The tag to get logs for
    * @return The list of log items for the tag

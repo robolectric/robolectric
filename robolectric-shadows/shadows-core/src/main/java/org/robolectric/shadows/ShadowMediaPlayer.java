@@ -1238,7 +1238,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Sets the current position, bypassing the normal state checking. Use with
-   * care. Non-Android setter.
+   * care.
    * 
    * @param position
    *          the new playback position.
@@ -1249,8 +1249,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Retrieves the current position without doing the state checking that the
-   * emulated version of {@link #getCurrentPosition()} does. Non-Android
-   * accessor.
+   * emulated version of {@link #getCurrentPosition()} does.
    * 
    * @return The current playback position within the current clip.
    */
@@ -1264,7 +1263,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Retrieves the current duration without doing the state checking that the
-   * emulated version does. Non-Android accessor.
+   * emulated version does.
    * 
    * @return The duration of the current clip loaded by the player.
    */
@@ -1274,8 +1273,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Retrieves the current state of the {@link MediaPlayer}. Uses the states as
-   * defined in the {@link MediaPlayer} documentation. Non-Android accessor.
-   * Used for assertions.
+   * defined in the {@link MediaPlayer} documentation.
    * 
    * @return The current state of the {@link MediaPlayer}, as defined in the
    *         MediaPlayer documentation.
@@ -1305,7 +1303,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Non-Android accessor. Note: This has a funny name at the
+   * Note: This has a funny name at the
    * moment to avoid having to produce an API-specific shadow -
    * if it were called {@code getAudioStreamType()} then
    * the {@code RobolectricWiringTest} will inform us that
@@ -1320,8 +1318,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Non-Android accessor.
-   * 
    * @return seekDelay
    */
   public int getSeekDelay() {
@@ -1342,7 +1338,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Non-Android accessor. Used for assertions.
+   * Useful for assertions.
    * 
    * @return The current {@code auxEffect} setting.
    */
@@ -1366,7 +1362,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Retrieves the data source (if any) that was passed in to
    * {@link #setDataSource(DataSource)}.
    * 
-   * Non-Android accessor. Use for assertions.
+   * Useful for assertions.
    * 
    * @return The source passed in to {@code setDataSource}.
    */
@@ -1379,8 +1375,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * {@link MediaPlayer#setDataSource(Context, Uri, Map)} or
    * {@link MediaPlayer#setDataSource(Context, Uri)}.
    * 
-   * Non-Android accessor. Use for assertions.
-   * 
    * @return The source Uri passed in to {@code setDataSource}.
    */
   public Uri getSourceUri() {
@@ -1390,8 +1384,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Retrieves the resource ID used in the call to {@link #create(Context, int)}
    * (if any).
-   * 
-   * Non-Android accessor. Use for assertions.
    * 
    * @return The resource ID passed in to {@code create()}, or
    *         {@code -1} if a different method of setting the source was
@@ -1404,8 +1396,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Retrieves the current setting for the left channel volume.
    * 
-   * Non-Android accessor. Use for assertions.
-   * 
    * @return The left channel volume.
    */
   public float getLeftVolume() {
@@ -1413,8 +1403,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Non-Android accessor. Use for assertions.
-   * 
    * @return The right channel volume.
    */
   public float getRightVolume() {
@@ -1425,8 +1413,8 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       PAUSED, PLAYBACK_COMPLETED);
 
   /**
-   * Tests to see if the player is in the PREPARED state. Non-Android accessor.
-   * Use for assertions. This is mainly used for backward compatibility.
+   * Tests to see if the player is in the PREPARED state.
+   * This is mainly used for backward compatibility.
    * {@link #getState} may be more useful for new testing applications.
    * 
    * @return {@code true} if the MediaPlayer is in the PREPARED state,
@@ -1437,8 +1425,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Non-Android accessor.  Use for assertions.
-   *
    * @return the OnCompletionListener
    */
   public MediaPlayer.OnCompletionListener getOnCompletionListener() {
@@ -1446,7 +1432,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Non-Android accessor.  Use for assertions.
    * @return the OnPreparedListener
    */
   public MediaPlayer.OnPreparedListener getOnPreparedListener() {

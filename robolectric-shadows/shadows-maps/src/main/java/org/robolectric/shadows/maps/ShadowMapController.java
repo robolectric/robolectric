@@ -52,7 +52,7 @@ public class ShadowMapController {
   }
 
   /**
-   * Non-Android accessor that returns the {@code MapView} that is being controlled
+   * Returns the {@code MapView} that is being controlled
    *
    * @return the {@code MapView} that is being controlled
    */
@@ -61,7 +61,7 @@ public class ShadowMapController {
   }
 
   /**
-   * Non-Android accessor that returns the most recent value set by a call to either version of {@code animateTo()}
+   * Returns the most recent value set by a call to either version of {@code animateTo()}
    *
    * @return the most recent value set by a call to either version of {@code animateTo()}
    */
@@ -70,7 +70,7 @@ public class ShadowMapController {
   }
 
   /**
-   * Non-Android accessor that allows the {@code MapView} being controlled to be set explicitly.
+   * Allows the {@code MapView} being controlled to be set explicitly.
    *
    * @param shadowMapView the {@link ShadowMapView} to be controlled (either created explicitly or obtained via a call
    *                      to {@link org.robolectric.RobolectricForMaps.shadowOf(com.google.android.maps.MapView)})
