@@ -31,6 +31,13 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         // it's weird that compileOnly deps aren't included for test compilation; fix that:
         project.sourceSets {
             test.compileClasspath += project.configurations.compileOnly
+
+            generated {
+                java {
+                    srcDirs = ["build/generated/source/apt/main"]
+                    include "**/*.java"
+                }
+            }
         }
 
         def mavenArtifactName = {

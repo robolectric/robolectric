@@ -10,7 +10,6 @@ import org.robolectric.annotation.processing.validator.ResetterValidator;
 import org.robolectric.annotation.processing.validator.Validator;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -19,8 +18,11 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic.Kind;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +71,9 @@ public class RobolectricProcessor extends AbstractProcessor {
   public void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
+
+    log("run for " + shadowPackage);
+
     model = new RobolectricModel(environment.getElementUtils(), environment.getTypeUtils());
 
     addValidator(new ImplementationValidator(model, environment));
@@ -78,6 +83,14 @@ public class RobolectricProcessor extends AbstractProcessor {
 
     generators.add(new ShadowProviderGenerator(model, environment, shouldInstrumentPackages));
     generators.add(new ServiceLoaderGenerator(model, environment));
+  }
+
+  private void log(String msg) {
+    try (FileWriter fileWriter = new FileWriter(new File("/tmp/ap.log"), true)) {
+      fileWriter.append(new Date() + ": " + msg + "\n");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
