@@ -11,29 +11,32 @@ import junit.framework.Test;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkPicker;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ManifestFactory;
+import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.Fs;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 
 public class CtsRobolectricTestRunner extends RobolectricTestRunner {
+  public static final boolean KILL_LONG_RUNNING_TESTS = true;
 
   private boolean isJunit3;
   private static final CtsResults ctsResults;
@@ -65,6 +68,29 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
 
   public CtsRobolectricTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass);
+  }
+
+  @Override
+  protected ManifestFactory getManifestFactory(Config config) {
+    return new ManifestFactory() {
+      @Override
+      public ManifestIdentifier identify(Config config) {
+        return new ManifestIdentifier(
+            Fs.fileFromPath(Config.DEFAULT_MANIFEST_NAME),
+            Fs.fileFromPath(Config.DEFAULT_RES_FOLDER),
+            Fs.fileFromPath(Config.DEFAULT_ASSET_FOLDER),
+            null, Collections.emptyList());
+      }
+
+      @Override
+      public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
+        return new AndroidManifest(
+            manifestIdentifier.getManifestFile(),
+            manifestIdentifier.getResDir(),
+            manifestIdentifier.getAssetDir()
+        );
+      }
+    };
   }
 
   @Override
@@ -201,7 +227,10 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
                 return;
               }
             });
-            warningThread.start();
+
+            if (KILL_LONG_RUNNING_TESTS) {
+              warningThread.start();
+            }
 
             CtsTestResult actualResult;
             Throwable error = null;
