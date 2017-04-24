@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -34,6 +35,7 @@ import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -268,6 +270,16 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void whenResourceNotFound_getQuantityString_shouldThrow() throws Exception {
+    try {
+      resources.getQuantityString(-1, 0);
+      fail("should throw Resources.NotFoundException");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+  }
+
+  @Test
   public void getFraction() throws Exception {
     final int myself = 300;
     final int myParent = 600;
@@ -497,6 +509,14 @@ public class ShadowResourcesTest {
     InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("raw txt file contents");
+  }
+
+  @Test
+  public void shouldLoadRawResourcesViaFileDescriptor() throws Exception {
+    AssetFileDescriptor assetFileDescriptor = resources.openRawResourceFd(R.raw.raw_resource);
+    assertThat(assetFileDescriptor).isNotNull();
+    FileInputStream inputStream = assetFileDescriptor.createInputStream();
+    assertThat(TestUtil.readString(inputStream)).isEqualTo("raw txt file contents");
   }
 
   @Test

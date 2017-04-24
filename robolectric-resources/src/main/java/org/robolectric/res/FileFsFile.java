@@ -8,6 +8,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
@@ -81,7 +82,7 @@ public class FileFsFile implements FsFile {
 
   @Override
   public InputStream getInputStream() throws IOException {
-    return new BufferedInputStream(new FileInputStream(file));
+    return new BufferedFileInputStream(file);
   }
 
   @Override
@@ -190,5 +191,18 @@ public class FileFsFile implements FsFile {
       }
     }
     return new FileFsFile(file);
+  }
+
+  public static class BufferedFileInputStream extends BufferedInputStream {
+    private final File file;
+
+    public BufferedFileInputStream(File in) throws FileNotFoundException {
+      super(new FileInputStream(in));
+      this.file = in;
+    }
+
+    public FileInputStream newInputStream() throws FileNotFoundException {
+      return new FileInputStream(file);
+    }
   }
 }
