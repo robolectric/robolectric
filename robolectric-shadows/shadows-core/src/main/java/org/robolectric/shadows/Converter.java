@@ -198,12 +198,12 @@ public class Converter<T> {
     }
   }
 
-  private static class FromFile extends Converter<FsFile> {
+  private static class FromFile extends Converter<String> {
     @Override
-    public boolean fillTypedValue(FsFile data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
-      typedValue.string = data.getPath();
+      typedValue.string = data;
       typedValue.assetCookie = getNextStringCookie();
       return true;
     }

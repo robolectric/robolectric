@@ -22,6 +22,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -118,7 +119,12 @@ public class ShadowResources {
           RuntimeEnvironment.getQualifiers(), resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
-      return null;
+      ResName resName = shadowAssetManager.getResourceTable().getResName(resId);
+      if (resName == null) {
+        throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(resId));
+      } else {
+        throw new Resources.NotFoundException(resName.getFullyQualifiedName());
+      }
     }
   }
 
@@ -129,11 +135,17 @@ public class ShadowResources {
 
   @Implementation
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-    try {
-      FileInputStream fis = (FileInputStream)openRawResource(id);
-      return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-    } catch (Exception e) {
-      return null;
+    InputStream in = openRawResource(id);
+    if (in instanceof FileFsFile.BufferedFileInputStream) {
+      try {
+        FileInputStream fileIn = ((FileFsFile.BufferedFileInputStream) in).newInputStream();
+        ParcelFileDescriptor parcelFileDescriptor = new ParcelFileDescriptor(fileIn.getFD());
+        return new AssetFileDescriptor(parcelFileDescriptor, 0, fileIn.getChannel().size());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      throw new IllegalStateException("huh?");
     }
   }
 
