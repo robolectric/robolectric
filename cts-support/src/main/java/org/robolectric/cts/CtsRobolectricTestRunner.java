@@ -36,7 +36,8 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 public class CtsRobolectricTestRunner extends RobolectricTestRunner {
-  public static final boolean KILL_LONG_RUNNING_TESTS = true;
+  private static final boolean KILL_LONG_RUNNING_TESTS = true;
+  private static final boolean ASSERT_ON_EXPECTED_TEST_OUTCOME = true;
 
   private boolean isJunit3;
   private static final CtsResults ctsResults;
@@ -232,43 +233,47 @@ public class CtsRobolectricTestRunner extends RobolectricTestRunner {
               warningThread.start();
             }
 
-            CtsTestResult actualResult;
-            Throwable error = null;
-            try {
-              statement.evaluate();
+            if (ASSERT_ON_EXPECTED_TEST_OUTCOME) {
+              CtsTestResult actualResult;
+              Throwable error = null;
+              try {
+                statement.evaluate();
 
-              actualResult = CtsTestResult.PASS;
-            } catch (AssertionFailedError e) {
-              error = e;
-              actualResult = CtsTestResult.ASSERT_FAIL;
-            } catch (ThreadDeath threadDeath) {
-              threadDeath.printStackTrace();
-              actualResult = CtsTestResult.TIMEOUT;
-              error = threadDeath;
-            } catch (Throwable e) {
-              error = e;
-              actualResult = CtsTestResult.FAIL;
-            } finally {
-              warningThread.interrupt();
-              warningThread.join();
-            }
+                actualResult = CtsTestResult.PASS;
+              } catch (AssertionFailedError e) {
+                error = e;
+                actualResult = CtsTestResult.ASSERT_FAIL;
+              } catch (ThreadDeath threadDeath) {
+                threadDeath.printStackTrace();
+                actualResult = CtsTestResult.TIMEOUT;
+                error = threadDeath;
+              } catch (Throwable e) {
+                error = e;
+                actualResult = CtsTestResult.FAIL;
+              } finally {
+                warningThread.interrupt();
+                warningThread.join();
+              }
 
-            if (actualResult == expectedResult) {
-              if (expectedResult != CtsTestResult.PASS) {
-                System.out.println("Expected " + expectedResult + " for " + method + " and got it.");
+              if (actualResult == expectedResult) {
+                if (expectedResult != CtsTestResult.PASS) {
+                  System.out.println("Expected " + expectedResult + " for " + method + " and got it.");
+                }
+              } else {
+                if (expectedResult != null) {
+                  System.out.println("Expected " + expectedResult + " for " + method + ", but got " + actualResult + ".");
+                }
+
+                ctsResults.setResult(method.getDeclaringClass().getName(), method.getMethod().getName(), actualResult);
+
+                if (error != null) {
+                  throw error;
+                } else if (expectedResult != null && actualResult == CtsTestResult.PASS) {
+                  throw new RuntimeException(method + " unexpectedly passed (yay!)");
+                }
               }
             } else {
-              if (expectedResult != null) {
-                System.out.println("Expected " + expectedResult + " for " + method + ", but got " + actualResult + ".");
-              }
-
-              ctsResults.setResult(method.getDeclaringClass().getName(), method.getMethod().getName(), actualResult);
-
-              if (error != null) {
-                throw error;
-              } else if (expectedResult != null && actualResult == CtsTestResult.PASS) {
-                throw new RuntimeException(method + " unexpectedly passed (yay!)");
-              }
+              statement.evaluate();
             }
           }
         };
