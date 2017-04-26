@@ -19,7 +19,7 @@ import javax.tools.Diagnostic.Kind;
 public class ImplementsValidator extends Validator {
 
   public static final String IMPLEMENTS_CLASS = "org.robolectric.annotation.Implements";
-  public static final int MAX_SUPPORTED_ANDROID_SDK = 23;
+  public static final int MAX_SUPPORTED_ANDROID_SDK = 10000; // Now == Build.VERSION_CODES.O
 
   public ImplementsValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, IMPLEMENTS_CLASS);
