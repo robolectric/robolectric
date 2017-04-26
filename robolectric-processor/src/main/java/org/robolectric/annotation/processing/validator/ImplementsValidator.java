@@ -161,15 +161,11 @@ public class ImplementsValidator extends Validator {
       }
       String docMd = elementUtils.getDocComment(methodElement);
       if (docMd != null) {
-        documentedMethod.documentation = prepareJavadocMarkdown(docMd);
+        documentedMethod.setDocumentation(docMd);
       }
 
       model.documentMethod(elem, documentedMethod);
     }
-  }
-
-  static String prepareJavadocMarkdown(String docMd) {
-    return docMd.replaceAll("\n ", "\n").trim();
   }
 
   private Integer sdkOrNull(int sdk) {

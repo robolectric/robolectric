@@ -12,6 +12,7 @@ import static org.robolectric.annotation.processing.validator.Utils.SHADOW_PROVI
 import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -248,9 +249,9 @@ public class RobolectricProcessorTest {
         .processedWith(new RobolectricProcessor())
         .compilesWithoutError();
     JsonParser jsonParser = new JsonParser();
-    JsonElement json = jsonParser.parse(new BufferedReader(new FileReader("docs.json")));
-    assertThat(((JsonObject) json).getAsJsonObject("com.example.objects.AnyObject")
-        .getAsJsonPrimitive("doc").getAsString())
-        .isEqualTo("Robolectric Javadoc goes here!");
+    String jsonFile = "build/docs/json/org.robolectric.Robolectric.DocumentedObject.json";
+    JsonElement json = jsonParser.parse(new BufferedReader(new FileReader(jsonFile)));
+    assertThat(((JsonObject) json).get("documentation").getAsString())
+        .isEqualTo("Robolectric Javadoc goes here!\n");
   }
 }

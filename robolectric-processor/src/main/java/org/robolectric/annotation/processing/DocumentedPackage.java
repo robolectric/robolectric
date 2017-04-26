@@ -4,10 +4,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class DocumentedPackage extends RobolectricModel.DocumentedElement {
+public class DocumentedPackage extends DocumentedElement {
   private final Map<String, DocumentedType> documentedTypes = new TreeMap<>();
-
-  public String documentation;
 
   DocumentedPackage(String name) {
     super(name);

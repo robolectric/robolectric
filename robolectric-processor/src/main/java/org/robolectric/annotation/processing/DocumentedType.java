@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class DocumentedType extends RobolectricModel.DocumentedElement {
+public class DocumentedType extends DocumentedElement {
   public final Map<String, DocumentedMethod> methods = new TreeMap<>();
 
-  public String documentation;
   public List<String> imports;
 
   DocumentedType(String name) {

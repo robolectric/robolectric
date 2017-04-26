@@ -81,25 +81,8 @@ public class RobolectricModel {
     return documentedPackages.values();
   }
 
-  public static abstract class DocumentedElement {
-    private final String name;
-
-    protected DocumentedElement(String name) {
-      this.name = name;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    @Override
-    public String toString() {
-      return getClass().getSimpleName() + "{name='" + name + '\'' + '}';
-    }
-  }
-
   public void documentPackage(String name, String documentation) {
-    getDocumentedPackage(name).documentation = documentation;
+    getDocumentedPackage(name).setDocumentation(documentation);
   }
 
   private DocumentedPackage getDocumentedPackage(String name) {
@@ -118,7 +101,7 @@ public class RobolectricModel {
 
   public void documentType(TypeElement type, String documentation, List<String> imports) {
     DocumentedType documentedType = getDocumentedType(type);
-    documentedType.documentation = documentation;
+    documentedType.setDocumentation(documentation);
     documentedType.imports = imports;
   }
 

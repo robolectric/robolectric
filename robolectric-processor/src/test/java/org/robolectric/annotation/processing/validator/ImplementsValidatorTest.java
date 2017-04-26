@@ -5,6 +5,7 @@ import static org.robolectric.annotation.processing.validator.SingleClassSubject
 import static org.truth0.Truth.ASSERT;
 
 import org.junit.Test;
+import org.robolectric.annotation.processing.DocumentedMethod;
 
 public class ImplementsValidatorTest {
   @Test
@@ -87,8 +88,12 @@ public class ImplementsValidatorTest {
 
   @Test
   public void javadocMarkdownFormatting() throws Exception {
-    assertThat(ImplementsValidator.prepareJavadocMarkdown(
+    DocumentedMethod documentedMethod = new DocumentedMethod("name");
+    documentedMethod.setDocumentation(
         " First sentence.\n \n Second sentence.\n \n ASCII art:\n   *  *  *\n @return null\n"
-    )).isEqualTo("First sentence.\n\nSecond sentence.\n\nASCII art:\n  *  *  *\n@return null");
+    );
+
+    assertThat(documentedMethod.getDocumentation())
+        .isEqualTo("First sentence.\n\nSecond sentence.\n\nASCII art:\n  *  *  *\n@return null\n");
   }
 }
