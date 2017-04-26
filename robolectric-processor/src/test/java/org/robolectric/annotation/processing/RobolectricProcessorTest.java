@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.truth0.Truth.ASSERT;
 import static com.google.testing.compile.JavaFileObjects.*;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
@@ -11,11 +12,15 @@ import static org.robolectric.annotation.processing.validator.Utils.SHADOW_PROVI
 import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -232,5 +237,20 @@ public class RobolectricProcessorTest {
     .compilesWithoutError()
     .and()
     .generatesSources(forResource("org/robolectric/Robolectric_EmptyProvidedPackageNames.java"));   
+  }
+
+  @Test
+  public void shouldGenerateJavadocJson() throws Exception {
+    ASSERT.about(javaSources())
+        .that(ImmutableList.of(
+            ROBO_SOURCE,
+            forResource("org/robolectric/annotation/processing/shadows/DocumentedObjectShadow.java")))
+        .processedWith(new RobolectricProcessor())
+        .compilesWithoutError();
+    JsonParser jsonParser = new JsonParser();
+    JsonElement json = jsonParser.parse(new BufferedReader(new FileReader("docs.json")));
+    assertThat(((JsonObject) json).getAsJsonObject("com.example.objects.AnyObject")
+        .getAsJsonPrimitive("doc").getAsString())
+        .isEqualTo("Robolectric Javadoc goes here!");
   }
 }

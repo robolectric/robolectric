@@ -43,6 +43,10 @@ public class ShadowProviderGenerator extends Generator {
 
   @Override
   public void generate() {
+    if (shadowPackage == null) {
+      return;
+    }
+
     final String shadowClassName = shadowPackage + '.' + GEN_CLASS;
 
     // TODO: Because this was fairly simple to begin with I haven't

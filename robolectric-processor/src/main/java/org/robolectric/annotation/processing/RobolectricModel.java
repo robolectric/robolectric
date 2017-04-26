@@ -49,7 +49,7 @@ import static com.google.common.collect.Sets.newTreeSet;
 public class RobolectricModel {
   private static FQComparator fqComparator = new FQComparator();
   private static SimpleComparator comparator = new SimpleComparator();
-  
+
   /** TypeElement representing the Robolectric.Anything interface, or null if the element isn't found. */
   final TypeElement ANYTHING;
   /** TypeMirror representing the Robolectric.Anything interface, or null if the element isn't found. */
@@ -66,7 +66,7 @@ public class RobolectricModel {
   private final Elements elements;
   /** Convenience reference for the processing environment's types utilities. */
   private final Types types;
-  
+
   private HashMap<TypeElement,String> referentMap = newHashMap();
   private HashMultimap<String,TypeElement> typeMap = HashMultimap.create();
   private HashMap<TypeElement,TypeElement> importMap = newHashMap();
@@ -74,6 +74,63 @@ public class RobolectricModel {
   private TreeMap<String, String> extraShadowTypes = newTreeMap();
   private TreeSet<String> imports = newTreeSet();
   private TreeMap<TypeElement,ExecutableElement> resetterMap = newTreeMap(comparator);
+
+  private final Map<String, DocumentedPackage> documentedPackages = new TreeMap<>();
+
+  public Collection<DocumentedPackage> getDocumentedPackages() {
+    return documentedPackages.values();
+  }
+
+  public static abstract class DocumentedElement {
+    private final String name;
+
+    protected DocumentedElement(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    @Override
+    public String toString() {
+      return getClass().getSimpleName() + "{name='" + name + '\'' + '}';
+    }
+  }
+
+  public void documentPackage(String name, String documentation) {
+    getDocumentedPackage(name).documentation = documentation;
+  }
+
+  private DocumentedPackage getDocumentedPackage(String name) {
+    DocumentedPackage documentedPackage = documentedPackages.get(name);
+    if (documentedPackage == null) {
+      documentedPackage = new DocumentedPackage(name);
+      documentedPackages.put(name, documentedPackage);
+    }
+    return documentedPackage;
+  }
+
+  private DocumentedPackage getDocumentedPackage(TypeElement type) {
+    Element pkgElement = type.getEnclosingElement();
+    return getDocumentedPackage(pkgElement.toString());
+  }
+
+  public void documentType(TypeElement type, String documentation, List<String> imports) {
+    DocumentedType documentedType = getDocumentedType(type);
+    documentedType.documentation = documentation;
+    documentedType.imports = imports;
+  }
+
+  private DocumentedType getDocumentedType(TypeElement type) {
+    DocumentedPackage documentedPackage = getDocumentedPackage(type);
+    return documentedPackage.getDocumentedType(type.getQualifiedName().toString());
+  }
+
+  public void documentMethod(TypeElement shadowClass, DocumentedMethod documentedMethod) {
+    DocumentedType documentedType = getDocumentedType(shadowClass);
+    documentedType.methods.put(documentedMethod.getName(), documentedMethod);
+  }
 
   private static class FQComparator implements Comparator<TypeElement> {
     @Override
@@ -146,7 +203,7 @@ public class RobolectricModel {
       return s;
     }
   };
-  
+
   public static AnnotationValueVisitor<Integer, Void> intVisitor = new SimpleAnnotationValueVisitor6<Integer, Void>() {
     @Override
     public Integer visitInt(int i, Void aVoid) {
@@ -157,7 +214,7 @@ public class RobolectricModel {
   public AnnotationMirror getImplementsMirror(Element elem) {
     return getAnnotationMirror(elem, IMPLEMENTS);
   }
-  
+
   private TypeMirror getImplementedClassName(AnnotationMirror am) {
     AnnotationValue className = getAnnotationValue(am, "className");
     if (className == null) {
@@ -173,7 +230,7 @@ public class RobolectricModel {
     }
     return impElement.asType();
   }
-  
+
   public TypeMirror getImplementedClass(AnnotationMirror am) {
     if (am == null) {
       return null;
@@ -195,10 +252,10 @@ public class RobolectricModel {
     if (ANYTHING_MIRROR != null && types.isSameType(type, ANYTHING_MIRROR)) {
       return null;
     }
-    
+
     return type;
   }
-  
+
   private static ElementVisitor<TypeElement,Void> typeElementVisitor = new SimpleElementVisitor6<TypeElement,Void>() {
 
     @Override
@@ -206,7 +263,7 @@ public class RobolectricModel {
       return e;
     }
   };
-  
+
   private void registerType(TypeElement type) {
     if (!Objects.equal(ANYTHING, type) && !importMap.containsKey(type)) {
       typeMap.put(type.getSimpleName().toString(), type);
@@ -220,7 +277,7 @@ public class RobolectricModel {
       }
     }
   }
-  
+
   /**
    * Prepares the various derived parts of the model based on the class mappings
    * that have been registered to date.
@@ -258,7 +315,7 @@ public class RobolectricModel {
                 importMap.put(type, parent);
                 return null;
               }
-              @Override 
+              @Override
               public Void visitPackage(PackageElement parent, TypeElement type) {
                 referentMap.put(type, type.getQualifiedName().toString());
                 importMap.remove(type);
@@ -358,12 +415,12 @@ public class RobolectricModel {
 
   private Predicate<TypeMirror> notObject;
   public List<TypeMirror> getExplicitBounds(TypeParameterElement typeParam) {
-    return newArrayList(Iterables.filter(typeParam.getBounds(), notObject));    
+    return newArrayList(Iterables.filter(typeParam.getBounds(), notObject));
   }
-  
+
   /**
    * Returns a plain string to be used in the generated source
-   * to identify the given type. The returned string will have 
+   * to identify the given type. The returned string will have
    * sufficient level of qualification in order to make the referent
    * unique for the source file.
    * @param type
@@ -372,14 +429,14 @@ public class RobolectricModel {
   public String getReferentFor(TypeElement type) {
     return referentMap.get(type);
   }
-  
+
   private TypeVisitor<String,Void> findReferent = new SimpleTypeVisitor6<String,Void>() {
     @Override
     public String visitDeclared(DeclaredType t, Void p) {
       return referentMap.get(t.asElement());
     }
   };
-  
+
   public String getReferentFor(TypeMirror type) {
     return findReferent.visit(type);
   }
@@ -396,8 +453,8 @@ public class RobolectricModel {
       return 0;
     }
   };
-  
-  
+
+
   private Equivalence<TypeParameterElement> typeEq = new Equivalence<TypeParameterElement>() {
     @Override
     @SuppressWarnings({"unchecked"})
@@ -414,7 +471,7 @@ public class RobolectricModel {
       return 0;
     }
   };
-  
+
   public void appendParameterList(StringBuilder message, List<? extends TypeParameterElement> tpeList) {
     boolean first = true;
     for (TypeParameterElement tpe : tpeList) {
@@ -436,7 +493,7 @@ public class RobolectricModel {
       }
     }
   }
-  
+
   @SuppressWarnings({"unchecked"})
   public boolean isSameParameterList(List<? extends TypeParameterElement> l1, List<? extends TypeParameterElement> l2) {
     // Cast is necessary because of a flaw in the API design of "PairwiseEquivalent",
