@@ -90,6 +90,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         if (owner.deploy) {
             project.apply plugin: "signing"
             project.apply plugin: "maven"
+            project.apply plugin: 'ch.raffael.pegdown-doclet'
 
             task('sourcesJar', type: Jar, dependsOn: classes) {
                 classifier "sources"
