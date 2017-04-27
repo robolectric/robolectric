@@ -19,4 +19,8 @@ public class DocumentedObjectShadow {
   public String getSomething(int index, Map<String, String> defaultValue) {
     return null;
   }
+
+  public enum SomeEnum {
+    VALUE1, VALUE2
+  }
 }
