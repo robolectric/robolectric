@@ -28,19 +28,25 @@ public class ShadowProviderGenerator extends Generator {
   private final Messager messager;
   private final Elements elements;
   private final RobolectricModel model;
+  private final String shadowPackage;
   private final boolean shouldInstrumentPackages;
 
-  public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment, 
-      boolean shouldInstrumentPackages) {
+  public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment,
+                                 String shadowPackage, boolean shouldInstrumentPackages) {
     this.messager = environment.getMessager();
     this.elements = environment.getElementUtils();
     this.filer = environment.getFiler();
     this.model = model;
+    this.shadowPackage = shadowPackage;
     this.shouldInstrumentPackages = shouldInstrumentPackages;
   }
 
   @Override
-  public void generate(String shadowPackage) {
+  public void generate() {
+    if (shadowPackage == null) {
+      return;
+    }
+
     final String shadowClassName = shadowPackage + '.' + GEN_CLASS;
 
     // TODO: Because this was fairly simple to begin with I haven't
@@ -52,7 +58,7 @@ public class ShadowProviderGenerator extends Generator {
     try {
       JavaFileObject jfo = filer.createSourceFile(shadowClassName);
       writer = new PrintWriter(jfo.openWriter());
-      generate(shadowPackage, writer);
+      generate(writer);
     } catch (IOException e) {
       messager.printMessage(Diagnostic.Kind.ERROR, "Failed to write shadow class file: " + e);
       throw new RuntimeException(e);
@@ -64,7 +70,7 @@ public class ShadowProviderGenerator extends Generator {
     }
   }
 
-  void generate(String shadowPackage, PrintWriter writer) {
+  void generate(PrintWriter writer) {
     writer.print("package " + shadowPackage + ";\n");
     for (String name : model.getImports()) {
       writer.println("import " + name + ';');

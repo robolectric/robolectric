@@ -1,9 +1,11 @@
 package org.robolectric.annotation.processing.validator;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 import static org.truth0.Truth.ASSERT;
 
 import org.junit.Test;
+import org.robolectric.annotation.processing.DocumentedMethod;
 
 public class ImplementsValidatorTest {
   @Test
@@ -82,5 +84,16 @@ public class ImplementsValidatorTest {
       .failsToCompile()
       .withErrorContaining("Shadow type has type parameters but real type does not")
       .onLine(7);
+  }
+
+  @Test
+  public void javadocMarkdownFormatting() throws Exception {
+    DocumentedMethod documentedMethod = new DocumentedMethod("name");
+    documentedMethod.setDocumentation(
+        " First sentence.\n \n Second sentence.\n \n ASCII art:\n   *  *  *\n @return null\n"
+    );
+
+    assertThat(documentedMethod.getDocumentation())
+        .isEqualTo("First sentence.\n\nSecond sentence.\n\nASCII art:\n  *  *  *\n@return null\n");
   }
 }
