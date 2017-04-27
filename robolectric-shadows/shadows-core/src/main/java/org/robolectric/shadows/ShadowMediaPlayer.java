@@ -36,35 +36,33 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  * of {@link MediaPlayer} with Robolectric.
  * 
  * This shadow implementation provides much of the functionality needed to
- * emulate {@link MediaPlayer} initialization &amp; playback behavior without having
+ * emulate {@link MediaPlayer} initialization and playback behavior without having
  * to play actual media files. A summary of the features included are:
  * 
- * <ul>
- * <li>Construction-time callback hook {@link CreateListener} so that
- * newly-created {@link MediaPlayer} instances can have their shadows configured
- * before they are used.</li>
- * <li>Emulation of the {@link android.media.MediaPlayer.OnCompletionListener
- * OnCompletionListener}, {@link android.media.MediaPlayer.OnErrorListener
- * OnErrorListener}, {@link android.media.MediaPlayer.OnInfoListener
- * OnInfoListener}, {@link android.media.MediaPlayer.OnPreparedListener
- * OnPreparedListener} and
- * {@link android.media.MediaPlayer.OnSeekCompleteListener
- * OnSeekCompleteListener}.</li>
- * <li>Full support of the {@link MediaPlayer} internal states and their
- * transition map.</li>
- * <li>Configure time parameters such as playback duration, preparation delay
- * and {@link #setSeekDelay seek delay}.</li>
- * <li>Emulation of asynchronous callback events during playback through
- * Robolectric's scheduling system using the {@link MediaInfo} inner class.</li>
- * <li>Emulation of error behavior when methods are called from invalid states,
- * or to throw assertions when methods are invoked in invalid states (using
- * {@link #setInvalidStateBehavior}).</li>
- * <li>Emulation of different playback behaviors based on the current data
- * source, as passed in to {@link #setDataSource(String) setDataSource()}, using
- * {@link #addMediaInfo}.</li>
- * <li>Emulation of exceptions when calling {@link #setDataSource} using
- * {@link #addException}.</li>
- * </ul>
+ * * Construction-time callback hook {@link CreateListener} so that
+ *   newly-created {@link MediaPlayer} instances can have their shadows configured
+ *   before they are used.
+ * * Emulation of the {@link android.media.MediaPlayer.OnCompletionListener
+ *   OnCompletionListener}, {@link android.media.MediaPlayer.OnErrorListener
+ *   OnErrorListener}, {@link android.media.MediaPlayer.OnInfoListener
+ *   OnInfoListener}, {@link android.media.MediaPlayer.OnPreparedListener
+ *   OnPreparedListener} and
+ *   {@link android.media.MediaPlayer.OnSeekCompleteListener
+ *   OnSeekCompleteListener}.
+ * * Full support of the {@link MediaPlayer} internal states and their
+ *   transition map.
+ * * Configure time parameters such as playback duration, preparation delay
+ *   and (@link #setSeekDelay seek delay}.
+ * * Emulation of asynchronous callback events during playback through
+ *   Robolectric's scheduling system using the {@link MediaInfo} inner class.
+ * * Emulation of error behavior when methods are called from invalid states,
+ *   or to throw assertions when methods are invoked in invalid states (using
+ *   {@link #setInvalidStateBehavior}).
+ * * Emulation of different playback behaviors based on the current data
+ *   source, as passed in to {@link #setDataSource(String) setDataSource()}, using
+ *   {@link #addMediaInfo}.
+ * * Emulation of exceptions when calling {@link #setDataSource} using
+ *   {@link #addException}.
  *
  * <b>Note</b>: One gotcha with this shadow is that you need to either configure an
  * exception or a {@link ShadowMediaPlayer.MediaInfo} instance for that data source
@@ -113,7 +111,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * 
    * @see #setInvalidStateBehavior
    */
-  public static enum InvalidStateBehavior {
+  public enum InvalidStateBehavior {
     SILENT, EMULATE, ASSERT
   }
 
@@ -175,7 +173,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      * 
      * @param duration
      *          the duration (in ms) of this emulated media. A callback event
-     *          will be scheduled at this offset to stop playback simulation &amp;
+     *          will be scheduled at this offset to stop playback simulation and
      *          invoke the completion callback.
      * @param preparationDelay
      *          the preparation delay (in ms) to emulate for this media. If set
@@ -247,7 +245,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      *          the value for the {@code extra} parameter to use in the call to
      *          {@link android.media.MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)
      *          onError()}.
-     * @return A reference to the MediaEvent object that was created &amp; scheduled.
+     * @return A reference to the MediaEvent object that was created and scheduled.
      */
     public MediaEvent scheduleErrorAtOffset(int offset, int what, int extra) {
       ErrorCallback callback = new ErrorCallback(what, extra);
@@ -271,7 +269,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      *          the value for the {@code extra} parameter to use in the call to
      *          {@link android.media.MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)
      *          onInfo()}.
-     * @return A reference to the MediaEvent object that was created &amp; scheduled.
+     * @return A reference to the MediaEvent object that was created and scheduled.
      */
     public MediaEvent scheduleInfoAtOffset(int offset, final int what,
         final int extra) {
@@ -304,7 +302,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      *          will trigger.
      * @param length
      *          the length of time (in ms) for which playback will be paused.
-     * @return A reference to the MediaEvent object that was created &amp; scheduled.
+     * @return A reference to the MediaEvent object that was created and scheduled.
      */
     public MediaEvent scheduleBufferUnderrunAtOffset(int offset, final int length) {
       final MediaEvent restart = new MediaEvent() {
@@ -895,7 +893,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Tests to see if the player is really playing.
    * 
    * The player is defined as "really playing" if simulated playback events
-   * (including playback completion) are being scheduled &amp; invoked and
+   * (including playback completion) are being scheduled and invoked and
    * {@link #getCurrentPosition currentPosition} is being updated as time
    * passes. Note that while the player will normally be really playing if in
    * the STARTED state, this is not always the case - for example, if a pending
@@ -1170,30 +1168,31 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Specifies how the media player should behave when a method is invoked in an
    * invalid state. Three modes are supported (as defined by the
    * {@link InvalidStateBehavior} enum):
-   * 
-   * <ul>
-   * <li>SILENT: no invalid state checking is done at all. All methods can be
+   *
+   * ### {@link InvalidStateBehavior#SILENT}
+   * No invalid state checking is done at all. All methods can be
    * invoked from any state without throwing any exceptions or invoking the
    * error listener.
-   * 
+   *
    * This mode is provided primarily for backwards compatibility, and for this
    * reason it is the default. For proper testing one of the other two modes is
-   * probably preferable.</li>
-   * <li>EMULATE: the shadow will attempt to emulate the behavior of the actual
+   * probably preferable.
+   *
+   * ### {@link InvalidStateBehavior#EMULATE}
+   * The shadow will attempt to emulate the behavior of the actual
    * {@link MediaPlayer} implementation. This is based on a reading of the
    * documentation and on actual experiments done on a Jelly Bean device. The
    * official documentation is not all that clear, but basically methods fall
    * into three categories:
-   * <ul>
-   * <li>Those that log an error when invoked in an invalid state but don't
-   * throw an exception or invoke {@code onError()}. An example is
-   * {@link #getVideoHeight()}.</li>
-   * <li>Synchronous error handling: methods always throw an exception (usually
-   * {@link IllegalStateException} but don't invoke {@code onError()}.
-   * Examples are {@link #prepare()} and {@link #setDataSource(String)}.</li>
-   * <li>Asynchronous error handling: methods don't throw an exception but
-   * invoke {@code onError()}.</li>
-   * </ul>
+   * * Those that log an error when invoked in an invalid state but don't
+   *   throw an exception or invoke {@code onError()}. An example is
+   *   {@link #getVideoHeight()}.
+   * * Synchronous error handling: methods always throw an exception (usually
+   *   {@link IllegalStateException} but don't invoke {@code onError()}.
+   *   Examples are {@link #prepare()} and {@link #setDataSource(String)}.
+   * * Asynchronous error handling: methods don't throw an exception but
+   *   invoke {@code onError()}.
+   *
    * Additionally, all three methods behave synchronously (throwing
    * {@link IllegalStateException} when invoked from the END state.
    * 
@@ -1207,14 +1206,15 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * the most conservative implementation (ie, it is illegal to invoke
    * {@link #setDataSource} from the ERROR state and likewise illegal to invoke
    * {@link #getCurrentPosition()} from the INITIALIZED state.
-   * <li>ASSERT: the shadow will raise an assertion any time that a method is
+   *
+   * ### {@link InvalidStateBehavior#ASSERT}
+   * The shadow will raise an assertion any time that a method is
    * invoked in an invalid state. The philosophy behind this mode is that to
    * invoke a method in an invalid state is a programming error - a bug, pure
-   * and simple. As such it should be discovered &amp; eliminated at development &amp;
+   * and simple. As such it should be discovered and eliminated at development and
    * testing time, rather than anticipated and handled at runtime. Asserting is
-   * a way of testing for these bugs during testing.</li>
-   * </ul>
-   * 
+   * a way of testing for these bugs during testing.
+   *
    * @param invalidStateBehavior
    *          the behavior mode for this shadow to use during testing.
    * @see #getInvalidStateBehavior()
