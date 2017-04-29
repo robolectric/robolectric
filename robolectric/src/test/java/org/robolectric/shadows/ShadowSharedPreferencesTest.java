@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowSharedPreferencesTest {
   private final static String FILENAME = "filename";
   private SharedPreferences.Editor editor;
@@ -50,7 +50,8 @@ public class ShadowSharedPreferencesTest {
 
   @After
   public void tearDown() {
-    // TODO: Should this be done in the Robolectric environment?
+    // TODO: Should be done in resetter for ShadowQueuedWork but this relies on getting a handler from main thread
+    // which has already been reset at that point.
     QueuedWork.waitToFinish();
   }
 

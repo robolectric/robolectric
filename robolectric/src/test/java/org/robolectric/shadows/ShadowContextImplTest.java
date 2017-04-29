@@ -46,6 +46,7 @@ public class ShadowContextImplTest {
   }
 
   @Test
+  @Config(minSdk = N)
   public void testMoveSharedPreferencesFrom() throws Exception {
     String PREFS = "PREFS";
     String PREF_NAME = "TOKEN_PREF";
