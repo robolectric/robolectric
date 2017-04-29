@@ -14,6 +14,7 @@ public class Qualifiers {
   private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
   private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("(v)([0-9]+)$");
   private static final Pattern SIZE_QUALIFIER_PATTERN = Pattern.compile("(s?[wh])([0-9]+)dp");
+  private static final Pattern ORIENTATION_QUALIFIER_PATTERN = Pattern.compile("(land|port)");
 
   // Version are matched in the end, and hence have least order
   private static final int ORDER_VERSION = 0;
@@ -178,5 +179,15 @@ public class Qualifiers {
       qualifiers += "w" + screenWidth + "dp";
     }
     return qualifiers;
+  }
+
+  public static String getOrientation(String qualifiers) {
+    for (String qualifier : qualifiers.split("-")) {
+      Matcher matcher = ORIENTATION_QUALIFIER_PATTERN.matcher(qualifier);
+      if (matcher.find()) {
+        return matcher.group(1);
+      }
+    }
+    return null;
   }
 }

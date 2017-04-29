@@ -858,8 +858,14 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   /**
-   * Obtain flags for actions supported. Currently only supports ACTION_CLICK, ACTION_LONG_CLICK,
-   * ACTION_SCROLL_FORWARD, ACTION_PASTE, ACTION_FOCUS, ACTION_SET_SELECTION, ACTION_SCROLL_BACKWARD
+   * Obtain flags for actions supported. Currently only supports
+   * {@link AccessibilityNodeInfo#ACTION_CLICK},
+   * {@link AccessibilityNodeInfo#ACTION_LONG_CLICK},
+   * {@link AccessibilityNodeInfo#ACTION_SCROLL_FORWARD},
+   * {@link AccessibilityNodeInfo#ACTION_PASTE},
+   * {@link AccessibilityNodeInfo#ACTION_FOCUS},
+   * {@link AccessibilityNodeInfo#ACTION_SET_SELECTION},
+   * {@link AccessibilityNodeInfo#ACTION_SCROLL_BACKWARD}
    * Returned value is derived from the getters.
    *
    * @return Action mask. 0 if no actions supported.

@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.view.View;
 import android.widget.TextView;
 import org.junit.Test;
@@ -12,6 +13,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Config(qualifiers = "en")
 @RunWith(TestRunners.SelfTest.class)
 public class QualifiersTest {
+
+  @Test
+  @Config(qualifiers = "land")
+  public void orientation() throws Exception {
+    assertThat(Robolectric.setupActivity(Activity.class).getResources().getConfiguration().orientation)
+        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
 
   @Test
   public void shouldGetFromClass() throws Exception {
