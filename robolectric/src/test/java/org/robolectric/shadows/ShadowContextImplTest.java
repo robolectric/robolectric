@@ -45,6 +45,29 @@ public class ShadowContextImplTest {
     assertThat(context.getDataDir()).isNotEqualTo(deviceProtectedStorageContext.getDataDir());
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void testMoveSharedPreferencesFrom() throws Exception {
+    String PREFS = "PREFS";
+    String PREF_NAME = "TOKEN_PREF";
+    RuntimeEnvironment.application
+        .getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        .edit()
+        .putString(PREF_NAME, "token")
+        .commit();
+
+    Context context = RuntimeEnvironment.application;
+    Context dpContext = context.createDeviceProtectedStorageContext();
+
+    assertThat(dpContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).contains(PREF_NAME)).isFalse();
+    assertThat(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).contains(PREF_NAME)).isTrue();
+
+    assertThat(dpContext.moveSharedPreferencesFrom(context, PREFS)).isTrue();
+
+    assertThat(dpContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).contains(PREF_NAME)).isTrue();
+    assertThat(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).contains(PREF_NAME)).isFalse();
+  }
+
   @Config(minSdk = KITKAT)
   @Test public void getExternalFilesDirs() {
     File[] dirs = context.getExternalFilesDirs("something");
