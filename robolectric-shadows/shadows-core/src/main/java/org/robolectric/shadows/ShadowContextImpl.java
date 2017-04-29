@@ -24,7 +24,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.fakes.RoboSharedPreferences;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -44,8 +43,6 @@ public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<>();
-  private final Map<String, RoboSharedPreferences> roboSharedPreferencesMap = new HashMap<>();
-  private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<>();
   private ContentResolver contentResolver;
 
   @RealObject
@@ -339,15 +336,6 @@ public class ShadowContextImpl {
     for (int i = intents.length - 1; i >= 0; i--) {
       startActivity(intents[i], options);
     }
-  }
-
-  @Implementation
-  public SharedPreferences getSharedPreferences(String name, int mode) {
-    if (!roboSharedPreferencesMap.containsKey(name)) {
-      roboSharedPreferencesMap.put(name, new RoboSharedPreferences(sharedPreferenceMap, name, mode));
-    }
-
-    return roboSharedPreferencesMap.get(name);
   }
 
   @Implementation
