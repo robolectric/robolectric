@@ -59,7 +59,7 @@ public @interface Config {
   int minSdk() default -1;
 
   /**
-   * The minimum Android SDK level to emulate when running tests on multiple API versions.
+   * The maximum Android SDK level to emulate when running tests on multiple API versions.
    */
   int maxSdk() default -1;
 
