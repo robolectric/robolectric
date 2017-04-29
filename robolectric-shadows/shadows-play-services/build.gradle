@@ -22,7 +22,7 @@ dependencies {
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "org.mockito:mockito-core:2.5.4"
-    testRuntime "com.android.support:support-v4:23.2.0"
+    testRuntime "com.android.support:support-v4:26.0.0-alpha1"
     testRuntime "com.google.android.gms:play-services-base:8.4.0"
     testRuntime "com.google.android.gms:play-services-basement:8.4.0"
 
