@@ -14,13 +14,18 @@ import android.content.ServiceConnection;
 import android.hardware.SystemSensorManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.os.*;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.UserHandle;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -361,5 +366,13 @@ public class ShadowContextImpl {
   @Implementation(minSdk = KITKAT)
   public File[] getExternalFilesDirs(String type) {
     return new File[] { Environment.getExternalStoragePublicDirectory(type) };
+  }
+
+  @Resetter
+  public static void reset() {
+    String prefsCacheFieldName = RuntimeEnvironment.getApiLevel() >= N ? "sSharedPrefsCache" : "sSharedPrefs";
+    Object prefsDefaultValue = RuntimeEnvironment.getApiLevel() >= KITKAT ? null : new HashMap<>();
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
+    ReflectionHelpers.setStaticField(contextImplClass, prefsCacheFieldName, prefsDefaultValue);
   }
 }
