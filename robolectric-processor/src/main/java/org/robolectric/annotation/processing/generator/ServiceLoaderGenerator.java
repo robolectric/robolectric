@@ -18,16 +18,16 @@ import java.io.PrintWriter;
 public class ServiceLoaderGenerator extends Generator {
   private final Filer filer;
   private final Messager messager;
-  private final RobolectricModel model;
+  private final String shadowPackage;
 
-  public ServiceLoaderGenerator(RobolectricModel model, ProcessingEnvironment environment) {
+  public ServiceLoaderGenerator(ProcessingEnvironment environment, String shadowPackage) {
     this.filer = environment.getFiler();
     this.messager = environment.getMessager();
-    this.model = model;
+    this.shadowPackage = shadowPackage;
   }
 
   @Override
-  public void generate(String shadowPackage) {
+  public void generate() {
     final String fileName = "org.robolectric.internal.ShadowProvider";
 
     try {
