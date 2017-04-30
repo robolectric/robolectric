@@ -11,13 +11,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
+import android.hardware.SystemSensorManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.UserHandle;
+import android.os.*;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
 import org.robolectric.RuntimeEnvironment;
@@ -53,7 +50,7 @@ public class ShadowContextImpl {
     // They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
     SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "android.view.WindowManagerImpl");
     SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
-    SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "org.robolectric.fakes.RoboSensorManager");
+    SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.SystemSensorManager");
     SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "org.robolectric.fakes.RoboVibrator");
 
     // the rest are as mapped in docs...
@@ -171,6 +168,14 @@ public class ShadowContextImpl {
             ClassParameter.from(android.print.IPrintManager.class, null),
             ClassParameter.from(int.class, -1),
             ClassParameter.from(int.class, -1));
+        } else if (serviceClassName.equals("android.hardware.SystemSensorManager")) {
+          if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
+            service = new SystemSensorManager(RuntimeEnvironment.application, Looper.getMainLooper());
+          } else {
+            service = ReflectionHelpers.callConstructor(
+                Class.forName(serviceClassName),
+                ClassParameter.from(Looper.class, Looper.getMainLooper()));
+          }
         } else {
           service = newInstanceOf(clazz);
         }

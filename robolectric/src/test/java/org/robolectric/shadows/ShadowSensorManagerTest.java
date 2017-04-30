@@ -1,16 +1,16 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.hardware.*;
+import android.os.Build;
+import android.os.MemoryFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +32,16 @@ public class ShadowSensorManagerTest {
   public void tearDown() {
     sensorManager = null;
     shadow = null;
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void createDirectChannel() throws Exception {
+    SensorDirectChannel channel = sensorManager.createDirectChannel(new MemoryFile("name", 10));
+    assertThat(channel.isValid()).isTrue();
+
+    channel.close();
+    assertThat(channel.isValid()).isFalse();
   }
 
   @Test
