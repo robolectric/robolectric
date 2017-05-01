@@ -37,7 +37,7 @@ import static java.util.Arrays.asList;
 
 public class CtsRobolectricTestRunner extends RobolectricTestRunner {
   private static final boolean KILL_LONG_RUNNING_TESTS = true;
-  private static final boolean ASSERT_ON_EXPECTED_TEST_OUTCOME = true;
+  private static final boolean ASSERT_ON_EXPECTED_TEST_OUTCOME = false; // todo DO NOT SUBMIT
 
   private boolean isJunit3;
   private static final CtsResults ctsResults;

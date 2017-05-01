@@ -1,7 +1,13 @@
 package org.robolectric.shadows;
 
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import android.database.sqlite.SQLiteAbortException;
@@ -444,14 +450,31 @@ public class ShadowSQLiteConnection {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, long statementPtr) {
+  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
     return nativeExecuteForBlobFileDescriptor((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeExecuteForBlobFileDescriptor(long connectionPtr, long statementPtr) {
+  public static int nativeExecuteForBlobFileDescriptor(final long connectionPtr, final long statementPtr) {
     // impossible to support without native code?
-    return -1;
+    return CONNECTIONS.execute("execute for long", new Callable<Integer>() {
+      @Override
+      public Integer call() throws SQLiteException {
+        SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
+        if (!stmt.step()) {
+          throw new SQLiteException(SQLiteConstants.SQLITE_DONE, "No rows returned from query");
+        }
+        byte[] bytes = stmt.columnBlob(0);
+        File file = new File("/tmp/blob");
+        try {
+          FileOutputStream fileOutputStream = new FileOutputStream(file);
+          fileOutputStream.write(bytes);
+          return ShadowParcelFileDescriptor.fd(fileOutputStream.getFD());
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)

@@ -131,7 +131,12 @@ public class ShadowCursorWindow {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeGetType(long windowPtr, int row, int column) {
-    return WINDOW_DATA.get(windowPtr).value(row, column).type;
+    try {
+      return WINDOW_DATA.get(windowPtr).value(row, column).type;
+    } catch (IndexOutOfBoundsException e) {
+      // per https://github.com/android/platform_frameworks_base/commit/aa32c30b81134fc7ebd9408f4757d1dc4410f338
+      return Cursor.FIELD_TYPE_NULL;
+    }
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
