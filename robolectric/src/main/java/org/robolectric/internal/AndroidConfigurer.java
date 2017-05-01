@@ -74,7 +74,8 @@ public class AndroidConfigurer {
 
     builder.addClassNameTranslation("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
         .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
-        .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName());
+        .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName())
+        .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName());
 
     // Instrumenting these classes causes a weird failure.
     builder.doNotInstrumentClass("android.R")

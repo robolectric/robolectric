@@ -1,16 +1,12 @@
 package org.robolectric.shadows;
 
-import android.app.QueuedWork;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
 
 import java.util.*;
 
@@ -35,7 +31,7 @@ public class ShadowSharedPreferencesTest {
     context = RuntimeEnvironment.application;
 
     sharedPreferences = context.getSharedPreferences(FILENAME, 3);
-    editor = sharedPreferences.edit().clear();
+    editor = sharedPreferences.edit();
     editor.putBoolean("boolean", true);
     editor.putFloat("float", 1.1f);
     editor.putInt("int", 2);
@@ -46,13 +42,6 @@ public class ShadowSharedPreferencesTest {
     stringSet.add( "string2" );
     stringSet.add( "string3" );
     editor.putStringSet("stringSet", stringSet);
-  }
-
-  @After
-  public void tearDown() {
-    // TODO: Should be done in resetter for ShadowQueuedWork but this relies on getting a handler from main thread
-    // which has already been reset at that point.
-    QueuedWork.waitToFinish();
   }
 
   @Test
