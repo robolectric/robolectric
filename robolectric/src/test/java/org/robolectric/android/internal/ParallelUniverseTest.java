@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import android.app.Application;
 
+import android.os.Build;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,7 @@ public class ParallelUniverseTest {
   @Before
   public void setUp() throws InitializationError {
     pu = new ParallelUniverse();
-    pu.setSdkConfig(new SdkConfig(18));
+    pu.setSdkConfig(new SdkConfig(Build.VERSION_CODES.M));
   }
 
   private void setUpApplicationState(Config defaultConfig) {
@@ -128,7 +129,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c);
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("v23");
   }
   
   @Test
@@ -144,7 +145,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c);
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v23");
   }
   
   @Test
