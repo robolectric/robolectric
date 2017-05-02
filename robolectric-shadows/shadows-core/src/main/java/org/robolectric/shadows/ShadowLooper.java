@@ -95,7 +95,7 @@ public class ShadowLooper {
   }
 
   private void doLoop() {
-    if (this != getShadowMainLooper()) {
+    if (realObject != Looper.getMainLooper()) {
       synchronized (realObject) {
         while (!quit) {
           try {
@@ -109,7 +109,7 @@ public class ShadowLooper {
 
   @Implementation
   public void quit() {
-    if (this == getShadowMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
+    if (realObject == Looper.getMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
     quitUnchecked();
   }
 
@@ -329,7 +329,7 @@ public class ShadowLooper {
 
   public void resetScheduler() {
     ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
-    if (this == getShadowMainLooper() || RoboSettings.isUseGlobalScheduler()) {
+    if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
       sQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
     } else {
       sQueue.setScheduler(new Scheduler());

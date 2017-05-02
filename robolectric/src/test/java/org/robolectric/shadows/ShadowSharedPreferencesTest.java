@@ -8,7 +8,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -31,6 +34,9 @@ public class ShadowSharedPreferencesTest {
     context = RuntimeEnvironment.application;
 
     sharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    // Ensure no shared preferences have leaked from previous tests.
+    assertThat(sharedPreferences.getAll()).hasSize(0);
+
     editor = sharedPreferences.edit();
     editor.putBoolean("boolean", true);
     editor.putFloat("float", 1.1f);
@@ -74,9 +80,8 @@ public class ShadowSharedPreferencesTest {
   @Test
   public void getAll_shouldReturnAllValues() throws Exception {
     editor.commit();
-    Map<String, ?> all = sharedPreferences.getAll();
-    assertThat(all.size()).isEqualTo(6);
-    assertThat((Integer) all.get("int")).isEqualTo(2);
+    assertThat(sharedPreferences.getAll()).hasSize(6);
+    assertThat(sharedPreferences.getAll().get("int")).isEqualTo(2);
   }
 
   @Test
