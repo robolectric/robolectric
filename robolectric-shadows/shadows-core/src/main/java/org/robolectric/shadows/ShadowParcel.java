@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.Parcel;
+import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.util.Pair;
 import org.robolectric.annotation.Implementation;
@@ -11,9 +12,12 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.LinkedHashMap;
@@ -343,6 +347,25 @@ public class ShadowParcel {
     String actualInterfaceName = nativeReadString(nativePtr);
     if (!Objects.equals(interfaceName, actualInterfaceName)) {
       throw new SecurityException("Binder invocation to an incorrect interface");
+    }
+  }
+
+  @Implementation
+  public static FileDescriptor openFileDescriptor(String path, int mode) throws FileNotFoundException {
+    String modeString = "";
+    if ((mode & ParcelFileDescriptor.MODE_READ_ONLY) != 0) {
+      modeString += 'r';
+    }
+    if ((mode & ParcelFileDescriptor.MODE_WRITE_ONLY) != 0) {
+      modeString += 'w';
+    }
+
+    try {
+      return new RandomAccessFile(path, modeString).getFD();
+    } catch (FileNotFoundException e) {
+      throw e;
+    } catch (IOException e) {
+      throw new FileNotFoundException(path);
     }
   }
 
