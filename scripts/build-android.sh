@@ -209,11 +209,10 @@ build_android_src_jar() {
     local tmp=${OUT}/sources
     mkdir ${tmp}
 
-    for sourceSubDir in "${SOURCES[@]}"; do    
+    for sourceSubDir in "${SOURCES[@]}"; do
         rsync -a ${src}/${sourceSubDir}/java/ ${tmp}/
     done
     rsync -a ${ANDROID_SOURCES_BASE}/libcore/luni/src/main/java/ ${tmp}/ # this is new
-    rsync -a ${ANDROID_SOURCES_BASE}/frameworks/base/test-runner/src ${tmp}/ # this is new
     cd ${tmp}; jar cf ${OUT}/${ANDROID_ALL_SRC} .
     rm -rf ${tmp}
 }

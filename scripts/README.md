@@ -96,7 +96,7 @@ $ make -j8
 
 For Marshmallow and above:
 ```
-$ tapas core-libart services services.accessibility telephony-common framework ext icu4j-icudata-jarjar android.test.runner
+$ tapas core-libart services services.accessibility telephony-common framework ext icu4j-icudata-jarjar
 $ ANDROID_COMPILE_WITH_JACK=false make -j8
 ```
 
@@ -106,7 +106,7 @@ into frameworks/base/services/core/java/com/android/server/pm/ShortcutService.ja
 ```
 $ lunch aosp_x86-eng
 $ make -j8
-$ make -j8 out/target/common/obj/JAVA_LIBRARIES/services_intermediates/classes.jar out/target/common/obj/JAVA_LIBRARIES/android.test.runner_intermediates/classes.jar out/host/linux-x86/framework/icu4j-icudata-host-jarjar.jar 
+$ make -j8 out/target/common/obj/JAVA_LIBRARIES/services_intermediates/classes.jar out/host/linux-x86/framework/icu4j-icudata-host-jarjar.jar 
 ```
 
 
