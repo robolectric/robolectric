@@ -12,7 +12,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.*;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralRules;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -110,16 +112,32 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return shadowOf(realResourcesImpl.getAssets()).getResourceTable().getRawValue(id, RuntimeEnvironment.getQualifiers());
+    ResourceTable resourceTable = shadowOf(realResourcesImpl.getAssets()).getResourceTable();
+    InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+    if (inputStream == null) {
+      throw newNotFoundException(id);
+    } else {
+      return inputStream;
+    }
   }
 
   @Implementation
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
+    FileInputStream fis = (FileInputStream)openRawResource(id);
     try {
-      FileInputStream fis = (FileInputStream)openRawResource(id);
       return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
     } catch (Exception e) {
-      return null;
+      throw newNotFoundException(id);
+    }
+  }
+
+  private Resources.NotFoundException newNotFoundException(int id) {
+    ResourceTable resourceTable = shadowOf(realResourcesImpl.getAssets()).getResourceTable();
+    ResName resName = resourceTable.getResName(id);
+    if (resName == null) {
+      return new Resources.NotFoundException("resource ID #0x" + Integer.toHexString(id));
+    } else {
+      return new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
   }
 
