@@ -49,8 +49,10 @@ To check out a branch other than `master`, specify it with `-b`. For a list of b
 *  `5.0.0_r2`    - Lollipop
 *  `5.1.1_r9`    - Lollipop MR1
 *  `6.0.1_r3`    - Marshmallow
+*  `7.0.0_r1`    - Nougat
+*  `7.1.0_r7`    - Nougat MR1
 ```
-$ repo init -u https://android.googlesource.com/platform/manifest -b android-6.0.1_r3
+$ repo init -u https://android.googlesource.com/platform/manifest -b android-7.1.0_r7
 ```
 
 A successful initialization will end with a message stating that Repo is initialized in your working directory. Your client directory should now contain a `.repo` directory where files such as the manifest will be kept.
@@ -66,16 +68,14 @@ Beware this will take over an hour and will require 45+ Gigabytes of space. If y
 ## 4. Grab dependencies
 On Ubuntu run
 ```
-$ sudo apt-get install git-core gnupg flex bison gperf build-essential \
+$ sudo apt-get install git-core gnupg gnupg-agent flex bison gperf build-essential \
 zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 \
 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache \
 libgl1-mesa-dev libxml2-utils xsltproc unzip libswitch-perl
 ```
 
-## 5. Set environment variables
+## 5. Set Android environment variables
 ```
-$ export BUILD_ROOT=<Path to AOSP source directory>
-$ export SIGNING_PASSWORD=<Passphrase for GPG signing key>
 $ source build/envsetup.sh
 ```
 
@@ -95,22 +95,34 @@ $ make -j8
 ```
 
 For Marshmallow and above:
-
 ```
-$ tapas core-libart services services.accessibility telephony-common framework ext icu4j-icudata-jarjar
+$ tapas core-libart services services.accessibility telephony-common framework ext icu4j-icudata-jarjar android.test.runner
 $ ANDROID_COMPILE_WITH_JACK=false make -j8
 ```
 
+For Nougat:
+You may need to patch this commit: https://android.googlesource.com/platform/frameworks/base.git/+/e065f7c5a9ad4e47f5490793401445660af37624
+into frameworks/base/services/core/java/com/android/server/pm/ShortcutService.java
+```
+$ lunch aosp_x86-eng
+$ make -j8
+$ make -j8 out/target/common/obj/JAVA_LIBRARIES/services_intermediates/classes.jar out/target/common/obj/JAVA_LIBRARIES/android.test.runner_intermediates/classes.jar out/host/linux-x86/framework/icu4j-icudata-host-jarjar.jar 
+```
+
+
 ## 7. Run build-android.sh
-(Optional) Signing Artifacts:
-The end of the script will prompt you to sign the new artifacts.  You will be prompted a total of 4 times (once for each artifact).  To make this easier, run this command beforehand:
+Signing Artifacts:
+The end of the script will prompt you to sign the new artifacts using GPG. See [Performing a Release](https://github.com/robolectric/robolectric-gradle-plugin/wiki/Performing-a-Release) for instructions on obtaining a GPG key pair.
+
+(Optional) You will be prompted a total of 4 times (once for each artifact). To make this easier, run this command beforehand:
 ```
 $ gpg-agent --daemon
 ```
 
 Finally, in your Robolectric directory run:
 ```
-$ build-android.sh <android version> <robolectric sub-version>
+$ export SIGNING_PASSWORD=<Passphrase for GPG signing key>
+$ build-android.sh <Path to AOSP source directory> <android version> <robolectric sub-version>
 ```
 
 For Robolectric version `6.0.1_r3-robolectric-0`, android version would be `6.0.1_r3` and  robolectric sub-version `0`.

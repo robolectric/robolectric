@@ -103,7 +103,6 @@ build_platform() {
         SOURCES=(core graphics media location opengl sax services telephony wifi)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
-        TZDATA_ARCH="generic"
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -210,10 +209,11 @@ build_android_src_jar() {
     local tmp=${OUT}/sources
     mkdir ${tmp}
 
-    for sourceSubDir in "${SOURCES[@]}"; do
+    for sourceSubDir in "${SOURCES[@]}"; do    
         rsync -a ${src}/${sourceSubDir}/java/ ${tmp}/
     done
     rsync -a ${ANDROID_SOURCES_BASE}/libcore/luni/src/main/java/ ${tmp}/ # this is new
+    rsync -a ${ANDROID_SOURCES_BASE}/frameworks/base/test-runner/src ${tmp}/ # this is new
     cd ${tmp}; jar cf ${OUT}/${ANDROID_ALL_SRC} .
     rm -rf ${tmp}
 }
