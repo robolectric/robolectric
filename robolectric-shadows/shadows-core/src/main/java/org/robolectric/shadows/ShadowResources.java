@@ -146,6 +146,8 @@ public class ShadowResources {
         throw newNotFoundException(id);
       }
     } else {
+      // likely because we're trying to open a file inside the system resources jar.
+      // todo: support opening files from jars
       throw newNotFoundException(id);
     }
   }
