@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -558,6 +559,13 @@ public class ShadowResourcesTest {
     } catch (Resources.NotFoundException e) {
       // cool
     }
+  }
+
+  @Test
+  public void openRawResourceFd() throws Exception {
+    AssetFileDescriptor assetFileDescriptor = resources.openRawResourceFd(R.raw.raw_resource);
+    assertThat(TestUtil.readString(assetFileDescriptor.createInputStream()))
+        .isEqualTo("raw txt file contents");
 
     try {
       resources.openRawResourceFd(R.string.hello);

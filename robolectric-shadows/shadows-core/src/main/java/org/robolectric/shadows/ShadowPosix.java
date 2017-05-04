@@ -10,9 +10,18 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
+import java.io.FileDescriptor;
 
 @Implements(value = Posix.class, isInAndroidSdk = false)
 public class ShadowPosix {
+  /**
+   * Passes through the original {@link FileDescriptor} without duplicating it.
+   */
+  @Implementation
+  public FileDescriptor dup(FileDescriptor fd) throws ErrnoException {
+    return fd;
+  }
+
   @Implementation
   public static void mkdir(String path, int mode) throws ErrnoException {
     new File(path).mkdirs();

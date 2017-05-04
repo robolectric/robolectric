@@ -11,6 +11,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -20,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
@@ -344,6 +346,14 @@ public class ShadowParcel {
     if (!Objects.equals(interfaceName, actualInterfaceName)) {
       throw new SecurityException("Binder invocation to an incorrect interface");
     }
+  }
+
+  /**
+   * Passes through the original {@link FileDescriptor} without duplicating it.
+   */
+  @Implementation(maxSdk = JELLY_BEAN_MR2)
+  public static FileDescriptor dupFileDescriptor(FileDescriptor orig) throws IOException {
+    return orig;
   }
 
   private static class ByteBuffer {

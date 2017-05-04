@@ -81,7 +81,7 @@ public class FileFsFile implements FsFile {
 
   @Override
   public InputStream getInputStream() throws IOException {
-    return new BufferedInputStream(new FileInputStream(file));
+    return new FileBufferedInputStream(new FileInputStream(file));
   }
 
   @Override
@@ -191,4 +191,5 @@ public class FileFsFile implements FsFile {
     }
     return new FileFsFile(file);
   }
+
 }
