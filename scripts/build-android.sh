@@ -62,6 +62,8 @@ ANDROID_ALL_POM=android-all-${ROBOLECTRIC_VERSION}.pom
 ANDROID_ALL_SRC=android-all-${ROBOLECTRIC_VERSION}-sources.jar
 ANDROID_ALL_DOC=android-all-${ROBOLECTRIC_VERSION}-javadoc.jar
 ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
+ANDROID_TEST_RUNNER_JAR=android-test-runner-${ROBOLECTRIC_VERSION}.jar
+ANDROID_TEST_RUNNER_SRC=android-test-runner-${ROBOLECTRIC_VERSION}-sources.jar
 
 build_platform() {
     NATIVE_ARTIFACTS=()
@@ -103,7 +105,6 @@ build_platform() {
         SOURCES=(core graphics media location opengl sax services telephony wifi)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
-        TZDATA_ARCH="generic"
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -226,6 +227,22 @@ build_android_doc_jar() {
     rm -rf ${OUT}/javadoc
 }
 
+build_android_test_runner_jar() {
+    echo "Robolectric: Building android-test-runner.jar..."
+
+    cd ${OUT}
+    # copy the original jar
+    local src=${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/android.test.runner_intermediates/classes.jar
+    cp ${src} ${ANDROID_TEST_RUNNER_JAR}
+
+    # build the source jar
+    local tmp=${OUT}/sources
+    mkdir ${tmp}
+    rsync -a ${ANDROID_SOURCES_BASE}/frameworks/base/test-runner/src/ ${tmp}/
+    cd ${tmp}; jar cf ${OUT}/${ANDROID_TEST_RUNNER_SRC} .
+    rm -rf ${tmp}
+}
+
 build_signed_packages() {
     echo "Robolectric: Building android-all.pom..."
     sed s/VERSION/${ROBOLECTRIC_VERSION}/ ${SCRIPT_DIR}/pom_template.xml | sed s/ARTIFACT_ID/android-all/ > ${OUT}/${ANDROID_ALL_POM}
@@ -263,6 +280,22 @@ mavenize() {
       -Dversion=${ROBOLECTRIC_VERSION} \
       -Dpackaging=jar \
       -Dclassifier=javadoc
+
+    local FILE_NAME_BASE2=android-test-runner-${ROBOLECTRIC_VERSION}
+    mvn install:install-file \
+      -Dfile=${OUT}/${FILE_NAME_BASE2}.jar \
+      -DgroupId=org.robolectric \
+      -DartifactId=android-test-runner \
+      -Dversion=${ROBOLECTRIC_VERSION} \
+      -Dpackaging=jar
+
+    mvn install:install-file \
+      -Dfile=${OUT}/${FILE_NAME_BASE2}-sources.jar \
+      -DgroupId=org.robolectric \
+      -DartifactId=android-test-runner \
+      -Dversion=${ROBOLECTRIC_VERSION} \
+      -Dpackaging=jar \
+      -Dclassifier=sources
 }
 
 OUT=`mktemp --directory`
@@ -275,6 +308,7 @@ build_android_classes
 build_android_all_jar
 build_android_src_jar
 build_android_doc_jar
+build_android_test_runner_jar
 build_signed_packages
 mavenize
 
