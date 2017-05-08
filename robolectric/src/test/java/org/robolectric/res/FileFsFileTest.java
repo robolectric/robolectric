@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.emory.mathcs.backport.java.util.Collections;
+import java.util.Collections;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;

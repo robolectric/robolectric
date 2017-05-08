@@ -55,7 +55,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  * <li>Full support of the {@link MediaPlayer} internal states and their
  * transition map.</li>
  * <li>Configure time parameters such as playback duration, preparation delay
- * and (@link #setSeekDelay seek delay}.</li>
+ * and {@link #setSeekDelay seek delay}.</li>
  * <li>Emulation of asynchronous callback events during playback through
  * Robolectric's scheduling system using the {@link MediaInfo} inner class.</li>
  * <li>Emulation of error behavior when methods are called from invalid states,

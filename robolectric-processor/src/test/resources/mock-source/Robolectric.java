@@ -14,4 +14,7 @@ package org.robolectric;
  */
 public class Robolectric {
   public interface Anything {}
+
+  public static class DocumentedObject {
+  }
 }

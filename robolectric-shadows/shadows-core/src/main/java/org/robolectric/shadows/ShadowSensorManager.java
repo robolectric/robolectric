@@ -1,16 +1,18 @@
 package org.robolectric.shadows;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.hardware.*;
+import android.os.MemoryFile;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static android.os.Build.VERSION_CODES.O;
 
 /**
  * Shadow for {@link android.hardware.SensorManager}.
@@ -20,6 +22,8 @@ public class ShadowSensorManager {
   public boolean forceListenersToFail = false;
   private final Map<Integer, Sensor> sensorMap = new HashMap<>();
   private final ArrayList<SensorEventListener> listeners = new ArrayList<>();
+
+  @RealObject private SensorManager realObject;
 
   /**
    * Provide a Sensor for the indicated sensor type.
@@ -62,5 +66,14 @@ public class ShadowSensorManager {
 
   public SensorEvent createSensorEvent() {
     return ReflectionHelpers.callConstructor(SensorEvent.class);
+  }
+
+  @Implementation(minSdk = O)
+  public SensorDirectChannel createDirectChannel(MemoryFile mem) {
+    return ReflectionHelpers.callConstructor(SensorDirectChannel.class,
+        ClassParameter.from(SensorManager.class, realObject),
+        ClassParameter.from(int.class, 0),
+        ClassParameter.from(int.class, SensorDirectChannel.TYPE_ASHMEM),
+        ClassParameter.from(long.class, mem.length()));
   }
 }
