@@ -182,7 +182,7 @@ public class AndroidManifestTest {
    */
   @Test
   public void shouldReadTargetSDKVersionOPreview() throws Exception {
-    assertEquals(26, newConfigWith("android:targetSdkVersion=\"O\"").getTargetSdkVersion());
+    assertEquals(26, newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"").getTargetSdkVersion());
   }
 
   @Test
