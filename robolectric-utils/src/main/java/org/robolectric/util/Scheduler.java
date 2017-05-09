@@ -47,7 +47,8 @@ public class Scheduler {
     CONSTANT_IDLE
   }
 
-  private volatile long currentTime = 100;
+  private final static long START_TIME = 100;
+  private volatile long currentTime = START_TIME;
   private boolean isExecutingRunnable = false;
   private final Thread associatedThread = Thread.currentThread();
   private final List<ScheduledRunnable> runnables = new ArrayList<>();
@@ -274,6 +275,8 @@ public class Scheduler {
   public synchronized void reset() {
     runnables.clear();
     idleState = UNPAUSED;
+    currentTime = START_TIME;
+    isExecutingRunnable = false;
   }
 
   /**

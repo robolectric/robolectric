@@ -57,6 +57,10 @@ public class ShadowLooper {
         synchronized (looper) {
           if (!shadowOf(looper).quit) {
             looper.quit();
+          } else {
+            // Reset the schedulers of all loopers. This prevents un-run tasks queued up in static
+            // background handlers from leaking to subsequent tests.
+            shadowOf(looper).getScheduler().reset();
           }
         }
       }
