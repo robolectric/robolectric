@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,7 +36,7 @@ public class ShadowAccountManager {
 
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
   private Handler mainHandler;
-  private RoboAccountManagerFuture pendingAddFuture;
+  private AddAccountPrompt addAccountPrompt;
 
   public void __constructor__(Context context, IAccountManager service) {
     mainHandler = new Handler(context.getMainLooper());
@@ -293,15 +291,29 @@ public class ShadowAccountManager {
   /**
    * Non-android accessor.
    *
+   * If {@link #addAccount(String, String, String[], Bundle, Activity, AccountManagerCallback, Handler)} has been
+   * called, this method simulates the user entering the account user name. This behavior is deprecated and will be
+   * removed in Robolectric 3.5.
+   *
    * @param account User account.
+   *
+   * @deprecated For simulating user interaction through a dialog, use {@code getAddAccountPrompt().enterAccountName()} instead.
    */
+  @Deprecated // only for dialog use case though
   public void addAccount(Account account) {
-    accounts.add(account);
-    if (pendingAddFuture != null) {
-      pendingAddFuture.resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-      start(pendingAddFuture);
-      pendingAddFuture = null;
+    AddAccountPrompt addAccountPrompt = getAddAccountPrompt();
+    if (addAccountPrompt != null) {
+      addAccountPrompt.enterAccountName(account.name);
     }
+    addAccountInternal(account);
+  }
+
+  public AddAccountPrompt getAddAccountPrompt() {
+    return addAccountPrompt;
+  }
+
+  private void addAccountInternal(Account account) {
+    accounts.add(account);
     notifyListeners();
   }
 
@@ -321,7 +333,7 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-Android accessor consumes and returns the next {@code addAccountOptions} passed to addAccount.
+   * Non-Android accessor consumes and returns the next {@code addAccountOptions} passed to {@link #addAccount(Account)}.
    *
    * @return the next {@code addAccountOptions}
    */
@@ -346,43 +358,103 @@ public class ShadowAccountManager {
     }
   }
 
-  private class RoboAccountManagerFuture extends BaseRoboAccountManagerFuture<Bundle> {
-    private final String accountType;
+  private class RoboAccountManagerFuture extends BaseRoboAccountManagerFuture<Bundle> implements AddAccountPrompt {
     private final Activity activity;
     private final Bundle resultBundle;
+    private boolean cancelled;
 
     RoboAccountManagerFuture(AccountManagerCallback<Bundle> callback, Handler handler, String accountType, Activity activity) {
       super(callback, handler);
 
-      this.accountType = accountType;
       this.activity = activity;
       this.resultBundle = new Bundle();
+      resultBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
     }
 
     @Override
     public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-      if (!authenticators.containsKey(accountType)) {
-        throw new AuthenticatorException("No authenticator specified for " + accountType);
+      if (cancelled) {
+        throw new OperationCanceledException();
       }
 
-      resultBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+      if (!authenticators.containsKey(getAccountType())) {
+        throw new AuthenticatorException("No authenticator specified for " + getAccountType());
+      }
 
       if (activity == null) {
         Intent resultIntent = new Intent();
         resultBundle.putParcelable(AccountManager.KEY_INTENT, resultIntent);
-      } else if (callback == null) {
-        resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
+      } else {
+        if (callback == null) {
+          if (getAccountName() == null) {
+            resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
+          }
+        }
+
+        Account newAccount = new Account(getAccountName(), getAccountType());
+        addAccountInternal(newAccount);
       }
 
       return resultBundle;
     }
+
+    private String getAccountType() {
+      return resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE);
+    }
+
+    private String getAccountName() {
+      return resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME);
+    }
+
+    @Override
+    public void enterAccountName(String accountName) {
+      resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, accountName);
+      start();
+      addAccountPrompt = null;
+    }
+
+    @Override
+    public void cancel() {
+      cancelled = true;
+      start();
+      addAccountPrompt = null;
+    }
   }
 
+  public interface AddAccountPrompt {
+    /**
+     * Simulate the user entering their account name. The account will added to the {@link AccountManager}, and listeners
+     * will be notified.
+     *
+     * @param accountName The account name to add.
+     */
+    void enterAccountName(String accountName);
+
+    /**
+     * Simulate the user cancelling the add account flow.
+     */
+    void cancel();
+  }
+
+  /**
+   * No action will occur until {@link #addAccount(Account)} has been called, simulating user input, or
+   * {@link AccountManagerFuture#getResult()} is called. If {@link AccountManagerFuture#getResult()} is called before
+   * {@link #addAccount(Account)}, {@code some_user@gmail.com} will be used as the user name. This behavior is deprecated
+   * and will be removed in Robolectric 3.5; instead, use {@code getAddAccountPrompt().enterAccountName()}.
+   *
+   * If {@code activity} is not null, use {@link #getAddAccountPrompt()} to simulate collecting account information from
+   * the user.
+   */
   @Implementation
   public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, Bundle addAccountOptions, Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
     addAccountOptionsList.add(addAccountOptions);
-    pendingAddFuture = new RoboAccountManagerFuture(callback, handler, accountType, activity);
-    return pendingAddFuture;
+    RoboAccountManagerFuture roboAccountManagerFuture = new RoboAccountManagerFuture(callback, handler, accountType, activity);
+
+    if (activity != null) {
+      addAccountPrompt = roboAccountManagerFuture;
+    }
+
+    return roboAccountManagerFuture;
   }
 
   public void setFeatures(Account account, String[] accountFeatures) {
