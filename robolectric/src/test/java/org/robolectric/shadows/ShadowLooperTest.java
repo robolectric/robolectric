@@ -312,6 +312,30 @@ public class ShadowLooperTest {
   }
 
   @Test
+  public void resetThreadLoopers_resets_background_thread_schedulers() {
+    HandlerThread backgroundThread = new HandlerThread("resetTest");
+    backgroundThread.start();
+    Looper backgroundLooper = backgroundThread.getLooper();
+    Handler handler = new Handler(backgroundLooper);
+    Runnable empty = new Runnable() {
+      @Override
+      public void run() {}
+    };
+    // There should be at least two iterations of this loop because resetThreadLoopers calls
+    // 'quit' on background loopers once, which also resets the scheduler.
+    for (int i = 0; i < 5; i++) {
+      assertThat(shadowOf(backgroundLooper).getScheduler().size()).isZero();
+      assertThat(shadowOf(backgroundLooper).getScheduler().getCurrentTime()).isEqualTo(100L);
+      handler.post(empty);
+      handler.postDelayed(empty, 5000);
+      // increment scheduler's time by 5000
+      shadowOf(backgroundLooper).runToEndOfTasks();
+      assertThat(shadowOf(backgroundLooper).getScheduler().getCurrentTime()).isEqualTo(5100L);
+      ShadowLooper.resetThreadLoopers();
+    }
+  }
+
+  @Test
   public void myLooper_returnsMainLooper_ifMainThreadIsSwitched() throws InterruptedException {
     final AtomicReference<Looper> myLooper = new AtomicReference<>();
     Thread t = new Thread(testName.getMethodName()) {
