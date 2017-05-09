@@ -139,8 +139,8 @@ public class ShadowContentResolver {
   @Implementation
   public final Uri insert(Uri url, ContentValues values) {
     ContentProvider provider = getProvider(url);
-
-    InsertStatement insertStatement = new InsertStatement(url, provider, new ContentValues(values));
+    ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
+    InsertStatement insertStatement = new InsertStatement(url, provider, valuesCopy);
     statements.add(insertStatement);
     insertStatements.add(insertStatement);
 
@@ -165,8 +165,8 @@ public class ShadowContentResolver {
   @Implementation
   public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
     ContentProvider provider = getProvider(uri);
-
-    UpdateStatement updateStatement = new UpdateStatement(uri, provider, new ContentValues(values), where, selectionArgs);
+    ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
+    UpdateStatement updateStatement = new UpdateStatement(uri, provider, valuesCopy, where, selectionArgs);
     statements.add(updateStatement);
     updateStatements.add(updateStatement);
 

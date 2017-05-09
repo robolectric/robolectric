@@ -153,6 +153,18 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void insert_supportsNullContentValues() throws Exception {
+    contentResolver.insert(EXTERNAL_CONTENT_URI, null);
+    assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues()).isNull();
+  }
+
+  @Test
+  public void update_supportsNullContentValues() throws Exception {
+    contentResolver.update(EXTERNAL_CONTENT_URI, null, null, null);
+    assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues()).isNull();
+  }
+
+  @Test
   public void delete_shouldTrackDeletedUris() throws Exception {
     assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(0);
 
