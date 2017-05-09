@@ -27,7 +27,8 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(application = RobolectricTestRunnerSelfTest.MyTestApplication.class)
 public class RobolectricTestRunnerSelfTest {
 
   @Test
@@ -114,26 +115,6 @@ public class RobolectricTestRunnerSelfTest {
   @AfterClass
   public static void resetStaticState_shouldBeCalled_onMainThread() {
     assertThat(onTerminateCalledFromMain).isTrue();
-  }
-
-  public static class RunnerForTesting extends TestRunners.SelfTest {
-    public static RunnerForTesting instance;
-
-    public RunnerForTesting(Class<?> testClass) throws InitializationError {
-      super(testClass);
-      instance = this;
-    }
-
-    @Nonnull
-    @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
-      return MyTestLifecycle.class;
-    }
-
-    public static class MyTestLifecycle extends DefaultTestLifecycle {
-      @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
-        return new MyTestApplication();
-      }
-    }
   }
 
   private static List<String> order = new ArrayList<>();
