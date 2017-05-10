@@ -255,6 +255,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = 17)
   public void testGetCreatorPackage_nothingSet() {
     Context ctx = RuntimeEnvironment.application;
     PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
@@ -264,6 +265,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = 17)
   public void testGetCreatorPackage_explicitlySetPackage() {
     String fakePackage = "some.fake.package";
     Context ctx = RuntimeEnvironment.application;

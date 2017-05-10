@@ -92,7 +92,7 @@ public class ShadowPendingIntent {
         null /* requiredPermission */);
   }
 
-  @Implementation
+  @Implementation(minSdk = 14)
   public synchronized void send(Context context, int resultCode, Intent intent, final PendingIntent.OnFinished onFinished, final Handler handler, String requiredPermission)
       throws CanceledException {
     if (canceled) {
@@ -192,10 +192,10 @@ public class ShadowPendingIntent {
     return getCreatorPackage();
   }
 
-  @Implementation
+  @Implementation(minSdk = 17)
   public String getCreatorPackage() {
     return (creatorPackage == null)
-        ? RuntimeEnvironment.application.getPackageName()
+        ? savedContext.getPackageName()
         : creatorPackage;
   }
 
@@ -206,27 +206,7 @@ public class ShadowPendingIntent {
   @Override
   @Implementation
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || realPendingIntent.getClass() != o.getClass()) return false;
-    ShadowPendingIntent that = shadowOf((PendingIntent) o);
-    if (savedContext != null) {
-      String packageName = savedContext.getPackageName();
-      String thatPackageName = that.savedContext.getPackageName();
-      if (packageName != null ? !packageName.equals(thatPackageName) : thatPackageName != null) return false;
-    } else {
-      if (that.savedContext != null) return false;
-    }
-    if (this.intentType != that.intentType) {
-      return false;
-    }
-    if (this.requestCode != that.requestCode) {
-      return false;
-    }
-    if (!compareIntents(this.savedIntents, that.savedIntents)) {
-      return false;
-    }
-
-    return true;
+    return realPendingIntent == o;
   }
 
   @Override
@@ -242,7 +222,7 @@ public class ShadowPendingIntent {
   }
 
   private static synchronized PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags) {
-    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents);
+    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents, RuntimeEnvironment.application.getPackage());
 
     if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
       return previousIntent;
@@ -278,7 +258,9 @@ public class ShadowPendingIntent {
   protected static Intent[] copyIntents(Intent[] intents) {
     Intent[] intentsCopy = new Intent[intents.length];
     for (int i = 0; i < intents.length; i++) {
-      intentsCopy[i] = new Intent(intents[i]);
+      // this is a hack, because many robolectric tests themselves assume that a null intent is
+      // ok, when in fact this would crash on a real android device
+      intentsCopy[i] = intents[i] != null ? new Intent(intents[i]) : null;
     }
     return intentsCopy;
   }
@@ -307,7 +289,7 @@ public class ShadowPendingIntent {
     return true;
   }
 
-  private static PendingIntent getCreatedIntentForLocked(int intentType, int requestCode, Intent[] intents) {
+  private static PendingIntent getCreatedIntentForLocked(int intentType, int requestCode, Intent[] intents, String packageName) {
     for (PendingIntent createdIntent : createdIntents) {
       ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(createdIntent);
       if (shadowPendingIntent.intentType != intentType) {
@@ -317,6 +299,9 @@ public class ShadowPendingIntent {
         continue;
       }
       if (!compareIntents(shadowPendingIntent.savedIntents, intents)) {
+        continue;
+      }
+      if (!shadowPendingIntent.getCreatorPackage().equals(packageName)) {
         continue;
       }
 
