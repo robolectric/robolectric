@@ -76,6 +76,14 @@ public class ShadowUserManagerTest {
     assertThat(userManager.hasUserRestriction(UserManager.DISALLOW_CAMERA)).isFalse();
   }
 
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void isManagedProfile() {
+    assertThat(userManager.isManagedProfile()).isFalse();
+    shadowOf(userManager).setManagedProfile(true);
+    assertThat(userManager.isManagedProfile()).isTrue();
+  }
+
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
   private static UserHandle newUserHandle(int uid) {
     Parcel userParcel = Parcel.obtain();

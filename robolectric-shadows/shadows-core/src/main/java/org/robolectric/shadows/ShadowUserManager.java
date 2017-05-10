@@ -19,6 +19,7 @@ import static android.os.Build.VERSION_CODES.*;
 public class ShadowUserManager {
 
   private boolean userUnlocked = true;
+  private boolean managedProfile = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -43,6 +44,17 @@ public class ShadowUserManager {
     this.userUnlocked = userUnlocked;
   }
 
+  @Implementation(minSdk = LOLLIPOP)
+  public boolean isManagedProfile() {
+    return managedProfile;
+  }
+
+  /**
+   * Setter for {@link UserManager#isManagedProfile()}
+   */
+  public void setManagedProfile(boolean managedProfile) {
+    this.managedProfile = managedProfile;
+  }
 
   @Implementation(minSdk = LOLLIPOP)
   public boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
