@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
