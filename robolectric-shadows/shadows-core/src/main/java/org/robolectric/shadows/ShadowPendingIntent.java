@@ -2,11 +2,14 @@ package org.robolectric.shadows;
 
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
+import android.os.Handler;
 
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -23,74 +26,117 @@ import static org.robolectric.Shadows.shadowOf;
 
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
+
+  private static final int TYPE_ACTIVITY =  1;
+  private static final int TYPE_SERVICE = 2;
+  private static final int TYPE_BROADCAST = 3;
+
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
 
   @RealObject
   PendingIntent realPendingIntent;
 
+  private int intentType;
   private Intent[] savedIntents;
   private Context savedContext;
-  private boolean isActivityIntent;
-  private boolean isBroadcastIntent;
-  private boolean isServiceIntent;
   private int requestCode;
   private int flags;
+  private String creatorPackage;
+  private volatile boolean canceled;
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, new Intent[] {intent}, flags);
   }
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags, Bundle options) {
-    return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, new Intent[] {intent}, flags);
   }
 
   @Implementation
   public static PendingIntent getActivities(Context context, int requestCode, Intent[] intents, int flags) {
-    return create(context, intents, true, false, false, requestCode, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, intents, flags);
   }
 
   @Implementation
   public static PendingIntent getActivities(Context context, int requestCode, Intent[] intents, int flags, Bundle options) {
-    return create(context, intents, true, false, false, requestCode, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, intents, flags);
   }
 
   @Implementation
   public static PendingIntent getBroadcast(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, new Intent[] {intent}, false, true, false, requestCode, flags);
+    return create(TYPE_BROADCAST, context, requestCode, new Intent[] {intent}, flags);
   }
 
   @Implementation
   public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, new Intent[] {intent}, false, false, true, requestCode, flags);
+    return create(TYPE_SERVICE, context, requestCode, new Intent[] {intent}, flags);
   }
 
   @Implementation
   public void send() throws CanceledException {
-    send(savedContext, 0, null);
+    send(null, 0, null);
   }
 
   @Implementation
-  public void send(Context context, int code, Intent intent) throws CanceledException {
-    if (intent != null) {
-      for (Intent savedIntent : savedIntents) {
-        savedIntent.fillIn(intent, 0);
+  public void send(Context context, int resultCode, Intent intent) throws CanceledException {
+    // forward directly to the full implementation of send rather than relying on PendingIntent to
+    // forward this; older versions of PendingIntent do not have the other overloads
+    send(
+        context,
+        resultCode,
+        intent,
+        null /* onFinished */,
+        null /* handler */,
+        null /* requiredPermission */);
+  }
+
+  @Implementation
+  public synchronized void send(Context context, int resultCode, Intent intent, PendingIntent.OnFinished onFinished, Handler handler, String requiredPermission) throws CanceledException {
+    if (canceled) {
+      throw new CanceledException();
+    }
+
+    Intent[] sendIntents = savedIntents;
+    if ((flags & PendingIntent.FLAG_IMMUTABLE) == 0 && intent != null) {
+      sendIntents = copyIntents(savedIntents);
+      for (int i = 0; i < savedIntents.length; i++) {
+        sendIntents[i].fillIn(intent, 0);
       }
     }
 
-    if (isActivityIntent) {
-      for (Intent savedIntent : savedIntents) {
-        context.startActivity(savedIntent);
+    if (isActivityIntent()) {
+      for (Intent sendIntent : sendIntents) {
+        savedContext.startActivity(sendIntent);
       }
-    } else if (isBroadcastIntent) {
-      for (Intent savedIntent : savedIntents) {
-        context.sendBroadcast(savedIntent);
-      }
-    } else if (isServiceIntent) {
-      for (Intent savedIntent : savedIntents) {
-        context.startService(savedIntent);
-      }
+    } else if (isBroadcastIntent()) {
+      BroadcastReceiver finalBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+          if (onFinished == null) {
+            return;
+          }
+
+          OnFinishedRunnable onFinishedRunnable = new OnFinishedRunnable(onFinished, intent, getResultCode(), getResultData(), getResultExtras(false));
+          if (handler != null) {
+            handler.post(onFinishedRunnable);
+          } else {
+            onFinishedRunnable.run();
+          }
+        }
+      };
+
+      // sendBroadcast doesn't allow passing through as many arguments as we'd like
+      savedContext.sendOrderedBroadcast(sendIntents[0], requiredPermission, finalBroadcastReceiver, null, resultCode, null, null);
+    } else if (isServiceIntent()) {
+        savedContext.startService(sendIntents[0]);
+    } else {
+      throw new IllegalStateException();
+    }
+
+    if ((flags & PendingIntent.FLAG_ONE_SHOT) != 0) {
+      cancel();
     }
   }
 
@@ -99,27 +145,32 @@ public class ShadowPendingIntent {
     return new RoboIntentSender(realPendingIntent);
   }
 
+  @Implementation
+  public synchronized void cancel() {
+      canceled = true;
+  }
+
   public boolean isActivityIntent() {
-    return isActivityIntent;
+    return intentType == TYPE_ACTIVITY;
   }
 
   public boolean isBroadcastIntent() {
-    return isBroadcastIntent;
+    return intentType == TYPE_BROADCAST;
   }
 
   public boolean isServiceIntent() {
-    return isServiceIntent;
+    return intentType == TYPE_SERVICE;
   }
 
   public Context getSavedContext() {
     return savedContext;
   }
 
-  public Intent getSavedIntent() {
+  public synchronized Intent getSavedIntent() {
     return savedIntents[0];
   }
 
-  public Intent[] getSavedIntents() {
+  public synchronized Intent[] getSavedIntents() {
     return savedIntents;
   }
 
@@ -129,6 +180,26 @@ public class ShadowPendingIntent {
 
   public int getFlags() {
     return flags;
+  }
+
+  public boolean isCanceled() {
+    return canceled;
+  }
+
+  @Implementation
+  public String getTargetPackage() {
+    return getCreatorPackage();
+  }
+
+  @Implementation
+  public String getCreatorPackage() {
+    return (creatorPackage == null)
+        ? RuntimeEnvironment.application.getPackageName()
+        : creatorPackage;
+  }
+
+  public void setCreatorPackage(String creatorPackage) {
+    this.creatorPackage = creatorPackage;
   }
 
   @Override
@@ -144,23 +215,16 @@ public class ShadowPendingIntent {
     } else {
       if (that.savedContext != null) return false;
     }
-    if (this.savedIntents == null) {
-      return that.savedIntents == null;
-    }
-    if (that.savedIntents == null) {
+    if (this.intentType != that.intentType) {
       return false;
-    }
-    if (this.savedIntents.length != that.savedIntents.length) {
-      return false;
-    }
-    for (int i = 0; i < this.savedIntents.length; i++) {
-      if (!this.savedIntents[i].filterEquals(that.savedIntents[i])) {
-        return false;
-      }
     }
     if (this.requestCode != that.requestCode) {
       return false;
     }
+    if (!compareIntents(this.savedIntents, that.savedIntents)) {
+      return false;
+    }
+
     return true;
   }
 
@@ -176,51 +240,116 @@ public class ShadowPendingIntent {
     return result;
   }
 
-  private static PendingIntent create(Context context, Intent[] intents, boolean isActivity, boolean isBroadcast, boolean isService, int requestCode, int flags) {
+  private static synchronized PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags) {
+    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents);
+
     if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
-      return getCreatedIntentFor(intents);
+      return previousIntent;
+    }
+
+    if (previousIntent != null) {
+      if ((flags & PendingIntent.FLAG_UPDATE_CURRENT) != 0) {
+        ShadowPendingIntent previousIntentShadow = shadowOf(previousIntent);
+        synchronized (previousIntentShadow) {
+          for (int i = 0; i < previousIntentShadow.savedIntents.length; i++) {
+            previousIntentShadow.savedIntents[i].replaceExtras(intents[i]);
+          }
+        }
+        return previousIntent;
+      } else if ((flags & PendingIntent.FLAG_CANCEL_CURRENT) != 0) {
+        previousIntent.cancel();
+      }
     }
 
     PendingIntent pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
     ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(pendingIntent);
-    shadowPendingIntent.savedIntents = intents;
-    shadowPendingIntent.isActivityIntent = isActivity;
-    shadowPendingIntent.isBroadcastIntent = isBroadcast;
-    shadowPendingIntent.isServiceIntent = isService;
+    shadowPendingIntent.intentType = intentType;
     shadowPendingIntent.savedContext = context;
     shadowPendingIntent.requestCode = requestCode;
+    shadowPendingIntent.savedIntents = copyIntents(intents);
     shadowPendingIntent.flags = flags;
+    shadowPendingIntent.canceled = false;
 
     createdIntents.add(pendingIntent);
     return pendingIntent;
   }
 
-  private static PendingIntent getCreatedIntentFor(Intent[] intents) {
+  protected static Intent[] copyIntents(Intent[] intents) {
+    Intent[] intentsCopy = new Intent[intents.length];
+    for (int i = 0; i < intents.length; i++) {
+      intentsCopy[i] = new Intent(intents[i]);
+    }
+    return intentsCopy;
+  }
+
+  protected static boolean compareIntents(Intent[] intentsThis, Intent[] intentsThat) {
+    if (intentsThis == intentsThat) {
+      return true;
+    }
+    if (intentsThis == null || intentsThat == null) {
+      return false;
+    }
+    if (intentsThis.length != intentsThat.length) {
+      return false;
+    }
+    // Order matters in the framework. If I call getActivities(Activity1, Activity2), that will
+    // give me a different PendingIntent than if I call getActivities(Activity2, Activity1).
+    for (int i = 0; i < intentsThis.length; i++) {
+      if (intentsThis[i] == intentsThat[i]) {
+        continue;
+      }
+      if (intentsThis[i] == null || !intentsThis[i].filterEquals(intentsThat[i])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private static PendingIntent getCreatedIntentForLocked(int intentType, int requestCode, Intent[] intents) {
     for (PendingIntent createdIntent : createdIntents) {
       ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(createdIntent);
-      if (shadowPendingIntent.savedIntents.length != intents.length) {
+      if (shadowPendingIntent.intentType != intentType) {
+        continue;
+      }
+      if (shadowPendingIntent.requestCode != requestCode) {
+        continue;
+      }
+      if (!compareIntents(shadowPendingIntent.savedIntents, intents)) {
         continue;
       }
 
-      // Order matters in the framework. If I call getActivities(Activity1, Activity2), that will
-      // give me a different PendingIntent than if I call getActivities(Activity2, Activity1).
-      boolean equalIntents = true;
-      for (int i = 0; i < intents.length; i++) {
-        if (!shadowPendingIntent.savedIntents[i].filterEquals(intents[i])) {
-          equalIntents = false;
-          break;
-        }
-      }
-
-      if (equalIntents) {
-        return createdIntent;
-      }
+      return createdIntent;
     }
+
     return null;
   }
 
   @Resetter
   public static void reset() {
     createdIntents.clear();
+  }
+
+  // not an anonymous class so that the broadcast reciever can be GCed before this runs
+  private class OnFinishedRunnable implements Runnable {
+
+    private final PendingIntent.OnFinished onFinished;
+    private final Intent intent;
+    private final int resultCode;
+    private final String resultData;
+    private final Bundle resultExtras;
+
+    public OnFinishedRunnable(PendingIntent.OnFinished onFinished, Intent intent, int resultCode, String resultData, Bundle resultExtras) {
+      this.onFinished = onFinished;
+      this.intent = intent;
+      this.resultCode = resultCode;
+      this.resultData = resultData;
+      this.resultExtras = resultExtras;
+    }
+
+    @Override
+    public void run() {
+      onFinished.onSendFinished(realPendingIntent, intent, resultCode, resultData, resultExtras);
+    }
   }
 }
