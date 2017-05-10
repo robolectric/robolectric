@@ -555,10 +555,10 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Common code path for all {@code setDataSource()} implementations.
    *
-   * # Checks for any specified exceptions for the specified data source and throws them.</li>
-   * # Checks the current state and throws an exception if it is in an invalid state.</li>
-   * # If no exception is thrown in either of the previous two steps, then {@link #doSetDataSource(DataSource)} is called to set the data source.</li>
-   * # Sets the player state to {@code INITIALIZED}.</li>
+   * * Checks for any specified exceptions for the specified data source and throws them.</li>
+   * * Checks the current state and throws an exception if it is in an invalid state.</li>
+   * * If no exception is thrown in either of the previous two steps, then {@link #doSetDataSource(DataSource)} is called to set the data source.</li>
+   * * Sets the player state to {@code INITIALIZED}.</li>
    *
    * Usually this method would not be called directly, but indirectly through one of the
    * other {@link #setDataSource(String)} implementations, which use {@link DataSource#toDataSource(String)}
@@ -1395,7 +1395,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /**
    * Retrieves the current setting for the left channel volume.
-   * 
+   *
    * @return The left channel volume.
    */
   public float getLeftVolume() {
