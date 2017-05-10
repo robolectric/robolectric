@@ -9,7 +9,6 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,6 +20,7 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -152,6 +152,9 @@ public class ShadowPendingIntent {
   @Implementation
   public synchronized void cancel() {
       canceled = true;
+      synchronized (createdIntents) {
+        createdIntents.remove(realPendingIntent);
+      }
   }
 
   public boolean isActivityIntent() {
@@ -186,7 +189,7 @@ public class ShadowPendingIntent {
     return flags;
   }
 
-  public boolean isCanceled() {
+  public synchronized boolean isCanceled() {
     return canceled;
   }
 
@@ -196,13 +199,13 @@ public class ShadowPendingIntent {
   }
 
   @Implementation(minSdk = 17)
-  public String getCreatorPackage() {
+  public synchronized String getCreatorPackage() {
     return (creatorPackage == null)
         ? savedContext.getPackageName()
         : creatorPackage;
   }
 
-  public void setCreatorPackage(String creatorPackage) {
+  public synchronized void setCreatorPackage(String creatorPackage) {
     this.creatorPackage = creatorPackage;
   }
 
@@ -234,38 +237,44 @@ public class ShadowPendingIntent {
         + "}";
   }
 
-  private static synchronized PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags) {
-    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents,  context.getPackageName());
+  private static PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags) {
+    synchronized (createdIntents) {
+      PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents,  context.getPackageName());
 
-    if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
-      return previousIntent;
-    }
+      if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
+        return previousIntent;
+      }
 
-    if (previousIntent != null) {
-      if ((flags & PendingIntent.FLAG_UPDATE_CURRENT) != 0) {
-        ShadowPendingIntent previousIntentShadow = shadowOf(previousIntent);
-        synchronized (previousIntentShadow) {
-          for (int i = 0; i < previousIntentShadow.savedIntents.length; i++) {
-            previousIntentShadow.savedIntents[i].replaceExtras(intents[i]);
+      if (previousIntent != null) {
+        if ((flags & PendingIntent.FLAG_UPDATE_CURRENT) != 0) {
+          ShadowPendingIntent previousIntentShadow = shadowOf(previousIntent);
+          synchronized (previousIntentShadow) {
+            for (int i = 0; i < previousIntentShadow.savedIntents.length; i++) {
+              previousIntentShadow.savedIntents[i].replaceExtras(intents[i]);
+            }
           }
         }
-        return previousIntent;
-      } else if ((flags & PendingIntent.FLAG_CANCEL_CURRENT) != 0) {
-        previousIntent.cancel();
+
+        if ((flags & PendingIntent.FLAG_CANCEL_CURRENT) != 0) {
+          previousIntent.cancel();
+        } else {
+          return previousIntent;
+        }
       }
+
+      PendingIntent pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
+      ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(pendingIntent);
+      shadowPendingIntent.intentType = intentType;
+      shadowPendingIntent.savedContext = context;
+      shadowPendingIntent.requestCode = requestCode;
+      shadowPendingIntent.savedIntents = copyIntents(intents);
+      shadowPendingIntent.flags = flags;
+      shadowPendingIntent.canceled = false;
+
+      createdIntents.add(pendingIntent);
+
+      return pendingIntent;
     }
-
-    PendingIntent pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
-    ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(pendingIntent);
-    shadowPendingIntent.intentType = intentType;
-    shadowPendingIntent.savedContext = context;
-    shadowPendingIntent.requestCode = requestCode;
-    shadowPendingIntent.savedIntents = copyIntents(intents);
-    shadowPendingIntent.flags = flags;
-    shadowPendingIntent.canceled = false;
-
-    createdIntents.add(pendingIntent);
-    return pendingIntent;
   }
 
   protected static Intent[] copyIntents(Intent[] intents) {
@@ -305,18 +314,19 @@ public class ShadowPendingIntent {
   private static PendingIntent getCreatedIntentForLocked(int intentType, int requestCode, Intent[] intents, String packageName) {
     for (PendingIntent createdIntent : createdIntents) {
       ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(createdIntent);
-      if (shadowPendingIntent.intentType != intentType) {
-        continue;
-      }
-      if (shadowPendingIntent.requestCode != requestCode) {
-        continue;
-      }
-      if (!compareIntents(shadowPendingIntent.savedIntents, intents)) {
-        continue;
-      }
-      String createdPackage = shadowPendingIntent.getCreatorPackage();
-      if (createdPackage == packageName || (createdPackage != null && createdPackage.equals(packageName))) {
-        continue;
+      synchronized (shadowPendingIntent) {
+        if (shadowPendingIntent.intentType != intentType) {
+          continue;
+        }
+        if (shadowPendingIntent.requestCode != requestCode) {
+          continue;
+        }
+        if (!compareIntents(shadowPendingIntent.savedIntents, intents)) {
+          continue;
+        }
+        if (!Objects.equals(shadowPendingIntent.getCreatorPackage(), packageName)) {
+          continue;
+        }
       }
 
       return createdIntent;
