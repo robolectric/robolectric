@@ -11,9 +11,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for com.android.internal.policy.PhoneWindow.
- */
 @Implements(value = PhoneWindow.class, isInAndroidSdk = false, minSdk = M)
 public class ShadowPhoneWindow extends ShadowWindow {
   @SuppressWarnings("UnusedDeclaration")

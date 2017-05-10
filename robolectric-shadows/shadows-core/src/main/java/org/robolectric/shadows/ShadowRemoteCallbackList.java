@@ -9,9 +9,6 @@ import org.robolectric.annotation.Implements;
 
 import java.util.HashMap;
 
-/**
- * Shadow for {@link android.os.RemoteCallbackList}.
- */
 @Implements(RemoteCallbackList.class)
 public class ShadowRemoteCallbackList<E extends IInterface> {
   private HashMap<IBinder, Callback> callbacks = new HashMap<>();

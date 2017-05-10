@@ -12,9 +12,6 @@ import java.util.Map;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * Shadow for {@link android.os.Debug}.
- */
 @Implements(Debug.class)
 public class ShadowDebug {
   @Implementation

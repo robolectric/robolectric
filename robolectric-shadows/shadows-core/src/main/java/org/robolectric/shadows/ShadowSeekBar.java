@@ -6,9 +6,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@link android.widget.SeekBar}.
- */
 @Implements(SeekBar.class)
 public class ShadowSeekBar extends ShadowAbsSeekBar {
 

@@ -5,9 +5,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.widget.ArrayAdapter}.
- */
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ArrayAdapter.class)
 public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {

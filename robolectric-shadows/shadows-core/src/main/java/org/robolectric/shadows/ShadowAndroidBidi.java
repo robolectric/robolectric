@@ -4,9 +4,6 @@ import android.text.Layout;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@code android.text.AndroidBidi}.
- */
 @Implements(className = "android.text.AndroidBidi", isInAndroidSdk = false)
 public class ShadowAndroidBidi {
   @Implementation

@@ -22,9 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.appwidget.AppWidgetManager}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
 public class ShadowAppWidgetManager {
@@ -220,8 +217,6 @@ public class ShadowAppWidgetManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param widgetId id of the desired widget
    * @return the widget associated with {@code widgetId}
    */
@@ -230,8 +225,6 @@ public class ShadowAppWidgetManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param widgetId id of the widget whose provider is to be returned
    * @return the {@code AppWidgetProvider} associated with {@code widgetId}
    */
@@ -240,9 +233,9 @@ public class ShadowAppWidgetManager {
   }
 
   /**
-   * Non-Android mechanism that enables testing of widget behavior when all of the views are recreated on every
-   * update. This is useful for ensuring that your widget will behave correctly even if it is restarted by the OS
-   * between events.
+   * Enables testing of widget behavior when all of the views are recreated on every
+   * update. This is useful for ensuring that your widget will behave correctly even
+   * if it is restarted by the OS between events.
    *
    * @param alwaysRecreate whether or not to always recreate the views
    */
@@ -251,8 +244,6 @@ public class ShadowAppWidgetManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the state of the{@code alwaysRecreateViewsDuringUpdate} flag
    */
   public boolean getAlwaysRecreateViewsDuringUpdate() {

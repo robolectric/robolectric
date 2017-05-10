@@ -14,9 +14,6 @@ import org.robolectric.annotation.Implements;
 import java.util.Map;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.os.ServiceManager}.
- */
 @Implements(value = ServiceManager.class, isInAndroidSdk = false)
 public class ShadowServiceManager {
 

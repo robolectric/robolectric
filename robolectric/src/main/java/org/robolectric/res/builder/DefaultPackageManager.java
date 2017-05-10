@@ -613,7 +613,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   /**
-   * Non-Android accessor.  Use to make assertions on values passed to setComponentEnabledSetting.
+   * Use to make assertions on values passed to setComponentEnabledSetting.
    *
    * @param componentName Component name.
    * @return Component state.
@@ -624,7 +624,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   /**
-   * Non-Android accessor.  Used to add a package to the list of those already 'installed' on system.
+   * Adds a package to the list of those already 'installed' on system.
    *
    * @param packageInfo New package info.
    */
@@ -786,7 +786,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   /**
-   * Non-Android accessor.  Used to declare a system feature is or is not supported.
+   * Used to declare a system feature is or is not supported.
    *
    * @param name Feature name.
    * @param supported Is the feature supported?

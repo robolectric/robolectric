@@ -8,11 +8,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Implementation;
 import java.util.concurrent.Callable;
 
-/**
- * Shadow for {@link android.content.AsyncTaskLoader}
- *
- * @param <D> Return data type.
- */
 @Implements(AsyncTaskLoader.class)
 public class ShadowAsyncTaskLoader<D> {
   @RealObject private AsyncTaskLoader<D> realObject;

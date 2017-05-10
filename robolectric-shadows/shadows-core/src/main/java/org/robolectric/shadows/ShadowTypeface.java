@@ -23,9 +23,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.graphics.Typeface}.
- */
 @Implements(value = Typeface.class, looseSignatures = true)
 public class ShadowTypeface {
   private static Map<Long, FontDesc> FONTS = new HashMap<>();
@@ -132,7 +129,7 @@ public class ShadowTypeface {
   }
 
   /**
-   * Non-Android accessor. Return the font description.
+   * Returns the font description.
    *
    * @return Font description.
    */

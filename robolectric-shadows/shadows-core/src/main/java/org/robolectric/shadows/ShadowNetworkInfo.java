@@ -6,9 +6,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@code android.net.NetworkInfo}.
- */
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
   private boolean isAvailable;
@@ -68,7 +65,6 @@ public class ShadowNetworkInfo {
   }
 
   /**
-   * Non-Android accessor
    * Sets up the return value of {@link #isAvailable()}.
    *
    * @param isAvailable the value that {@link #isAvailable()} will return.
@@ -78,9 +74,6 @@ public class ShadowNetworkInfo {
   }
 
   /**
-   * Non-Android accessor.
-   *
-   * <p>
    * Sets up the return value of {@link #isConnectedOrConnecting()} and {@link #isConnected()}.
    *
    * @param isConnected the value that {@link #isConnectedOrConnecting()} and {@link #isConnected()} will return.
@@ -90,7 +83,6 @@ public class ShadowNetworkInfo {
   }
 
   /**
-   * Non-Android accessor
    * Sets up the return value of {@link #getType()}.
    *
    * @param connectionType the value that {@link #getType()} will return.

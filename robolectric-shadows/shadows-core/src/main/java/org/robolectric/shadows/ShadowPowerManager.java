@@ -16,9 +16,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
-/**
- * Shadow for {@link android.os.PowerManager}.
- */
 @Implements(PowerManager.class)
 public class ShadowPowerManager {
   private boolean isScreenOn = true;
@@ -71,7 +68,7 @@ public class ShadowPowerManager {
   }
 
   /**
-   * Non-Android accessor that discards the most recent {@code PowerManager.WakeLock}s
+   * Discards the most recent {@code PowerManager.WakeLock}s
    */
   @Resetter
   public static void reset() {
@@ -82,8 +79,7 @@ public class ShadowPowerManager {
   }
 
   /**
-   * Non-Android accessor retrieves the most recent wakelock registered
-   * by the application
+   * Retrieves the most recent wakelock registered by the application
    *
    * @return Most recent wake lock.
    */
@@ -127,7 +123,7 @@ public class ShadowPowerManager {
     }
 
     /**
-     * Non-Android accessor retrieves if the wake lock is reference counted or not
+     * Retrieves if the wake lock is reference counted or not
      *
      * @return Is the wake lock reference counted?
      */

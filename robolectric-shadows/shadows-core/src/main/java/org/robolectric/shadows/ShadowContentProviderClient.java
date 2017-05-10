@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.content.ContentProviderClient}.
- */
 @Implements(ContentProviderClient.class)
 public class ShadowContentProviderClient {
   private boolean stable;

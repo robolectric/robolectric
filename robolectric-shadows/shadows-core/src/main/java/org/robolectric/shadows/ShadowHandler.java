@@ -7,9 +7,10 @@ import org.robolectric.annotation.Implements;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
- * separate thread.{@link Runnable}s that are scheduled to be executed immediately can be triggered by calling
+ * Robolectric places posted {@link Runnable}s into a queue instead of sending them to be handled on a
+ * separate thread. {@link Runnable}s that are scheduled to be executed immediately can be triggered by calling
  * {@link #idleMainLooper()}.
+ *
  * todo: add utility method to advance time and trigger execution of Runnables scheduled for a time in the future
  * 
  * @deprecated There is no special shadow implementation for the {@link android.os.Handler} class. The special

@@ -14,9 +14,6 @@ import org.robolectric.annotation.RealObject;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@link android.view.Display}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Display.class)
 public class ShadowDisplay {
