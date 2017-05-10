@@ -108,9 +108,8 @@ public class ShadowPendingIntent {
       throw new CanceledException();
     }
 
-    Intent[] sendIntents = savedIntents;
+    Intent[] sendIntents = copyIntents(savedIntents);
     if ((flags & PendingIntent.FLAG_IMMUTABLE) == 0 && intent != null) {
-      sendIntents = copyIntents(savedIntents);
       for (int i = 0; i < savedIntents.length; i++) {
         sendIntents[i].fillIn(intent, 0);
       }
@@ -299,8 +298,6 @@ public class ShadowPendingIntent {
   protected static Intent[] copyIntents(Intent[] intents) {
     Intent[] intentsCopy = new Intent[intents.length];
     for (int i = 0; i < intents.length; i++) {
-      // this is a hack, because many robolectric tests themselves assume that a null intent is
-      // ok, when in fact this would crash on a real android device
       intentsCopy[i] = intents[i] != null ? new Intent(intents[i]) : null;
     }
     return intentsCopy;
