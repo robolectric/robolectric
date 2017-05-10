@@ -43,35 +43,48 @@ public class ShadowPendingIntent {
   private int flags;
   private String creatorPackage;
   private volatile boolean canceled;
+  private Bundle savedOptions;
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
-    return create(TYPE_ACTIVITY, context, requestCode, new Intent[] {intent}, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, new Intent[] {intent}, flags, null);
   }
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags, Bundle options) {
-    return create(TYPE_ACTIVITY, context, requestCode, new Intent[] {intent}, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, new Intent[] {intent}, flags, options);
   }
 
   @Implementation
   public static PendingIntent getActivities(Context context, int requestCode, Intent[] intents, int flags) {
-    return create(TYPE_ACTIVITY, context, requestCode, intents, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, intents, flags, null);
   }
 
   @Implementation
   public static PendingIntent getActivities(Context context, int requestCode, Intent[] intents, int flags, Bundle options) {
-    return create(TYPE_ACTIVITY, context, requestCode, intents, flags);
+    return create(TYPE_ACTIVITY, context, requestCode, intents, flags, options);
   }
 
   @Implementation
   public static PendingIntent getBroadcast(Context context, int requestCode, Intent intent, int flags) {
-    return create(TYPE_BROADCAST, context, requestCode, new Intent[] {intent}, flags);
+    return create(TYPE_BROADCAST, context, requestCode, new Intent[] {intent}, flags, null);
   }
 
   @Implementation
   public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
-    return create(TYPE_SERVICE, context, requestCode, new Intent[] {intent}, flags);
+    return create(TYPE_SERVICE, context, requestCode, new Intent[] {intent}, flags, null);
+  }
+
+  // this method is useless, but cannot be removed without breaking subclasses
+  @Implementation
+  public void send() throws CanceledException {
+    send(null, 0, null, null, null, null, null);
+  }
+
+  // this method is useless, but cannot be removed without breaking subclasses
+  @Implementation
+  public void send(Context context, int code, Intent intent) throws CanceledException {
+    send(context, code, intent, null, null, null, null);
   }
 
   @Implementation
@@ -85,11 +98,11 @@ public class ShadowPendingIntent {
         onFinished,
         handler,
         requiredPermission,
-        null /* options */);
+        null);
   }
 
   @Implementation(minSdk = 23)
-  public synchronized void send(Context context, int resultCode, Intent intent, final PendingIntent.OnFinished onFinished, final Handler handler, String requiredPermission, Bundle bundle)
+  public synchronized void send(Context context, int resultCode, Intent intent, final PendingIntent.OnFinished onFinished, final Handler handler, String requiredPermission, Bundle options)
       throws CanceledException {
     if (canceled) {
       throw new CanceledException();
@@ -104,8 +117,16 @@ public class ShadowPendingIntent {
     }
 
     if (isActivityIntent()) {
+      Bundle sendOptions = (savedOptions != null ? new Bundle(savedOptions) : null);
+      if (options != null) {
+        if (sendOptions == null) {
+          sendOptions = new Bundle();
+        }
+        sendOptions.putAll(options);
+      }
+
       for (Intent sendIntent : sendIntents) {
-        savedContext.startActivity(sendIntent, bundle);
+        savedContext.startActivity(sendIntent, sendOptions);
       }
     } else if (isBroadcastIntent()) {
       BroadcastReceiver finalBroadcastReceiver = new BroadcastReceiver() {
@@ -174,6 +195,10 @@ public class ShadowPendingIntent {
     return savedIntents;
   }
 
+  public Bundle getSavedOptions() {
+    return savedOptions;
+  }
+
   public int getRequestCode() {
     return requestCode;
   }
@@ -230,7 +255,7 @@ public class ShadowPendingIntent {
         + "}";
   }
 
-  private static PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags) {
+  private static PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags, Bundle options) {
     synchronized (createdIntents) {
       PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents,  context.getPackageName());
 
@@ -261,6 +286,7 @@ public class ShadowPendingIntent {
       shadowPendingIntent.savedContext = context;
       shadowPendingIntent.requestCode = requestCode;
       shadowPendingIntent.savedIntents = copyIntents(intents);
+      shadowPendingIntent.savedOptions = (options != null ? new Bundle(options) : null);
       shadowPendingIntent.flags = flags;
       shadowPendingIntent.canceled = false;
 

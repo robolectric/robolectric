@@ -27,12 +27,13 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void getBroadcast_shouldCreateIntentForBroadcast() throws Exception {
-    Intent intent = new Intent();
+    Intent intent = new Intent("ACTION");
     PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isTrue();
     assertThat(shadow.isServiceIntent()).isFalse();
+    assertThat(shadow.getSavedIntent().filterEquals(intent)).isTrue();
     assertThat((Context) RuntimeEnvironment.application).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
     assertThat(shadow.getFlags()).isEqualTo(100);
@@ -40,12 +41,13 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void getActivity_shouldCreateIntentForActivity() throws Exception {
-    Intent intent = new Intent();
+    Intent intent = new Intent("ACTION");
     PendingIntent pendingIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isTrue();
     assertThat(shadow.isBroadcastIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isFalse();
+    assertThat(shadow.getSavedIntent().filterEquals(intent)).isTrue();
     assertThat((Context) RuntimeEnvironment.application).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
     assertThat(shadow.getFlags()).isEqualTo(100);
@@ -75,12 +77,13 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void getService_shouldCreateIntentForService() throws Exception {
-    Intent intent = new Intent();
+    Intent intent = new Intent("ACTION");
     PendingIntent pendingIntent = PendingIntent.getService(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isTrue();
+    assertThat(shadow.getSavedIntent().filterEquals(intent)).isTrue();
     assertThat((Context) RuntimeEnvironment.application).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
     assertThat(shadow.getFlags()).isEqualTo(100);
