@@ -221,8 +221,18 @@ public class ShadowPendingIntent {
     return result;
   }
 
+  @Override
+  @Implementation
+  public String toString() {
+    return "PendingIntent{"
+        + Integer.toHexString(System.identityHashCode(realPendingIntent))
+        + ": "
+        + Integer.toHexString(System.identityHashCode(this))
+        + "}";
+  }
+
   private static synchronized PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags) {
-    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents, context.getPackageName());
+    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents,  context.getPackageName());
 
     if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
       return previousIntent;
@@ -301,7 +311,8 @@ public class ShadowPendingIntent {
       if (!compareIntents(shadowPendingIntent.savedIntents, intents)) {
         continue;
       }
-      if (!shadowPendingIntent.getCreatorPackage().equals(packageName)) {
+      String createdPackage = shadowPendingIntent.getCreatorPackage();
+      if (createdPackage == packageName || (createdPackage != null && createdPackage.equals(packageName))) {
         continue;
       }
 

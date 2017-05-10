@@ -89,15 +89,13 @@ public class ShadowPendingIntentTest {
   @Test
   public void send_shouldFillInIntentData() throws Exception {
     Intent intent = new Intent();
-    Activity context = new Activity();
-    PendingIntent forActivity = PendingIntent.getActivity(context, 99, intent, 100);
+    PendingIntent forActivity = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent, 100);
 
-    Activity otherContext = new Activity();
     Intent fillIntent = new Intent();
     fillIntent.putExtra("TEST", 23);
-    forActivity.send(otherContext, 0, fillIntent);
+    forActivity.send(RuntimeEnvironment.application, 0, fillIntent);
 
-    Intent i = shadowOf(otherContext).getNextStartedActivity();
+    Intent i = shadowOf(RuntimeEnvironment.application).getNextStartedActivity();
     assertThat(i).isNotNull();
     assertThat(i.getIntExtra("TEST", -1)).isEqualTo(23);
   }
