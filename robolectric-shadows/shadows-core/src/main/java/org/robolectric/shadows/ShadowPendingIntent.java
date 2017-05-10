@@ -93,7 +93,8 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
-  public synchronized void send(Context context, int resultCode, Intent intent, PendingIntent.OnFinished onFinished, Handler handler, String requiredPermission) throws CanceledException {
+  public synchronized void send(Context context, int resultCode, Intent intent, final PendingIntent.OnFinished onFinished, final Handler handler, String requiredPermission)
+      throws CanceledException {
     if (canceled) {
       throw new CanceledException();
     }
