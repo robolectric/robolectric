@@ -225,7 +225,7 @@ public class ShadowPendingIntent {
   }
 
   private static synchronized PendingIntent create(int intentType, Context context, int requestCode, Intent[] intents, int flags) {
-    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents, RuntimeEnvironment.application.getPackage());
+    PendingIntent previousIntent = getCreatedIntentForLocked(intentType, requestCode, intents, context.getPackageName());
 
     if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
       return previousIntent;
