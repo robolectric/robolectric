@@ -9,6 +9,7 @@ import android.os.Bundle;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
@@ -18,8 +19,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.isNull;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
@@ -152,7 +152,7 @@ public class ShadowPendingIntentTest {
     forBroadcast.send(101, onFinished, null);
 
     ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-    verify(onFinished).onSendFinished(eq(forBroadcast), intentCaptor.capture(), eq(101), anyString(), any(Bundle.class));
+    verify(onFinished).onSendFinished(eq(forBroadcast), intentCaptor.capture(), eq(101), Mockito.<String>isNull(), Mockito.<Bundle>isNull());
     assertThat(intentCaptor.getValue().filterEquals(intent)).isTrue();
   }
 
