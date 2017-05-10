@@ -75,25 +75,21 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
-  public void send() throws CanceledException {
-    send(null, 0, null);
-  }
-
-  @Implementation
-  public void send(Context context, int resultCode, Intent intent) throws CanceledException {
+  public void send(Context context, int resultCode, Intent intent, PendingIntent.OnFinished onFinished, Handler handler, String requiredPermission) throws CanceledException {
     // forward directly to the full implementation of send rather than relying on PendingIntent to
-    // forward this; older versions of PendingIntent do not have the other overloads
+    // forward this; older versions of PendingIntent do not have the full overloads
     send(
         context,
         resultCode,
         intent,
-        null /* onFinished */,
-        null /* handler */,
-        null /* requiredPermission */);
+        onFinished,
+        handler,
+        requiredPermission,
+        null /* options */);
   }
 
-  @Implementation(minSdk = 14)
-  public synchronized void send(Context context, int resultCode, Intent intent, final PendingIntent.OnFinished onFinished, final Handler handler, String requiredPermission)
+  @Implementation(minSdk = 23)
+  public synchronized void send(Context context, int resultCode, Intent intent, final PendingIntent.OnFinished onFinished, final Handler handler, String requiredPermission, Bundle bundle)
       throws CanceledException {
     if (canceled) {
       throw new CanceledException();
@@ -109,7 +105,7 @@ public class ShadowPendingIntent {
 
     if (isActivityIntent()) {
       for (Intent sendIntent : sendIntents) {
-        savedContext.startActivity(sendIntent);
+        savedContext.startActivity(sendIntent, bundle);
       }
     } else if (isBroadcastIntent()) {
       BroadcastReceiver finalBroadcastReceiver = new BroadcastReceiver() {
