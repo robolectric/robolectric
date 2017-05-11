@@ -12,9 +12,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@link GoogleApiAvailability}.
- */
 @Implements(GoogleApiAvailability.class)
 public class ShadowGoogleApiAvailability {
     private int availabilityCode = ConnectionResult.SERVICE_MISSING;

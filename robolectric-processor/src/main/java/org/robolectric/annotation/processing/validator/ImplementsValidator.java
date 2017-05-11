@@ -136,6 +136,11 @@ public class ImplementsValidator extends Validator {
       imports.add(importLine.getQualifiedIdentifier().toString());
     }
 
+    List<TypeElement> enclosedTypes = ElementFilter.typesIn(elem.getEnclosedElements());
+    for (TypeElement enclosedType : enclosedTypes) {
+      imports.add(enclosedType.getQualifiedName().toString());
+    }
+
     Elements elementUtils = env.getElementUtils();
     model.documentType(elem, elementUtils.getDocComment(elem), imports);
 

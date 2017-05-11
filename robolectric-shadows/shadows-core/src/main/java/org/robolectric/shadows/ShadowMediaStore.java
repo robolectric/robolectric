@@ -8,9 +8,6 @@ import android.provider.MediaStore;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.provider.MediaStore}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MediaStore.class)
 public class ShadowMediaStore {

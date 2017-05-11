@@ -37,9 +37,6 @@ import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
-/**
- * Shadow for {@code android.content.ContextImpl}.
- */
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl {
 

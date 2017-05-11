@@ -19,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Shadow for {@link android.support.v4.content.LocalBroadcastManager}.
- */
 @Implements(LocalBroadcastManager.class)
 public class ShadowLocalBroadcastManager {
   private final List<Intent> sentBroadcastIntents = new ArrayList<>();

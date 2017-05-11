@@ -5,9 +5,6 @@ import android.view.ViewRootImpl;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.view.ViewRootImpl}.
- */
 @Implements(value = ViewRootImpl.class, isInAndroidSdk = false)
 public class ShadowViewRootImpl {
 

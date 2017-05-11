@@ -18,9 +18,6 @@ import org.robolectric.shadow.api.Shadow;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Shadow for {@link android.widget.TabHost}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
 public class ShadowTabHost extends ShadowFrameLayout {
@@ -141,7 +138,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
     private Drawable icon;
 
     /**
-     * Non-Android accessor, sets the tag on the TabSpec.
+     * Sets the tag on the TabSpec.
      *
      * @param tag The tag.
      */
@@ -155,8 +152,6 @@ public class ShadowTabHost extends ShadowFrameLayout {
     }
 
     /**
-     * Non-Android accessor.
-     *
      * @return the view object set in a call to {@code TabSpec#setIndicator(View)}
      */
     public View getIndicatorAsView() {
@@ -200,8 +195,6 @@ public class ShadowTabHost extends ShadowFrameLayout {
     }
 
     /**
-     * Non-Android accessor
-     *
      * @return the intent object set in a call to {@code TabSpec#setContent(Intent)}
      */
     public Intent getContentAsIntent() {

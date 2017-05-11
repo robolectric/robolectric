@@ -95,42 +95,42 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Default implementation of {@link RequestDirector}.
- * <p>
+ *
  * The following parameters can be used to customize the behavior of this
  * class:
- * <ul>
- *  <li>{@link org.apache.http.params.CoreProtocolPNames#PROTOCOL_VERSION}</li>
- *  <li>{@link org.apache.http.params.CoreProtocolPNames#STRICT_TRANSFER_ENCODING}</li>
- *  <li>{@link org.apache.http.params.CoreProtocolPNames#HTTP_ELEMENT_CHARSET}</li>
- *  <li>{@link org.apache.http.params.CoreProtocolPNames#USE_EXPECT_CONTINUE}</li>
- *  <li>{@link org.apache.http.params.CoreProtocolPNames#WAIT_FOR_CONTINUE}</li>
- *  <li>{@link org.apache.http.params.CoreProtocolPNames#USER_AGENT}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#SOCKET_BUFFER_SIZE}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#MAX_LINE_LENGTH}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#MAX_HEADER_COUNT}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#SO_TIMEOUT}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#SO_LINGER}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#TCP_NODELAY}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#CONNECTION_TIMEOUT}</li>
- *  <li>{@link org.apache.http.params.CoreConnectionPNames#STALE_CONNECTION_CHECK}</li>
- *  <li>{@link org.apache.http.conn.params.ConnRoutePNames#FORCED_ROUTE}</li>
- *  <li>{@link org.apache.http.conn.params.ConnRoutePNames#LOCAL_ADDRESS}</li>
- *  <li>{@link org.apache.http.conn.params.ConnRoutePNames#DEFAULT_PROXY}</li>
- *  <li>{@link org.apache.http.conn.params.ConnManagerPNames#TIMEOUT}</li>
- *  <li>{@link org.apache.http.conn.params.ConnManagerPNames#MAX_CONNECTIONS_PER_ROUTE}</li>
- *  <li>{@link org.apache.http.conn.params.ConnManagerPNames#MAX_TOTAL_CONNECTIONS}</li>
- *  <li>{@link org.apache.http.cookie.params.CookieSpecPNames#DATE_PATTERNS}</li>
- *  <li>{@link org.apache.http.cookie.params.CookieSpecPNames#SINGLE_COOKIE_HEADER}</li>
- *  <li>{@link org.apache.http.auth.params.AuthPNames#CREDENTIAL_CHARSET}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#COOKIE_POLICY}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#HANDLE_AUTHENTICATION}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#HANDLE_REDIRECTS}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#MAX_REDIRECTS}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#ALLOW_CIRCULAR_REDIRECTS}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#VIRTUAL_HOST}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#DEFAULT_HOST}</li>
- *  <li>{@link org.apache.http.client.params.ClientPNames#DEFAULT_HEADERS}</li>
- * </ul>
+ *
+ *  * {@link org.apache.http.params.CoreProtocolPNames#PROTOCOL_VERSION}
+ *  * {@link org.apache.http.params.CoreProtocolPNames#STRICT_TRANSFER_ENCODING}
+ *  * {@link org.apache.http.params.CoreProtocolPNames#HTTP_ELEMENT_CHARSET}
+ *  * {@link org.apache.http.params.CoreProtocolPNames#USE_EXPECT_CONTINUE}
+ *  * {@link org.apache.http.params.CoreProtocolPNames#WAIT_FOR_CONTINUE}
+ *  * {@link org.apache.http.params.CoreProtocolPNames#USER_AGENT}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#SOCKET_BUFFER_SIZE}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#MAX_LINE_LENGTH}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#MAX_HEADER_COUNT}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#SO_TIMEOUT}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#SO_LINGER}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#TCP_NODELAY}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#CONNECTION_TIMEOUT}
+ *  * {@link org.apache.http.params.CoreConnectionPNames#STALE_CONNECTION_CHECK}
+ *  * {@link org.apache.http.conn.params.ConnRoutePNames#FORCED_ROUTE}
+ *  * {@link org.apache.http.conn.params.ConnRoutePNames#LOCAL_ADDRESS}
+ *  * {@link org.apache.http.conn.params.ConnRoutePNames#DEFAULT_PROXY}
+ *  * {@link org.apache.http.conn.params.ConnManagerPNames#TIMEOUT}
+ *  * {@link org.apache.http.conn.params.ConnManagerPNames#MAX_CONNECTIONS_PER_ROUTE}
+ *  * {@link org.apache.http.conn.params.ConnManagerPNames#MAX_TOTAL_CONNECTIONS}
+ *  * {@link org.apache.http.cookie.params.CookieSpecPNames#DATE_PATTERNS}
+ *  * {@link org.apache.http.cookie.params.CookieSpecPNames#SINGLE_COOKIE_HEADER}
+ *  * {@link org.apache.http.auth.params.AuthPNames#CREDENTIAL_CHARSET}
+ *  * {@link org.apache.http.client.params.ClientPNames#COOKIE_POLICY}
+ *  * {@link org.apache.http.client.params.ClientPNames#HANDLE_AUTHENTICATION}
+ *  * {@link org.apache.http.client.params.ClientPNames#HANDLE_REDIRECTS}
+ *  * {@link org.apache.http.client.params.ClientPNames#MAX_REDIRECTS}
+ *  * {@link org.apache.http.client.params.ClientPNames#ALLOW_CIRCULAR_REDIRECTS}
+ *  * {@link org.apache.http.client.params.ClientPNames#VIRTUAL_HOST}
+ *  * {@link org.apache.http.client.params.ClientPNames#DEFAULT_HOST}
+ *  * {@link org.apache.http.client.params.ClientPNames#DEFAULT_HEADERS}
+ *
  *
  * @since 4.0
  */
@@ -625,12 +625,12 @@ public class DefaultRequestDirector implements RequestDirector {
    * to determine the route for either the original or a followup request.
    *
    * @param target    the target host for the request.
-   *                  Implementations may accept <code>null</code>
+   *                  Implementations may accept {@code null}
    *                  if they can still determine a route, for example
    *                  to a default target or by inspecting the request.
    * @param request   the request to execute
    * @param context   the context to use for the execution,
-   *                  never <code>null</code>
+   *                  never {@code null}
    *
    * @return  the route the request should take
    *
@@ -733,9 +733,9 @@ public class DefaultRequestDirector implements RequestDirector {
    * @param route     the route to establish
    * @param context   the context for request execution
    *
-   * @return  <code>true</code> if the tunnelled route is secure,
-   *          <code>false</code> otherwise.
-   *          The implementation here always returns <code>false</code>,
+   * @return  {@code true} if the tunnelled route is secure,
+   *          {@code false} otherwise.
+   *          The implementation here always returns {@code false},
    *          but derived classes may override.
    *
    * @throws HttpException    in case of a problem
@@ -867,12 +867,12 @@ public class DefaultRequestDirector implements RequestDirector {
    *
    * @param route     the route to establish
    * @param hop       the hop in the route to establish now.
-   *                  <code>route.getHopTarget(hop)</code>
+   *                  {@code route.getHopTarget(hop)}
    *                  will return the proxy to tunnel to.
    * @param context   the context for request execution
    *
-   * @return  <code>true</code> if the partially tunnelled connection
-   *          is secure, <code>false</code> otherwise.
+   * @return  {@code true} if the partially tunnelled connection
+   *          is secure, {@code false} otherwise.
    *
    * @throws HttpException    in case of a problem
    * @throws IOException      in case of an IO problem
@@ -943,7 +943,7 @@ public class DefaultRequestDirector implements RequestDirector {
    * @param context   the context used for the current request execution
    *
    * @return  the followup request and route if there is a followup, or
-   *          <code>null</code> if the response should be returned as is
+   *          {@code null} if the response should be returned as is
    *
    * @throws HttpException    in case of a problem
    * @throws IOException      in case of an IO problem
@@ -1081,7 +1081,7 @@ public class DefaultRequestDirector implements RequestDirector {
 
   /**
    * Shuts down the connection.
-   * This method is called from a <code>catch</code> block in
+   * This method is called from a {@code catch} block in
    * {@link #execute execute} during exception handling.
    */
   private void abortConnection() {

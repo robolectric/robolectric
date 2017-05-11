@@ -7,9 +7,6 @@ import org.robolectric.annotation.Implements;
 
 import java.util.List;
 
-/**
- * Shadow for {@link android.content.ContextWrapper}.
- */
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {
 
@@ -18,7 +15,7 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor that delegates to the application to consume and return the next {@code Intent} on the
+   * Delegates to the application to consume and return the next {@code Intent} on the
    * started activities stack.
    *
    * @return the next started {@code Intent} for an activity
@@ -28,7 +25,7 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor that delegates to the application to return (without consuming) the next {@code Intent} on
+   * Delegates to the application to return (without consuming) the next {@code Intent} on
    * the started activities stack.
    *
    * @return the next started {@code Intent} for an activity
@@ -38,7 +35,7 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor that delegates to the application to consume and return the next {@code Intent} on the
+   * Delegates to the application to consume and return the next {@code Intent} on the
    * started services stack.
    *
    * @return the next started {@code Intent} for a service
@@ -48,8 +45,7 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Non-android accessor that delefates to the application to clear the stack of started
-   * service intents.
+   * Delegates to the application to clear the stack of started service intents.
    */
   public void clearStartedServices() {
     ShadowApplication.getInstance().clearStartedServices();
@@ -65,7 +61,7 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor that delegates to the application to return the next {@code Intent} to stop
+   * Delegates to the application to return the next {@code Intent} to stop
    * a service (irrespective of if the service was running)
    *
    * @return {@code Intent} for the next service requested to be stopped

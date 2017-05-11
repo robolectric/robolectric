@@ -5,9 +5,6 @@ import android.support.multidex.MultiDex;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 
-/**
- * Shadow for {@link android.support.multidex.MultiDex}.
- */
 @Implements(MultiDex.class)
 public class ShadowMultiDex {
 

@@ -5,9 +5,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.view.ContextThemeWrapper}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextThemeWrapper.class)
 public class ShadowContextThemeWrapper extends ShadowContextWrapper {

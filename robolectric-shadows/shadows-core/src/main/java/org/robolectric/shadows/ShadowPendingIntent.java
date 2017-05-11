@@ -24,9 +24,6 @@ import java.util.Objects;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@code android.app.PendingIntent}.
- */
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
 

@@ -6,9 +6,6 @@ import android.view.Surface;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.media.MediaRecorder}.
- */
 @Implements(MediaRecorder.class)
 public class ShadowMediaRecorder {
   @SuppressWarnings("UnusedDeclaration")

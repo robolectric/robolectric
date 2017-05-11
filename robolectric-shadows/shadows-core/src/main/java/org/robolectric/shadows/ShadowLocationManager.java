@@ -23,9 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Shadow for {@link android.location.LocationManager}.
- */
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
   private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<>();
@@ -308,10 +305,7 @@ public class ShadowLocationManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
-   * <p>
-   * Gets the criteria value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}
+   * Gets the criteria value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}.
    *
    * @return the criteria used to find the best provider
    */
@@ -320,9 +314,6 @@ public class ShadowLocationManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
-   * <p>
    * Gets the enabled value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}
    *
    * @return the enabled value used to find the best provider
@@ -396,8 +387,6 @@ public class ShadowLocationManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return lastRequestedLocationUpdatesLocationListener
    */
   public List<LocationListener> getRequestLocationUpdateListeners() {
