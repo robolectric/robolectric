@@ -19,8 +19,11 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -30,7 +33,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
-import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.Scheduler;
 import org.robolectric.android.TestBroadcastReceiver;
 
@@ -558,12 +560,13 @@ public class ShadowApplicationTest {
   }
 
   private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
-    File f = temporaryFolder.newFile("whatever.xml",
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-            "          package=\"" + packageName + "\">\n" +
-            "    " + contents + "\n" +
-            "</manifest>\n");
+    String fileContents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+        "          package=\"" + packageName + "\">\n" +
+        "    " + contents + "\n" +
+        "</manifest>\n";
+    File f = temporaryFolder.newFile("whatever.xml");
+    Files.write(fileContents, f, Charsets.UTF_8);
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 

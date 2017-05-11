@@ -1,12 +1,15 @@
 package org.robolectric.internal.dependency;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.test.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -72,6 +75,8 @@ public class PropertiesDependencyResolverTest {
   //////////////////
 
   private FsFile propsFile(String contents) throws IOException {
-    return Fs.newFile(temporaryFolder.newFile("file.properties", contents));
+    File file = temporaryFolder.newFile("file.properties");
+    Files.write(contents, file, Charsets.UTF_8);
+    return Fs.newFile(file);
   }
 }
