@@ -13,7 +13,7 @@ public class ShadowOpenGLMatrix {
    * matrix multiplication works, the result matrix will have the same
    * effect as first multiplying by the rhs matrix, then multiplying by
    * the lhs matrix. This is the opposite of what you might expect.
-   * <p>
+   *
    * The same float array may be passed for result, lhs, and/or rhs. However,
    * the result element values are undefined if the result elements overlap
    * either the lhs or rhs elements.
@@ -73,7 +73,7 @@ public class ShadowOpenGLMatrix {
   /**
    * Multiplies a 4 element vector by a 4x4 matrix and stores the result in a
    * 4-element column vector. In matrix notation: result = lhs x rhs
-   * <p>
+   *
    * The same float array may be passed for resultVec, lhsMat, and/or rhsVec.
    * However, the resultVec element values are undefined if the resultVec
    * elements overlap either the lhsMat or rhsVec elements.

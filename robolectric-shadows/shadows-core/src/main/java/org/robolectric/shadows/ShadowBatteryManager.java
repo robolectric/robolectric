@@ -11,9 +11,6 @@ import java.util.Map;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * Shadow for {@link android.os.BatteryManager}.
- */
 @Implements(BatteryManager.class)
 public class ShadowBatteryManager {
   private boolean isCharging = false;

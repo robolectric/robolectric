@@ -14,15 +14,12 @@ public class DefaultTestLifecycle implements TestLifecycle {
   /**
    * Override this method if you want to provide your own implementation of Application.
    *
-   * <p>
    * This method attempts to instantiate an application instance as follows:-
    *
-   * <ol>
-   *   <li>If specified loads the application specified in the Config annotation</li>
-   *   <li>Attempt to load a test application as documented <a href="http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html">here</a></li>
-   *   <li>Use the application as specified in the AndroidManifest.xml</li>
-   *   <li>Instantiate a standard {@link android.app.Application}</li>
-   * </ol>
+   * 1. If specified loads the application specified in the Config annotation
+   * 1. Attempt to load a test application as documented <a href="http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html">here</a>
+   * 1. Use the application as specified in the AndroidManifest.xml
+   * 1. Instantiate a standard {@link android.app.Application}
    *
    * @param method The currently-running test method.
    * @param appManifest The application manifest.

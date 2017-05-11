@@ -6,9 +6,6 @@ import android.widget.VideoView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.widget.VideoView}.
- */
 @Implements(VideoView.class)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowVideoView extends ShadowSurfaceView {
@@ -113,8 +110,6 @@ public class ShadowVideoView extends ShadowSurfaceView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return On prepared listener.
    */
   public MediaPlayer.OnPreparedListener getOnPreparedListener() {
@@ -122,8 +117,6 @@ public class ShadowVideoView extends ShadowSurfaceView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return On error listener.
    */
   public MediaPlayer.OnErrorListener getOnErrorListener() {
@@ -131,8 +124,6 @@ public class ShadowVideoView extends ShadowSurfaceView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return On completion listener.
    */
   public MediaPlayer.OnCompletionListener getOnCompletionListener() {
@@ -140,8 +131,6 @@ public class ShadowVideoView extends ShadowSurfaceView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Video path.
    */
   public String getVideoPath() {
@@ -149,8 +138,6 @@ public class ShadowVideoView extends ShadowSurfaceView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Video URI.
    */
   public String getVideoURIString() {
@@ -158,8 +145,6 @@ public class ShadowVideoView extends ShadowSurfaceView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Current video state.
    */
   public int getCurrentVideoState() {
@@ -167,24 +152,16 @@ public class ShadowVideoView extends ShadowSurfaceView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Previous video state.
    */
   public int getPrevVideoState() {
     return prevState;
   }
 
-  /**
-   * Non-Android accessor.
-   */
   public void setDuration(int duration) {
     this.duration = duration;
   }
 
-  /**
-   * Non-Android accessor.
-   */
   private void savePrevState() {
     prevState = currentState;
   }

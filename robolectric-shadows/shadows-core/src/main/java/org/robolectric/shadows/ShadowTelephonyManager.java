@@ -13,9 +13,6 @@ import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
-/**
- * Shadow for {@link android.telephony.TelephonyManager}.
- */
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
   private PhoneStateListener listener;
@@ -43,7 +40,7 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Non-Android accessor.  Returns the most recent listener passed to #listen().
+   * Returns the most recent listener passed to #listen().
    *
    * @return Phone state listener.
    */
@@ -52,7 +49,7 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Non-Android accessor.  Returns the most recent flags passed to #listen().
+   * Returns the most recent flags passed to #listen().
    *
    * @return Event flags.
    */

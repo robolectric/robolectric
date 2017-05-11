@@ -40,9 +40,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 
-/**
- * Shadow for {@link android.view.View}.
- */
 @Implements(View.class)
 public class ShadowView {
 
@@ -144,8 +141,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the resource ID of this view's background
    * @deprecated Use FEST assertions instead.
    */
@@ -158,8 +153,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the color of this view's background, or 0 if it's not a solid color
    * @deprecated Use FEST assertions instead.
    */
@@ -273,7 +266,6 @@ public class ShadowView {
   /**
    * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
    *
-   * <p>
    * Robolectric extension.
    * @return String representation of this view.
    */
@@ -331,8 +323,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return whether or not {@link #invalidate()} has been called
    */
   public boolean wasInvalidated() {
@@ -365,8 +355,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-android accessor.
-   *
    * @return Touch listener, if set.
    */
   public View.OnTouchListener getOnTouchListener() {
@@ -374,8 +362,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-android accessor.
-   *
    * @return Returns click listener, if set.
    */
   public View.OnClickListener getOnClickListener() {
@@ -383,8 +369,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-android accessor.
-   *
    * @return Returns long click listener, if set.
    */
   public View.OnLongClickListener getOnLongClickListener() {
@@ -392,8 +376,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-android accessor.
-   *
    * @return Returns system ui visibility change listener.
    */
   public View.OnSystemUiVisibilityChangeListener getOnSystemUiVisibilityChangeListener() {
@@ -401,8 +383,6 @@ public class ShadowView {
   }
 
   /**
-   * Non-android accessor.
-   *
    * @return Returns create ContextMenu listener, if set.
    */
   public View.OnCreateContextMenuListener getOnCreateContextMenuListener() {

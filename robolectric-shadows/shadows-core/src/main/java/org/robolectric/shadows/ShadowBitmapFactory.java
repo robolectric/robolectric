@@ -30,9 +30,6 @@ import java.util.zip.Checksum;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.graphics.BitmapFactory}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {

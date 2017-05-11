@@ -16,9 +16,6 @@ import java.io.PrintStream;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.view.ViewGroup}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
@@ -63,7 +60,7 @@ public class ShadowViewGroup extends ShadowView {
   }
 
   /**
-   * Non-Android method that dumps the state of this {@code ViewGroup} to {@code System.out}
+   * Dumps the state of this {@code ViewGroup} to {@code System.out}.
    */
   @Override
   public void dump(PrintStream out, int indent) {
@@ -126,9 +123,6 @@ public class ShadowViewGroup extends ShadowView {
     return false;
   }
 
-  /**
-   * Shadow for {@link android.view.ViewGroup.LayoutParams}.
-   */
   @SuppressWarnings({"UnusedDeclaration"})
   @Implements(ViewGroup.LayoutParams.class)
   public static class ShadowLayoutParams {
@@ -144,9 +138,6 @@ public class ShadowViewGroup extends ShadowView {
     }
   }
 
-  /**
-   * Shadow for {@link android.view.ViewGroup.MarginLayoutParams}.
-   */
   @SuppressWarnings("UnusedDeclaration")
   @Implements(ViewGroup.MarginLayoutParams.class)
   public static class ShadowMarginLayoutParams extends ShadowLayoutParams {

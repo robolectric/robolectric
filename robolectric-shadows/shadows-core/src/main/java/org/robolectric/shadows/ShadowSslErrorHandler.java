@@ -4,9 +4,6 @@ import android.webkit.SslErrorHandler;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.webkit.SslErrorHandler}.
- */
 @Implements(SslErrorHandler.class)
 public class ShadowSslErrorHandler extends ShadowHandler {
 

@@ -6,9 +6,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@code android.webkit.CookieSyncManager}.
- */
 @Implements(CookieSyncManager.class)
 public class ShadowCookieSyncManager extends ShadowWebSyncManager {
 

@@ -14,9 +14,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.view.Window}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
 public class ShadowWindow {

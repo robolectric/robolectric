@@ -4,9 +4,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
-/**
- * Shadow for {@link android.os.Process}.
- */
 @Implements(android.os.Process.class)
 public class ShadowProcess {
   private static int pid;

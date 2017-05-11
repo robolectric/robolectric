@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadow for {@link GoogleAuthUtil} that allows providing a
- * {@link GoogleAuthUtilImpl}.
  * Calls to static method of {@link GoogleAuthUtil} will be redirected to the provided
  * {@link GoogleAuthUtilImpl} implementation. Use {@link #provideImpl(GoogleAuthUtilImpl)}
  * to set the implementation instance. By default, a {@link GoogleAuthUtilImpl} is used in call
