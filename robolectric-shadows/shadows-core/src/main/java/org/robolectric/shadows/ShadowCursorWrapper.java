@@ -15,9 +15,6 @@ import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * Shadow for {@link android.database.CursorWrapper}.
- */
 @Implements(CursorWrapper.class)
 public class ShadowCursorWrapper implements Cursor {
   private Cursor wrappedCursor;

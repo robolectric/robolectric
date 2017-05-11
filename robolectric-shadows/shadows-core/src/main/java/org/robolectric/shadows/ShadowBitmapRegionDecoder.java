@@ -11,9 +11,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@code android.graphics.BitmapRegionDecoder}.
- */
 @Implements(BitmapRegionDecoder.class)
 public class ShadowBitmapRegionDecoder {
   private int width;

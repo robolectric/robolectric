@@ -6,9 +6,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@link android.view.InputDevice}.
- */
 @Implements(InputDevice.class)
 public class ShadowInputDevice {
   private String deviceName;

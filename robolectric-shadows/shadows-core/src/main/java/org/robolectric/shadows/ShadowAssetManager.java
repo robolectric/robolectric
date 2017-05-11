@@ -50,9 +50,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.content.res.AssetManager}.
- */
 @Implements(AssetManager.class)
 public final class ShadowAssetManager {
   public static final int STYLE_NUM_ENTRIES = 6;

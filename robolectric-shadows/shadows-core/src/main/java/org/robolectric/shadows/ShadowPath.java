@@ -12,9 +12,7 @@ import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 
 /**
- * Shadow for {@code android.graphics.Path}.
- *
- * <p>The shadow only supports straight-line paths.</p>
+ * The shadow only supports straight-line paths.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Path.class)
@@ -64,8 +62,6 @@ public class ShadowPath {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return all the points that have been added to the {@code Path}
    */
   public List<Point> getPoints() {
@@ -73,8 +69,6 @@ public class ShadowPath {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return whether the {@link #moveTo(float, float)} method was called
    */
   public Point getWasMovedTo() {

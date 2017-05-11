@@ -9,9 +9,6 @@ import org.robolectric.annotation.RealObject;
 import static org.robolectric.shadow.api.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
-/**
- * Shadow for {@link android.widget.CompoundButton}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CompoundButton.class)
 public class ShadowCompoundButton extends ShadowTextView {

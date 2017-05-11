@@ -5,9 +5,6 @@ import android.text.method.MovementMethod;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.text.method.LinkMovementMethod}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(LinkMovementMethod.class)
 public class ShadowLinkMovementMethod {

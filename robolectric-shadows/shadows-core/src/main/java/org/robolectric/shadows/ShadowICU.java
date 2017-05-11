@@ -9,9 +9,6 @@ import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@link libcore.icu.ICU}.
- */
 @Implements(value = libcore.icu.ICU.class, isInAndroidSdk = false)
 public class ShadowICU {
 

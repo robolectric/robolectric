@@ -20,9 +20,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.io.IOException;
 
-/**
- * Shadow for {@link android.net.http.AndroidHttpClient}.
- */
 @Implements(AndroidHttpClient.class)
 public class ShadowAndroidHttpClient {
   @RealObject private AndroidHttpClient client;

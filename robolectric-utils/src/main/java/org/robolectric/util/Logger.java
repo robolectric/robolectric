@@ -3,9 +3,7 @@ package org.robolectric.util;
 /**
  * Logger for Robolectric. For now, it simply prints messages to stdout.
  *
- * <p>
  * Logging can be enabled by setting the property: {@code robolectric.logging.enabled = true}.
- * </p>
  */
 public class Logger {
   private static final String LOGGING_ENABLED = "robolectric.logging.enabled";

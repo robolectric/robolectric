@@ -21,9 +21,6 @@ import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@code android.app.PendingIntent}.
- */
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
   private static final List<PendingIntent> createdIntents = new ArrayList<>();

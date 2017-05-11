@@ -22,9 +22,6 @@ import java.util.List;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
-/**
- * Shadow for {@link android.view.accessibility.AccessibilityManager}.
- */
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
 

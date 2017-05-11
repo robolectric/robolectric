@@ -7,9 +7,6 @@ import org.robolectric.shadow.api.Shadow;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@code android.net.Network}.
- */
 @Implements(value = Network.class, minSdk = LOLLIPOP)
 public class ShadowNetwork {
   private int netId;

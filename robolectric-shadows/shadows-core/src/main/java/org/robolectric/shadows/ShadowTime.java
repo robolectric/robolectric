@@ -19,9 +19,6 @@ import java.util.TimeZone;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-/**
- * Shadow for {@link android.text.format.Time}.
- */
 @Implements(value = Time.class)
 public class ShadowTime {
   @RealObject

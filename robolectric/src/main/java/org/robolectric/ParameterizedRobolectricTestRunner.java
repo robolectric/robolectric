@@ -33,14 +33,14 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
 
   /**
    * Annotation for a method which provides parameters to be injected into the test class constructor by
-   * <code>Parameterized</code>
+   * {@code Parameterized}
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Parameters {
 
     /**
-     * <p>Optional pattern to derive the test's name from the parameters. Use numbers in braces to refer to the
+     * Optional pattern to derive the test's name from the parameters. Use numbers in braces to refer to the
      * parameters or the additional data as follows:
      *
      * <pre>
@@ -49,7 +49,8 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
      * {1} - the second parameter value
      * etc...
      * </pre>
-     * <p> Default value is "{index}" for compatibility with previous JUnit versions. </p>
+     *
+     * Default value is "{index}" for compatibility with previous JUnit versions.
      *
      * @return {@link MessageFormat} pattern string, except the index placeholder.
      * @see MessageFormat
