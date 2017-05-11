@@ -556,9 +556,24 @@ public class ShadowResourcesTest {
     } catch (Resources.NotFoundException e) {
       // cool
     }
+  }
 
+  @Test
+  public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
+    assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
+  }
+
+  @Test
+  public void openRawResourceFd_withNonFile_throwsNotFoundException() throws Exception {
     try {
       resources.openRawResourceFd(R.string.hello);
+      fail("should throw");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+
+    try {
+      resources.openRawResourceFd(-1234);
       fail("should throw");
     } catch (Resources.NotFoundException e) {
       // cool

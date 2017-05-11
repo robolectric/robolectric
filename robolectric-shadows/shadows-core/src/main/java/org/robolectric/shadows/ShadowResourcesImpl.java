@@ -19,6 +19,7 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -121,12 +122,23 @@ public class ShadowResourcesImpl {
     }
   }
 
+  /**
+   * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will
+   * be returned if the resource is found. If the resource cannot be found, {@link Resources.NotFoundException} will
+   * be thrown.
+   */
   @Implementation
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-    FileInputStream fis = (FileInputStream)openRawResource(id);
+    InputStream inputStream = openRawResource(id);
+    if (!(inputStream instanceof FileInputStream)) {
+      // todo fixme
+      return null;
+    }
+
+    FileInputStream fis = (FileInputStream) inputStream;
     try {
       return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-    } catch (Exception e) {
+    } catch (IOException e) {
       throw newNotFoundException(id);
     }
   }
