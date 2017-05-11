@@ -5,6 +5,7 @@
       <enum name="marsupial" value="0"/>
       <enum name="ungulate" value="1"/>
     </attr>
+    <attr name="message" format="string"/>
 
     <attr name="scrollBars">
       <flag name="horizontal" value="0x00000100" />
@@ -55,5 +56,16 @@
 
   <declare-styleable name="CustomStateView">
     <attr name="stateFoo" format="boolean" />
+  </declare-styleable>
+
+  <declare-styleable name="Theme.AnotherTheme.Attributes">
+    <attr name="averageSheepWidth" format="reference"/>
+    <attr name="isSugary" format="reference"/>
+    <attr name="logoHeight" format="reference"/>
+    <attr name="logoWidth" format="reference"/>
+    <attr name="styleReference" format="reference"/>
+    <attr name="styleReferenceWithoutExplicitType" format="reference"/>
+    <attr name="snail" format="reference"/>
+    <attr name="averageSheepWidth" format="reference"/>
   </declare-styleable>
 </resources>

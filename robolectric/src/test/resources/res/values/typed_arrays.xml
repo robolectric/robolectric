@@ -29,7 +29,6 @@
     </array>
 
     <array name="typed_array_with_resource_id">
-        <item>@id/id_declared_in_id_tag</item>
         <item>@id/id_declared_in_item_tag</item>
         <item>@id/id_declared_in_layout</item>
     </array>

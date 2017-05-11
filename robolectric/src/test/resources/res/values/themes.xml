@@ -13,13 +13,12 @@
   </style>
 
   <style name="Theme.Robolectric.EmptyParent" parent=""/>
-  <style name="Theme.Robolectric.NullStringParent" parent="Null"/>
 
   <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
     <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
     <item name="logoWidth">?attr/averageSheepWidth</item>
     <item name="logoHeight">@dimen/test_dp_dimen</item>
-    <item name="averageSheepWidth">42px</item>
+    <item name="averageSheepWidth">@dimen/test_dp_dimen</item>
     <item name="animalStyle">@style/Gastropod</item>
     <item name="isSugary">?attr/isSugary</item>
     <item name="styleReference">?android:attr/buttonStyle</item>
@@ -35,13 +34,16 @@
     <item name="someLayoutTwo">?someLayoutOne</item>
   </style>
 
+  <style name="Theme">
+  </style>
+
   <style name="Theme.ThemeReferredToByParentAttrReference">
     <item name="parentStyleReference">@style/StyleReferredToByParentAttrReference</item>
   </style>
 
   <style name="Theme.ThemeContainingStyleReferences" parent="">
     <item name="styleReference">@style/StyleReferredToByParentAttrReference</item>
-    <item name="styleReferenceWithoutExplicitType">@StyleReferredToByParentAttrReference</item>
+    <item name="styleReferenceWithoutExplicitType">@style/StyleReferredToByParentAttrReference</item>
   </style>
 
   <style name="StyleReferredToByParentAttrReference">

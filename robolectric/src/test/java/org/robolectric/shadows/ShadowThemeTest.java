@@ -73,7 +73,7 @@ public class ShadowThemeTest {
   @Test public void shouldResolveReferencesThatStartWithAQuestionMark() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
     Button theButton = (Button) activity.findViewById(R.id.button);
-    assertThat(theButton.getMinWidth()).isEqualTo(42);
+    assertThat(theButton.getMinWidth()).isEqualTo(8);
     assertThat(theButton.getMinHeight()).isEqualTo(8);
   }
 
@@ -129,8 +129,8 @@ public class ShadowThemeTest {
     boolean resolved = activity.getTheme().resolveAttribute(R.attr.logoWidth, value, false);
 
     assertThat(resolved).isTrue();
-    assertThat(value.type).isEqualTo(TypedValue.TYPE_DIMENSION);
-    assertThat(value.coerceToString()).isEqualTo("42.0px");
+    assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);
+    assertThat(value.data).isEqualTo(R.dimen.test_dp_dimen);
   }
 
   @Test public void withResolveRefsFalse_shouldNotResolveResource() throws Exception {
@@ -188,12 +188,6 @@ public class ShadowThemeTest {
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric_EmptyParent, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
-  }
-
-  @Test public void whenAThemeHasNullStringParentAttr_shouldHaveNoParent() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_Robolectric_NullStringParent, true);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 

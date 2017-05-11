@@ -79,7 +79,7 @@ public class StyleResolver implements Style {
   private StyleData getParent(StyleData style) {
     String parent = getParentStyleName(style);
 
-    if (parent == null || "Null".equals(parent)) return null;
+    if (parent == null) return null;
 
     if (parent.startsWith("@")) parent = parent.substring(1);
 
