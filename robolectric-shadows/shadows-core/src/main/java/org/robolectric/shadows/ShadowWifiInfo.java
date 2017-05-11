@@ -8,9 +8,6 @@ import org.robolectric.annotation.HiddenApi;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@link android.net.wifi.WifiInfo}.
- */
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
   public static void __staticInitializer__() {

@@ -12,11 +12,10 @@ import org.robolectric.util.SoftThreadLocal;
 import org.robolectric.util.TimeUtils;
 
 /**
- * Shadow for {@link android.view.Choreographer}.
- *
- * <p>This class maintains its own concept of the current time aimed at making animations
- * work correctly. Time starts out at 0 and advances by "frameInterval" every time
- * {@link android.view.Choreographer#getFrameTimeNanos} is called.</p>
+ * Robolectric maintains its own concept of the current time from the Choreographer's
+ * point of view, aimed at making animations work correctly. Time starts out at {@code 0}
+ * and advances by {@code frameInterval} every time
+ * {@link Choreographer#getFrameTimeNanos()} is called.
  */
 @Implements(Choreographer.class)
 public class ShadowChoreographer {

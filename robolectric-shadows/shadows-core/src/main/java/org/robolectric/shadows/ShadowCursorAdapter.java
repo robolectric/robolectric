@@ -37,9 +37,6 @@ import java.util.List;
 import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
 import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 
-/**
- * Shadow for {@link android.widget.CursorAdapter}.
- */
 @Implements(CursorAdapter.class)
 public class ShadowCursorAdapter extends ShadowBaseAdapter {
   @RealObject CursorAdapter realCursorAdapter;
@@ -61,8 +58,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
   }
 
   /**
-   * Non-Android API.  Set a list of views to be returned for successive
-   * calls to getView().
+   * Sets a list of views to be returned for successive calls to {@link #getView(int, View, ViewGroup)}.
    *
    * @param views The list of views
    */

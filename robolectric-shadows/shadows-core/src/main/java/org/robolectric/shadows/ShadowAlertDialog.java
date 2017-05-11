@@ -16,9 +16,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.app.AlertDialog}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
@@ -33,8 +30,6 @@ public class ShadowAlertDialog extends ShadowDialog {
   private FrameLayout custom;
 
   /**
-   * Non-Android accessor.
-   *
    * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
    */
   public static AlertDialog getLatestAlertDialog() {
@@ -71,8 +66,6 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the items that are available to be clicked on
    */
   public CharSequence[] getItems() {
@@ -90,8 +83,6 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the message displayed in the dialog
    */
   public CharSequence getMessage() {
@@ -105,8 +96,6 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return return the view set with {@link AlertDialog.Builder#setView(View)}
    */
   public View getView() {
@@ -114,8 +103,6 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return return the view set with {@link AlertDialog.Builder#setCustomTitle(View)}
    */
   public View getCustomTitleView() {
@@ -127,9 +114,6 @@ public class ShadowAlertDialog extends ShadowDialog {
     return (ShadowAlertController) ShadowExtractor.extract(alert);
   }
 
-  /**
-   * Shadow for {@code android.app.AlertDialog.Builder}.
-   */
   @Implements(AlertDialog.Builder.class)
   public static class ShadowBuilder {
   }

@@ -16,9 +16,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
- * Shadow for {@link libcore.icu.LocaleData}.
- *
- * <p>This class only supports en_US regardless of the default locale set in the JVM.</p>
+ * Robolectric only supports en_US regardless of the default locale set in the JVM.
  */
 @Implements(value = LocaleData.class, isInAndroidSdk = false)
 public class ShadowLocaleData {

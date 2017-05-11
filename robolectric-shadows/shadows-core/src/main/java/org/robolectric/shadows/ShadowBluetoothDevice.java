@@ -4,9 +4,6 @@ import android.bluetooth.BluetoothDevice;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.bluetooth.BluetoothDevice}.
- */
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
 

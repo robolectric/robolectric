@@ -7,9 +7,6 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.graphics.drawable.GradientDrawable}.
- */
 @Implements(GradientDrawable.class)
 public class ShadowGradientDrawable extends ShadowDrawable {
 

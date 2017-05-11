@@ -7,9 +7,6 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.widget.BaseAdapter}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BaseAdapter.class)
 public class ShadowBaseAdapter {

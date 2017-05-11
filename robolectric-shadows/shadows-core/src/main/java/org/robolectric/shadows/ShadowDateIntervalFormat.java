@@ -11,9 +11,6 @@ import org.robolectric.annotation.Implementation;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 
-/**
- * Shadow for {@link libcore.icu.DateIntervalFormat}.
- */
 @Implements(value = DateIntervalFormat.class, isInAndroidSdk = false, minSdk = KITKAT)
 public class ShadowDateIntervalFormat {
 

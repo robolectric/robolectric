@@ -13,9 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Shadow for {@link android.location.Geocoder}.
- */
 @Implements(Geocoder.class)
 public class ShadowGeocoder {
   private String addressLine1;
@@ -115,7 +112,7 @@ public class ShadowGeocoder {
   }
 
   /**
-   * Non-Android accessor that indicates whether {@link #getFromLocation(double, double, int)} was called.
+   * Indicates whether {@link #getFromLocation(double, double, int)} was called.
    *
    * @return whether {@link #getFromLocation(double, double, int)} was called.
    */
