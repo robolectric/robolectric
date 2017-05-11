@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.os.PowerManager;
 
+import android.os.WorkSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -131,9 +133,21 @@ public class ShadowPowerManagerTest {
     assertThat(powerManager.isInteractive()).isFalse();
   }
 
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
   public void isPowerSaveMode_shouldGetAndSet() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
     shadowPowerManager.setIsPowerSaveMode(true);
     assertThat(powerManager.isPowerSaveMode()).isTrue();
+  }
+
+  @Test
+  public void workSource_shouldGetAndSet() throws Exception {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
+    WorkSource workSource = new WorkSource();
+    assertThat(shadowLock.getWorkSource()).isNull();
+    lock.setWorkSource(workSource);
+    assertThat(shadowLock.getWorkSource()).isEqualTo(workSource);
   }
 }
