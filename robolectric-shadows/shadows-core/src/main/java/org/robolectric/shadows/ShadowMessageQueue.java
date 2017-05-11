@@ -14,9 +14,11 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.*;
-import static org.robolectric.util.ReflectionHelpers.*;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
+import static org.robolectric.util.ReflectionHelpers.getField;
+import static org.robolectric.util.ReflectionHelpers.setField;
 
 /**
  * Shadow for {@link android.os.MessageQueue}.
@@ -123,21 +125,19 @@ public class ShadowMessageQueue {
             Message n = shadowOf(m).getNext();
             if (m == msg) {
               setHead(n);
-              dispatchMessage(msg);
-              return;
-            }
-
-            while (n != null) {
-              if (n == msg) {
-                n = shadowOf(n).getNext();
-                shadowOf(m).setNext(n);
-                dispatchMessage(msg);
-                return;
+            } else {
+              while (n != null) {
+                if (n == msg) {
+                  n = shadowOf(n).getNext();
+                  shadowOf(m).setNext(n);
+                  break;
+                }
+                m = n;
+                n = shadowOf(m).getNext();
               }
-              m = n;
-              n = shadowOf(m).getNext();
             }
           }
+          dispatchMessage(msg);
         }
       };
       shadowOf(msg).setScheduledRunnable(callback);
@@ -150,7 +150,8 @@ public class ShadowMessageQueue {
     return retval;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public void removeSyncBarrier(int token) {
   }
 
