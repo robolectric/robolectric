@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +18,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.isNull;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
@@ -111,7 +109,9 @@ public class ShadowPendingIntentTest {
     try {
       forActivity.send();
       fail();
-    } catch (PendingIntent.CanceledException e) {}
+    } catch (PendingIntent.CanceledException e) {
+      // pass
+    }
 
     assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isNull();
   }
