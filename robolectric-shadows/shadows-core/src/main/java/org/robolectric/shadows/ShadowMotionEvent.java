@@ -8,9 +8,6 @@ import org.robolectric.annotation.RealObject;
 
 import java.lang.reflect.Constructor;
 
-/**
- * Shadow for {@link android.view.MotionEvent}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MotionEvent.class)
 public class ShadowMotionEvent {

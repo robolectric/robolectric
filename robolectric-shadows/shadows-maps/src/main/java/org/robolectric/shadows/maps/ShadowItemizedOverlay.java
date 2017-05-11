@@ -10,9 +10,6 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 
-/**
- * Shadow for {@link com.google.android.maps.ItemizedOverlay}.
- */
 @Implements(ItemizedOverlay.class)
 public class ShadowItemizedOverlay<Item extends OverlayItem> {
   private boolean isPopulated;
@@ -54,7 +51,7 @@ public class ShadowItemizedOverlay<Item extends OverlayItem> {
   }
 
   /**
-   * Non-Android accessor that indicates whether {@link #setLastFocusedIndex(int)} has been called with a value other
+   * Indicates whether {@link #setLastFocusedIndex(int)} has been called with a value other
    * than -1.
    *
    * @return whether {@link #setLastFocusedIndex(int)} has been called with a value other

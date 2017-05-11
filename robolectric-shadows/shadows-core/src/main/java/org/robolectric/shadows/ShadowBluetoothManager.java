@@ -7,9 +7,6 @@ import org.robolectric.annotation.Implements;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
-/**
- * Shadow for {@link android.bluetooth.BluetoothManager}.
- */
 @Implements(value = BluetoothManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothManager {
 

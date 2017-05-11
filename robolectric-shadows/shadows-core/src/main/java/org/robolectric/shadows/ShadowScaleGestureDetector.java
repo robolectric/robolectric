@@ -6,9 +6,6 @@ import android.view.ScaleGestureDetector;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.view.ScaleGestureDetector}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ScaleGestureDetector.class)
 public class ShadowScaleGestureDetector {

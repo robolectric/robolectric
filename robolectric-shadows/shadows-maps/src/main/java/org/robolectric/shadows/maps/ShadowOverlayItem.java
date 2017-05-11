@@ -7,9 +7,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.Strings;
 
-/**
- * Shadow for {@link com.google.android.maps.OverlayItem}.
- */
 @Implements(OverlayItem.class)
 public class ShadowOverlayItem {
   private GeoPoint geoPoint;

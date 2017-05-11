@@ -46,9 +46,6 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
-/**
- * Shadow for {@link android.database.sqlite.SQLiteConnection}.
- */
 @Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
 public class ShadowSQLiteConnection {
 

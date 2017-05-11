@@ -5,9 +5,6 @@ import android.net.Uri;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.content.ContentUris}.
- */
 @Implements(ContentUris.class)
 public class ShadowContentUris {
 

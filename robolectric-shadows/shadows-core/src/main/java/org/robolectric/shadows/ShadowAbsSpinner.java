@@ -9,9 +9,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.widget.AbsSpinner}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsSpinner.class)
 public class ShadowAbsSpinner extends ShadowAdapterView {

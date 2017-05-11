@@ -495,45 +495,93 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void shouldLoadRawResources() throws Exception {
+  public void openRawResource_shouldLoadRawResources() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("raw txt file contents");
   }
 
   @Test
-  public void shouldLoadRawResourcesFromLibraries() throws Exception {
+  public void openRawResource_shouldLoadRawResourcesFromLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
   }
 
   @Test
-  public void shouldLoadRawResourcesFromSecondaryLibraries() throws Exception {
+  public void openRawResource_shouldLoadRawResourcesFromSecondaryLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_2);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib2");
   }
 
   @Test
-  public void shouldLoadRawResourcesFromTertiaryLibraries() throws Exception {
+  public void openRawResource_shouldLoadRawResourcesFromTertiaryLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_3);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib3");
   }
 
   @Test
-  public void shouldLoadRawResources_supportsDrawable() throws Exception {
+  public void openRawResource_shouldLoadDrawables() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
   }
 
   @Test @Config(qualifiers = "hdpi")
-  public void shouldLoadRawResources_supportsDrawableWithQualifiers() throws Exception {
+  public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
+  }
+
+  @Test
+  public void openRawResource_withNonFile_throwsNotFoundException() throws Exception {
+    try {
+      resources.openRawResource(R.string.hello);
+      fail("should throw");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+
+    try {
+      resources.openRawResource(R.string.hello, new TypedValue());
+      fail("should throw");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+
+    try {
+      resources.openRawResource(-1234, new TypedValue());
+      fail("should throw");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+
+    try {
+      resources.openRawResourceFd(R.string.hello);
+      fail("should throw");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+  }
+
+  @Test
+  public void getXml_withNonFile_throwsNotFoundException() throws Exception {
+    try {
+      resources.getXml(R.string.hello);
+      fail("should throw");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+
+    try {
+      resources.getXml(-1234);
+      fail("should throw");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
   }
 
   @Test

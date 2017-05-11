@@ -22,6 +22,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -34,9 +35,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.content.res.Resources}.
- */
 @Implements(Resources.class)
 public class ShadowResources {
   private static Resources system = null;
@@ -124,16 +122,32 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResourceTable().getRawValue(id, RuntimeEnvironment.getQualifiers());
+    ResourceTable resourceTable = shadowOf(realResources.getAssets()).getResourceTable();
+    InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+    if (inputStream == null) {
+      throw newNotFoundException(id);
+    } else {
+      return inputStream;
+    }
   }
 
   @Implementation
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
+    FileInputStream fis = (FileInputStream)openRawResource(id);
     try {
-      FileInputStream fis = (FileInputStream)openRawResource(id);
       return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-    } catch (Exception e) {
-      return null;
+    } catch (IOException e) {
+      throw newNotFoundException(id);
+    }
+  }
+
+  private Resources.NotFoundException newNotFoundException(int id) {
+    ResourceTable resourceTable = shadowOf(realResources.getAssets()).getResourceTable();
+    ResName resName = resourceTable.getResName(id);
+    if (resName == null) {
+      return new Resources.NotFoundException("resource ID #0x" + Integer.toHexString(id));
+    } else {
+      return new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
   }
 
@@ -143,8 +157,9 @@ public class ShadowResources {
     TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
     if (typedArray != null) {
       return typedArray;
+    } else {
+      throw newNotFoundException(id);
     }
-    throw new Resources.NotFoundException("Typed array resource ID #0x" + Integer.toHexString(id));
   }
 
   public void setDensity(float density) {

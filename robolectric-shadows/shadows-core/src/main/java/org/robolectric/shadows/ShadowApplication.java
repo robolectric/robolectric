@@ -57,9 +57,6 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
-/**
- * Shadow for {@link android.app.Application}.
- */
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
@@ -105,7 +102,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   /**
    * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
    *
-   * <p>
    * Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runBackgroundTasks() {
@@ -632,8 +628,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return list of {@link Wrapper}s for registered receivers
    */
   public List<Wrapper> getRegisteredReceivers() {
@@ -641,8 +635,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the layout inflater used by this {@code Application}
    */
   public LayoutInflater getLayoutInflater() {
@@ -650,8 +642,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the app widget manager used by this {@code Application}
    */
   public AppWidgetManager getAppWidgetManager() {

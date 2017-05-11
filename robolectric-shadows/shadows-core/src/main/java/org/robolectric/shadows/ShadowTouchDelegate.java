@@ -6,9 +6,6 @@ import android.view.View;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-/**
- * Shadow for {@link android.view.TouchDelegate}.
- */
 @Implements(TouchDelegate.class)
 public class ShadowTouchDelegate {
   @RealObject private TouchDelegate realObject;

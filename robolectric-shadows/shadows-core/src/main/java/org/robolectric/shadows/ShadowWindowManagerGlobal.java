@@ -9,9 +9,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
-/**
- * Shadow for {@link android.view.WindowManagerGlobal}.
- */
 @Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false, minSdk = JELLY_BEAN_MR1)
 public class ShadowWindowManagerGlobal {
 

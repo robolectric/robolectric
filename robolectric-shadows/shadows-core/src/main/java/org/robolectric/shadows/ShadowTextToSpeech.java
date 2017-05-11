@@ -6,9 +6,6 @@ import java.util.HashMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.speech.tts.TextToSpeech}.
- */
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {
   private Context context;

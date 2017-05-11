@@ -22,9 +22,6 @@ import java.util.List;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.app.Dialog}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Dialog.class)
 public class ShadowDialog {

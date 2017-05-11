@@ -21,12 +21,12 @@ import java.util.List;
 /**
  * Concrete implementation of the {@link XmlResourceParser}.
  *
- * <p>Clients expects a pull parser while the resource loader
+ * Clients expects a pull parser while the resource loader
  * initialise this object with a {@link Document}.
  * This implementation navigates the dom and emulates a pull
  * parser by raising all the opportune events.
  *
- * <p>Note that the original android implementation is based on
+ * Note that the original android implementation is based on
  * a set of native methods calls. Here those methods are
  * re-implemented in java when possible.
  */
@@ -512,7 +512,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
    * Navigate to the next node after a node and all of his
    * children have been explored.
    *
-   * <p>If the node has unexplored siblings navigate to the
+   * If the node has unexplored siblings navigate to the
    * next sibling. Otherwise return to its parent.
    *
    * @param node the node which was just explored.

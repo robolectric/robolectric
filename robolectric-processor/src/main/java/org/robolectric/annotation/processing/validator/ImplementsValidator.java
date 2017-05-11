@@ -1,17 +1,26 @@
 package org.robolectric.annotation.processing.validator;
 
+import com.sun.source.tree.ImportTree;
+import com.sun.source.util.Trees;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.processing.DocumentedMethod;
 import org.robolectric.annotation.processing.RobolectricModel;
-
-import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.Implements}.
@@ -19,10 +28,14 @@ import javax.tools.Diagnostic.Kind;
 public class ImplementsValidator extends Validator {
 
   public static final String IMPLEMENTS_CLASS = "org.robolectric.annotation.Implements";
-  public static final int MAX_SUPPORTED_ANDROID_SDK = 23;
+  public static final int MAX_SUPPORTED_ANDROID_SDK = 10000; // Now == Build.VERSION_CODES.O
+
+  private final ProcessingEnvironment env;
 
   public ImplementsValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, IMPLEMENTS_CLASS);
+
+    this.env = env;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
@@ -35,9 +48,11 @@ public class ImplementsValidator extends Validator {
     }
     return type;
   }
-  
+
   @Override
   public Void visitType(TypeElement elem, Element parent) {
+    captureJavadoc(elem);
+
     // Don't import nested classes because some of them have the same name.
     AnnotationMirror am = getCurrentAnnotation();
     AnnotationValue av = RobolectricModel.getAnnotationValue(am, "value");
@@ -112,5 +127,53 @@ public class ImplementsValidator extends Validator {
     }
     model.addShadowType(elem, type);
     return null;
+  }
+
+  private void captureJavadoc(TypeElement elem) {
+    List<String> imports = new ArrayList<>();
+    List<? extends ImportTree> importLines = Trees.instance(env).getPath(elem).getCompilationUnit().getImports();
+    for (ImportTree importLine : importLines) {
+      imports.add(importLine.getQualifiedIdentifier().toString());
+    }
+
+    List<TypeElement> enclosedTypes = ElementFilter.typesIn(elem.getEnclosedElements());
+    for (TypeElement enclosedType : enclosedTypes) {
+      imports.add(enclosedType.getQualifiedName().toString());
+    }
+
+    Elements elementUtils = env.getElementUtils();
+    model.documentType(elem, elementUtils.getDocComment(elem), imports);
+
+    for (Element memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
+      ExecutableElement methodElement = (ExecutableElement) memberElement;
+      Implementation implementation = memberElement.getAnnotation(Implementation.class);
+
+      DocumentedMethod documentedMethod = new DocumentedMethod(memberElement.toString());
+      for (Modifier modifier : memberElement.getModifiers()) {
+        documentedMethod.modifiers.add(modifier.toString());
+      }
+      documentedMethod.isImplementation = implementation != null;
+      if (implementation != null) {
+        documentedMethod.minSdk = sdkOrNull(implementation.minSdk());
+        documentedMethod.maxSdk = sdkOrNull(implementation.maxSdk());
+      }
+      for (VariableElement variableElement : methodElement.getParameters()) {
+        documentedMethod.params.add(variableElement.toString());
+      }
+      documentedMethod.returnType = methodElement.getReturnType().toString();
+      for (TypeMirror typeMirror : methodElement.getThrownTypes()) {
+        documentedMethod.exceptions.add(typeMirror.toString());
+      }
+      String docMd = elementUtils.getDocComment(methodElement);
+      if (docMd != null) {
+        documentedMethod.setDocumentation(docMd);
+      }
+
+      model.documentMethod(elem, documentedMethod);
+    }
+  }
+
+  private Integer sdkOrNull(int sdk) {
+    return sdk == -1 ? null : sdk;
   }
 }

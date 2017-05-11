@@ -9,9 +9,6 @@ import org.robolectric.annotation.Implementation;
 import android.support.v4.content.AsyncTaskLoader;
 import java.util.concurrent.Callable;
 
-/**
- * Shadow for {@link android.support.v4.content.AsyncTaskLoader}.
- */
 @Implements(AsyncTaskLoader.class)
 public class ShadowAsyncTaskLoader<D> {
   @RealObject private AsyncTaskLoader<D> realLoader;

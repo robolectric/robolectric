@@ -4,9 +4,6 @@ import android.graphics.LinearGradient;
 import android.graphics.Shader;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.graphics.LinearGradient}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(LinearGradient.class)
 public class ShadowLinearGradient {

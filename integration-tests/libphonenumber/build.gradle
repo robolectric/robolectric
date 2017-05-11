@@ -4,12 +4,9 @@ dependencies {
     compile project(":robolectric")
     compile "junit:junit:4.12"
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compile "com.android.support:support-v4:23.2.0"
 
     // Testing dependencies
     testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
-    testCompile "com.android.support:support-v4:23.2.0"
-    testCompile "com.android.support:internal_impl:23.2.0"
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile 'com.googlecode.libphonenumber:libphonenumber:8.0.0'
 }

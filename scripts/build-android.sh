@@ -103,7 +103,6 @@ build_platform() {
         SOURCES=(core graphics media location opengl sax services telephony wifi)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
-        TZDATA_ARCH="generic"
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1

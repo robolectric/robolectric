@@ -19,9 +19,6 @@ import java.util.Map;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.content.res.TypedArray}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TypedArray.class)
 public class ShadowTypedArray {
