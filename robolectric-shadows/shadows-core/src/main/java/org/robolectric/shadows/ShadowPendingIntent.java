@@ -298,7 +298,7 @@ public class ShadowPendingIntent {
     }
   }
 
-  protected static Intent[] copyIntents(Intent[] intents) {
+  private static Intent[] copyIntents(Intent[] intents) {
     Intent[] intentsCopy = new Intent[intents.length];
     for (int i = 0; i < intents.length; i++) {
       intentsCopy[i] = intents[i] != null ? new Intent(intents[i]) : null;
@@ -306,7 +306,7 @@ public class ShadowPendingIntent {
     return intentsCopy;
   }
 
-  protected static boolean compareIntents(Intent[] intentsThis, Intent[] intentsThat) {
+  private static boolean compareIntents(Intent[] intentsThis, Intent[] intentsThat) {
     if (intentsThis == intentsThat) {
       return true;
     }
