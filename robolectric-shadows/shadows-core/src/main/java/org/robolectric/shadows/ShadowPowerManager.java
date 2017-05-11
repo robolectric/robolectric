@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.PowerManager;
+import android.os.WorkSource;
 
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -94,8 +95,9 @@ public class ShadowPowerManager {
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
     private boolean refCounted = true;
-    private int refCount;
-    private boolean locked;
+    private int refCount = 0;
+    private boolean locked = false;
+    private WorkSource workSource = null;
 
     @Implementation
     public void acquire() {
@@ -138,6 +140,15 @@ public class ShadowPowerManager {
     @Implementation
     public void setReferenceCounted(boolean value) {
       refCounted = value;
+    }
+
+    @Implementation
+    public synchronized void setWorkSource(WorkSource ws) {
+      workSource = ws;
+    }
+
+    public synchronized WorkSource getWorkSource() {
+      return workSource;
     }
   }
 }
