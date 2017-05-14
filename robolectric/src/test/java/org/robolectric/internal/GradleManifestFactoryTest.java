@@ -1,5 +1,7 @@
 package org.robolectric.internal;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,10 +15,9 @@ import org.robolectric.res.FsFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.joinPath;
-import static org.robolectric.util.TestUtil.newFile;
 
 public class GradleManifestFactoryTest {
   @Rule
@@ -191,13 +192,14 @@ public class GradleManifestFactoryTest {
 
   @Test
   public void rClassShouldBeInTheSamePackageAsBuildConfig() throws Exception {
-    File manifestFile = new File(
-        joinPath("build", "intermediates", "manifests", "full",
+    File manifestFile =
+        Paths.get("build/intermediates/manifests/full",
             org.robolectric.gradleapp.BuildConfig.FLAVOR,
-            org.robolectric.gradleapp.BuildConfig.BUILD_TYPE),
-        "AndroidManifest.xml");
+            org.robolectric.gradleapp.BuildConfig.BUILD_TYPE,
+            "AndroidManifest.xml").toFile();
+
     manifestFile.getParentFile().mkdirs();
-    newFile(manifestFile, "<manifest package=\"something\"/>");
+    Files.write("<manifest package=\"something\"/>", manifestFile, Charsets.UTF_8);
 
     AndroidManifest manifest = createManifest(
         configBuilder.setConstants(BuildConfig.class).build());
@@ -240,4 +242,5 @@ public class GradleManifestFactoryTest {
     public static final String BUILD_TYPE = "type2";
     public static final String FLAVOR = "flavor2";
   }
+
 }

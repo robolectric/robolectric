@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 @RunWith(TestRunners.SelfTest.class) // todo: @Config(sdk=ALL_SDKS) or something
 public class DrawableResourceLoaderTest {
@@ -76,11 +75,11 @@ public class DrawableResourceLoaderTest {
   @Test
   public void shouldCreateAnimators() throws Exception {
     Animator animator = AnimatorInflater.loadAnimator(application, R.animator.spinning);
-    assertInstanceOf(Animator.class, animator);
+    assertThat(animator).isInstanceOf((Class<? extends Animator>) Animator.class);
   }
 
   @Test
   public void shouldCreateAnimsAndColors() throws Exception {
-    assertInstanceOf(ColorDrawable.class, resources.getDrawable(R.color.grey42));
+    assertThat(resources.getDrawable(R.color.grey42)).isInstanceOf((Class<? extends android.graphics.drawable.Drawable>) ColorDrawable.class);
   }
 }

@@ -1,9 +1,7 @@
 package org.robolectric;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import org.junit.Test;
@@ -49,13 +47,10 @@ public class ManifestFactoryTest {
     AndroidManifest appManifest = manifestFactory.create(manifestFactory.identify(config));
 
     // This intentionally loads from the non standard resources/project.properties
-    List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
-    assertEquals(asList(
-        joinPath(".", "src", "test", "resources", "res"),
-        joinPath(".", "src", "test", "resources", "lib1", "res"),
-        joinPath(".", "src", "test", "resources", "lib1", "..", "lib3", "res"),
-        joinPath(".", "src", "test", "resources", "lib1", "..", "lib2", "res")),
-        resourcePaths);
+    assertThat(appManifest.getIncludedResourcePaths().get(0).getResourceBase().toString()).isEqualTo("./src/test/resources/res");
+    assertThat(appManifest.getIncludedResourcePaths().get(0).getResourceBase().toString()).isEqualTo("./src/test/resources/lib1/res");
+    assertThat(appManifest.getIncludedResourcePaths().get(0).getResourceBase().toString()).isEqualTo("./src/test/resources/lib1/../lib3/res");
+    assertThat(appManifest.getIncludedResourcePaths().get(0).getResourceBase().toString()).isEqualTo("./src/test/resources/lib1/../lib2/res");
   }
 
   @Test
@@ -114,13 +109,5 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraryDirs()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isEqualTo("another.package");
-  }
-
-  private List<String> stringify(Collection<ResourcePath> resourcePaths) {
-    List<String> resourcePathBases = new ArrayList<>();
-    for (ResourcePath resourcePath : resourcePaths) {
-      resourcePathBases.add(resourcePath.getResourceBase().toString());
-    }
-    return resourcePathBases;
   }
 }

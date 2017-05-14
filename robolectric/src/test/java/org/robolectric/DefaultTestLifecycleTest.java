@@ -13,6 +13,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.util.TestUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(RobolectricTestRunner.class)
 public class DefaultTestLifecycleTest {
@@ -58,7 +58,7 @@ public class DefaultTestLifecycleTest {
 
   @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
+    AndroidManifest appManifest = new AndroidManifest(TestUtil.resourceFile("TestAndroidManifestWithReceivers.xml"), null, null);
     Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
     shadowOf(application).bind(appManifest);
 

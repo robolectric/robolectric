@@ -18,6 +18,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
 import android.view.Display;
+import com.google.common.io.CharStreams;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -496,42 +498,42 @@ public class ShadowResourcesTest {
   public void openRawResource_shouldLoadRawResources() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("raw txt file contents");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream))).isEqualTo("raw txt file contents");
   }
 
   @Test
   public void openRawResource_shouldLoadRawResourcesFromLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream))).isEqualTo("from lib3");
   }
 
   @Test
   public void openRawResource_shouldLoadRawResourcesFromSecondaryLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_2);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib2");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream))).isEqualTo("I'm only defined in lib2");
   }
 
   @Test
   public void openRawResource_shouldLoadRawResourcesFromTertiaryLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_3);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib3");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream))).isEqualTo("I'm only defined in lib3");
   }
 
   @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream))).isEqualTo("drawable.png image\n");
   }
 
   @Test @Config(qualifiers = "hdpi")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream))).isEqualTo("drawable-hdpi.png image\n");
   }
 
   @Test

@@ -7,17 +7,16 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
-import static org.robolectric.util.TestUtil.stringify;
 
 public class ConfigMergerTest {
   @Test public void defaultValuesAreMerged() throws Exception {
@@ -262,5 +261,47 @@ public class ConfigMergerTest {
   @Ignore
   @Config(qualifiers = "from-class6", shadows = Test6.class, instrumentedPackages = "com.example.test6", resourceDir = "class6/res", constants = BuildConfigConstants6.class)
   public static class Test6 extends Test5 {
+  }
+
+  private static String stringify(Config config) {
+    int[] sdk = config.sdk();
+    String manifest = config.manifest();
+    Class<? extends Application> application = config.application();
+    String packageName = config.packageName();
+    String qualifiers = config.qualifiers();
+    String resourceDir = config.resourceDir();
+    String assetsDir = config.assetDir();
+    Class<?>[] shadows = config.shadows();
+    String[] instrumentedPackages = config.instrumentedPackages();
+    String[] libraries = config.libraries();
+    Class<?> constants = config.constants();
+    return stringify(sdk, manifest, application, packageName, qualifiers, resourceDir, assetsDir, shadows, instrumentedPackages, libraries, constants);
+  }
+
+  private static String stringify(int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, String[] instrumentedPackages, String[] libraries, Class<?> constants) {
+    String[] stringClasses = new String[shadows.length];
+    for (int i = 0; i < stringClasses.length; i++) {
+      stringClasses[i] = shadows[i].toString();
+    }
+
+    Arrays.sort(stringClasses);
+
+    String[] sortedLibraries = libraries.clone();
+    Arrays.sort(sortedLibraries);
+
+    String[] sortedInstrumentedPackages = instrumentedPackages.clone();
+    Arrays.sort(sortedInstrumentedPackages);
+
+    return "sdk=" + Arrays.toString(sdk) + "\n" +
+        "manifest=" + manifest + "\n" +
+        "application=" + application + "\n" +
+        "packageName=" + packageName + "\n" +
+        "qualifiers=" + qualifiers + "\n" +
+        "resourceDir=" + resourceDir + "\n" +
+        "assetDir=" + assetsDir + "\n" +
+        "shadows=" + Arrays.toString(stringClasses) + "\n" +
+        "instrumentedPackages" + Arrays.toString(sortedInstrumentedPackages) + "\n" +
+        "libraries=" + Arrays.toString(sortedLibraries) + "\n" +
+        "constants=" + constants;
   }
 }

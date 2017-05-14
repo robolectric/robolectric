@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.joinPath;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAssetManagerTest {
@@ -74,12 +73,10 @@ public class ShadowAssetManagerTest {
     files = Arrays.asList(assetManager.list(testPath));
     assertTrue(files.contains("extra"));
 
-    testPath = joinPath("docs", "extra");
-    files = Arrays.asList(assetManager.list(testPath));
+    files = Arrays.asList(assetManager.list("docs/extra"));
     assertTrue(files.contains("testing"));
 
-    testPath = joinPath("docs", "extra", "testing");
-    files = Arrays.asList(assetManager.list(testPath));
+    files = Arrays.asList(assetManager.list("docs/extra/testing"));
     assertTrue(files.contains("hello.txt"));
 
     testPath = "assetsHome.txt";
