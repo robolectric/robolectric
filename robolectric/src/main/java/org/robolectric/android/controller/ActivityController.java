@@ -13,17 +13,16 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.android.runtime.RuntimeAdapter;
-import org.robolectric.android.runtime.RuntimeAdapterFactory;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
 import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ActivityController<T extends Activity> extends org.robolectric.util.ActivityController<T> {
@@ -78,8 +77,7 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     final Class<?> threadClass = getActivityThreadClass(cl);
     final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
 
-    final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
+    shadowOf(component).callActivityAttach(baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
 
     shadowReference.setThemeFromManifest();
     attached = true;
@@ -204,9 +202,8 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
       Rect frame = new Rect();
       display.getRectSize(frame);
       Rect insets = new Rect(0, 0, 0, 0);
-      final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-      runtimeAdapter.callViewRootImplDispatchResized(
-          root, frame, insets, insets, insets, insets, insets, true, null);
+      ShadowViewRootImpl shadow = Shadow.extract(root);
+      shadow.callViewRootImplDispatchResized(frame, insets, insets, insets, insets, insets, true, null);
     }
 
     return this;
@@ -313,7 +310,7 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
           attach();
           
           // Set saved non config instance
-          Shadows.shadowOf(recreatedActivity).setLastNonConfigurationInstance(nonConfigInstance);
+          shadowOf(recreatedActivity).setLastNonConfigurationInstance(nonConfigInstance);
           
             // Create lifecycle
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,

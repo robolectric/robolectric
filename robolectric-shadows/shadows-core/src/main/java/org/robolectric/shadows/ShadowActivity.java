@@ -1,23 +1,23 @@
 package org.robolectric.shadows;
 
 import android.R;
-import android.app.Activity;
-import android.app.Application;
-import android.app.Dialog;
-import android.app.Fragment;
+import android.app.*;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
+import android.view.*;
 
+import com.android.internal.app.IVoiceInteractor;
+import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -33,8 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -574,6 +573,78 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  public void callActivityAttach(Context baseContext, Class<?> activityThreadClass, Application application, Intent intent, ActivityInfo activityInfo, String activityTitle, Class<?> nonConfigurationInstancesClass) {
+    if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
+      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+          ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
+          ReflectionHelpers.ClassParameter.from(activityThreadClass, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(IBinder.class, null),
+          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(Application.class, application),
+          ReflectionHelpers.ClassParameter.from(Intent.class, intent),
+          ReflectionHelpers.ClassParameter.from(ActivityInfo.class, activityInfo),
+          ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
+          ReflectionHelpers.ClassParameter.from(Activity.class, null),
+          ReflectionHelpers.ClassParameter.from(String.class, "id"),
+          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()));
+    } else if (RuntimeEnvironment.getApiLevel() <= LOLLIPOP) {
+      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+          ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
+          ReflectionHelpers.ClassParameter.from(activityThreadClass, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(IBinder.class, null),
+          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(Application.class, application),
+          ReflectionHelpers.ClassParameter.from(Intent.class, intent),
+          ReflectionHelpers.ClassParameter.from(ActivityInfo.class, activityInfo),
+          ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
+          ReflectionHelpers.ClassParameter.from(Activity.class, null),
+          ReflectionHelpers.ClassParameter.from(String.class, "id"),
+          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
+          ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null));
+    } else if (RuntimeEnvironment.getApiLevel() <= M) {
+      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+          ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
+          ReflectionHelpers.ClassParameter.from(activityThreadClass, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(IBinder.class, null),
+          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(Application.class, application),
+          ReflectionHelpers.ClassParameter.from(Intent.class, intent),
+          ReflectionHelpers.ClassParameter.from(ActivityInfo.class, activityInfo),
+          ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
+          ReflectionHelpers.ClassParameter.from(Activity.class, null),
+          ReflectionHelpers.ClassParameter.from(String.class, "id"),
+          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
+          ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
+          ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null));
+    } else if (RuntimeEnvironment.getApiLevel() < O) {
+      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+          ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
+          ReflectionHelpers.ClassParameter.from(activityThreadClass, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(IBinder.class, null),
+          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(Application.class, application),
+          ReflectionHelpers.ClassParameter.from(Intent.class, intent),
+          ReflectionHelpers.ClassParameter.from(ActivityInfo.class, activityInfo),
+          ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
+          ReflectionHelpers.ClassParameter.from(Activity.class, null),
+          ReflectionHelpers.ClassParameter.from(String.class, "id"),
+          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
+          ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
+          ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null),
+          ReflectionHelpers.ClassParameter.from(Window.class, null));
+    } else {
+      throw new RuntimeException("Unable to handle API level: " + RuntimeEnvironment.getApiLevel());
     }
   }
 }

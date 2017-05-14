@@ -1,6 +1,7 @@
 package org.robolectric.android.internal;
 
 import android.app.Application;
+import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -18,7 +19,6 @@ import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.*;
@@ -104,7 +104,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Object activityThread = ReflectionHelpers.newInstance(activityThreadClass);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", new Instrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));

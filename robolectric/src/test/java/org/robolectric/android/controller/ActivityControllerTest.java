@@ -34,7 +34,7 @@ import org.robolectric.util.TestRunnable;
 import java.util.ArrayList;
 import java.util.List;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class ActivityControllerTest {
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyActivity.class.getName());
@@ -211,23 +211,6 @@ public class ActivityControllerTest {
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }
 
-  @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void attach_shouldWorkWithAPI19() {
-    MyActivity activity = Robolectric.buildActivity(MyActivity.class).create().get();
-    assertThat(activity).isNotNull();
-  }
-
-  @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void shouldUseCorrectRuntimeAdapter() {
-    ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", 15);
-    MyActivity activity = Robolectric.buildActivity(MyActivity.class).setup().get();
-    assertThat(activity).isNotNull();
-    RuntimeAdapter adapter = RuntimeAdapterFactory.getInstance();
-    assertThat(adapter.getClass().getName()).isEqualTo("org.robolectric.android.runtime.Api19RuntimeAdapter");
-  }
-  
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
