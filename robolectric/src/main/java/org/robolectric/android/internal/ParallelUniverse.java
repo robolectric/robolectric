@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
@@ -23,6 +24,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -93,21 +95,19 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
-
-    Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
     ShadowLooper.getShadowMainLooper().resetScheduler();
-    Object activityThread = ReflectionHelpers.newInstance(activityThreadClass);
+    ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new Instrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
+    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
@@ -131,7 +131,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-        ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
+        ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
         ApplicationTestUtil.attach(application, contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);

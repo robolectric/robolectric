@@ -1,5 +1,6 @@
 package org.robolectric.android.controller;
 
+import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Service;
 import android.app.IntentService;
@@ -14,7 +15,6 @@ import org.robolectric.util.ReflectionHelpers;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class IntentServiceController<T extends IntentService> extends org.robolectric.util.IntentServiceController<T> {
-  private final String shadowActivityThreadClassName;
 
   public static <T extends IntentService> IntentServiceController<T> of(final ShadowsAdapter shadowsAdapter,
                                                                         final T service,
@@ -26,7 +26,6 @@ public class IntentServiceController<T extends IntentService> extends org.robole
 
     private IntentServiceController(final ShadowsAdapter shadowsAdapter, final T service, final Intent intent) {
         super(shadowsAdapter, service, intent);
-        shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
     }
 
   /**
@@ -43,17 +42,10 @@ public class IntentServiceController<T extends IntentService> extends org.robole
       final Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
       final ClassLoader cl = baseContext.getClassLoader();
-      final Class<?> activityThreadClass;
-        try {
-          activityThreadClass = cl.loadClass(shadowActivityThreadClassName);
-        } catch (ClassNotFoundException e) {
-          e.printStackTrace();
-          throw new RuntimeException(e);
-        }
 
       ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
          from(Context.class, baseContext),
-         from(activityThreadClass, null),
+         from(ActivityThread.class, null),
          from(String.class, component.getClass().getSimpleName()),
          from(IBinder.class, null),
          from(Application.class, RuntimeEnvironment.application),

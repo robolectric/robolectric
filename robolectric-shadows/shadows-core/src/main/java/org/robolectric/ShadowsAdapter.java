@@ -15,11 +15,7 @@ public interface ShadowsAdapter {
 
   ShadowLooperAdapter getMainLooper();
 
-  String getShadowActivityThreadClassName();
-
   void setupLogging();
-
-  String getShadowContextImplClassName();
 
   void bind(Application application, AndroidManifest appManifest);
 

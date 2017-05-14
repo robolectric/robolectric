@@ -30,18 +30,8 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public String getShadowActivityThreadClassName() {
-    return ShadowActivityThread.CLASS_NAME;
-  }
-
-  @Override
   public void setupLogging() {
     ShadowLog.setupLogging();
-  }
-
-  @Override
-  public String getShadowContextImplClassName() {
-    return ShadowContextImpl.CLASS_NAME;
   }
 
   @Override

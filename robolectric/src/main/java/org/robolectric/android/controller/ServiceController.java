@@ -1,5 +1,6 @@
 package org.robolectric.android.controller;
 
+import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
@@ -13,8 +14,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ServiceController<T extends Service> extends org.robolectric.util.ServiceController<T> {
 
-  private String shadowActivityThreadClassName;
-
   public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
     ServiceController<T> controller = new ServiceController<>(shadowsAdapter, service, intent);
     controller.attach();
@@ -23,7 +22,6 @@ public class ServiceController<T extends Service> extends org.robolectric.util.S
 
   protected ServiceController(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
     super(shadowsAdapter, service, intent);
-    shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }
 
   /**
@@ -39,18 +37,9 @@ public class ServiceController<T extends Service> extends org.robolectric.util.S
 
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
-    ClassLoader cl = baseContext.getClassLoader();
-    Class<?> activityThreadClass;
-    try {
-      activityThreadClass = cl.loadClass(shadowActivityThreadClassName);
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-    }
-
     ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
         from(Context.class, baseContext),
-        from(activityThreadClass, null),
+        from(ActivityThread.class, null),
         from(String.class, component.getClass().getSimpleName()),
         from(IBinder.class, null),
         from(Application.class, RuntimeEnvironment.application),

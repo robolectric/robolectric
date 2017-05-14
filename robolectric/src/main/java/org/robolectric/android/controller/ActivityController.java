@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import android.app.Activity;
+import android.app.ActivityThread;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -71,10 +72,9 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     final String title = getActivityTitle();
     final ClassLoader cl = baseContext.getClassLoader();
     final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
-    final Class<?> threadClass = getActivityThreadClass(cl);
     final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
 
-    shadowOf(component).callActivityAttach(baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
+    shadowOf(component).callActivityAttach(baseContext, ActivityThread.class, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
     shadowOf(component).setThemeFromManifest();
     attached = true;
     return this;
@@ -84,14 +84,6 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     try {
       return application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), component.getClass().getName()), PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
     } catch (PackageManager.NameNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private Class<?> getActivityThreadClass(ClassLoader cl) {
-    try {
-      return cl.loadClass(shadowsAdapter.getShadowActivityThreadClassName());
-    } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
   }
