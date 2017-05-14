@@ -14,10 +14,9 @@ import android.view.Display;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
-import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -27,7 +26,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ActivityController<T extends Activity> extends org.robolectric.util.ActivityController<T> {
   private final ShadowsAdapter shadowsAdapter;
-  private ShadowActivityAdapter shadowReference;
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     return new ActivityController<>(shadowsAdapter, activity, intent).attach();
@@ -40,7 +38,6 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
   private ActivityController(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     super(shadowsAdapter, activity, intent);
     this.shadowsAdapter = shadowsAdapter;
-    shadowReference = shadowsAdapter.getShadowActivityAdapter(this.component);
   }
 
   /**
@@ -78,8 +75,7 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
 
     shadowOf(component).callActivityAttach(baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
-
-    shadowReference.setThemeFromManifest();
+    shadowOf(component).setThemeFromManifest();
     attached = true;
     return this;
   }
@@ -112,8 +108,7 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
     String title = null;
 
     /* Get the label for the activity from the manifest */
-    ShadowApplicationAdapter shadowApplicationAdapter = shadowsAdapter.getApplicationAdapter(component);
-    AndroidManifest appManifest = shadowApplicationAdapter.getAppManifest();
+    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
     if (appManifest == null) return null;
     String labelRef = appManifest.getActivityLabel(component.getClass().getName());
 
@@ -306,7 +301,6 @@ public class ActivityController<T extends Activity> extends org.robolectric.util
           // Setup controller for the new activity
           attached = false;
           component = recreatedActivity;
-          shadowReference = shadowsAdapter.getShadowActivityAdapter(component);
           attach();
           
           // Set saved non config instance
