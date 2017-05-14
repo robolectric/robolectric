@@ -15,14 +15,13 @@ import java.util.Set;
 public class TempDirectory {
   private static final TempDirectory instance = new TempDirectory();
 
-  private final Queue<Path> reusableDirs;
   private final Set<String> deletePaths;
 
   TempDirectory() {
-    reusableDirs = new ArrayDeque<>();
     deletePaths = new LinkedHashSet<>();
 
     // Use a manual hook that actually clears the directory
+    // This is necessary because File.deleteOnExit won't delete non empty directories
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override public void run() {
         for (String file : deletePaths) {
@@ -38,7 +37,7 @@ public class TempDirectory {
   }
 
   public static Path create() {
-    return instance.createImpl(true);
+    return instance.createImpl();
   }
 
   /**
@@ -46,7 +45,7 @@ public class TempDirectory {
    */
   @Deprecated
   public static Path createDeleteOnExit() {
-    return instance.createImpl(true);
+    return create();
   }
 
   public static void destroy(Path path) {
@@ -55,13 +54,10 @@ public class TempDirectory {
     }
   }
 
-  Path createImpl(boolean deleteOnExit) {
-    Path empty = reusableDirs.poll();
-    if (empty != null && Files.exists(empty)) return empty;
-
+  private Path createImpl() {
     try {
-      Path directory = createTempDir("robolectric");
-      if (deleteOnExit) deleteOnExit(directory);
+      Path directory = Files.createTempDirectory("robolectric");
+      deleteOnExit(directory);
       return directory;
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -73,7 +69,6 @@ public class TempDirectory {
 
     try {
       clearDirectory(path);
-      reusableDirs.add(path);
     } catch (IOException ignored) {
       // We failed to clear the directory, just try again at exit
     }
@@ -101,9 +96,5 @@ public class TempDirectory {
 
   private void deleteOnExit(Path path) {
     deletePaths.add(path.toString());
-  }
-
-  private Path createTempDir(String name) throws IOException {
-    return Files.createTempDirectory(name);
   }
 }

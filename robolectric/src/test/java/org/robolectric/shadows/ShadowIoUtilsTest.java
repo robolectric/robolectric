@@ -1,14 +1,16 @@
 package org.robolectric.shadows;
 
 
+import com.google.common.io.Files;
 import libcore.io.IoUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.test.TemporaryFolder;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,9 +22,10 @@ public class ShadowIoUtilsTest {
   @Test
   public void ioUtils() throws Exception {
 
-    File fontFile = temporaryFolder.newFile("test_file.txt", "some contents");
+    File file = temporaryFolder.newFile("test_file.txt");
+    Files.write("some contents", file, StandardCharsets.UTF_8);
 
-    String contents = IoUtils.readFileAsString(fontFile.getAbsolutePath());
+    String contents = IoUtils.readFileAsString(file.getAbsolutePath());
     assertThat(contents).isEqualTo("some contents");
   }
 }

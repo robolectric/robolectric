@@ -16,5 +16,4 @@ dependencies {
     testCompile "org.assertj:assertj-core:2.6.0"
     testCompile "com.google.testing.compile:compile-testing:0.6"
     testCompile "org.mockito:mockito-core:2.5.4"
-    testCompile project(":testutil")
 }
