@@ -1,7 +1,7 @@
 package org.robolectric.android;
 
 import android.content.Context;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.MethodSignature;

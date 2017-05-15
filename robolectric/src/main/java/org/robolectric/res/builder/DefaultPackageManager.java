@@ -19,6 +19,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -40,6 +41,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -48,7 +50,6 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -79,6 +80,7 @@ import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TempDirectory;
 
 /**
@@ -110,9 +112,19 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public PackageInstaller getPackageInstaller() {
     if (packageInstaller == null) {
-      packageInstaller = new PackageInstaller(RuntimeEnvironment.application, this, ReflectionHelpers.createNullProxy(
-          IPackageInstaller.class),
-          null, UserHandle.myUserId());
+      if (RuntimeEnvironment.getApiLevel() == VERSION_CODES.O) {
+        packageInstaller = new PackageInstaller(ReflectionHelpers.createNullProxy(
+            IPackageInstaller.class),
+            null, UserHandle.myUserId());
+      } else {
+        packageInstaller = ReflectionHelpers.callConstructor(PackageInstaller.class,
+            ClassParameter.from(Context.class, RuntimeEnvironment.application),
+            ClassParameter.from(PackageManager.class, this),
+            ClassParameter.from(IPackageInstaller.class,
+                ReflectionHelpers.createNullProxy(IPackageInstaller.class)),
+            ClassParameter.from(String.class, null),
+            ClassParameter.from(int.class, UserHandle.myUserId()));
+      }
     }
     return packageInstaller;
   }
@@ -241,6 +253,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         providerInfo.readPermission = contentProviderData.getReadPermission();
         providerInfo.writePermission = contentProviderData.getWritePermission();
         providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
+        providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
         if ((flags & GET_META_DATA) != 0) {
           providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
         }
@@ -600,7 +613,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   /**
-   * Non-Android accessor.  Use to make assertions on values passed to setComponentEnabledSetting.
+   * Use to make assertions on values passed to setComponentEnabledSetting.
    *
    * @param componentName Component name.
    * @return Component state.
@@ -611,7 +624,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   /**
-   * Non-Android accessor.  Used to add a package to the list of those already 'installed' on system.
+   * Adds a package to the list of those already 'installed' on system.
    *
    * @param packageInfo New package info.
    */
@@ -626,16 +639,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
-      PackageInstaller.SessionParams sessionParams = new PackageInstaller.SessionParams(0);
-      sessionParams.setAppPackageName(packageInfo.packageName);
-      try {
-        getPackageInstaller().createSession(sessionParams);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   @Override
@@ -680,6 +683,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         info.authority = cpdata[i].getAuthorities(); // todo: support multiple authorities
         info.name = cpdata[i].getClassName();
         info.packageName = androidManifest.getPackageName();
+        info.metaData = metaDataToBundle(cpdata[i].getMetaData().getValueMap());
         packageInfo.providers[i] = info;
       }
     }
@@ -782,7 +786,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   /**
-   * Non-Android accessor.  Used to declare a system feature is or is not supported.
+   * Used to declare a system feature is or is not supported.
    *
    * @param name Feature name.
    * @param supported Is the feature supported?

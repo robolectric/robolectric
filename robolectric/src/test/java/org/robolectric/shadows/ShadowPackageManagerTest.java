@@ -5,8 +5,21 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.*;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.FeatureInfo;
+import android.content.pm.IPackageStatsObserver;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageStats;
+import android.content.pm.PathPermission;
+import android.content.pm.PermissionInfo;
+import android.content.pm.ProviderInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.content.pm.Signature;
+import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -15,6 +28,7 @@ import android.os.Bundle;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
@@ -22,18 +36,34 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.test.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.content.pm.PackageManager.*;
+import static android.content.pm.ApplicationInfo.*;
+import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
+import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_MATCH;
+import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
+import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -55,6 +85,172 @@ public class ShadowPackageManagerTest {
   public void setUp() {
     shadowPackageManager = shadowOf(RuntimeEnvironment.application.getPackageManager());
     packageManager = RuntimeEnvironment.application.getPackageManager();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void packageInstallerCreateSession() throws Exception {
+    PackageInstaller packageInstaller = RuntimeEnvironment.application.getPackageManager().getPackageInstaller();
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+
+    PackageInstaller.SessionInfo sessionInfo = packageInstaller.getSessionInfo(sessionId);
+    assertThat(sessionInfo.isActive()).isTrue();
+
+    assertThat(sessionInfo.appPackageName).isEqualTo("packageName");
+
+    packageInstaller.abandonSession(sessionId);
+
+    assertThat(packageInstaller.getSessionInfo(sessionId)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void packageInstallerOpenSession() throws Exception {
+    PackageInstaller packageInstaller = RuntimeEnvironment.application.getPackageManager().getPackageInstaller();
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+
+    PackageInstaller.Session session = packageInstaller.openSession(sessionId);
+
+    assertThat(session).isNotNull();
+  }
+
+  private static PackageInstaller.SessionParams createSessionParams(String appPackageName) {
+    PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+    params.setAppPackageName(appPackageName);
+    return params;
+  }
+
+  @Test
+  public void packageInstallerAndGetPackageArchiveInfo() {
+    ApplicationInfo appInfo = new ApplicationInfo();
+    appInfo.flags = 0;
+    appInfo.packageName = TEST_PACKAGE_NAME;
+    appInfo.sourceDir = TEST_APP_PATH;
+    appInfo.name = TEST_PACKAGE_LABEL;
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = appInfo;
+    shadowPackageManager.addPackage(packageInfo);
+
+    PackageInfo packageInfoResult = shadowPackageManager.getPackageArchiveInfo(TEST_APP_PATH, 0);
+    assertThat(packageInfoResult).isNotNull();
+    ApplicationInfo applicationInfo = packageInfoResult.applicationInfo;
+    assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
+    assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
+    assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
+
+  }
+
+  @Test @Config(manifest = "src/test/resources/TestAndroidManifestWithFlags.xml")
+  public void applicationFlags() throws Exception {
+    int flags = shadowPackageManager.getApplicationInfo("org.robolectric", 0).flags;
+    assertThat(flags).isEqualTo(
+        FLAG_ALLOW_BACKUP
+            | FLAG_ALLOW_CLEAR_USER_DATA
+            | FLAG_ALLOW_TASK_REPARENTING
+            | FLAG_DEBUGGABLE
+            | FLAG_HAS_CODE
+            | FLAG_KILL_AFTER_RESTORE
+            | FLAG_PERSISTENT
+            | FLAG_RESIZEABLE_FOR_SCREENS
+            | FLAG_RESTORE_ANY_VERSION
+            | FLAG_SUPPORTS_LARGE_SCREENS
+            | FLAG_SUPPORTS_NORMAL_SCREENS
+            | FLAG_SUPPORTS_SCREEN_DENSITIES
+            | FLAG_SUPPORTS_SMALL_SCREENS
+            | FLAG_TEST_ONLY
+            | FLAG_VM_SAFE_MODE
+    );
+  }
+  
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  public void testCheckPermissions() throws Exception {
+    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.GET_TASKS", RuntimeEnvironment.application.getPackageName()));
+
+    assertEquals(PackageManager.PERMISSION_DENIED, shadowPackageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_DENIED, shadowPackageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  public void testQueryBroadcastReceiverSucceeds() {
+    Intent intent = new Intent("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
+    intent.setPackage(RuntimeEnvironment.application.getPackageName());
+
+    List<ResolveInfo> receiverInfos = shadowPackageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    assertTrue(receiverInfos.size() == 1);
+    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.get(0).activityInfo.name);
+    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.get(0).activityInfo.permission);
+    assertEquals("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE", receiverInfos.get(0).filter.getAction(0));
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  public void testQueryBroadcastReceiverFailsForMissingPackageName() {
+    Intent intent = new Intent("org.robolectric.ACTION_ONE_MORE_PACKAGE");
+    List<ResolveInfo> receiverInfos = shadowPackageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    assertTrue(receiverInfos.size() == 0);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  public void testQueryBroadcastReceiverFailsForMissingAction() {
+    Intent intent = new Intent();
+    intent.setPackage(RuntimeEnvironment.application.getPackageName());
+    List<ResolveInfo> receiverInfos = shadowPackageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    assertTrue(receiverInfos.size() == 0);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
+  public void testGetPackageInfo_ForReceiversSucceeds() throws Exception {
+    PackageInfo receiverInfos = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_RECEIVERS);
+
+    assertEquals(1, receiverInfos.receivers.length);
+    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.receivers[0].name);
+    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.receivers[0].permission);
+  }
+
+  public static class ActivityWithConfigChanges extends Activity { }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void getActivityMetaData_configChanges() throws Exception {
+    Activity activity = setupActivity(ShadowPackageManagerTest.ActivityWithConfigChanges.class);
+
+    ActivityInfo activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
+
+    int configChanges = activityInfo.configChanges;
+    assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
+    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_LAYOUT).isEqualTo(ActivityInfo.CONFIG_SCREEN_LAYOUT);
+    assertThat(configChanges & ActivityInfo.CONFIG_ORIENTATION).isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
+
+    // Spot check a few other possible values that shouldn't be in the flags.
+    assertThat(configChanges & ActivityInfo.CONFIG_MNC).isZero();
+    assertThat(configChanges & ActivityInfo.CONFIG_FONT_SCALE).isZero();
+    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_SIZE).isZero();
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  public void getPermissionInfo_withMinimalFields() throws Exception {
+    PermissionInfo permission = packageManager.getPermissionInfo("permission_with_minimal_fields", 0);
+    assertThat(permission.labelRes).isEqualTo(0);
+    assertThat(permission.descriptionRes).isEqualTo(0);
+    assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
+  }
+
+  @Test
+  public void getPermissionInfo_addedPermissions() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "manually_added_permission";
+    shadowPackageManager.addPermissionInfo(permissionInfo);
+    PermissionInfo permission = packageManager.getPermissionInfo("manually_added_permission", 0);
+    assertThat(permission.name).isEqualTo("manually_added_permission");
   }
 
   @Test
@@ -352,6 +548,15 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getProviderInfo_shouldMetaDataInProviderInfos() throws Exception {
+    ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
+
+    assertThat(providerInfo.metaData.getString("greeting")).isEqualTo("Hello");
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
   public void resolveContentProvider_shouldResolveByPackageName() throws Exception {
     ProviderInfo providerInfo = packageManager.resolveContentProvider("org.robolectric.authority1", 0);
     assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
@@ -422,57 +627,6 @@ public class ShadowPackageManagerTest {
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));
     assertEquals(R.string.app_name, metaValue);
-  }
-
-  @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
-  public void testCheckPermissions() throws Exception {
-    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.GET_TASKS", RuntimeEnvironment.application.getPackageName()));
-
-    assertEquals(PackageManager.PERMISSION_DENIED, shadowPackageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_DENIED, shadowPackageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
-  }
-
-  @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
-  public void testQueryBroadcastReceiverSucceeds() {
-    Intent intent = new Intent("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
-    intent.setPackage(RuntimeEnvironment.application.getPackageName());
-
-    List<ResolveInfo> receiverInfos = shadowPackageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
-    assertTrue(receiverInfos.size() == 1);
-    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.get(0).activityInfo.name);
-    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.get(0).activityInfo.permission);
-    assertEquals("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE", receiverInfos.get(0).filter.getAction(0));
-  }
-
-  @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
-  public void testQueryBroadcastReceiverFailsForMissingPackageName() {
-    Intent intent = new Intent("org.robolectric.ACTION_ONE_MORE_PACKAGE");
-    List<ResolveInfo> receiverInfos = shadowPackageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
-    assertTrue(receiverInfos.size() == 0);
-  }
-
-  @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
-  public void testQueryBroadcastReceiverFailsForMissingAction() {
-    Intent intent = new Intent();
-    intent.setPackage(RuntimeEnvironment.application.getPackageName());
-    List<ResolveInfo> receiverInfos = shadowPackageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
-    assertTrue(receiverInfos.size() == 0);
-  }
-
-  @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
-  public void testGetPackageInfo_ForReceiversSucceeds() throws Exception {
-    PackageInfo receiverInfos = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_RECEIVERS);
-
-    assertEquals(1, receiverInfos.receivers.length);
-    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.receivers[0].name);
-    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.receivers[0].permission);
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -1069,4 +1223,25 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getInstallerPackageName("target.package")).isEqualTo("installer.package");
   }
+
+  @Test
+  public void getXml() throws Exception {
+    XmlResourceParser in = packageManager.getXml(RuntimeEnvironment.application.getPackageName(),
+        R.xml.dialog_preferences,
+        RuntimeEnvironment.application.getApplicationInfo());
+    assertThat(in).isNotNull();
+  }
+
+  @Test @Config(minSdk = LOLLIPOP)
+  public void addPackageShouldNotCreateSessions() {
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "test.package";
+    shadowPackageManager.addPackage(packageInfo);
+
+    assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
+  }
+
+
+
 }

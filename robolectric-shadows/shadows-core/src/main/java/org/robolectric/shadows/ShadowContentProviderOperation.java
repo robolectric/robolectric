@@ -10,9 +10,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Map;
 
-/**
- * Shadow for {@link android.content.ContentProviderOperation}.
- */
 @Implements(ContentProviderOperation.class)
 public class ShadowContentProviderOperation {
   public final static int TYPE_INSERT = 1;

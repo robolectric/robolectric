@@ -5,9 +5,6 @@ import android.app.ActivityGroup;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.app.ActivityGroup}.
- */
 @Implements(ActivityGroup.class)
 public class ShadowActivityGroup extends ShadowActivity {
   private Activity currentActivity;
@@ -18,8 +15,6 @@ public class ShadowActivityGroup extends ShadowActivity {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param activity Current activity.
    */
   public void setCurrentActivity(Activity activity) {

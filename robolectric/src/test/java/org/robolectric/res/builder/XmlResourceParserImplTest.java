@@ -43,7 +43,7 @@ public class XmlResourceParserImplTest {
 
   @Before
   public void setUp() throws Exception {
-    resourceTable = ResourceTableFactory.newResourceTable(R.class.getPackage().getName(), testResources());
+    resourceTable = new ResourceTableFactory().newResourceTable(R.class.getPackage().getName(), testResources());
     TypedResource typedResource = resourceTable.getValue(R.xml.preferences, "");
     FsFile xmlFile = typedResource.getXmlContext().getXmlFile();
     String packageName = typedResource.getXmlContext().getPackageName();

@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JUnit4.class)
@@ -15,8 +16,9 @@ public class StyleDataTest {
 
   @Test
   public void getAttrValue_willFindLibraryResourcesWithSameName() {
-    StyleData styleData = new StyleData("library.resource", "Theme_MyApp", "Theme_Material");
-    styleData.add(myLibSearchViewStyle, new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource"));
+    StyleData styleData = new StyleData("library.resource", "Theme_MyApp", "Theme_Material", asList(
+        new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource")
+    ));
 
     assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("lib_value");
     assertThat(styleData.getAttrValue(myLibSearchViewStyle).value).isEqualTo("lib_value");
@@ -26,8 +28,9 @@ public class StyleDataTest {
 
   @Test
   public void getAttrValue_willNotFindFrameworkResourcesWithSameName() {
-    StyleData styleData = new StyleData("android", "Theme_Material", "Theme");
-    styleData.add(androidSearchViewStyle, new AttributeResource(androidSearchViewStyle, "android_value", "android"));
+    StyleData styleData = new StyleData("android", "Theme_Material", "Theme", asList(
+        new AttributeResource(androidSearchViewStyle, "android_value", "android")
+    ));
 
     assertThat(styleData.getAttrValue(androidSearchViewStyle).value).isEqualTo("android_value");
 
@@ -37,9 +40,10 @@ public class StyleDataTest {
 
   @Test
   public void getAttrValue_willChooseBetweenAmbiguousAttributes() {
-    StyleData styleData = new StyleData("android", "Theme_Material", "Theme");
-    styleData.add(myLibSearchViewStyle, new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource"));
-    styleData.add(androidSearchViewStyle, new AttributeResource(androidSearchViewStyle, "android_value", "android"));
+    StyleData styleData = new StyleData("android", "Theme_Material", "Theme", asList(
+        new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource"),
+        new AttributeResource(androidSearchViewStyle, "android_value", "android")
+    ));
 
     assertThat(styleData.getAttrValue(androidSearchViewStyle).value).isEqualTo("android_value");
     assertThat(styleData.getAttrValue(myLibSearchViewStyle).value).isEqualTo("lib_value");

@@ -78,14 +78,14 @@ public class SupportFragmentTestUtilTest {
     assertThat(fragment.getActivity()).isInstanceOf(LoginFragmentActivity.class);
   }
 
-  private static class LoginSupportFragment extends Fragment {
+  public static class LoginSupportFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
     }
   }
 
-  private static class LoginFragmentActivity extends FragmentActivity {
+  public static class LoginFragmentActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);

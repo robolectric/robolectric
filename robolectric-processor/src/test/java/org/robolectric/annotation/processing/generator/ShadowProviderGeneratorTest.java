@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.generator;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.annotation.Implements;
@@ -27,7 +27,7 @@ public class ShadowProviderGeneratorTest {
   @Before
   public void setUp() throws Exception {
     model = mock(RobolectricModel.class);
-    generator = new ShadowProviderGenerator(model, mock(ProcessingEnvironment.class), true);
+    generator = new ShadowProviderGenerator(model, mock(ProcessingEnvironment.class), "the.package", true);
     writer = new StringWriter();
   }
 
@@ -40,7 +40,7 @@ public class ShadowProviderGeneratorTest {
     resetters.put(type("ShadowThing", 21, -1), element("resetMin21"));
     when(model.getResetters()).thenReturn(resetters);
 
-    generator.generate("the.package", new PrintWriter(writer));
+    generator.generate(new PrintWriter(writer));
 
     assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 19 && org.robolectric.RuntimeEnvironment.getApiLevel() <= 20) ShadowThing.reset19To20();");
     assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 21) ShadowThing.resetMin21();");
@@ -57,7 +57,7 @@ public class ShadowProviderGeneratorTest {
     return shadowType;
   }
 
-  @NotNull
+  @Nonnull
   private ExecutableElement element(String reset) {
     ExecutableElement resetterExecutable = mock(ExecutableElement.class);
     Name mock = mock(Name.class);

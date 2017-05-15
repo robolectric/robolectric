@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   @Override
-  public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
+  public TypedResource getValue(@Nonnull ResName resName, String qualifiers) {
     return resources.get(resName, qualifiers);
   }
 
@@ -55,21 +55,34 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   public XmlBlock getXml(ResName resName, String qualifiers) {
-    FileTypedResource typedResource = (FileTypedResource) resources.get(resName, qualifiers);
-    if (typedResource == null || !typedResource.isXml()) {
+    FileTypedResource fileTypedResource = getFileResource(resName, qualifiers);
+    if (fileTypedResource == null || !fileTypedResource.isXml()) {
       return null;
     } else {
-      return XmlBlock.create(typedResource.getFsFile(), resName.packageName);
+      return XmlBlock.create(fileTypedResource.getFsFile(), resName.packageName);
     }
   }
 
   public InputStream getRawValue(ResName resName, String qualifiers) {
-    FileTypedResource typedResource = (FileTypedResource) resources.get(resName, qualifiers);
-    FsFile file = typedResource == null ? null : typedResource.getFsFile();
-    try {
-      return file == null ? null : file.getInputStream();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    FileTypedResource fileTypedResource = getFileResource(resName, qualifiers);
+    if (fileTypedResource == null) {
+      return null;
+    } else {
+      FsFile file = fileTypedResource.getFsFile();
+      try {
+        return file == null ? null : file.getInputStream();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private FileTypedResource getFileResource(ResName resName, String qualifiers) {
+    TypedResource typedResource = resources.get(resName, qualifiers);
+    if (!(typedResource instanceof FileTypedResource)) {
+      return null;
+    } else {
+      return (FileTypedResource) typedResource;
     }
   }
 

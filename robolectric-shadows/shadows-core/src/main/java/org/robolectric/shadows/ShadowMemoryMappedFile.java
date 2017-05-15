@@ -17,11 +17,9 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
- * Shadow for {@link libcore.io.MemoryMappedFile}.
- *
- * <p>This is used by Android to load and inferFromValue time zone information. Robolectric emulates
+ * This is used by Android to load and inferFromValue time zone information. Robolectric emulates
  * this functionality by proxying to a time zone database file packaged into the android-all
- * jar.</p>
+ * jar.
  */
 @Implements(value = MemoryMappedFile.class, isInAndroidSdk = false)
 public class ShadowMemoryMappedFile {
@@ -39,7 +37,7 @@ public class ShadowMemoryMappedFile {
                     .newInstance("open", -1);
             }
             try {
-                MemoryMappedFile memoryMappedFile = new MemoryMappedFile(-1, -1);
+                MemoryMappedFile memoryMappedFile = new MemoryMappedFile(0L, 0L);
                 ShadowMemoryMappedFile shadowMemoryMappedFile = (ShadowMemoryMappedFile) ShadowExtractor.extract(memoryMappedFile);
                 shadowMemoryMappedFile.bytes = Streams.readFully(is);
                 return memoryMappedFile;
@@ -84,7 +82,7 @@ public class ShadowMemoryMappedFile {
     }
 
     @Implementation
-    public long size() {
+    public int size() {
         return bytes.length;
     }
 
@@ -101,6 +99,11 @@ public class ShadowMemoryMappedFile {
 
         public void skip(int byteCount) {
             buffer.position(buffer.position() + byteCount);
+        }
+
+        @Override
+        public int pos() {
+            return 0;
         }
 
         public void readByteArray(byte[] dst, int dstOffset, int byteCount) {

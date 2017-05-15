@@ -1,25 +1,24 @@
 package org.robolectric.manifest;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
-import org.robolectric.test.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static android.content.pm.ApplicationInfo.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -165,15 +164,25 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldReadTargetSdkVersionFromAndroidManifestOrDefaultToMin() throws Exception {
-    assertEquals(42, newConfigWith("android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"").getTargetSdkVersion());
-    assertEquals(7, newConfigWith("android:minSdkVersion=\"7\"").getTargetSdkVersion());
-    assertEquals(1, newConfigWith("").getTargetSdkVersion());
+    assertEquals(42, newConfigWith("targetsdk42minsdk6.xml", "android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"").getTargetSdkVersion());
+    assertEquals(7, newConfigWith("minsdk7.xml", "android:minSdkVersion=\"7\"").getTargetSdkVersion());
+    assertEquals(1, newConfigWith("noattributes.xml", "").getTargetSdkVersion());
   }
 
   @Test
   public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToOne() throws Exception {
-    assertEquals(17, newConfigWith("android:minSdkVersion=\"17\"").getMinSdkVersion());
-    assertEquals(1, newConfigWith("").getMinSdkVersion());
+    assertEquals(17, newConfigWith("minsdk17.xml", "android:minSdkVersion=\"17\"").getMinSdkVersion());
+    assertEquals(1, newConfigWith("noattributes.xml", "").getMinSdkVersion());
+  }
+
+  /**
+   * For Android O preview, apps are encouraged to use targetSdkVersion="O".
+   *
+   * @see <a href="http://google.com">https://developer.android.com/preview/migration.html</a>
+   */
+  @Test
+  public void shouldReadTargetSDKVersionOPreview() throws Exception {
+    assertEquals(26, newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"").getTargetSdkVersion());
   }
 
   @Test
@@ -188,7 +197,7 @@ public class AndroidManifestTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
-  public void shouldReturnApplicationMetaData() throws PackageManager.NameNotFoundException {
+  public void shouldReturnApplicationMetaData() throws Exception {
     Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
 
     Object metaValue = meta.get("org.robolectric.metaName1");
@@ -391,19 +400,35 @@ public class AndroidManifestTest {
     assertThat(config.getApplicationAttributes().get("android:allowBackup")).isEqualTo("true");
   }
 
-  /////////////////////////////
+  @Test
+  public void allFieldsShouldBePrimitivesOrJavaLangOrRobolectric() throws Exception {
+    List<Field> wrongFields = new ArrayList<>();
+    for (Field field : AndroidManifest.class.getDeclaredFields()) {
+      Class<?> type = field.getType();
+      if (type.isPrimitive()) continue;
 
-  public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
-    File f = temporaryFolder.newFile("whatever.xml",
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-            "          package=\"org.robolectric\">\n" +
-            "    <uses-sdk " + usesSdkAttrs + "/>\n" +
-            "</manifest>\n");
-    return new AndroidManifest(Fs.newFile(f), null, null);
+      String packageName = type.getPackage().getName();
+      if (packageName.startsWith("java.")
+          || packageName.equals("org.robolectric.res")
+          || packageName.equals("org.robolectric.manifest")
+          ) continue;
+
+      wrongFields.add(field);
+    }
+
+    assertThat(wrongFields).isEmpty();
   }
 
-  private boolean hasFlag(final int flags, final int flag) {
-    return (flags & flag) != 0;
+  /////////////////////////////
+
+  private AndroidManifest newConfigWith(String fileName, String usesSdkAttrs) throws IOException {
+    String contents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+        "          package=\"org.robolectric\">\n" +
+        "    <uses-sdk " + usesSdkAttrs + "/>\n" +
+        "</manifest>\n";
+    File f = temporaryFolder.newFile(fileName);
+    Files.write(contents, f, Charsets.UTF_8);
+    return new AndroidManifest(Fs.newFile(f), null, null);
   }
 }

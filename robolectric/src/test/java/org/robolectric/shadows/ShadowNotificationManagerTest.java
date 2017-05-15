@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
@@ -25,6 +27,25 @@ public class ShadowNotificationManagerTest {
 
   @Before public void setUp() {
     notificationManager = (NotificationManager) RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannel() {
+    notificationManager.createNotificationChannel(new NotificationChannel("id", "name", 1));
+
+    assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(1);
+    assertThat(shadowOf(notificationManager).getNotificationChannel("id").getName()).isEqualTo("name");
+    assertThat(shadowOf(notificationManager).getNotificationChannel("id").getImportance()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannelGroup() {
+    notificationManager.createNotificationChannelGroup(new NotificationChannelGroup("id", "name"));
+
+    assertThat(shadowOf(notificationManager).getNotificationChannelGroups()).hasSize(1);
+    assertThat(shadowOf(notificationManager).getNotificationChannelGroup("id").getName()).isEqualTo("name");
   }
 
   @Test

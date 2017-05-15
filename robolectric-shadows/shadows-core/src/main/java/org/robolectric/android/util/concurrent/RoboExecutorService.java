@@ -133,6 +133,7 @@ public class RoboExecutorService implements ExecutorService {
 
   @Override
   public void execute(Runnable runnable) {
-    submit(runnable);
+    @SuppressWarnings({"unused", "nullness"})
+    Future<?> possiblyIgnoredError = submit(runnable);
   }
 }

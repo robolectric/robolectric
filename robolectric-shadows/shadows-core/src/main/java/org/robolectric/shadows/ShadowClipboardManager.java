@@ -17,9 +17,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.content.ClipboardManager}.
- */
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)
 public class ShadowClipboardManager {

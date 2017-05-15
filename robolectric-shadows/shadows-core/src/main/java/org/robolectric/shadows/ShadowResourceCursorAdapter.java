@@ -9,9 +9,6 @@ import android.widget.ResourceCursorAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.widget.ResourceCursorAdapter}.
- */
 @Implements(ResourceCursorAdapter.class)
 public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {
   private int mLayout;

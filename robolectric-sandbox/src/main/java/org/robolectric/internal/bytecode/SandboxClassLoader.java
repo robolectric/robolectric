@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -369,7 +369,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       doSpecialHandling();
     }
 
-    @NotNull
+    @Nonnull
     private Set<String> instrumentMethods() {
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
@@ -759,7 +759,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     /**
      * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
      * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
-     * <p>
+     *
      * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
      * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
      * present in legacy bytecode.
@@ -910,7 +910,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       } else if (type.equals(Type.INT_TYPE) || type.equals(Type.SHORT_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)) {
         push(0);
       } else if (type.equals(Type.LONG_TYPE)) {
-        push(0l);
+        push(0L);
       } else if (type.equals(Type.FLOAT_TYPE)) {
         push(0f);
       } else if (type.equals(Type.DOUBLE_TYPE)) {

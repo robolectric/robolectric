@@ -1,0 +1,46 @@
+package org.robolectric.shadows;
+
+import android.os.BatteryManager;
+
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+
+@Implements(BatteryManager.class)
+public class ShadowBatteryManager {
+  private boolean isCharging = false;
+  private final Map<Integer, Long> longProperties = new HashMap<>();
+  private final Map<Integer, Integer> intProperties = new HashMap<>();
+
+  @Implementation(minSdk = M)
+  public boolean isCharging() {
+    return isCharging;
+  }
+
+  public void setIsCharging(boolean charging) {
+    isCharging = charging;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public int getIntProperty(int id) {
+    return intProperties.containsKey(id) ? intProperties.get(id) : Integer.MIN_VALUE;
+  }
+
+  public void setIntProperty(int id, int value) {
+    intProperties.put(id, value);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public long getLongProperty(int id) {
+    return longProperties.containsKey(id) ? longProperties.get(id) : Long.MIN_VALUE;
+  }
+
+  public void setLongProperty(int id, long value) {
+    longProperties.put(id, value);
+  }
+}

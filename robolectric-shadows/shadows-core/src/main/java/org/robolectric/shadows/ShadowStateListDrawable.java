@@ -16,9 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.graphics.drawable.StateListDrawable}.
- */
 @Implements(StateListDrawable.class)
 public class ShadowStateListDrawable extends ShadowDrawable {
   private final Map<Integer, Integer> stateToResource = new HashMap<>();

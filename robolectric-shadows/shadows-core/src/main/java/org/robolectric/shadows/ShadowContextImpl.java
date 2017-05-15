@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.accounts.AccountManager;
 import android.accounts.IAccountManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
@@ -12,20 +11,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.hardware.SystemSensorManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.UserHandle;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.fakes.RoboSharedPreferences;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -37,16 +37,11 @@ import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
-/**
- * Shadow for {@code android.content.ContextImpl}.
- */
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<>();
-  private final Map<String, RoboSharedPreferences> roboSharedPreferencesMap = new HashMap<>();
-  private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<>();
   private ContentResolver contentResolver;
 
   @RealObject
@@ -57,7 +52,7 @@ public class ShadowContextImpl {
     // They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
     SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "android.view.WindowManagerImpl");
     SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
-    SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "org.robolectric.fakes.RoboSensorManager");
+    SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.SystemSensorManager");
     SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "org.robolectric.fakes.RoboVibrator");
 
     // the rest are as mapped in docs...
@@ -100,6 +95,7 @@ public class ShadowContextImpl {
       SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
+      SYSTEM_SERVICE_MAP.put(Context.BATTERY_SERVICE, "android.os.BatteryManager");
     }
     if (getApiLevel() >= LOLLIPOP_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");
@@ -174,6 +170,14 @@ public class ShadowContextImpl {
             ClassParameter.from(android.print.IPrintManager.class, null),
             ClassParameter.from(int.class, -1),
             ClassParameter.from(int.class, -1));
+        } else if (serviceClassName.equals("android.hardware.SystemSensorManager")) {
+          if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
+            service = new SystemSensorManager(RuntimeEnvironment.application, Looper.getMainLooper());
+          } else {
+            service = ReflectionHelpers.callConstructor(
+                Class.forName(serviceClassName),
+                ClassParameter.from(Looper.class, Looper.getMainLooper()));
+          }
         } else {
           service = newInstanceOf(clazz);
         }
@@ -307,6 +311,12 @@ public class ShadowContextImpl {
   }
 
   @Implementation
+  public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
+      IntentFilter filter, String broadcastPermission, Handler scheduler) {
+    return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
+  }
+
+  @Implementation
   public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     ShadowApplication.getInstance().unregisterReceiver(broadcastReceiver);
   }
@@ -336,15 +346,6 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public SharedPreferences getSharedPreferences(String name, int mode) {
-    if (!roboSharedPreferencesMap.containsKey(name)) {
-      roboSharedPreferencesMap.put(name, new RoboSharedPreferences(sharedPreferenceMap, name, mode));
-    }
-
-    return roboSharedPreferencesMap.get(name);
-  }
-
-  @Implementation
   public int getUserId() {
     return 0;
   }
@@ -362,5 +363,13 @@ public class ShadowContextImpl {
   @Implementation(minSdk = KITKAT)
   public File[] getExternalFilesDirs(String type) {
     return new File[] { Environment.getExternalStoragePublicDirectory(type) };
+  }
+
+  @Resetter
+  public static void reset() {
+    String prefsCacheFieldName = RuntimeEnvironment.getApiLevel() >= N ? "sSharedPrefsCache" : "sSharedPrefs";
+    Object prefsDefaultValue = RuntimeEnvironment.getApiLevel() >= KITKAT ? null : new HashMap<>();
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
+    ReflectionHelpers.setStaticField(contextImplClass, prefsCacheFieldName, prefsDefaultValue);
   }
 }

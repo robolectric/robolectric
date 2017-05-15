@@ -2,7 +2,7 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:robolectric="http://schemas.android.com/apk/res/org.robolectric"
+    xmlns:robolectric="http://schemas.android.com/apk/res-auto"
     xmlns:fakens="http://example.com/fakens"
     >
   <org.robolectric.android.CustomView
@@ -11,7 +11,7 @@
       android:layout_height="wrap_content"
       android:gravity="center"
       robolectric:message="@string/hello"
-      robolectric:itemType="string"
+      robolectric:itemType="marsupial"
       fakens:message="@layout/text_views"
       >
     <View

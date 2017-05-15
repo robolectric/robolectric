@@ -6,9 +6,6 @@ import android.appwidget.AppWidgetProviderInfo;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.appwidget.AppWidgetHost}.
- */
 @Implements(AppWidgetHostView.class)
 public class ShadowAppWidgetHostView extends ShadowFrameLayout {
 

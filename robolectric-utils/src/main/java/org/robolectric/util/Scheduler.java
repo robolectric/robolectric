@@ -47,11 +47,12 @@ public class Scheduler {
     CONSTANT_IDLE
   }
 
-  private long currentTime = 100;
+  private final static long START_TIME = 100;
+  private volatile long currentTime = START_TIME;
   private boolean isExecutingRunnable = false;
   private final Thread associatedThread = Thread.currentThread();
   private final List<ScheduledRunnable> runnables = new ArrayList<>();
-  private IdleState idleState = UNPAUSED;
+  private volatile IdleState idleState = UNPAUSED;
 
   /**
    * Retrieves the current idling state of this <tt>Scheduler</tt>.
@@ -59,7 +60,7 @@ public class Scheduler {
    * @see #setIdleState(IdleState)
    * @see #isPaused()
    */
-  public synchronized IdleState getIdleState() {
+  public IdleState getIdleState() {
     return idleState;
   }
 
@@ -81,6 +82,7 @@ public class Scheduler {
       case CONSTANT_IDLE:
         advanceToLastPostedRunnable();
         break;
+      default:
     }
   }
 
@@ -89,7 +91,7 @@ public class Scheduler {
    *
    * @return  Current time in milliseconds.
    */
-  public synchronized long getCurrentTime() {
+  public long getCurrentTime() {
     return currentTime;
   }
 
@@ -118,7 +120,7 @@ public class Scheduler {
    *
    * @return  <tt>true</tt> if it is paused.
    */
-  public synchronized boolean isPaused() {
+  public boolean isPaused() {
     return idleState == PAUSED;
   }
 
@@ -273,6 +275,8 @@ public class Scheduler {
   public synchronized void reset() {
     runnables.clear();
     idleState = UNPAUSED;
+    currentTime = START_TIME;
+    isExecutingRunnable = false;
   }
 
   /**
@@ -327,6 +331,7 @@ public class Scheduler {
       case UNPAUSED:
         advanceBy(0);
         break;
+      default:
     }
   }
 

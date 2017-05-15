@@ -13,7 +13,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         sourceCompatibility = JavaVersion.VERSION_1_7
         targetCompatibility = JavaVersion.VERSION_1_7
 
-        tasks.withType(JavaCompile) {
+        tasks.withType(JavaCompile) { task ->
             sourceCompatibility = JavaVersion.VERSION_1_7
             targetCompatibility = JavaVersion.VERSION_1_7
 
@@ -25,6 +25,13 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 compilerArgs << "-Xlint:-options"       // Turn off "missing" bootclasspath warning
                 encoding = "utf-8"                      // Make sure source encoding is UTF-8
                 incremental = true
+            }
+
+            def noRebuild = System.getenv('NO_REBUILD') == "true"
+            if (noRebuild) {
+                println "[NO_REBUILD] $task will be skipped!"
+                task.outputs.upToDateWhen { true }
+                task.onlyIf { false }
             }
         }
 
@@ -75,11 +82,15 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                     println "Running tests with ${forwardedSystemProperties}"
                 }
             }
+
+            rootProject.tasks['aggregateTestReports'].reportOn binResultsDir
+            finalizedBy ':aggregateTestReports'
         }
 
         if (owner.deploy) {
             project.apply plugin: "signing"
             project.apply plugin: "maven"
+            project.apply plugin: 'ch.raffael.pegdown-doclet'
 
             task('sourcesJar', type: Jar, dependsOn: classes) {
                 classifier "sources"
@@ -98,7 +109,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 sign configurations.archives
             }
 
-            def skipJavadoc = System.getenv()["SKIP_JAVADOC"] == "true"
+            def skipJavadoc = System.getenv('SKIP_JAVADOC') == "true"
             artifacts {
                 archives jar
                 archives sourcesJar

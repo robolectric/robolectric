@@ -14,9 +14,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.view.RenderNodeAnimator}.
- */
 @Implements(value = RenderNodeAnimator.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
 public class ShadowRenderNodeAnimator {
   private static final int STATE_FINISHED = 3;

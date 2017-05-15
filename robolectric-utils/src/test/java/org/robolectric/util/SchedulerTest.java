@@ -5,10 +5,14 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.Scheduler.IdleState.*;
 
+@RunWith(JUnit4.class)
 public class SchedulerTest {
   private final Scheduler scheduler = new Scheduler();
   private final List<String> transcript = new ArrayList<>();
@@ -449,6 +453,55 @@ public class SchedulerTest {
     });
 
     assertThat(runnablesThatWereRun).containsExactly(1, 2);
+  }
+
+  @Test(timeout=1000)
+  public void schedulerAllowsConcurrentTimeRead_whileLockIsHeld() throws InterruptedException {
+    final AtomicLong l = new AtomicLong();
+    Thread t = new Thread("schedulerAllowsConcurrentTimeRead") {
+      @Override
+      public void run() {
+        l.set(scheduler.getCurrentTime());
+      }
+    };
+    // Grab the lock and then start a thread that tries to get the current time. The other thread
+    // should not deadlock.
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
+  }
+
+  @Test(timeout = 1000)
+  public void schedulerAllowsConcurrentStateRead_whileLockIsHeld() throws InterruptedException {
+    Thread t = new Thread("schedulerAllowsConcurrentStateRead") {
+      @Override
+      public void run() {
+        scheduler.getIdleState();
+      }
+    };
+    // Grab the lock and then start a thread that tries to get the idle state. The other thread
+    // should not deadlock.
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
+  }
+
+  @Test(timeout = 1000)
+  public void schedulerAllowsConcurrentIsPaused_whileLockIsHeld() throws InterruptedException {
+    Thread t = new Thread("schedulerAllowsConcurrentIsPaused") {
+      @Override
+      public void run() {
+        scheduler.isPaused();
+      }
+    };
+    // Grab the lock and then start a thread that tries to get the paused state. The other thread
+    // should not deadlock.
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
   }
 
   private class AddToTranscript implements Runnable {

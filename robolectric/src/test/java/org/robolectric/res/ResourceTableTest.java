@@ -14,7 +14,7 @@ public class ResourceTableTest {
 
   @Before
   public void setUp() {
-    resourceTable = ResourceTableFactory.newResourceTable("myPackage");
+    resourceTable = new ResourceTableFactory().newResourceTable("myPackage");
   }
 
   @Test

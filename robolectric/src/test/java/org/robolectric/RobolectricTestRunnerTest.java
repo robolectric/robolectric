@@ -1,7 +1,7 @@
 package org.robolectric;
 
 import android.os.Build;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -132,7 +132,7 @@ public class RobolectricTestRunnerTest {
       super(testClass);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
       return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), new Properties());

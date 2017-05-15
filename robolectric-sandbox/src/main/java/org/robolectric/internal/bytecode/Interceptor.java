@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.util.Function;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -22,7 +22,7 @@ public abstract class Interceptor {
 
   abstract public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException;
 
-  @NotNull
+  @Nonnull
   protected static Function<Object, Object> returnDefaultValue(final MethodSignature methodSignature) {
     return new Function<Object, Object>() {
       @Override

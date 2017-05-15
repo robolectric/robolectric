@@ -1323,7 +1323,7 @@ public class ShadowMediaPlayerTest {
   }
 
   /**
-   * If the looping mode was being set to <code>true</code>
+   * If the looping mode was being set to {@code true}
    * {@link MediaPlayer#setLooping(boolean)}, the MediaPlayer object shall
    * remain in the Started state.
    */

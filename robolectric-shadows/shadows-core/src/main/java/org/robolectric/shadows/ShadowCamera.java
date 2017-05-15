@@ -17,9 +17,6 @@ import java.util.Map;
 
 import static org.robolectric.shadow.api.Shadow.*;
 
-/**
- * Shadow for {@link android.hardware.Camera}.
- */
 @Implements(Camera.class)
 public class ShadowCamera {
 
@@ -434,9 +431,6 @@ public class ShadowCamera {
 
   }
 
-  /**
-   * Shadow for the Android {@code Camera.Size} value object.
-   */
   @Implements(Camera.Size.class)
   public static class ShadowSize {
     @RealObject private Camera.Size realCameraSize;

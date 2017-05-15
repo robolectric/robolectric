@@ -6,7 +6,9 @@ import org.robolectric.ShadowsAdapter;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class IntentServiceController<T extends IntentService> extends org.robolectric.util.IntentServiceController<T> {
+public class IntentServiceController<T extends IntentService> extends ComponentController<IntentServiceController<T>, T> {
+  private final String shadowActivityThreadClassName;
+
   public static <T extends IntentService> IntentServiceController<T> of(final ShadowsAdapter shadowsAdapter,
                                                                         final T service,
                                                                         final Intent intent) {

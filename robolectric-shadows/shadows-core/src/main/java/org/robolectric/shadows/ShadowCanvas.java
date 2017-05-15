@@ -8,8 +8,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -20,11 +20,9 @@ import java.util.List;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * Shadow for {@link android.graphics.Canvas}.
- *
- * <p> Broken. This implementation is very specific to the application for which it was developed.
+ * Broken. This implementation is very specific to the application for which it was developed.
  * Todo: Reimplement. Consider using the same strategy of collecting a history of draw events
- * and providing methods for writing queries based on type, number, and order of events.</p>
+ * and providing methods for writing queries based on type, number, and order of events.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Canvas.class)

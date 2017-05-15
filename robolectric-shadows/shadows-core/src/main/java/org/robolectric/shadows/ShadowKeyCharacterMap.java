@@ -10,9 +10,6 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.view.KeyCharacterMap}.
- */
 @Implements(KeyCharacterMap.class)
 public class ShadowKeyCharacterMap {
   private static final Map<Character, Integer> CHAR_TO_KEY_CODE = new HashMap<>();

@@ -10,11 +10,9 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.util.FragmentTestUtil;
 
 /**
- * Controller class for driving fragment lifecycles, similar to {@link ActivityController}. Only
- * necessary if more complex lifecycle management is needed, otherwise {@link FragmentTestUtil}
- * should be sufficient.
+ * Controller class for driving fragment lifecycles, similar to {@link ActivityController}.
  */
-public class FragmentController<F extends Fragment> extends org.robolectric.util.FragmentController<F> {
+public class FragmentController<F extends Fragment> extends ComponentController<FragmentController<F>, F> {
   private final F fragment;
   private final ActivityController<? extends Activity> activityController;
 

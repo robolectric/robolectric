@@ -5,9 +5,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-/**
- * Shadow for {@link android.os.CountDownTimer}.
- */
 @Implements(CountDownTimer.class)
 public class ShadowCountDownTimer {
   private boolean started;

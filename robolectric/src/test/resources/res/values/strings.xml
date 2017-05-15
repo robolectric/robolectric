@@ -42,4 +42,7 @@
   <string name="typed_array_b">banana</string>
   <string name="test_permission_description">permission string</string>
   <string name="test_permission_label">permission label</string>
+  <string name="string_with_spaces">
+    Up to <xliff:g id="upper_limit" example="12">%1$s</xliff:g> <xliff:g id="space"> </xliff:g> <xliff:g id="currency" example="USD">%2$s</xliff:g>
+  </string>
 </resources>

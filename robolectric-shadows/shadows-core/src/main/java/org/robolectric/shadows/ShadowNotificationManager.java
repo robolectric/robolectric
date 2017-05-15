@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
+import com.google.common.collect.ImmutableList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.RuntimeEnvironment;
@@ -13,13 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.app.NotificationManager}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(NotificationManager.class)
 public class ShadowNotificationManager {
   private Map<Key, Notification> notifications = new HashMap<>();
+  private final Map<String, NotificationChannel> notificationChannels = new HashMap<>();
+  private final Map<String, NotificationChannelGroup> notificationChannelGroups = new HashMap<>();
 
   @Implementation
   public void notify(int id, Notification notification) {
@@ -68,6 +70,35 @@ public class ShadowNotificationManager {
 	  0 /* postTime */);
     }
     return statusBarNotifications;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public NotificationChannel getNotificationChannel(String channelId) {
+    return notificationChannels.get(channelId);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannelGroup(NotificationChannelGroup group) {
+    notificationChannelGroups.put(group.getId(), group);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public List<NotificationChannelGroup> getNotificationChannelGroups() {
+    return ImmutableList.copyOf(notificationChannelGroups.values());
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannel(NotificationChannel channel) {
+    notificationChannels.put(channel.getId(), channel);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public List<NotificationChannel> getNotificationChannels() {
+    return ImmutableList.copyOf(notificationChannels.values());
+  }
+
+  public NotificationChannelGroup getNotificationChannelGroup(String id) {
+    return notificationChannelGroups.get(id);
   }
 
   public int size() {

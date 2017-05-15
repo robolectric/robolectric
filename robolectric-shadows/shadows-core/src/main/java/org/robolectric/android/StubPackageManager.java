@@ -7,13 +7,14 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.EphemeralApplicationInfo;
+import android.content.pm.ChangedPackages;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageMoveObserver;
 import android.content.pm.IPackageStatsObserver;
+import android.content.pm.InstantAppInfo;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
 import android.content.pm.KeySet;
@@ -26,7 +27,9 @@ import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.content.pm.SharedLibraryInfo;
 import android.content.pm.VerifierDeviceIdentity;
+import android.content.pm.VersionedPackage;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.Rect;
@@ -49,10 +52,17 @@ import java.util.List;
  * If there is functionality you are missing you can extend ShadowPackageManager.
  */
 @Instrument
+@Deprecated
 public class StubPackageManager extends PackageManager {
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public PackageInfo getPackageInfo(VersionedPackage versionedPackage, int flags)
+      throws NameNotFoundException {
     return null;
   }
 
@@ -94,6 +104,11 @@ public class StubPackageManager extends PackageManager {
   @Override
   public List<PermissionInfo> queryPermissionsByGroup(String group, int flags) throws NameNotFoundException {
     return null;
+  }
+
+  @Override
+  public boolean isPermissionReviewModeEnabled() {
+    return false;
   }
 
   @Override
@@ -229,8 +244,53 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
+  public List<ApplicationInfo> getInstalledApplicationsAsUser(int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public List<InstantAppInfo> getInstantApps() {
+    return null;
+  }
+
+  @Override
+  public Drawable getInstantAppIcon(String packageName) {
+    return null;
+  }
+
+  @Override
+  public boolean isInstantApp() {
+    return false;
+  }
+
+  @Override
+  public int getInstantAppCookieMaxSize() {
+    return 0;
+  }
+
+  @Override
+  public byte[] getInstantAppCookie() {
+    return new byte[0];
+  }
+
+  @Override
+  public boolean setInstantAppCookie(byte[] cookie) {
+    return false;
+  }
+
+  @Override
   public String[] getSystemSharedLibraryNames() {
     return new String[0];
+  }
+
+  @Override
+  public List<SharedLibraryInfo> getSharedLibraries(int flags) {
+    return null;
+  }
+
+  @Override
+  public List<SharedLibraryInfo> getSharedLibrariesAsUser(int flags, int userId) {
+    return null;
   }
 
   @Override
@@ -680,6 +740,16 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
+  public int getInstallReason(String packageName, UserHandle user) {
+    return 0;
+  }
+
+  @Override
+  public boolean canRequestPackageInstalls() {
+    return false;
+  }
+
+  @Override
   public void verifyPendingInstall(int id, int verificationCode) {
   }
 
@@ -751,6 +821,11 @@ public class StubPackageManager extends PackageManager {
     return false;
   }
 
+  @Override
+  public void setApplicationCategoryHint(String packageName, int categoryHint) {
+
+  }
+
   public String[] setPackagesSuspendedAsUser(
             String[] packageNames, boolean suspended, int userId) {
     return null;
@@ -812,25 +887,6 @@ public class StubPackageManager extends PackageManager {
     return null;
   }
 
-  public List<EphemeralApplicationInfo> getEphemeralApplications() {
-    return null;
-  }
-
-  public Drawable getEphemeralApplicationIcon(String packageName) {
-    return null;
-  }
-
-  public boolean isEphemeralApplication() {
-    return false;}
-
-    public int getEphemeralCookieMaxSizeBytes() {return 0;}
-
-    public byte[] getEphemeralCookie() {
-  return null;
-  }
-  public boolean setEphemeralCookie(byte[] cookie) {
-    return false;
-  }
   public List<PackageInfo> getInstalledPackagesAsUser(int flags,
             int userId) {
     return null;
@@ -858,5 +914,10 @@ public class StubPackageManager extends PackageManager {
   }
   public String getSharedSystemSharedLibraryPackageName() {
     return "";
+  }
+
+  @Override
+  public ChangedPackages getChangedPackages(int sequenceNumber) {
+    return null;
   }
 }

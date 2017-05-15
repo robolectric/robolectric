@@ -1,11 +1,8 @@
 package org.robolectric.annotation.processing.validator;
 
-import static com.google.testing.compile.JavaFileObjects.forResource;
-import static org.truth0.Truth.ASSERT;
-
 import javax.tools.JavaFileObject;
 
-import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
+import static com.google.testing.compile.JavaFileObjects.forResource;
 
 public class Utils {
   // So that we can test compilation without Robolectric.java included, this has not been put in its
@@ -18,13 +15,5 @@ public class Utils {
   public static String toResourcePath(String clazzName) {
     return clazzName.replace('.', '/') + ".java";
   }
-  
-  public static void assertWithoutErrorContaining(UnsuccessfulCompilationClause c, String err) {
-    try {
-      c.withErrorContaining(err);
-    } catch (AssertionError e) {
-      return;
-    }
-    ASSERT.fail("Shouldn't have found any errors containing " + err + ", but we did");
-  }
+
 }

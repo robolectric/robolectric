@@ -9,9 +9,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@link android.app.WallpaperManager}.
- */
 @Implements(WallpaperManager.class)
 public class ShadowWallpaperManager {
 

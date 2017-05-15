@@ -1,7 +1,7 @@
 package org.robolectric.manifest;
 
 import com.google.common.base.Preconditions;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
@@ -34,7 +34,6 @@ public class AndroidManifest {
 
   private boolean manifestIsParsed;
 
-  private Node applicationNode;
   private String applicationName;
   private String applicationLabel;
   private String rClassName;
@@ -130,7 +129,7 @@ public class AndroidManifest {
         versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
         rClassName = packageName + ".R";
 
-        applicationNode = findApplicationNode(manifestDocument);
+        Node applicationNode = findApplicationNode(manifestDocument);
         if (applicationNode != null) {
           NamedNodeMap attributes = applicationNode.getAttributes();
           int attrCount = attributes.getLength();
@@ -145,15 +144,22 @@ public class AndroidManifest {
           themeRef = applicationAttributes.get("android:theme");
           labelRef = applicationAttributes.get("android:label");
 
-          parseReceivers();
-          parseServices();
-          parseActivities();
-          parseApplicationMetaData();
-          parseContentProviders();
+          parseReceivers(applicationNode);
+          parseServices(applicationNode);
+          parseActivities(applicationNode);
+          parseApplicationMetaData(applicationNode);
+          parseContentProviders(applicationNode);
         }
 
         minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-        targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
+
+        String targetSdkText = getTagAttributeText(manifestDocument, "uses-sdk",
+            "android:targetSdkVersion");
+        if (targetSdkText != null) {
+          // Support Android O Preview. This can be removed once Android O is officially launched.
+          targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
+        }
+
         maxSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:maxSdkVersion");
         if (processName == null) {
           processName = packageName;
@@ -207,7 +213,7 @@ public class AndroidManifest {
     }
   }
 
-  private void parseContentProviders() {
+  private void parseContentProviders(Node applicationNode) {
     for (Node contentProviderNode : getChildrenTags(applicationNode, "provider")) {
       String name = getAttributeValue(contentProviderNode, "android:name");
       String authorities = getAttributeValue(contentProviderNode, "android:authorities");
@@ -238,7 +244,7 @@ public class AndroidManifest {
     return attributeNode == null ? null : attributeNode.getTextContent();
   }
 
-  private void parseReceivers() {
+  private void parseReceivers(Node applicationNode) {
     for (Node receiverNode : getChildrenTags(applicationNode, "receiver")) {
       Node namedItem = receiverNode.getAttributes().getNamedItem("android:name");
       if (namedItem == null) continue;
@@ -266,7 +272,7 @@ public class AndroidManifest {
     }
   }
 
-  private void parseServices() {
+  private void parseServices(Node applicationNode) {
     for (Node serviceNode : getChildrenTags(applicationNode, "service")) {
       Node namedItem = serviceNode.getAttributes().getNamedItem("android:name");
       if (namedItem == null) continue;
@@ -293,7 +299,7 @@ public class AndroidManifest {
     }
   }
 
-  private void parseActivities() {
+  private void parseActivities(Node applicationNode) {
     for (Node activityNode : getChildrenTags(applicationNode, "activity")) {
       parseActivity(activityNode, false);
     }
@@ -437,9 +443,12 @@ public class AndroidManifest {
     for (ServiceData service : serviceDatas.values()) {
       service.getMetaData().init(resourceTable, packageName);
     }
+    for (ContentProviderData providerData : providers) {
+      providerData.getMetaData().init(resourceTable, packageName);
+    }
   }
 
-  private void parseApplicationMetaData() {
+  private void parseApplicationMetaData(Node applicationNode) {
     applicationMetaData = new MetaData(getChildrenTags(applicationNode, "meta-data"));
   }
 

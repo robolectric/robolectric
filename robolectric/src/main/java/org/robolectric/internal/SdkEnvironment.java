@@ -1,6 +1,6 @@
 package org.robolectric.internal;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
@@ -20,12 +20,12 @@ public class SdkEnvironment extends Sandbox {
   public synchronized PackageResourceTable getSystemResourceTable(DependencyResolver dependencyResolver) {
     if (systemResourceTable == null) {
       ResourcePath resourcePath = createRuntimeSdkResourcePath(dependencyResolver);
-      systemResourceTable = ResourceTableFactory.newFrameworkResourceTable(resourcePath);
+      systemResourceTable = new ResourceTableFactory().newFrameworkResourceTable(resourcePath);
     }
     return systemResourceTable;
   }
 
-  @NotNull
+  @Nonnull
   private ResourcePath createRuntimeSdkResourcePath(DependencyResolver dependencyResolver) {
     try {
       Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));

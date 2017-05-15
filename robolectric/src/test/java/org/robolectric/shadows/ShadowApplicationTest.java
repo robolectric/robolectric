@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.hardware.SystemSensorManager;
 import android.media.session.MediaSessionManager;
 import android.os.*;
 import android.print.PrintManager;
@@ -18,19 +19,20 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboSensorManager;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
-import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.Scheduler;
 import org.robolectric.android.TestBroadcastReceiver;
 
@@ -78,7 +80,7 @@ public class ShadowApplicationTest {
     checkSystemService(Context.KEYGUARD_SERVICE, android.app.KeyguardManager.class);
     checkSystemService(Context.LOCATION_SERVICE, android.location.LocationManager.class);
     checkSystemService(Context.SEARCH_SERVICE, android.app.SearchManager.class);
-    checkSystemService(Context.SENSOR_SERVICE, RoboSensorManager.class);
+    checkSystemService(Context.SENSOR_SERVICE, SystemSensorManager.class);
     checkSystemService(Context.STORAGE_SERVICE, android.os.storage.StorageManager.class);
     checkSystemService(Context.VIBRATOR_SERVICE, RoboVibrator.class);
     checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
@@ -111,6 +113,7 @@ public class ShadowApplicationTest {
   @Config(minSdk = LOLLIPOP)
   public void shouldProvideMediaSessionService() throws Exception {
     checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
+    checkSystemService(Context.BATTERY_SERVICE, BatteryManager.class);
   }
 
   @Test
@@ -557,12 +560,13 @@ public class ShadowApplicationTest {
   }
 
   private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
-    File f = temporaryFolder.newFile("whatever.xml",
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-            "          package=\"" + packageName + "\">\n" +
-            "    " + contents + "\n" +
-            "</manifest>\n");
+    String fileContents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+        "          package=\"" + packageName + "\">\n" +
+        "    " + contents + "\n" +
+        "</manifest>\n";
+    File f = temporaryFolder.newFile("whatever.xml");
+    Files.write(fileContents, f, Charsets.UTF_8);
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 

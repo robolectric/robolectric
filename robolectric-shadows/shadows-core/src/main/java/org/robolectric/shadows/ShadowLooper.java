@@ -23,7 +23,7 @@ import static org.robolectric.shadow.api.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
- * Shadow for {@link android.os.Looper} that enqueues posted {@link Runnable}s to be run
+ * Robolectric enqueues posted {@link Runnable}s to be run
  * (on this thread) later. {@code Runnable}s that are scheduled to run immediately can be
  * triggered by calling {@link #idle()}.
  *
@@ -57,6 +57,10 @@ public class ShadowLooper {
         synchronized (looper) {
           if (!shadowOf(looper).quit) {
             looper.quit();
+          } else {
+            // Reset the schedulers of all loopers. This prevents un-run tasks queued up in static
+            // background handlers from leaking to subsequent tests.
+            shadowOf(looper).getScheduler().reset();
           }
         }
       }
@@ -95,7 +99,7 @@ public class ShadowLooper {
   }
 
   private void doLoop() {
-    if (this != getShadowMainLooper()) {
+    if (realObject != Looper.getMainLooper()) {
       synchronized (realObject) {
         while (!quit) {
           try {
@@ -109,7 +113,7 @@ public class ShadowLooper {
 
   @Implementation
   public void quit() {
-    if (this == getShadowMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
+    if (realObject == Looper.getMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
     quitUnchecked();
   }
 
@@ -191,8 +195,8 @@ public class ShadowLooper {
    * Runs any immediately runnable tasks previously queued on the UI thread,
    * e.g. by {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
    *
-   * <p>Note: calling this method does not pause or un-pause the scheduler.</p>
-   
+   * **Note:** calling this method does not pause or un-pause the scheduler.
+   *
    * @see #runUiThreadTasksIncludingDelayedTasks
    */
   public static void runUiThreadTasks() {
@@ -203,8 +207,8 @@ public class ShadowLooper {
    * Runs all runnable tasks (pending and future) that have been queued on the UI thread. Such tasks may be queued by
    * e.g. {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
    *
-   * <p>Note: calling this method does not pause or un-pause the scheduler, however the clock is advanced as
-   * future tasks are run.</p>
+   * **Note:** calling this method does not pause or un-pause the scheduler, however the clock is advanced as
+   * future tasks are run.
    * 
    * @see #runUiThreadTasks
    */
@@ -329,7 +333,7 @@ public class ShadowLooper {
 
   public void resetScheduler() {
     ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
-    if (this == getShadowMainLooper() || RoboSettings.isUseGlobalScheduler()) {
+    if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
       sQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
     } else {
       sQueue.setScheduler(new Scheduler());

@@ -3,7 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.os.Build;
 import java.io.InputStream;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -23,7 +23,6 @@ import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
@@ -88,11 +87,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
 
+        Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
+            "org.robolectric.internal.dependency.MavenDependencyResolver");
+        DependencyResolver dependencyResolver = (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
         if (cacheDir.exists() || cacheDir.mkdir()) {
           Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
-          dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
+          this.dependencyResolver = new CachedDependencyResolver(dependencyResolver, cacheDir, 60 * 60 * 24 * 1000);
         } else {
-          dependencyResolver = new MavenDependencyResolver();
+          this.dependencyResolver = dependencyResolver;
         }
       }
 
@@ -125,7 +127,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @since 2.3
    */
   @Override
-  @NotNull
+  @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdkConfig().getApiLevel(), getInterceptors());
   }
@@ -138,7 +140,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return an {@link ConfigMerger}.
    * @since 3.2
    */
-  @NotNull
+  @Nonnull
   private ConfigMerger createConfigMerger() {
     return new ConfigMerger();
   }
@@ -151,13 +153,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return an {@link SdkPicker}.
    * @since 3.2
    */
-  @NotNull
+  @Nonnull
   protected SdkPicker createSdkPicker() {
     return new SdkPicker();
   }
 
   @Override
-  @NotNull // todo
+  @Nonnull // todo
   protected Collection<Interceptor> findInterceptors() {
     return AndroidInterceptors.all();
   }
@@ -172,7 +174,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @deprecated Override {@link #createClassLoaderConfig(FrameworkMethod)} instead
    */
   @Deprecated
-  @NotNull
+  @Nonnull
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
     FrameworkMethod method = ((MethodPassThrough) config).method;
     Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
@@ -184,7 +186,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * {@inheritDoc}
    */
-  @NotNull
+  @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
     return createClassLoaderConfig(new Config.Builder(((RobolectricFrameworkMethod) method).config) {
       @Override
@@ -201,7 +203,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    *
    * @return a class which implements {@link TestLifecycle}. This implementation returns a {@link DefaultTestLifecycle}.
    */
-  @NotNull
+  @Nonnull
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
   }
@@ -234,10 +236,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Returns the ResourceProvider for the compile time SDK.
    */
-  @NotNull
+  @Nonnull
   private static PackageResourceTable getCompiletimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
-      compiletimeSdkResourceTable = ResourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
+      ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
+      compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
   }
@@ -255,7 +258,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   @Override
-  @NotNull
+  @Nonnull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
@@ -282,6 +285,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
+    ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
@@ -411,7 +415,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return new Config.Builder().build();
   }
 
-  @NotNull
+  @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
     Config config = ((RobolectricFrameworkMethod) frameworkMethod).config;
     return config.shadows();
@@ -446,7 +450,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
     PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
     if (resourceTable == null) {
-      resourceTable = ResourceMerger.buildResourceTable(appManifest);
+      resourceTable = new ResourceMerger().buildResourceTable(appManifest);
 
       appResourceTableCache.put(appManifest, resourceTable);
     }
@@ -494,14 +498,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   static class RobolectricFrameworkMethod extends FrameworkMethod {
-    private final @NotNull AndroidManifest appManifest;
-    final @NotNull SdkConfig sdkConfig;
-    final @NotNull Config config;
+    private final @Nonnull AndroidManifest appManifest;
+    final @Nonnull SdkConfig sdkConfig;
+    final @Nonnull Config config;
     private boolean includeApiLevelInName = true;
     TestLifecycle testLifecycle;
     ParallelUniverseInterface parallelUniverseInterface;
 
-    RobolectricFrameworkMethod(@NotNull Method method, @NotNull AndroidManifest appManifest, @NotNull SdkConfig sdkConfig, @NotNull Config config) {
+    RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest, @Nonnull SdkConfig sdkConfig, @Nonnull Config config) {
       super(method);
       this.appManifest = appManifest;
       this.sdkConfig = sdkConfig;
@@ -520,7 +524,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       includeApiLevelInName = false;
     }
 
-    @NotNull
+    @Nonnull
     public AndroidManifest getAppManifest() {
       return appManifest;
     }
