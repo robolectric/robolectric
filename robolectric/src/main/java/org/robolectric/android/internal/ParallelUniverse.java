@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.os.Looper;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -106,6 +107,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
+    ReflectionHelpers.setStaticField(activityThreadClass, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
