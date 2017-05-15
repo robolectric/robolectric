@@ -6,10 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -216,7 +216,7 @@ public class ShadowPendingIntent {
     return getCreatorPackage();
   }
 
-  @Implementation(minSdk = 17)
+  @Implementation(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public String getCreatorPackage() {
     return (creatorPackage == null)
         ? savedContext.getPackageName()
