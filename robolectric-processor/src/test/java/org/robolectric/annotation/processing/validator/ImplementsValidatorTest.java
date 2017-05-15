@@ -1,8 +1,8 @@
 package org.robolectric.annotation.processing.validator;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertAbout;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
-import static org.truth0.Truth.ASSERT;
 
 import org.junit.Test;
 import org.robolectric.annotation.processing.DocumentedMethod;
@@ -11,7 +11,7 @@ public class ImplementsValidatorTest {
   @Test
   public void implementsWithoutClassOrClassName_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsWithoutClass";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("@Implements: must specify <value> or <className>")
@@ -21,7 +21,7 @@ public class ImplementsValidatorTest {
   @Test
   public void anything_withoutClassName_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithoutClassName";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("@Implements: Anything class specified but no <className> attribute")
@@ -31,7 +31,7 @@ public class ImplementsValidatorTest {
   @Test
   public void anything_withUnresolvableClassName_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassName";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
@@ -41,7 +41,7 @@ public class ImplementsValidatorTest {
   @Test
   public void value_withUnresolvableClassNameAndOldMaxSdk_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassNameAndOldMaxSdk";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
         .that(testClass)
         .compilesWithoutError();
   }
@@ -49,7 +49,7 @@ public class ImplementsValidatorTest {
   @Test
   public void value_withClassName_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsDummyWithOuterDummyClassName";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("@Implements: cannot specify both <value> and <className> attributes")
@@ -59,7 +59,7 @@ public class ImplementsValidatorTest {
   @Test
   public void implementsWithParameterMismatch_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsWithParameterMismatch";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("Shadow type must have same type parameters as its real counterpart: expected <T,N extends java.lang.Number>, was <N extends java.lang.Number,T>")
@@ -69,7 +69,7 @@ public class ImplementsValidatorTest {
   @Test
   public void implementsWithMissingParameters_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsWithMissingParameters";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("Shadow type is missing type parameters, expected <T,N extends java.lang.Number>")
@@ -79,7 +79,7 @@ public class ImplementsValidatorTest {
   @Test
   public void implementsWithExtraParameters_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsWithExtraParameters";
-    ASSERT.about(singleClass())
+    assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("Shadow type has type parameters but real type does not")

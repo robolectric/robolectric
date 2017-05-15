@@ -1,7 +1,7 @@
 package org.robolectric.annotation.processing;
 
+import static com.google.common.truth.Truth.assertAbout;
 import static com.google.common.truth.Truth.assertThat;
-import static org.truth0.Truth.ASSERT;
 import static com.google.testing.compile.JavaFileObjects.*;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
@@ -36,18 +36,18 @@ public class RobolectricProcessorTest {
 
   @Test
   public void robolectricProcessor_supportsPackageOption() {
-    ASSERT.that(new RobolectricProcessor().getSupportedOptions()).contains(PACKAGE_OPT);
+    assertThat(new RobolectricProcessor().getSupportedOptions()).contains(PACKAGE_OPT);
   }
 
   @Test
   public void robolectricProcessor_supportsShouldInstrumentPackageOption() {
-    ASSERT.that(
+    assertThat(
         new RobolectricProcessor().getSupportedOptions()).contains(SHOULD_INSTRUMENT_PKG_OPT);
   }
 
   @Test
   public void unannotatedSource_shouldCompile() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
@@ -63,7 +63,7 @@ public class RobolectricProcessorTest {
   public void generatedFile_shouldHandleInnerClassCollisions() {
     // Because the Generated annotation has a retention of "source", it can't
     // be tested by a unit test - must run a source-level test.
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
@@ -79,7 +79,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedFile_shouldSkipNonPublicClasses() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
@@ -95,7 +95,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedFile_shouldHandleAnythingShadows() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
@@ -110,7 +110,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedFile_shouldHandleClassNameOnlyShadows() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
@@ -124,7 +124,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedFile_shouldNotGenerateShadowOfMethodsForExcludedClasses() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
         .that(ImmutableList.of(
             SHADOW_PROVIDER_SOURCE,
             SHADOW_EXTRACTOR_SOURCE,
@@ -150,7 +150,7 @@ public class RobolectricProcessorTest {
     Map<String,String> opts = new HashMap<>();
     opts.put(PACKAGE_OPT, "my.test.pkg");
 
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
@@ -164,7 +164,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void shouldGenerateMetaInfServicesFile() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
         .that(ImmutableList.of(
             SHADOW_PROVIDER_SOURCE,
             SHADOW_EXTRACTOR_SOURCE,
@@ -178,7 +178,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void shouldGracefullyHandleUnrecognisedAnnotation() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
@@ -190,7 +190,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void shouldGracefullyHandleNoAnythingClass_withNoRealObject() {
-    ASSERT.about(javaSource())
+    assertAbout(javaSource())
       .that(forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"))
       .processedWith(new RobolectricProcessor())
       .failsToCompile();
@@ -198,7 +198,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void shouldGracefullyHandleNoAnythingClass_withFoundOnImplementsAnnotation() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
@@ -209,7 +209,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void shouldGenerateGenericShadowOf() {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
@@ -228,7 +228,7 @@ public class RobolectricProcessorTest {
     options.put(PACKAGE_OPT, "org.robolectric");
     options.put(SHOULD_INSTRUMENT_PKG_OPT, "false");
 
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
     .that(ImmutableList.of(
         ROBO_SOURCE,
         SHADOW_PROVIDER_SOURCE,
@@ -243,7 +243,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void shouldGenerateJavadocJson() throws Exception {
-    ASSERT.about(javaSources())
+    assertAbout(javaSources())
         .that(ImmutableList.of(
             ROBO_SOURCE,
             forResource("org/robolectric/annotation/processing/shadows/DocumentedObjectShadow.java")))
