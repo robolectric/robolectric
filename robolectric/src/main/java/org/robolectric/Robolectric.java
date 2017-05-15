@@ -72,7 +72,7 @@ public class Robolectric {
   }
 
   public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
-    return IntentServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+    return IntentServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass), intent);
   }
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {

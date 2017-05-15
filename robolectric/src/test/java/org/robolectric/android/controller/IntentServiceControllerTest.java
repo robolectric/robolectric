@@ -58,7 +58,7 @@ public class IntentServiceControllerTest {
 
   @Test
   public void shouldSetIntentForGivenServiceInstance() throws Exception {
-    IntentServiceController<MyService> intentServiceController = IntentServiceController.of(new CoreShadowsAdapter(), new MyService(""), null).bind();
+    IntentServiceController<MyService> intentServiceController = IntentServiceController.of(new CoreShadowsAdapter(), new MyService(), null).bind();
     assertThat(intentServiceController.get().boundIntent).isNotNull();
   }
 
@@ -121,9 +121,9 @@ public class IntentServiceControllerTest {
 
     public Intent unboundIntent;
 
-    public MyService(String name) {
-            super(name);
-        }
+    public MyService() {
+      super("ThreadName");
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
