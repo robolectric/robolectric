@@ -107,7 +107,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
-    ReflectionHelpers.setStaticField(activityThreadClass, "sMainThreadHandler", new Handler());
+    ReflectionHelpers.setStaticField(activityThreadClass, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
