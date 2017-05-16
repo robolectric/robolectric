@@ -45,6 +45,32 @@ public class ShadowIntentTest {
   }
 
   @Test
+  public void withSingleMatch_resolveActivity_shouldReturnActivityName() throws Exception {
+    Context context = RuntimeEnvironment.application;
+    PackageManager packageManager = context.getPackageManager();
+
+    Intent intent = new Intent();
+    intent.setClassName(context, TEST_ACTIVITY_CLASS_NAME);
+    ComponentName componentName = intent.resolveActivity(packageManager);
+    assertThat(componentName).isNotNull();
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestForActivitiesWithIntentFilter.xml")
+  public void testResolveActivitySingleMatch() {
+    Context context = RuntimeEnvironment.application;
+    PackageManager packageManager = context.getPackageManager();
+
+    final Intent intent = new Intent("android.intent.action.MAIN");
+    intent.addCategory("android.intent.category.LAUNCHER");
+
+    // Should only have one activity responding to narrow category
+    final ComponentName target = intent.resolveActivity(packageManager);
+    assertEquals("org.robolectric", target.getPackageName());
+    assertEquals("org.robolectric.shadows.TestActivity", target.getClassName());
+  }
+
+  @Test
   public void testGetExtraReturnsNull_whenThereAreNoExtrasAdded() throws Exception {
     Intent intent = new Intent();
     assertEquals(intent.getExtras(), null);

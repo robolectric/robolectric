@@ -801,7 +801,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(Color.WHITE, metaValue);
+    assertEquals(0xFFABCDEF, metaValue);
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
     assertTrue(Boolean.class.isInstance(metaValue));
@@ -826,6 +826,10 @@ public class ShadowPackageManagerTest {
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));
     assertEquals(R.string.app_name, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColorRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(R.color.clear, metaValue);
   }
 
   @Test
