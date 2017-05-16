@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.android.CustomStateView;
 import org.robolectric.android.CustomView;
@@ -451,6 +452,11 @@ public class ShadowLayoutInflaterTest {
     assertThat(innerCustomView.childCountAfterInflate).isEqualTo(3);
   }
 
+  @Test
+  public void issue2941() throws Exception {
+    Robolectric.setupActivity(MyActivity.class);
+  }
+
   @SuppressWarnings("UnusedDeclaration")
   public static class CustomView3 extends TextView {
     public CustomView3(Context context) { super(context); }
@@ -500,6 +506,15 @@ public class ShadowLayoutInflaterTest {
 
     public void onButtonClick(View v) {
       clicked = true;
+    }
+  }
+
+  private static class MyActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+
+      setContentView(R.layout.custom_layout2);
     }
   }
 }
