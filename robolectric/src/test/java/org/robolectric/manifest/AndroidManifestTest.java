@@ -7,8 +7,10 @@ import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.robolectric.annotation.Config;
+import org.robolectric.R;
 import org.robolectric.res.Fs;
+import org.robolectric.res.PackageResourceTable;
+import org.robolectric.res.ResourceTableFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -39,6 +42,7 @@ public class AndroidManifestTest {
   @Test
   public void parseManifest_shouldReadPermissions() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
+    config.initMetaData(testAppResourceTable());
 
     assertThat(config.getPermissions().keySet())
         .containsExactlyInAnyOrder("some_permission",
@@ -107,6 +111,7 @@ public class AndroidManifestTest {
   @Test
   public void parseManifest_shouldReadBroadcastReceiversWithMetaData() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
+    config.initMetaData(testAppResourceTable());
 
     assertThat(config.getBroadcastReceivers().get(4).getClassName()).isEqualTo("org.robolectric.test.ConfigTestReceiver");
     assertThat(config.getBroadcastReceivers().get(4).getActions()).contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
@@ -119,37 +124,37 @@ public class AndroidManifestTest {
     assertEquals("metaValue2", metaValue);
 
     metaValue = meta.get("org.robolectric.metaFalse");
-    assertEquals("false", metaValue);
+    assertEquals(false, metaValue);
 
     metaValue = meta.get("org.robolectric.metaTrue");
-    assertEquals("true", metaValue);
+    assertEquals(true, metaValue);
 
     metaValue = meta.get("org.robolectric.metaInt");
-    assertEquals("123", metaValue);
+    assertEquals(123, metaValue);
 
     metaValue = meta.get("org.robolectric.metaFloat");
-    assertEquals("1.23", metaValue);
+    assertEquals(1.23f, metaValue);
 
     metaValue = meta.get("org.robolectric.metaColor");
-    assertEquals("#FFFFFF", metaValue);
+    assertEquals(0xFFFFFFFF, metaValue);
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertEquals("@bool/false_bool_value", metaValue);
+    assertEquals(false, metaValue);
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertEquals("@integer/test_integer1", metaValue);
+    assertEquals(2000, metaValue);
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertEquals("@color/clear", metaValue);
+    assertEquals(1, metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertEquals("@string/app_name", metaValue);
+    assertEquals("Testing App", metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertEquals("@string/str_int", metaValue);
+    assertEquals("123456", metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringRes");
-    assertEquals("@string/app_name", metaValue);
+    assertEquals(R.string.app_name, metaValue);
   }
 
   @Test
@@ -191,14 +196,15 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReturnPackageNameWhenNoProcessIsSpecifiedInTheManifest() {
+  public void shouldReturnPackageNameWhenNoProcessIsSpecifiedInTheManifest() throws Exception {
     assertEquals("org.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
   public void shouldReturnApplicationMetaData() throws Exception {
-    Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
+    AndroidManifest androidManifest = newConfig("TestAndroidManifestWithAppMetaData.xml");
+    androidManifest.initMetaData(testAppResourceTable());
+    Map<String, Object> meta = androidManifest.getApplicationMetaData();
 
     Object metaValue = meta.get("org.robolectric.metaName1");
     assertEquals("metaValue1", metaValue);
@@ -207,37 +213,40 @@ public class AndroidManifestTest {
     assertEquals("metaValue2", metaValue);
 
     metaValue = meta.get("org.robolectric.metaFalse");
-    assertEquals("false", metaValue);
+    assertEquals(false, metaValue);
 
     metaValue = meta.get("org.robolectric.metaTrue");
-    assertEquals("true", metaValue);
+    assertEquals(true, metaValue);
 
     metaValue = meta.get("org.robolectric.metaInt");
-    assertEquals("123", metaValue);
+    assertEquals(123, metaValue);
 
     metaValue = meta.get("org.robolectric.metaFloat");
-    assertEquals("1.23", metaValue);
+    assertEquals(1.23f, metaValue);
 
     metaValue = meta.get("org.robolectric.metaColor");
-    assertEquals("#FFFFFF", metaValue);
+    assertEquals(0xFFABCDEF, metaValue);
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertEquals("@bool/false_bool_value", metaValue);
+    assertEquals(false, metaValue);
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertEquals("@integer/test_integer1", metaValue);
+    assertEquals(2000, metaValue);
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertEquals("@color/clear", metaValue);
+    assertEquals(1, metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertEquals("@string/app_name", metaValue);
+    assertEquals("Testing App", metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertEquals("@string/str_int", metaValue);
+    assertEquals("123456", metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringRes");
-    assertEquals("@string/app_name", metaValue);
+    assertEquals(R.string.app_name, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColorRes");
+    assertEquals(R.color.clear, metaValue);
   }
 
   @Test
@@ -262,7 +271,7 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldRead1IntentFilter() {
+  public void shouldRead1IntentFilter() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
     appManifest.getMinSdkVersion(); // Force parsing
 
@@ -279,7 +288,7 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReadMultipleIntentFilters() {
+  public void shouldReadMultipleIntentFilters() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithMultipleIntentFilters.xml");
     appManifest.getMinSdkVersion(); // Force parsing
 
@@ -307,7 +316,7 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReadTaskAffinity() {
+  public void shouldReadTaskAffinity() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithTaskAffinity.xml");
     assertThat(appManifest.getTargetSdkVersion()).isEqualTo(16);
 
@@ -343,7 +352,7 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReadIntentFilterWithData() {
+  public void shouldReadIntentFilterWithData() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilterWithData.xml");
     appManifest.getMinSdkVersion(); // Force parsing
 
@@ -430,5 +439,9 @@ public class AndroidManifestTest {
     File f = temporaryFolder.newFile(fileName);
     Files.write(contents, f, Charsets.UTF_8);
     return new AndroidManifest(Fs.newFile(f), null, null);
+  }
+
+  private PackageResourceTable testAppResourceTable() {
+    return new ResourceTableFactory().newResourceTable("org.robolectric", TEST_RESOURCE_PATH);
   }
 }

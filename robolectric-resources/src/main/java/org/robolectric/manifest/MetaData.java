@@ -35,14 +35,16 @@ public final class MetaData {
   public void init(ResourceTable resourceTable, String packageName) throws RoboNotFoundException {
     if (!initialised) {
       for (Map.Entry<String,VALUE_TYPE> entry : typeMap.entrySet()) {
-        String value = valueMap.get(entry.getKey()).toString();
+        String key = entry.getKey();
+        String value = valueMap.get(key).toString();
+        VALUE_TYPE type = entry.getValue();
         if (value.startsWith("@")) {
           ResName resName = ResName.qualifyResName(value.substring(1), packageName, null);
 
-          switch (entry.getValue()) {
+          switch (type) {
             case RESOURCE:
               // Was provided by resource attribute, store resource ID
-              valueMap.put(entry.getKey(), resourceTable.getResourceId(resName));
+              valueMap.put(key, resourceTable.getResourceId(resName));
               break;
             case VALUE:
               // Was provided by value attribute, need to inferFromValue it
@@ -53,16 +55,16 @@ public final class MetaData {
               }
               switch (typedRes.getResType()) {
                 case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
-                  valueMap.put(entry.getKey(), parseValue(typedRes.getData().toString()));
+                  valueMap.put(key, parseValue(typedRes.getData().toString()));
                   break;
                 default:
-                  valueMap.put(entry.getKey(),typedRes.getData());
+                  valueMap.put(key,typedRes.getData());
               }
               break;
           }
-        } else if (entry.getValue() == VALUE_TYPE.VALUE) {
+        } else if (type == VALUE_TYPE.VALUE) {
           // Raw value, so inferFromValue it in to the appropriate type and store it
-          valueMap.put(entry.getKey(), parseValue(value));
+          valueMap.put(key, parseValue(value));
         }
       }
       // Finished parsing, mark as initialised
@@ -71,6 +73,7 @@ public final class MetaData {
   }
 
   public Map<String, Object> getValueMap() {
+    if (!initialised) throw new IllegalStateException();
     return valueMap;
   }
 

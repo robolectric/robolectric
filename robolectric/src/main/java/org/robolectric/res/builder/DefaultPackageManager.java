@@ -103,7 +103,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private final Map<Integer, String> namesForUid = new HashMap<>();
   private final Map<Integer, String[]> packagesForUid = new HashMap<>();
   private final Map<String, String> packageInstallerMap = new HashMap<>();
-  private boolean queryIntentImplicitly = false;
+  private boolean queryIntentImplicitly = true;
   private PackageInstaller packageInstaller;
   private AndroidManifest applicationManifest;
   private ResourceTable appResourceTable;
@@ -843,6 +843,12 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
           resolveInfo.resolvePackageName = packageName;
           resolveInfo.activityInfo = new ActivityInfo();
           resolveInfo.activityInfo.targetActivity = activityName;
+          resolveInfo.activityInfo.packageName = packageName;
+          resolveInfo.activityInfo.name = activityName;
+          PackageInfo packageInfo = packageInfos.get(packageName);
+          if (packageInfo != null) {
+            resolveInfo.activityInfo.applicationInfo = packageInfo.applicationInfo;
+          }
 
           resolveInfoList.add(resolveInfo);
         }

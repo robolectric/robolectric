@@ -437,6 +437,10 @@ public class AndroidManifest {
     if (applicationMetaData != null) {
       applicationMetaData.init(resourceTable, packageName);
     }
+
+    for (ActivityData activityData : activityDatas.values()) {
+      activityData.getMetaData().init(resourceTable, packageName);
+    }
     for (PackageItemData receiver : receivers) {
       receiver.getMetaData().init(resourceTable, packageName);
     }
@@ -445,6 +449,9 @@ public class AndroidManifest {
     }
     for (ContentProviderData providerData : providers) {
       providerData.getMetaData().init(resourceTable, packageName);
+    }
+    for (PermissionItemData permissionItemData : permissions.values()) {
+      permissionItemData.getMetaData().init(resourceTable, packageName);
     }
   }
 
@@ -539,10 +546,12 @@ public class AndroidManifest {
 
   public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
+
     if (applicationMetaData == null) {
-      applicationMetaData = new MetaData(Collections.<Node>emptyList());
+      return Collections.emptyMap();
+    } else {
+      return applicationMetaData.getValueMap();
     }
-    return applicationMetaData.getValueMap();
   }
 
   public ResourcePath getResourcePath() {
