@@ -268,6 +268,16 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void whenResourceNotFound_getQuantityString_shouldThrow() throws Exception {
+    try {
+      resources.getQuantityString(-1, 0);
+      fail("should throw Resources.NotFoundException");
+    } catch (Resources.NotFoundException e) {
+      // cool
+    }
+  }
+
+  @Test
   public void getFraction() throws Exception {
     final int myself = 300;
     final int myParent = 600;

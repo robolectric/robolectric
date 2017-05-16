@@ -116,7 +116,12 @@ public class ShadowResources {
           RuntimeEnvironment.getQualifiers(), resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
-      return null;
+      ResName resName = shadowAssetManager.getResourceTable().getResName(resId);
+      if (resName == null) {
+        throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(resId));
+      } else {
+        throw new Resources.NotFoundException(resName.getFullyQualifiedName());
+      }
     }
   }
 
