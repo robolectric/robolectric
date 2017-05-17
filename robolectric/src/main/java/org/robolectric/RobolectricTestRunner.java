@@ -41,7 +41,10 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -102,10 +105,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       if (buildPathPropertiesUrl != null) {
         Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
 
-        FsFile propertiesFile = Fs.fileFromPath(buildPathPropertiesUrl.getFile());
         try {
+          FsFile propertiesFile = Fs.newFile(Paths.get(buildPathPropertiesUrl.toURI()).toFile());
           dependencyResolver = new PropertiesDependencyResolver(propertiesFile, dependencyResolver);
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
           throw new RuntimeException("couldn't read " + buildPathPropertiesUrl, e);
         }
       }
