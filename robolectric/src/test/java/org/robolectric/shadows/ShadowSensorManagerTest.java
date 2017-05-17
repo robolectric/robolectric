@@ -37,7 +37,7 @@ public class ShadowSensorManagerTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
   public void createDirectChannel() throws Exception {
-    SensorDirectChannel channel = sensorManager.createDirectChannel(new MemoryFile("name", 10));
+    SensorDirectChannel channel = (SensorDirectChannel) sensorManager.createDirectChannel(new MemoryFile("name", 10));
     assertThat(channel.isValid()).isTrue();
 
     channel.close();
