@@ -8,7 +8,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final M = new AndroidSdk(23, "6.0.1_r3", 0, "1.7")
     static final N = new AndroidSdk(24, "7.0.0_r1", 0, "1.8")
     static final N_MR1 = new AndroidSdk(25, "7.1.0_r7", 0, "1.8")
-    static final O = new AndroidSdk(26, "o-preview-1", 0, "1.8")
+    static final O = new AndroidSdk(26, "o-preview-2", 0, "1.8")
 
     private static final double jdkVersion = Double.parseDouble(System.getProperty("java.specification.version"));
 

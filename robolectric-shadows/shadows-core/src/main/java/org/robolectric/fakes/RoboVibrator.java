@@ -1,6 +1,7 @@
 package org.robolectric.fakes;
 
 import android.os.Vibrator;
+import android.os.VibrationEffect;
 
 import android.media.AudioAttributes;
 import org.robolectric.annotation.internal.DoNotInstrument;
@@ -31,13 +32,16 @@ public class RoboVibrator extends Vibrator {
     this.repeat = repeat;
   }
 
-  @Override
   public void vibrate(int i, String s, long l, AudioAttributes audioAttributes) {
 
   }
 
-  @Override
   public void vibrate(int i, String s, long[] longs, int i1, AudioAttributes audioAttributes) {
+
+  }
+
+  @Override
+  public void vibrate(int i, String s, VibrationEffect effect, AudioAttributes audioAttributes) {
 
   }
 
@@ -72,5 +76,10 @@ public class RoboVibrator extends Vibrator {
 
   public int getRepeat() {
     return repeat;
+  }
+
+  @Override
+  public boolean hasAmplitudeControl() {
+    return false;
   }
 }

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.os.Build;
 import android.system.ErrnoException;
 import android.system.StructStat;
-import libcore.io.Posix;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -11,7 +10,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 
-@Implements(value = Posix.class, isInAndroidSdk = false)
+@Implements(className = "libcore.io.Posix", maxSdk = Build.VERSION_CODES.N_MR1, isInAndroidSdk = false)
 public class ShadowPosix {
   @Implementation
   public static void mkdir(String path, int mode) throws ErrnoException {

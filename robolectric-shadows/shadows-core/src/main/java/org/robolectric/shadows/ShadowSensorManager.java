@@ -70,7 +70,7 @@ public class ShadowSensorManager {
     return ReflectionHelpers.callConstructor(SensorDirectChannel.class,
         ClassParameter.from(SensorManager.class, realObject),
         ClassParameter.from(int.class, 0),
-        ClassParameter.from(int.class, SensorDirectChannel.TYPE_ASHMEM),
+        ClassParameter.from(int.class, SensorDirectChannel.TYPE_MEMORY_FILE),
         ClassParameter.from(long.class, mem.length()));
   }
 }
