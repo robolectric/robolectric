@@ -10,7 +10,9 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.view.ViewRootImpl;
+import android.view.ViewRootImpl.ActivityConfigCallback;
 import android.view.Window;
+import android.util.MergedConfiguration;
 import com.android.internal.app.IVoiceInteractor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.fakes.RoboInstrumentation;
@@ -37,7 +39,8 @@ class Api26RuntimeAdapter implements RuntimeAdapter {
         ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
         ClassParameter.from(String.class, "referrer"),
         ClassParameter.from(IVoiceInteractor.class, null),
-        ClassParameter.from(Window.class, null)
+        ClassParameter.from(Window.class, null),
+        ClassParameter.from(ActivityConfigCallback.class, null)
     );
   }
 
@@ -53,7 +56,7 @@ class Api26RuntimeAdapter implements RuntimeAdapter {
         ClassParameter.from(Rect.class, stableInsets),
         ClassParameter.from(Rect.class, outsets),
         ClassParameter.from(boolean.class, reportDraw),
-        ClassParameter.from(Configuration.class, newConfig),
+        ClassParameter.from(MergedConfiguration.class, null),
         ClassParameter.from(Rect.class, frame),
         ClassParameter.from(boolean.class, false),
         ClassParameter.from(boolean.class, false),

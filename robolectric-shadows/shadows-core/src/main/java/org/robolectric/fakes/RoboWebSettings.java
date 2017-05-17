@@ -634,4 +634,14 @@ public class RoboWebSettings extends WebSettings {
   }
 
   // End API 24.
+
+  public boolean getSafeBrowsingEnabled() {
+    return false;
+  }
+
+  public void setSafeBrowsingEnabled(boolean enabled) {
+
+  }
+
+  // End API 26
 }

@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.StubPackageManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.manifest.AndroidManifest;
