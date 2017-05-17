@@ -11,9 +11,6 @@ import org.robolectric.annotation.Implements;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Shadow for {@link android.view.SurfaceView}.
- */
 @Implements(SurfaceView.class)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowSurfaceView extends ShadowView {

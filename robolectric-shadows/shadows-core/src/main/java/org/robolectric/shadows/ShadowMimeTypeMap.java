@@ -11,9 +11,6 @@ import org.robolectric.shadow.api.Shadow;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.webkit.MimeTypeMap}.
- */
 @Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {
   private final Map<String, String> extensionToMimeTypeMap = new HashMap<>();

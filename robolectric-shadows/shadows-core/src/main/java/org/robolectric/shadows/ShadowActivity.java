@@ -39,9 +39,6 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
-/**
- * Shadow for {@link android.app.Activity}.
- */
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 
@@ -257,8 +254,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the {@code contentView} set by one of the {@code setContentView()} methods
    */
   public View getContentView() {
@@ -266,8 +261,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the {@code resultCode} set by one of the {@code setResult()} methods
    */
   public int getResultCode() {
@@ -275,8 +268,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)}
    */
   public Intent getResultIntent() {
@@ -284,7 +275,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor consumes and returns the next {@code Intent} on the
+   * Consumes and returns the next {@code Intent} on the
    * started activities for results stack.
    *
    * @return the next started {@code Intent} for an activity, wrapped in
@@ -299,9 +290,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor returns the most recent {@code Intent} started by
-   * {@link #[[#]]#startActivityForResult(android.content.Intent, int)} without
-   * consuming it.
+   * Returns the most recent {@code Intent} started by
+   * {@link #startActivityForResult(Intent, int)} without consuming it.
    *
    * @return the most recently started {@code Intent}, wrapped in
    *         an {@link ShadowActivity.IntentForResult} object
@@ -324,8 +314,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param view View to focus.
    */
   public void setCurrentFocus(View view) {
@@ -485,8 +473,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor
-   *
    * @return the dialog resource id passed into
    *         {@code Activity.showDialog(int, Bundle)} or {@code Activity.showDialog(int)}
    */

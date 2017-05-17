@@ -1,49 +1,52 @@
-package org.robolectric.fakes;
+package org.robolectric.shadows;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
-@RunWith(TestRunners.SelfTest.class)
-public class RoboSharedPreferencesTest {
-  protected final static String FILENAME = "filename";
-  private HashMap<String, Map<String, Object>> content;
+@RunWith(TestRunners.MultiApiSelfTest.class)
+public class ShadowSharedPreferencesTest {
+  private final static String FILENAME = "filename";
   private SharedPreferences.Editor editor;
-  private RoboSharedPreferences sharedPreferences;
+  private SharedPreferences sharedPreferences;
 
-  private static final Set<String> stringSet;
+  private final Set<String> stringSet = new HashSet<>();
 
-  static {
-    stringSet = new HashSet<>();
-    stringSet.add( "string1" );
-    stringSet.add( "string2" );
-    stringSet.add( "string3" );
-  }
+  private Context context;
 
   @Before
   public void setUp() {
-    content = new HashMap<>();
+    context = RuntimeEnvironment.application;
 
-    sharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
+    sharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    // Ensure no shared preferences have leaked from previous tests.
+    assertThat(sharedPreferences.getAll()).hasSize(0);
+
     editor = sharedPreferences.edit();
     editor.putBoolean("boolean", true);
     editor.putFloat("float", 1.1f);
     editor.putInt("int", 2);
     editor.putLong("long", 3l);
     editor.putString("string", "foobar");
+
+    stringSet.add( "string1" );
+    stringSet.add( "string2" );
+    stringSet.add( "string3" );
     editor.putStringSet("stringSet", stringSet);
   }
 
@@ -51,7 +54,7 @@ public class RoboSharedPreferencesTest {
   public void commit_shouldStoreValues() throws Exception {
     editor.commit();
 
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
@@ -67,7 +70,7 @@ public class RoboSharedPreferencesTest {
 
     assertThat(sharedPreferences.getString("string", "no value for key")).isEqualTo("no value for key");
 
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
     anotherSharedPreferences.edit().putString("string", "value for key").commit();
 
     editor.commit();
@@ -77,15 +80,13 @@ public class RoboSharedPreferencesTest {
   @Test
   public void getAll_shouldReturnAllValues() throws Exception {
     editor.commit();
-    Map<String, ?> all = sharedPreferences.getAll();
-    assertThat(all.size()).isEqualTo(6);
-    assertThat((Integer) all.get("int")).isEqualTo(2);
+    assertThat(sharedPreferences.getAll()).hasSize(6);
+    assertThat(sharedPreferences.getAll().get("int")).isEqualTo(2);
   }
 
   @Test
   public void commit_shouldRemoveValuesThenSetValues() throws Exception {
-    content.put(FILENAME, new HashMap<String, Object>());
-    content.get(FILENAME).put("deleteMe", "foo");
+    editor.putString("deleteMe", "foo").commit();
 
     editor.remove("deleteMe");
 
@@ -94,42 +95,41 @@ public class RoboSharedPreferencesTest {
 
     editor.commit();
 
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
-    assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    assertThat(anotherSharedPreferences.getBoolean("boolean", false)).isTrue();
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
     assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
 
     assertThat(anotherSharedPreferences.getString("deleteMe", "awol")).isEqualTo("awol");
-    assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops")).isEqualTo("baz");
+    assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops")).isEqualTo("oops");
   }
 
   @Test
   public void commit_shouldClearThenSetValues() throws Exception {
-    content.put(FILENAME, new HashMap<String, Object>());
-    content.get(FILENAME).put("deleteMe", "foo");
+    editor.putString("deleteMe", "foo");
 
     editor.clear();
     editor.putString("dontDeleteMe", "baz");
 
     editor.commit();
 
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
     assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
 
-    assertThat(anotherSharedPreferences.getString("deleteMe", "awol")).isEqualTo("awol");
+    // Android always calls clear before put on any open editor, so here "foo" is preserved rather than cleared.
+    assertThat(anotherSharedPreferences.getString("deleteMe", "awol")).isEqualTo("foo");
     assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops")).isEqualTo("baz");
   }
 
   @Test
   public void putString_shouldRemovePairIfValueIsNull() throws Exception {
-    content.put(FILENAME, new HashMap<String, Object>());
-    content.get(FILENAME).put("deleteMe", "foo");
+    editor.putString("deleteMe", "foo");
 
     editor.putString("deleteMe", null);
     editor.commit();
@@ -139,8 +139,7 @@ public class RoboSharedPreferencesTest {
 
   @Test
   public void putStringSet_shouldRemovePairIfValueIsNull() throws Exception {
-    content.put(FILENAME, new HashMap<String, Object>());
-    content.get(FILENAME).put("deleteMe", stringSet);
+    editor.putStringSet("deleteMe", new HashSet<String>());
 
     editor.putStringSet("deleteMe", null);
     editor.commit();
@@ -152,13 +151,13 @@ public class RoboSharedPreferencesTest {
   public void apply_shouldStoreValues() throws Exception {
     editor.apply();
 
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
   }
 
   @Test
   public void shouldReturnDefaultValues() throws Exception {
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", 3);
 
     assertFalse(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(666f);
@@ -168,24 +167,21 @@ public class RoboSharedPreferencesTest {
   }
 
   @Test
-  public void shouldStoreRegisteredListeners() {
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
-    anotherSharedPreferences.registerOnSharedPreferenceChangeListener(testListener);
-    assertTrue(anotherSharedPreferences.hasListener(testListener));
-  }
-
-  @Test
   public void shouldRemoveRegisteredListenersOnUnresgister() {
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
-    anotherSharedPreferences.registerOnSharedPreferenceChangeListener(testListener);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", 3);
 
-    anotherSharedPreferences.unregisterOnSharedPreferenceChangeListener(testListener);
-    assertFalse(anotherSharedPreferences.hasListener(testListener));
+    SharedPreferences.OnSharedPreferenceChangeListener mockListener = mock(SharedPreferences.OnSharedPreferenceChangeListener.class);
+    anotherSharedPreferences.registerOnSharedPreferenceChangeListener(mockListener);
+
+    anotherSharedPreferences.unregisterOnSharedPreferenceChangeListener(mockListener);
+
+    anotherSharedPreferences.edit().putString("key", "value");
+    verifyZeroInteractions(mockListener);
   }
 
   @Test
   public void shouldTriggerRegisteredListeners() {
-    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", 3);
 
     final String testKey = "foo";
 
@@ -202,10 +198,4 @@ public class RoboSharedPreferencesTest {
 
     assertThat(transcript).containsExactly(testKey+ " called");
   }
-
-  private SharedPreferences.OnSharedPreferenceChangeListener testListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-    }
-  };
 }

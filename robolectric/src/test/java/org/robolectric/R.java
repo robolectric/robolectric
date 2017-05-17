@@ -84,7 +84,6 @@ public final class R {
     public static final int id_declared_in_layout = 0x7f01003d;
     public static final int id_declared_in_item_tag = 0x7f01003e;
     public static final int id_with_string_value = 0x7f010042;
-    public static final int id_declared_in_id_tag = 0x7f010041;
     public static final int lib_button = 0x7f01003f;
     public static final int lib3_button = 0x7f010040;
   }
@@ -162,7 +161,6 @@ public final class R {
     public static final int color_with_alpha = 0x7f050407;
     public static final int android_namespaced_black = 0x7f050408;
     public static final int android_namespaced_transparent = 0x7f050409;
-    public static final int android_red = 0x7f05040a;
     public static final int test_color_1 = 0x7f05040b;
     public static final int color_state_list = 0x7f05040c;
     public static final int list_separator = 0x7f05040d;
@@ -382,8 +380,6 @@ public final class R {
   public static final class bool {
     public static final int false_bool_value = 0x7f100f00;
     public static final int true_bool_value = 0x7f100f01;
-    public static final int zero_is_false = 0x7f100f02;
-    public static final int integers_are_true = 0x7f100f03;
     public static final int reference_to_true = 0x7f100f04;
     public static final int true_as_item = 0x7f100f05;
     public static final int different_resource_boolean=0x7f100f06;
@@ -396,7 +392,6 @@ public final class R {
     public static final int Theme_Robolectric = 0x7f111001;
     public static final int Theme_Robolectric_ImplicitChild = 0x7f111002;
     public static final int Theme_Robolectric_EmptyParent = 0x7f111003;
-    public static final int Theme_Robolectric_NullStringParent = 0x7f111004;
     public static final int Theme_AnotherTheme = 0x7f111005;
     public static final int MyCustomView = 0x7f111006;
     public static final int Widget_Robolectric_Button = 0x7f111007;

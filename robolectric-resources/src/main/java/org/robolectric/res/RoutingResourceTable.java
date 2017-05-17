@@ -20,7 +20,8 @@ public class RoutingResourceTable implements ResourceTable {
   }
 
   public InputStream getRawValue(int resId, String qualifiers) {
-    return getRawValue(getResName(resId), qualifiers);
+    ResName resName = getResName(resId);
+    return resName != null ? getRawValue(resName, qualifiers) : null;
   }
 
   @Override public TypedResource getValue(@Nonnull ResName resName, String qualifiers) {

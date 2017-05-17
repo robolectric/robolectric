@@ -8,9 +8,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.app.IntentService}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(IntentService.class)
 public class ShadowIntentService extends ShadowService {

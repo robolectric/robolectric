@@ -26,9 +26,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * Shadow for {@link android.telecom.TelecomManager}.
- */
 @Implements(value = TelecomManager.class, minSdk = LOLLIPOP)
 public class ShadowTelecomManager {
 

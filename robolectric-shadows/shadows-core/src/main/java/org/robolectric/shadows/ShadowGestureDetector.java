@@ -13,9 +13,6 @@ import static android.view.GestureDetector.OnDoubleTapListener;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-/**
- * Shadow for {@link android.view.GestureDetector}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GestureDetector.class)
 public class ShadowGestureDetector {

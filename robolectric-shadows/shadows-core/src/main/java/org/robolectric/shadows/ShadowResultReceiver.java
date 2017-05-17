@@ -8,9 +8,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/**
- * Shadow for {@link android.os.ResultReceiver}.
- */
 @Implements(ResultReceiver.class)
 public class ShadowResultReceiver {
   @RealObject private ResultReceiver realResultReceiver;

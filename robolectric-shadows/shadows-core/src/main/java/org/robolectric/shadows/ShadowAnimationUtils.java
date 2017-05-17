@@ -11,9 +11,6 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.view.animation.AnimationUtils}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AnimationUtils.class)
 public class ShadowAnimationUtils {

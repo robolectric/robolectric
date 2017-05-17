@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Robolectric implementation of {@link android.webkit.CookieManager}.
  *
- * <p>Basic implementation which does not fully implement RFC2109.
+ * Basic implementation which does not fully implement RFC2109.
  */
 public class RoboCookieManager extends CookieManager {
     private static final String HTTP = "http://";

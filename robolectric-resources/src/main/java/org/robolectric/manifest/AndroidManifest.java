@@ -152,7 +152,14 @@ public class AndroidManifest {
         }
 
         minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-        targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
+
+        String targetSdkText = getTagAttributeText(manifestDocument, "uses-sdk",
+            "android:targetSdkVersion");
+        if (targetSdkText != null) {
+          // Support Android O Preview. This can be removed once Android O is officially launched.
+          targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
+        }
+
         maxSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:maxSdkVersion");
         if (processName == null) {
           processName = packageName;

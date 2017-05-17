@@ -21,9 +21,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
 
-/**
- * Shadow for {@link android.app.Notification}.
- */
 @Implements(Notification.class)
 public class ShadowNotification {
 

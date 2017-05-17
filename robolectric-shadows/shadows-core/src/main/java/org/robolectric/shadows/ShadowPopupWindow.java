@@ -10,9 +10,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.widget.PopupWindow}.
- */
 @Implements(PopupWindow.class)
 public class ShadowPopupWindow {
 

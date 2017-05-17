@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.app.ActivityManager}.
- */
 @Implements(ActivityManager.class)
 public class ShadowActivityManager {
   private int memoryClass = 16;
@@ -68,8 +65,6 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param tasks List of running tasks.
    */
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
@@ -78,8 +73,6 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param services List of running services.
    */
   public void setServices(List<ActivityManager.RunningServiceInfo> services) {
@@ -88,8 +81,6 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param processes List of running processes.
    */
   public void setProcesses(List<ActivityManager.RunningAppProcessInfo> processes) {
@@ -98,8 +89,6 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return Get the package name of the last background processes killed.
    */
   public String getBackgroundPackage() {
@@ -107,8 +96,6 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param memoryClass Set the application's memory class.
    */
   public void setMemoryClass(int memoryClass) {
@@ -116,8 +103,6 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @param memoryInfo Set the application's memory info.
    */
   public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {

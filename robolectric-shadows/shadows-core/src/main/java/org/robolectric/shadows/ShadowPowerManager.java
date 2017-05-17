@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.PowerManager;
+import android.os.WorkSource;
 
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -16,9 +17,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
-/**
- * Shadow for {@link android.os.PowerManager}.
- */
 @Implements(PowerManager.class)
 public class ShadowPowerManager {
   private boolean isScreenOn = true;
@@ -71,7 +69,7 @@ public class ShadowPowerManager {
   }
 
   /**
-   * Non-Android accessor that discards the most recent {@code PowerManager.WakeLock}s
+   * Discards the most recent {@code PowerManager.WakeLock}s
    */
   @Resetter
   public static void reset() {
@@ -82,8 +80,7 @@ public class ShadowPowerManager {
   }
 
   /**
-   * Non-Android accessor retrieves the most recent wakelock registered
-   * by the application
+   * Retrieves the most recent wakelock registered by the application
    *
    * @return Most recent wake lock.
    */
@@ -94,8 +91,9 @@ public class ShadowPowerManager {
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
     private boolean refCounted = true;
-    private int refCount;
-    private boolean locked;
+    private int refCount = 0;
+    private boolean locked = false;
+    private WorkSource workSource = null;
 
     @Implementation
     public void acquire() {
@@ -127,7 +125,7 @@ public class ShadowPowerManager {
     }
 
     /**
-     * Non-Android accessor retrieves if the wake lock is reference counted or not
+     * Retrieves if the wake lock is reference counted or not
      *
      * @return Is the wake lock reference counted?
      */
@@ -138,6 +136,15 @@ public class ShadowPowerManager {
     @Implementation
     public void setReferenceCounted(boolean value) {
       refCounted = value;
+    }
+
+    @Implementation
+    public synchronized void setWorkSource(WorkSource ws) {
+      workSource = ws;
+    }
+
+    public synchronized WorkSource getWorkSource() {
+      return workSource;
     }
   }
 }

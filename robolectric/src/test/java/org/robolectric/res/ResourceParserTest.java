@@ -71,16 +71,6 @@ public class ResourceParserTest {
   }
 
   @Test
-  public void shouldLoadIdResourcesDefinedByIdTag() throws Exception {
-    TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "id", "id_declared_in_id_tag"), "");
-    assertThat(value).isNotNull();
-    assertThat(value.getResType()).isEqualTo(ResType.CHAR_SEQUENCE);
-    assertThat(value.isReference()).isFalse();
-    assertThat(value.asString()).isEqualTo("");
-    assertThat((String) value.getData()).isEqualTo("");
-  }
-
-  @Test
   public void whenIdItemsHaveStringContent_shouldLoadIdResourcesDefinedByItemTag() throws Exception {
     TypedResource value2 = resourceTable.getValue(new ResName("org.robolectric", "id", "id_with_string_value"), "");
     assertThat(value2.asString()).isEqualTo("string value");

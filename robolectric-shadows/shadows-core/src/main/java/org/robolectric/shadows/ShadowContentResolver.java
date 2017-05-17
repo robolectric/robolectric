@@ -42,9 +42,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.content.ContentResolver}.
- */
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
   private int nextDatabaseIdForInserts;
@@ -139,8 +136,8 @@ public class ShadowContentResolver {
   @Implementation
   public final Uri insert(Uri url, ContentValues values) {
     ContentProvider provider = getProvider(url);
-
-    InsertStatement insertStatement = new InsertStatement(url, provider, new ContentValues(values));
+    ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
+    InsertStatement insertStatement = new InsertStatement(url, provider, valuesCopy);
     statements.add(insertStatement);
     insertStatements.add(insertStatement);
 
@@ -160,13 +157,14 @@ public class ShadowContentResolver {
    *
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
    * the value set with {@link #setNextDatabaseIdForUpdates(int)} will be incremented and returned.
-   * *Note:* the return value in this case will be changed to 1 in a future release of Robolectric.
+   *
+   * *Note:* the return value in this case will be changed to {@code 1} in a future release of Robolectric.
    */
   @Implementation
   public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
     ContentProvider provider = getProvider(uri);
-
-    UpdateStatement updateStatement = new UpdateStatement(uri, provider, new ContentValues(values), where, selectionArgs);
+    ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
+    UpdateStatement updateStatement = new UpdateStatement(uri, provider, valuesCopy, where, selectionArgs);
     statements.add(updateStatement);
     updateStatements.add(updateStatement);
 
@@ -304,7 +302,7 @@ public class ShadowContentResolver {
    * or {@link #getDeletedUris()}.
    *
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
-   * <code>1</code> will be returned.
+   * {@code 1} will be returned.
    */
   @Implementation
   public final int delete(Uri url, String where, String[] selectionArgs) {
@@ -329,7 +327,7 @@ public class ShadowContentResolver {
    * {@link #getInsertStatements()}.
    *
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
-   * the number of rows in <code>values</code> will be returned.
+   * the number of rows in {@code values} will be returned.
    */
   @Implementation
   public final int bulkInsert(Uri url, ContentValues[] values) {
@@ -518,12 +516,11 @@ public class ShadowContentResolver {
    * Internal-only method, do not use!
    *
    * Instead, use
-   * <pre>
-   * {@code
+   * ```java
    * ProviderInfo info = new ProviderInfo();
    * info.authority = authority;
    * Robolectric.buildContentProvider(ContentProvider.class).create(info);
-   * }</pre>
+   * ```
    */
   synchronized public static void registerProviderInternal(String authority, ContentProvider provider) {
     providers.put(authority, provider);
@@ -533,6 +530,14 @@ public class ShadowContentResolver {
     return getStatus(account, authority, false);
   }
 
+  /**
+   * Retrieve information on the status of the given account.
+   *
+   * @param account the account
+   * @param authority the authority
+   * @param create whether to create if no such account is found
+   * @return the account's status
+   */
   public static Status getStatus(Account account, String authority, boolean create) {
     Map<Account, Status> map = syncableAccounts.get(authority);
     if (map == null) {
@@ -564,7 +569,7 @@ public class ShadowContentResolver {
    * Set the value to be returned by {@link ContentResolver#update(Uri, ContentValues, String, String[])}
    * when no appropriate {@link ContentProvider} can be found.
    *
-   * @deprecated This method will be removed in Robolectric 3.5. Instead, <code>1</code> will be returned.
+   * @deprecated This method will be removed in Robolectric 3.5. Instead, {@code 1} will be returned.
    *
    * @param nextId the number of rows to return
    */

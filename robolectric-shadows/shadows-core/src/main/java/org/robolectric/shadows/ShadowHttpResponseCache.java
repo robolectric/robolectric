@@ -14,9 +14,6 @@ import java.util.Map;
 
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
-/**
- * Shadow for {@link android.net.http.HttpResponseCache}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = HttpResponseCache.class, callThroughByDefault = false)
 public class ShadowHttpResponseCache {
