@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -216,6 +218,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGetCreatorPackage_nothingSet() {
     Context ctx = RuntimeEnvironment.application;
     PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
@@ -225,6 +228,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGetCreatorPackage_explicitlySetPackage() {
     String fakePackage = "some.fake.package";
     Context ctx = RuntimeEnvironment.application;
