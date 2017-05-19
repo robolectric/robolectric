@@ -16,6 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.*;
+
+/**
+ * Shadow for {@link android.net.wifi.WifiManager}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
@@ -63,6 +68,11 @@ public class ShadowWifiManager {
       wifiConfigurations.add(wifiConfiguration);
     }
     return wifiConfigurations;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public List<WifiConfiguration> getPrivilegedConfiguredNetworks() {
+    return getConfiguredNetworks();
   }
 
   @Implementation
