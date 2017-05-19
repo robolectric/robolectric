@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.O;
 
-@Implements(SensorManager.class)
+@Implements(value = SensorManager.class, looseSignatures = true)
 public class ShadowSensorManager {
   public boolean forceListenersToFail = false;
   private final Map<Integer, Sensor> sensorMap = new HashMap<>();
@@ -66,11 +66,11 @@ public class ShadowSensorManager {
   }
 
   @Implementation(minSdk = O)
-  public SensorDirectChannel createDirectChannel(MemoryFile mem) {
+  public Object createDirectChannel(MemoryFile mem) {
     return ReflectionHelpers.callConstructor(SensorDirectChannel.class,
         ClassParameter.from(SensorManager.class, realObject),
         ClassParameter.from(int.class, 0),
-        ClassParameter.from(int.class, SensorDirectChannel.TYPE_ASHMEM),
+        ClassParameter.from(int.class, SensorDirectChannel.TYPE_MEMORY_FILE),
         ClassParameter.from(long.class, mem.length()));
   }
 }

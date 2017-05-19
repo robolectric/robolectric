@@ -56,6 +56,45 @@ import java.util.List;
 public class StubPackageManager extends PackageManager {
 
   @Override
+  public int getInstantAppCookieMaxBytes() {
+    return -1;
+  }
+
+  @Override
+  public void clearInstantAppCookie() {
+
+  }
+
+  @Override
+  public void updateInstantAppCookie(byte[] cookie) {
+
+  }
+
+  @Override
+  public void setUpdateAvailable(String packageName, boolean updateAvaialble) {
+  }
+
+  @Override
+  public ComponentName getInstantAppResolverSettingsComponent() {
+    return null;
+  }
+
+  @Override
+  public ComponentName getInstantAppInstallerComponent() {
+    return null;
+  }
+
+  @Override
+  public String getInstantAppAndroidId(String s, UserHandle u) {
+    return null;
+  }
+
+  @Override
+  public boolean isInstantApp(String packageName) {
+    return false;
+  }
+
+  @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
     return null;
   }

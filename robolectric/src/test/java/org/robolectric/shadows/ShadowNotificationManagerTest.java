@@ -35,8 +35,10 @@ public class ShadowNotificationManagerTest {
     notificationManager.createNotificationChannel(new NotificationChannel("id", "name", 1));
 
     assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(1);
-    assertThat(shadowOf(notificationManager).getNotificationChannel("id").getName()).isEqualTo("name");
-    assertThat(shadowOf(notificationManager).getNotificationChannel("id").getImportance()).isEqualTo(1);
+    NotificationChannel channel = (NotificationChannel)shadowOf(notificationManager)
+        .getNotificationChannel("id");
+    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getImportance()).isEqualTo(1);
   }
 
   @Test
@@ -45,7 +47,9 @@ public class ShadowNotificationManagerTest {
     notificationManager.createNotificationChannelGroup(new NotificationChannelGroup("id", "name"));
 
     assertThat(shadowOf(notificationManager).getNotificationChannelGroups()).hasSize(1);
-    assertThat(shadowOf(notificationManager).getNotificationChannelGroup("id").getName()).isEqualTo("name");
+    NotificationChannelGroup group = (NotificationChannelGroup)shadowOf(notificationManager)
+        .getNotificationChannelGroup("id");
+    assertThat(group.getName()).isEqualTo("name");
   }
 
   @Test
