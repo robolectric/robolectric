@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ public class SchedulerTest {
   private final List<String> transcript = new ArrayList<>();
 
   private long startTime;
-  
+
   @Before
   public void setUp() throws Exception {
     scheduler.pause();
@@ -123,6 +124,13 @@ public class SchedulerTest {
   }
 
   @Test
+  public void advanceTo_canMoveTimeBackwards() {
+    long time = scheduler.getCurrentTime();
+    scheduler.advanceTo(time - 1);
+    assertThat(scheduler.getCurrentTime()).isEqualTo(time - 1);
+  }
+
+  @Test
   public void advanceBy_returnsTrueIffSomeJobWasRun() throws Exception {
     scheduler.postDelayed(new AddToTranscript("one"), 0);
     scheduler.postDelayed(new AddToTranscript("two"), 0);
@@ -167,7 +175,7 @@ public class SchedulerTest {
 
     assertThat(transcript).containsExactly("one");
   }
-  
+
   @Test
   public void postDelayed_whileIdlingConstantly_advancesTime() {
     scheduler.setIdleState(CONSTANT_IDLE);
@@ -175,7 +183,7 @@ public class SchedulerTest {
 
     assertThat(scheduler.getCurrentTime()).isEqualTo(1000 + startTime);
   }
-  
+
   @Test
   public void postAtFrontOfQueue_addsJobAtFrontOfQueue() throws Exception {
     scheduler.post(new AddToTranscript("one"));
@@ -300,7 +308,7 @@ public class SchedulerTest {
       }
     }, 0);
     scheduler.runOneTask();
-    
+
     assertThat(order).as("order:first run").containsExactly(1, 2);
     assertThat(scheduler.size()).as("size:first run").isEqualTo(2);
     scheduler.runOneTask();
@@ -328,7 +336,7 @@ public class SchedulerTest {
         order.add(2);
       }
     }, 0);
-    
+
     assertThat(order).as("order").containsExactly(1, 2, 3);
     assertThat(scheduler.size()).as("size").isEqualTo(0);
   }
@@ -398,12 +406,12 @@ public class SchedulerTest {
         order.add(2);
       }
     }, 0);
-    
+
     assertThat(order).as("order:before").containsExactly(1, 2);
     assertThat(scheduler.size()).as("size:before").isEqualTo(1);
     scheduler.advanceToLastPostedRunnable();
     assertThat(order).as("order:after").containsExactly(1, 2, 3);
-    assertThat(scheduler.size()).as("size:after").isEqualTo(0);    
+    assertThat(scheduler.size()).as("size:after").isEqualTo(0);
     assertThat(scheduler.getCurrentTime()).as("time:after").isEqualTo(1 + startTime);
   }
 
@@ -502,6 +510,34 @@ public class SchedulerTest {
       t.start();
       t.join();
     }
+  }
+
+  @Test(timeout = 1000)
+  public void schedulerTestReentrancy_fromOtherThread() {
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        new Thread(new Runnable() {
+          @Override
+          public void run() {
+            scheduler.postDelayed(new Runnable() {
+              @Override
+              public void run() {
+
+              }
+            }, 100);
+            latch.countDown();
+          }
+        }).start();
+        try {
+          latch.await();
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+    scheduler.unPause();
   }
 
   private class AddToTranscript implements Runnable {
