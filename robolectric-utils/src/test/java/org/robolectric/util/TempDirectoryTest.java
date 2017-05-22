@@ -6,44 +6,33 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+@RunWith(JUnit4.class)
 public class TempDirectoryTest {
   @Test
-  public void verifyReuse() {
-    TempDirectory dir = new TempDirectory();
-    Path path = dir.createImpl(false);
-    dir.destroyImpl(path);
-    assertThat(path).exists();
-    assertThat(dir.createImpl(false)).isSameAs(path);
-  }
-
-  @Test
-  public void directoryIsEmpty() throws IOException {
-    TempDirectory dir = new TempDirectory();
-    Path path = dir.createImpl(false);
+  public void nonEmptyDirectoryDeleted() throws IOException {
+    Path path = TempDirectory.create();
     Path temp = Files.createTempDirectory(path, "hello");
-    dir.destroyImpl(path);
+    TempDirectory.destroy(path);
     assertThat(temp).doesNotExist();
   }
 
   @Test
   public void rougeDeletion() throws IOException {
-    TempDirectory dir = new TempDirectory();
-    Path path = dir.createImpl(false);
+    Path path = TempDirectory.create();
     Files.delete(path);
-    dir.destroyImpl(path);
+    TempDirectory.destroy(path);
     assertThat(path).doesNotExist();
-    assertThat(dir.createImpl(false)).isNotSameAs(path);
+    assertThat(TempDirectory.create()).isNotSameAs(path);
   }
 
   @Test
-  public void rougeDeletionAfterDestroy() throws IOException {
-    TempDirectory dir = new TempDirectory();
-    Path path = dir.createImpl(false);
-    dir.destroyImpl(path);
-    Files.delete(path);
-    Path newPath = dir.createImpl(false);
-    assertThat(path).doesNotExist();
+  public void createsUniqueDirs() throws IOException {
+    Path path = TempDirectory.create();
+    TempDirectory.destroy(path);
+    Path newPath = TempDirectory.create();
     assertThat(path).isNotSameAs(newPath);
   }
 }

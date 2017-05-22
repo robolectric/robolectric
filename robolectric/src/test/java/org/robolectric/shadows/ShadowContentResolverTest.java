@@ -153,6 +153,18 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void insert_supportsNullContentValues() throws Exception {
+    contentResolver.insert(EXTERNAL_CONTENT_URI, null);
+    assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues()).isNull();
+  }
+
+  @Test
+  public void update_supportsNullContentValues() throws Exception {
+    contentResolver.update(EXTERNAL_CONTENT_URI, null, null, null);
+    assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues()).isNull();
+  }
+
+  @Test
   public void delete_shouldTrackDeletedUris() throws Exception {
     assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(0);
 
@@ -172,6 +184,7 @@ public class ShadowContentResolverTest {
     assertThat(contentResolver.delete(uri21, "id", new String[]{"5"})).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri()).isEqualTo(uri21);
+    assertThat(shadowContentResolver.getDeleteStatements().get(0).getContentProvider()).isNull();
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere()).isEqualTo("id");
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0]).isEqualTo("5");
 

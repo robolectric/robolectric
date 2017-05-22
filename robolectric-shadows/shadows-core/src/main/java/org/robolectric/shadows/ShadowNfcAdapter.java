@@ -10,9 +10,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.nfc.NfcAdapter}.
- */
 @Implements(NfcAdapter.class)
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;

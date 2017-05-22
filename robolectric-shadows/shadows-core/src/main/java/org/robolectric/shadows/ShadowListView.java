@@ -9,9 +9,6 @@ import org.robolectric.annotation.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Shadow for {@link android.widget.ListView}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
 public class ShadowListView extends ShadowAbsListView {

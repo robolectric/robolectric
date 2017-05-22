@@ -19,8 +19,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /**
- * Shadow for {@link GooglePlayServicesUtil} that allows providing a
- * {@link GooglePlayServicesUtilImpl}.
  * Calls to static method of {@link GooglePlayServicesUtil} will be redirected to the provided
  * {@link GooglePlayServicesUtilImpl} implementation. Use
  * {@link #provideImpl(GooglePlayServicesUtilImpl)} to

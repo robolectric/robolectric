@@ -5,13 +5,13 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getRobolectricPackageManager;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringRes;
 import android.annotation.UserIdInt;
-import android.annotation.XmlRes;
 import android.app.ApplicationPackageManager;
 import android.app.PackageInstallObserver;
 import android.content.ComponentName;
@@ -20,7 +20,6 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.EphemeralApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
@@ -42,9 +41,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.VerifierDeviceIdentity;
-import android.content.res.ObbInfo;
 import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -463,38 +460,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public List<EphemeralApplicationInfo> getEphemeralApplications() {
-    return getDelegatePackageManager().getEphemeralApplications();
-  }
-
-  @Implementation
-  public Drawable getEphemeralApplicationIcon(String packageName) {
-    return getDelegatePackageManager().getEphemeralApplicationIcon(packageName);
-  }
-
-  @Implementation
-  public boolean isEphemeralApplication() {
-    return getDelegatePackageManager().isEphemeralApplication();
-  }
-
-  @Implementation
-  public int getEphemeralCookieMaxSizeBytes() {
-    return getDelegatePackageManager().getEphemeralCookieMaxSizeBytes();
-  }
-
-  @Implementation
-  public
-  @NonNull
-  byte[] getEphemeralCookie() {
-    return getDelegatePackageManager().getEphemeralCookie();
-  }
-
-  @Implementation
-  public boolean setEphemeralCookie(@NonNull byte[] cookie) {
-    return getDelegatePackageManager().setEphemeralCookie(cookie);
-  }
-
-  @Implementation
   public ResolveInfo resolveActivityAsUser(Intent intent, int flags, int userId) {
     return getDelegatePackageManager().resolveActivityAsUser(intent, flags, userId);
   }
@@ -595,11 +560,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public Drawable getManagedUserBadgedDrawable(Drawable drawable, Rect badgeLocation, int badgeDensity) {
-    return getDelegatePackageManager().getManagedUserBadgedDrawable(drawable, badgeLocation, badgeDensity);
-  }
-
-  @Implementation
   public Drawable getUserBadgedIcon(Drawable icon, UserHandle user) {
     return getDelegatePackageManager().getUserBadgedIcon(icon, user);
   }
@@ -647,11 +607,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public CharSequence getText(String packageName, @StringRes int resid, ApplicationInfo appInfo) {
     return getDelegatePackageManager().getText(packageName, resid, appInfo);
-  }
-
-  @Implementation
-  public XmlResourceParser getXml(String packageName, @XmlRes int resid, ApplicationInfo appInfo) {
-    return getDelegatePackageManager().getXml(packageName, resid, appInfo);
   }
 
   @Implementation

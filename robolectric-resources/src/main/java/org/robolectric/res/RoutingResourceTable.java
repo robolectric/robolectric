@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RoutingResourceTable implements ResourceTable {
-  private static final PackageResourceTable EMPTY_RESOURCE_TABLE = ResourceTableFactory.newResourceTable("");
+  private static final PackageResourceTable EMPTY_RESOURCE_TABLE = new ResourceTableFactory().newResourceTable("");
   private final Map<String, PackageResourceTable> resourceTables;
 
   public RoutingResourceTable(PackageResourceTable... resourceTables) {
@@ -20,10 +20,11 @@ public class RoutingResourceTable implements ResourceTable {
   }
 
   public InputStream getRawValue(int resId, String qualifiers) {
-    return getRawValue(getResName(resId), qualifiers);
+    ResName resName = getResName(resId);
+    return resName != null ? getRawValue(resName, qualifiers) : null;
   }
 
-  @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
+  @Override public TypedResource getValue(@Nonnull ResName resName, String qualifiers) {
     return pickFor(resName).getValue(resName, qualifiers);
   }
 

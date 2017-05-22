@@ -2,9 +2,13 @@ package org.robolectric.res;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(JUnit4.class)
 public class ThemeStyleSetTest {
 
   private ThemeStyleSet themeStyleSet;
@@ -38,11 +42,7 @@ public class ThemeStyleSetTest {
   }
 
   private StyleData createStyle(String styleName, AttributeResource... attributeResources) {
-    StyleData styleData = new StyleData("package", styleName, null);
-    for (AttributeResource attributeResource : attributeResources) {
-      styleData.add(attributeResource.resName, attributeResource);
-    }
-    return styleData;
+    return new StyleData("package", styleName, null, asList(attributeResources));
   }
 
   private AttributeResource createAttribute(String attrName, String value) {

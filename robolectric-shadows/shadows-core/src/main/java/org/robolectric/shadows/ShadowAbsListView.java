@@ -4,9 +4,6 @@ import android.widget.AbsListView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link android.widget.AbsListView}.
- */
 @Implements(AbsListView.class)
 public class ShadowAbsListView extends ShadowAdapterView {
   private AbsListView.OnScrollListener onScrollListener;

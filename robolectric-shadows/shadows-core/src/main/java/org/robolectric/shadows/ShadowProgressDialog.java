@@ -9,9 +9,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.app.ProgressDialog}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ProgressDialog.class)
 public class ShadowProgressDialog extends ShadowAlertDialog {
@@ -20,8 +17,6 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
   private int mProgressStyle;
 
   /**
-   * Non-Android accessor.
-   *
    * @return the message displayed in the dialog
    */
   @Override
@@ -41,8 +36,6 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the style of the progress dialog
    */
   public int getProgressStyle() {

@@ -8,9 +8,6 @@ import org.robolectric.shadow.api.Shadow;
 
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * Shadow for {@link android.app.KeyguardManager}.
- */
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
   @RealObject private KeyguardManager realKeyguardManager;

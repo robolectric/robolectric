@@ -1,6 +1,7 @@
 package org.robolectric.annotation.processing;
 
 import org.robolectric.annotation.processing.generator.Generator;
+import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
 import org.robolectric.annotation.processing.generator.ShadowProviderGenerator;
 import org.robolectric.annotation.processing.validator.ImplementationValidator;
@@ -10,16 +11,13 @@ import org.robolectric.annotation.processing.validator.ResetterValidator;
 import org.robolectric.annotation.processing.validator.Validator;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic.Kind;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +31,6 @@ import java.util.Set;
   RobolectricProcessor.PACKAGE_OPT, 
   RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT})
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
   static final String SHOULD_INSTRUMENT_PKG_OPT = 
@@ -76,8 +73,9 @@ public class RobolectricProcessor extends AbstractProcessor {
     addValidator(new RealObjectValidator(model, environment));
     addValidator(new ResetterValidator(model, environment));
 
-    generators.add(new ShadowProviderGenerator(model, environment, shouldInstrumentPackages));
-    generators.add(new ServiceLoaderGenerator(model, environment));
+    generators.add(new ShadowProviderGenerator(model, environment, shadowPackage, shouldInstrumentPackages));
+    generators.add(new ServiceLoaderGenerator(environment, shadowPackage));
+    generators.add(new JavadocJsonGenerator(model, environment));
   }
 
   @Override
@@ -91,10 +89,10 @@ public class RobolectricProcessor extends AbstractProcessor {
       }
     }
 
-    if (!generated && shadowPackage != null) {
+    if (!generated) {
       model.prepare();
       for (Generator generator : generators) {
-        generator.generate(shadowPackage);
+        generator.generate();
       }
       generated = true;
     }
@@ -109,9 +107,13 @@ public class RobolectricProcessor extends AbstractProcessor {
     if (this.options == null) {
       this.options = options;
       this.shadowPackage = options.get(PACKAGE_OPT);
-      this.shouldInstrumentPackages = 
-          "false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT)) 
-          ? false : true;
+      this.shouldInstrumentPackages =
+          !"false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT));
     }
+  }
+
+  @Override
+  public SourceVersion getSupportedSourceVersion() {
+    return SourceVersion.latest();
   }
 }

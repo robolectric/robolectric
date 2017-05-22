@@ -11,9 +11,6 @@ import org.robolectric.annotation.RealObject;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.graphics.drawable.Icon}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Icon.class, minSdk = M)
 public class ShadowIcon {

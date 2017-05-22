@@ -9,9 +9,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@link android.view.inputmethod.InputMethodManager}.
- */
 @Implements(value = InputMethodManager.class, callThroughByDefault = false)
 public class ShadowInputMethodManager {
 

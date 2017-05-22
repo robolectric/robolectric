@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -590,7 +590,7 @@ public class SandboxClassLoaderTest {
     return m.invoke(shadow.directlyOn(instance, (Class<Object>) theClass));
   }
 
-  @NotNull
+  @Nonnull
   private InstrumentationConfiguration.Builder configureBuilder() {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
     builder.doNotAcquirePackage("java.")

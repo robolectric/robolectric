@@ -6,11 +6,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 
 /**
- * Shadow for {@link android.os.SystemClock}.
- *
- * <p>The concept of current time is base on the current time of the UI Scheduler for
+ * Robolectric's concept of current time is base on the current time of the UI Scheduler for
  * consistency with previous implementations. This is not ideal, since both schedulers
- * (background and foreground), can see different values for the current time.</p>
+ * (background and foreground), can see different values for the current time.
  */
 @Implements(SystemClock.class)
 public class ShadowSystemClock {

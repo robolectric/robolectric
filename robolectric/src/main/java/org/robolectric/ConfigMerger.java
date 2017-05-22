@@ -1,8 +1,8 @@
 package org.robolectric;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Join;
 
@@ -65,7 +65,7 @@ public class ConfigMerger {
    *
    * The returned object is likely to be reused for many tests.
    *
-   * @param packageName the name of the package, or empty string (<code>""</code>) for the top level package
+   * @param packageName the name of the package, or empty string ({@code ""}) for the top level package
    * @return {@link Config} object for the specified package
    * @since 3.2
    */
@@ -75,7 +75,7 @@ public class ConfigMerger {
   }
 
   /**
-   * Return a {@link Properties} file for the given package name, or <code>null</code> if none is available.
+   * Return a {@link Properties} file for the given package name, or {@code null} if none is available.
    * 
    * @since 3.2
    */
@@ -93,7 +93,7 @@ public class ConfigMerger {
     }
   }
 
-  @NotNull @VisibleForTesting
+  @Nonnull @VisibleForTesting
   List<String> packageHierarchyOf(Class<?> javaClass) {
     Package aPackage = javaClass.getPackage();
     String testPackageName = aPackage == null ? "" : aPackage.getName();
@@ -107,7 +107,7 @@ public class ConfigMerger {
     return packageHierarchy;
   }
 
-  @NotNull
+  @Nonnull
   private List<Class> parentClassesFor(Class testClass) {
     List<Class> testClassHierarchy = new ArrayList<>();
     while (testClass != null && !testClass.equals(Object.class)) {

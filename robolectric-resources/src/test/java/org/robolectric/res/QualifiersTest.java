@@ -60,4 +60,11 @@ public class QualifiersTest {
     assertThat(Qualifiers.addScreenWidth("v7", 320)).isEqualTo("v7-w320dp");
     assertThat(Qualifiers.addScreenWidth("w320dp-v7", 480)).isEqualTo("w320dp-v7");
   }
+
+  @Test public void getOrientation() {
+    assertThat(Qualifiers.getOrientation("land")).isEqualTo("land");
+    assertThat(Qualifiers.getOrientation("en-rUs-land")).isEqualTo("land");
+    assertThat(Qualifiers.getOrientation("port")).isEqualTo("port");
+    assertThat(Qualifiers.getOrientation("port-v7")).isEqualTo("port");
+  }
 }

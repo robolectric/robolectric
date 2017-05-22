@@ -7,9 +7,6 @@ import android.graphics.Picture;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for {@link Picture}.
- */
 @Implements(Picture.class)
 public class ShadowPicture {
 

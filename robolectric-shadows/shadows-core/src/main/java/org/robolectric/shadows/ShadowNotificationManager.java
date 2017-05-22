@@ -4,22 +4,23 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
+import com.google.common.collect.ImmutableList;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.app.NotificationManager}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(NotificationManager.class)
+@Implements(value = NotificationManager.class, looseSignatures = true)
 public class ShadowNotificationManager {
   private Map<Key, Notification> notifications = new HashMap<>();
+  private final Map<String, Object> notificationChannels = new HashMap<>();
+  private final Map<String, Object> notificationChannelGroups = new HashMap<>();
 
   @Implementation
   public void notify(int id, Notification notification) {
@@ -68,6 +69,37 @@ public class ShadowNotificationManager {
 	  0 /* postTime */);
     }
     return statusBarNotifications;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public Object /*NotificationChannel*/ getNotificationChannel(String channelId) {
+    return notificationChannels.get(channelId);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannelGroup(Object /*NotificationChannelGroup*/ group) {
+    String id = ReflectionHelpers.callInstanceMethod(group, "getId");
+    notificationChannelGroups.put(id, group);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public List<Object /*NotificationChannelGroup*/> getNotificationChannelGroups() {
+    return ImmutableList.copyOf(notificationChannelGroups.values());
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannel(Object /*NotificationChannel*/ channel) {
+    String id = ReflectionHelpers.callInstanceMethod(channel, "getId");
+    notificationChannels.put(id, channel);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public List<Object /*NotificationChannel*/> getNotificationChannels() {
+    return ImmutableList.copyOf(notificationChannels.values());
+  }
+
+  public Object /*NotificationChannelGroup*/ getNotificationChannelGroup(String id) {
+    return notificationChannelGroups.get(id);
   }
 
   public int size() {

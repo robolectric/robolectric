@@ -13,9 +13,6 @@ import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.widget.Toast}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
 public class ShadowToast {
@@ -106,7 +103,7 @@ public class ShadowToast {
   }
 
   /**
-   * Non-Android accessor that discards the recorded {@code Toast}s. Shown toasts are automatically cleared between
+   * Discards the recorded {@code Toast}s. Shown toasts are automatically cleared between
    * tests. This method allows the user to discard recorded toasts during the test in order to make assertions clearer
    * e.g:
    *
@@ -130,7 +127,7 @@ public class ShadowToast {
   }
 
   /**
-   * Non-Android accessor that returns the number of {@code Toast} requests that have been made during this test run
+   * Returns the number of {@code Toast} requests that have been made during this test run
    * or since {@link #reset()} has been called.
    *
    * @return the number of {@code Toast} requests that have been made during this test run
@@ -141,7 +138,7 @@ public class ShadowToast {
   }
 
   /**
-   * Non-Android query method that returns whether or not a particular custom {@code Toast} has been shown.
+   * Returns whether or not a particular custom {@code Toast} has been shown.
    *
    * @param message the message to search for
    * @param layoutResourceIdToCheckForMessage
@@ -175,7 +172,7 @@ public class ShadowToast {
   }
 
   /**
-   * Non-Android accessor that returns the text of the most recently shown {@code Toast}
+   * Returns the text of the most recently shown {@code Toast}.
    *
    * @return the text of the most recently shown {@code Toast}
    */
@@ -185,7 +182,7 @@ public class ShadowToast {
   }
 
   /**
-   * Non-Android accessor that returns the most recently shown {@code Toast}
+   * Returns the most recently shown {@code Toast}.
    *
    * @return the most recently shown {@code Toast}
    */

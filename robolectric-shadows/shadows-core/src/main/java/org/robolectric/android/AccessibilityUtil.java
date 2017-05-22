@@ -105,8 +105,8 @@ public class AccessibilityUtil {
   /**
    * Specify that a specific subset of accessibility checks be run. The subsets are specified based
    * on which Robolectric version particular checks were released with. By default, all checks are
-   * run ({@link ForRobolectricVersion}.
-   * <p>
+   * run {@link ForRobolectricVersion}.
+   *
    * If you call this method, the value you pass will take precedence over any value in any 
    * annotations. 
    * 
@@ -245,7 +245,7 @@ public class AccessibilityUtil {
 
         /* If we've crawled up the stack far enough to find the test, stop looking */
         for (Annotation annotation : clazz.getAnnotations()) {
-          if (annotation.getClass().getName().equals("org.junit.Test")) {
+          if (annotation.annotationType().getName().equals("org.junit.Test")) {
             break;
           }
         }

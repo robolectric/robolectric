@@ -6,8 +6,7 @@ import org.robolectric.ShadowsAdapter;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class ServiceController<T extends Service> extends org.robolectric.util.ServiceController<T> {
-
+public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T> {
   public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
     return new ServiceController<>(shadowsAdapter, service, intent);
   }

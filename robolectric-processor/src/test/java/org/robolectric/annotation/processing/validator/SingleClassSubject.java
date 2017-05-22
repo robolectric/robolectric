@@ -7,14 +7,14 @@ import com.google.testing.compile.CompileTester.SuccessfulCompilationClause;
 import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
 import com.google.testing.compile.JavaFileObjects;
 import org.robolectric.annotation.processing.RobolectricProcessor;
-import org.truth0.FailureStrategy;
-import org.truth0.subjects.Subject;
-import org.truth0.subjects.SubjectFactory;
+import com.google.common.truth.FailureStrategy;
+import com.google.common.truth.Subject;
+import com.google.common.truth.SubjectFactory;
 
 import javax.tools.JavaFileObject;
 
+import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.truth0.Truth.ASSERT;
 
 public final class SingleClassSubject extends Subject<SingleClassSubject, String> {
 
@@ -36,7 +36,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
   public SingleClassSubject(FailureStrategy failureStrategy, String subject) {
     super(failureStrategy, subject);
     source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
-    tester = ASSERT.about(javaSources())
+    tester = assertAbout(javaSources())
       .that(ImmutableList.of(source, Utils.ROBO_SOURCE, Utils.SHADOW_EXTRACTOR_SOURCE))
       .processedWith(new RobolectricProcessor());
   }

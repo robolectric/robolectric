@@ -13,9 +13,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
-/**
- * Shadow for {@link android.app.DatePickerDialog}.
- */
 @Implements(DatePickerDialog.class)
 public class ShadowDatePickerDialog extends ShadowAlertDialog {
 

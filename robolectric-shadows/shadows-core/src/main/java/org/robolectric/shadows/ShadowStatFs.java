@@ -12,9 +12,6 @@ import java.util.Map;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
-/**
- * Shadow for {@link android.os.StatFs}.
- */
 @Implements(StatFs.class)
 public class ShadowStatFs {
   public static final int BLOCK_SIZE = 4096;

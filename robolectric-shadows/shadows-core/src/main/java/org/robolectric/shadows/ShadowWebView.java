@@ -21,9 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Shadow for {@link android.webkit.WebView}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
 public class ShadowWebView extends ShadowAbsoluteLayout {
@@ -137,8 +134,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the last loaded url
    */
   public String getLastLoadedUrl() {
@@ -146,8 +141,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return the additional Http headers that in the same request with last loaded url
    */
   public Map<String, String> getLastAdditionalHttpHeaders() {
@@ -262,8 +255,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
 
   /**
-   * Non-Android accessor.
-   *
    * @return webChromeClient
    */
   public WebChromeClient getWebChromeClient() {
@@ -286,8 +277,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   }
 
   /**
-   * Non-Android accessor.
-   *
    * @return goBackInvocations the number of times {@code android.webkit.WebView#goBack()}
    * was invoked
    */
@@ -296,8 +285,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   }
 
   /**
-   * Non-Android setter.
-   *
    * Sets the value to return from {@code android.webkit.WebView#canGoBack()}
    *
    * @param canGoBack Value to return from {@code android.webkit.WebView#canGoBack()}

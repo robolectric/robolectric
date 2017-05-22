@@ -1,7 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import android.os.Build;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.android.AndroidInterceptors;
@@ -30,7 +30,7 @@ public class AndroidSandboxClassLoaderTest {
 
   ////////////////////////
 
-  @NotNull
+  @Nonnull
   private InstrumentationConfiguration.Builder configureBuilder() {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
     builder.doNotAcquirePackage("java.");

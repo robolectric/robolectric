@@ -7,8 +7,9 @@ import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.util.TypedValue;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.HiddenApi;
@@ -41,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
@@ -48,9 +50,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@link android.content.res.AssetManager}.
- */
 @Implements(AssetManager.class)
 public final class ShadowAssetManager {
   public static final int STYLE_NUM_ENTRIES = 6;
@@ -273,10 +272,10 @@ public final class ShadowAssetManager {
   public CharSequence[] getResourceTextArray(int resId) {
     TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
-    TypedResource[] items = getConverter(value).getItems(value);
-    CharSequence[] charSequences = new CharSequence[items.length];
-    for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
+    List<TypedResource> items = getConverter(value).getItems(value);
+    CharSequence[] charSequences = new CharSequence[items.size()];
+    for (int i = 0; i < items.size(); i++) {
+      TypedResource typedResource = resolve(items.get(i), RuntimeEnvironment.getQualifiers(), resId);
       charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
     }
     return charSequences;
@@ -433,10 +432,10 @@ public final class ShadowAssetManager {
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
-    TypedResource[] items = getConverter(value).getItems(value);
-    int[] ints = new int[items.length];
-    for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
+    List<TypedResource> items = getConverter(value).getItems(value);
+    int[] ints = new int[items.size()];
+    for (int i = 0; i < items.size(); i++) {
+      TypedResource typedResource = resolve(items.get(i), RuntimeEnvironment.getQualifiers(), resId);
       ints[i] = getConverter(typedResource).asInt(typedResource);
     }
     return ints;
@@ -447,18 +446,18 @@ public final class ShadowAssetManager {
     if (value == null) {
       return null;
     }
-    TypedResource[] items = getConverter(value).getItems(value);
+    List<TypedResource> items = getConverter(value).getItems(value);
     return getTypedArray(resources, items, resId);
   }
 
-  private TypedArray getTypedArray(Resources resources, TypedResource[] typedResources, int resId) {
-    final CharSequence[] stringData = new CharSequence[typedResources.length];
-    final int totalLen = typedResources.length * ShadowAssetManager.STYLE_NUM_ENTRIES;
+  private TypedArray getTypedArray(Resources resources, List<TypedResource> typedResources, int resId) {
+    final CharSequence[] stringData = new CharSequence[typedResources.size()];
+    final int totalLen = typedResources.size() * ShadowAssetManager.STYLE_NUM_ENTRIES;
     final int[] data = new int[totalLen];
 
-    for (int i = 0; i < typedResources.length; i++) {
+    for (int i = 0; i < typedResources.size(); i++) {
       final int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
-      TypedResource typedResource = typedResources[i];
+      TypedResource typedResource = typedResources.get(i);
 
       // Classify the item.
       int type = getResourceType(typedResource);
@@ -509,8 +508,8 @@ public final class ShadowAssetManager {
       stringData[i] = typedResource == null ? null : typedResource.asString();
     }
 
-    int[] indices = new int[typedResources.length + 1]; /* keep zeroed out */
-    return ShadowTypedArray.create(resources, null, data, indices, typedResources.length, stringData);
+    int[] indices = new int[typedResources.size() + 1]; /* keep zeroed out */
+    return ShadowTypedArray.create(resources, null, data, indices, typedResources.size(), stringData);
   }
 
   private int getResourceType(TypedResource typedResource) {
@@ -611,7 +610,7 @@ public final class ShadowAssetManager {
     return resolveStyle(getResName(resId), themeStyleSet);
   }
 
-  private Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
+  private Style resolveStyle(@Nonnull ResName themeStyleName, Style themeStyleSet) {
     TypedResource themeStyleResource = resourceTable.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
@@ -815,7 +814,7 @@ public final class ShadowAssetManager {
     return typedArray;
   }
 
-  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @NotNull Style themeStyleSet) {
+  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @Nonnull Style themeStyleSet) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
@@ -859,7 +858,7 @@ public final class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  @NotNull private ResName getResName(int id) {
+  @Nonnull private ResName getResName(int id) {
     ResName resName = resourceTable.getResName(id);
     if (resName == null) {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id)
@@ -886,6 +885,11 @@ public final class ShadowAssetManager {
   @Implementation
   public String getResourceEntryName(int resid) {
    return getResName(resid).name;
+  }
+
+  @Implementation
+  public final SparseArray<String> getAssignedPackageIdentifiers() {
+    return new SparseArray<>();
   }
 
   @Resetter

@@ -2,7 +2,7 @@ package org.robolectric.annotation;
 
 import android.app.Application;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -59,7 +59,7 @@ public @interface Config {
   int minSdk() default -1;
 
   /**
-   * The minimum Android SDK level to emulate when running tests on multiple API versions.
+   * The maximum Android SDK level to emulate when running tests on multiple API versions.
    */
   int maxSdk() default -1;
 
@@ -95,7 +95,7 @@ public @interface Config {
    * an {@code applicationId} associated with {@code productFlavors} or specify {@code applicationIdSuffix}
    * in your build.gradle.
    *
-   * <p>If not specified, Robolectric defaults to the {@code applicationId}.</p>
+   * If not specified, Robolectric defaults to the {@code applicationId}.
    *
    * @return The java package name for R.class.
    */
@@ -104,7 +104,7 @@ public @interface Config {
   /**
    * The ABI split to use when locating resources and AndroidManifest.xml
    *
-   * <p>You do not typically have to set this, unless you are utilizing the ABI split feature</p>
+   * You do not typically have to set this, unless you are utilizing the ABI split feature.
    *
    * @return The ABI split to test with
    */
@@ -120,7 +120,7 @@ public @interface Config {
   /**
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
    *
-   * <p>If not specified, Robolectric defaults to {@code res}.</p>
+   * If not specified, Robolectric defaults to {@code res}.
    *
    * @return Android resource directory.
    */
@@ -129,7 +129,7 @@ public @interface Config {
   /**
    * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
    *
-   * <p>If not specified, Robolectric defaults to {@code assets}.</p>
+   * If not specified, Robolectric defaults to {@code assets}.
    *
    * @return Android asset directory.
    */
@@ -138,7 +138,7 @@ public @interface Config {
   /**
    * The directory where application files are created during the application build process.
    *
-   * <p>If not specified, Robolectric defaults to {@code build}.</p>
+   * If not specified, Robolectric defaults to {@code build}.
    *
    * @return Android build directory.
    */
@@ -367,7 +367,7 @@ public @interface Config {
       return libraries;
     }
 
-    @NotNull @Override
+    @Nonnull @Override
     public Class<? extends Annotation> annotationType() {
       return Config.class;
     }
@@ -488,7 +488,7 @@ public @interface Config {
 
     /**
      * This returns actual default values where they exist, in the sense that we could use
-     * the values, rather than markers like <code>-1</code> or <code>--default</code>.
+     * the values, rather than markers like {@code -1} or {@code --default}.
      */
     public static Builder defaults() {
       return new Builder()

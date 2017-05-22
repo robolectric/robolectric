@@ -9,7 +9,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.util.Logger;
 
-public class ContentProviderController<T extends ContentProvider> extends org.robolectric.util.ContentProviderController<T> {
+public class ContentProviderController<T extends ContentProvider>  {
   private T contentProvider;
 
   private ContentProviderController(T contentProvider) {
@@ -39,14 +39,30 @@ public class ContentProviderController<T extends ContentProvider> extends org.ro
   }
 
   /**
+   * Create and register {@link ContentProvider} using {@link ProviderInfo} found from manifest.
+   *
+   * @param authority the authority to use
+   * @return this {@link ContentProviderController}
+   */
+  public ContentProviderController<T> create(String authority) {
+    ProviderInfo providerInfo = new ProviderInfo();
+    providerInfo.authority = authority;
+    return create(providerInfo);
+  }
+
+  /**
    * Create and register {@link ContentProvider} using the given {@link ProviderInfo}.
+   *
+   * @param providerInfo the {@link ProviderInfo} to use
+   * @return this {@link ContentProviderController}
    */
   public ContentProviderController<T> create(ProviderInfo providerInfo) {
+    Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    contentProvider.attachInfo(baseContext, providerInfo);
+
     if (providerInfo != null) {
       ShadowContentResolver.registerProviderInternal(providerInfo.authority, contentProvider);
     }
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
-    contentProvider.attachInfo(baseContext, providerInfo);
 
     return this;
   }

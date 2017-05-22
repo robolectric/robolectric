@@ -399,7 +399,7 @@ public class RoboWebSettings extends WebSettings {
 
   @Override
   public void setDefaultZoom(ZoomDensity zoom) {
-    this.defaultZoom = defaultZoom;
+    this.defaultZoom = zoom;
   }
 
   @Override
@@ -634,4 +634,14 @@ public class RoboWebSettings extends WebSettings {
   }
 
   // End API 24.
+
+  public boolean getSafeBrowsingEnabled() {
+    return false;
+  }
+
+  public void setSafeBrowsingEnabled(boolean enabled) {
+
+  }
+
+  // End API 26
 }

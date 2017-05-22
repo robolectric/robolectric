@@ -22,7 +22,7 @@ import org.robolectric.util.ReflectionHelpers;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-public class ActivityController<T extends Activity> extends org.robolectric.util.ActivityController<T> {
+public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     return new ActivityController<>(shadowsAdapter, activity, intent);
   }

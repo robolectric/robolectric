@@ -7,9 +7,6 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-/**
- * Shadow for {@link android.widget.NumberPicker}.
- */
 @Implements(value = NumberPicker.class)
 public class ShadowNumberPicker extends ShadowLinearLayout {
   @RealObject

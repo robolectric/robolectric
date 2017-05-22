@@ -29,9 +29,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Shadow for {@link android.view.ViewConfiguration}.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)
 public class ShadowViewConfiguration {

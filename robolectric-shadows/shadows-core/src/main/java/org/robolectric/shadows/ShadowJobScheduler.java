@@ -16,9 +16,6 @@ import java.util.Set;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-/**
- * Shadow for {@link android.app.job.JobScheduler}.
- */
 @Implements(value = JobScheduler.class, minSdk = LOLLIPOP)
 public abstract class ShadowJobScheduler {
 

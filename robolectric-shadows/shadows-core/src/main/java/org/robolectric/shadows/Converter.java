@@ -7,6 +7,8 @@ import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.Util;
 
+import java.util.List;
+
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;
 
@@ -83,7 +85,7 @@ public class Converter<T> {
     throw cantDo("asInt");
   }
 
-  public TypedResource[] getItems(TypedResource typedResource) {
+  public List<TypedResource> getItems(TypedResource typedResource) {
     throw cantDo("getItems");
   }
 
@@ -164,8 +166,8 @@ public class Converter<T> {
 
   public static class FromArray extends Converter {
     @Override
-    public TypedResource[] getItems(TypedResource typedResource) {
-      return (TypedResource[]) typedResource.getData();
+    public List<TypedResource> getItems(TypedResource typedResource) {
+      return (List<TypedResource>) typedResource.getData();
     }
   }
 

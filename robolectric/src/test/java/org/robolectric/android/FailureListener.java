@@ -1,6 +1,6 @@
 package org.robolectric.android;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FailureListener extends RunListener {
-  @NotNull
+  @Nonnull
   public static List<Failure> runTests(Class<?> testClass) throws InitializationError {
     RunNotifier notifier = new RunNotifier();
     FailureListener failureListener = new FailureListener();

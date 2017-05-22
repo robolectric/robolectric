@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
 
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,9 +22,6 @@ import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Shadow for {@code android.app.PendingIntent}.
- */
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
@@ -38,6 +36,7 @@ public class ShadowPendingIntent {
   private boolean isServiceIntent;
   private int requestCode;
   private int flags;
+  private String creatorPackage;
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
@@ -132,6 +131,22 @@ public class ShadowPendingIntent {
 
   public int getFlags() {
     return flags;
+  }
+
+  @Implementation
+  public String getTargetPackage() {
+    return getCreatorPackage();
+  }
+
+  @Implementation
+  public String getCreatorPackage() {
+    return (creatorPackage == null)
+        ? RuntimeEnvironment.application.getPackageName()
+        : creatorPackage;
+  }
+
+  public void setCreatorPackage(String creatorPackage) {
+    this.creatorPackage = creatorPackage;
   }
 
   @Override
