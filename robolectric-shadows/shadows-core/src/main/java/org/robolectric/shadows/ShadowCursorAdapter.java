@@ -37,12 +37,18 @@ import java.util.List;
 import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
 import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 
+/**
+ * @deprecated This class will be removed after Robolectric 3.5 is released. The real
+ * Android CursorAdapter will be used instead.
+ */
 @Implements(CursorAdapter.class)
+@Deprecated
 public class ShadowCursorAdapter extends ShadowBaseAdapter {
   @RealObject CursorAdapter realCursorAdapter;
 
   private List<View> views = new ArrayList<>();
 
+  @Deprecated
   @Implementation
   public View getView(int position, View convertView, ViewGroup parent) {
     // if the cursor is null OR there are no views to dispense return null
@@ -62,6 +68,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
    *
    * @param views The list of views
    */
+  @Deprecated
   public void setViews(List<View> views) {
     this.views = views;
   }
@@ -112,11 +119,13 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     }
   }
 
+  @Deprecated
   @Implementation
   public Cursor getCursor() {
     return mCursor;
   }
 
+  @Deprecated
   @Implementation
   public int getCount() {
     if (mDataValid && mCursor != null) {
@@ -126,6 +135,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     }
   }
 
+  @Deprecated
   @Implementation
   public Object getItem(int position) {
     if (mDataValid && mCursor != null) {
@@ -136,6 +146,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     }
   }
 
+  @Deprecated
   @Implementation
   public long getItemId(int position) {
     if (mDataValid && mCursor != null) {
@@ -150,11 +161,13 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     }
   }
 
+  @Deprecated
   @Implementation
   public boolean hasStableIds() {
     return true;
   }
 
+  @Deprecated
   @Implementation
   public Cursor swapCursor(Cursor cursor) {
     if (cursor == mCursor) {
@@ -182,6 +195,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     return old;
   }
 
+  @Deprecated
   @Implementation
   public void changeCursor(Cursor newCursor) {
     Cursor old = swapCursor(newCursor);
@@ -190,11 +204,13 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     }
   }
 
+  @Deprecated
   @Implementation
   public CharSequence convertToString(Cursor cursor) {
     return cursor == null ? "" : cursor.toString();
   }
 
+  @Deprecated
   @Implementation
   public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
     if (mFilterQueryProvider != null) {
@@ -204,11 +220,13 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     return mCursor;
   }
 
+  @Deprecated
   @Implementation
   public FilterQueryProvider getFilterQueryProvider() {
     return mFilterQueryProvider;
   }
 
+  @Deprecated
   @Implementation
   public void setFilterQueryProvider(FilterQueryProvider filterQueryProvider) {
     mFilterQueryProvider = filterQueryProvider;
