@@ -378,7 +378,7 @@ public class ShadowViewTest {
   @Test
   public void shouldFindViewWithTag() {
     view.setTag("tagged");
-    assertThat(view.findViewWithTag("tagged")).isSameAs(view);
+    assertThat((View) view.findViewWithTag("tagged")).isSameAs(view);
   }
 
   @Test

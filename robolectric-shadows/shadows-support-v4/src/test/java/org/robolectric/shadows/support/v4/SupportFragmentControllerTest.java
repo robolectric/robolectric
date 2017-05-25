@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -72,7 +73,7 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.getActivity()).isNotNull();
     assertThat(fragment.isAdded()).isTrue();
     assertThat(fragment.isResumed()).isFalse();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
   }
 
   @Test
@@ -92,7 +93,7 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.getActivity()).isNotNull();
     assertThat(fragment.isAdded()).isTrue();
     assertThat(fragment.isResumed()).isTrue();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
   }
 
   @Test

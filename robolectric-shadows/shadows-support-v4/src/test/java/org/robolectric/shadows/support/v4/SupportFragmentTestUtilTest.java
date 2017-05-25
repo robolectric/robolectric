@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -26,7 +27,7 @@ public class SupportFragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
   }
 
   @Test
@@ -36,7 +37,7 @@ public class SupportFragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
   }
 
   @Test
@@ -54,7 +55,7 @@ public class SupportFragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
     assertThat(fragment.getActivity()).isInstanceOf(LoginFragmentActivity.class);
   }
 
@@ -65,7 +66,7 @@ public class SupportFragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
     assertThat(fragment.getActivity()).isInstanceOf(LoginFragmentActivity.class);
   }
 
