@@ -9,6 +9,7 @@ import org.robolectric.annotation.Implements;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
+  @Implementation
   public static void __staticInitializer__() {
   }
 
