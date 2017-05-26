@@ -54,6 +54,7 @@ public class ShadowDefaultRequestDirector {
 
   org.robolectric.shadows.httpclient.DefaultRequestDirector redirector;
 
+  @Implementation
   public void __constructor__(
       Log log,
       HttpRequestExecutor requestExec,
@@ -103,6 +104,7 @@ public class ShadowDefaultRequestDirector {
     }
   }
 
+  @Implementation
   public void __constructor__(
       HttpRequestExecutor requestExec,
       ClientConnectionManager conman,

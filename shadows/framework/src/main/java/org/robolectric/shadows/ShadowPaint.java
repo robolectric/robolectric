@@ -40,11 +40,13 @@ public class ShadowPaint {
   private float textSize;
   private Paint.Align textAlign = Paint.Align.LEFT;
 
+  @Implementation
   public void __constructor__(int flags) {
     this.flags = flags;
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(int.class, flags));
   }
 
+  @Implementation
   public void __constructor__(Paint otherPaint) {
     ShadowPaint otherShadowPaint = shadowOf(otherPaint);
     this.color = otherShadowPaint.color;

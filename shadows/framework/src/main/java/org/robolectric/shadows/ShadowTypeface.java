@@ -31,11 +31,13 @@ public class ShadowTypeface {
   @RealObject private Typeface realTypeface;
 
   @HiddenApi
+  @Implementation
   public void __constructor__(int fontId) {
     description = findById((long) fontId);
   }
 
   @HiddenApi
+  @Implementation
   public void __constructor__(long fontId) {
     description = findById(fontId);
   }

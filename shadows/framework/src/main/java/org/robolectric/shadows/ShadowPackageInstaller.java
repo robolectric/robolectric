@@ -158,6 +158,7 @@ public class ShadowPackageInstaller {
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
 
+    @Implementation
     public void __constructor__() {
 
     }

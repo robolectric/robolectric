@@ -80,6 +80,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  */
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer extends ShadowPlayerBase {
+  @Implementation
   public static void __staticInitializer__() {
     // don't bind the JNI library
   }
@@ -522,6 +523,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return mp;
   }
 
+  @Implementation
   public void __constructor__() {
     // Contract of audioSessionId is that if it is 0 (which represents
     // the master mix) then that's an error. By default it generates

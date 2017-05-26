@@ -25,6 +25,7 @@ public class ShadowToast {
 
   @RealObject Toast toast;
 
+  @Implementation
   public void __constructor__(Context context) {
   }
 

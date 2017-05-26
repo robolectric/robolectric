@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -15,6 +16,7 @@ public class ShadowTimePickerDialog extends ShadowAlertDialog {
   private int hourOfDay;
   private int minute;
 
+  @Implementation
   public void __constructor__(Context context, int theme, TimePickerDialog.OnTimeSetListener callBack,
                               int hourOfDay, int minute, boolean is24HourView) {
     this.hourOfDay = hourOfDay;

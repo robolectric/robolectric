@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
+  @Implementation
   public static void __staticInitializer__() {
   }
 

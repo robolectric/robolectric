@@ -21,6 +21,7 @@ public class ShadowPath {
   private Point wasMovedTo;
   private String quadDescription = "";
 
+  @Implementation
   public void __constructor__(Path path) {
     points = new ArrayList<>(Shadows.shadowOf(path).getPoints());
     wasMovedTo = Shadows.shadowOf(path).wasMovedTo;
