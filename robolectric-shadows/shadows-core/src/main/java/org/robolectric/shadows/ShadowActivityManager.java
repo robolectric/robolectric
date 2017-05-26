@@ -3,11 +3,13 @@ package org.robolectric.shadows;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
 import android.content.pm.ConfigurationInfo;
+import android.os.Process;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ActivityManager.class)
@@ -15,9 +17,18 @@ public class ShadowActivityManager {
   private int memoryClass = 16;
   private String backgroundPackage;
   private ActivityManager.MemoryInfo memoryInfo;
-  private final List<ActivityManager.RunningTaskInfo> tasks = new ArrayList<>();
-  private final List<ActivityManager.RunningServiceInfo> services = new ArrayList<>();
-  private final List<ActivityManager.RunningAppProcessInfo> processes = new ArrayList<>();
+  private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
+  private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
+  private List<ActivityManager.RunningAppProcessInfo> processes = new CopyOnWriteArrayList<>();
+
+  public ShadowActivityManager() {
+    ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
+    processInfo.pid = Process.myPid();
+    processInfo.uid = Process.myUid();
+    processInfo.processName = RuntimeEnvironment.application.getPackageName();
+    processInfo.pkgList = new String[] {RuntimeEnvironment.application.getPackageName()};
+    processes.add(processInfo);
+  }
 
   @Implementation
   public int getMemoryClass() {
@@ -41,6 +52,10 @@ public class ShadowActivityManager {
 
   @Implementation
   public List<ActivityManager.RunningAppProcessInfo> getRunningAppProcesses() {
+    // This method is explicitly documented not to return an empty list
+    if (processes.isEmpty()) {
+      return null;
+    }
     return processes;
   }
 

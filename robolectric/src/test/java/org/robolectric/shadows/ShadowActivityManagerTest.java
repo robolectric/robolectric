@@ -60,7 +60,11 @@ public class ShadowActivityManagerTest {
     final ActivityManager.RunningAppProcessInfo process1 = buildProcessInfo(new ComponentName("org.robolectric", "Process 1"));
     final ActivityManager.RunningAppProcessInfo process2 = buildProcessInfo(new ComponentName("org.robolectric", "Process 2"));
 
-    assertThat(activityManager.getRunningAppProcesses()).isEmpty();
+    assertThat(activityManager.getRunningAppProcesses().size()).isEqualTo(1);
+    ActivityManager.RunningAppProcessInfo myInfo = activityManager.getRunningAppProcesses().get(0);
+    assertThat(myInfo.pid).isEqualTo(android.os.Process.myPid());
+    assertThat(myInfo.uid).isEqualTo(android.os.Process.myUid());
+    assertThat(myInfo.processName).isEqualTo(RuntimeEnvironment.application.getBaseContext().getPackageName());
     shadowOf(activityManager).setProcesses(Lists.newArrayList(process1, process2));
     assertThat(activityManager.getRunningAppProcesses()).containsExactly(process1, process2);
   }
