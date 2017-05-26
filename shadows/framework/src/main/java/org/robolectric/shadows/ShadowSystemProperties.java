@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.SystemProperties;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -15,9 +16,9 @@ import java.util.Set;
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
   private static final Map<String, String> INITIAL_VALUES = new HashMap<String, String>() {{
-    put("ro.build.version.release", "2.2");
+    put("ro.build.version.release", "2.2"); // todo: should come from SdkConfig
     put("ro.build.version.incremental", "0");
-    put("ro.build.version.sdk", "8");
+    put("ro.build.version.sdk", Integer.toString(RuntimeEnvironment.getApiLevel()));
     put("ro.build.date.utc", "1277708400000");  // Jun 28, 2010
     put("ro.debuggable", "0");
     put("ro.secure", "1");
@@ -25,7 +26,7 @@ public class ShadowSystemProperties {
     put("ro.product.cpu.abilist32", "armeabi-v7a,armeabi");
     put("ro.product.cpu.abilist64", "armeabi-v7a,armeabi");
     put("ro.build.fingerprint", "robolectric");
-    put("ro.build.version.all_codenames", "REL");
+    put("ro.build.version.all_codenames", "REL"); // todo: this and codename should come from SdkConfig
     put("log.closeguard.Animation", "n");
     put("debug.choreographer.vsync", "n"); // disable vsync for Choreographer
   }};
@@ -43,16 +44,6 @@ public class ShadowSystemProperties {
 
     VALUES.clear();
     VALUES.putAll(INITIAL_VALUES);
-  }
-
-  @Implementation
-  public static String get(String key) {
-    Object o = VALUES.get(key);
-    if (o == null) {
-      warnUnknown(key);
-      return "";
-    }
-    return o.toString();
   }
 
   synchronized private static String getValue(String key) {
@@ -88,7 +79,7 @@ public class ShadowSystemProperties {
   public static String native_get(String key, String defaultValue) {
     String value = getValue(key);
     if (value.isEmpty()) {
-      value = defaultValue;
+      value = defaultValue == null ? "" : defaultValue;
     }
     if (value.isEmpty()) {
       value = "";
