@@ -14,7 +14,7 @@ public class ShadowLoadedApk {
     return this.getClass().getClassLoader();
   }
 
-  @Implementation(minSdk = VERSION_CODES.CUR_DEVELOPMENT)
+  @Implementation(minSdk = 26)
   public ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException {
     return this.getClass().getClassLoader();
   }

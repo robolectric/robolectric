@@ -24,9 +24,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import com.google.common.collect.ImmutableList;
 
+@RunWith(JUnit4.class)
 public class RobolectricProcessorTest {
   private static final Map<String,String> DEFAULT_OPTS = new HashMap<>();
 
