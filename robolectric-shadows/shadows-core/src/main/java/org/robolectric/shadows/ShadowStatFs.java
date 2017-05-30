@@ -38,6 +38,25 @@ public class ShadowStatFs {
     return stat.freeBlocks;
   }
 
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getFreeBlocksLong() {
+    return stat.freeBlocks;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getFreeBytes() {
+    return getBlockSizeLong() * getFreeBlocksLong();
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getAvailableBytes() {
+    return getBlockSizeLong() * getAvailableBlocksLong();
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getTotalBytes() {
+    return getBlockSizeLong() * getBlockCountLong();
+  }
   @Implementation
   public int getAvailableBlocks() {
     return stat.availableBlocks;
