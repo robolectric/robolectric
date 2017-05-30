@@ -8,10 +8,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.bytecode.ShadowConstants;
 import org.robolectric.internal.bytecode.SandboxConfig;
-import org.robolectric.testing.AFinalClass;
+import org.robolectric.internal.bytecode.ShadowConstants;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.Pony;
 
 import java.lang.reflect.Method;
@@ -237,16 +237,16 @@ public class ShadowingTest {
     }
   }
 
-  @Test @Ignore("todo fix")
+  @Test
   public void shouldNotInstrumentPackageIfNotAddedToConfig() throws Exception {
-    Class<?> clazz = Class.forName(AFinalClass.class.getName());
+    Class<?> clazz = Class.forName(AnUninstrumentedClass.class.getName());
     assertTrue(Modifier.isFinal(clazz.getModifiers()));
   }
 
   @Test
   @SandboxConfig(instrumentedPackages = {"org.robolectric.testing"})
   public void shouldInstrumentPackageIfAddedToConfig() throws Exception {
-    Class<?> clazz = Class.forName(AFinalClass.class.getName());
+    Class<?> clazz = Class.forName(AnUninstrumentedClass.class.getName());
     assertFalse(Modifier.isFinal(clazz.getModifiers()));
   }
 }

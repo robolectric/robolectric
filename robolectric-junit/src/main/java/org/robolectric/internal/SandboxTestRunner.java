@@ -26,6 +26,7 @@ import org.robolectric.internal.bytecode.ShadowWrangler;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -150,7 +151,25 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       builder.addInstrumentedClass(shadowInfo.getShadowedClassName());
     }
 
+    addInstrumentedPackages(method, builder);
+
     return builder.build();
+  }
+
+  private void addInstrumentedPackages(FrameworkMethod method, InstrumentationConfiguration.Builder builder) {
+    SandboxConfig classConfig = getTestClass().getJavaClass().getAnnotation(SandboxConfig.class);
+    if (classConfig != null) {
+      for (String pkgName : classConfig.instrumentedPackages()) {
+        builder.addInstrumentedPackage(pkgName);
+      }
+    }
+
+    SandboxConfig methodConfig = method.getAnnotation(SandboxConfig.class);
+    if (methodConfig != null) {
+      for (String pkgName : methodConfig.instrumentedPackages()) {
+        builder.addInstrumentedPackage(pkgName);
+      }
+    }
   }
 
   protected void configureShadows(FrameworkMethod method, Sandbox sandbox) {
