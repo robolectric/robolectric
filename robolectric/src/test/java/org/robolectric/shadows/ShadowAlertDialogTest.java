@@ -271,7 +271,7 @@ public class ShadowAlertDialogTest {
     AlertDialog dialog = new AlertDialog(RuntimeEnvironment.application) {
     };
 
-    assertThat(dialog.findViewById(99)).isNull();
+    assertThat((View) dialog.findViewById(99)).isNull();
 
     dialog.setContentView(R.layout.main);
     assertNotNull(dialog.findViewById(R.id.title));

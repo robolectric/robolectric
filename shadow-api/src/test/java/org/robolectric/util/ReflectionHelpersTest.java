@@ -15,14 +15,14 @@ public class ReflectionHelpersTest {
   public void getFieldReflectively_getsPrivateFields() {
     ExampleDescendant example = new ExampleDescendant();
     example.overridden = 5;
-    assertThat(ReflectionHelpers.getField(example, "overridden")).isEqualTo(5);
+    assertThat((int) ReflectionHelpers.getField(example, "overridden")).isEqualTo(5);
   }
 
   @Test
   public void getFieldReflectively_getsInheritedFields() {
     ExampleDescendant example = new ExampleDescendant();
     example.setNotOverridden(6);
-    assertThat(ReflectionHelpers.getField(example, "notOverridden")).isEqualTo(6);
+    assertThat((int) ReflectionHelpers.getField(example, "notOverridden")).isEqualTo(6);
   }
 
   @Test
@@ -77,7 +77,8 @@ public class ReflectionHelpersTest {
 
   @Test
   public void getStaticFieldReflectively_withFieldName_getsStaticField() {
-    assertThat(ReflectionHelpers.getStaticField(ExampleDescendant.class, "DESCENDANT")).isEqualTo(6);
+    assertThat((int) ReflectionHelpers.getStaticField(ExampleDescendant.class, "DESCENDANT"))
+        .isEqualTo(6);
   }
 
   @Test
@@ -108,20 +109,23 @@ public class ReflectionHelpersTest {
   @Test
   public void callInstanceMethodReflectively_callsPrivateMethods() {
     ExampleDescendant example = new ExampleDescendant();
-    assertThat(ReflectionHelpers.callInstanceMethod(example, "returnNumber")).isEqualTo(1337);
+    assertThat((int) ReflectionHelpers.callInstanceMethod(example, "returnNumber")).isEqualTo(1337);
   }
 
   @Test
   public void callInstanceMethodReflectively_whenMultipleSignaturesExistForAMethodName_callsMethodWithCorrectSignature() {
     ExampleDescendant example = new ExampleDescendant();
-    assertThat(ReflectionHelpers.callInstanceMethod(example, "returnNumber", ClassParameter.from(int.class, 5)))
-      .isEqualTo(5);
+    int returnNumber =
+        ReflectionHelpers.callInstanceMethod(
+            example, "returnNumber", ClassParameter.from(int.class, 5));
+    assertThat(returnNumber).isEqualTo(5);
   }
 
   @Test
   public void callInstanceMethodReflectively_callsInheritedMethods() {
     ExampleDescendant example = new ExampleDescendant();
-    assertThat(ReflectionHelpers.callInstanceMethod(example, "returnNegativeNumber")).isEqualTo(-46);
+    assertThat((int) ReflectionHelpers.callInstanceMethod(example, "returnNegativeNumber"))
+        .isEqualTo(-46);
   }
 
   @Test
@@ -174,7 +178,9 @@ public class ReflectionHelpersTest {
 
   @Test
   public void callStaticMethodReflectively_callsPrivateStaticMethodsReflectively() {
-    assertThat(ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "getConstantNumber")).isEqualTo(1);
+    int constantNumber =
+        ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "getConstantNumber");
+    assertThat(constantNumber).isEqualTo(1);
   }
 
   @Test

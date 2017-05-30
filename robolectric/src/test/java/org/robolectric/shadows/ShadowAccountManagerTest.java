@@ -10,6 +10,7 @@ import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import org.junit.Before;
@@ -469,7 +470,7 @@ public class ShadowAccountManagerTest {
 
     Bundle resultBundle = result.getResult();
 
-    assertThat(resultBundle.getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+    assertThat((Intent) resultBundle.getParcelable(AccountManager.KEY_INTENT)).isNotNull();
   }
 
   @Test

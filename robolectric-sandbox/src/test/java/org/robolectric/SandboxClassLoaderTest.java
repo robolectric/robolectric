@@ -105,7 +105,7 @@ public class SandboxClassLoaderTest {
     assertTrue(Modifier.isPublic(defaultCtor.getModifiers()));
     defaultCtor.setAccessible(true);
     Object instance = defaultCtor.newInstance();
-    assertThat(shadow.extract(instance)).isNotNull();
+    assertThat((Object) shadow.extract(instance)).isNotNull();
     assertThat(transcript).isEmpty();
   }
 

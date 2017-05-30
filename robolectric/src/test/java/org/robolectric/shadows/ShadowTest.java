@@ -36,13 +36,14 @@ public class ShadowTest {
   @Test
   public void extractor() throws Exception {
     Activity activity = new Activity();
-    assertThat(Shadow.extract(activity)).isSameAs(shadowOf(activity));
+    assertThat((ShadowActivity) Shadow.extract(activity)).isSameAs(shadowOf(activity));
   }
 
   @Test
   public void deprecated_extractor() throws Exception {
     Activity activity = new Activity();
-    assertThat(org.robolectric.internal.Shadow.extract(activity)).isSameAs(shadowOf(activity));
+    assertThat((ShadowActivity) org.robolectric.internal.Shadow.extract(activity))
+        .isSameAs(shadowOf(activity));
   }
 
   @Test

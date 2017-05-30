@@ -5,6 +5,7 @@ import static org.robolectric.util.FragmentTestUtil.startFragment;
 import static org.robolectric.util.FragmentTestUtil.startVisibleFragment;
 
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -26,7 +27,7 @@ public class FragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
   }
 
   @Test
@@ -36,7 +37,7 @@ public class FragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
   }
 
   @Test
@@ -54,7 +55,7 @@ public class FragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
     assertThat(fragment.getActivity()).isInstanceOf(LoginActivity.class);
   }
 
@@ -65,7 +66,7 @@ public class FragmentTestUtilTest {
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
-    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat((TextView) fragment.getView().findViewById(R.id.tacos)).isNotNull();
     assertThat(fragment.getActivity()).isInstanceOf(LoginActivity.class);
   }
 

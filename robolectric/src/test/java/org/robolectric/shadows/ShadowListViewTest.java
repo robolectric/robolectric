@@ -64,10 +64,10 @@ public class ShadowListViewTest {
     assertThat(shadowOf(listView).getHeaderViews().get(2)).isSameAs(view2);
     assertThat(shadowOf(listView).getHeaderViews().get(3)).isSameAs(view3);
 
-    assertThat(listView.findViewById(0)).isNotNull();
-    assertThat(listView.findViewById(1)).isNotNull();
-    assertThat(listView.findViewById(2)).isNotNull();
-    assertThat(listView.findViewById(3)).isNotNull();
+    assertThat((View) listView.findViewById(0)).isNotNull();
+    assertThat((View) listView.findViewById(1)).isNotNull();
+    assertThat((View) listView.findViewById(2)).isNotNull();
+    assertThat((View) listView.findViewById(3)).isNotNull();
   }
 
   @Test
@@ -77,7 +77,7 @@ public class ShadowListViewTest {
 
     listView.addHeaderView(view);
 
-    assertThat(listView.findViewById(42)).isSameAs(view);
+    assertThat((View) listView.findViewById(42)).isSameAs(view);
   }
 
   @Test
@@ -98,7 +98,7 @@ public class ShadowListViewTest {
 
     listView.addFooterView(view);
 
-    assertThat(listView.findViewById(42)).isSameAs(view);
+    assertThat((View) listView.findViewById(42)).isSameAs(view);
   }
 
   @Test

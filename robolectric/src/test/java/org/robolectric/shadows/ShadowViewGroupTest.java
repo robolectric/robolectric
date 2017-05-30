@@ -130,8 +130,8 @@ public class ShadowViewGroupTest {
     root.addView(child1);
     root.addView(child2);
     root.addView(child3, 1);
-    assertThat(root.findViewWithTag("tag1")).isSameAs(child1);
-    assertThat(root.findViewWithTag("tag2")).isSameAs((View) child2);
+    assertThat((View) root.findViewWithTag("tag1")).isSameAs(child1);
+    assertThat((View) root.findViewWithTag("tag2")).isSameAs((View) child2);
     assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameAs(child3);
   }
 
@@ -144,8 +144,8 @@ public class ShadowViewGroupTest {
     root.addView(child1);
     root.addView(child2);
     root.addView(child3, 1);
-    assertThat(root.findViewWithTag("tag21")).isEqualTo(null);
-    assertThat((ViewGroup) root.findViewWithTag("tag23")).isEqualTo(null);
+    assertThat((View) root.findViewWithTag("tag21")).isNull();
+    assertThat((ViewGroup) root.findViewWithTag("tag23")).isNull();
   }
 
   @Test
@@ -162,13 +162,13 @@ public class ShadowViewGroupTest {
     child3b.setTag("tag2");
 
     //can find views by tag from root
-    assertThat(root.findViewWithTag("tag1")).isSameAs(child1);
-    assertThat(root.findViewWithTag("tag2")).isSameAs((View) child2);
+    assertThat((View) root.findViewWithTag("tag1")).isSameAs(child1);
+    assertThat((View) root.findViewWithTag("tag2")).isSameAs((View) child2);
     assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameAs(child3);
 
     //can find views by tag from child3
-    assertThat(child3.findViewWithTag("tag1")).isSameAs(child3a);
-    assertThat(child3.findViewWithTag("tag2")).isSameAs(child3b);
+    assertThat((View) child3.findViewWithTag("tag1")).isSameAs(child3a);
+    assertThat((View) child3.findViewWithTag("tag2")).isSameAs(child3b);
   }
 
   @Test

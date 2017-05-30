@@ -10,12 +10,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
     Closure doApply = {
         apply plugin: "java"
-        sourceCompatibility = JavaVersion.VERSION_1_7
-        targetCompatibility = JavaVersion.VERSION_1_7
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
 
         tasks.withType(JavaCompile) { task ->
-            sourceCompatibility = JavaVersion.VERSION_1_7
-            targetCompatibility = JavaVersion.VERSION_1_7
+            sourceCompatibility = JavaVersion.VERSION_1_8
+            targetCompatibility = JavaVersion.VERSION_1_8
 
             // Show all warnings except boot classpath
             configure(options) {

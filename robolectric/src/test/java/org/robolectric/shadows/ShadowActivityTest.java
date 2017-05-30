@@ -974,7 +974,10 @@ public class ShadowActivityTest {
 
     @Override
     public void onContentChanged() {
-      transcript.add("onContentChanged was called; title is \"" + shadowOf(findViewById(R.id.title)).innerText() + "\"");
+      transcript.add(
+          "onContentChanged was called; title is \""
+              + shadowOf((View) findViewById(R.id.title)).innerText()
+              + "\"");
     }
 
     private void setTranscript(List<String> transcript) {
