@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.LinearLayout;
 
 import org.robolectric.Robolectric;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ComponentController;
 
@@ -134,6 +133,16 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
       @Override
       public void run() {
         activityController.visible();
+      }
+    });
+    return this;
+  }
+
+  public SupportFragmentController<F> saveInstanceState(final Bundle outState) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.saveInstanceState(outState);
       }
     });
     return this;

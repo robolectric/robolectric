@@ -126,6 +126,22 @@ public class SupportFragmentControllerTest {
   }
 
   @Test
+  public void hasSavedState() {
+    final LoginFragment fragment = spy(new LoginFragment());
+    final Bundle outState = new Bundle();
+    outState.putString("test_key", "test_value");
+
+    SupportFragmentController.of(fragment, LoginActivity.class).create().start().resume().saveInstanceState(outState);
+
+    assertThat(fragment.getView()).isNotNull();
+    assertThat(fragment.getActivity()).isNotNull();
+    assertThat(fragment.isAdded()).isTrue();
+    assertThat(fragment.isResumed()).isTrue();
+
+    verify(fragment).onSaveInstanceState(outState);
+  }
+
+  @Test
   public void withIntent_deprecated() {
     final LoginFragment fragment = new LoginFragment();
     final SupportFragmentController<LoginFragment> controller = SupportFragmentController.of(fragment, LoginActivity.class);
