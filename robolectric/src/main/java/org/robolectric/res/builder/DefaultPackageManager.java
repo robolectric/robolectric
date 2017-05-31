@@ -36,6 +36,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -108,6 +109,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private AndroidManifest applicationManifest;
   private ResourceTable appResourceTable;
   private Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  private Map<String, Resources> resources = new HashMap<>();
 
   @Override
   public PackageInstaller getPackageInstaller() {
@@ -138,6 +140,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   public Resources getResourcesForApplication(String appPackageName) throws NameNotFoundException {
     if (RuntimeEnvironment.application.getPackageName().equals(appPackageName)) {
       return RuntimeEnvironment.application.getResources();
+    } else if (resources.containsKey(appPackageName)) {
+      return resources.get(appPackageName);
     }
     throw new PackageManager.NameNotFoundException(appPackageName);
   }
@@ -639,6 +643,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+    Resources r = new Resources(new AssetManager(), null, null);
+    resources.put(packageInfo.packageName, r);
   }
 
   @Override
