@@ -16,6 +16,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import java.util.Collections;
+
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowHtmlTest {
   private static final String HTML_SHORT = "<img src='foo.png'>";
-  private static final String HTML_LONG = String.format("<img src='%s.png'>", StringUtils.repeat("foo", 100));
+  private static final String HTML_LONG = String.format("<img src='%s.png'>",
+      String.join("", Collections.nCopies(100, "foo")));
 
   private Context context;
 
