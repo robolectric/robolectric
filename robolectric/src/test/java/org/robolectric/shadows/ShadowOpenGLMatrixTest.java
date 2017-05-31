@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.opengl.Matrix;
+import java.util.Comparator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -8,8 +9,9 @@ import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static java.lang.Math.abs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.withPrecision;
+import static org.assertj.core.api.Assertions.offset;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowOpenGLMatrixTest {
@@ -70,10 +72,10 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.multiplyMM(res, 0, m1, 0, i, 0);
-    assertThat(res).containsSequence(m1, withPrecision(0.0001f));
+    assertThat(res).containsSequence(m1);
 
     Matrix.multiplyMM(res, 0, i, 0, m1, 0);
-    assertThat(res).containsSequence(m1, withPrecision(0.0001f));
+    assertThat(res).containsSequence(m1);
   }
 
   @Test
@@ -93,10 +95,10 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.multiplyMM(res, 16, m1, 16, i, 16);
-    assertThat(res).containsSequence(m1, withPrecision(0.0001f));
+    assertThat(res).containsSequence(m1);
 
     Matrix.multiplyMM(res, 16, i, 16, m1, 16);
-    assertThat(res).containsSequence(m1, withPrecision(0.0001f));
+    assertThat(res).containsSequence(m1);
   }
 
   @Test
@@ -124,7 +126,7 @@ public class ShadowOpenGLMatrixTest {
 
 
     Matrix.multiplyMM(res, 0, m1, 0, m2, 0);
-    assertThat(res).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(res).containsSequence(expected);
   }
 
   @Test
@@ -163,7 +165,7 @@ public class ShadowOpenGLMatrixTest {
     };
 
     Matrix.multiplyMM(res, 16, m1, 16, m2, 16);
-    assertThat(res).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(res).containsSequence(expected);
   }
 
   @Test
@@ -189,7 +191,7 @@ public class ShadowOpenGLMatrixTest {
     };
     final float[] res = new float[16];
     Matrix.multiplyMM(res, 0, m1, 0, m2, 0);
-    assertThat(res).containsSequence(expected, withPrecision(0.0001f));
+    assertMatrixWithPrecision(res, expected, 0.0001f);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -245,7 +247,7 @@ public class ShadowOpenGLMatrixTest {
     Matrix.setIdentityM(i, 0);
     float[] v1 = new float[]{1, 2, 3, 4};
     Matrix.multiplyMV(res, 0, i, 0, v1, 0);
-    assertThat(res).containsSequence(v1, withPrecision(0.0001f));
+    assertThat(res).containsSequence(v1);
   }
 
   @Test
@@ -261,7 +263,7 @@ public class ShadowOpenGLMatrixTest {
     float[] v1 = new float[]{42, 239, 128, 1024};
     float[] expected = new float[]{14268, 15701, 17134, 18567};
     Matrix.multiplyMV(res, 0, m1, 0, v1, 0);
-    assertThat(res).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(res).containsSequence(expected);
   }
 
   @Test
@@ -284,7 +286,7 @@ public class ShadowOpenGLMatrixTest {
             14268, 15701, 17134, 18567
     };
     Matrix.multiplyMV(res, 1, m1, 4, v1, 2);
-    assertThat(res).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(res).containsSequence(expected);
   }
 
   @Test
@@ -303,12 +305,12 @@ public class ShadowOpenGLMatrixTest {
     };
     final float[] res = new float[4];
     Matrix.multiplyMV(res, 0, m1, 0, v2, 0);
-    assertThat(res).containsSequence(expected, withPrecision(0.0001f));
+    assertMatrixWithPrecision(res, expected, 0.0001f);
   }
 
   @Test
   public void testLength() {
-    assertThat(Matrix.length(3, 4, 5)).isEqualTo(7.071f, withPrecision(0.0001f));
+    assertThat(Matrix.length(3, 4, 5)).isEqualTo(7.071f, offset(0.0001f));
   }
 
   @Test
@@ -328,7 +330,8 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     assertThat(Matrix.invertM(output, 0, matrix, 0)).isTrue();
-    assertThat(output).containsSequence(inverse, withPrecision(0.0001f));
+
+    assertMatrixWithPrecision(output, inverse, 0.0001f);
   }
 
   @Test
@@ -354,7 +357,7 @@ public class ShadowOpenGLMatrixTest {
 
     float[] output = new float[16];
     Matrix.multiplyMM(output, 0, matrix1, 0, matrix2, 0);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -372,7 +375,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.frustumM(output, 0, 100, 500, 200, 300, 1, 100);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -386,7 +389,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.frustumM(output, 0, 100, 500, 200, 300, 1, 100);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -399,7 +402,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.perspectiveM(output, 0, 0.2f, 0.5f, 1, 100);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -415,7 +418,7 @@ public class ShadowOpenGLMatrixTest {
     float[] expected = new float[]{11, 30, 57, 1};
     float[] output = new float[4];
     Matrix.multiplyMV(output, 0, matrix, 0, vector, 0);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -433,7 +436,7 @@ public class ShadowOpenGLMatrixTest {
             0, 0, 0, 1
     };
     Matrix.setIdentityM(matrix, 0);
-    assertThat(matrix).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(matrix).containsSequence(expected);
   }
 
   @Test
@@ -452,7 +455,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.scaleM(output, 0, matrix, 0, 2, 4, 6);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -470,7 +473,7 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.scaleM(matrix, 0, 2, 4, 6);
-    assertThat(matrix).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(matrix).containsSequence(expected);
   }
 
   @Test
@@ -489,7 +492,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.translateM(output, 0, matrix, 0, 2, 4, 6);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -507,7 +510,7 @@ public class ShadowOpenGLMatrixTest {
             89, 102, 115, 128
     };
     Matrix.translateM(matrix, 0, 2, 4, 6);
-    assertThat(matrix).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(matrix).containsSequence(expected);
   }
 
   @Test
@@ -526,7 +529,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.rotateM(output, 0, matrix, 0, 2, 4, 6, 8);
-    assertThat(output).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(output).containsSequence(expected);
   }
 
   @Test
@@ -544,7 +547,7 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.rotateM(matrix, 0, 2, 4, 6, 8);
-    assertThat(matrix).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(matrix).containsSequence(expected);
   }
 
   @Test
@@ -562,6 +565,13 @@ public class ShadowOpenGLMatrixTest {
             0, 0, 0, 1
     };
     Matrix.setRotateM(matrix, 0, 1, 2, 3, 4);
-    assertThat(matrix).containsSequence(expected, withPrecision(0.0001f));
+    assertThat(matrix).containsSequence(expected);
+  }
+
+  private static void assertMatrixWithPrecision(float[] actual, float[] expected, float precision) {
+    assertThat(actual).hasSameSizeAs(expected);
+    for (int i = 0; i < actual.length; i++) {
+      assertThat(actual[i]).isEqualTo(expected[i], offset(precision));
+    }
   }
 }
