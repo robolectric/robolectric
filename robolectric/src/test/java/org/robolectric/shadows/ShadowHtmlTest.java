@@ -3,12 +3,10 @@ package org.robolectric.shadows;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
 import android.widget.EditText;
 import android.widget.TextView;
-import org.codehaus.plexus.util.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
