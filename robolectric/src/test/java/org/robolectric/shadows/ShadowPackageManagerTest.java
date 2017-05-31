@@ -959,6 +959,14 @@ public class ShadowPackageManagerTest {
     packageManager.getResourcesForApplication("non.existent.package");
   }
 
+  @Test
+  public void getResourcesForApplication_anotherPackage() throws Exception {
+    shadowPackageManager.addPackage("another.package");
+
+    assertThat(packageManager.getResourcesForApplication("another.package")).isNotNull();
+    assertThat(packageManager.getResourcesForApplication("another.package")).isNotEqualTo(RuntimeEnvironment.application.getResources());
+  }
+
   @Test @Config(minSdk = M)
   public void shouldShowRequestPermissionRationale() {
     assertThat(packageManager.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)).isFalse();
