@@ -7,6 +7,8 @@ import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 
@@ -22,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
+@RunWith(JUnit4.class)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -196,7 +199,7 @@ public class AndroidManifestTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
+  @Config(manifest = "TestAndroidManifestWithAppMetaData.xml")
   public void shouldReturnApplicationMetaData() throws Exception {
     Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
 

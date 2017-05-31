@@ -58,6 +58,12 @@ public class Util {
     for (String pathPart : pathParts) {
       f = new File(f, pathPart);
     }
+
+    String dotSlash = "." + File.separator;
+    if (f.getPath().startsWith(dotSlash)) {
+      f = new File(f.getPath().substring(dotSlash.length()));
+    }
+
     return f;
   }
 

@@ -2,12 +2,15 @@ package org.robolectric.shadows;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 import org.robolectric.res.*;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestRunners.SelfTest.class)
 public class ConverterTest {
 
   private XmlContext xmlContext;

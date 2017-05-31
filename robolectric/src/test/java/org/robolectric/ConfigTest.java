@@ -2,6 +2,8 @@ package org.robolectric;
 
 import javax.annotation.Nonnull;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
@@ -11,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.annotation.Config.DEFAULT_VALUE_INT;
 
+@RunWith(JUnit4.class)
 public class ConfigTest {
   @Test
   public void testDefaults() throws Exception {

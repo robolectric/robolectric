@@ -5,6 +5,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.gradleapp.BuildConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -18,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.newFile;
 
+@RunWith(JUnit4.class)
 public class GradleManifestFactoryTest {
   @Rule
   public ExpectedException exception = ExpectedException.none();

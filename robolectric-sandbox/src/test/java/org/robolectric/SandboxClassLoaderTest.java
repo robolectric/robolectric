@@ -3,6 +3,8 @@ package org.robolectric;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.ClassInfo;
@@ -81,6 +83,7 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
+@RunWith(JUnit4.class)
 public class SandboxClassLoaderTest {
 
   private ClassLoader classLoader;

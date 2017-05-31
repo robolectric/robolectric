@@ -3,6 +3,7 @@ package org.robolectric;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 import static org.robolectric.util.TestUtil.resourceFile;
@@ -18,8 +19,16 @@ public class TestRunners {
     @Override
     protected Config buildGlobalConfig() {
       return new Config.Builder(super.buildGlobalConfig())
-          .setManifest(resourceFile("TestAndroidManifest.xml").toString())
+          .setManifest("TestAndroidManifest.xml")
           .build();
+    }
+
+    @Override
+    public Config getConfig(Method method) {
+      Config baseConfig = super.getConfig(method);
+      return new Config.Builder(baseConfig)
+              .setManifest(resourceFile(baseConfig.manifest()).toString())
+              .build();
     }
   }
 

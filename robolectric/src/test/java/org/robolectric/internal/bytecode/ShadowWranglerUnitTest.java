@@ -2,6 +2,8 @@ package org.robolectric.internal.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -13,6 +15,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unchecked")
+@RunWith(JUnit4.class)
 public class ShadowWranglerUnitTest {
   private ShadowWrangler shadowWrangler;
   private Interceptors interceptors;

@@ -2,10 +2,13 @@ package org.robolectric.android;
 
 import android.content.Intent;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 import org.robolectric.res.builder.DefaultPackageManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestRunners.SelfTest.class)
 public class DefaultPackageManagerIntentComparatorTest {
 
   @Test

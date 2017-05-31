@@ -12,10 +12,13 @@ import java.net.URL;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.internal.dependency.CachedDependencyResolver.Cache;
 
 import static org.junit.Assert.*;
 
+@RunWith(JUnit4.class)
 public class CachedDependencyResolverFileCacheTest {
 
   private final String ID = "id";
