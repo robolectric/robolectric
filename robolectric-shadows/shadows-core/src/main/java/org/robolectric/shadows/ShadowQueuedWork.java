@@ -13,8 +13,7 @@ public class ShadowQueuedWork {
   @Resetter
   public static void reset() {
     QueuedWork.waitToFinish();
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O ||
-        (RuntimeEnvironment.getApiLevel() == 26 && Build.VERSION_CODES.O == 10000)) {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
       ReflectionHelpers.setStaticField(QueuedWork.class, "sHandler", null);
     } else {
       ReflectionHelpers.setStaticField(QueuedWork.class, "sSingleThreadExecutor", null);

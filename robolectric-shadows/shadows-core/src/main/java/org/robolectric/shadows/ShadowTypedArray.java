@@ -28,7 +28,7 @@ public class ShadowTypedArray {
 
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
     TypedArray typedArray;
-    if (RuntimeEnvironment.getApiLevel() >= 26) {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
       typedArray = ReflectionHelpers.callConstructor(TypedArray.class,
           ClassParameter.from(Resources.class, realResources));
       ReflectionHelpers.setField(typedArray, "mData", data);

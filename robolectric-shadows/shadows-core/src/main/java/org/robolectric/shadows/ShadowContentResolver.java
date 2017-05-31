@@ -573,7 +573,6 @@ public class ShadowContentResolver {
    *
    * @param nextId the number of rows to return
    */
-  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public void setNextDatabaseIdForUpdates(int nextId) {
     nextDatabaseIdForUpdates = nextId;
