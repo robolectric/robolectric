@@ -56,7 +56,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -407,6 +409,35 @@ public class ShadowActivityTest {
   public void shouldCallFinishInOnBackPressed() {
     Activity activity = new Activity();
     activity.onBackPressed();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN)
+  public void shouldCallFinishOnFinishAffinity() {
+    Activity activity = new Activity();
+    activity.finishAffinity();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldCallFinishOnFinishAndRemoveTask() {
+    Activity activity = new Activity();
+    activity.finishAndRemoveTask();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
+  public void shouldCallFinishOnFinish() {
+    Activity activity = new Activity();
+    activity.finish();
 
     ShadowActivity shadowActivity = shadowOf(activity);
     assertTrue(shadowActivity.isFinishing());
