@@ -8,6 +8,6 @@ dependencies {
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
-    compile "org.assertj:assertj-core:2.6.0"
+    compile "org.assertj:assertj-core:3.1.0"
     testCompile "org.mockito:mockito-core:2.5.4"
 }

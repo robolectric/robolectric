@@ -1222,7 +1222,7 @@ public class ShadowPackageManagerTest {
     packageInfoTwo.applicationInfo.packageName = packageInfoTwo.packageName;
     shadowPackageManager.addPackage(packageInfoTwo);
 
-    assertThat(packageManager.getPackagesForUid(1234)).containsExactlyInAnyOrder("package.one", "package.two");
+    assertThat(packageManager.getPackagesForUid(1234)).containsExactly("package.one", "package.two");
   }
 
   @Test
