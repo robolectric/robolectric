@@ -4,7 +4,6 @@ import android.app.LoadedApk;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Build.VERSION_CODES;
 
 @Implements(value = LoadedApk.class, isInAndroidSdk = false)
 public class ShadowLoadedApk {
@@ -14,7 +13,8 @@ public class ShadowLoadedApk {
     return this.getClass().getClassLoader();
   }
 
-  @Implementation(minSdk = VERSION_CODES.CUR_DEVELOPMENT)
+  // TODO: change to VERSION_CODES.O when final
+  @Implementation(minSdk = 26)
   public ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException {
     return this.getClass().getClassLoader();
   }
