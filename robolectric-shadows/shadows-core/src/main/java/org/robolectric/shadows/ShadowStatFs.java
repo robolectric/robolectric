@@ -12,6 +12,11 @@ import java.util.Map;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
+/**
+ * Robolectic doesn't provide actual filesystem stats; rather, it provides the ability to specify stats values in advance.
+ *
+ * @see #registerStats(File, int, int, int)
+ */
 @Implements(StatFs.class)
 public class ShadowStatFs {
   public static final int BLOCK_SIZE = 4096;
@@ -38,6 +43,25 @@ public class ShadowStatFs {
     return stat.freeBlocks;
   }
 
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getFreeBlocksLong() {
+    return stat.freeBlocks;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getFreeBytes() {
+    return getBlockSizeLong() * getFreeBlocksLong();
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getAvailableBytes() {
+    return getBlockSizeLong() * getAvailableBlocksLong();
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public long getTotalBytes() {
+    return getBlockSizeLong() * getBlockCountLong();
+  }
   @Implementation
   public int getAvailableBlocks() {
     return stat.availableBlocks;
@@ -51,6 +75,10 @@ public class ShadowStatFs {
     }
   }
 
+  /**
+   * Robolectric always uses a block size of `4096`.
+   * @return
+   */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public long getBlockSizeLong() {
     return BLOCK_SIZE;
@@ -66,10 +94,26 @@ public class ShadowStatFs {
     return stat.availableBlocks;
   }
 
+  /**
+   * Register stats for a path, which will be used when a matching {@link StatFs} instance is created.
+   *
+   * @param path path to the file
+   * @param blockCount number of blocks
+   * @param freeBlocks number of free blocks
+   * @param availableBlocks number of available blocks
+   */
   public static void registerStats(File path, int blockCount, int freeBlocks, int availableBlocks) {
     registerStats(path.getAbsolutePath(), blockCount, freeBlocks, availableBlocks);
   }
 
+  /**
+   * Register stats for a path, which will be used when a matching {@link StatFs} instance is created.
+   *
+   * @param path path to the file
+   * @param blockCount number of blocks
+   * @param freeBlocks number of free blocks
+   * @param availableBlocks number of available blocks
+   */
   public static void registerStats(String path, int blockCount, int freeBlocks, int availableBlocks) {
     stats.put(path, new Stats(blockCount, freeBlocks, availableBlocks));
   }
