@@ -41,7 +41,7 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
 
     assertThat(config.getPermissions().keySet())
-        .containsExactly("some_permission",
+        .contains("some_permission",
             "permission_with_literal_label",
             "permission_with_minimal_fields");
     PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
