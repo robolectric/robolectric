@@ -58,7 +58,7 @@ public class StringResourcesTest {
     for (String t : tests) {
       try {
         StringResources.processStringResources(t);
-        fail("expected IllegalArgumentException with test '" + t + "'");
+        fail("expected IllegalArgumentException with test '%s'", t);
       } catch (IllegalArgumentException expected) {
         // cool
       }
