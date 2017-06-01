@@ -6,11 +6,13 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.util.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,6 +123,22 @@ public class ShadowWifiManagerTest {
     wifiManager.removeNetwork(0);
 
     list = wifiManager.getConfiguredNetworks();
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getPrivilegedConfiguredNetworks_shouldReturnConfiguredNetworks() throws Exception {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.networkId = 123;
+    wifiManager.addNetwork(wifiConfiguration);
+
+    List<WifiConfiguration> list = wifiManager.getPrivilegedConfiguredNetworks();
+    assertThat(list.size()).isEqualTo(1);
+
+    wifiManager.removeNetwork(0);
+
+    list = wifiManager.getPrivilegedConfiguredNetworks();
     assertThat(list.size()).isEqualTo(0);
   }
 
