@@ -43,9 +43,24 @@ public class ShadowWifiManagerTest {
   }
 
   @Test(expected = SecurityException.class)
+  public void getWifiState_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted() throws Exception {
+    shadowWifiManager.setAccessWifiStatePermission(false);
+    wifiManager.getWifiState();
+  }
+
+  @Test(expected = SecurityException.class)
   public void getConnectionInfo_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted() throws Exception {
     shadowWifiManager.setAccessWifiStatePermission(false);
     wifiManager.getConnectionInfo();
+  }
+
+  @Test
+  public void getWifiState() throws Exception {
+    wifiManager.setWifiEnabled(true);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_ENABLED);
+
+    wifiManager.setWifiEnabled(false);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
   }
 
   @Test
