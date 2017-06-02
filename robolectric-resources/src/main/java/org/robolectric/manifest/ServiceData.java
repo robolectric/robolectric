@@ -1,6 +1,7 @@
 package org.robolectric.manifest;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ServiceData {
@@ -8,11 +9,13 @@ public class ServiceData {
   private final MetaData metaData;
   private final List<String> actions;
   private String permission;
+  private List<IntentFilterData> intentFilters;
 
-  public ServiceData(String className, MetaData metaData) {
+  public ServiceData(String className, MetaData metaData, List<IntentFilterData> intentFilterData) {
     this.actions = new ArrayList<>();
     this.className = className;
     this.metaData = metaData;
+    intentFilters = new LinkedList<>(intentFilterData);
   }
 
   public String getClassName() {
@@ -37,5 +40,13 @@ public class ServiceData {
 
   public String getPermission() {
     return permission;
+  }
+
+  /**
+   * Get the intent filters defined for activity.
+   * @return A list of intent filters. Not null.
+   */
+  public List<IntentFilterData> getIntentFilters() {
+    return intentFilters;
   }
 }
