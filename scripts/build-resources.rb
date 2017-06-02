@@ -1,23 +1,33 @@
 #!/usr/bin/env ruby
 #
-# Use this script to generate resource IDs in R.java when you
-# add/change/remove resources in the src/test/resources/res folder.
-# 
+# This script can be used to regenerate sequential resource ids when the
+# R.java file is modified in the src/test/resources/res folder.
+#
+# Note: this script does *NOT* generate resource ids that are consistent
+# with the Android aapt tool. This script will likely be removed at some
+# near point in the future and replaced by something that invokes aapt
+# directly.
 
-path_to_r = File.expand_path("../../robolectric/src/test/java/org/robolectric/R.java", __FILE__)
+GIT_ROOT = `git rev-parse --show-toplevel`.chomp
+START = 0x7f000000
+INCR = 0x10000
+
+path_to_r = File.join(GIT_ROOT, "robolectric/src/test/java/org/robolectric/R.java")
 if path_to_r =~ /^\/path\/to/
   raise "please change the path to this file!"
 else
   original_contents = File.read(path_to_r)
-  x = 0xffff
+  num_classes = 0
+  x = START
   new_contents = original_contents.gsub(/class|0x[0-9a-fA-F]+;/) do |match|
     if match == "class"
-      x += 0x100
-      x = x & 0xffffff00
-      x -= 1
+      x = START + INCR * num_classes
+      num_classes += 1
       "class"
     else
-      "0x#{"%x" % (x += 1)};"
+      val = "0x#{"%x"%x};"
+      x += 1
+      val
     end
   end
   File.open(path_to_r, "w") { |f| f << new_contents }
