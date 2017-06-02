@@ -1,10 +1,13 @@
 package org.robolectric.internal.bytecode;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.shadows.ShadowCursorAdapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(JUnit4.class)
 public class ShadowMapTest {
   @Test public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
     ShadowMap map = new ShadowMap.Builder().build();

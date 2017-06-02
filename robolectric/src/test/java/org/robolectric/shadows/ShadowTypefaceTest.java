@@ -7,11 +7,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.test.TemporaryAsset;
+import org.robolectric.res.FileFsFile;
+import org.robolectric.util.TestUtil;
 
 import java.io.File;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -19,15 +18,11 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowTypefaceTest {
   private File fontFile;
-  @Rule public TemporaryAsset temporaryAsset = new TemporaryAsset();
 
   @Before
   public void setup() throws Exception {
-    AndroidManifest appManifest = shadowOf(RuntimeEnvironment.application).getAppManifest();
-    fontFile = temporaryAsset.createFile(appManifest, "myFont.ttf", "myFontData");
-
-    List<AndroidManifest> libraryManifests = appManifest.getLibraryManifests();
-    temporaryAsset.createFile(libraryManifests.get(0), "libFont.ttf", "libFontData");
+    fontFile =
+        ((FileFsFile) TestUtil.resourcesBaseDir().join("assets/myFont.ttf")).getFile();
   }
 
   @Test

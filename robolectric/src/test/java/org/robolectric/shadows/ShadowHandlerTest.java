@@ -497,9 +497,9 @@ public class ShadowHandlerTest {
 
     final long startTime = Robolectric.getForegroundThreadScheduler().getCurrentTime();
     h.sendEmptyMessage(0);
-    h.sendEmptyMessageDelayed(0, 4000l);
+    h.sendEmptyMessageDelayed(0, 4000L);
     Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
-    h.sendEmptyMessageDelayed(0, 12000l);
+    h.sendEmptyMessageDelayed(0, 12000L);
     Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
 
     assertThat(whens).as("whens").containsExactly(startTime, startTime + 4000, startTime + 16000);

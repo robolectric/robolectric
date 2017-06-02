@@ -28,14 +28,14 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContentProviderClientTest {
 
-  static final String AUTHORITY = "org.robolectric";
-  static final Uri URI = Uri.parse("content://" + AUTHORITY);
-  static final ContentValues VALUES = new ContentValues();
-  static final String[] PROJECTION = null;
-  static final String SELECTION = "1=?";
-  static final String[] SELECTION_ARGS = {"1"};
-  static final String SORT_ORDER = "DESC";
-  static final String MIME_TYPE = "application/octet-stream";
+  private static final String AUTHORITY = "org.robolectric";
+  private final Uri URI = Uri.parse("content://" + AUTHORITY);
+  private final ContentValues VALUES = new ContentValues();
+  private static final String[] PROJECTION = null;
+  private static final String SELECTION = "1=?";
+  private static final String[] SELECTION_ARGS = {"1"};
+  private static final String SORT_ORDER = "DESC";
+  private static final String MIME_TYPE = "application/octet-stream";
 
   @Mock ContentProvider provider;
   ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();

@@ -6,6 +6,7 @@ import org.robolectric.res.builder.XmlBlock;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 
 public class RoutingResourceTable implements ResourceTable {
   private static final PackageResourceTable EMPTY_RESOURCE_TABLE = new ResourceTableFactory().newResourceTable("");
@@ -95,6 +96,6 @@ public class RoutingResourceTable implements ResourceTable {
 
   @Override
   public String toString() {
-    return resourceTables.keySet().toString();
+    return new TreeSet<>(resourceTables.keySet()).toString();
   }
 }

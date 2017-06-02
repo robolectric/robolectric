@@ -544,7 +544,7 @@ public class ShadowContentResolverTest {
   @Test
   public void shouldGetPeriodSyncs() throws Exception {
     assertThat(ContentResolver.getPeriodicSyncs(a, AUTHORITY).size()).isEqualTo(0);
-    ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
+    ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000L);
 
     List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(a, AUTHORITY);
     assertThat(syncs.size()).isEqualTo(1);
@@ -552,7 +552,7 @@ public class ShadowContentResolverTest {
     PeriodicSync first = syncs.get(0);
     assertThat(first.account).isEqualTo(a);
     assertThat(first.authority).isEqualTo(AUTHORITY);
-    assertThat(first.period).isEqualTo(6000l);
+    assertThat(first.period).isEqualTo(6000L);
     assertThat(first.extras).isNotNull();
   }
 
@@ -560,7 +560,7 @@ public class ShadowContentResolverTest {
   public void shouldValidateSyncExtras() throws Exception {
     Bundle bundle = new Bundle();
     bundle.putString("foo", "strings");
-    bundle.putLong("long", 10l);
+    bundle.putLong("long", 10L);
     bundle.putDouble("double", 10.0d);
     bundle.putFloat("float", 10.0f);
     bundle.putInt("int", 10);

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -225,4 +226,5 @@ public class ShadowResourcesImpl {
     ShadowResources.setCreatedFromResId(wrapper, id, drawable);
     return drawable;
   }
+
 }

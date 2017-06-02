@@ -1,9 +1,12 @@
 package org.robolectric.res;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(JUnit4.class)
 public class ResNameTest {
   @Test public void shouldQualify() throws Exception {
     assertThat(ResName.qualifyResourceName("some.package:type/name", null, null)).isEqualTo("some.package:type/name");

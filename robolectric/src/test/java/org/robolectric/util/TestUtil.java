@@ -1,17 +1,28 @@
 package org.robolectric.util;
 
 import android.app.Application;
-import javax.annotation.Nonnull;
+
 import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +62,11 @@ public abstract class TestUtil {
 
   private static File resourcesBaseDirFile() {
     if (testDirLocation == null) {
+      String baseDir = System.getProperty("robolectric-tests.base-dir");
+      if (baseDir != null) {
+        return testDirLocation = new File(baseDir, "src/test/resources");
+      }
+
       File testDir = Util.file("src", "test", "resources");
       if (hasTestManifest(testDir)) return testDirLocation = testDir;
 
@@ -98,18 +114,16 @@ public abstract class TestUtil {
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
-      Fs fs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      Fs fs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
       SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("res"), fs.join("assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
-  @Nonnull
   public static ResourcePath sdkResources(int apiLevel) {
-    Fs sdkResFs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
+    Fs sdkResFs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
     return new ResourcePath(null, sdkResFs.join("res"), null, null);
   }
-
 
   public static ResourcePath gradleAppResources() {
     return new ResourcePath(org.robolectric.gradleapp.R.class, resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
@@ -203,6 +217,17 @@ public abstract class TestUtil {
         assertThat(original).containsExactly(expectedStrings);
       }
       list.subList(0, index + 1).clear();
+    }
+  }
+
+  private static DependencyResolver getDependencyResolver() {
+    if (Boolean.getBoolean("robolectric.offline")) {
+      String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
+      return new LocalDependencyResolver(new File(dependencyDir));
+    } else {
+      Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
+              "org.robolectric.internal.dependency.MavenDependencyResolver");
+      return (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
     }
   }
 }

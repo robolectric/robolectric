@@ -8,21 +8,21 @@ import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.net.Uri;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(TestRunners.SelfTest.class)
 @Config(manifest = Config.NONE, sdk = 23)
 public class ContentProviderControllerTest {
   private final ContentProviderController<MyContentProvider> controller = Robolectric.buildContentProvider(MyContentProvider.class);
@@ -40,7 +40,7 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void shouldInitializeFromManifestProviderInfo() throws Exception {
     MyContentProvider myContentProvider = controller.create().get();
     assertThat(myContentProvider.getReadPermission()).isEqualTo("READ_PERMISSION");
@@ -55,7 +55,7 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void shouldRegisterWithContentResolver() throws Exception {
     controller.create().get();
 

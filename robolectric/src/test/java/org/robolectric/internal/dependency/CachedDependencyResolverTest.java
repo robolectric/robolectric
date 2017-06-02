@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.internal.dependency.CachedDependencyResolver.Cache;
 import org.robolectric.internal.dependency.CachedDependencyResolver.CacheNamingStrategy;
@@ -18,6 +20,7 @@ import org.robolectric.internal.dependency.CachedDependencyResolver.CacheValidat
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
+@RunWith(JUnit4.class)
 public class CachedDependencyResolverTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private static final String CACHE_NAME = "someName";

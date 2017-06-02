@@ -7,6 +7,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,9 +32,13 @@ abstract public class Fs {
     if (!"file".equals(u.getProtocol())) {
       throw new IllegalArgumentException();
     }
-    return new File(u.getFile()).toURI();
+    return new File(u.getPath()).toURI();
   }
 
+  /**
+   * @deprecated Use {@link #fromURL(URL)} instead.
+   */
+  @Deprecated
   public static FsFile fileFromPath(String urlString) {
     if (urlString.startsWith("jar:")) {
       String[] parts = urlString.replaceFirst("jar:", "").split("!");
@@ -41,6 +46,23 @@ abstract public class Fs {
       return fs.join(parts[1].substring(1));
     } else {
       return new FileFsFile(new File(urlString));
+    }
+  }
+
+  public static FsFile fromURL(URL url) {
+    switch (url.getProtocol()) {
+      case "file":
+        return new FileFsFile(new File(url.getPath()));
+      case "jar":
+        String[] parts = url.getPath().split("!");
+        try {
+          Fs fs = fromJar(new URL(parts[0]));
+          return fs.join(parts[1].substring(1));
+        } catch (MalformedURLException e) {
+          throw new IllegalArgumentException(e);
+        }
+      default:
+        throw new IllegalArgumentException("unsupported fs type for '" + url + "'");
     }
   }
 

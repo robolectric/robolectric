@@ -7,14 +7,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.CancellationSignal;
 
+import com.google.common.io.Files;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.res.FileFsFile;
+import org.robolectric.util.TempDirectory;
+import org.robolectric.util.TestUtil;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -605,7 +612,8 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() throws Exception {
-        File testDb = new File(getClass().getResource("/test with spaces.sql").toURI().getPath());
+        File testDbOrig = ((FileFsFile) TestUtil.resourceFile("sqlite-db-dump.sql")).getFile();
+        File testDb = writableCopyOf(testDbOrig);
         assertThat(testDb.exists()).isTrue();
         SQLiteDatabase db = SQLiteDatabase.openDatabase(testDb.getAbsolutePath(), null, OPEN_READWRITE);
         Cursor c = db.rawQuery("select * from test", null);
@@ -917,6 +925,13 @@ public class SQLiteDatabaseTest {
     }
 
     /////////////////////
+
+    private File writableCopyOf(File testDbOrig) throws IOException {
+        Path tempDir = TempDirectory.create();
+        File testDb = tempDir.resolve("sqlite-db-dump.sql").toFile();
+        Files.copy(testDbOrig, testDb);
+        return testDb;
+    }
 
     private SQLiteDatabase openOrCreateDatabase(String name) {
         return openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath(name));

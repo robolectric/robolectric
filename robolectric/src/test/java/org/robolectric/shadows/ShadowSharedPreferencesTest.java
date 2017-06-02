@@ -41,7 +41,7 @@ public class ShadowSharedPreferencesTest {
     editor.putBoolean("boolean", true);
     editor.putFloat("float", 1.1f);
     editor.putInt("int", 2);
-    editor.putLong("long", 3l);
+    editor.putLong("long", 3L);
     editor.putString("string", "foobar");
 
     stringSet.add( "string1" );
@@ -58,7 +58,7 @@ public class ShadowSharedPreferencesTest {
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
-    assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
+    assertThat(anotherSharedPreferences.getLong("long", 666L)).isEqualTo(3L);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
     assertThat(anotherSharedPreferences.getStringSet("stringSet", null)).isEqualTo(stringSet);
   }
@@ -99,7 +99,7 @@ public class ShadowSharedPreferencesTest {
     assertThat(anotherSharedPreferences.getBoolean("boolean", false)).isTrue();
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
-    assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
+    assertThat(anotherSharedPreferences.getLong("long", 666L)).isEqualTo(3L);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
 
     assertThat(anotherSharedPreferences.getString("deleteMe", "awol")).isEqualTo("awol");
@@ -119,7 +119,7 @@ public class ShadowSharedPreferencesTest {
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
-    assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
+    assertThat(anotherSharedPreferences.getLong("long", 666L)).isEqualTo(3L);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
 
     // Android always calls clear before put on any open editor, so here "foo" is preserved rather than cleared.
@@ -162,7 +162,7 @@ public class ShadowSharedPreferencesTest {
     assertFalse(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(666f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(666);
-    assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(666l);
+    assertThat(anotherSharedPreferences.getLong("long", 666L)).isEqualTo(666L);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("wacka wa");
   }
 

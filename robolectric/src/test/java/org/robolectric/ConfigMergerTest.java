@@ -3,6 +3,8 @@ package org.robolectric;
 import android.app.Application;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowView;
@@ -19,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
 import static org.robolectric.util.TestUtil.stringify;
 
+@RunWith(JUnit4.class)
 public class ConfigMergerTest {
   @Test public void defaultValuesAreMerged() throws Exception {
     assertThat(configFor(Test2.class, "withoutAnnotation",

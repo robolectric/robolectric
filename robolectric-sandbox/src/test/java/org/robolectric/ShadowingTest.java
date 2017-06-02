@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
@@ -18,7 +19,9 @@ import java.lang.reflect.Modifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @RunWith(SandboxTestRunner.class)
@@ -234,15 +237,16 @@ public class ShadowingTest {
     }
   }
 
+  @Test @Ignore("todo fix")
   public void shouldNotInstrumentPackageIfNotAddedToConfig() throws Exception {
     Class<?> clazz = Class.forName(AFinalClass.class.getName());
-    assertEquals(1, clazz.getModifiers() & Modifier.FINAL);
+    assertTrue(Modifier.isFinal(clazz.getModifiers()));
   }
 
   @Test
   @SandboxConfig(instrumentedPackages = {"org.robolectric.testing"})
   public void shouldInstrumentPackageIfAddedToConfig() throws Exception {
     Class<?> clazz = Class.forName(AFinalClass.class.getName());
-    assertEquals(0, clazz.getModifiers() & Modifier.FINAL);
+    assertFalse(Modifier.isFinal(clazz.getModifiers()));
   }
 }

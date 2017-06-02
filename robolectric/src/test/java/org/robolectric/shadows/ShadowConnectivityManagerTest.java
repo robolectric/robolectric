@@ -145,7 +145,7 @@ public class ShadowConnectivityManagerTest {
   public void getAllNetworkInfo_shouldReturnAllNetworkInterfaces() throws Exception {
     NetworkInfo[] infos = connectivityManager.getAllNetworkInfo();
     assertThat(infos).hasSize(2);
-    assertThat(connectivityManager.getActiveNetworkInfo()).isSameAs(infos[0]);
+    assertThat(infos).contains(connectivityManager.getActiveNetworkInfo());
 
     shadowConnectivityManager.setActiveNetworkInfo(null);
     assertThat(connectivityManager.getAllNetworkInfo()).isEmpty();

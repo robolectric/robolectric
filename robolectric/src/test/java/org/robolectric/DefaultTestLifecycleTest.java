@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.newConfig;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(TestRunners.SelfTest.class)
 public class DefaultTestLifecycleTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -48,7 +48,7 @@ public class DefaultTestLifecycleTest {
         .isExactlyInstanceOf(TestApplication.class);
   }
 
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
+  @Config(manifest = "TestAndroidManifestWithReceiversCustomPackage.xml")
   @Test public void shouldAssignThePackageNameFromTheManifest() throws Exception {
     Application application = RuntimeEnvironment.application;
 
@@ -67,7 +67,7 @@ public class DefaultTestLifecycleTest {
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
   }
 
-  @Config(manifest = "src/test/resources/TestAndroidManifestForActivities.xml")
+  @Config(manifest = "TestAndroidManifestForActivities.xml")
   @Test public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
     Application application = RuntimeEnvironment.application;
 
