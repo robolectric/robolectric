@@ -444,7 +444,7 @@ public class ShadowActivityTest {
 
     for (int mode : modes) {
       activity.setDefaultKeyMode(mode);
-      assertThat(shadow.getDefaultKeymode()).isEqualTo(mode).as("Unexpected key mode");
+      assertThat(shadow.getDefaultKeymode()).as("Unexpected key mode").isEqualTo(mode);
     }
   }
 

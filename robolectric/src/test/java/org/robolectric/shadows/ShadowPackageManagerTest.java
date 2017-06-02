@@ -163,7 +163,7 @@ public class ShadowPackageManagerTest {
             | FLAG_VM_SAFE_MODE
     );
   }
-  
+
   @Test
   @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void testCheckPermissions() throws Exception {
@@ -1222,7 +1222,8 @@ public class ShadowPackageManagerTest {
     packageInfoTwo.applicationInfo.packageName = packageInfoTwo.packageName;
     shadowPackageManager.addPackage(packageInfoTwo);
 
-    assertThat(packageManager.getPackagesForUid(1234)).containsExactly("package.one", "package.two");
+    assertThat(packageManager.getPackagesForUid(1234)).containsExactlyInAnyOrder("package.one",
+        "package.two");
   }
 
   @Test
@@ -1249,7 +1250,4 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
   }
-
-
-
 }
