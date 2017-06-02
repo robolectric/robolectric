@@ -8,6 +8,6 @@ dependencies {
     testCompile "com.google.android:android-stubs:23"
 
     // Testing dependencies
-    testCompile "org.assertj:assertj-core:3.1.0"
+    testCompile "org.assertj:assertj-core:3.8.0"
     testCompile "org.mockito:mockito-core:2.5.4"
 }
