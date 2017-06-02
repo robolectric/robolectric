@@ -9,6 +9,11 @@ import android.widget.ResourceCursorAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * @deprecated This class will be removed after Robolectric 3.5 is released. The real
+ * Android ResourceCursorAdapter will be used instead.
+ */
+@Deprecated
 @Implements(ResourceCursorAdapter.class)
 public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {
   private int mLayout;
@@ -33,21 +38,25 @@ public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {
     mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
   }
 
+  @Deprecated
   @Implementation
   public View newView(Context context, Cursor cursor, ViewGroup parent) {
     return mInflater.inflate(mLayout, parent, false);
   }
 
+  @Deprecated
   @Implementation
   public View newDropDownView(Context context, Cursor cursor, ViewGroup parent) {
     return mInflater.inflate(mDropDownLayout, parent, false);
   }
 
+  @Deprecated
   @Implementation
   public void setViewResource(int layout) {
     mLayout = layout;
   }
 
+  @Deprecated
   @Implementation
   public void setDropDownViewResource(int dropDownLayout) {
     mDropDownLayout = dropDownLayout;
