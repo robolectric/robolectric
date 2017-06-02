@@ -142,7 +142,7 @@ public class ShadowPackageManagerTest {
 
   }
 
-  @Test @Config(manifest = "src/test/resources/TestAndroidManifestWithFlags.xml")
+  @Test @Config(manifest = "TestAndroidManifestWithFlags.xml")
   public void applicationFlags() throws Exception {
     int flags = shadowPackageManager.getApplicationInfo("org.robolectric", 0).flags;
     assertThat(flags).isEqualTo(
@@ -163,9 +163,9 @@ public class ShadowPackageManagerTest {
             | FLAG_VM_SAFE_MODE
     );
   }
-  
+
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void testCheckPermissions() throws Exception {
     assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
     assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
@@ -176,7 +176,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  @Config(manifest = "TestAndroidManifestWithReceivers.xml")
   public void testQueryBroadcastReceiverSucceeds() {
     Intent intent = new Intent("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
     intent.setPackage(RuntimeEnvironment.application.getPackageName());
@@ -189,7 +189,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  @Config(manifest = "TestAndroidManifestWithReceivers.xml")
   public void testQueryBroadcastReceiverFailsForMissingPackageName() {
     Intent intent = new Intent("org.robolectric.ACTION_ONE_MORE_PACKAGE");
     List<ResolveInfo> receiverInfos = shadowPackageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
@@ -197,7 +197,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  @Config(manifest = "TestAndroidManifestWithReceivers.xml")
   public void testQueryBroadcastReceiverFailsForMissingAction() {
     Intent intent = new Intent();
     intent.setPackage(RuntimeEnvironment.application.getPackageName());
@@ -206,7 +206,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
+  @Config(manifest = "TestAndroidManifestWithReceiversCustomPackage.xml")
   public void testGetPackageInfo_ForReceiversSucceeds() throws Exception {
     PackageInfo receiverInfos = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_RECEIVERS);
 
@@ -218,7 +218,7 @@ public class ShadowPackageManagerTest {
   public static class ActivityWithConfigChanges extends Activity { }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "TestAndroidManifest.xml")
   public void getActivityMetaData_configChanges() throws Exception {
     Activity activity = setupActivity(ShadowPackageManagerTest.ActivityWithConfigChanges.class);
 
@@ -236,7 +236,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void getPermissionInfo_withMinimalFields() throws Exception {
     PermissionInfo permission = packageManager.getPermissionInfo("permission_with_minimal_fields", 0);
     assertThat(permission.labelRes).isEqualTo(0);
@@ -347,7 +347,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
+  @Config(manifest = "TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
   public void queryIntentActivities_EmptyResultWithNoMatchingImplicitIntents() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -358,7 +358,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
+  @Config(manifest = "TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
   public void queryIntentActivities_MatchWithImplicitIntents() throws Exception {
     Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
     Intent i = new Intent(Intent.ACTION_VIEW);
@@ -374,7 +374,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestForActivityAliases.xml")
+  @Config(manifest = "TestAndroidManifestForActivityAliases.xml")
   public void queryIntentActivities_MatchWithAliasIntents() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -507,7 +507,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void getPackageInfo_getProvidersShouldReturnProviderInfos() throws Exception {
     PackageInfo packageInfo = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
@@ -519,7 +519,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void getProviderInfo_shouldReturnProviderInfos() throws Exception {
     ProviderInfo providerInfo1 = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, ".tester.FullyQualifiedClassName"), 0);
     assertThat(providerInfo1.packageName).isEqualTo("org.robolectric");
@@ -531,7 +531,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
     ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
@@ -547,7 +547,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void getProviderInfo_shouldMetaDataInProviderInfos() throws Exception {
     ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
@@ -556,7 +556,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void resolveContentProvider_shouldResolveByPackageName() throws Exception {
     ProviderInfo providerInfo = packageManager.resolveContentProvider("org.robolectric.authority1", 0);
     assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
@@ -564,7 +564,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithNoContentProviders.xml")
+  @Config(manifest = "TestAndroidManifestWithNoContentProviders.xml")
   public void getPackageInfo_getProvidersShouldReturnNullOnNoProviders() throws Exception {
     PackageInfo packageInfo = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
@@ -572,7 +572,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  @Config(manifest = "TestAndroidManifestWithReceivers.xml")
   public void testReceiverInfo() throws Exception {
     ActivityInfo info = shadowPackageManager.getReceiverInfo(new ComponentName(RuntimeEnvironment.application, ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
     Bundle meta = info.metaData;
@@ -630,7 +630,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
+  @Config(manifest = "TestAndroidManifestWithReceiversCustomPackage.xml")
   public void testGetPackageInfo_ForReceiversIncorrectPackage() throws Exception {
     try {
       shadowPackageManager.getPackageInfo("unknown_package", PackageManager.GET_RECEIVERS);
@@ -642,7 +642,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void getPackageInfo_shouldReturnRequestedPermissions() throws Exception {
     PackageInfo packageInfo = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
@@ -651,7 +651,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithoutPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithoutPermissions.xml")
   public void getPackageInfo_shouldReturnNullOnNoRequestedPermissions() throws Exception {
     PackageInfo packageInfo = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
@@ -698,7 +698,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "TestAndroidManifest.xml")
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = shadowPackageManager.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
@@ -723,7 +723,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
+  @Config(manifest = "TestAndroidManifestWithAppMetaData.xml")
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
     ShadowApplication app = ShadowApplication.getInstance();
     String packageName = app.getAppManifest().getPackageName();
@@ -846,7 +846,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "TestAndroidManifest.xml")
   public void testSetApplicationEnabledSetting() {
     assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
 
@@ -856,7 +856,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "TestAndroidManifest.xml")
   public void testSetComponentEnabledSetting() {
     ComponentName componentName = new ComponentName(RuntimeEnvironment.application, "org.robolectric.component");
     assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
@@ -869,7 +869,7 @@ public class ShadowPackageManagerTest {
   public static class ActivityWithMetadata extends Activity { }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "TestAndroidManifest.xml")
   public void getActivityMetaData() throws Exception {
     Activity activity = setupActivity(ActivityWithMetadata.class);
 
@@ -878,7 +878,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "TestAndroidManifest.xml")
   public void shouldAssignLabelResFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = shadowPackageManager.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.labelRes).isEqualTo(R.string.app_name);
@@ -886,7 +886,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
+  @Config(manifest = "TestAndroidManifestWithAppMetaData.xml")
   public void shouldAssignNonLocalizedLabelFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = shadowPackageManager.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.labelRes).isEqualTo(0);
@@ -894,7 +894,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  @Config(manifest = "TestPackageManagerGetServiceInfo.xml")
   public void getServiceInfo_shouldReturnServiceInfoIfExists() throws Exception {
     ServiceInfo serviceInfo = shadowPackageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
     assertEquals(serviceInfo.packageName, "org.robolectric");
@@ -904,21 +904,21 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  @Config(manifest = "TestPackageManagerGetServiceInfo.xml")
   public void getServiceInfo_shouldReturnServiceInfoWithMetaDataWhenFlagsSet() throws Exception {
     ServiceInfo serviceInfo = shadowPackageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_META_DATA);
     assertNotNull(serviceInfo.metaData);
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  @Config(manifest = "TestPackageManagerGetServiceInfo.xml")
   public void getServiceInfo_shouldReturnServiceInfoWithoutMetaDataWhenFlagsNotSet() throws Exception {
     ServiceInfo serviceInfo = shadowPackageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
     assertNull(serviceInfo.metaData);
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
-  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  @Config(manifest = "TestPackageManagerGetServiceInfo.xml")
   public void getServiceInfo_shouldThrowNameNotFoundExceptionIfNotExist() throws Exception {
     ComponentName nonExistComponent = new ComponentName("org.robolectric", "com.foo.NonExistService");
     try {
@@ -1103,7 +1103,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void getPermissionInfo() throws Exception {
     PermissionInfo permission = RuntimeEnvironment.application.getPackageManager().getPermissionInfo("some_permission", 0);
     assertThat(permission.labelRes).isEqualTo(R.string.test_permission_label);
@@ -1166,13 +1166,13 @@ public class ShadowPackageManagerTest {
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void getPermissionInfo_notFound() throws Exception {
     packageManager.getPermissionInfo("non_existant_permission", 0);
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void getPermissionInfo_noMetaData() throws Exception {
     PermissionInfo permission = packageManager.getPermissionInfo("some_permission", 0);
     assertThat(permission.metaData).isNull();
@@ -1185,7 +1185,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void getPermissionInfo_withMetaData() throws Exception {
     PermissionInfo permission = packageManager.getPermissionInfo("some_permission", PackageManager.GET_META_DATA);
     assertThat(permission.metaData).isNotNull();
@@ -1193,7 +1193,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void getPermissionInfo_withLiteralLabel() throws Exception {
     PermissionInfo permission = packageManager.getPermissionInfo("permission_with_literal_label", 0);
     assertThat(permission.labelRes).isEqualTo(0);
@@ -1222,7 +1222,8 @@ public class ShadowPackageManagerTest {
     packageInfoTwo.applicationInfo.packageName = packageInfoTwo.packageName;
     shadowPackageManager.addPackage(packageInfoTwo);
 
-    assertThat(packageManager.getPackagesForUid(1234)).containsExactly("package.one", "package.two");
+    assertThat(packageManager.getPackagesForUid(1234)).containsExactlyInAnyOrder("package.one",
+        "package.two");
   }
 
   @Test
@@ -1249,7 +1250,4 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
   }
-
-
-
 }

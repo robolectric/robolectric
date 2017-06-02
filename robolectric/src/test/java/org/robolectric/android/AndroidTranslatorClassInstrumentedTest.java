@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -12,7 +13,7 @@ import org.robolectric.annotation.internal.Instrument;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(TestRunners.SelfTest.class)
 public class AndroidTranslatorClassInstrumentedTest {
 
   @Test

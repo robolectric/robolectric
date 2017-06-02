@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
+import org.robolectric.TestRunners;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.res.*;
 import org.w3c.dom.Document;
@@ -34,7 +35,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
-@RunWith(JUnit4.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
@@ -347,20 +348,20 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testIsEmptyElementTag() throws Exception {
-    assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("Before START_DOCUMENT should return false.");
+    assertThat(parser.isEmptyElementTag()).as("Before START_DOCUMENT should return false.").isEqualTo(false);
 
     forgeAndOpenDocument("<foo><bar/></foo>");
-    assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("Not empty tag should return false.");
+    assertThat(parser.isEmptyElementTag()).as("Not empty tag should return false.").isEqualTo(false);
 
     forgeAndOpenDocument("<foo/>");
-    assertThat(parser.isEmptyElementTag()).isEqualTo(false).as(
-        "In the Android implementation this method always return false.");
+    assertThat(parser.isEmptyElementTag()).as(
+        "In the Android implementation this method always return false.").isEqualTo(false);
   }
 
   @Test
   public void testGetAttributeCount() throws Exception {
-    assertThat(parser.getAttributeCount()).isEqualTo(-1)
-        .as("When no node is being explored the number of attributes should be -1.");
+    assertThat(parser.getAttributeCount())
+        .as("When no node is being explored the number of attributes should be -1.").isEqualTo(-1);
 
     forgeAndOpenDocument("<foo bar=\"bar\"/>");
     assertThat(parser.getAttributeCount()).isEqualTo(1);
@@ -591,8 +592,8 @@ public class XmlResourceParserImplTest {
     // Negative unsigned int must be
     forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
 
-    assertThat(parser.getAttributeUnsignedIntValue(XMLNS_NS, "bar", 0)).isEqualTo(0)
-        .as("Getting a negative number as unsigned should return the default value.");
+    assertThat(parser.getAttributeUnsignedIntValue(XMLNS_NS, "bar", 0))
+        .as("Getting a negative number as unsigned should return the default value.").isEqualTo(0);
   }
 
   @Test
@@ -606,8 +607,8 @@ public class XmlResourceParserImplTest {
     // Negative unsigned int must be
     forgeAndOpenDocument("<foo bar=\"-12\"/>");
 
-    assertThat(parser.getAttributeUnsignedIntValue(0, 0)).isEqualTo(0)
-        .as("Getting a negative number as unsigned should return the default value.");
+    assertThat(parser.getAttributeUnsignedIntValue(0, 0))
+        .as("Getting a negative number as unsigned should return the default value.").isEqualTo(0);
   }
 
   @Test

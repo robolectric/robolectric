@@ -3,6 +3,8 @@ package org.robolectric.res;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,6 +22,7 @@ import static org.robolectric.util.TestUtil.gradleAppResources;
 import static org.robolectric.util.TestUtil.sdkResources;
 import static org.robolectric.util.TestUtil.testResources;
 
+@RunWith(JUnit4.class)
 public class ResourceParserTest {
 
   private ResourceTable resourceTable;

@@ -2,11 +2,14 @@ package org.robolectric.res;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.R;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.*;
 
+@RunWith(JUnit4.class)
 public class ResourceTableFactoryTest {
   private ResourceTable appResourceTable;
   private ResourceTable systemResourceTable;

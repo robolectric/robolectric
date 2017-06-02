@@ -3,6 +3,8 @@ package org.robolectric.res;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -10,6 +12,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(JUnit4.class)
 public class ResBundleTest {
   private ResBundle.ResMap resMap = new ResBundle.ResMap();
   private ResName resName;

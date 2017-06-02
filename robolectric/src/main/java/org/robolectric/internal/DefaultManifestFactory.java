@@ -50,12 +50,12 @@ public class DefaultManifestFactory implements ManifestFactory {
   }
 
   private FsFile resolveFile(String manifestConfig) {
-    FsFile manifestFile;URL manifestUrl = getClass().getResource(manifestConfig);
-    if (manifestUrl == null || !manifestUrl.getProtocol().equals("file")) {
+    URL manifestUrl = getClass().getClassLoader().getResource(manifestConfig);
+    if (manifestUrl == null) {
       throw new IllegalArgumentException("couldn't find '" + manifestConfig + "'");
+    } else {
+      return Fs.fromURL(manifestUrl);
     }
-    manifestFile = Fs.fileFromPath(manifestUrl.getPath());
-    return manifestFile;
   }
 
   @Override

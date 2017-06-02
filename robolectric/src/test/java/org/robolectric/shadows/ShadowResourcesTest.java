@@ -110,7 +110,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void getText_withLayoutId() throws Exception {
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo("." + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith(File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
   }
 
   @Test
@@ -680,6 +680,7 @@ public class ShadowResourcesTest {
     typedArray.recycle();
   }
 
+  @Test
   public void obtainStyledAttributes_shouldCheckXmlFirst_fromXmlLoadedFromResources() throws Exception {
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21

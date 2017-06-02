@@ -4,6 +4,8 @@ import android.os.Build;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.SandboxFactory;
@@ -12,6 +14,7 @@ import java.lang.reflect.Modifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(JUnit4.class)
 public class AndroidSandboxClassLoaderTest {
 
   private ClassLoader classLoader;

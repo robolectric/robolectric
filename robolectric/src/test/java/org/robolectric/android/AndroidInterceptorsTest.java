@@ -2,12 +2,15 @@ package org.robolectric.android;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(JUnit4.class)
 public class AndroidInterceptorsTest {
   @Test
   public void allMethodRefs() throws Exception {
