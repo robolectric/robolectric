@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
@@ -47,5 +48,11 @@ public class ShadowWifiConfiguration {
     config.wepKeys = new String[4];
     System.arraycopy(realObject.wepKeys, 0, config.wepKeys, 0, config.wepKeys.length);
     return config;
+  }
+
+  // WifiConfiguration's toString() method crashes.
+  @Implementation
+  public String toString() {
+    return String.format("WifiConfiguration{ssid=%s}", realObject.SSID);
   }
 }
