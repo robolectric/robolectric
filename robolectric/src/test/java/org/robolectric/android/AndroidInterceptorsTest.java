@@ -14,7 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AndroidInterceptorsTest {
   @Test
   public void allMethodRefs() throws Exception {
-    Assertions.assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs()).contains(
+    Assertions.assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs())
+        .containsExactlyInAnyOrder(
             new MethodRef("java.util.LinkedHashMap", "eldest"),
             new MethodRef("java.lang.System", "loadLibrary"),
             new MethodRef("android.os.StrictMode", "trackActivity"),
