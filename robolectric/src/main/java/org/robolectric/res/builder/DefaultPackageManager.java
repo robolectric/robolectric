@@ -378,7 +378,42 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   @Override
   public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-    return queryIntent(intent, flags);
+    // Check the manually added resolve infos first.
+    List<ResolveInfo> resolveInfos = queryIntent(intent, flags);
+    if (!resolveInfos.isEmpty()) {
+      return resolveInfos;
+    }
+
+    // Check matches from the manifest.
+    resolveInfos = new ArrayList<>();
+    if (resolveInfos.isEmpty()) {
+      for (ServiceData service : applicationManifest.getServices()) {
+        IntentFilter intentFilter = matchIntentFilter(intent, service.getIntentFilters());
+        if (intentFilter != null) {
+          resolveInfos.add(getResolveInfo(service, intentFilter, applicationManifest.getPackageName()));
+        }
+      }
+    }
+
+    return resolveInfos;
+  }
+
+  private static ResolveInfo getResolveInfo(ServiceData service, IntentFilter intentFilter, String packageName) {
+    try {
+      ResolveInfo info = new ResolveInfo();
+      info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
+      info.serviceInfo = new ServiceInfo();
+      info.serviceInfo.name = service.getClassName();
+      info.serviceInfo.packageName = packageName;
+      info.serviceInfo.applicationInfo = new ApplicationInfo();
+      info.filter = new IntentFilter();
+      for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
+        info.filter.addDataType(it.next());
+      }
+      return info;
+    } catch (IntentFilter.MalformedMimeTypeException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -861,7 +896,8 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
           activityName = activityData.getTargetActivityName();
         }
 
-        if (matchIntentFilter(activityData, intent)) {
+        IntentFilter intentFilter = matchIntentFilter(intent, activityData.getIntentFilters());
+        if (intentFilter != null) {
           ResolveInfo resolveInfo = new ResolveInfo();
           resolveInfo.resolvePackageName = packageName;
           resolveInfo.activityInfo = new ActivityInfo();
@@ -875,8 +911,8 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return resolveInfoList;
   }
 
-  private boolean matchIntentFilter(ActivityData activityData, Intent intent) {
-    for (IntentFilterData intentFilterData : activityData.getIntentFilters()) {
+  private IntentFilter matchIntentFilter(Intent intent, List<IntentFilterData> intentFilters) {
+    for (IntentFilterData intentFilterData : intentFilters) {
       List<String> actionList = intentFilterData.getActions();
       List<String> categoryList = intentFilterData.getCategories();
       IntentFilter intentFilter = new IntentFilter();
@@ -928,10 +964,10 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
           intent.getData());
       if (matchActionResult && (matchCategoriesResult == null) &&
           (matchResult != IntentFilter.NO_MATCH_DATA && matchResult != IntentFilter.NO_MATCH_TYPE)){
-        return true;
+        return intentFilter;
       }
     }
-    return false;
+    return null;
   }
 
   @Override

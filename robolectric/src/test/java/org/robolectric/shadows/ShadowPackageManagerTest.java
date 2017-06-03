@@ -422,9 +422,19 @@ public class ShadowPackageManagerTest {
 
     shadowPackageManager.addResolveInfoForIntent(i, info);
 
-    List<ResolveInfo> activities = shadowPackageManager.queryIntentServices(i, 0);
-    assertThat(activities).hasSize(1);
-    assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
+    List<ResolveInfo> services = shadowPackageManager.queryIntentServices(i, 0);
+    assertThat(services).hasSize(1);
+    assertThat(services.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestWithServices.xml")
+  public void queryIntentServices_fromManifest() {
+    Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+    i.setType("image/jpeg");
+    List<ResolveInfo> services = shadowPackageManager.queryIntentServices(i, 0);
+    assertThat(services).isNotEmpty();
   }
 
   @Test

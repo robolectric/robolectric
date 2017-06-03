@@ -92,10 +92,13 @@ public class AndroidManifestTest {
 
     assertThat(config.getServices().get(0).getClassName()).isEqualTo("com.foo.Service");
     assertThat(config.getServices().get(0).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    assertThat(config.getServices().get(0).getIntentFilters()).isNotEmpty();
+    assertThat(config.getServices().get(0).getIntentFilters().get(0).getMimeTypes()).containsExactly("image/jpeg");
 
     assertThat(config.getServices().get(1).getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServices().get(1).getActions()).isEmpty();
-    
+    assertThat(config.getServices().get(1).getIntentFilters()).isEmpty();
+
     assertThat(config.getServiceData("com.foo.Service").getClassName()).isEqualTo("com.foo.Service");
     assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertEquals(config.getServiceData("com.foo.Service").getPermission(), "com.foo.Permission");

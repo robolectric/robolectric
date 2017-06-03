@@ -280,7 +280,8 @@ public class AndroidManifest {
       String serviceName = resolveClassRef(namedItem.getTextContent());
       MetaData metaData = new MetaData(getChildrenTags(serviceNode, "meta-data"));
 
-      ServiceData service = new ServiceData(serviceName, metaData);
+      final List<IntentFilterData> intentFilterData = parseIntentFilters(serviceNode);
+      ServiceData service = new ServiceData(serviceName, metaData, intentFilterData);
       List<Node> intentFilters = getChildrenTags(serviceNode, "intent-filter");
       for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -290,7 +291,7 @@ public class AndroidManifest {
           }
         }
       }
-      
+
       Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
       if (permissionItem != null) {
         service.setPermission(permissionItem.getTextContent());
