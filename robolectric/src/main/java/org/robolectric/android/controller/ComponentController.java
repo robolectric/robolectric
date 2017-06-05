@@ -15,8 +15,6 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
 
   protected Intent intent;
 
-  protected boolean attached;
-
   @SuppressWarnings("unchecked")
   public ComponentController(ShadowsAdapter shadowsAdapter, T component, Intent intent) {
     this(shadowsAdapter, component);
@@ -33,28 +31,6 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   public T get() {
     return component;
   }
-
-  /**
-   * @deprecated Use the appropriate builder in {@link org.robolectric.Robolectric} instead.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public C withIntent(Intent intent) {
-    this.intent = intent;
-    return myself;
-  }
-
-  /**
-   * @deprecated The component is automatically attached. There is no need to call this method.
-   *
-   * TODO(jongerrish): Make this method private so that it can only be called internally, should not
-   * be part of the API.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public abstract C attach();
 
   public abstract C create();
 

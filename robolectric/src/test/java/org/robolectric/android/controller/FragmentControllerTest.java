@@ -122,20 +122,6 @@ public class FragmentControllerTest {
   }
 
   @Test
-  public void withIntent_deprecated() {
-    final LoginFragment fragment = new LoginFragment();
-    final FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class);
-
-    Intent intent = new Intent("test_action");
-    intent.putExtra("test_key", "test_value");
-    controller.withIntent(intent).create();
-
-    Intent intentInFragment = controller.get().getActivity().getIntent();
-    assertThat(intentInFragment.getAction()).isEqualTo("test_action");
-    assertThat(intentInFragment.getExtras().getString("test_key")).isEqualTo("test_value");
-  }
-
-  @Test
   public void withIntent() {
     final LoginFragment fragment = new LoginFragment();
 

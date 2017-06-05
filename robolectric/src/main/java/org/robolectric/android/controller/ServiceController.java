@@ -1,63 +1,18 @@
 package org.robolectric.android.controller;
 
-import android.app.Application;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.os.IBinder;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T> {
-
-  private String shadowActivityThreadClassName;
-
   public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
-    ServiceController<T> controller = new ServiceController<>(shadowsAdapter, service, intent);
-    controller.attach();
-    return controller;
+    return new ServiceController<>(shadowsAdapter, service, intent);
   }
 
   protected ServiceController(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
     super(shadowsAdapter, service, intent);
-    shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
-  }
-
-  /**
-   * @deprecated This is a no-op, it's safe to remove this call.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public ServiceController<T> attach() {
-    if (attached) {
-      return this;
-    }
-
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
-
-    ClassLoader cl = baseContext.getClassLoader();
-    Class<?> activityThreadClass;
-    try {
-      activityThreadClass = cl.loadClass(shadowActivityThreadClassName);
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-    }
-
-    ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
-        from(Context.class, baseContext),
-        from(activityThreadClass, null),
-        from(String.class, component.getClass().getSimpleName()),
-        from(IBinder.class, null),
-        from(Application.class, RuntimeEnvironment.application),
-        from(Object.class, null));
-
-    attached = true;
-    return this;
   }
 
   public ServiceController<T> bind() {
