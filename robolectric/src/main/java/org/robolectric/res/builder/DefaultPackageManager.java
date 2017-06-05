@@ -386,7 +386,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
     // Check matches from the manifest.
     resolveInfos = new ArrayList<>();
-    if (resolveInfos.isEmpty()) {
+    if (resolveInfos.isEmpty() && applicationManifest != null) {
       for (ServiceData service : applicationManifest.getServices()) {
         IntentFilter intentFilter = matchIntentFilter(intent, service.getIntentFilters());
         if (intentFilter != null) {
