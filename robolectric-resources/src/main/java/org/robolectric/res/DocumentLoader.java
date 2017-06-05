@@ -31,6 +31,9 @@ public abstract class DocumentLoader {
     if (!dir.exists()) {
       throw new RuntimeException("no such directory " + dir);
     }
+    if (!dir.isDirectory()) {
+      return;
+    }
 
     for (FsFile file : dir.listFiles(ENDS_WITH_XML)) {
       loadResourceXmlFile(new XmlContext(packageName, file));
