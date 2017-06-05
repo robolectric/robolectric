@@ -210,6 +210,12 @@ public class ShadowContentResolver {
   }
 
   @Implementation
+  public Cursor query(Uri uri, String[] projection, String selection,
+      String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
+    return query(uri, projection, selection, selectionArgs, sortOrder);
+  }
+
+  @Implementation
   public String getType(Uri uri) {
     ContentProvider provider = getProvider(uri);
     if (provider != null) {
