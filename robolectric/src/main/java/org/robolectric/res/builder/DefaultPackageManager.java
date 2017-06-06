@@ -902,7 +902,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
           resolveInfo.resolvePackageName = packageName;
           resolveInfo.activityInfo = new ActivityInfo();
           resolveInfo.activityInfo.targetActivity = activityName;
-
+          resolveInfo.activityInfo.name = activityData.getName();
           resolveInfoList.add(resolveInfo);
         }
       }

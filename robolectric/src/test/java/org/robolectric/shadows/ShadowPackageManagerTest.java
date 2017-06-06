@@ -369,8 +369,8 @@ public class ShadowPackageManagerTest {
     List<ResolveInfo> activities = shadowPackageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
-    assertThat(activities.get(0).resolvePackageName.toString()).isEqualTo("org.robolectric");
-    assertThat(activities.get(0).activityInfo.targetActivity.toString()).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
   }
 
   @Test
@@ -383,8 +383,9 @@ public class ShadowPackageManagerTest {
     List<ResolveInfo> activities = shadowPackageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
-    assertThat(activities.get(0).resolvePackageName.toString()).isEqualTo("org.robolectric");
-    assertThat(activities.get(0).activityInfo.targetActivity.toString()).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).activityInfo.name).isEqualTo("org.robolectric.shadows.TestActivityAlias");
   }
 
   @Test
