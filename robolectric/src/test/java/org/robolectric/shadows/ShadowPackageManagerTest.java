@@ -25,6 +25,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1213,6 +1216,68 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
+  public void queryPermissionsByGroup_noMetaData() throws Exception {
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", 0);
+    assertThat(permissions).hasSize(1);
+
+    PermissionInfo permission = permissions.get(0);
+
+    assertThat(permission.group).isEqualTo("my_permission_group");
+    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.metaData).isNull();
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
+  public void queryPermissionsByGroup_withMetaData() throws Exception {
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", PackageManager.GET_META_DATA);
+    assertThat(permissions).hasSize(1);
+
+    PermissionInfo permission = permissions.get(0);
+
+    assertThat(permission.group).isEqualTo("my_permission_group");
+    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.metaData).isNotNull();
+    assertThat(permission.metaData.getString("meta_data_name")).isEqualTo("meta_data_value");
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
+  public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup() throws Exception {
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
+
+    assertThat(Iterables.transform(permissions, getPermissionNames()))
+        .containsExactlyInAnyOrder("permission_with_minimal_fields", "permission_with_literal_label");
+  }
+
+  @Test
+  public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup_with_addPermissionInfo() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "some_name";
+    shadowPackageManager.addPermissionInfo(permissionInfo);
+
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
+    assertThat(permissions).hasSize(1);
+
+    assertThat(permissions.get(0).name).isEqualTo(permissionInfo.name);
+  }
+
+  @Test
+  public void queryPermissionsByGroup_with_addPermissionInfo() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "some_name";
+    permissionInfo.group = "some_group";
+    shadowPackageManager.addPermissionInfo(permissionInfo);
+
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(permissionInfo.group, 0);
+    assertThat(permissions).hasSize(1);
+
+    assertThat(permissions.get(0).name).isEqualTo(permissionInfo.name);
+    assertThat(permissions.get(0).group).isEqualTo(permissionInfo.group);
+  }
+
+  @Test
   public void getDefaultActivityIcon() {
     assertThat(packageManager.getDefaultActivityIcon()).isNotNull();
   }
@@ -1260,5 +1325,15 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addPackage(packageInfo);
 
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
+  }
+
+  private static Function<PermissionInfo, String> getPermissionNames() {
+    return new Function<PermissionInfo, String>() {
+      @Nullable
+      @Override
+      public String apply(@Nullable PermissionInfo permissionInfo) {
+        return permissionInfo.name;
+      }
+    };
   }
 }
