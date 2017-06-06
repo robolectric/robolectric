@@ -47,13 +47,7 @@ import java.util.List;
 import static android.content.pm.ApplicationInfo.*;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
-import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_MATCH;
-import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
-import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
+import static android.content.pm.PackageManager.*;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -280,9 +274,24 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getApplicationInfo_ThisApplication() throws Exception {
-    ApplicationInfo info = shadowPackageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test
+  public void getApplicationInfo_uninstalledApplication_includeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), MATCH_UNINSTALLED_PACKAGES);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test(expected = PackageManager.NameNotFoundException.class)
+  public void getApplicationInfo_uninstalledApplication_dontIncludeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)

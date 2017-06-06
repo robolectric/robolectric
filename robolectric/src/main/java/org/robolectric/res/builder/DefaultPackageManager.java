@@ -177,6 +177,10 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
   public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
+      if (getApplicationEnabledSetting(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
+        throw new NameNotFoundException("Package is disabled, can't find");
+      }
       return info.applicationInfo;
     } else {
       throw new NameNotFoundException(packageName);
