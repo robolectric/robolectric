@@ -25,6 +25,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1243,10 +1246,9 @@ public class ShadowPackageManagerTest {
   @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup() throws Exception {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
-    assertThat(permissions).hasSize(2);
 
-    assertThat(permissions.get(0).name).isEqualTo("permission_with_minimal_fields");
-    assertThat(permissions.get(1).name).isEqualTo("permission_with_literal_label");
+    assertThat(Iterables.transform(permissions, getPermissionNames()))
+        .containsExactlyInAnyOrder("permission_with_minimal_fields", "permission_with_literal_label");
   }
 
   @Test
@@ -1323,5 +1325,15 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addPackage(packageInfo);
 
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
+  }
+
+  private static Function<PermissionInfo, String> getPermissionNames() {
+    return new Function<PermissionInfo, String>() {
+      @Nullable
+      @Override
+      public String apply(@Nullable PermissionInfo permissionInfo) {
+        return permissionInfo.name;
+      }
+    };
   }
 }
