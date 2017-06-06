@@ -8,19 +8,19 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Implements(DownloadManager.class)
 public class ShadowDownloadManager {
 
   private long queueCounter = -1; // First request starts at 0 just like in the real DownloadManager
-  private Map<Long, DownloadManager.Request> requestMap = new HashMap<>();
+  private Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
 
   @Implementation
   public long enqueue(DownloadManager.Request request) {
@@ -53,6 +53,8 @@ public class ShadowDownloadManager {
           result.requests.add(request);
         }
       }
+    } else {
+      result.requests.addAll(requestMap.values());
     }
     return result;
   }
@@ -140,6 +142,7 @@ public class ShadowDownloadManager {
     private static final int COLUMN_INDEX_STATUS = 3;
     private static final int COLUMN_INDEX_URI = 4;
     private static final int COLUMN_INDEX_LOCAL_URI = 5;
+    private static final int COLUMN_INDEX_TITLE = 6;
 
     public List<DownloadManager.Request> requests = new ArrayList<>();
     private int positionIndex = -1;
@@ -149,6 +152,11 @@ public class ShadowDownloadManager {
     public int getCount() {
       checkClosed();
       return requests.size();
+    }
+
+    @Override
+    public int getPosition() {
+      return positionIndex;
     }
 
     @Override
@@ -186,9 +194,23 @@ public class ShadowDownloadManager {
 
       } else if (DownloadManager.COLUMN_LOCAL_URI.equals(columnName)) {
         return COLUMN_INDEX_LOCAL_URI;
+
+      } else if (DownloadManager.COLUMN_TITLE.equals(columnName)) {
+        return COLUMN_INDEX_TITLE;
       }
 
       return -1;
+    }
+
+    @Override
+    public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException {
+      checkClosed();
+
+      int columnIndex = getColumnIndex(columnName);
+      if (columnIndex == -1) {
+        throw new IllegalArgumentException("Column not found.");
+      }
+      return columnIndex;
     }
 
     @Override
@@ -220,6 +242,9 @@ public class ShadowDownloadManager {
 
         case COLUMN_INDEX_LOCAL_URI:
           return request.getDestination().toString();
+
+        case COLUMN_INDEX_TITLE:
+          return request.getTitle().toString();
       }
 
       return "Unknown ColumnIndex " + columnIndex;
