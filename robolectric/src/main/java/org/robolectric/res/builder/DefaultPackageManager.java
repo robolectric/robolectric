@@ -83,6 +83,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
@@ -534,16 +535,24 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
       throw new NameNotFoundException(name);
     }
 
-    permissionInfo = new PermissionInfo();
+    permissionInfo = createPermissionInfo(flags, permissionItemData);
+
+    return permissionInfo;
+  }
+
+  private PermissionInfo createPermissionInfo(int flags,
+      PermissionItemData permissionItemData) throws NameNotFoundException {
+    PermissionInfo permissionInfo = new PermissionInfo();
     String packageName = applicationManifest.getPackageName();
     permissionInfo.packageName = packageName;
-    permissionInfo.name = name;
+    permissionInfo.name = permissionItemData.getName();
     permissionInfo.group = permissionItemData.getPermissionGroup();
     permissionInfo.protectionLevel = decodeProtectionLevel(permissionItemData.getProtectionLevel());
 
     String descriptionRef = permissionItemData.getDescription();
     if (descriptionRef != null) {
-      ResName descResName = AttributeResource.getResourceReference(descriptionRef, packageName, "string");
+      ResName descResName = AttributeResource
+          .getResourceReference(descriptionRef, packageName, "string");
       permissionInfo.descriptionRes = appResourceTable.getResourceId(descResName);
     }
 
@@ -560,7 +569,6 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     if ((flags & GET_META_DATA) != 0) {
       permissionInfo.metaData = metaDataToBundle(permissionItemData.getMetaData().getValueMap());
     }
-
     return permissionInfo;
   }
 
@@ -1292,7 +1300,20 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   @Override
   public List<PermissionInfo> queryPermissionsByGroup(String group, int flags) throws NameNotFoundException {
-    return null;
+    List<PermissionInfo> result = new LinkedList<>();
+    for (PermissionInfo permissionInfo : extraPermissions.values()) {
+      if (Objects.equals(permissionInfo.group, group)) {
+        result.add(permissionInfo);
+      }
+    }
+
+    for (PermissionItemData permissionItemData : applicationManifest.getPermissions().values()) {
+      if (Objects.equals(permissionItemData.getPermissionGroup(), group)) {
+        result.add(createPermissionInfo(flags, permissionItemData));
+      }
+    }
+
+    return result;
   }
 
   @Override
