@@ -55,6 +55,8 @@ public interface RobolectricPackageManager {
 
   CharSequence getApplicationLabel(ApplicationInfo info);
 
+  void setApplicationEnabledSetting(String packageName, int newState, int flags);
+
   void setComponentEnabledSetting(ComponentName componentName, int newState, int flags);
 
   void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity);
