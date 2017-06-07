@@ -75,14 +75,6 @@ public class RuntimeEnvironment {
   }
 
   /**
-   * @deprecated Prefer Android API {@link android.content.Context#getPackageManager()} instead.
-   */
-  @Deprecated
-  public static PackageManager getPackageManager() {
-    return (PackageManager) packageManager;
-  }
-
-  /**
    * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
    * <pre>
    *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
