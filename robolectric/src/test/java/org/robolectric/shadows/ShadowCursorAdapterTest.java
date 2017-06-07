@@ -16,8 +16,6 @@ import org.robolectric.TestRunners;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
-import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
@@ -98,24 +96,6 @@ public class ShadowCursorAdapterTest {
     for (int i = 0; i < 5; i++) {
       assertThat(adapter.getView(i, null, null)).isSameAs(views.get(i));
     }
-  }
-
-  @Test public void shouldNotRegisterObserversIfNoFlagsAreSet() throws Exception {
-    adapter = new TestAdapterWithFlags(curs, 0);
-    assertThat(Shadows.shadowOf(adapter).mChangeObserver).isNull();
-    assertThat(Shadows.shadowOf(adapter).mDataSetObserver).isNull();
-  }
-
-  @Test public void shouldRegisterObserversWhenRegisterObserverFlagIsSet() throws Exception {
-    adapter = new TestAdapterWithFlags(curs, FLAG_REGISTER_CONTENT_OBSERVER);
-    assertThat(Shadows.shadowOf(adapter).mChangeObserver).isNotNull();
-    assertThat(Shadows.shadowOf(adapter).mDataSetObserver).isNotNull();
-  }
-
-  @Test public void shouldRegisterObserversWhenAutoRequeryFlagIsSet() throws Exception {
-    adapter = new TestAdapterWithFlags(curs, FLAG_AUTO_REQUERY);
-    assertThat(Shadows.shadowOf(adapter).mChangeObserver).isNotNull();
-    assertThat(Shadows.shadowOf(adapter).mDataSetObserver).isNotNull();
   }
 
   @Test public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {

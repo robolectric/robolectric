@@ -122,35 +122,4 @@ public class ShadowViewGroup extends ShadowView {
     interceptedTouchEvent = ev;
     return false;
   }
-
-  @SuppressWarnings({"UnusedDeclaration"})
-  @Implements(ViewGroup.LayoutParams.class)
-  public static class ShadowLayoutParams {
-    @RealObject private ViewGroup.LayoutParams realLayoutParams;
-
-    public void __constructor__(int w, int h) {
-      realLayoutParams.width = w;
-      realLayoutParams.height = h;
-    }
-
-    public void __constructor__(ViewGroup.LayoutParams source) {
-      __constructor__(source.width, source.height);
-    }
-  }
-
-  @SuppressWarnings("UnusedDeclaration")
-  @Implements(ViewGroup.MarginLayoutParams.class)
-  public static class ShadowMarginLayoutParams extends ShadowLayoutParams {
-
-    @RealObject
-    private ViewGroup.MarginLayoutParams realMarginLayoutParams;
-
-    @Implementation
-    public void setMargins(int left, int top, int right, int bottom) {
-      realMarginLayoutParams.leftMargin = left;
-      realMarginLayoutParams.topMargin = top;
-      realMarginLayoutParams.rightMargin = right;
-      realMarginLayoutParams.bottomMargin = bottom;
-    }
-  }
 }

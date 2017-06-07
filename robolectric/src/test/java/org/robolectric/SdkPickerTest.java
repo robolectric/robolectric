@@ -2,6 +2,8 @@ package org.robolectric;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -13,6 +15,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(JUnit4.class)
 public class SdkPickerTest {
   private static final int[] sdkInts = { 16, 17, 18, 19, 21, 22, 23 };
   private AndroidManifest appManifest;

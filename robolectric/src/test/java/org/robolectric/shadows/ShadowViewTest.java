@@ -560,6 +560,7 @@ public class ShadowViewTest {
     assertThat(shadowOf(view).didRequestLayout()).isFalse();
   }
 
+  @Test
   public void shouldClickAndNotClick() throws Exception {
     assertThat(view.isClickable()).isFalse();
     view.setClickable(true);

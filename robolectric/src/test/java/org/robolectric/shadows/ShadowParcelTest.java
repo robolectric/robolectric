@@ -48,7 +48,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadLongWhenEmpty() {
-    assertThat(parcel.readLong()).isEqualTo(0l);
+    assertThat(parcel.readLong()).isEqualTo(0L);
   }
 
   @Test
@@ -306,7 +306,7 @@ public class ShadowParcelTest {
       assertThat(parcel.readLong()).isEqualTo(i);
     }
     // now try to read past the number of items written and see what happens
-    assertThat(parcel.readLong()).isEqualTo(0l);
+    assertThat(parcel.readLong()).isEqualTo(0L);
   }
 
   @Test
@@ -322,7 +322,7 @@ public class ShadowParcelTest {
     }
     // now try to read past the number of items written and see what happens
     assertThat(parcel.readString()).isNull();
-    assertThat(parcel.readLong()).isEqualTo(0l);
+    assertThat(parcel.readLong()).isEqualTo(0L);
   }
 
   @Test(expected = ClassCastException.class)

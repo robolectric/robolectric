@@ -228,6 +228,10 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     throw new UnsupportedOperationException("Not implemented");
   }
 
+  public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
+    RuntimeEnvironment.getRobolectricPackageManager().setApplicationEnabledSetting(packageName, newState, flags);
+  }
+
   @Override
   public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
     RuntimeEnvironment.getRobolectricPackageManager().addPreferredActivity(filter, match, set, activity);

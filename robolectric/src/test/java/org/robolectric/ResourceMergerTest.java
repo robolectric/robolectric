@@ -40,7 +40,7 @@ public class ResourceMergerTest {
   }
 
   @Test
-  @Config(manifest="src/test/resources/TestAndroidManifest.xml", libraries="lib1")
+  @Config(libraries="lib1")
   public void libraryConfigShouldOverrideProjectProperties() throws Exception {
     AndroidManifest manifest = Shadows.shadowOf(RuntimeEnvironment.application).getAppManifest();
     List<AndroidManifest> libraryManifests = manifest.getLibraryManifests();

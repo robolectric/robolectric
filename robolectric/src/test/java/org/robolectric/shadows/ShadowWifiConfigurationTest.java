@@ -59,4 +59,13 @@ public class ShadowWifiConfigurationTest {
     assertThat(copy.wepKeys[2]).isEqualTo("2");
     assertThat(copy.wepKeys[3]).isEqualTo("3");
   }
+
+  @Test
+  public void toStringDoesntCrash() {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.toString();
+
+    wifiConfiguration.SSID = "SSID";
+    wifiConfiguration.toString();
+  }
 }

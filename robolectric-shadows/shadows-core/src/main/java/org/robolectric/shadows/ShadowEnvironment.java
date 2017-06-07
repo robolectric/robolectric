@@ -1,26 +1,25 @@
 package org.robolectric.shadows;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import android.os.Environment;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Resetter;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TempDirectory;
-
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+
+import android.os.Environment;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.TempDirectory;
 
 @Implements(Environment.class)
 public class ShadowEnvironment {
@@ -165,6 +164,11 @@ public class ShadowEnvironment {
     STORAGE_EMULATED.put(file, isEmulated);
   }
 
+  /**
+   * Adds a directory to list returned by {@link ShadowUserEnvironment#getExternalDirs()}.
+   *
+   * @param path the external dir to add
+   */
   public static File addExternalDir(String path) {
     Path externalFileDir;
     if (path == null) {
@@ -200,6 +204,11 @@ public class ShadowEnvironment {
     return externalFileDir.toFile();
   }
 
+  /**
+   * Sets the {@link #getExternalStorageState(File)} for given directory.
+   *
+   * @param externalStorageState Value to return from {@link #getExternalStorageState(File)}.
+   */
   public static void setExternalStorageState(File directory, String state) {
     storageState.put(directory.toPath(), state);
   }

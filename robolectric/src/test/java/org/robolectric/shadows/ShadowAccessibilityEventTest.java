@@ -46,10 +46,10 @@ public class ShadowAccessibilityEventTest {
   }
 
   @Test
-  public void shouldEqualToClonedEvent() {
+  public void shouldBeEqualToClonedEvent() {
     shadow.setEventType(AccessibilityEvent.TYPE_ANNOUNCEMENT);
     AccessibilityEvent newEvent = ShadowAccessibilityEvent.obtain(event);
-    assertThat(shadow.equals(newEvent)).isEqualTo(true);
+    assertThat(event.equals(newEvent)).isEqualTo(true);
     newEvent.recycle();
   }
 

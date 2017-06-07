@@ -1,6 +1,8 @@
 package org.robolectric.internal.bytecode;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.internal.bytecode.ProxyMaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@RunWith(JUnit4.class)
 public class ProxyMakerTest {
   private static final ProxyMaker.MethodMapper IDENTITY_NAME = new ProxyMaker.MethodMapper() {
     @Override public String getName(String className, String methodName) {

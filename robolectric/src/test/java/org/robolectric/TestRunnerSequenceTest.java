@@ -7,8 +7,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.internal.TextListener;
 import org.junit.runner.Result;
+import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.resourceFile;
 
+@RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {
   public static class StateHolder {
     public static List<String> transcript;

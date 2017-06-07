@@ -23,7 +23,7 @@ import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
-public class ShadowWebView extends ShadowAbsoluteLayout {
+public class ShadowWebView extends ShadowViewGroup {
   @RealObject
   private WebView realWebView;
   

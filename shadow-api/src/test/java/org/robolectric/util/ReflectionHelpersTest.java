@@ -1,6 +1,8 @@
 package org.robolectric.util;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.Field;
@@ -9,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
+@RunWith(JUnit4.class)
 public class ReflectionHelpersTest {
 
   @Test
@@ -261,17 +264,17 @@ public class ReflectionHelpersTest {
   }
 
   @SuppressWarnings("serial")
-  private static class TestError extends Error {    
+  private static class TestError extends Error {
   }
-  
+
   @SuppressWarnings("serial")
-  private static class TestException extends Exception {    
+  private static class TestException extends Exception {
   }
-  
+
   @SuppressWarnings("serial")
-  private static class TestRuntimeException extends RuntimeException {    
+  private static class TestRuntimeException extends RuntimeException {
   }
-  
+
   @SuppressWarnings("unused")
   private static class ExampleBase {
     private int notOverridden;
@@ -317,7 +320,7 @@ public class ReflectionHelpersTest {
     private void throwCheckedException() throws Exception {
       throw new TestException();
     }
-    
+
     private void throwError() {
       throw new TestError();
     }
@@ -329,7 +332,7 @@ public class ReflectionHelpersTest {
     private static void staticThrowCheckedException() throws Exception {
       throw new TestException();
     }
-    
+
     private static void staticThrowError() {
       throw new TestError();
     }
@@ -341,21 +344,21 @@ public class ReflectionHelpersTest {
       throw new TestError();
     }
   }
-  
+
   private static class ThrowsCheckedException {
     @SuppressWarnings("unused")
     public ThrowsCheckedException() throws Exception {
       throw new TestException();
     }
   }
-  
+
   private static class ThrowsUncheckedException {
     @SuppressWarnings("unused")
     public ThrowsUncheckedException() {
       throw new TestRuntimeException();
     }
   }
-  
+
   private static class ExampleClass {
     public String name;
     public int index;

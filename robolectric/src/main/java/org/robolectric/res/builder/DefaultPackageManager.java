@@ -18,30 +18,48 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
+import android.app.PackageInstallObserver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.ChangedPackages;
+import android.content.pm.FeatureInfo;
+import android.content.pm.IPackageDataObserver;
+import android.content.pm.IPackageDeleteObserver;
+import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageInstaller;
+import android.content.pm.IPackageMoveObserver;
 import android.content.pm.IPackageStatsObserver;
+import android.content.pm.InstantAppInfo;
+import android.content.pm.InstrumentationInfo;
+import android.content.pm.IntentFilterVerificationInfo;
+import android.content.pm.KeySet;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
+import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageStats;
 import android.content.pm.PathPermission;
+import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.content.pm.SharedLibraryInfo;
 import android.content.pm.Signature;
+import android.content.pm.VerifierDeviceIdentity;
+import android.content.pm.VersionedPackage;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,10 +67,10 @@ import android.os.Looper;
 import android.os.PatternMatcher;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.os.storage.VolumeInfo;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,10 +83,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.StubPackageManager;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
@@ -88,7 +106,7 @@ import org.robolectric.util.TempDirectory;
  * @deprecated use @{link ShadowPackageManager} instead.
  */
 @Deprecated
-public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
+public class DefaultPackageManager extends PackageManager implements RobolectricPackageManager {
 
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
   private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
@@ -159,6 +177,10 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
+      if (getApplicationEnabledSetting(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
+        throw new NameNotFoundException("Package is disabled, can't find");
+      }
       return info.applicationInfo;
     } else {
       throw new NameNotFoundException(packageName);
@@ -361,7 +383,42 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
   @Override
   public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-    return queryIntent(intent, flags);
+    // Check the manually added resolve infos first.
+    List<ResolveInfo> resolveInfos = queryIntent(intent, flags);
+    if (!resolveInfos.isEmpty()) {
+      return resolveInfos;
+    }
+
+    // Check matches from the manifest.
+    resolveInfos = new ArrayList<>();
+    if (resolveInfos.isEmpty() && applicationManifest != null) {
+      for (ServiceData service : applicationManifest.getServices()) {
+        IntentFilter intentFilter = matchIntentFilter(intent, service.getIntentFilters());
+        if (intentFilter != null) {
+          resolveInfos.add(getResolveInfo(service, intentFilter, applicationManifest.getPackageName()));
+        }
+      }
+    }
+
+    return resolveInfos;
+  }
+
+  private static ResolveInfo getResolveInfo(ServiceData service, IntentFilter intentFilter, String packageName) {
+    try {
+      ResolveInfo info = new ResolveInfo();
+      info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
+      info.serviceInfo = new ServiceInfo();
+      info.serviceInfo.name = service.getClassName();
+      info.serviceInfo.packageName = packageName;
+      info.serviceInfo.applicationInfo = new ApplicationInfo();
+      info.filter = new IntentFilter();
+      for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
+        info.filter.addDataType(it.next());
+      }
+      return info;
+    } catch (IntentFilter.MalformedMimeTypeException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -482,16 +539,24 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       throw new NameNotFoundException(name);
     }
 
-    permissionInfo = new PermissionInfo();
+    permissionInfo = createPermissionInfo(flags, permissionItemData);
+
+    return permissionInfo;
+  }
+
+  private PermissionInfo createPermissionInfo(int flags,
+      PermissionItemData permissionItemData) throws NameNotFoundException {
+    PermissionInfo permissionInfo = new PermissionInfo();
     String packageName = applicationManifest.getPackageName();
     permissionInfo.packageName = packageName;
-    permissionInfo.name = name;
+    permissionInfo.name = permissionItemData.getName();
     permissionInfo.group = permissionItemData.getPermissionGroup();
     permissionInfo.protectionLevel = decodeProtectionLevel(permissionItemData.getProtectionLevel());
 
     String descriptionRef = permissionItemData.getDescription();
     if (descriptionRef != null) {
-      ResName descResName = AttributeResource.getResourceReference(descriptionRef, packageName, "string");
+      ResName descResName = AttributeResource
+          .getResourceReference(descriptionRef, packageName, "string");
       permissionInfo.descriptionRes = appResourceTable.getResourceId(descResName);
     }
 
@@ -508,7 +573,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     if ((flags & GET_META_DATA) != 0) {
       permissionInfo.metaData = metaDataToBundle(permissionItemData.getMetaData().getValueMap());
     }
-
     return permissionInfo;
   }
 
@@ -844,12 +908,13 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
           activityName = activityData.getTargetActivityName();
         }
 
-        if (matchIntentFilter(activityData, intent)) {
+        IntentFilter intentFilter = matchIntentFilter(intent, activityData.getIntentFilters());
+        if (intentFilter != null) {
           ResolveInfo resolveInfo = new ResolveInfo();
           resolveInfo.resolvePackageName = packageName;
           resolveInfo.activityInfo = new ActivityInfo();
           resolveInfo.activityInfo.targetActivity = activityName;
-
+          resolveInfo.activityInfo.name = activityData.getName();
           resolveInfoList.add(resolveInfo);
         }
       }
@@ -858,8 +923,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     return resolveInfoList;
   }
 
-  private boolean matchIntentFilter(ActivityData activityData, Intent intent) {
-    for (IntentFilterData intentFilterData : activityData.getIntentFilters()) {
+  private IntentFilter matchIntentFilter(Intent intent, List<IntentFilterData> intentFilters) {
+    for (IntentFilterData intentFilterData : intentFilters) {
       List<String> actionList = intentFilterData.getActions();
       List<String> categoryList = intentFilterData.getCategories();
       IntentFilter intentFilter = new IntentFilter();
@@ -911,10 +976,10 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
           intent.getData());
       if (matchActionResult && (matchCategoriesResult == null) &&
           (matchResult != IntentFilter.NO_MATCH_DATA && matchResult != IntentFilter.NO_MATCH_TYPE)){
-        return true;
+        return intentFilter;
       }
     }
-    return false;
+    return null;
   }
 
   @Override
@@ -1047,11 +1112,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override
-  public void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver callback) {
-    this.getPackageSizeInfoAsUser(pkgName, uid, callback);
-  }
-
-  @Override
   public void getPackageSizeInfoAsUser(String pkgName, int uid, final IPackageStatsObserver callback) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -1169,5 +1229,702 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
       return 0;
     }
+  }
+
+
+  @Override
+  public int getInstantAppCookieMaxBytes() {
+    return -1;
+  }
+
+  @Override
+  public void clearInstantAppCookie() {
+
+  }
+
+  @Override
+  public void updateInstantAppCookie(byte[] cookie) {
+
+  }
+
+  @Override
+  public void setUpdateAvailable(String packageName, boolean updateAvaialble) {
+  }
+
+  @Override
+  public ComponentName getInstantAppResolverSettingsComponent() {
+    return null;
+  }
+
+  @Override
+  public ComponentName getInstantAppInstallerComponent() {
+    return null;
+  }
+
+  @Override
+  public String getInstantAppAndroidId(String s, UserHandle u) {
+    return null;
+  }
+
+  @Override
+  public boolean isInstantApp(String packageName) {
+    return false;
+  }
+
+  @Override
+  public PackageInfo getPackageInfo(VersionedPackage versionedPackage, int flags)
+      throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public String[] currentToCanonicalPackageNames(String[] strings) {
+    return new String[0];
+  }
+
+  @Override
+  public String[] canonicalToCurrentPackageNames(String[] strings) {
+    return new String[0];
+  }
+
+  @Override
+  public Intent getLeanbackLaunchIntentForPackage(String s) {
+    return null;
+  }
+
+  @Override
+  public int[] getPackageGids(String packageName) throws NameNotFoundException {
+    return new int[0];
+  }
+
+  @Override
+  public int getPackageUid(String packageName, int userHandle) throws NameNotFoundException {
+    return 0;
+  }
+
+  @Override
+  public List<PermissionInfo> queryPermissionsByGroup(String group, int flags) throws NameNotFoundException {
+    List<PermissionInfo> result = new LinkedList<>();
+    for (PermissionInfo permissionInfo : extraPermissions.values()) {
+      if (Objects.equals(permissionInfo.group, group)) {
+        result.add(permissionInfo);
+      }
+    }
+
+    for (PermissionItemData permissionItemData : applicationManifest.getPermissions().values()) {
+      if (Objects.equals(permissionItemData.getPermissionGroup(), group)) {
+        result.add(createPermissionInfo(flags, permissionItemData));
+      }
+    }
+
+    return result;
+  }
+
+  @Override
+  public boolean isPermissionReviewModeEnabled() {
+    return false;
+  }
+
+  @Override
+  public PermissionGroupInfo getPermissionGroupInfo(String name, int flags) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
+    return null;
+  }
+
+  @Override
+  public List<PackageInfo> getPackagesHoldingPermissions(String[] permissions, int flags) {
+    return null;
+  }
+
+  @Override
+  public boolean isPermissionRevokedByPolicy(String permName, String pkgName) {
+    return false;
+  }
+
+  @Override
+  public String getPermissionControllerPackageName() {
+    return null;
+  }
+
+  @Override
+  public boolean addPermission(PermissionInfo info) {
+    return false;
+  }
+
+  @Override
+  public boolean addPermissionAsync(PermissionInfo permissionInfo) {
+    return false;
+  }
+
+  @Override
+  public void removePermission(String name) {
+  }
+
+  @Override
+  public void grantRuntimePermission(String packageName, String permissionName, UserHandle user) {
+
+  }
+
+  @Override
+  public void revokeRuntimePermission(String packageName, String permissionName, UserHandle user) {
+
+  }
+
+  @Override
+  public int getPermissionFlags(String permissionName, String packageName, UserHandle user) {
+    return 0;
+  }
+
+  @Override
+  public void updatePermissionFlags(String permissionName, String packageName, int flagMask, int flagValues, UserHandle user) {
+
+  }
+
+  public boolean shouldShowRequestPermissionRationale(String permission) {
+    return false;
+  }
+
+  @Override
+  public int checkSignatures(int uid1, int uid2) {
+    return 0;
+  }
+
+  @Override
+  public int getUidForSharedUser(String sharedUserName) throws NameNotFoundException {
+    return 0;
+  }
+
+  @Override
+  public List<ApplicationInfo> getInstalledApplicationsAsUser(int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public List<InstantAppInfo> getInstantApps() {
+    return null;
+  }
+
+  @Override
+  public Drawable getInstantAppIcon(String packageName) {
+    return null;
+  }
+
+  @Override
+  public boolean isInstantApp() {
+    return false;
+  }
+
+  @Override
+  public int getInstantAppCookieMaxSize() {
+    return 0;
+  }
+
+  @Override
+  public byte[] getInstantAppCookie() {
+    return new byte[0];
+  }
+
+  @Override
+  public boolean setInstantAppCookie(byte[] cookie) {
+    return false;
+  }
+
+  @Override
+  public String[] getSystemSharedLibraryNames() {
+    return new String[0];
+  }
+
+  @Override
+  public List<SharedLibraryInfo> getSharedLibraries(int flags) {
+    return null;
+  }
+
+  @Override
+  public List<SharedLibraryInfo> getSharedLibrariesAsUser(int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public FeatureInfo[] getSystemAvailableFeatures() {
+    return new FeatureInfo[0];
+  }
+
+  @Override
+  public ResolveInfo resolveActivityAsUser(Intent intent, int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public List<ResolveInfo> queryIntentActivityOptions(ComponentName caller, Intent[] specifics, Intent intent, int flags) {
+    return null;
+  }
+
+  @Override
+  public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public List<ResolveInfo> queryIntentServicesAsUser(Intent intent, int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public ProviderInfo resolveContentProviderAsUser(String s, int i, int i1) {
+    return null;
+  }
+
+  @Override
+  public List<ProviderInfo> queryContentProviders(String processName, int uid, int flags) {
+    return null;
+  }
+
+  @Override
+  public InstrumentationInfo getInstrumentationInfo(ComponentName className, int flags) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public List<InstrumentationInfo> queryInstrumentation(String targetPackage, int flags) {
+    return null;
+  }
+
+  @Override
+  public Drawable getActivityBanner(ComponentName componentName) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public Drawable getActivityBanner(Intent intent) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public Drawable getApplicationIcon(ApplicationInfo info) {
+    return null;
+  }
+
+  @Override
+  public Drawable getApplicationBanner(ApplicationInfo applicationInfo) {
+    return null;
+  }
+
+  @Override
+  public Drawable getApplicationBanner(String s) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public Drawable getActivityLogo(ComponentName componentName) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public Drawable getActivityLogo(Intent intent) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public Drawable getApplicationLogo(ApplicationInfo applicationInfo) {
+    return null;
+  }
+
+  @Override
+  public Drawable getApplicationLogo(String s) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public Drawable getUserBadgedIcon(Drawable drawable, UserHandle userHandle) {
+    return null;
+  }
+
+  @Override
+  public Drawable getUserBadgedDrawableForDensity(Drawable drawable, UserHandle userHandle, Rect rect, int i) {
+    return null;
+  }
+
+  @Override
+  public Drawable getUserBadgeForDensity(UserHandle userHandle, int i) {
+    return null;
+  }
+
+  @Override
+  public CharSequence getUserBadgedLabel(CharSequence charSequence, UserHandle userHandle) {
+    return null;
+  }
+
+  @Override
+  public CharSequence getText(String packageName, int resid, ApplicationInfo appInfo) {
+    return null;
+  }
+
+  @Override
+  public XmlResourceParser getXml(String packageName, int resid, ApplicationInfo appInfo) {
+    return null;
+  }
+
+  @Override
+  public Resources getResourcesForActivity(ComponentName activityName) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public Resources getResourcesForApplicationAsUser(String appPackageName, int userId) throws NameNotFoundException {
+    return null;
+  }
+
+  @Override
+  public void installPackage(Uri packageURI, IPackageInstallObserver observer, int flags, String installerPackageName) {
+
+  }
+
+  @Override
+  public void installPackage(Uri uri, PackageInstallObserver packageInstallObserver, int i, String s) {
+
+  }
+
+  @Override
+  public int installExistingPackage(String packageName) throws NameNotFoundException {
+    return 0;
+  }
+
+  @Override
+  public void clearApplicationUserData(String packageName, IPackageDataObserver observer) {
+
+  }
+
+  @Override
+  public void deleteApplicationCacheFiles(String packageName, IPackageDataObserver observer) {
+
+  }
+
+  @Override
+  public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
+
+  }
+
+  @Override
+  public void freeStorageAndNotify(String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {
+
+  }
+
+  @Override
+  public void freeStorage(long freeStorageSize, IntentSender pi) {
+
+  }
+
+  @Override
+  public void freeStorage(String volumeUuid, long freeStorageSize, IntentSender pi) {
+
+  }
+
+  @Override
+  public void addPackageToPreferred(String packageName) {
+  }
+
+  @Override
+  public void removePackageFromPreferred(String packageName) {
+  }
+
+  @Override
+  public List<PackageInfo> getPreferredPackages(int flags) {
+    return null;
+  }
+
+  @Override
+  public void replacePreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
+
+  }
+
+  @Override
+  public void clearPackagePreferredActivities(String packageName) {
+  }
+
+  @Override
+  public boolean setApplicationHiddenSettingAsUser(String s, boolean b, UserHandle userHandle) {
+    return false;
+  }
+
+  @Override
+  public boolean getApplicationHiddenSettingAsUser(String s, UserHandle userHandle) {
+    return false;
+  }
+
+  @Override
+  public boolean isSafeMode() {
+    return false;
+  }
+
+  @Override
+  public void addOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
+
+  }
+
+  @Override
+  public void removeOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
+
+  }
+
+  @Override
+  public KeySet getKeySetByAlias(String s, String s1) {
+    return null;
+  }
+
+  @Override
+  public KeySet getSigningKeySet(String s) {
+    return null;
+  }
+
+  @Override
+  public boolean isSignedBy(String s, KeySet keySet) {
+    return false;
+  }
+
+  @Override
+  public boolean isSignedByExactly(String s, KeySet keySet) {
+    return false;
+  }
+
+  public void movePackage(String packageName, IPackageMoveObserver observer, int flags) {
+
+  }
+
+  @Override
+  public int getMoveStatus(int moveId) {
+    return 0;
+  }
+
+  @Override
+  public void registerMoveCallback(MoveCallback callback, Handler handler) {
+  }
+
+  @Override
+  public void unregisterMoveCallback(MoveCallback callback) {
+
+  }
+
+  @Override
+  public int movePackage(String packageName, VolumeInfo vol) {
+    return 0;
+  }
+
+  @Override
+  public VolumeInfo getPackageCurrentVolume(ApplicationInfo app) {
+    return null;
+  }
+
+  @Override
+  public List<VolumeInfo> getPackageCandidateVolumes(ApplicationInfo app) {
+    return null;
+  }
+
+  @Override
+  public int movePrimaryStorage(VolumeInfo vol) {
+    return 0;
+  }
+
+  @Override
+  public VolumeInfo getPrimaryStorageCurrentVolume() {
+    return null;
+  }
+
+  @Override
+  public List<VolumeInfo> getPrimaryStorageCandidateVolumes() {
+    return null;
+  }
+
+  @Override
+  public VerifierDeviceIdentity getVerifierDeviceIdentity() {
+    return null;
+  }
+
+  @Override
+  public boolean isUpgrade() {
+    return false;
+  }
+
+  @Override
+  public void addCrossProfileIntentFilter(IntentFilter intentFilter, int i, int i1, int i2) {
+
+  }
+
+  @Override
+  public void clearCrossProfileIntentFilters(int i) {
+
+  }
+
+  @Override
+  public Drawable loadItemIcon(PackageItemInfo packageItemInfo, ApplicationInfo applicationInfo) {
+    return null;
+  }
+
+  @Override
+  public Drawable loadUnbadgedItemIcon(PackageItemInfo packageItemInfo, ApplicationInfo applicationInfo) {
+    return null;
+  }
+
+  @Override
+  public boolean isPackageAvailable(String s) {
+    return false;
+  }
+
+  @Override
+  public int getInstallReason(String packageName, UserHandle user) {
+    return 0;
+  }
+
+  @Override
+  public boolean canRequestPackageInstalls() {
+    return false;
+  }
+
+  @Override
+  public void verifyPendingInstall(int id, int verificationCode) {
+  }
+
+  @Override
+  public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
+
+  }
+
+  @Override
+  public void verifyIntentFilter(int verificationId, int verificationCode, List<String> outFailedDomains) {
+
+  }
+
+  @Override
+  public List<IntentFilterVerificationInfo> getIntentFilterVerifications(String packageName) {
+    return null;
+  }
+
+  @Override
+  public List<IntentFilter> getAllIntentFilters(String packageName) {
+    return null;
+  }
+
+  @Override
+  public void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
+  }
+
+  @Override
+  public ComponentName getHomeActivities(List<ResolveInfo> outActivities) {
+    return null;
+  }
+
+  @Override
+  public List<ResolveInfo> queryIntentContentProvidersAsUser(Intent intent, int flags, int userId) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
+    return Collections.emptyList();
+  }
+
+  public boolean isPackageSuspendedForUser(String packageName, int userId) {
+    return false;
+  }
+
+  @Override
+  public void setApplicationCategoryHint(String packageName, int categoryHint) {
+
+  }
+
+  public String[] setPackagesSuspendedAsUser(
+      String[] packageNames, boolean suspended, int userId) {
+    return null;
+  }
+
+  public void flushPackageRestrictionsAsUser(int userId) {
+  }
+
+  public void deleteApplicationCacheFilesAsUser(String packageName, int userId,
+      IPackageDataObserver observer) {
+  }
+
+  public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer,
+      int flags, int userId) {
+  }
+
+  public String getDefaultBrowserPackageNameAsUser(int userId) {
+    return null;
+  }
+
+  public boolean updateIntentVerificationStatusAsUser(String packageName, int status,
+      int userId) {
+    return false;
+  }
+
+  public int getIntentVerificationStatusAsUser(String packageName, int userId) {
+    return 0;
+  }
+
+  public int installExistingPackageAsUser(String packageName, int userId)
+      throws NameNotFoundException {
+    return 0;
+  }
+
+  public boolean setDefaultBrowserPackageNameAsUser(String packageName,
+      int userId) {
+    return false;
+  }
+  public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
+    return null;
+  }
+
+  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent,
+      int flags, int userId) {
+    return null;
+  }
+  public boolean hasSystemFeature(String name, int version) {
+    return false;
+  }
+
+  public String getServicesSystemSharedLibraryPackageName() {
+    return null;
+  }
+
+  public List<PackageInfo> getInstalledPackagesAsUser(int flags,
+      int userId) {
+    return null;
+  }
+  public ApplicationInfo getApplicationInfoAsUser(String packageName,
+      int flags, int userId) throws NameNotFoundException {
+    return null;
+  }
+  public int getPackageUidAsUser(String packageName, int userId)
+      throws NameNotFoundException {
+    return 0;
+  }
+
+  public int getPackageUidAsUser(String packageName, int flags,
+      int userId) throws NameNotFoundException {
+    return 0;
+  }
+  public int[] getPackageGids(String packageName, int flags)
+      throws NameNotFoundException {
+    return null;
+  }
+  public PackageInfo getPackageInfoAsUser(String packageName,
+      int flags, int userId) throws NameNotFoundException {
+    return null;
+  }
+  public String getSharedSystemSharedLibraryPackageName() {
+    return "";
+  }
+
+  @Override
+  public ChangedPackages getChangedPackages(int sequenceNumber) {
+    return null;
   }
 }

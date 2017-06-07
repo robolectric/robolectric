@@ -7,6 +7,8 @@ import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 
@@ -22,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
+@RunWith(JUnit4.class)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -89,10 +92,13 @@ public class AndroidManifestTest {
 
     assertThat(config.getServices().get(0).getClassName()).isEqualTo("com.foo.Service");
     assertThat(config.getServices().get(0).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    assertThat(config.getServices().get(0).getIntentFilters()).isNotEmpty();
+    assertThat(config.getServices().get(0).getIntentFilters().get(0).getMimeTypes()).containsExactly("image/jpeg");
 
     assertThat(config.getServices().get(1).getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServices().get(1).getActions()).isEmpty();
-    
+    assertThat(config.getServices().get(1).getIntentFilters()).isEmpty();
+
     assertThat(config.getServiceData("com.foo.Service").getClassName()).isEqualTo("com.foo.Service");
     assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertEquals(config.getServiceData("com.foo.Service").getPermission(), "com.foo.Permission");
@@ -196,7 +202,7 @@ public class AndroidManifestTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
+  @Config(manifest = "TestAndroidManifestWithAppMetaData.xml")
   public void shouldReturnApplicationMetaData() throws Exception {
     Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
 

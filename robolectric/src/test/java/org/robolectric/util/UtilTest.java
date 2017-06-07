@@ -1,6 +1,8 @@
 package org.robolectric.util;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.net.URL;
 
@@ -10,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Vyacheslav Mayorov
  * @since 2013-10-04
  */
+@RunWith(JUnit4.class)
 public class UtilTest {
   @Test
   public void urlShouldReturnCorrectURL() throws Exception {

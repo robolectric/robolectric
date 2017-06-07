@@ -48,6 +48,15 @@ public class ShadowWifiManager {
   }
 
   @Implementation
+  public int getWifiState() {
+    if (isWifiEnabled()) {
+      return WifiManager.WIFI_STATE_ENABLED;
+    } else {
+      return WifiManager.WIFI_STATE_DISABLED;
+    }
+  }
+
+  @Implementation
   public WifiInfo getConnectionInfo() {
     checkAccessWifiStatePermission();
     if (wifiInfo == null) {

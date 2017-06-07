@@ -2,12 +2,15 @@ package org.robolectric.internal;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.res.FsFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(JUnit4.class)
 public class MavenManifestFactoryTest {
 
   private Config.Builder configBuilder;

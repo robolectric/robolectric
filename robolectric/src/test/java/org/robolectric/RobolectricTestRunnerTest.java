@@ -6,9 +6,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
+import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
@@ -30,6 +32,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
+@RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
 
   private RunNotifier notifier;
