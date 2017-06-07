@@ -6,6 +6,7 @@ public final class R {
     public static final int fragment = 0x10022;
     public static final int tacos = 0x10027;
     public static final int burritos = 0x10028;
+    public static final int view_pager = 0x10029;
   }
 
   public static final class drawable {
@@ -17,5 +18,6 @@ public final class R {
     public static final int fragment = 0x10607;
     public static final int fragment_contents = 0x10609;
     public static final int activity_fragment = 0x10620;
+    public static final int activity_view_pager = 0x10621;
   }
 }
