@@ -1,21 +1,23 @@
 package org.robolectric.annotation.processing.generator;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.robolectric.annotation.processing.DocumentedPackage;
-import org.robolectric.annotation.processing.DocumentedType;
-import org.robolectric.annotation.processing.RobolectricModel;
-
-import javax.annotation.processing.Messager;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import org.robolectric.annotation.processing.DocumentedPackage;
+import org.robolectric.annotation.processing.DocumentedType;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 public class JavadocJsonGenerator extends Generator {
 
@@ -61,7 +63,7 @@ public class JavadocJsonGenerator extends Generator {
   private void writeJson(Object object, File file) {
     file.getParentFile().mkdirs();
 
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+    try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), UTF_8)) {
       gson.toJson(object, writer);
     } catch (IOException e) {
       messager.printMessage(Diagnostic.Kind.ERROR, "Failed to write javadoc JSON file: " + e);

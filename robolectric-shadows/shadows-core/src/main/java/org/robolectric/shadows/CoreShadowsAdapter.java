@@ -26,7 +26,7 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
     final ShadowActivity shadow = Shadows.shadowOf(component);
     return new ShadowActivityAdapter() {
 
-      public void setThemeFromManifest() {
+      @Override public void setThemeFromManifest() {
         shadow.setThemeFromManifest();
       }
     };
@@ -36,7 +36,7 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   public ShadowLooperAdapter getMainLooper() {
     final ShadowLooper shadow = Shadows.shadowOf(Looper.getMainLooper());
     return new ShadowLooperAdapter() {
-      public void runPaused(Runnable runnable) {
+      @Override public void runPaused(Runnable runnable) {
         shadow.runPaused(runnable);
       }
     };
@@ -50,7 +50,7 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   @Override
   public ShadowApplicationAdapter getApplicationAdapter(final Activity component) {
     return new ShadowApplicationAdapter() {
-      public AndroidManifest getAppManifest() {
+      @Override public AndroidManifest getAppManifest() {
         return ShadowApplication.getInstance().getAppManifest();
       }
     };

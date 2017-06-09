@@ -24,7 +24,7 @@ public class RoboCookieManager extends CookieManager {
     private final List<Cookie> store = new ArrayList<>();
     private boolean accept;
 
-    public void setCookie(String url, String value) {
+    @Override public void setCookie(String url, String value) {
       List<Cookie> cookies = parseCookies(url, value);
       for (Cookie cookie : cookies) {
         store.add(cookie);
@@ -61,7 +61,7 @@ public class RoboCookieManager extends CookieManager {
 
     }
 
-    public String getCookie(String url) {
+    @Override public String getCookie(String url) {
       // Return null value for empty url
       if (url == null || url.equals("")) {
         return null;
@@ -124,11 +124,11 @@ public class RoboCookieManager extends CookieManager {
       return matchedCookies;
     }
 
-    public void setAcceptCookie(boolean accept) {
+    @Override public void setAcceptCookie(boolean accept) {
       this.accept = accept;
     }
 
-    public boolean acceptCookie() {
+    @Override public boolean acceptCookie() {
       return this.accept;
     }
 
@@ -149,7 +149,7 @@ public class RoboCookieManager extends CookieManager {
       store.removeAll(expired);
     }
 
-    public boolean hasCookies() {
+    @Override public boolean hasCookies() {
       return !store.isEmpty();
     }
 

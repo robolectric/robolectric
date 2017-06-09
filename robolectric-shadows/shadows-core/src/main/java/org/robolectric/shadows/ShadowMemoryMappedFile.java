@@ -93,11 +93,11 @@ public class ShadowMemoryMappedFile {
             this.buffer = ByteBuffer.wrap(buffer);
         }
 
-        public void seek(int offset) {
+        @Override public void seek(int offset) {
             buffer.position(offset);
         }
 
-        public void skip(int byteCount) {
+        @Override public void skip(int byteCount) {
             buffer.position(buffer.position() + byteCount);
         }
 
@@ -106,26 +106,26 @@ public class ShadowMemoryMappedFile {
             return 0;
         }
 
-        public void readByteArray(byte[] dst, int dstOffset, int byteCount) {
+        @Override public void readByteArray(byte[] dst, int dstOffset, int byteCount) {
             System.arraycopy(buffer.array(), buffer.position(), dst, dstOffset, byteCount);
             skip(byteCount);
         }
 
-        public byte readByte() {
+        @Override public byte readByte() {
             return buffer.get();
         }
 
-        public int readInt() {
+        @Override public int readInt() {
             return buffer.getInt();
         }
 
-        public void readIntArray(int[] dst, int dstOffset, int intCount) {
+        @Override public void readIntArray(int[] dst, int dstOffset, int intCount) {
             for (int i = 0; i < intCount; i++) {
                 dst[dstOffset + i] = buffer.getInt();
             }
         }
 
-        public short readShort() {
+        @Override public short readShort() {
             return buffer.getShort();
         }
     }

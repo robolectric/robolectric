@@ -1,23 +1,23 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-
-import static org.robolectric.Shadows.shadowOf;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)
@@ -180,7 +180,7 @@ public class ShadowBitmap {
   @Implementation
   public boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
     try {
-      stream.write((description + " compressed as " + format + " with quality " + quality).getBytes());
+      stream.write((description + " compressed as " + format + " with quality " + quality).getBytes(UTF_8));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

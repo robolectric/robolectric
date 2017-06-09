@@ -1,5 +1,7 @@
 package org.robolectric.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -14,7 +16,7 @@ public class Strings {
     int inSize;
     StringBuilder stringBuilder = new StringBuilder();
     while ((inSize = inputStream.read(buffer)) > 0) {
-      stringBuilder.append(new String(buffer, 0, inSize));
+      stringBuilder.append(new String(buffer, 0, inSize, UTF_8));
     }
     return stringBuilder.toString();
   }

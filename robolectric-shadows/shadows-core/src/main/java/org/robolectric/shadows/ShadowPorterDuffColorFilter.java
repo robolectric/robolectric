@@ -25,7 +25,7 @@ public class ShadowPorterDuffColorFilter {
     this.mode = mode;
   }
 
-  @Implementation
+  @Override @Implementation
   public int hashCode() {
     return 31 * mode.hashCode() + color;
   }

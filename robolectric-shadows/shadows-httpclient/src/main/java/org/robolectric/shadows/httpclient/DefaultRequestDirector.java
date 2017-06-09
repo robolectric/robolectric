@@ -347,7 +347,7 @@ public class DefaultRequestDirector implements RequestDirector {
 
 
   // non-javadoc, see interface ClientRequestDirector
-  public HttpResponse execute(HttpHost target, HttpRequest request,
+  @Override public HttpResponse execute(HttpHost target, HttpRequest request,
                 HttpContext context)
     throws HttpException, IOException {
 

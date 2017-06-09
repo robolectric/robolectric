@@ -98,7 +98,7 @@ public class ShadowMapView extends ShadowViewGroup {
   public void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight) {
   }
 
-  @Implementation // todo 2.0-cleanup
+  @Override @Implementation // todo 2.0-cleanup
   public boolean onTouchEvent(MotionEvent event) {
     return directlyOn(realView, View.class).onTouchEvent(event);
   }
@@ -259,7 +259,7 @@ public class ShadowMapView extends ShadowViewGroup {
     preLoadWasCalled = true;
   }
 
-  @Implementation
+  @Override @Implementation
   public void onLayout(boolean b, int i, int i1, int i2, int i3) {
   }
 

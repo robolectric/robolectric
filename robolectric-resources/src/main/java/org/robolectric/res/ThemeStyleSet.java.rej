@@ -1,0 +1,9 @@
+--- org/robolectric/res/ThemeStyleSet.java
++++ org/robolectric/res/ThemeStyleSet.java
+@@ -11,5 +11,5 @@
+   private List<OverlayedStyle> styles = new ArrayList<>();
+ 
+-  public AttributeResource getAttrValue(ResName attrName) {
++  @Override public AttributeResource getAttrValue(ResName attrName) {
+     AttributeResource attribute = null;
+ 

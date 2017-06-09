@@ -188,7 +188,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
   }
 
-  protected Statement methodBlock(final FrameworkMethod method) {
+  @Override protected Statement methodBlock(final FrameworkMethod method) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {

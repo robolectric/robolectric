@@ -54,7 +54,7 @@ public class PackageResourceTable implements ResourceTable {
     return resources.get(getResName(resId), qualifiers);
   }
 
-  public XmlBlock getXml(ResName resName, String qualifiers) {
+  @Override public XmlBlock getXml(ResName resName, String qualifiers) {
     FileTypedResource fileTypedResource = getFileResource(resName, qualifiers);
     if (fileTypedResource == null || !fileTypedResource.isXml()) {
       return null;
@@ -63,7 +63,7 @@ public class PackageResourceTable implements ResourceTable {
     }
   }
 
-  public InputStream getRawValue(ResName resName, String qualifiers) {
+  @Override public InputStream getRawValue(ResName resName, String qualifiers) {
     FileTypedResource fileTypedResource = getFileResource(resName, qualifiers);
     if (fileTypedResource == null) {
       return null;

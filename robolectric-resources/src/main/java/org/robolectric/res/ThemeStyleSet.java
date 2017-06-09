@@ -10,7 +10,7 @@ public class ThemeStyleSet implements Style {
 
   private List<OverlayedStyle> styles = new ArrayList<>();
 
-  public AttributeResource getAttrValue(ResName attrName) {
+  @Override public AttributeResource getAttrValue(ResName attrName) {
     AttributeResource attribute = null;
 
     for (OverlayedStyle overlayedStyle : styles) {

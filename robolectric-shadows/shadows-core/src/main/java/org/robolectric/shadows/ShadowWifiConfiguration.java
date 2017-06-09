@@ -51,7 +51,7 @@ public class ShadowWifiConfiguration {
   }
 
   // WifiConfiguration's toString() method crashes.
-  @Implementation
+  @Override @Implementation
   public String toString() {
     return String.format("WifiConfiguration{ssid=%s}", realObject.SSID);
   }

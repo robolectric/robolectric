@@ -89,7 +89,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     return getShadowAlertController().getMessage();
   }
 
-  @Implementation
+  @Override @Implementation
   public void show() {
     super.show();
     shadowOf(RuntimeEnvironment.application).setLatestAlertDialog(this);

@@ -20,7 +20,7 @@ public class RoutingResourceTable implements ResourceTable {
     }
   }
 
-  public InputStream getRawValue(int resId, String qualifiers) {
+  @Override public InputStream getRawValue(int resId, String qualifiers) {
     ResName resName = getResName(resId);
     return resName != null ? getRawValue(resName, qualifiers) : null;
   }
@@ -29,16 +29,16 @@ public class RoutingResourceTable implements ResourceTable {
     return pickFor(resName).getValue(resName, qualifiers);
   }
 
-  public TypedResource getValue(int resId, String qualifiers) {
+  @Override public TypedResource getValue(int resId, String qualifiers) {
     ResName resName = pickFor(resId).getResName(resId);
     return resName != null ? getValue(resName, qualifiers) : null;
   }
 
-  public XmlBlock getXml(ResName resName, String qualifiers) {
+  @Override public XmlBlock getXml(ResName resName, String qualifiers) {
     return pickFor(resName).getXml(resName, qualifiers);
   }
 
-  public InputStream getRawValue(ResName resName, String qualifiers) {
+  @Override public InputStream getRawValue(ResName resName, String qualifiers) {
     return pickFor(resName).getRawValue(resName, qualifiers);
   }
 

@@ -53,7 +53,7 @@ public class RoboVibrator extends Vibrator {
 
   }
 
-  public void cancel() {
+  @Override public void cancel() {
     cancelled = true;
     vibrating = false;
   }

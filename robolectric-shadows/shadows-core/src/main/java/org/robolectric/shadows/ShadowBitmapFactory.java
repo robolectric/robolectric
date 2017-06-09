@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,6 +10,15 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
+import java.io.FileDescriptor;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -17,18 +29,6 @@ import org.robolectric.util.Join;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.io.FileDescriptor;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
@@ -112,7 +112,7 @@ public class ShadowBitmapFactory {
 
   @Implementation
   public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
-    String desc = new String(data);
+    String desc = new String(data, UTF_8);
     if (!Charset.forName("US-ASCII").newEncoder().canEncode(desc)) {
       Checksum checksumEngine = new CRC32();
       checksumEngine.update(data, 0, data.length);

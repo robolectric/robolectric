@@ -186,7 +186,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * {@inheritDoc}
    */
-  @Nonnull
+  @Override @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
     return createClassLoaderConfig(new Config.Builder(((RobolectricFrameworkMethod) method).config) {
       @Override
@@ -253,7 +253,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return method.getAnnotation(Ignore.class) != null;
   }
 
-  protected boolean shouldIgnore(FrameworkMethod method) {
+  @Override protected boolean shouldIgnore(FrameworkMethod method) {
     return shouldIgnore(method, ((RobolectricFrameworkMethod) method).config);
   }
 
@@ -318,7 +318,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     roboMethod.parallelUniverseInterface = null;
   }
 
-  protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+  @Override protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
     try {
       return new HelperTestRunner(bootstrappedTestClass);
     } catch (InitializationError initializationError) {
@@ -415,7 +415,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return new Config.Builder().build();
   }
 
-  @Nonnull
+  @Override @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
     Config config = ((RobolectricFrameworkMethod) frameworkMethod).config;
     return config.shadows();

@@ -1,23 +1,22 @@
 package org.robolectric.shadows;
 
-import java.util.concurrent.atomic.AtomicLong;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.database.Cursor;
 import android.database.CursorWindow;
 import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.RuntimeEnvironment.castNativePtr;
+import java.util.concurrent.atomic.AtomicLong;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = CursorWindow.class)
 public class ShadowCursorWindow {
@@ -55,7 +54,7 @@ public class ShadowCursorWindow {
         byte[] blob = (byte[])value.value;
         return blob == null ? new byte[]{} : blob;
       case Cursor.FIELD_TYPE_STRING:
-        return ((String)value.value).getBytes();
+        return ((String)value.value).getBytes(UTF_8);
       default:
         throw new android.database.sqlite.SQLiteException("Getting blob when column is non-blob. Row " + row + ", col " + column);
     }

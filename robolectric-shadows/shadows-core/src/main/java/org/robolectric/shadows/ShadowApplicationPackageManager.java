@@ -106,7 +106,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     getRobolectricPackageManager().setComponentEnabledSetting(componentName, newState, flags);
   }
 
-  @Implementation
+  @Override @Implementation
   public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
     getDelegatePackageManager().setApplicationEnabledSetting(packageName, newState, flags);
   }
@@ -209,7 +209,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     verificationResults.put(id, verificationCode);
   }
 
-  @Implementation
+  @Override @Implementation
   public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
     verificationTimeoutExtension.put(id, millisecondsToDelay);
   }
@@ -244,7 +244,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getDelegatePackageManager().getPermissionControllerPackageName();
   }
 
-  @Implementation(maxSdk = JELLY_BEAN)
+  @Override @Implementation(maxSdk = JELLY_BEAN)
   public void getPackageSizeInfo(String packageName, IPackageStatsObserver observer) {
     getDelegatePackageManager()
         .getPackageSizeInfoAsUser(packageName, UserHandle.myUserId(), observer);
@@ -504,18 +504,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getDelegatePackageManager().queryInstrumentation(targetPackage, flags);
   }
 
-  @Nullable
+  @Override @Nullable
   @Implementation
   public Drawable getDrawable(String packageName, @DrawableRes int resId, @Nullable ApplicationInfo appInfo) {
     return getDelegatePackageManager().getDrawable(packageName, resId, appInfo);
   }
 
-  @Implementation
+  @Override @Implementation
   public Drawable getActivityIcon(ComponentName activityName) throws NameNotFoundException {
     return getDelegatePackageManager().getActivityIcon(activityName);
   }
 
-  public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
+  @Override public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
     return getDelegatePackageManager().getActivityIcon(intent);
   }
 
@@ -764,11 +764,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getDelegatePackageManager().getPreferredPackages(flags);
   }
 
-  public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
+  @Override public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
     getDelegatePackageManager().addPreferredActivity(filter, match, set, activity);
   }
 
-  public void addPreferredActivityAsUser(IntentFilter filter, int match, ComponentName[] set, ComponentName activity, int userId) {
+  @Override public void addPreferredActivityAsUser(IntentFilter filter, int match, ComponentName[] set, ComponentName activity, int userId) {
     getDelegatePackageManager().addPreferredActivityAsUser(filter, match, set, activity, userId);
   }
 
@@ -777,7 +777,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     getDelegatePackageManager().replacePreferredActivity(filter, match, set, activity);
   }
 
-  public void replacePreferredActivityAsUser(IntentFilter filter, int match, ComponentName[] set, ComponentName activity, int userId) {
+  @Override public void replacePreferredActivityAsUser(IntentFilter filter, int match, ComponentName[] set, ComponentName activity, int userId) {
     getDelegatePackageManager().replacePreferredActivityAsUser(filter, match, set, activity, userId);
   }
 
@@ -786,7 +786,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     getDelegatePackageManager().clearPackagePreferredActivities(packageName);
   }
 
-  public int getPreferredActivities(List<IntentFilter> outFilters,
+  @Override public int getPreferredActivities(List<IntentFilter> outFilters,
       List<ComponentName> outActivities, String packageName) {
     return getDelegatePackageManager().getPreferredActivities(outFilters, outActivities, packageName);
   }

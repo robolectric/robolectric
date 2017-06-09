@@ -42,7 +42,7 @@ public class ReflectionHelpers {
     return annotation.cast(
         Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
             new InvocationHandler() {
-              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+              @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 return method.getDefaultValue();
               }
             }));
