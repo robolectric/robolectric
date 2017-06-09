@@ -27,22 +27,9 @@ public class ShadowTest {
   }
 
   @Test
-  public void deprecated_newInstanceOf() throws Exception {
-    assertThat(org.robolectric.internal.Shadow.newInstanceOf(Activity.class.getName()).getClass().getClassLoader())
-        .isSameAs(myClassLoader);
-  }
-
-  @Test
   public void extractor() throws Exception {
     Activity activity = new Activity();
     assertThat((ShadowActivity) Shadow.extract(activity)).isSameAs(shadowOf(activity));
-  }
-
-  @Test
-  public void deprecated_extractor() throws Exception {
-    Activity activity = new Activity();
-    assertThat((ShadowActivity) org.robolectric.internal.Shadow.extract(activity))
-        .isSameAs(shadowOf(activity));
   }
 
   @Test
