@@ -41,7 +41,7 @@ public class XmlBlock {
       if (inputStream != null) try {
         inputStream.close();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        // ignore
       }
     }
   }

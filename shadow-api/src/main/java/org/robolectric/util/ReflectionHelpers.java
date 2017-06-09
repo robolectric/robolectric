@@ -15,6 +15,7 @@ import java.util.Map;
 /**
  * Collection of helper methods for calling methods and accessing fields reflectively.
  */
+@SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
 public class ReflectionHelpers {
   public static final Map<String, Object> PRIMITIVE_RETURN_VALUES =
       Collections.unmodifiableMap(new HashMap<String, Object>() {{
