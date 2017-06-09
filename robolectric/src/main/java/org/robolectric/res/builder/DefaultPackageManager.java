@@ -348,21 +348,24 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
   public ServiceInfo getServiceInfo(ComponentName className, int flags) throws NameNotFoundException {
     String packageName = className.getPackageName();
     AndroidManifest androidManifest = androidManifests.get(packageName);
-    String serviceName = className.getClassName();
-    ServiceData serviceData = androidManifest.getServiceData(serviceName);
-    if (serviceData == null) {
-      throw new NameNotFoundException(serviceName);
+    if (androidManifest != null) {
+      String serviceName = className.getClassName();
+      ServiceData serviceData = androidManifest.getServiceData(serviceName);
+      if (serviceData == null) {
+        throw new NameNotFoundException(serviceName);
+      }
+
+      ServiceInfo serviceInfo = new ServiceInfo();
+      serviceInfo.packageName = packageName;
+      serviceInfo.name = serviceName;
+      serviceInfo.applicationInfo = getApplicationInfo(packageName, flags);
+      serviceInfo.permission = serviceData.getPermission();
+      if ((flags & GET_META_DATA) != 0) {
+        serviceInfo.metaData = metaDataToBundle(serviceData.getMetaData().getValueMap());
+      }
+      return serviceInfo;
     }
-    
-    ServiceInfo serviceInfo = new ServiceInfo();
-    serviceInfo.packageName = packageName;
-    serviceInfo.name = serviceName;
-    serviceInfo.applicationInfo = getApplicationInfo(packageName, flags);
-    serviceInfo.permission = serviceData.getPermission();
-    if ((flags & GET_META_DATA) != 0) {
-      serviceInfo.metaData = metaDataToBundle(serviceData.getMetaData().getValueMap());
-    }
-    return serviceInfo;   
+    return null;
   }
 
   @Override
