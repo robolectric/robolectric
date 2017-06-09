@@ -39,3 +39,8 @@ classes
 
 tmp
 local.properties
+
+
+# CTS stuff
+cts/
+cts-libs/
