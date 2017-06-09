@@ -17,7 +17,7 @@ import java.util.Objects;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Matrix.class)
@@ -273,7 +273,7 @@ public class ShadowMatrix {
     final SimpleMatrix inverseMatrix = mMatrix.invert();
     if (inverseMatrix != null) {
       if (inverse != null) {
-        final ShadowMatrix shadowInverse = (ShadowMatrix) ShadowExtractor.extract(inverse);
+        final ShadowMatrix shadowInverse = Shadow.extract(inverse);
         shadowInverse.mMatrix = inverseMatrix;
       }
       return true;
@@ -323,7 +323,7 @@ public class ShadowMatrix {
   }
 
   private static SimpleMatrix getSimpleMatrix(Matrix matrix) {
-    final ShadowMatrix otherMatrix = (ShadowMatrix) ShadowExtractor.extract(matrix);
+    final ShadowMatrix otherMatrix = Shadow.extract(matrix);
     return otherMatrix.mMatrix;
   }
 

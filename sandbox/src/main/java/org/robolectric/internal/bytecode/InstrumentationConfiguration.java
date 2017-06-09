@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadow.api.Shadow;
 
 import java.util.Collection;
@@ -31,7 +30,6 @@ public class InstrumentationConfiguration {
       Shadow.class.getName(),
 
       // these classes are deprecated and will be removed soon:
-      ShadowExtractor.class.getName(),
       "org.robolectric.internal.Shadow",
       "org.robolectric.res.builder.DefaultPackageManager",
       "org.robolectric.res.builder.DefaultPackageManager$1",

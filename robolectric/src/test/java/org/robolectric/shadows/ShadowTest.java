@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadow.api.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +48,6 @@ public class ShadowTest {
   @Test
   public void otherDeprecated_extractor() throws Exception {
     Activity activity = new Activity();
-    assertThat(ShadowExtractor.extract(activity)).isSameAs(shadowOf(activity));
+    assertThat(Shadow.<Object>extract(activity)).isSameAs(shadowOf(activity));
   }
 }

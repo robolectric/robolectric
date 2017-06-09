@@ -322,7 +322,7 @@ public class RobolectricModel {
     imports.add("java.util.Map");
     imports.add("java.util.HashMap");
     imports.add("javax.annotation.Generated");
-    imports.add("org.robolectric.internal.ShadowExtractor");
+    imports.add("org.robolectric.shadow.api.Shadow");
     imports.add("org.robolectric.internal.ShadowProvider");
   }
 

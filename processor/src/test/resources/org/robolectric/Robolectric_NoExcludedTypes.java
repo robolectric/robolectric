@@ -3,8 +3,6 @@ package org.robolectric;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Generated;
-
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.ShadowProvider;
 
 /**

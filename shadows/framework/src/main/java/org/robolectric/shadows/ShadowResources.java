@@ -16,8 +16,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.res.*;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -223,7 +223,7 @@ public class ShadowResources {
     long getNativePtr() {
       if (RuntimeEnvironment.getApiLevel() >= N) {
         ResourcesImpl.ThemeImpl themeImpl = ReflectionHelpers.getField(realTheme, "mThemeImpl");
-        return ((ShadowResourcesImpl.ShadowThemeImpl) ShadowExtractor.extract(themeImpl)).getNativePtr();
+        return ((ShadowResourcesImpl.ShadowThemeImpl) Shadow.extract(themeImpl)).getNativePtr();
       } else {
         return ((Number) ReflectionHelpers.getField(realTheme, "mTheme")).longValue();
       }
