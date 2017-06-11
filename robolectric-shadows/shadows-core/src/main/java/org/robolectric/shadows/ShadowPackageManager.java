@@ -5,18 +5,8 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.FeatureInfo;
-import android.content.pm.IPackageDataObserver;
-import android.content.pm.IPackageStatsObserver;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
+import android.content.pm.*;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.PackageStats;
-import android.content.pm.PermissionInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Drawable;
 import android.os.UserHandle;
 import java.util.HashMap;
@@ -423,19 +413,21 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     getDelegatePackageManager().replacePreferredActivityAsUser(filter, match, set, activity, userId);
   }
 
-  @Implementation
-  public void setInstallerPackageName(String targetPackage, String installerPackageName) {
-    getDelegatePackageManager().setInstallerPackageName(targetPackage, installerPackageName);
-  }
-
   static PackageManager getDelegatePackageManager() {
     return (PackageManager) RuntimeEnvironment.getRobolectricPackageManager();
   }
 
+  /**
+   * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
+   */
   public void doPendingUninstallCallbacks() {
     RuntimeEnvironment.getRobolectricPackageManager().doPendingUninstallCallbacks();
   }
 
+  /**
+   * Returns package names successfully deleted with {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
+   * Note that like real {@link PackageManager} the calling context must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
+   */
   public Set<String> getDeletedPackages() {
     return RuntimeEnvironment.getRobolectricPackageManager().getDeletedPackages();
   }
