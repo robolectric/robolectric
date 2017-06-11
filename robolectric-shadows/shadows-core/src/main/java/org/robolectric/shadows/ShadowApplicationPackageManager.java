@@ -210,6 +210,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
+    verificationTimeoutExtension.put(id, millisecondsToDelay);
+  }
+
+  @Implementation
   public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
     getDelegatePackageManager().freeStorageAndNotify(freeStorageSize, observer);
   }
@@ -627,11 +632,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public int installExistingPackageAsUser(String packageName, int userId) throws NameNotFoundException {
     return getDelegatePackageManager().installExistingPackageAsUser(packageName, userId);
-  }
-
-  @Implementation
-  public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
-    getDelegatePackageManager().extendVerificationTimeout(id, verificationCodeAtTimeout, millisecondsToDelay);
   }
 
   @Implementation

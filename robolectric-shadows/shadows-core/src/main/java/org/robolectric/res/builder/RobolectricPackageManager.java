@@ -3,14 +3,24 @@ package org.robolectric.res.builder;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.*;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageStats;
+import android.content.pm.PermissionInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Drawable;
+import java.util.List;
+import java.util.Set;
 import org.robolectric.manifest.AndroidManifest;
 
-import java.util.List;
-
 public interface RobolectricPackageManager {
+
+  void doPendingUninstallCallbacks();
+
   PackageInfo getPackageInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;
 
   ApplicationInfo getApplicationInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;
@@ -100,6 +110,8 @@ public interface RobolectricPackageManager {
   PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags);
 
   void addPermissionInfo(PermissionInfo permissionInfo);
+
+  Set<String> getDeletedPackages();
 
   class ComponentState {
     public int newState;

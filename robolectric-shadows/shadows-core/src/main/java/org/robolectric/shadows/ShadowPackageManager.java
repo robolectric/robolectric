@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -36,6 +37,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   protected List<FeatureInfo> systemAvailableFeatures = new LinkedList<>();
   private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
   protected final Map<Integer, Integer> verificationResults = new HashMap<>();
+  protected final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
   protected final Map<String, String> currentToCanonicalNames = new HashMap<>();
 
   /**
@@ -355,6 +357,13 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     }
     return result;
   }
+  public long getVerificationExtendedTimeout(int id) {
+    Long result = verificationTimeoutExtension.get(id);
+    if (result == null) {
+      return 0;
+    }
+    return result;
+  }
 
   public void setShouldShowRequestPermissionRationale(String permission, boolean show) {
     permissionRationaleMap.put(permission, show);
@@ -414,7 +423,20 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     getDelegatePackageManager().replacePreferredActivityAsUser(filter, match, set, activity, userId);
   }
 
+  @Implementation
+  public void setInstallerPackageName(String targetPackage, String installerPackageName) {
+    getDelegatePackageManager().setInstallerPackageName(targetPackage, installerPackageName);
+  }
+
   static PackageManager getDelegatePackageManager() {
     return (PackageManager) RuntimeEnvironment.getRobolectricPackageManager();
+  }
+
+  public void doPendingUninstallCallbacks() {
+    RuntimeEnvironment.getRobolectricPackageManager().doPendingUninstallCallbacks();
+  }
+
+  public Set<String> getDeletedPackages() {
+    return RuntimeEnvironment.getRobolectricPackageManager().getDeletedPackages();
   }
 }

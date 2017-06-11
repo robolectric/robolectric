@@ -18,6 +18,7 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
+import android.Manifest;
 import android.app.PackageInstallObserver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -166,11 +167,16 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-    if (packageInfos.containsKey(packageName)) {
-      return packageInfos.get(packageName);
+    PackageInfo info = packageInfos.get(packageName);
+    if (info != null) {
+      if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
+        throw new NameNotFoundException("Package is disabled, can't find");
+      }
+      return info;
+    } else {
+      throw new NameNotFoundException(packageName);
     }
-
-    throw new NameNotFoundException(packageName);
   }
 
   @Override
@@ -370,7 +376,16 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   @Override
   public List<PackageInfo> getInstalledPackages(int flags) {
-    return new ArrayList<>(packageInfos.values());
+    List<PackageInfo> result = new ArrayList<>();
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      if (applicationEnabledSettingMap.get(packageInfo.packageName)
+          != COMPONENT_ENABLED_STATE_DISABLED
+          || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
+            result.add(packageInfo);
+          }
+    }
+
+    return result;
   }
 
   @Override
@@ -676,7 +691,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     List<PackageInfo> packages = getInstalledPackages(flags);
     for (PackageInfo aPackage : packages) {
       ApplicationInfo appInfo = aPackage.applicationInfo;
-      if (archiveFilePath.equals(appInfo.sourceDir)) {
+      if (appInfo != null && archiveFilePath.equals(appInfo.sourceDir)) {
         return aPackage;
       }
     }
@@ -712,6 +727,9 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     Resources r = new Resources(new AssetManager(), null, null);
     resources.put(packageInfo.packageName, r);
+    if (packageInfo.applicationInfo != null) {
+      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+    }
   }
 
   @Override
@@ -1795,9 +1813,15 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
   public void verifyPendingInstall(int id, int verificationCode) {
   }
 
+  private boolean mExtendTimeoutCalled = false;
+
   @Override
   public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
+    mExtendTimeoutCalled = true;
+  }
 
+  public boolean wasExtendVerificationTimeoutCalled() {
+    return mExtendTimeoutCalled;
   }
 
   @Override
@@ -1815,8 +1839,48 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return null;
   }
 
+  private Set<String> deletedPackages = new HashSet<>();
+  private Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
+
   @Override
   public void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
+    pendingDeleteCallbacks.put(packageName, observer);
+  }
+
+  public void doPendingUninstallCallbacks() {
+    boolean hasDeletePackagesPermission = false;
+    String[] requestedPermissions =
+        packageInfos.get(applicationManifest.getPackageName()).requestedPermissions;
+    if (requestedPermissions != null) {
+      for (String permission : requestedPermissions) {
+        if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {
+          hasDeletePackagesPermission = true;
+          break;
+        }
+      }
+    }
+
+    for (String packageName : pendingDeleteCallbacks.keySet()) {
+      int resultCode = PackageManager.DELETE_FAILED_INTERNAL_ERROR;
+
+      PackageInfo removed = packageInfos.get(packageName);
+      if (hasDeletePackagesPermission && removed != null) {
+        packageInfos.remove(packageName);
+        deletedPackages.add(packageName);
+        resultCode = PackageManager.DELETE_SUCCEEDED;
+      }
+
+      try {
+        pendingDeleteCallbacks.get(packageName).packageDeleted(packageName, resultCode);
+      } catch (RemoteException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    pendingDeleteCallbacks.clear();
+  }
+
+  public Set<String> getDeletedPackages() {
+    return deletedPackages;
   }
 
   @Override
