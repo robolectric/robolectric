@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'robolectric-annotations',
         deploy: true
 ).apply(project)
 

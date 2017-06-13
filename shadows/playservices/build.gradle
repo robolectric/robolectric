@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'shadows-play-services',
         deploy: true
 ).apply(project)
 
@@ -31,10 +32,4 @@ dependencies {
     testRuntime "com.google.android.gms:play-services-basement:8.4.0"
 
     testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
-}
-
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-play-services'
-    }
 }

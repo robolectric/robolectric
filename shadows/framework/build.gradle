@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'shadows-core',
         deploy: true
 ).apply(project)
 
@@ -37,13 +38,6 @@ task copyNatives(type: Copy) {
 
 jar {
     dependsOn copyNatives
-}
-
-// change local artifact name to match dependencies
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-core'
-    }
 }
 
 dependencies {

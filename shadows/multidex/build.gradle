@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'shadows-multidex',
         deploy: true
 ).apply(project)
 
@@ -20,11 +21,4 @@ dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testCompile project(":robolectric")
-}
-
-// change local artifact name to match dependencies
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-multidex'
-    }
 }

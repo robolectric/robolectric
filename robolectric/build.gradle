@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'robolectric',
         deploy: true
 ).apply(project)
 
@@ -62,7 +63,7 @@ checkApiChanges {
             "org.robolectric:resources:${apiCompatVersion}@jar",
             "org.robolectric:sandbox:${apiCompatVersion}@jar",
             "org.robolectric:utils:${apiCompatVersion}@jar",
-            "org.robolectric:shadowapi:${apiCompatVersion}@jar",
+            "org.robolectric:shadow-api:${apiCompatVersion}@jar",
             "org.robolectric:shadows-core:${apiCompatVersion}@jar",
     ]
 

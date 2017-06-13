@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'robolectric-sandbox',
         deploy: true
 ).apply(project)
 

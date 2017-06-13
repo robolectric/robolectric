@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'shadow-api',
         deploy: true
 ).apply(project)
 

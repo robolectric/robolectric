@@ -3,6 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
+        artifactName: 'robolectric-processor',
         deploy: true
 ).apply(project)
 

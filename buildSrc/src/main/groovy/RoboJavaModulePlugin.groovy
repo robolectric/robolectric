@@ -6,6 +6,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
 
 class RoboJavaModulePlugin implements Plugin<Project> {
+    String artifactName = "none";
     Boolean deploy = false;
 
     Closure doApply = {
@@ -40,16 +41,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             test.compileClasspath += project.configurations.compileOnly
         }
 
-        def mavenArtifactName = {
-            def projNameParts = project.name.split(/\//) as List
-            if (projNameParts[0] == "shadows") {
-                projNameParts = projNameParts.drop(1)
-                return projNameParts.join("-")
-            } else {
-                return project.name
-            }
-        }()
-        ext.mavenArtifactName = mavenArtifactName
+        def myArtifactName = owner.artifactName
+        ext.mavenArtifactName = myArtifactName
 
         task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
             File outDir = project.sourceSets['test'].output.resourcesDir
@@ -121,7 +114,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             uploadArchives {
                 repositories {
                     mavenDeployer {
-                        pom.artifactId = mavenArtifactName
+                        pom.artifactId = myArtifactName
                         pom.project {
                             name project.name
                             description = "An alternative Android testing framework."
