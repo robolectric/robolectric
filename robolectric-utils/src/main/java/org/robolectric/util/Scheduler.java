@@ -1,18 +1,19 @@
 package org.robolectric.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
+import static org.robolectric.util.Scheduler.IdleState.PAUSED;
+import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
+
+import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
-
-import static org.robolectric.util.Scheduler.IdleState.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
  * the future). Runnables that are scheduled to run on the UI thread (tasks, animations, etc)
  * eventually get routed to a Scheduler instance.
- * 
+ *
  * The execution of a scheduler can be in one of three states:
  * <ul><li>paused ({@link #pause()}): if paused, then no posted events will be run unless the Scheduler
  * is explicitly instructed to do so.</li>
@@ -46,12 +47,24 @@ public class Scheduler {
      */
     CONSTANT_IDLE
   }
-
   private final static long START_TIME = 100;
-  private volatile long currentTime = START_TIME;
-  private boolean isExecutingRunnable = false;
+
   private final Thread associatedThread = Thread.currentThread();
-  private final List<ScheduledRunnable> runnables = new ArrayList<>();
+  // guards time when held WITH stateLock
+  private final ReentrantLock timeLock = new ReentrantLock();
+  // guards everything except time
+  private final ReentrantLock stateLock = new ReentrantLock();
+  // NOTE: locking order is 1) timeLock, 2) runnables lock. be very careful with any
+  // change, as if you are holding a lock but call into another function that attempts to acquire
+  // a higher order lock, you risk lock inversion. changing time requires holding both locks at
+  // once.
+  //
+  // thus, holding either lock will guarantee time cannot change, but still allows for enough
+  // granularity other state may change
+
+  private final LinkedList<ScheduledRunnable> runnables = new LinkedList<>();
+  private volatile boolean isExecutingRunnable = false;
+  private volatile long currentTimeMs = START_TIME;
   private volatile IdleState idleState = UNPAUSED;
 
   /**
@@ -73,16 +86,22 @@ public class Scheduler {
    * @see #setIdleState(IdleState)
    * @see #isPaused()
    */
-  public synchronized void setIdleState(IdleState idleState) {
-    this.idleState = idleState;
-    switch (idleState) {
-      case UNPAUSED:
-        advanceBy(0);
-        break;
-      case CONSTANT_IDLE:
-        advanceToLastPostedRunnable();
-        break;
-      default:
+  public void setIdleState(IdleState idleState) {
+    timeLock.lock();
+    try {
+      this.idleState = idleState;
+      switch (idleState) {
+        case UNPAUSED:
+          advance(currentTimeMs, false);
+          break;
+        case CONSTANT_IDLE:
+          advance(Long.MAX_VALUE, false);
+          break;
+        default:
+          break;
+      }
+    } finally {
+      timeLock.unlock();
     }
   }
 
@@ -92,7 +111,7 @@ public class Scheduler {
    * @return  Current time in milliseconds.
    */
   public long getCurrentTime() {
-    return currentTime;
+    return currentTimeMs;
   }
 
   /**
@@ -101,7 +120,7 @@ public class Scheduler {
    * @see #unPause()
    * @see #setIdleState(IdleState)
    */
-  public synchronized void pause() {
+  public void pause() {
     setIdleState(PAUSED);
   }
 
@@ -111,7 +130,7 @@ public class Scheduler {
    * @see #pause()
    * @see #setIdleState(IdleState)
    */
-  public synchronized void unPause() {
+  public void unPause() {
     setIdleState(UNPAUSED);
   }
 
@@ -129,7 +148,7 @@ public class Scheduler {
    *
    * @param runnable    Runnable to add.
    */
-  public synchronized void post(Runnable runnable) {
+  public void post(Runnable runnable) {
     postDelayed(runnable, 0, TimeUnit.MILLISECONDS);
   }
 
@@ -137,22 +156,19 @@ public class Scheduler {
    * Add a runnable to the queue to be run after a delay.
    *
    * @param runnable    Runnable to add.
-   * @param delayMillis Delay in millis.
+   * @param delayMs Delay in millis.
+   * @deprecated Use {@link #postDelayed(Runnable, long, TimeUnit)} instead.
    */
-  public synchronized void postDelayed(Runnable runnable, long delayMillis) {
-    postDelayed(runnable, delayMillis, TimeUnit.MILLISECONDS);
+  @Deprecated
+  public void postDelayed(Runnable runnable, long delayMs) {
+    postDelayed(runnable, delayMs, TimeUnit.MILLISECONDS);
   }
 
   /**
    * Add a runnable to the queue to be run after a delay.
    */
-  public synchronized void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
-    long delayMillis = unit.toMillis(delay);
-    if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      queueRunnableAndSort(runnable, currentTime + delayMillis);
-    } else {
-      runOrQueueRunnable(runnable, currentTime + delayMillis);
-    }
+  public void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
+    queueAndMaybeRunUnlocked(runnable, unit.toMillis(delay), false);
   }
 
   /**
@@ -160,12 +176,8 @@ public class Scheduler {
    *
    * @param runnable  Runnable to add.
    */
-  public synchronized void postAtFrontOfQueue(Runnable runnable) {
-    if (isPaused() || Thread.currentThread() != associatedThread) {
-      runnables.add(0, new ScheduledRunnable(runnable, currentTime));
-    } else {
-      runOrQueueRunnable(runnable, currentTime);
-    }
+  public void postAtFrontOfQueue(Runnable runnable) {
+    queueAndMaybeRunUnlocked(runnable, 0, true);
   }
 
   /**
@@ -173,23 +185,35 @@ public class Scheduler {
    *
    * @param runnable  Runnable to remove.
    */
-  public synchronized void remove(Runnable runnable) {
-    ListIterator<ScheduledRunnable> iterator = runnables.listIterator();
-    while (iterator.hasNext()) {
-      ScheduledRunnable next = iterator.next();
-      if (next.runnable == runnable) {
-        iterator.remove();
+  public void remove(Runnable runnable) {
+    stateLock.lock();
+    try {
+      ListIterator<ScheduledRunnable> iterator = runnables.listIterator();
+      while (iterator.hasNext()) {
+        ScheduledRunnable next = iterator.next();
+        if (next.runnable == runnable) {
+          iterator.remove();
+        }
       }
+    } finally {
+      stateLock.unlock();
     }
   }
 
   /**
-   * Run all runnables in the queue.
+   * Run all runnables in the queue at the time this method is called.
    *
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceToLastPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(runnables.size() - 1).scheduledTime);
+  public boolean advanceToLastPostedRunnable() {
+    timeLock.lock();
+    stateLock.lock();
+    try {
+      return !runnables.isEmpty() && advanceTo(runnables.peekLast().scheduledTime);
+    } finally {
+      stateLock.unlock();
+      timeLock.unlock();
+    }
   }
 
   /**
@@ -197,8 +221,15 @@ public class Scheduler {
    *
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceToNextPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(0).scheduledTime);
+  public boolean advanceToNextPostedRunnable() {
+    timeLock.lock();
+    stateLock.lock();
+    try {
+      return !runnables.isEmpty() && advanceTo(runnables.peek().scheduledTime);
+    } finally {
+      stateLock.unlock();
+      timeLock.unlock();
+    }
   }
 
   /**
@@ -209,7 +240,7 @@ public class Scheduler {
    * @deprecated Use {@link #advanceBy(long, TimeUnit)}.
    */
   @Deprecated
-  public synchronized boolean advanceBy(long interval) {
+  public boolean advanceBy(long interval) {
     return advanceBy(interval, TimeUnit.MILLISECONDS);
   }
 
@@ -218,30 +249,33 @@ public class Scheduler {
    *
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceBy(long amount, TimeUnit unit) {
-    long endingTime = currentTime + unit.toMillis(amount);
-    return advanceTo(endingTime);
+  public boolean advanceBy(long amount, TimeUnit unit) {
+    timeLock.lock();
+    try {
+      return advanceTo(currentTimeMs + unit.toMillis(amount));
+    } finally {
+      timeLock.unlock();
+    }
   }
 
   /**
    * Run all runnables that are scheduled before the endTime.
    *
-   * @param   endTime   Future time.
+   * @param   endTimeMs   Future time.
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceTo(long endTime) {
-    if (endTime - currentTime < 0 || size() < 1) {
-      currentTime = endTime;
-      return false;
+  public boolean advanceTo(long endTimeMs) {
+    timeLock.lock();
+    try {
+      boolean run = false;
+      if (endTimeMs >= currentTimeMs) {
+        run = advance(endTimeMs, false);
+      }
+      currentTimeMs = endTimeMs;
+      return run;
+    } finally {
+      timeLock.unlock();
     }
-
-    int runCount = 0;
-    while (nextTaskIsScheduledBefore(endTime)) {
-      runOneTask();
-      ++runCount;
-    }
-    currentTime = endTime;
-    return runCount > 0;
   }
 
   /**
@@ -249,15 +283,8 @@ public class Scheduler {
    *
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean runOneTask() {
-    if (size() < 1) {
-      return false;
-    }
-
-    ScheduledRunnable postedRunnable = runnables.remove(0);
-    currentTime = postedRunnable.scheduledTime;
-    postedRunnable.run();
-    return true;
+  public boolean runOneTask() {
+    return advance(Long.MAX_VALUE, true);
   }
 
   /**
@@ -265,18 +292,32 @@ public class Scheduler {
    *
    * @return  True if any runnables can be executed.
    */
-  public synchronized boolean areAnyRunnable() {
-    return nextTaskIsScheduledBefore(currentTime);
+  public boolean areAnyRunnable() {
+    timeLock.lock();
+    stateLock.lock();
+    try {
+      return !runnables.isEmpty() && runnables.peek().scheduledTime <= currentTimeMs;
+    } finally {
+      stateLock.unlock();
+      timeLock.unlock();
+    }
   }
 
   /**
    * Reset the internal state of the Scheduler.
    */
-  public synchronized void reset() {
-    runnables.clear();
-    idleState = UNPAUSED;
-    currentTime = START_TIME;
-    isExecutingRunnable = false;
+  public void reset() {
+    timeLock.lock();
+    stateLock.lock();
+    try {
+      runnables.clear();
+      idleState = UNPAUSED;
+      currentTimeMs = START_TIME;
+      isExecutingRunnable = false;
+    } finally {
+      stateLock.unlock();
+      timeLock.unlock();
+    }
   }
 
   /**
@@ -284,8 +325,13 @@ public class Scheduler {
    *
    * @return  Number of enqueues runnables.
    */
-  public synchronized int size() {
-    return runnables.size();
+  public int size() {
+    stateLock.lock();
+    try {
+      return runnables.size();
+    } finally {
+      stateLock.unlock();
+    }
   }
 
   /**
@@ -303,44 +349,161 @@ public class Scheduler {
     setIdleState(shouldIdleConstantly ? CONSTANT_IDLE : UNPAUSED);
   }
 
-  private boolean nextTaskIsScheduledBefore(long endingTime) {
-    return size() > 0 && runnables.get(0).scheduledTime <= endingTime;
+  // this method must return false if there is any possibility of having to run this runnable. it
+  // may optionally return false even when there the scheduler may not have to run the runnables.
+  // thus a default simple and correct implementation would simply be to always return false.
+  //
+  // NOTE: method may be called unlocked, then it may not obey the above contract (but should try)
+  // NOTE: method may be called locked, then it must obey the above contract
+  private boolean mayQueueRunnableWithoutRunning(long delayMs, boolean front) {
+    if (Thread.currentThread() != associatedThread || idleState == PAUSED || isExecutingRunnable) {
+      return true;
+    }
+
+    return idleState == UNPAUSED && delayMs > 0;
   }
 
-  private void runOrQueueRunnable(Runnable runnable, long scheduledTime) {
-    if (isExecutingRunnable) {
-      queueRunnableAndSort(runnable, scheduledTime);
-      return;
+  private void queueAndMaybeRunUnlocked(Runnable runnable, long delayMs, boolean front) {
+    // NOTE: useful during development to fail tests early rather than trying to debug deadlock
+    //if (stateLock.isHeldByCurrentThread()) {
+    //  throw new AssertionError("cannot hold stateLock while calling this method");
+    //}
+
+    // double checked locking and a spin lock, how fun and pretty
+    while (true) {
+      if (mayQueueRunnableWithoutRunning(delayMs, front)) {
+        stateLock.lock();
+        try {
+          if (mayQueueRunnableWithoutRunning(delayMs, front)) {
+            queueRunnableLocked(runnable, delayMs, front);
+            return;
+          }
+        } finally {
+          stateLock.unlock();
+        }
+      } else {
+        timeLock.lock();
+        stateLock.lock();
+        try {
+          if (!mayQueueRunnableWithoutRunning(delayMs, front)) {
+            queueRunnableLocked(runnable, delayMs, front);
+
+            switch (idleState) {
+              case CONSTANT_IDLE:
+                advance(Long.MAX_VALUE, false);
+                break;
+              case UNPAUSED:
+                advance(currentTimeMs, false);
+                break;
+              default:
+            }
+            return;
+          }
+        } finally {
+          stateLock.unlock();
+          timeLock.unlock();
+        }
+      }
+
+      Thread.yield();
     }
-    isExecutingRunnable = true;
+  }
+
+  // stateLock must be held
+  private void queueRunnableLocked(Runnable runnable, long delayMs, boolean front) {
+    // NOTE: useful during development to fail tests early rather than trying to debug deadlock
+    //if (!stateLock.isHeldByCurrentThread()) {
+    //  throw new AssertionError("must hold stateLock while calling this method");
+    //}
+
+    long scheduledTimeMs = currentTimeMs + delayMs;
+    ScheduledRunnable scheduled = new ScheduledRunnable(runnable, scheduledTimeMs);
+
+    ListIterator<ScheduledRunnable> scheduledIterator = runnables.listIterator();
+    while (scheduledIterator.hasNext()) {
+      if (front) {
+        if (scheduledTimeMs <= scheduledIterator.next().scheduledTime) {
+          scheduledIterator.previous();
+          break;
+        }
+      } else {
+        if (scheduledTimeMs < scheduledIterator.next().scheduledTime) {
+          scheduledIterator.previous();
+          break;
+        }
+      }
+    }
+
+    scheduledIterator.add(scheduled);
+  }
+
+  // ideally time would only be advanced from the associated thread of this scheduler, but that
+  // would require breaking changes.
+  // NOTE: the strictOnlyOneRunnable only exists to match legacy behavior EXACTLY
+  private boolean advance(long maxTime, boolean strictOnlyOneRunnable) {
+    int numRunnablesExecuted = 0;
+
+    timeLock.lock();
+    stateLock.lock();
     try {
-      runnable.run();
+      if (isExecutingRunnable) {
+        return false;
+      }
+
+      do {
+        ListIterator<ScheduledRunnable> scheduledIterator = runnables.listIterator();
+        if (!scheduledIterator.hasNext()) {
+          break;
+        }
+
+        ScheduledRunnable task = scheduledIterator.next();
+        if (task.scheduledTime > maxTime) {
+          break;
+        }
+
+        scheduledIterator.remove();
+
+        currentTimeMs = Math.max(currentTimeMs, task.scheduledTime);
+
+        isExecutingRunnable = true;
+        final int lockCount = stateLock.getHoldCount();
+        for (int i = 0; i < lockCount; ++i) {
+          stateLock.unlock();
+        }
+        try {
+          task.runnable.run();
+          ++numRunnablesExecuted;
+        } finally {
+          for (int i = 0; i < lockCount; ++i) {
+            stateLock.lock();
+          }
+          isExecutingRunnable = false;
+        }
+      } while (!strictOnlyOneRunnable);
+
+      // the executed tasks may have changed the idle state
+      if (numRunnablesExecuted > 0 && !strictOnlyOneRunnable) {
+        switch (idleState) {
+          case UNPAUSED:
+            advance(currentTimeMs, false);
+            break;
+          case CONSTANT_IDLE:
+            advance(Long.MAX_VALUE, false);
+            break;
+          default:
+            break;
+        }
+      }
+
+      return numRunnablesExecuted > 0;
     } finally {
-      isExecutingRunnable = false;
-    }
-    if (scheduledTime > currentTime) {
-      currentTime = scheduledTime;
-    }
-    // The runnable we just ran may have queued other runnables. If there are
-    // any pending immediate execution we should run these now too, unless we are
-    // paused.
-    switch (idleState) {
-      case CONSTANT_IDLE:
-        advanceToLastPostedRunnable();
-        break;
-      case UNPAUSED:
-        advanceBy(0);
-        break;
-      default:
+      stateLock.unlock();
+      timeLock.unlock();
     }
   }
 
-  private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
-    runnables.add(new ScheduledRunnable(runnable, scheduledTime));
-    Collections.sort(runnables);
-  }
+  private static class ScheduledRunnable implements Comparable<ScheduledRunnable> {
 
-  private class ScheduledRunnable implements Comparable<ScheduledRunnable> {
     private final Runnable runnable;
     private final long scheduledTime;
 
@@ -351,16 +514,7 @@ public class Scheduler {
 
     @Override
     public int compareTo(ScheduledRunnable runnable) {
-      return (int) (scheduledTime - runnable.scheduledTime);
-    }
-
-    public void run() {
-      isExecutingRunnable = true;
-      try {
-        runnable.run();
-      } finally {
-        isExecutingRunnable = false;
-      }
+      return Long.compare(scheduledTime, runnable.scheduledTime);
     }
   }
 }
