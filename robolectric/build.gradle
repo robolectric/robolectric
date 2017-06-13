@@ -1,3 +1,7 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.10"
+}
+
 new RoboJavaModulePlugin(
         deploy: true
 ).apply(project)
@@ -18,15 +22,15 @@ project.sourceSets.test.compileClasspath += configurations.shadow
 
 dependencies {
     // Project dependencies
-    compile project(":robolectric-annotations")
-    compile project(":robolectric-junit")
-    compile project(":robolectric-resources")
-    compile project(":robolectric-sandbox")
-    compile project(":robolectric-utils")
+    compile project(":annotations")
+    compile project(":junit")
+    compile project(":resources")
+    compile project(":sandbox")
+    compile project(":utils")
 
     // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
-    compile project(":robolectric-shadows/shadows-core")
+    compile project(":shadows/framework")
 
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk16:1.46"
@@ -53,24 +57,24 @@ project.apply plugin: CheckApiChangesPlugin
 checkApiChanges {
     from = [
             "org.robolectric:robolectric:${apiCompatVersion}@jar",
-            "org.robolectric:robolectric-annotations:${apiCompatVersion}@jar",
-            "org.robolectric:robolectric-junit:${apiCompatVersion}@jar",
-            "org.robolectric:robolectric-resources:${apiCompatVersion}@jar",
-            "org.robolectric:robolectric-sandbox:${apiCompatVersion}@jar",
-            "org.robolectric:robolectric-utils:${apiCompatVersion}@jar",
-            "org.robolectric:shadow-api:${apiCompatVersion}@jar",
+            "org.robolectric:annotations:${apiCompatVersion}@jar",
+            "org.robolectric:junit:${apiCompatVersion}@jar",
+            "org.robolectric:resources:${apiCompatVersion}@jar",
+            "org.robolectric:sandbox:${apiCompatVersion}@jar",
+            "org.robolectric:utils:${apiCompatVersion}@jar",
+            "org.robolectric:shadowapi:${apiCompatVersion}@jar",
             "org.robolectric:shadows-core:${apiCompatVersion}@jar",
     ]
 
     to = [
             project(":robolectric"),
-            project(":robolectric-annotations"),
-            project(":robolectric-junit"),
-            project(":robolectric-resources"),
-            project(":robolectric-sandbox"),
-            project(":robolectric-shadows/shadows-core"),
-            project(":robolectric-utils"),
-            project(":shadow-api"),
+            project(":annotations"),
+            project(":junit"),
+            project(":resources"),
+            project(":sandbox"),
+            project(":shadows/framework"),
+            project(":utils"),
+            project(":shadowapi"),
     ]
 
     entryPoints += "org.robolectric.RobolectricTestRunner"

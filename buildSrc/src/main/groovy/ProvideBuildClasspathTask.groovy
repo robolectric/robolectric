@@ -10,7 +10,7 @@ class ProvideBuildClasspathTask extends DefaultTask {
         final List<String> paths = new ArrayList<>()
 
         project.rootProject.allprojects.each { Project otherProject ->
-            def match = otherProject.name =~ /robolectric-shadows\/(.*)/
+            def match = otherProject.name =~ /shadows\/(.*)/
             if (match.matches()) {
                 def artifactName = "${otherProject.group}:${otherProject.mavenArtifactName}:${otherProject.version}"
                 File classesDir = otherProject.sourceSets['main'].output.classesDir

@@ -27,7 +27,7 @@ public class DefaultTestLifecycle implements TestLifecycle {
    * @return An instance of the Application class specified by the ApplicationManifest.xml or an instance of
    *         Application if not specified.
    */
-  public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
+  @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
 
     Application application = null;
     if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
@@ -69,13 +69,13 @@ public class DefaultTestLifecycle implements TestLifecycle {
    *
    * @param method the test method about to be run
    */
-  public void beforeTest(final Method method) {
+  @Override public void beforeTest(final Method method) {
     if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
       ((TestLifecycleApplication) RuntimeEnvironment.application).beforeTest(method);
     }
   }
 
-  public void prepareTest(final Object test) {
+  @Override public void prepareTest(final Object test) {
     if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
       ((TestLifecycleApplication) RuntimeEnvironment.application).prepareTest(test);
     }
@@ -86,7 +86,7 @@ public class DefaultTestLifecycle implements TestLifecycle {
    *
    * @param method the test method that just ran.
    */
-  public void afterTest(final Method method) {
+  @Override public void afterTest(final Method method) {
     if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
       ((TestLifecycleApplication) RuntimeEnvironment.application).afterTest(method);
     }

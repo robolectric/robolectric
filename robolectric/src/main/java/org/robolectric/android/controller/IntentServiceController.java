@@ -62,12 +62,12 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
       return this;
     }
 
-    public IntentServiceController<T> create() {
+    @Override public IntentServiceController<T> create() {
       invokeWhilePaused("onCreate");
       return this;
     }
 
-    public IntentServiceController<T> destroy() {
+    @Override public IntentServiceController<T> destroy() {
       invokeWhilePaused("onDestroy");
       return this;
     }

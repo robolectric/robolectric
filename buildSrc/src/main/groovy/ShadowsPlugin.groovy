@@ -14,7 +14,7 @@ class ShadowsPlugin implements Plugin<Project> {
         }
 
         project.dependencies {
-            robolectricProcessor project.project(":robolectric-processor")
+            robolectricProcessor project.project(":processor")
         }
 
         def generatedSourcesDir = "${project.buildDir}/generated-shadows"

@@ -244,11 +244,11 @@ public class AndroidInterceptors {
       );
     }
 
-    public Function<Object, Object> handle(MethodSignature methodSignature) {
+    @Override public Function<Object, Object> handle(MethodSignature methodSignature) {
       return returnDefaultValue(methodSignature);
     }
 
-    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
+    @Override public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       MethodHandle nothing = constant(Void.class, null).asType(methodType(void.class));
 
       if (type.parameterCount() != 0) {

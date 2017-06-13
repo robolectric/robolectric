@@ -59,12 +59,12 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     return this;
   }
 
-  public ServiceController<T> create() {
+  @Override public ServiceController<T> create() {
     invokeWhilePaused("onCreate");
     return this;
   }
 
-  public ServiceController<T> destroy() {
+  @Override public ServiceController<T> destroy() {
     invokeWhilePaused("onDestroy");
     return this;
   }

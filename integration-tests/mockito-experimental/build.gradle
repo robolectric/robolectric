@@ -1,3 +1,7 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.10"
+}
+
 apply plugin: RoboJavaModulePlugin
 
 dependencies {
