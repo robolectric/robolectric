@@ -21,6 +21,7 @@ public class Shadow {
    * Retrieve corresponding Shadow of the object.
    * @since 3.3
    */
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public static <T> T extract(Object instance) {
     return SHADOW_IMPL.extract(instance);
   }
@@ -46,15 +47,17 @@ public class Shadow {
     return SHADOW_IMPL.directlyOn(shadowedObject, clazz);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public static <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ClassParameter... paramValues) {
     return SHADOW_IMPL.directlyOn(shadowedObject, clazzName, methodName, paramValues);
   }
 
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ClassParameter... paramValues) {
     return SHADOW_IMPL.directlyOn(shadowedObject, clazz, methodName, paramValues);
   }
 
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public static <R, T> R directlyOn(Class<T> clazz, String methodName, ClassParameter... paramValues) {
     return SHADOW_IMPL.directlyOn(clazz, methodName, paramValues);
   }

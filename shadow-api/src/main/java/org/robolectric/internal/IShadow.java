@@ -2,6 +2,7 @@ package org.robolectric.internal;
 
 import org.robolectric.util.ReflectionHelpers;
 
+@SuppressWarnings("TypeParameterUnusedInFormals")
 public interface IShadow {
   <T> T extract(Object instance);
 

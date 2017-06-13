@@ -39,7 +39,7 @@ public abstract class ShadowJobScheduler {
     private Map<Integer, JobInfo> scheduledJobs = new HashMap<>();
     private Set<Integer> jobsToFail = new HashSet<>();
 
-    @Implementation
+    @Override @Implementation
     public int schedule(JobInfo job) {
       if (jobsToFail.contains(job.getId())) {
         return JobScheduler.RESULT_FAILURE;
@@ -49,17 +49,17 @@ public abstract class ShadowJobScheduler {
       return JobScheduler.RESULT_SUCCESS;
     }
 
-    @Implementation
+    @Override @Implementation
     public void cancel(int jobId) {
       scheduledJobs.remove(jobId);
     }
 
-    @Implementation
+    @Override @Implementation
     public void cancelAll() {
       scheduledJobs.clear();
     }
 
-    @Implementation
+    @Override @Implementation
     public List<JobInfo> getAllPendingJobs() {
       return new ArrayList<>(scheduledJobs.values());
     }

@@ -298,7 +298,7 @@ public class ShadowResources {
       this.message = name;
     }
 
-    @Implementation
+    @Override @Implementation
     public String toString() {
       return realObject.getClass().getName() + ": " + message;
     }

@@ -1,13 +1,6 @@
 package org.robolectric.shadows.httpclient;
 
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpVersion;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,6 +10,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpVersion;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 
 public class TestHttpResponse extends HttpResponseStub {
 
@@ -35,11 +36,11 @@ public class TestHttpResponse extends HttpResponseStub {
 
   public TestHttpResponse(int statusCode, String responseBody) {
     this.statusCode = statusCode;
-    this.responseBody = responseBody.getBytes();
+    this.responseBody = responseBody.getBytes(UTF_8);
   }
 
   public TestHttpResponse(int statusCode, String responseBody, Header... headers) {
-    this(statusCode, responseBody.getBytes(), headers);
+    this(statusCode, responseBody.getBytes(UTF_8), headers);
   }
 
   public TestHttpResponse(int statusCode, byte[] responseBody, Header... headers) {
@@ -49,7 +50,7 @@ public class TestHttpResponse extends HttpResponseStub {
   }
 
   protected void setResponseBody(String responseBody) {
-    this.responseBody = responseBody.getBytes();
+    this.responseBody = responseBody.getBytes(UTF_8);
   }
 
   @Override public StatusLine getStatusLine() {

@@ -20,7 +20,7 @@ public class RoboIntentSender extends IntentSender {
     this.pendingIntent = pendingIntent;
   }
 
-  public void sendIntent(Context context, int code, Intent intent,
+  @Override public void sendIntent(Context context, int code, Intent intent,
                          final OnFinished onFinished, Handler handler, String requiredPermission)
       throws SendIntentException {
     try {

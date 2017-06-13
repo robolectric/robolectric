@@ -12,19 +12,20 @@ public class ShadowImpl implements IShadow {
   });
 
   @Override
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public <T> T extract(Object instance) {
     return (T) ((ShadowedObject) instance).$$robo$getData();
   }
 
-  public <T> T newInstanceOf(Class<T> clazz) {
+  @Override public <T> T newInstanceOf(Class<T> clazz) {
     return ReflectionHelpers.callConstructor(clazz);
   }
 
-  public <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
+  @Override public <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
     return ReflectionHelpers.callConstructor(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
   }
 
-  public <T> T directlyOn(T shadowedObject, Class<T> clazz) {
+  @Override public <T> T directlyOn(T shadowedObject, Class<T> clazz) {
     return createProxy(shadowedObject, clazz);
   }
 
@@ -42,7 +43,7 @@ public class ShadowImpl implements IShadow {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @Override @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
     try {
       Class<Object> aClass = (Class<Object>) shadowedObject.getClass().getClassLoader().loadClass(clazzName);
@@ -52,22 +53,25 @@ public class ShadowImpl implements IShadow {
     }
   }
 
+  @Override @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
     String directMethodName = directMethodName(methodName);
     return (R) ReflectionHelpers.callInstanceMethod(clazz, shadowedObject, directMethodName, paramValues);
   }
 
+  @Override @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public <R, T> R directlyOn(Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
     String directMethodName = directMethodName(methodName);
     return (R) ReflectionHelpers.callStaticMethod(clazz, directMethodName, paramValues);
   }
 
+  @Override @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public <R> R invokeConstructor(Class<? extends R> clazz, R instance, ReflectionHelpers.ClassParameter... paramValues) {
     String directMethodName = directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     return (R) ReflectionHelpers.callInstanceMethod(clazz, instance, directMethodName, paramValues);
   }
 
-  public String directMethodName(String methodName) {
+  @Override public String directMethodName(String methodName) {
     return ShadowConstants.ROBO_PREFIX + methodName;
   }
 

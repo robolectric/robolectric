@@ -15,6 +15,7 @@ import java.util.Map;
 /**
  * Collection of helper methods for calling methods and accessing fields reflectively.
  */
+@SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
 public class ReflectionHelpers {
   public static final Map<String, Object> PRIMITIVE_RETURN_VALUES =
       Collections.unmodifiableMap(new HashMap<String, Object>() {{
@@ -41,7 +42,7 @@ public class ReflectionHelpers {
     return annotation.cast(
         Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
             new InvocationHandler() {
-              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+              @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 return method.getDefaultValue();
               }
             }));

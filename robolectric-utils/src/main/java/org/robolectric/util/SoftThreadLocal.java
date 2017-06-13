@@ -9,7 +9,7 @@ import java.lang.ref.SoftReference;
  */
 public abstract class SoftThreadLocal<T> {
   private final ThreadLocal<SoftReference<T>> threadLocal = new ThreadLocal<SoftReference<T>>() {
-    protected SoftReference<T> initialValue() {
+    @Override protected SoftReference<T> initialValue() {
       return new SoftReference<>(create());
     }
   };

@@ -520,7 +520,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     });
   }
 
-  public List<Intent> getBroadcastIntents() {
+  @Override public List<Intent> getBroadcastIntents() {
     return broadcastIntents;
   }
 
@@ -774,11 +774,11 @@ public class ShadowApplication extends ShadowContextWrapper {
     return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
   }
 
-  public void grantPermissions(String... permissionNames) {
+  @Override public void grantPermissions(String... permissionNames) {
     Collections.addAll(grantedPermissions, permissionNames);
   }
 
-  public void denyPermissions(String... permissionNames) {
+  @Override public void denyPermissions(String... permissionNames) {
     for (String permissionName : permissionNames) {
       grantedPermissions.remove(permissionName);
     }

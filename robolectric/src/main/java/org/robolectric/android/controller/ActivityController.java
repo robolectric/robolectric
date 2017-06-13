@@ -143,7 +143,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return this;
   }
 
-  public ActivityController<T> create() {
+  @Override public ActivityController<T> create() {
     return create(null);
   }
 
@@ -231,7 +231,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return this;
   }
 
-  public ActivityController<T> destroy() {
+  @Override public ActivityController<T> destroy() {
     invokeWhilePaused("performDestroy");
     return this;
   }

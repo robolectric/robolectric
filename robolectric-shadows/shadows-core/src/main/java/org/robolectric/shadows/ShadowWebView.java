@@ -243,7 +243,7 @@ public class ShadowWebView extends ShadowViewGroup {
     return destroyCalled;
   }
 
-  @Implementation
+  @Override @Implementation
   public void post(Runnable action) {
     action.run();
     runFlag = true;

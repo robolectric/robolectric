@@ -1,0 +1,27 @@
+--- org/robolectric/res/RoutingResourceTable.java
++++ org/robolectric/res/RoutingResourceTable.java
+@@ -21,5 +21,5 @@
+   }
+ 
+-  public InputStream getRawValue(int resId, String qualifiers) {
++  @Override public InputStream getRawValue(int resId, String qualifiers) {
+     ResName resName = getResName(resId);
+     return resName != null ? getRawValue(resName, qualifiers) : null;
+@@ -30,14 +30,14 @@
+   }
+ 
+-  public TypedResource getValue(int resId, String qualifiers) {
++  @Override public TypedResource getValue(int resId, String qualifiers) {
+     ResName resName = pickFor(resId).getResName(resId);
+     return resName != null ? getValue(resName, qualifiers) : null;
+   }
+ 
+-  public XmlBlock getXml(ResName resName, String qualifiers) {
++  @Override public XmlBlock getXml(ResName resName, String qualifiers) {
+     return pickFor(resName).getXml(resName, qualifiers);
+   }
+ 
+-  public InputStream getRawValue(ResName resName, String qualifiers) {
++  @Override public InputStream getRawValue(ResName resName, String qualifiers) {
+     return pickFor(resName).getRawValue(resName, qualifiers);
+   }

@@ -1,5 +1,7 @@
 package org.robolectric.internal.dependency;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -72,7 +74,7 @@ public class CachedDependencyResolver implements DependencyResolver {
   }
 
   static class DefaultCacheNamingStrategy implements CacheNamingStrategy {
-    public String getName(String prefix, DependencyJar... dependencies) {
+    @Override public String getName(String prefix, DependencyJar... dependencies) {
       StringBuilder sb = new StringBuilder();
 
       sb.append(prefix)
@@ -88,7 +90,7 @@ public class CachedDependencyResolver implements DependencyResolver {
       }
 
       CRC32 crc = new CRC32();
-      crc.update(sb.toString().getBytes());
+      crc.update(sb.toString().getBytes(UTF_8));
       return crc.getValue() + "";
     }
   }

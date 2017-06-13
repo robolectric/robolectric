@@ -719,7 +719,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     addPackage(packageInfo, new PackageStats(packageInfo.packageName));
   }
 
-  public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
+  @Override public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
     packageInfos.put(packageInfo.packageName, packageInfo);
@@ -1072,14 +1072,14 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return result;
   }
 
-  public void setPackagesForCallingUid(String... packagesForCallingUid) {
+  @Override public void setPackagesForCallingUid(String... packagesForCallingUid) {
     setPackagesForUid(Binder.getCallingUid(), packagesForCallingUid);
   }
 
   /**
    * Override value returned by {@link #getPackagesForUid(int)}.
    */
-  public void setPackagesForUid(int uid, String... packagesForCallingUid) {
+  @Override public void setPackagesForUid(int uid, String... packagesForCallingUid) {
     this.packagesForUid.put(uid, packagesForCallingUid);
   }
 
@@ -1405,7 +1405,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   }
 
-  public boolean shouldShowRequestPermissionRationale(String permission) {
+  @Override public boolean shouldShowRequestPermissionRationale(String permission) {
     return false;
   }
 
@@ -1898,7 +1898,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return Collections.emptyList();
   }
 
-  public boolean isPackageSuspendedForUser(String packageName, int userId) {
+  @Override public boolean isPackageSuspendedForUser(String packageName, int userId) {
     return false;
   }
 
@@ -1907,86 +1907,86 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   }
 
-  public String[] setPackagesSuspendedAsUser(
+  @Override public String[] setPackagesSuspendedAsUser(
       String[] packageNames, boolean suspended, int userId) {
     return null;
   }
 
-  public void flushPackageRestrictionsAsUser(int userId) {
+  @Override public void flushPackageRestrictionsAsUser(int userId) {
   }
 
-  public void deleteApplicationCacheFilesAsUser(String packageName, int userId,
+  @Override public void deleteApplicationCacheFilesAsUser(String packageName, int userId,
       IPackageDataObserver observer) {
   }
 
-  public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer,
+  @Override public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer,
       int flags, int userId) {
   }
 
-  public String getDefaultBrowserPackageNameAsUser(int userId) {
+  @Override public String getDefaultBrowserPackageNameAsUser(int userId) {
     return null;
   }
 
-  public boolean updateIntentVerificationStatusAsUser(String packageName, int status,
+  @Override public boolean updateIntentVerificationStatusAsUser(String packageName, int status,
       int userId) {
     return false;
   }
 
-  public int getIntentVerificationStatusAsUser(String packageName, int userId) {
+  @Override public int getIntentVerificationStatusAsUser(String packageName, int userId) {
     return 0;
   }
 
-  public int installExistingPackageAsUser(String packageName, int userId)
+  @Override public int installExistingPackageAsUser(String packageName, int userId)
       throws NameNotFoundException {
     return 0;
   }
 
-  public boolean setDefaultBrowserPackageNameAsUser(String packageName,
+  @Override public boolean setDefaultBrowserPackageNameAsUser(String packageName,
       int userId) {
     return false;
   }
-  public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
+  @Override public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
     return null;
   }
 
-  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent,
+  @Override public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent,
       int flags, int userId) {
     return null;
   }
-  public boolean hasSystemFeature(String name, int version) {
+  @Override public boolean hasSystemFeature(String name, int version) {
     return false;
   }
 
-  public String getServicesSystemSharedLibraryPackageName() {
+  @Override public String getServicesSystemSharedLibraryPackageName() {
     return null;
   }
 
-  public List<PackageInfo> getInstalledPackagesAsUser(int flags,
+  @Override public List<PackageInfo> getInstalledPackagesAsUser(int flags,
       int userId) {
     return null;
   }
-  public ApplicationInfo getApplicationInfoAsUser(String packageName,
+  @Override public ApplicationInfo getApplicationInfoAsUser(String packageName,
       int flags, int userId) throws NameNotFoundException {
     return null;
   }
-  public int getPackageUidAsUser(String packageName, int userId)
+  @Override public int getPackageUidAsUser(String packageName, int userId)
       throws NameNotFoundException {
     return 0;
   }
 
-  public int getPackageUidAsUser(String packageName, int flags,
+  @Override public int getPackageUidAsUser(String packageName, int flags,
       int userId) throws NameNotFoundException {
     return 0;
   }
-  public int[] getPackageGids(String packageName, int flags)
+  @Override public int[] getPackageGids(String packageName, int flags)
       throws NameNotFoundException {
     return null;
   }
-  public PackageInfo getPackageInfoAsUser(String packageName,
+  @Override public PackageInfo getPackageInfoAsUser(String packageName,
       int flags, int userId) throws NameNotFoundException {
     return null;
   }
-  public String getSharedSystemSharedLibraryPackageName() {
+  @Override public String getSharedSystemSharedLibraryPackageName() {
     return "";
   }
 

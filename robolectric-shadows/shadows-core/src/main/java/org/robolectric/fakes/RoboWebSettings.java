@@ -181,7 +181,7 @@ public class RoboWebSettings extends WebSettings {
     return loadsImagesAutomatically;
   }
 
-  public void setLoadsImagesAutomatically(boolean loadsImagesAutomatically) {
+  @Override public void setLoadsImagesAutomatically(boolean loadsImagesAutomatically) {
     this.loadsImagesAutomatically = loadsImagesAutomatically;
   }
 
@@ -190,7 +190,7 @@ public class RoboWebSettings extends WebSettings {
     return defaultFixedFontSize;
   }
 
-  public void setDefaultFixedFontSize(int defaultFixedFontSize) {
+  @Override public void setDefaultFixedFontSize(int defaultFixedFontSize) {
     this.defaultFixedFontSize = defaultFixedFontSize;
   }
 
@@ -199,7 +199,7 @@ public class RoboWebSettings extends WebSettings {
     return minimumLogicalFontSize;
   }
 
-  public void setMinimumLogicalFontSize(int minimumLogicalFontSize) {
+  @Override public void setMinimumLogicalFontSize(int minimumLogicalFontSize) {
     this.minimumLogicalFontSize = minimumLogicalFontSize;
   }
 
@@ -208,7 +208,7 @@ public class RoboWebSettings extends WebSettings {
     return minimumFontSize;
   }
 
-  public void setMinimumFontSize(int minimumFontSize) {
+  @Override public void setMinimumFontSize(int minimumFontSize) {
     this.minimumFontSize = minimumFontSize;
   }
 
@@ -217,7 +217,7 @@ public class RoboWebSettings extends WebSettings {
     return fantasyFontFamily;
   }
 
-  public void setFantasyFontFamily(String fantasyFontFamily) {
+  @Override public void setFantasyFontFamily(String fantasyFontFamily) {
     this.fantasyFontFamily = fantasyFontFamily;
   }
 
@@ -226,7 +226,7 @@ public class RoboWebSettings extends WebSettings {
     return cursiveFontFamily;
   }
 
-  public void setCursiveFontFamily(String cursiveFontFamily) {
+  @Override public void setCursiveFontFamily(String cursiveFontFamily) {
     this.cursiveFontFamily = cursiveFontFamily;
   }
 
@@ -235,7 +235,7 @@ public class RoboWebSettings extends WebSettings {
     return serifFontFamily;
   }
 
-  public void setSerifFontFamily(String serifFontFamily) {
+  @Override public void setSerifFontFamily(String serifFontFamily) {
     this.serifFontFamily = serifFontFamily;
   }
 
@@ -244,7 +244,7 @@ public class RoboWebSettings extends WebSettings {
     return sansSerifFontFamily;
   }
 
-  public void setSansSerifFontFamily(String sansSerifFontFamily) {
+  @Override public void setSansSerifFontFamily(String sansSerifFontFamily) {
     this.sansSerifFontFamily = sansSerifFontFamily;
   }
 
@@ -253,7 +253,7 @@ public class RoboWebSettings extends WebSettings {
     return fixedFontFamily;
   }
 
-  public void setFixedFontFamily(String fixedFontFamily) {
+  @Override public void setFixedFontFamily(String fixedFontFamily) {
     this.fixedFontFamily = fixedFontFamily;
   }
 
@@ -262,7 +262,7 @@ public class RoboWebSettings extends WebSettings {
     return standardFontFamily;
   }
 
-  public void setStandardFontFamily(String standardFontFamily) {
+  @Override public void setStandardFontFamily(String standardFontFamily) {
     this.standardFontFamily = standardFontFamily;
   }
 
@@ -617,7 +617,7 @@ public class RoboWebSettings extends WebSettings {
 
   }
 
-  public boolean getOffscreenPreRaster() {
+  @Override public boolean getOffscreenPreRaster() {
     return false;
   }
 
@@ -635,11 +635,11 @@ public class RoboWebSettings extends WebSettings {
 
   // End API 24.
 
-  public boolean getSafeBrowsingEnabled() {
+  @Override public boolean getSafeBrowsingEnabled() {
     return false;
   }
 
-  public void setSafeBrowsingEnabled(boolean enabled) {
+  @Override public void setSafeBrowsingEnabled(boolean enabled) {
 
   }
 

@@ -51,7 +51,7 @@ public class RoboLayoutInflater extends LayoutInflater {
     return super.onCreateView(name, attrs);
   }
 
-  public LayoutInflater cloneInContext(Context newContext) {
+  @Override public LayoutInflater cloneInContext(Context newContext) {
     return new RoboLayoutInflater(this, newContext);
   }
 }
