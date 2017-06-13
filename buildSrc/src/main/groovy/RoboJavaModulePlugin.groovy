@@ -42,7 +42,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         def mavenArtifactName = {
             def projNameParts = project.name.split(/\//) as List
-            if (projNameParts[0] == "robolectric-shadows") {
+            if (projNameParts[0] == "shadows") {
                 projNameParts = projNameParts.drop(1)
                 return projNameParts.join("-")
             } else {
