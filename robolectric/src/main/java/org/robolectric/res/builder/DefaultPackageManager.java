@@ -276,23 +276,26 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     AndroidManifest androidManifest = androidManifests.get(packageName);
     String classString = resolvePackageName(packageName, className);
 
-    for (ContentProviderData contentProviderData : androidManifest.getContentProviders()) {
-      if (contentProviderData.getClassName().equals(classString)) {
-        ProviderInfo providerInfo = new ProviderInfo();
-        providerInfo.packageName = packageName;
-        providerInfo.name = contentProviderData.getClassName();
-        providerInfo.authority = contentProviderData.getAuthorities(); // todo: support multiple authorities
-        providerInfo.readPermission = contentProviderData.getReadPermission();
-        providerInfo.writePermission = contentProviderData.getWritePermission();
-        providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
-        providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
-        if ((flags & GET_META_DATA) != 0) {
+    if (androidManifest != null) {
+      for (ContentProviderData contentProviderData : androidManifest.getContentProviders()) {
+        if (contentProviderData.getClassName().equals(classString)) {
+          ProviderInfo providerInfo = new ProviderInfo();
+          providerInfo.packageName = packageName;
+          providerInfo.name = contentProviderData.getClassName();
+          providerInfo.authority = contentProviderData.getAuthorities(); // todo: support multiple authorities
+          providerInfo.readPermission = contentProviderData.getReadPermission();
+          providerInfo.writePermission = contentProviderData.getWritePermission();
+          providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
           providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
+          if ((flags & GET_META_DATA) != 0) {
+            providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
+          }
+          return providerInfo;
         }
-        return providerInfo;
       }
     }
-    return null;
+
+    throw new NameNotFoundException("Package not found: " + packageName);
   }
 
   private PathPermission[] createPathPermissions(List<PathPermissionData> pathPermissionDatas) {

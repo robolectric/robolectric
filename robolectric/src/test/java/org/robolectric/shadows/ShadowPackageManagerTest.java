@@ -540,6 +540,11 @@ public class ShadowPackageManagerTest {
     assertThat(providerInfo2.authority).isEqualTo("org.robolectric.authority2");
   }
 
+  @Test(expected = NameNotFoundException.class)
+  public void getProviderInfo_packageNotFoundShouldThrowException() throws Exception {
+    packageManager.getProviderInfo(new ComponentName("non.existent.package", ".tester.FullyQualifiedClassName"), 0);
+  }
+
   @Test
   @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
