@@ -59,13 +59,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return myself;
   }
 
-  /**
-   * @deprecated This is a no-op, it's safe to remove this call.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public ActivityController<T> attach() {
+  private ActivityController<T> attach() {
     if (attached) {
       return this;
     }

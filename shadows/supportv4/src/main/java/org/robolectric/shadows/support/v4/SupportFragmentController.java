@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.LinearLayout;
 
 import org.robolectric.Robolectric;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ComponentController;
 
@@ -40,17 +39,6 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
 
   public static <F extends Fragment> SupportFragmentController<F> of(F fragment, Class<? extends FragmentActivity> activityClass, Intent intent) {
     return new SupportFragmentController<>(fragment, activityClass, intent);
-  }
-
-  /**
-   * @deprecated This is a no-op, it's safe to remove this call.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  @Override
-  public SupportFragmentController<F> attach() {
-    return this;
   }
 
   /**

@@ -45,17 +45,6 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
     return myself;
   }
 
-  /**
-   * @deprecated The component is automatically attached. There is no need to call this method.
-   *
-   * TODO(jongerrish): Make this method private so that it can only be called internally, should not
-   * be part of the API.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public abstract C attach();
-
   public abstract C create();
 
   public abstract C destroy();

@@ -29,13 +29,7 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
         shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
     }
 
-  /**
-   * @deprecated This is a no-op, it's safe to remove this call.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public IntentServiceController<T> attach() {
+  private IntentServiceController<T> attach() {
       if (attached) {
         return this;
       }

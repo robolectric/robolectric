@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.util.FragmentTestUtil;
 
 /**
  * Controller class for driving fragment lifecycles, similar to {@link ActivityController}.
@@ -36,17 +35,6 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     super(shadowsAdapter, fragment, intent);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass, intent);
-  }
-
-  /**
-   * @deprecated This is a no-op, it's safe to remove this call.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  @Override
-  public FragmentController<F> attach() {
-    return this;
   }
 
   /**
