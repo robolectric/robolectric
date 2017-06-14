@@ -45,7 +45,10 @@ public class ShadowPackageInstallerTest {
   }
 
   @Test
-  public void packageInstallerCreateSession() throws Exception {
+  public void packageInstallerCreateAndAbandonSession() throws Exception {
+    PackageInstaller.SessionCallback mockCallback = mock(PackageInstaller.SessionCallback.class);
+    packageInstaller.registerSessionCallback(mockCallback, new Handler());
+
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
 
     PackageInstaller.SessionInfo sessionInfo = packageInstaller.getSessionInfo(sessionId);
@@ -56,6 +59,10 @@ public class ShadowPackageInstallerTest {
     packageInstaller.abandonSession(sessionId);
 
     assertThat(packageInstaller.getSessionInfo(sessionId)).isNull();
+    assertThat(packageInstaller.getAllSessions()).isEmpty();
+
+    verify(mockCallback).onCreated(sessionId);
+    verify(mockCallback).onFinished(sessionId, false);
   }
 
   @Test
@@ -114,9 +121,10 @@ public class ShadowPackageInstallerTest {
     OutputStream outputStream = session.openWrite("filename", 0, 0);
     outputStream.close();
 
-    session.commit(new IntentSender(ReflectionHelpers.createNullProxy(IIntentSender.class)));
+    session.abandon();
 
-    shadowOf(packageInstaller).setSessionFails(sessionId);
+    assertThat(packageInstaller.getAllSessions()).isEmpty();
+
     verify(mockCallback).onFinished(sessionId, false);
   }
 
@@ -137,7 +145,6 @@ public class ShadowPackageInstallerTest {
     shadowOf(packageInstaller).setSessionProgress(sessionId, 50.0f);
     verify(mockCallback).onProgressChanged(sessionId, 50.0f);
 
-    shadowOf(packageInstaller).setSessionSucceeds(sessionId);
     verify(mockCallback).onFinished(sessionId, true);
   }
 

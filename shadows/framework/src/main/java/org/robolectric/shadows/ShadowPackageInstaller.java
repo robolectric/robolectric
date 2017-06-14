@@ -4,6 +4,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.IntentSender;
+import android.content.IntentSender.SendIntentException;
 import android.content.pm.IPackageInstaller;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
@@ -77,6 +78,16 @@ public class ShadowPackageInstaller {
   @Implementation
   public void abandonSession(int sessionId) {
     sessionInfos.remove(sessionId);
+    sessions.remove(sessionId);
+
+    for (final CallbackInfo callbackInfo : callbackInfos) {
+      callbackInfo.handler.post(new Runnable() {
+        @Override
+        public void run() {
+          callbackInfo.callback.onFinished(sessionId, false);
+        }
+      });
+    }
   }
 
   @Implementation
@@ -87,6 +98,7 @@ public class ShadowPackageInstaller {
     }
 
     PackageInstaller.Session session = new PackageInstaller.Session(null);
+    shadowOf(session).setShadowPackageInstaller(sessionId, this);
     sessions.put(sessionId, session);
     return session;
   }
@@ -102,15 +114,20 @@ public class ShadowPackageInstaller {
     }
   }
 
-  public void setSessionSucceeds(int sessionId) throws Exception {
+  /**
+   * Prefer instead to use the Android APIs to close the session
+   * {@link android.content.pm.PackageInstaller.Session#commit(IntentSender)}
+   */
+  @Deprecated
+  public void setSessionSucceeds(int sessionId) {
     setSessionFinishes(sessionId, true);
   }
 
-  public void setSessionFails(int sessionId) throws Exception {
+  public void setSessionFails(int sessionId) {
     setSessionFinishes(sessionId, false);
   }
 
-  private void setSessionFinishes(final int sessionId, final boolean success) throws Exception {
+  private void setSessionFinishes(final int sessionId, final boolean success) {
     for (final CallbackInfo callbackInfo : callbackInfos) {
       callbackInfo.handler.post(new Runnable() {
         @Override
@@ -122,8 +139,14 @@ public class ShadowPackageInstaller {
 
     PackageInstaller.Session session = sessions.get(sessionId);
     ShadowSession shadowSession = shadowOf(session);
-    shadowSession.statusReceiver
-        .sendIntent(RuntimeEnvironment.application, 0, null, null, null, null);
+    if (success) {
+      try {
+        shadowSession.statusReceiver
+            .sendIntent(RuntimeEnvironment.application, 0, null, null, null, null);
+      } catch (SendIntentException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Implements(value = PackageInstaller.Session.class, minSdk = LOLLIPOP)
@@ -132,6 +155,8 @@ public class ShadowPackageInstaller {
     private OutputStream outputStream;
     private boolean outputStreamOpen;
     private IntentSender statusReceiver;
+    private int sessionId;
+    private ShadowPackageInstaller shadowPackageInstaller;
 
     public void __constructor__() {
 
@@ -165,11 +190,24 @@ public class ShadowPackageInstaller {
       if (outputStreamOpen) {
         throw new SecurityException("OutputStream still open");
       }
+
+      shadowPackageInstaller.setSessionSucceeds(sessionId);
     }
 
     @Implementation
     public void close() {
 
+    }
+
+    @Implementation
+    public void abandon() {
+      shadowPackageInstaller.abandonSession(sessionId);
+    }
+
+    private void setShadowPackageInstaller(int sessionId,
+        ShadowPackageInstaller shadowPackageInstaller) {
+      this.sessionId = sessionId;
+      this.shadowPackageInstaller = shadowPackageInstaller;
     }
   }
 }
