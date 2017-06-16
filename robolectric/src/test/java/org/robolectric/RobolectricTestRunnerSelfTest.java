@@ -67,21 +67,6 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(RuntimeEnvironment.getQualifiers()).contains("fr");
   }
 
-  @Before
-  public void clearOrder() {
-    onTerminateCalledFromMain = null;
-    order.clear();
-    RobolectricPackageManager mockManager = mock(RobolectricPackageManager.class);
-    doAnswer(new Answer<Void>() {
-      public Void answer(InvocationOnMock invocation) {
-        order.add("reset");
-        return null;
-      }
-    }).when(mockManager).reset();
-    
-    RuntimeEnvironment.setRobolectricPackageManager(mockManager);
-  }
-
   @Test
   public void testMethod_shouldBeInvoked_onMainThread() {
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();

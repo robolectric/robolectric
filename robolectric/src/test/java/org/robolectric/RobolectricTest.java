@@ -3,7 +3,6 @@ package org.robolectric;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -188,7 +187,7 @@ public class RobolectricTest {
       }
     }).when(mockManager).reset();
     
-    RuntimeEnvironment.setRobolectricPackageManager(mockManager);
+    RuntimeEnvironment.initRobolectricPackageManager();
     
     try {
       Robolectric.reset();

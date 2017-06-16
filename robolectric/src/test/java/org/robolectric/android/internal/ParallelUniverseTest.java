@@ -15,7 +15,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;
@@ -151,7 +150,7 @@ public class ParallelUniverseTest {
   @Test
   public void tearDownApplication_shouldNotResetPackageManager() {
     RobolectricPackageManager pm = mock(RobolectricPackageManager.class);
-    RuntimeEnvironment.setRobolectricPackageManager(pm);
+    RuntimeEnvironment.initRobolectricPackageManager();
     pu.tearDownApplication();
     verify(pm, never()).reset();
   }

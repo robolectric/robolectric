@@ -3,7 +3,9 @@ package org.robolectric;
 import android.app.Application;
 import android.content.pm.PackageManager;
 
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 
@@ -21,6 +23,7 @@ public class RuntimeEnvironment {
   private static ResourceTable systemResourceTable;
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
+  private static AndroidManifest appManifest;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -94,11 +97,11 @@ public class RuntimeEnvironment {
    * If there is functionality you are missing you can extend ShadowPackageManager.
    */
   @Deprecated
-  public static void setRobolectricPackageManager(RobolectricPackageManager newPackageManager) {
+  public static void initRobolectricPackageManager() {
     if (packageManager != null) {
       packageManager.reset();
     }
-    packageManager = newPackageManager;
+    packageManager = new DefaultPackageManager();
   }
 
   public static String getQualifiers() {
@@ -170,5 +173,13 @@ public class RuntimeEnvironment {
 
   public static ResourceTable getCompileTimeResourceTable() {
     return compileTimeResourceTable;
+  }
+
+  public static void setApplicationManifest(AndroidManifest appManifest) {
+    RuntimeEnvironment.appManifest = appManifest;
+  }
+
+  public static AndroidManifest getAppManifest() {
+    return RuntimeEnvironment.appManifest;
   }
 }

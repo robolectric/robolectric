@@ -81,7 +81,8 @@ public interface RobolectricPackageManager {
 
   void addPackage(String packageName);
 
-  void addManifest(AndroidManifest androidManifest, int labelRes);
+  @Deprecated
+  void addManifest(AndroidManifest androidManifest);
 
   void removePackage(String packageName);
 
