@@ -1622,6 +1622,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return 0;
   }
 
+
   @Override
   public void clearApplicationUserData(String packageName, IPackageDataObserver observer) {
 
