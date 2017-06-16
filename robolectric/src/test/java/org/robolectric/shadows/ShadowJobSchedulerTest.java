@@ -12,6 +12,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -102,5 +103,38 @@ public class ShadowJobSchedulerTest {
         .build());
 
     assertThat(result).isEqualTo(JobScheduler.RESULT_FAILURE);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getPendingJob_withValidId() {
+    int jobId = 99;
+    JobInfo originalJobInfo = new JobInfo.Builder(jobId,
+          new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+          .setPeriodic(1000)
+          .build();
+
+    jobScheduler.schedule(originalJobInfo);
+
+    JobInfo retrievedJobInfo = jobScheduler.getPendingJob(jobId);
+
+    assertThat(retrievedJobInfo).isEqualTo(originalJobInfo);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getPendingJob_withInvalidId() {
+    int jobId = 99;
+    int invalidJobId = 100;
+    JobInfo originalJobInfo = new JobInfo.Builder(jobId,
+          new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+          .setPeriodic(1000)
+          .build();
+
+    jobScheduler.schedule(originalJobInfo);
+
+    JobInfo retrievedJobInfo = jobScheduler.getPendingJob(invalidJobId);
+
+    assertThat(retrievedJobInfo).isNull();
   }
 }
