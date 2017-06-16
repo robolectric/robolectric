@@ -13,6 +13,8 @@ import java.util.Set;
 
 public class SdkConfig implements Comparable<SdkConfig> {
 
+  // changes outside of private blocks...
+
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS = Collections.unmodifiableMap(new HashMap<Integer, SdkVersion>() {
     private final double jdkVersion = Double.parseDouble(System.getProperty("java.specification.version"));
 
@@ -121,6 +123,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
               Objects.equals(that.robolectricVersion, robolectricVersion);
     }
 
+  // more changes outside of private blocks...
     @Override
     public int hashCode() {
       return androidVersion.hashCode() * 31 + robolectricVersion.hashCode();

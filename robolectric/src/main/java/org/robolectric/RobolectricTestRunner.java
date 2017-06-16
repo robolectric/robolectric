@@ -497,6 +497,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
+  // lots of fun changes go here!
   static class RobolectricFrameworkMethod extends FrameworkMethod {
     private final @Nonnull AndroidManifest appManifest;
     final @Nonnull SdkConfig sdkConfig;
