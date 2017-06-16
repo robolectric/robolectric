@@ -18,6 +18,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
 @Implements(PackageManager.class)
@@ -260,8 +261,8 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   }
 
   @Override
-  public void addManifest(AndroidManifest androidManifest, int labelRes) {
-    RuntimeEnvironment.getRobolectricPackageManager().addManifest(androidManifest, labelRes);
+  public void addManifest(AndroidManifest androidManifest) {
+    RuntimeEnvironment.getRobolectricPackageManager().addManifest(androidManifest);
   }
 
   @Override
@@ -368,7 +369,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
-    return getDelegatePackageManager().queryBroadcastReceiversAsUser(intent, flags, userHandle);
+    return getDelegatePackageManager().queryBroadcastReceiversAsUser(intent, flags, userHandle.getIdentifier());
   }
 
   @Implementation
@@ -391,25 +392,8 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     getDelegatePackageManager().freeStorage(freeStorageSize, pi);
   }
 
-  @Implementation
-  public void getPackageSizeInfo(String packageName, IPackageStatsObserver observer) {
-    getDelegatePackageManager().getPackageSizeInfo(packageName, observer);
-  }
-
-  @Implementation
-  public void addPreferredActivityAsUser(IntentFilter filter, int match,
-      ComponentName[] set, ComponentName activity, @UserIdInt int userId) {
-    getDelegatePackageManager().addPreferredActivityAsUser(filter, match, set, activity, userId);
-  }
-
-  @Implementation
-  public void replacePreferredActivityAsUser(IntentFilter filter, int match,
-      ComponentName[] set, ComponentName activity, @UserIdInt int userId) {
-    getDelegatePackageManager().replacePreferredActivityAsUser(filter, match, set, activity, userId);
-  }
-
-  static PackageManager getDelegatePackageManager() {
-    return (PackageManager) RuntimeEnvironment.getRobolectricPackageManager();
+  static DefaultPackageManager getDelegatePackageManager() {
+    return (DefaultPackageManager) RuntimeEnvironment.getRobolectricPackageManager();
   }
 
   /**

@@ -29,6 +29,7 @@ import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -64,15 +65,20 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
-    DefaultPackageManager packageManager = new DefaultPackageManager();
-    RuntimeEnvironment.setRobolectricPackageManager(packageManager);
+    RuntimeEnvironment.initRobolectricPackageManager();
 
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
+    RuntimeEnvironment.setApplicationManifest(appManifest);
 
-    initializeAppManifest(appManifest, appResourceTable, packageManager);
-    packageManager.setDependencies(appManifest, appResourceTable);
+    try {
+      appManifest.initMetaData(appResourceTable);
+    } catch (RoboNotFoundException e1) {
+      throw new Resources.NotFoundException(e1.getMessage(), e1);
+    }
+
+    RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
@@ -122,7 +128,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = packageManager.getApplicationInfo(appManifest.getPackageName(), 0);
+        applicationInfo = RuntimeEnvironment.getRobolectricPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -150,22 +156,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
-  }
-
-  private void initializeAppManifest(AndroidManifest appManifest, ResourceTable appResourceTable, DefaultPackageManager packageManager) {
-    try {
-      appManifest.initMetaData(appResourceTable);
-    } catch (RoboNotFoundException e) {
-      throw new Resources.NotFoundException(e.getMessage(), e);
-    }
-
-    int labelRes = 0;
-    if (appManifest.getLabelRef() != null) {
-      String fullyQualifiedName = ResName.qualifyResName(appManifest.getLabelRef(), appManifest.getPackageName());
-      Integer id = fullyQualifiedName == null ? null : appResourceTable.getResourceId(new ResName(fullyQualifiedName));
-      labelRes = id != null ? id : 0;
-    }
-    packageManager.addManifest(appManifest, labelRes);
   }
 
   @Override
