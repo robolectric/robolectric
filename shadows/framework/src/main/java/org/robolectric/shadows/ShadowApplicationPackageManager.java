@@ -56,11 +56,6 @@ import org.robolectric.annotation.Implements;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  public PackageInstaller getPackageInstaller() {
-    return getDelegatePackageManager().getPackageInstaller();
-  }
-
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
     return getRobolectricPackageManager().getInstalledPackages(flags);
@@ -244,7 +239,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getDelegatePackageManager().getPermissionControllerPackageName();
   }
 
-  @Override @Implementation(maxSdk = JELLY_BEAN)
+  @Implementation(maxSdk = JELLY_BEAN)
   public void getPackageSizeInfo(String packageName, IPackageStatsObserver observer) {
     getDelegatePackageManager()
         .getPackageSizeInfoAsUser(packageName, UserHandle.myUserId(), observer);
@@ -768,17 +763,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     getDelegatePackageManager().addPreferredActivity(filter, match, set, activity);
   }
 
-  @Override public void addPreferredActivityAsUser(IntentFilter filter, int match, ComponentName[] set, ComponentName activity, int userId) {
-    getDelegatePackageManager().addPreferredActivityAsUser(filter, match, set, activity, userId);
-  }
-
   @Implementation
   public void replacePreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
     getDelegatePackageManager().replacePreferredActivity(filter, match, set, activity);
-  }
-
-  @Override public void replacePreferredActivityAsUser(IntentFilter filter, int match, ComponentName[] set, ComponentName activity, int userId) {
-    getDelegatePackageManager().replacePreferredActivityAsUser(filter, match, set, activity, userId);
   }
 
   @Implementation
