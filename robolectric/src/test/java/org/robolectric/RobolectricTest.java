@@ -157,7 +157,7 @@ public class RobolectricTest {
       order.add("shadowProvider");
       assertThat(RuntimeEnvironment.application).as("app during shadow reset").isNotNull();
       assertThat(RuntimeEnvironment.getActivityThread()).as("activityThread during shadow reset").isNotNull();
-      assertThat(RuntimeEnvironment.getRobolectricPackageManager()).as("packageManager during shadow reset").isNotNull();
+      assertThat(RuntimeEnvironment.getDefaultPackageManager()).as("packageManager during shadow reset").isNotNull();
     }
 
     @Override
