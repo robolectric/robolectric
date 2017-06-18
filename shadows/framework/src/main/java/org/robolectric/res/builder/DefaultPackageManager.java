@@ -106,13 +106,13 @@ import org.robolectric.util.TempDirectory;
  * @deprecated use @{link ShadowPackageManager} instead.
  */
 @Deprecated
-public class DefaultPackageManager implements RobolectricPackageManager {
+public class DefaultPackageManager {
 
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
   private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   private final Map<String, PackageStats> packageStatsMap = new HashMap<>();
   private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
-  private final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
+  private final Map<ComponentName, RobolectricPackageManager.ComponentState> componentList = new LinkedHashMap<>();
   private final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   private final Map<String, Drawable> applicationIcons = new HashMap<>();
   private final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
@@ -609,12 +609,12 @@ public class DefaultPackageManager implements RobolectricPackageManager {
 
 
   public void setComponentEnabledSetting(ComponentName componentName, int newState, int flags) {
-    componentList.put(componentName, new ComponentState(newState, flags));
+    componentList.put(componentName, new RobolectricPackageManager.ComponentState(newState, flags));
   }
 
 
   public int getComponentEnabledSetting(ComponentName componentName) {
-    ComponentState state = componentList.get(componentName);
+    RobolectricPackageManager.ComponentState state = componentList.get(componentName);
     return state != null ? state.newState : PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
   }
 
@@ -684,7 +684,7 @@ public class DefaultPackageManager implements RobolectricPackageManager {
    * @return Component state.
    */
 
-  public ComponentState getComponentState(ComponentName componentName) {
+  public RobolectricPackageManager.ComponentState getComponentState(ComponentName componentName) {
     return componentList.get(componentName);
   }
 
