@@ -18,7 +18,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
 @Implements(PackageManager.class)
@@ -143,37 +142,37 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
-    RuntimeEnvironment.getRobolectricPackageManager().addResolveInfoForIntent(intent, info);
+    RuntimeEnvironment.getDefaultPackageManager().addResolveInfoForIntent(intent, info);
   }
 
   @Override
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-    RuntimeEnvironment.getRobolectricPackageManager().addResolveInfoForIntent(intent, info);
+    RuntimeEnvironment.getDefaultPackageManager().addResolveInfoForIntent(intent, info);
   }
 
   @Override
   public void removeResolveInfosForIntent(Intent intent, String packageName) {
-    RuntimeEnvironment.getRobolectricPackageManager().removeResolveInfosForIntent(intent, packageName);
+    RuntimeEnvironment.getDefaultPackageManager().removeResolveInfosForIntent(intent, packageName);
   }
 
   @Override
   public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
-    return RuntimeEnvironment.getRobolectricPackageManager().getActivityIcon(intent);
+    return RuntimeEnvironment.getDefaultPackageManager().getActivityIcon(intent);
   }
 
   @Override
   public Drawable getActivityIcon(ComponentName componentName) throws NameNotFoundException {
-    return RuntimeEnvironment.getRobolectricPackageManager().getActivityIcon(componentName);
+    return RuntimeEnvironment.getDefaultPackageManager().getActivityIcon(componentName);
   }
 
   @Override
   public void addActivityIcon(ComponentName component, Drawable drawable) {
-    RuntimeEnvironment.getRobolectricPackageManager().addActivityIcon(component, drawable);
+    RuntimeEnvironment.getDefaultPackageManager().addActivityIcon(component, drawable);
   }
 
   @Override
   public void addActivityIcon(Intent intent, Drawable drawable) {
-    RuntimeEnvironment.getRobolectricPackageManager().addActivityIcon(intent, drawable);
+    RuntimeEnvironment.getDefaultPackageManager().addActivityIcon(intent, drawable);
   }
 
   /**
@@ -188,7 +187,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void setApplicationIcon(String packageName, Drawable drawable) {
-    RuntimeEnvironment.getRobolectricPackageManager().setApplicationIcon(packageName, drawable);
+    RuntimeEnvironment.getDefaultPackageManager().setApplicationIcon(packageName, drawable);
   }
 
   /**
@@ -222,52 +221,52 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   }
 
   @Override public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
-    RuntimeEnvironment.getRobolectricPackageManager().setApplicationEnabledSetting(packageName, newState, flags);
+    RuntimeEnvironment.getDefaultPackageManager().setApplicationEnabledSetting(packageName, newState, flags);
   }
 
   @Override
   public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    RuntimeEnvironment.getRobolectricPackageManager().addPreferredActivity(filter, match, set, activity);
+    RuntimeEnvironment.getDefaultPackageManager().addPreferredActivity(filter, match, set, activity);
   }
 
   @Override
   public int getPreferredActivities(List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
-    return RuntimeEnvironment.getRobolectricPackageManager().getPreferredActivities(outFilters, outActivities, packageName);
+    return RuntimeEnvironment.getDefaultPackageManager().getPreferredActivities(outFilters, outActivities, packageName);
   }
 
   @Override
   public ComponentState getComponentState(ComponentName componentName) {
-    return RuntimeEnvironment.getRobolectricPackageManager().getComponentState(componentName);
+    return RuntimeEnvironment.getDefaultPackageManager().getComponentState(componentName);
   }
 
   @Override
   public void addPackage(PackageInfo packageInfo) {
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageInfo);
+    RuntimeEnvironment.getDefaultPackageManager().addPackage(packageInfo);
   }
 
   @Override
   public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageInfo, packageStats);
+    RuntimeEnvironment.getDefaultPackageManager().addPackage(packageInfo, packageStats);
   }
 
   @Override
   public void addPermissionInfo(PermissionInfo permissionInfo) {
-    RuntimeEnvironment.getRobolectricPackageManager().addPermissionInfo(permissionInfo);
+    RuntimeEnvironment.getDefaultPackageManager().addPermissionInfo(permissionInfo);
   }
 
   @Override
   public void addPackage(String packageName) {
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageName);
+    RuntimeEnvironment.getDefaultPackageManager().addPackage(packageName);
   }
 
   @Override
   public void addManifest(AndroidManifest androidManifest) {
-    RuntimeEnvironment.getRobolectricPackageManager().addManifest(androidManifest);
+    RuntimeEnvironment.getDefaultPackageManager().addManifest(androidManifest);
   }
 
   @Override
   public void removePackage(String packageName) {
-    RuntimeEnvironment.getRobolectricPackageManager().removePackage(packageName);
+    RuntimeEnvironment.getDefaultPackageManager().removePackage(packageName);
   }
 
   /**
@@ -282,17 +281,17 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void setSystemFeature(String name, boolean supported) {
-    RuntimeEnvironment.getRobolectricPackageManager().setSystemFeature(name, supported);
+    RuntimeEnvironment.getDefaultPackageManager().setSystemFeature(name, supported);
   }
 
   @Override
   public void addDrawableResolution(String packageName, int resourceId, Drawable drawable) {
-    RuntimeEnvironment.getRobolectricPackageManager().addDrawableResolution(packageName, resourceId, drawable);
+    RuntimeEnvironment.getDefaultPackageManager().addDrawableResolution(packageName, resourceId, drawable);
   }
 
   @Override
   public Drawable getDrawable(String packageName, int resourceId, ApplicationInfo applicationInfo) {
-    return RuntimeEnvironment.getRobolectricPackageManager().getDrawable(packageName, resourceId, applicationInfo);
+    return RuntimeEnvironment.getDefaultPackageManager().getDrawable(packageName, resourceId, applicationInfo);
   }
 
   /**
@@ -307,27 +306,27 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public boolean isQueryIntentImplicitly() {
-    return RuntimeEnvironment.getRobolectricPackageManager().isQueryIntentImplicitly();
+    return RuntimeEnvironment.getDefaultPackageManager().isQueryIntentImplicitly();
   }
 
   @Override
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
-    RuntimeEnvironment.getRobolectricPackageManager().setQueryIntentImplicitly(queryIntentImplicitly);
+    RuntimeEnvironment.getDefaultPackageManager().setQueryIntentImplicitly(queryIntentImplicitly);
   }
 
   @Override
   public void setNameForUid(int uid, String name) {
-    RuntimeEnvironment.getRobolectricPackageManager().setNameForUid(uid, name);
+    RuntimeEnvironment.getDefaultPackageManager().setNameForUid(uid, name);
   }
 
   @Override
   public void setPackagesForCallingUid(String... packagesForCallingUid) {
-    RuntimeEnvironment.getRobolectricPackageManager().setPackagesForCallingUid(packagesForCallingUid);
+    RuntimeEnvironment.getDefaultPackageManager().setPackagesForCallingUid(packagesForCallingUid);
   }
 
   @Override
   public void setPackagesForUid(int uid, String... packagesForCallingUid) {
-    RuntimeEnvironment.getRobolectricPackageManager().setPackagesForUid(uid, packagesForCallingUid);
+    RuntimeEnvironment.getDefaultPackageManager().setPackagesForUid(uid, packagesForCallingUid);
   }
 
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
@@ -369,38 +368,34 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
-    return getDelegatePackageManager().queryBroadcastReceiversAsUser(intent, flags, userHandle.getIdentifier());
+    return RuntimeEnvironment.getDefaultPackageManager().queryBroadcastReceiversAsUser(intent, flags, userHandle.getIdentifier());
   }
 
   @Implementation
   public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags, @UserIdInt int userId) {
-    return getDelegatePackageManager().queryBroadcastReceivers(intent, flags, userId);
+    return RuntimeEnvironment.getDefaultPackageManager().queryBroadcastReceivers(intent, flags, userId);
   }
 
   @Override @Implementation
   public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
-    return getDelegatePackageManager().getPackageArchiveInfo(archiveFilePath, flags);
+    return RuntimeEnvironment.getDefaultPackageManager().getPackageArchiveInfo(archiveFilePath, flags);
   }
 
   @Implementation
   public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
-    getDelegatePackageManager().freeStorageAndNotify(freeStorageSize, observer);
+    RuntimeEnvironment.getDefaultPackageManager().freeStorageAndNotify(freeStorageSize, observer);
   }
 
   @Implementation
   public void freeStorage(long freeStorageSize, IntentSender pi) {
-    getDelegatePackageManager().freeStorage(freeStorageSize, pi);
-  }
-
-  static DefaultPackageManager getDelegatePackageManager() {
-    return (DefaultPackageManager) RuntimeEnvironment.getRobolectricPackageManager();
+    RuntimeEnvironment.getDefaultPackageManager().freeStorage(freeStorageSize, pi);
   }
 
   /**
    * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
    */
   public void doPendingUninstallCallbacks() {
-    RuntimeEnvironment.getRobolectricPackageManager().doPendingUninstallCallbacks();
+    RuntimeEnvironment.getDefaultPackageManager().doPendingUninstallCallbacks();
   }
 
   /**
@@ -408,6 +403,6 @@ public class ShadowPackageManager implements RobolectricPackageManager {
    * Note that like real {@link PackageManager} the calling context must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
    */
   public Set<String> getDeletedPackages() {
-    return RuntimeEnvironment.getRobolectricPackageManager().getDeletedPackages();
+    return RuntimeEnvironment.getDefaultPackageManager().getDeletedPackages();
   }
 }

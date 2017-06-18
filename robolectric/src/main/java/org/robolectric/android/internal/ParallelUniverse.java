@@ -63,7 +63,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
-    RuntimeEnvironment.initRobolectricPackageManager();
+    RuntimeEnvironment.setDefaultPackageManager(new DefaultPackageManager());
 
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
@@ -76,7 +76,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       throw new Resources.NotFoundException(e1.getMessage(), e1);
     }
 
-    RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest);
+    RuntimeEnvironment.getDefaultPackageManager().addManifest(appManifest);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
@@ -126,7 +126,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = RuntimeEnvironment.getRobolectricPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
+        applicationInfo = RuntimeEnvironment.getDefaultPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }

@@ -42,7 +42,7 @@ public class Robolectric {
       provider.reset();
     }
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.initRobolectricPackageManager();
+    RuntimeEnvironment.setDefaultPackageManager(null);
     RuntimeEnvironment.setActivityThread(null);
   }
 
