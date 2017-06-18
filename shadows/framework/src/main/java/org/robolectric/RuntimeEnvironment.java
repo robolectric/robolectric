@@ -1,8 +1,8 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.content.pm.PackageManager;
 
+import org.robolectric.internal.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.DefaultPackageManager;
@@ -17,7 +17,7 @@ public class RuntimeEnvironment {
   private volatile static Thread mainThread = Thread.currentThread();
   private static String qualifiers;
   private static Object activityThread;
-  private static RobolectricPackageManager packageManager;
+  private static DefaultPackageManager packageManager;
   private static int apiLevel;
   private static Scheduler masterScheduler;
   private static ResourceTable systemResourceTable;
@@ -85,6 +85,11 @@ public class RuntimeEnvironment {
    */
   @Deprecated
   public static RobolectricPackageManager getRobolectricPackageManager() {
+    return Shadow.extract(RuntimeEnvironment.application.getPackageManager());
+  }
+
+  @Deprecated
+  public static DefaultPackageManager getDefaultPackageManager() {
     return packageManager;
   }
 
@@ -98,10 +103,15 @@ public class RuntimeEnvironment {
    */
   @Deprecated
   public static void initRobolectricPackageManager() {
+
+  }
+
+  @Deprecated
+  public static void setDefaultPackageManager(DefaultPackageManager newPackageManager) {
     if (packageManager != null) {
       packageManager.reset();
     }
-    packageManager = new DefaultPackageManager();
+    RuntimeEnvironment.packageManager = newPackageManager;
   }
 
   public static String getQualifiers() {

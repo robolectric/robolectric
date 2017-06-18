@@ -530,7 +530,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void getApplicationInfo_whenPackageManagerIsNull_shouldNotExplode() {
-    RuntimeEnvironment.initRobolectricPackageManager();
+    RuntimeEnvironment.setDefaultPackageManager(null);
     contextWrapper.getApplicationInfo();
   }
 }

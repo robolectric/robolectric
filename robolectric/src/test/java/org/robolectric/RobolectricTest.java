@@ -17,6 +17,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.builder.RobolectricPackageManager;
@@ -157,7 +158,7 @@ public class RobolectricTest {
       order.add("shadowProvider");
       assertThat(RuntimeEnvironment.application).as("app during shadow reset").isNotNull();
       assertThat(RuntimeEnvironment.getActivityThread()).as("activityThread during shadow reset").isNotNull();
-      assertThat(RuntimeEnvironment.getRobolectricPackageManager()).as("packageManager during shadow reset").isNotNull();
+      assertThat(RuntimeEnvironment.getDefaultPackageManager()).as("packageManager during shadow reset").isNotNull();
     }
 
     @Override
@@ -179,7 +180,7 @@ public class RobolectricTest {
     
     ReflectionHelpers.setStaticField(Robolectric.class, "providers", mockProviders);
 
-    RobolectricPackageManager mockManager = mock(RobolectricPackageManager.class);
+    DefaultPackageManager mockManager = mock(DefaultPackageManager.class);
     doAnswer(new Answer<Void>() {
       public Void answer(InvocationOnMock invocation) {
         order.add("packageManager");
@@ -187,7 +188,7 @@ public class RobolectricTest {
       }
     }).when(mockManager).reset();
     
-    RuntimeEnvironment.initRobolectricPackageManager();
+    RuntimeEnvironment.setDefaultPackageManager(mockManager);
     
     try {
       Robolectric.reset();
@@ -198,7 +199,7 @@ public class RobolectricTest {
     }
     assertThat(order).as("reset order").containsExactly("shadowProvider", "packageManager");
     assertThat(RuntimeEnvironment.application).as("app after reset").isNull();
-    assertThat(RuntimeEnvironment.getRobolectricPackageManager()).as("packageManager after reset").isNull();
+    assertThat(RuntimeEnvironment.getDefaultPackageManager()).as("packageManager after reset").isNull();
     assertThat(RuntimeEnvironment.getActivityThread()).as("activityThread after reset").isNull();
   }
   
