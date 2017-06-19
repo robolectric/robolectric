@@ -11,13 +11,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(minSdk = LOLLIPOP)
+@Config(minSdk = N)
 public class ShadowJobSchedulerTest {
 
   private JobScheduler jobScheduler;
@@ -36,6 +35,18 @@ public class ShadowJobSchedulerTest {
     jobScheduler.schedule(jobInfo);
 
     assertThat(jobScheduler.getAllPendingJobs()).contains(jobInfo);
+  }
+
+  @Test
+  public void getPendingJob() {
+    JobInfo jobInfo = new JobInfo.Builder(99,
+        new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+        .setRequiresDeviceIdle(true)
+        .build();
+    jobScheduler.schedule(jobInfo);
+
+    assertThat(jobScheduler.getPendingJob(99)).isEqualTo(jobInfo);
+    assertThat(jobScheduler.getPendingJob(100)).isNull();
   }
 
   @Test
