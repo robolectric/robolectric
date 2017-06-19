@@ -1,5 +1,7 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import android.app.Application;
 import android.app.LoadedApk;
 import android.content.Context;
@@ -9,29 +11,28 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
-
+import java.lang.reflect.Method;
+import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.ApplicationTestUtil;
+import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.*;
+import org.robolectric.res.Qualifiers;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
-
-import java.lang.reflect.Method;
-import java.security.Security;
-
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.TempDirectory;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
@@ -58,6 +59,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
+    RuntimeEnvironment.setTempDirectory(new TempDirectory(
+        method.getClass().getSimpleName() + "_" + method.getName()));
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 

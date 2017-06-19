@@ -742,8 +742,9 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
-    applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    applicationInfo.sourceDir = tempDirectory.create(packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.dataDir = tempDirectory.create(packageName + "-dataDir").toAbsolutePath().toString();
 
     packageInfo.applicationInfo = applicationInfo;
 
@@ -824,12 +825,13 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
-    applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    applicationInfo.sourceDir = tempDirectory.create(androidManifest.getPackageName() + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.dataDir = tempDirectory.create(androidManifest.getPackageName() + "-dataDir").toAbsolutePath().toString();
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
-      applicationInfo.credentialProtectedDataDir = TempDirectory.create().toAbsolutePath().toString();
-      applicationInfo.deviceProtectedDataDir = TempDirectory.create().toAbsolutePath().toString();
+      applicationInfo.credentialProtectedDataDir = tempDirectory.create("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir = tempDirectory.create("deviceDataDir").toAbsolutePath().toString();
     }
     applicationInfo.labelRes = labelRes;
     String labelRef = androidManifest.getLabelRef();
@@ -1044,15 +1046,6 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
       }
     }
     return PackageManager.PERMISSION_DENIED;
-  }
-
-  @Override
-  public void reset() {
-    for (PackageInfo info : packageInfos.values()) {
-      if (info.applicationInfo != null && info.applicationInfo.dataDir != null) {
-        TempDirectory.destroy(Paths.get(info.applicationInfo.dataDir));
-      }
-    }
   }
 
   @Override

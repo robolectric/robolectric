@@ -149,14 +149,6 @@ public class ParallelUniverseTest {
   }
   
   @Test
-  public void tearDownApplication_shouldNotResetPackageManager() {
-    RobolectricPackageManager pm = mock(RobolectricPackageManager.class);
-    RuntimeEnvironment.setRobolectricPackageManager(pm);
-    pu.tearDownApplication();
-    verify(pm, never()).reset();
-  }
-  
-  @Test
   public void tearDownApplication_invokesOnTerminate() {
     RuntimeEnvironment.application = mock(Application.class);
     pu.tearDownApplication();

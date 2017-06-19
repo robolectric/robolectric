@@ -7,73 +7,44 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayDeque;
 import java.util.LinkedHashSet;
-import java.util.Queue;
 import java.util.Set;
 
 public class TempDirectory {
-  private static final TempDirectory instance = new TempDirectory();
+  private final Path basePath;
 
-  private final Set<String> deletePaths;
-
-  TempDirectory() {
-    deletePaths = new LinkedHashSet<>();
+  public TempDirectory(String name) {
+    try {
+      basePath = Files.createTempDirectory("robolectric-" + name);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     // Use a manual hook that actually clears the directory
     // This is necessary because File.deleteOnExit won't delete non empty directories
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override public void run() {
-        for (String file : deletePaths) {
-          try {
-            Path path = Paths.get(file);
-            clearDirectory(path);
-            Files.delete(path);
-          } catch (IOException ignored) {
-          }
-        }
+        destroy();
       }
     }));
   }
 
-  public static Path create() {
-    return instance.createImpl();
-  }
-
-  /**
-   * @deprecated Use {@link #create()} instead.
-   */
-  @Deprecated
-  public static Path createDeleteOnExit() {
-    return create();
-  }
-
-  public static void destroy(Path path) {
-    if (path != null) {
-      instance.destroyImpl(path);
-    }
-  }
-
-  private Path createImpl() {
+  public Path create(String name) {
+    Path path = basePath.resolve(name);
     try {
-      Path directory = Files.createTempDirectory("robolectric");
-      deleteOnExit(directory);
-      return directory;
+      Files.createDirectory(path);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    return path;
   }
 
-  void destroyImpl(Path path) {
-    if (!Files.exists(path)) return;
-
+  public void destroy() {
     try {
-      clearDirectory(path);
+      clearDirectory(basePath);
+      Files.delete(basePath);
     } catch (IOException ignored) {
-      // We failed to clear the directory, just try again at exit
     }
-
-    deleteOnExit(path);
   }
 
   private void clearDirectory(final Path directory) throws IOException {
@@ -92,9 +63,5 @@ public class TempDirectory {
         return FileVisitResult.CONTINUE;
       }
     });
-  }
-
-  private void deleteOnExit(Path path) {
-    deletePaths.add(path.toString());
   }
 }
