@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import android.app.ActivityThread;
 import android.app.Application;
 import android.app.LoadedApk;
 import android.content.Context;
@@ -65,20 +66,16 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
-    RuntimeEnvironment.initRobolectricPackageManager();
-
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
-    RuntimeEnvironment.setApplicationManifest(appManifest);
 
     try {
       appManifest.initMetaData(appResourceTable);
     } catch (RoboNotFoundException e1) {
       throw new Resources.NotFoundException(e1.getMessage(), e1);
     }
-
-    RuntimeEnvironment.getDefaultPackageManager().addManifest(appManifest);
+    RuntimeEnvironment.setApplicationManifest(appManifest);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
@@ -105,20 +102,19 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
-    Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
     ShadowLooper.getShadowMainLooper().resetScheduler();
-    Object activityThread = ReflectionHelpers.newInstance(activityThreadClass);
+    ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
-    ReflectionHelpers.setStaticField(activityThreadClass, "sMainThreadHandler", new Handler(Looper.myLooper()));
+    ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
+    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
@@ -128,21 +124,16 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = RuntimeEnvironment.getDefaultPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
+        applicationInfo = systemContextImpl.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
 
-      Class<?> compatibilityInfoClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), "android.content.res.CompatibilityInfo");
-
-      LoadedApk loadedApk = ReflectionHelpers.callInstanceMethod(activityThread, "getPackageInfo",
-          ClassParameter.from(ApplicationInfo.class, applicationInfo),
-          ClassParameter.from(compatibilityInfoClass, null),
-          ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
+      LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-        ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
+        ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
         ApplicationTestUtil.attach(application, contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);

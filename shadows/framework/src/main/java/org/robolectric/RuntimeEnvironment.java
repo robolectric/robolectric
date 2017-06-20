@@ -95,19 +95,6 @@ public class RuntimeEnvironment {
     return packageManager;
   }
 
-  /**
-   * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
-   * <pre>
-   *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
-   * </pre>
-   *
-   * If there is functionality you are missing you can extend ShadowPackageManager.
-   */
-  @Deprecated
-  public static void initRobolectricPackageManager() {
-    packageManager = new DefaultPackageManager();
-  }
-
   public static String getQualifiers() {
     return qualifiers;
   }
@@ -180,6 +167,7 @@ public class RuntimeEnvironment {
   }
 
   public static void setApplicationManifest(AndroidManifest appManifest) {
+    packageManager = new DefaultPackageManager(appManifest);
     RuntimeEnvironment.appManifest = appManifest;
   }
 

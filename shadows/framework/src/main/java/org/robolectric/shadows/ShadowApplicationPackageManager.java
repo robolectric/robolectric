@@ -27,7 +27,6 @@ import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
-import android.content.pm.KeySet;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
@@ -47,6 +46,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
+import java.util.Collections;
 import java.util.List;
 
 import org.robolectric.annotation.Implementation;
@@ -225,12 +225,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
-    return getDefaultPackageManager().queryIntentContentProviders(intent, flags);
+    return Collections.emptyList();
   }
 
   @Implementation
   public List<ResolveInfo> queryIntentContentProvidersAsUser(Intent intent, int flags, int userId) {
-    return getDefaultPackageManager().queryIntentContentProvidersAsUser(intent, flags, userId);
+    return Collections.emptyList();
   }
 
   @Implementation
@@ -321,7 +321,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
-    return getDefaultPackageManager().getPackageInfoAsUser(packageName, flags, userId);
+    return null;
   }
 
   @Implementation
@@ -341,7 +341,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public int[] getPackageGids(String packageName, int flags) throws NameNotFoundException {
-    return getDefaultPackageManager().getPackageGids(packageName, flags);
+    return null;
   }
 
   @Implementation
@@ -351,13 +351,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public int getPackageUidAsUser(String packageName, int userId) throws NameNotFoundException {
-    return getDefaultPackageManager().getPackageUidAsUser(packageName, userId);
+    return 0;
   }
 
   @Implementation
   public int getPackageUidAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
-    return getDefaultPackageManager().getPackageUidAsUser(packageName, flags, userId);
+    return 0;
   }
 
   @Implementation
@@ -374,7 +374,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public ApplicationInfo getApplicationInfoAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
-    return getDefaultPackageManager().getApplicationInfoAsUser(packageName, flags, userId);
+    return null;
   }
 
   @Implementation
@@ -386,19 +386,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public
   @NonNull
   String getServicesSystemSharedLibraryPackageName() {
-    return getDefaultPackageManager().getServicesSystemSharedLibraryPackageName();
+    return null;
   }
 
   @Implementation
   public
   @NonNull
   String getSharedSystemSharedLibraryPackageName() {
-    return getDefaultPackageManager().getSharedSystemSharedLibraryPackageName();
+    return "";
   }
 
   @Implementation
   public boolean hasSystemFeature(String name, int version) {
-    return getDefaultPackageManager().hasSystemFeature(name, version);
+    return false;
   }
 
   @Implementation
@@ -450,7 +450,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<PackageInfo> getInstalledPackagesAsUser(int flags, int userId) {
-    return getDefaultPackageManager().getInstalledPackagesAsUser(flags, userId);
+    return null;
   }
 
   @Implementation
@@ -475,7 +475,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
-    return getDefaultPackageManager().queryBroadcastReceiversAsUser(intent, flags, userId);
+    return null;
   }
 
   @Implementation
@@ -570,7 +570,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
-    return getDefaultPackageManager().getUserBadgeForDensityNoBackground(user, density);
+    return null;
   }
 
   @Implementation
@@ -625,42 +625,41 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public int installExistingPackageAsUser(String packageName, int userId) throws NameNotFoundException {
-    return getDefaultPackageManager().installExistingPackageAsUser(packageName, userId);
+    return 0;
   }
 
   @Implementation
   public void verifyIntentFilter(int id, int verificationCode, List<String> failedDomains) {
-    getDefaultPackageManager().verifyIntentFilter(id, verificationCode, failedDomains);
   }
 
   @Implementation
   public int getIntentVerificationStatusAsUser(String packageName, int userId) {
-    return getDefaultPackageManager().getIntentVerificationStatusAsUser(packageName, userId);
+    return 0;
   }
 
   @Implementation
   public boolean updateIntentVerificationStatusAsUser(String packageName, int status, int userId) {
-    return getDefaultPackageManager().updateIntentVerificationStatusAsUser(packageName, status, userId);
+    return false;
   }
 
   @Implementation
   public List<IntentFilterVerificationInfo> getIntentFilterVerifications(String packageName) {
-    return getDefaultPackageManager().getIntentFilterVerifications(packageName);
+    return null;
   }
 
   @Implementation
   public List<IntentFilter> getAllIntentFilters(String packageName) {
-    return getDefaultPackageManager().getAllIntentFilters(packageName);
+    return null;
   }
 
   @Implementation
   public String getDefaultBrowserPackageNameAsUser(int userId) {
-    return getDefaultPackageManager().getDefaultBrowserPackageNameAsUser(userId);
+    return null;
   }
 
   @Implementation
   public boolean setDefaultBrowserPackageNameAsUser(String packageName, int userId) {
-    return getDefaultPackageManager().setDefaultBrowserPackageNameAsUser(packageName, userId);
+    return false;
   }
 
   @Implementation
@@ -710,7 +709,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer, int flags, int userId) {
-    getDefaultPackageManager().deletePackageAsUser(packageName, observer, flags, userId);
   }
 
   @Implementation
@@ -725,7 +723,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public void deleteApplicationCacheFilesAsUser(String packageName, int userId, IPackageDataObserver observer) {
-    getDefaultPackageManager().deleteApplicationCacheFilesAsUser(packageName, userId, observer);
   }
 
   @Implementation
@@ -735,27 +732,25 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public String[] setPackagesSuspendedAsUser(String[] packageNames, boolean suspended, int userId) {
-    return getDefaultPackageManager().setPackagesSuspendedAsUser(packageNames, suspended, userId);
+    return null;
   }
 
   @Implementation
   public boolean isPackageSuspendedForUser(String packageName, int userId) {
-    return getDefaultPackageManager().isPackageSuspendedForUser(packageName, userId);
+    return false;
   }
 
   @Implementation
   public void addPackageToPreferred(String packageName) {
-    getDefaultPackageManager().addPackageToPreferred(packageName);
   }
 
   @Implementation
   public void removePackageFromPreferred(String packageName) {
-    getDefaultPackageManager().removePackageFromPreferred(packageName);
   }
 
   @Implementation
   public List<PackageInfo> getPreferredPackages(int flags) {
-    return getDefaultPackageManager().getPreferredPackages(flags);
+    return null;
   }
 
   @Override public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
@@ -764,12 +759,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public void replacePreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    getDefaultPackageManager().replacePreferredActivity(filter, match, set, activity);
   }
 
   @Implementation
   public void clearPackagePreferredActivities(String packageName) {
-    getDefaultPackageManager().clearPackagePreferredActivities(packageName);
   }
 
   @Override public int getPreferredActivities(List<IntentFilter> outFilters,
@@ -779,76 +772,73 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ComponentName getHomeActivities(List<ResolveInfo> outActivities) {
-    return getDefaultPackageManager().getHomeActivities(outActivities);
+    return null;
   }
 
   @Implementation
   public void flushPackageRestrictionsAsUser(int userId) {
-    getDefaultPackageManager().flushPackageRestrictionsAsUser(userId);
   }
 
   @Implementation
   public boolean setApplicationHiddenSettingAsUser(String packageName, boolean hidden, UserHandle user) {
-    return getDefaultPackageManager().setApplicationHiddenSettingAsUser(packageName, hidden, user);
+    return false;
   }
 
   @Implementation
   public boolean getApplicationHiddenSettingAsUser(String packageName, UserHandle user) {
-    return getDefaultPackageManager().getApplicationHiddenSettingAsUser(packageName, user);
+    return false;
   }
 
   @Implementation
   public Object getKeySetByAlias(String packageName, String alias) {
-    return getDefaultPackageManager().getKeySetByAlias(packageName, alias);
+    return null;
   }
 
   @Implementation
   public Object getSigningKeySet(String packageName) {
-    return getDefaultPackageManager().getSigningKeySet(packageName);
+    return null;
   }
 
   @Implementation
   public boolean isSignedBy(String packageName, Object ks) {
-    return getDefaultPackageManager().isSignedBy(packageName, (KeySet) ks);
+    return false;
   }
 
   @Implementation
   public boolean isSignedByExactly(String packageName, Object ks) {
-    return getDefaultPackageManager().isSignedByExactly(packageName, (KeySet) ks);
+    return false;
   }
 
   @Implementation
   public VerifierDeviceIdentity getVerifierDeviceIdentity() {
-    return getDefaultPackageManager().getVerifierDeviceIdentity();
+    return null;
   }
 
   @Implementation
   public boolean isUpgrade() {
-    return getDefaultPackageManager().isUpgrade();
+    return false;
   }
 
   @Implementation
   public boolean isPackageAvailable(String packageName) {
-    return getDefaultPackageManager().isPackageAvailable(packageName);
+    return false;
   }
 
   @Implementation
   public void addCrossProfileIntentFilter(IntentFilter filter, int sourceUserId, int targetUserId, int flags) {
-    getDefaultPackageManager().addCrossProfileIntentFilter(filter, sourceUserId, targetUserId, flags);
   }
 
   @Implementation
   public void clearCrossProfileIntentFilters(int sourceUserId) {
-    getDefaultPackageManager().clearCrossProfileIntentFilters(sourceUserId);
   }
 
   @Implementation
   public Drawable loadItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
-    return getDefaultPackageManager().loadItemIcon(itemInfo, appInfo);
+    return null;
   }
 
   @Implementation
   public Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
-    return getDefaultPackageManager().loadUnbadgedItemIcon(itemInfo, appInfo);
+    return null;
   }
 }

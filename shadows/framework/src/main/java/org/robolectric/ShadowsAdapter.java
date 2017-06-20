@@ -17,6 +17,7 @@ public interface ShadowsAdapter {
 
   ShadowLooperAdapter getMainLooper();
 
+  // todo remove
   String getShadowActivityThreadClassName();
 
   ShadowApplicationAdapter getApplicationAdapter(Activity component);

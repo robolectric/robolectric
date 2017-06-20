@@ -368,7 +368,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
-    return RuntimeEnvironment.getDefaultPackageManager().queryBroadcastReceiversAsUser(intent, flags, userHandle.getIdentifier());
+    return null;
   }
 
   @Implementation
