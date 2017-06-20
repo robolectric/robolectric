@@ -60,7 +60,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setTempDirectory(new TempDirectory(
-        method.getClass().getSimpleName() + "_" + method.getName()));
+        method.getClass().getSimpleName() + "_" + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_")));
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
