@@ -703,7 +703,6 @@ public class DefaultPackageManager {
     }
   }
 
-  @Override
   public void addManifest(AndroidManifest appManifest) {
     androidManifests.put(appManifest.getPackageName(), appManifest);
 
@@ -993,9 +992,6 @@ public class DefaultPackageManager {
     }
     return PackageManager.PERMISSION_DENIED;
   }
-
-
-  @Override
 
   public void setNameForUid(int uid, String name) {
     namesForUid.put(uid, name);
