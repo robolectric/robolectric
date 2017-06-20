@@ -18,7 +18,6 @@ public class RuntimeEnvironment {
   private volatile static Thread mainThread = Thread.currentThread();
   private static String qualifiers;
   private static Object activityThread;
-  private static DefaultPackageManager packageManager;
   private static int apiLevel;
   private static Scheduler masterScheduler;
   private static ResourceTable systemResourceTable;
@@ -88,11 +87,6 @@ public class RuntimeEnvironment {
   @Deprecated
   public static RobolectricPackageManager getRobolectricPackageManager() {
     return Shadow.extract(RuntimeEnvironment.application.getPackageManager());
-  }
-
-  @Deprecated
-  public static DefaultPackageManager getDefaultPackageManager() {
-    return packageManager;
   }
 
   public static String getQualifiers() {
@@ -167,7 +161,6 @@ public class RuntimeEnvironment {
   }
 
   public static void setApplicationManifest(AndroidManifest appManifest) {
-    packageManager = new DefaultPackageManager(appManifest);
     RuntimeEnvironment.appManifest = appManifest;
   }
 

@@ -150,27 +150,7 @@ public class RobolectricTest {
   }
 
   private List<String> order = new ArrayList<>();
-  
-  private class MockProvider implements ShadowProvider {
-    @Override
-    public void reset() {
-      order.add("shadowProvider");
-      assertThat(RuntimeEnvironment.application).as("app during shadow reset").isNotNull();
-      assertThat(RuntimeEnvironment.getActivityThread()).as("activityThread during shadow reset").isNotNull();
-      assertThat(RuntimeEnvironment.getDefaultPackageManager()).as("packageManager during shadow reset").isNotNull();
-    }
 
-    @Override
-    public String[] getProvidedPackageNames() {
-      return null;
-    }
-
-    @Override
-    public Map<String, String> getShadowMap() {
-      return null;
-    }
-  }
-  
   @Implements(View.class)
   public static class TestShadowView {
     @Implementation
