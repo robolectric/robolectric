@@ -126,6 +126,10 @@ public class DefaultPackageManager {
   private Map<String, PermissionInfo> extraPermissions = new HashMap<>();
   private Map<String, Resources> resources = new HashMap<>();
 
+  public DefaultPackageManager(AndroidManifest appManifest) {
+    addManifest(appManifest);
+  }
+
   public Resources getResourcesForApplication(ApplicationInfo applicationInfo) throws NameNotFoundException {
     return getResourcesForApplication(applicationInfo.packageName);
   }
@@ -703,6 +707,7 @@ public class DefaultPackageManager {
     }
   }
 
+  // todo: make not public
   public void addManifest(AndroidManifest appManifest) {
     androidManifests.put(appManifest.getPackageName(), appManifest);
 
@@ -1410,30 +1415,6 @@ public class DefaultPackageManager {
   public void freeStorage(String volumeUuid, long freeStorageSize, IntentSender pi) {
   }
 
-  public void addPackageToPreferred(String packageName) {
-  }
-
-  public void removePackageFromPreferred(String packageName) {
-  }
-
-  public List<PackageInfo> getPreferredPackages(int flags) {
-    return null;
-  }
-
-  public void replacePreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-  }
-
-  public void clearPackagePreferredActivities(String packageName) {
-  }
-
-  public boolean setApplicationHiddenSettingAsUser(String s, boolean b, UserHandle userHandle) {
-    return false;
-  }
-
-  public boolean getApplicationHiddenSettingAsUser(String s, UserHandle userHandle) {
-    return false;
-  }
-
   public boolean isSafeMode() {
     return false;
   }
@@ -1442,22 +1423,6 @@ public class DefaultPackageManager {
   }
 
   public void removeOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
-  }
-
-  public KeySet getKeySetByAlias(String s, String s1) {
-    return null;
-  }
-
-  public KeySet getSigningKeySet(String s) {
-    return null;
-  }
-
-  public boolean isSignedBy(String s, KeySet keySet) {
-    return false;
-  }
-
-  public boolean isSignedByExactly(String s, KeySet keySet) {
-    return false;
   }
 
   public int getMoveStatus(int moveId) {
@@ -1491,43 +1456,6 @@ public class DefaultPackageManager {
   }
 
   public List<VolumeInfo> getPrimaryStorageCandidateVolumes() {
-    return null;
-  }
-
-  public VerifierDeviceIdentity getVerifierDeviceIdentity() {
-    return null;
-  }
-
-  public boolean isUpgrade() {
-    return false;
-  }
-
-  public void addCrossProfileIntentFilter(IntentFilter intentFilter, int i, int i1, int i2) {
-  }
-
-  public void clearCrossProfileIntentFilters(int i) {
-  }
-
-  public Drawable loadItemIcon(PackageItemInfo packageItemInfo, ApplicationInfo applicationInfo) {
-    return null;
-  }
-
-  public Drawable loadUnbadgedItemIcon(PackageItemInfo packageItemInfo, ApplicationInfo applicationInfo) {
-    return null;
-  }
-
-  public boolean isPackageAvailable(String s) {
-    return false;
-  }
-
-  public void verifyIntentFilter(int verificationId, int verificationCode, List<String> outFailedDomains) {
-  }
-
-  public List<IntentFilterVerificationInfo> getIntentFilterVerifications(String packageName) {
-    return null;
-  }
-
-  public List<IntentFilter> getAllIntentFilters(String packageName) {
     return null;
   }
 
@@ -1575,96 +1503,4 @@ public class DefaultPackageManager {
     return deletedPackages;
   }
 
-  public ComponentName getHomeActivities(List<ResolveInfo> outActivities) {
-    return null;
-  }
-
-  public List<ResolveInfo> queryIntentContentProvidersAsUser(Intent intent, int flags, int userId) {
-    return Collections.emptyList();
-  }
-
-  public List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
-    return Collections.emptyList();
-  }
-
-  public boolean isPackageSuspendedForUser(String packageName, int userId) {
-    return false;
-  }
-
-  public String[] setPackagesSuspendedAsUser(String[] packageNames, boolean suspended, int userId) {
-    return null;
-  }
-
-  public void flushPackageRestrictionsAsUser(int userId) {
-  }
-
-  public void deleteApplicationCacheFilesAsUser(String packageName, int userId, IPackageDataObserver observer) {
-  }
-
-  public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer, int flags, int userId) {
-  }
-
-  public String getDefaultBrowserPackageNameAsUser(int userId) {
-    return null;
-  }
-
-  public boolean updateIntentVerificationStatusAsUser(String packageName, int status, int userId) {
-    return false;
-  }
-
-  public int getIntentVerificationStatusAsUser(String packageName, int userId) {
-    return 0;
-  }
-
-  public int installExistingPackageAsUser(String packageName, int userId) throws NameNotFoundException {
-    return 0;
-  }
-
-  public boolean setDefaultBrowserPackageNameAsUser(String packageName, int userId) {
-    return false;
-  }
-
-  public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
-    return null;
-  }
-
-  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
-    return null;
-  }
-
-  public boolean hasSystemFeature(String name, int version) {
-    return false;
-  }
-
-  public String getServicesSystemSharedLibraryPackageName() {
-    return null;
-  }
-
-  public List<PackageInfo> getInstalledPackagesAsUser(int flags, int userId) {
-    return null;
-  }
-
-  public ApplicationInfo getApplicationInfoAsUser(String packageName, int flags, int userId) throws NameNotFoundException {
-    return null;
-  }
-
-  public int getPackageUidAsUser(String packageName, int userId) throws NameNotFoundException {
-    return 0;
-  }
-
-  public int getPackageUidAsUser(String packageName, int flags, int userId) throws NameNotFoundException {
-    return 0;
-  }
-
-  public int[] getPackageGids(String packageName, int flags) throws NameNotFoundException {
-    return null;
-  }
-
-  public PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId) throws NameNotFoundException {
-    return null;
-  }
-
-  public String getSharedSystemSharedLibraryPackageName() {
-    return "";
-  }
 }

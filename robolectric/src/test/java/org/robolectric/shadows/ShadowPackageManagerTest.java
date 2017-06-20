@@ -1366,8 +1366,6 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
   }
 
-
-
   @Test
   public void addPackageMultipleTimesShouldWork() throws Exception {
     shadowPackageManager.addPackage("test.package");
