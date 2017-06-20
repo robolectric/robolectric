@@ -5,7 +5,6 @@ import android.app.Application;
 import org.robolectric.internal.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
