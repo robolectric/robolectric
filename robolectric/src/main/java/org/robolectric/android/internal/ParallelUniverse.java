@@ -63,7 +63,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
-    RuntimeEnvironment.setDefaultPackageManager(new DefaultPackageManager());
+    RuntimeEnvironment.initRobolectricPackageManager();
 
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
