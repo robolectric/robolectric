@@ -56,7 +56,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
@@ -101,8 +100,12 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   protected final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
   protected final Map<String, String> currentToCanonicalNames = new HashMap<>();
 
-  protected DefaultPackageManager defaultPackageManager = new DefaultPackageManager(RuntimeEnvironment.getAppManifest());
-
+  public final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
+  
+  public ShadowPackageManager() {
+    addManifest(RuntimeEnvironment.getAppManifest());
+  }
+  
   /**
    * Goes through the meta data and puts each value in to a
    * bundle as the correct type.
@@ -324,6 +327,17 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     return applicationFlags;
   }
 
+  private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
+
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+    }
+  }
+
   /**
    * @deprecated We're forced to implement this because we're implementing {@link RobolectricPackageManager} which will
    * be removed in the next release. Prefer {@link PackageManager#getPackageInfo(String, int)} instead.
@@ -436,15 +450,15 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
-    defaultPackageManager.resolveInfoForIntent.put(intent, info);
+    resolveInfoForIntent.put(intent, info);
   }
 
   @Override
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-    List<ResolveInfo> infoList1 = defaultPackageManager.resolveInfoForIntent.get(intent);
+    List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
     if (infoList1 == null) {
       infoList1 = new ArrayList<>();
-      defaultPackageManager.resolveInfoForIntent.put(intent, infoList1);
+      resolveInfoForIntent.put(intent, infoList1);
     }
     List<ResolveInfo> infoList = infoList1;
     infoList.add(info);
@@ -452,10 +466,10 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void removeResolveInfosForIntent(Intent intent, String packageName) {
-    List<ResolveInfo> infoList1 = defaultPackageManager.resolveInfoForIntent.get(intent);
+    List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
     if (infoList1 == null) {
       infoList1 = new ArrayList<>();
-      defaultPackageManager.resolveInfoForIntent.put(intent, infoList1);
+      resolveInfoForIntent.put(intent, infoList1);
     }
     List<ResolveInfo> infoList = infoList1;
     for (Iterator<ResolveInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
@@ -468,22 +482,22 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
-    return defaultPackageManager.drawableList.get(intent.getComponent());
+    return drawableList.get(intent.getComponent());
   }
 
   @Override
   public Drawable getActivityIcon(ComponentName componentName) throws NameNotFoundException {
-    return defaultPackageManager.drawableList.get(componentName);
+    return drawableList.get(componentName);
   }
 
   @Override
   public void addActivityIcon(ComponentName component, Drawable drawable) {
-    defaultPackageManager.drawableList.put(component, drawable);
+    drawableList.put(component, drawable);
   }
 
   @Override
   public void addActivityIcon(Intent intent, Drawable drawable) {
-    defaultPackageManager.drawableList.put(intent.getComponent(), drawable);
+    drawableList.put(intent.getComponent(), drawable);
   }
 
   /**
@@ -498,7 +512,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void setApplicationIcon(String packageName, Drawable drawable) {
-    defaultPackageManager.applicationIcons.put(packageName, drawable);
+    applicationIcons.put(packageName, drawable);
   }
 
   /**
@@ -532,12 +546,12 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   }
 
   @Override public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
-    defaultPackageManager.applicationEnabledSettingMap.put(packageName, newState);
+    applicationEnabledSettingMap.put(packageName, newState);
   }
 
   @Override
   public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    defaultPackageManager.preferredActivities.put(filter, activity);
+    preferredActivities.put(filter, activity);
   }
 
   @Override
@@ -546,11 +560,11 @@ public class ShadowPackageManager implements RobolectricPackageManager {
       return 0;
     }
 
-    Set<IntentFilter> filters = defaultPackageManager.preferredActivities.keySet();
+    Set<IntentFilter> filters = preferredActivities.keySet();
     for (IntentFilter filter : outFilters) {
       step:
       for (IntentFilter testFilter : filters) {
-        ComponentName name = defaultPackageManager.preferredActivities.get(testFilter);
+        ComponentName name = preferredActivities.get(testFilter);
         // filter out based on the given packageName;
         if (packageName != null && !name.getPackageName().equals(packageName)) {
           continue step;
@@ -584,7 +598,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public ComponentState getComponentState(ComponentName componentName) {
-    return defaultPackageManager.componentList.get(componentName);
+    return componentList.get(componentName);
   }
 
   @Override
@@ -592,13 +606,13 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
-    defaultPackageManager.packageInfos.put(packageInfo.packageName, packageInfo);
-    defaultPackageManager.packageStatsMap.put(packageInfo.packageName, packageStats);
-    defaultPackageManager.applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+    packageInfos.put(packageInfo.packageName, packageInfo);
+    packageStatsMap.put(packageInfo.packageName, packageStats);
+    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     Resources r = new Resources(new AssetManager(), null, null);
-    defaultPackageManager.resources.put(packageInfo.packageName, r);
+    resources.put(packageInfo.packageName, r);
     if (packageInfo.applicationInfo != null) {
-      defaultPackageManager.namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
   }
 
@@ -606,19 +620,19 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
-    defaultPackageManager.packageInfos.put(packageInfo.packageName, packageInfo);
-    defaultPackageManager.packageStatsMap.put(packageInfo.packageName, packageStats);
-    defaultPackageManager.applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+    packageInfos.put(packageInfo.packageName, packageInfo);
+    packageStatsMap.put(packageInfo.packageName, packageStats);
+    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     Resources r = new Resources(new AssetManager(), null, null);
-    defaultPackageManager.resources.put(packageInfo.packageName, r);
+    resources.put(packageInfo.packageName, r);
     if (packageInfo.applicationInfo != null) {
-      defaultPackageManager.namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
   }
 
   @Override
   public void addPermissionInfo(PermissionInfo permissionInfo) {
-    defaultPackageManager.extraPermissions.put(permissionInfo.name, permissionInfo);
+    extraPermissions.put(permissionInfo.name, permissionInfo);
   }
 
   @Override
@@ -628,26 +642,26 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
-    defaultPackageManager.setUpPackageStorage(applicationInfo);
+    setUpPackageStorage(applicationInfo);
 
     packageInfo.applicationInfo = applicationInfo;
 
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
-    defaultPackageManager.packageInfos.put(packageInfo.packageName, packageInfo);
-    defaultPackageManager.packageStatsMap.put(packageInfo.packageName, packageStats);
-    defaultPackageManager.applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+    packageInfos.put(packageInfo.packageName, packageInfo);
+    packageStatsMap.put(packageInfo.packageName, packageStats);
+    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     Resources r = new Resources(new AssetManager(), null, null);
-    defaultPackageManager.resources.put(packageInfo.packageName, r);
+    resources.put(packageInfo.packageName, r);
     if (packageInfo.applicationInfo != null) {
-      defaultPackageManager.namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
   }
 
   @Override
   public void addManifest(AndroidManifest androidManifest) {
-    defaultPackageManager.androidManifests.put(androidManifest.getPackageName(), androidManifest);
+    androidManifests.put(androidManifest.getPackageName(), androidManifest);
 
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = androidManifest.getPackageName();
@@ -660,10 +674,10 @@ public class ShadowPackageManager implements RobolectricPackageManager {
       String name = data.getName();
       String activityName = name.startsWith(".") ? androidManifest.getPackageName() + name : name;
       Intent intent = new Intent(activityName);
-      List<ResolveInfo> infoList1 = defaultPackageManager.resolveInfoForIntent.get(intent);
+      List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
       if (infoList1 == null) {
         infoList1 = new ArrayList<>();
-        defaultPackageManager.resolveInfoForIntent.put(intent, infoList1);
+        resolveInfoForIntent.put(intent, infoList1);
       }
       List<ResolveInfo> infoList = infoList1;
       infoList.add(new ResolveInfo());
@@ -707,10 +721,10 @@ public class ShadowPackageManager implements RobolectricPackageManager {
       for (String action : androidManifest.getBroadcastReceivers().get(i).getActions()) {
         Intent intent = new Intent(action);
         intent.setPackage(androidManifest.getPackageName());
-        List<ResolveInfo> infoList1 = defaultPackageManager.resolveInfoForIntent.get(intent);
+        List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
         if (infoList1 == null) {
           infoList1 = new ArrayList<>();
-          defaultPackageManager.resolveInfoForIntent.put(intent, infoList1);
+          resolveInfoForIntent.put(intent, infoList1);
         }
         List<ResolveInfo> infoList = infoList1;
         infoList.add(resolveInfo);
@@ -732,7 +746,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
-    defaultPackageManager.setUpPackageStorage(applicationInfo);
+    setUpPackageStorage(applicationInfo);
 
     int labelRes = 0;
     if (androidManifest.getLabelRef() != null) {
@@ -752,19 +766,19 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
-    defaultPackageManager.packageInfos.put(packageInfo.packageName, packageInfo);
-    defaultPackageManager.packageStatsMap.put(packageInfo.packageName, packageStats);
-    defaultPackageManager.applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+    packageInfos.put(packageInfo.packageName, packageInfo);
+    packageStatsMap.put(packageInfo.packageName, packageStats);
+    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     Resources r = new Resources(new AssetManager(), null, null);
-    defaultPackageManager.resources.put(packageInfo.packageName, r);
+    resources.put(packageInfo.packageName, r);
     if (packageInfo.applicationInfo != null) {
-      defaultPackageManager.namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
   }
 
   @Override
   public void removePackage(String packageName) {
-    defaultPackageManager.packageInfos.remove(packageName);
+    packageInfos.remove(packageName);
   }
 
   /**
@@ -779,17 +793,17 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void setSystemFeature(String name, boolean supported) {
-    defaultPackageManager.systemFeatureList.put(name, supported);
+    systemFeatureList.put(name, supported);
   }
 
   @Override
   public void addDrawableResolution(String packageName, int resourceId, Drawable drawable) {
-    defaultPackageManager.drawables.put(new Pair(packageName, resourceId), drawable);
+    drawables.put(new Pair(packageName, resourceId), drawable);
   }
 
   @Override
   public Drawable getDrawable(String packageName, int resourceId, ApplicationInfo applicationInfo) {
-    return defaultPackageManager.drawables.get(new Pair(packageName, resourceId));
+    return drawables.get(new Pair(packageName, resourceId));
   }
 
   /**
@@ -804,27 +818,27 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public boolean isQueryIntentImplicitly() {
-    return defaultPackageManager.queryIntentImplicitly;
+    return queryIntentImplicitly;
   }
 
   @Override
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
-    defaultPackageManager.queryIntentImplicitly = queryIntentImplicitly;
+    queryIntentImplicitly = queryIntentImplicitly;
   }
 
   @Override
   public void setNameForUid(int uid, String name) {
-    defaultPackageManager.namesForUid.put(uid, name);
+    namesForUid.put(uid, name);
   }
 
   @Override
   public void setPackagesForCallingUid(String... packagesForCallingUid) {
-    defaultPackageManager.packagesForUid.put(Binder.getCallingUid(), packagesForCallingUid);
+    packagesForUid.put(Binder.getCallingUid(), packagesForCallingUid);
   }
 
   @Override
   public void setPackagesForUid(int uid, String... packagesForCallingUid) {
-    defaultPackageManager.packagesForUid.put(uid, packagesForCallingUid);
+    packagesForUid.put(uid, packagesForCallingUid);
   }
 
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
@@ -877,8 +891,8 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   @Override @Implementation
   public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
     List<PackageInfo> result = new ArrayList<>();
-    for (PackageInfo packageInfo : defaultPackageManager.packageInfos.values()) {
-      if (defaultPackageManager.applicationEnabledSettingMap.get(packageInfo.packageName)
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      if (applicationEnabledSettingMap.get(packageInfo.packageName)
           != COMPONENT_ENABLED_STATE_DISABLED
           || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
             result.add(packageInfo);
@@ -909,7 +923,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   public void doPendingUninstallCallbacks() {
     boolean hasDeletePackagesPermission = false;
     String[] requestedPermissions =
-        defaultPackageManager.packageInfos.get(RuntimeEnvironment.getAppManifest().getPackageName()).requestedPermissions;
+        packageInfos.get(RuntimeEnvironment.getAppManifest().getPackageName()).requestedPermissions;
     if (requestedPermissions != null) {
       for (String permission : requestedPermissions) {
         if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {
@@ -919,23 +933,23 @@ public class ShadowPackageManager implements RobolectricPackageManager {
       }
     }
 
-    for (String packageName : defaultPackageManager.pendingDeleteCallbacks.keySet()) {
+    for (String packageName : pendingDeleteCallbacks.keySet()) {
       int resultCode = PackageManager.DELETE_FAILED_INTERNAL_ERROR;
 
-      PackageInfo removed = defaultPackageManager.packageInfos.get(packageName);
+      PackageInfo removed = packageInfos.get(packageName);
       if (hasDeletePackagesPermission && removed != null) {
-        defaultPackageManager.packageInfos.remove(packageName);
-        defaultPackageManager.deletedPackages.add(packageName);
+        packageInfos.remove(packageName);
+        deletedPackages.add(packageName);
         resultCode = PackageManager.DELETE_SUCCEEDED;
       }
 
       try {
-        defaultPackageManager.pendingDeleteCallbacks.get(packageName).packageDeleted(packageName, resultCode);
+        pendingDeleteCallbacks.get(packageName).packageDeleted(packageName, resultCode);
       } catch (RemoteException e) {
         throw new RuntimeException(e);
       }
     }
-    defaultPackageManager.pendingDeleteCallbacks.clear();
+    pendingDeleteCallbacks.clear();
   }
 
   /**
@@ -943,336 +957,43 @@ public class ShadowPackageManager implements RobolectricPackageManager {
    * Note that like real {@link PackageManager} the calling context must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
    */
   public Set<String> getDeletedPackages() {
-    return defaultPackageManager.deletedPackages;
+    return deletedPackages;
   }
 
-  /**
-   * @deprecated use @{link ShadowPackageManager} instead.
-   */
-  @Deprecated
-  public static class DefaultPackageManager {
+  public final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
+  public final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  public final Map<String, PackageStats> packageStatsMap = new HashMap<>();
+  public final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
+  public final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
+  public final Map<String, Drawable> applicationIcons = new HashMap<>();
+  public final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  public final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
+  public final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  public final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
+  public final Map<Integer, String> namesForUid = new HashMap<>();
+  public final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  public final Map<String, String> packageInstallerMap = new HashMap<>();
+  public boolean queryIntentImplicitly = false;
+  public Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  public Map<String, Resources> resources = new HashMap<>();
 
-    public final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
-    public final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
-    public final Map<String, PackageStats> packageStatsMap = new HashMap<>();
-    public final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
-    public final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
-    public final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
-    public final Map<String, Drawable> applicationIcons = new HashMap<>();
-    public final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-    public final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
-    public final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
-    public final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-    public final Map<Integer, String> namesForUid = new HashMap<>();
-    public final Map<Integer, String[]> packagesForUid = new HashMap<>();
-    public final Map<String, String> packageInstallerMap = new HashMap<>();
-    public boolean queryIntentImplicitly = false;
-    public Map<String, PermissionInfo> extraPermissions = new HashMap<>();
-    public Map<String, Resources> resources = new HashMap<>();
 
-    public DefaultPackageManager(AndroidManifest appManifest) {
-      androidManifests.put(appManifest.getPackageName(), appManifest);
 
-      PackageInfo packageInfo = new PackageInfo();
-      packageInfo.packageName = appManifest.getPackageName();
-      packageInfo.versionName = appManifest.getVersionName();
-      packageInfo.versionCode = appManifest.getVersionCode();
 
-      Map<String,ActivityData> activityDatas = appManifest.getActivityDatas();
 
-      for (ActivityData data : activityDatas.values()) {
-        String name = data.getName();
-        String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
-        Intent intent = new Intent(activityName);
-        List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
-        if (infoList1 == null) {
-          infoList1 = new ArrayList<>();
-          resolveInfoForIntent.put(intent, infoList1);
-        }
-        List<ResolveInfo> infoList = infoList1;
-        infoList.add(new ResolveInfo());
-      }
 
-      ContentProviderData[] cpdata = appManifest.getContentProviders().toArray(new ContentProviderData[]{});
-      if (cpdata.length == 0) {
-        packageInfo.providers = null;
-      } else {
-        packageInfo.providers = new ProviderInfo[cpdata.length];
-        for (int i = 0; i < cpdata.length; i++) {
-          ProviderInfo info = new ProviderInfo();
-          info.authority = cpdata[i].getAuthorities(); // todo: support multiple authorities
-          info.name = cpdata[i].getClassName();
-          info.packageName = appManifest.getPackageName();
-          info.metaData = metaDataToBundle(cpdata[i].getMetaData().getValueMap());
-          packageInfo.providers[i] = info;
-        }
-      }
 
-      // Populate information related to BroadcastReceivers. Broadcast receivers can be queried in two
-      // possible ways,
-      // 1. PackageManager#getPackageInfo(...),
-      // 2. PackageManager#queryBroadcastReceivers(...)
-      // The following piece of code will let you enable querying receivers through both the methods.
-      List<ActivityInfo> receiverActivityInfos = new ArrayList<>();
-      for (int i = 0; i < appManifest.getBroadcastReceivers().size(); ++i) {
-        ActivityInfo activityInfo = new ActivityInfo();
-        activityInfo.name = appManifest.getBroadcastReceivers().get(i).getClassName();
-        activityInfo.permission = appManifest.getBroadcastReceivers().get(i).getPermission();
-        receiverActivityInfos.add(activityInfo);
-
-        ResolveInfo resolveInfo = new ResolveInfo();
-        resolveInfo.activityInfo = activityInfo;
-        IntentFilter filter = new IntentFilter();
-        for (String action : appManifest.getBroadcastReceivers().get(i).getActions()) {
-          filter.addAction(action);
-        }
-        resolveInfo.filter = filter;
-
-        for (String action : appManifest.getBroadcastReceivers().get(i).getActions()) {
-          Intent intent = new Intent(action);
-          intent.setPackage(appManifest.getPackageName());
-          List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
-          if (infoList1 == null) {
-            infoList1 = new ArrayList<>();
-            resolveInfoForIntent.put(intent, infoList1);
-          }
-          List<ResolveInfo> infoList = infoList1;
-          infoList.add(resolveInfo);
-        }
-      }
-      packageInfo.receivers = receiverActivityInfos.toArray(new ActivityInfo[0]);
-
-      String[] usedPermissions = appManifest.getUsedPermissions().toArray(new String[]{});
-      if (usedPermissions.length == 0) {
-        packageInfo.requestedPermissions = null;
-      } else {
-        packageInfo.requestedPermissions = usedPermissions;
-      }
-
-      ApplicationInfo applicationInfo = new ApplicationInfo();
-      applicationInfo.flags = decodeFlags(appManifest.getApplicationAttributes());
-      applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
-      applicationInfo.packageName = appManifest.getPackageName();
-      applicationInfo.processName = appManifest.getProcessName();
-      applicationInfo.name = appManifest.getApplicationName();
-      applicationInfo.metaData = metaDataToBundle(appManifest.getApplicationMetaData());
-      setUpPackageStorage(applicationInfo);
-
-      int labelRes = 0;
-      if (appManifest.getLabelRef() != null) {
-        String fullyQualifiedName = ResName.qualifyResName(appManifest.getLabelRef(), appManifest.getPackageName());
-        Integer id = fullyQualifiedName == null ? null : RuntimeEnvironment.getAppResourceTable().getResourceId(new ResName(fullyQualifiedName));
-        labelRes = id != null ? id : 0;
-      }
-
-      applicationInfo.labelRes = labelRes;
-      String labelRef = appManifest.getLabelRef();
-      if (labelRef != null && !labelRef.startsWith("@")) {
-        applicationInfo.nonLocalizedLabel = labelRef;
-      }
-
-      packageInfo.applicationInfo = applicationInfo;
-      PackageStats packageStats = new PackageStats(packageInfo.packageName);
-      Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
-
-      packageInfos.put(packageInfo.packageName, packageInfo);
-      packageStatsMap.put(packageInfo.packageName, packageStats);
-      applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-      Resources r = new Resources(new AssetManager(), null, null);
-      resources.put(packageInfo.packageName, r);
-      if (packageInfo.applicationInfo != null) {
-        namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
-      }
+  protected List<ResolveInfo> queryIntent(Intent intent, int flags) {
+    List<ResolveInfo> result = resolveInfoForIntent.get(intent);
+    if (result == null) {
+      return Collections.emptyList();
+    } else {
+      return result;
     }
-
-    PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-      PackageInfo info = packageInfos.get(packageName);
-      if (info != null) {
-        if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
-            && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
-          throw new NameNotFoundException("Package is disabled, can't find");
-        }
-        return info;
-      } else {
-        throw new NameNotFoundException(packageName);
-      }
-    }
-
-    ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
-      PackageInfo info = packageInfos.get(packageName);
-      if (info != null) {
-        try {
-            PackageInfo packageInfo = getPackageInfo(packageName, -1);
-        } catch (NameNotFoundException e) {
-            throw new IllegalArgumentException(e);
-        }
-
-        if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
-            && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
-          throw new NameNotFoundException("Package is disabled, can't find");
-        }
-        return info.applicationInfo;
-      } else {
-        throw new NameNotFoundException(packageName);
-      }
-    }
-
-    public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-      List<ResolveInfo> resolveInfoList = queryIntent(intent, flags);
-
-      if (resolveInfoList.isEmpty() && queryIntentImplicitly) {
-        resolveInfoList = queryImplicitIntent(intent, flags);
-      }
-
-      return resolveInfoList;
-    }
-
-    public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-      // Check the manually added resolve infos first.
-      List<ResolveInfo> resolveInfos = queryIntent(intent, flags);
-      if (!resolveInfos.isEmpty()) {
-        return resolveInfos;
-      }
-
-      // Check matches from the manifest.
-      resolveInfos = new ArrayList<>();
-      AndroidManifest applicationManifest = RuntimeEnvironment.getAppManifest();
-      if (resolveInfos.isEmpty() && applicationManifest != null) {
-        for (ServiceData service : applicationManifest.getServices()) {
-          IntentFilter intentFilter = matchIntentFilter(intent, service.getIntentFilters());
-          if (intentFilter != null) {
-            resolveInfos.add(getResolveInfo(service, intentFilter, applicationManifest.getPackageName()));
-          }
-        }
-      }
-
-      return resolveInfos;
-    }
-
-    public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
-      return queryIntent(intent, flags);
-    }
-
-
-    private void setUpPackageStorage(ApplicationInfo applicationInfo) {
-      TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
-      applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
-      applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
-
-      if (RuntimeEnvironment.getApiLevel() >= N) {
-        applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
-        applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
-      }
-    }
-
-
-    private List<ResolveInfo> queryIntent(Intent intent, int flags) {
-      List<ResolveInfo> result = resolveInfoForIntent.get(intent);
-      if (result == null) {
-        return Collections.emptyList();
-      } else {
-        return result;
-      }
-    }
-
-    private List<ResolveInfo> queryImplicitIntent(Intent intent, int flags) {
-      List<ResolveInfo> resolveInfoList = new ArrayList<>();
-
-      for (Map.Entry<String, AndroidManifest> androidManifest : androidManifests.entrySet()) {
-        String packageName = androidManifest.getKey();
-        AndroidManifest appManifest = androidManifest.getValue();
-
-        for (Map.Entry<String, ActivityData> activity : appManifest.getActivityDatas().entrySet()) {
-          String activityName = activity.getKey();
-          ActivityData activityData = activity.getValue();
-          if (activityData.getTargetActivity() != null) {
-            activityName = activityData.getTargetActivityName();
-          }
-
-          IntentFilter intentFilter = matchIntentFilter(intent, activityData.getIntentFilters());
-          if (intentFilter != null) {
-            ResolveInfo resolveInfo = new ResolveInfo();
-            resolveInfo.resolvePackageName = packageName;
-            resolveInfo.activityInfo = new ActivityInfo();
-            resolveInfo.activityInfo.targetActivity = activityName;
-            resolveInfo.activityInfo.name = activityData.getName();
-            resolveInfoList.add(resolveInfo);
-          }
-        }
-      }
-
-      return resolveInfoList;
-    }
-
-
-    public static class IntentComparator implements Comparator<Intent> {
-
-
-      public int compare(Intent i1, Intent i2) {
-        if (i1 == null && i2 == null) return 0;
-        if (i1 == null && i2 != null) return -1;
-        if (i1 != null && i2 == null) return 1;
-        if (i1.equals(i2)) return 0;
-        String action1 = i1.getAction();
-        String action2 = i2.getAction();
-        if (action1 == null && action2 != null) return -1;
-        if (action1 != null && action2 == null) return 1;
-        if (action1 != null && action2 != null) {
-          if (!action1.equals(action2)) {
-            return action1.compareTo(action2);
-          }
-        }
-        Uri data1 = i1.getData();
-        Uri data2 = i2.getData();
-        if (data1 == null && data2 != null) return -1;
-        if (data1 != null && data2 == null) return 1;
-        if (data1 != null && data2 != null) {
-          if (!data1.equals(data2)) {
-            return data1.compareTo(data2);
-          }
-        }
-        ComponentName component1 = i1.getComponent();
-        ComponentName component2 = i2.getComponent();
-        if (component1 == null && component2 != null) return -1;
-        if (component1 != null && component2 == null) return 1;
-        if (component1 != null && component2 != null) {
-          if (!component1.equals(component2)) {
-            return component1.compareTo(component2);
-          }
-        }
-        String package1 = i1.getPackage();
-        String package2 = i2.getPackage();
-        if (package1 == null && package2 != null) return -1;
-        if (package1 != null && package2 == null) return 1;
-        if (package1 != null && package2 != null) {
-          if (!package1.equals(package2)) {
-            return package1.compareTo(package2);
-          }
-        }
-        Set<String> categories1 = i1.getCategories();
-        Set<String> categories2 = i2.getCategories();
-        if (categories1 == null) return categories2 == null ? 0 : -1;
-        if (categories2 == null) return 1;
-        if (categories1.size() > categories2.size()) return 1;
-        if (categories1.size() < categories2.size()) return -1;
-        String[] array1 = categories1.toArray(new String[0]);
-        String[] array2 = categories2.toArray(new String[0]);
-        Arrays.sort(array1);
-        Arrays.sort(array2);
-        for (int i = 0; i < array1.length; ++i) {
-          int val = array1[i].compareTo(array2[i]);
-          if (val != 0) return val;
-        }
-        return 0;
-      }
-    }
-
-
-    private Set<String> deletedPackages = new HashSet<>();
-    public Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
-
-
   }
+  
+  private Set<String> deletedPackages = new HashSet<>();
+  public Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
 
   private static final List<Pair<String, Integer>> CONFIG_OPTIONS = asList(
       Pair.create("mcc", ActivityInfo.CONFIG_MCC),
@@ -1313,5 +1034,67 @@ public class ShadowPackageManager implements RobolectricPackageManager {
       }
     }
     return res;
+  }
+
+  public static class IntentComparator implements Comparator<Intent> {
+
+
+    public int compare(Intent i1, Intent i2) {
+      if (i1 == null && i2 == null) return 0;
+      if (i1 == null && i2 != null) return -1;
+      if (i1 != null && i2 == null) return 1;
+      if (i1.equals(i2)) return 0;
+      String action1 = i1.getAction();
+      String action2 = i2.getAction();
+      if (action1 == null && action2 != null) return -1;
+      if (action1 != null && action2 == null) return 1;
+      if (action1 != null && action2 != null) {
+        if (!action1.equals(action2)) {
+          return action1.compareTo(action2);
+        }
+      }
+      Uri data1 = i1.getData();
+      Uri data2 = i2.getData();
+      if (data1 == null && data2 != null) return -1;
+      if (data1 != null && data2 == null) return 1;
+      if (data1 != null && data2 != null) {
+        if (!data1.equals(data2)) {
+          return data1.compareTo(data2);
+        }
+      }
+      ComponentName component1 = i1.getComponent();
+      ComponentName component2 = i2.getComponent();
+      if (component1 == null && component2 != null) return -1;
+      if (component1 != null && component2 == null) return 1;
+      if (component1 != null && component2 != null) {
+        if (!component1.equals(component2)) {
+          return component1.compareTo(component2);
+        }
+      }
+      String package1 = i1.getPackage();
+      String package2 = i2.getPackage();
+      if (package1 == null && package2 != null) return -1;
+      if (package1 != null && package2 == null) return 1;
+      if (package1 != null && package2 != null) {
+        if (!package1.equals(package2)) {
+          return package1.compareTo(package2);
+        }
+      }
+      Set<String> categories1 = i1.getCategories();
+      Set<String> categories2 = i2.getCategories();
+      if (categories1 == null) return categories2 == null ? 0 : -1;
+      if (categories2 == null) return 1;
+      if (categories1.size() > categories2.size()) return 1;
+      if (categories1.size() < categories2.size()) return -1;
+      String[] array1 = categories1.toArray(new String[0]);
+      String[] array2 = categories2.toArray(new String[0]);
+      Arrays.sort(array1);
+      Arrays.sort(array2);
+      for (int i = 0; i < array1.length; ++i) {
+        int val = array1[i].compareTo(array2[i]);
+        if (val != 0) return val;
+      }
+      return 0;
+    }
   }
 }
