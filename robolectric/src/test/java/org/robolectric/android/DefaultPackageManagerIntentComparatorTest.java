@@ -4,7 +4,7 @@ import android.content.Intent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.shadows.ShadowPackageManager.DefaultPackageManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

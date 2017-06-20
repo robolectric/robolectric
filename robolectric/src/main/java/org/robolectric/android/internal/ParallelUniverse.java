@@ -27,9 +27,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.Qualifiers;
-import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -152,22 +150,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
    */
   private String createTestDataDirRootPath(Method method) {
     return method.getClass().getSimpleName() + "_" + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
-  }
-
-  private void initializeAppManifest(AndroidManifest appManifest, ResourceTable appResourceTable, DefaultPackageManager packageManager) {
-    try {
-      appManifest.initMetaData(appResourceTable);
-    } catch (RoboNotFoundException e) {
-      throw new Resources.NotFoundException(e.getMessage(), e);
-    }
-
-    int labelRes = 0;
-    if (appManifest.getLabelRef() != null) {
-      String fullyQualifiedName = ResName.qualifyResName(appManifest.getLabelRef(), appManifest.getPackageName());
-      Integer id = fullyQualifiedName == null ? null : appResourceTable.getResourceId(new ResName(fullyQualifiedName));
-      labelRes = id != null ? id : 0;
-    }
-    packageManager.addManifest(appManifest, labelRes);
   }
 
   @Override
