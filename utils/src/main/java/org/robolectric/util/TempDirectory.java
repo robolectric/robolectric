@@ -1,8 +1,10 @@
 package org.robolectric.util;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -33,6 +35,19 @@ public class TempDirectory {
     Path path = basePath.resolve(name);
     try {
       Files.createDirectory(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return path;
+  }
+
+  public Path createIfNotExists(String name) {
+    Path path = basePath.resolve(name);
+    try {
+      Files.createDirectory(path);
+    } catch (FileAlreadyExistsException e) {
+      // that's ok
+      return path;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
