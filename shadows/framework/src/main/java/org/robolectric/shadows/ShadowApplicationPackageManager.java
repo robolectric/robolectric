@@ -122,7 +122,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ProviderInfo resolveContentProviderAsUser(String name, int flags, @UserIdInt int userId) {
-    return getDefaultPackageManager().resolveContentProviderAsUser(name, flags, userId);
+    return null;
   }
 
   @Implementation
@@ -167,7 +167,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo) throws PackageManager.NameNotFoundException {
-    return getDefaultPackageManager().getResourcesForApplication(applicationInfo);
+    return getDefaultPackageManager().getResourcesForApplication(applicationInfo.packageName);
   }
 
   @Implementation
@@ -210,12 +210,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
-    getDefaultPackageManager().freeStorageAndNotify(freeStorageSize, observer);
   }
 
   @Implementation
   public void freeStorageAndNotify(String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {
-    getDefaultPackageManager().freeStorageAndNotify(volumeUuid, freeStorageSize, observer);
   }
 
   @Implementation
@@ -235,7 +233,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public String getPermissionControllerPackageName() {
-    return getDefaultPackageManager().getPermissionControllerPackageName();
+    return null;
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
@@ -274,7 +272,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public boolean isSafeMode() {
-    return getDefaultPackageManager().isSafeMode();
+    return false;
   }
 
   @Implementation
@@ -284,12 +282,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public Drawable getApplicationIcon(ApplicationInfo info) {
-    return getDefaultPackageManager().getApplicationIcon(info);
+    return null;
   }
 
   @Implementation
   public Drawable getUserBadgeForDensity(UserHandle userHandle, int i) {
-    return getDefaultPackageManager().getUserBadgeForDensity(userHandle, i);
+    return null;
   }
 
   @Implementation
@@ -299,7 +297,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public int checkSignatures(int uid1, int uid2) {
-    return getDefaultPackageManager().checkSignatures(uid1, uid2);
+    return 0;
   }
 
   @Implementation
@@ -308,12 +306,29 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   public CharSequence getApplicationLabel(ApplicationInfo info) {
-    return getDefaultPackageManager().getApplicationLabel(info);
+    return info.name;
   }
 
   @Implementation
   public Intent getLaunchIntentForPackage(String packageName) {
-    return getDefaultPackageManager().getLaunchIntentForPackage(packageName);
+    Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
+    intentToResolve.addCategory(Intent.CATEGORY_INFO);
+    intentToResolve.setPackage(packageName);
+    List<ResolveInfo> ris = getDefaultPackageManager().queryIntentActivities(intentToResolve, 0);
+
+    if (ris == null || ris.isEmpty()) {
+      intentToResolve.removeCategory(Intent.CATEGORY_INFO);
+      intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
+      intentToResolve.setPackage(packageName);
+      ris = getDefaultPackageManager().queryIntentActivities(intentToResolve, 0);
+    }
+    if (ris == null || ris.isEmpty()) {
+      return null;
+    }
+    Intent intent = new Intent(intentToResolve);
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    intent.setClassName(ris.get(0).activityInfo.packageName, ris.get(0).activityInfo.name);
+    return intent;
   }
 
   ////////////////////////////
@@ -326,17 +341,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public String[] canonicalToCurrentPackageNames(String[] names) {
-    return getDefaultPackageManager().canonicalToCurrentPackageNames(names);
+    return new String[0];
   }
 
   @Implementation
   public Intent getLeanbackLaunchIntentForPackage(String packageName) {
-    return getDefaultPackageManager().getLeanbackLaunchIntentForPackage(packageName);
+    return null;
   }
 
   @Implementation
   public int[] getPackageGids(String packageName) throws NameNotFoundException {
-    return getDefaultPackageManager().getPackageGids(packageName);
+    return new int[0];
   }
 
   @Implementation
@@ -346,7 +361,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public int getPackageUid(String packageName, int flags) throws NameNotFoundException {
-    return getDefaultPackageManager().getPackageUid(packageName, flags);
+    return 0;
   }
 
   @Implementation
@@ -363,12 +378,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
-    return getDefaultPackageManager().getPermissionGroupInfo(name, flags);
+    return null;
   }
 
   @Implementation
   public List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
-    return getDefaultPackageManager().getAllPermissionGroups(flags);
+    return null;
   }
 
   @Implementation

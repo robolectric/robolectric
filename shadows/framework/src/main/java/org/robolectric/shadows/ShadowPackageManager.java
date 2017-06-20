@@ -383,7 +383,6 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Implementation
   public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
-    RuntimeEnvironment.getDefaultPackageManager().freeStorageAndNotify(freeStorageSize, observer);
   }
 
   @Implementation

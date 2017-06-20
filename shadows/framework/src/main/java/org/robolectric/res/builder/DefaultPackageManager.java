@@ -108,30 +108,26 @@ import org.robolectric.util.TempDirectory;
 @Deprecated
 public class DefaultPackageManager {
 
-  private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
-  private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
-  private final Map<String, PackageStats> packageStatsMap = new HashMap<>();
-  private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
-  private final Map<ComponentName, RobolectricPackageManager.ComponentState> componentList = new LinkedHashMap<>();
-  private final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
-  private final Map<String, Drawable> applicationIcons = new HashMap<>();
-  private final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-  private final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
-  private final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
-  private final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-  private final Map<Integer, String> namesForUid = new HashMap<>();
-  private final Map<Integer, String[]> packagesForUid = new HashMap<>();
-  private final Map<String, String> packageInstallerMap = new HashMap<>();
-  private boolean queryIntentImplicitly = false;
-  private Map<String, PermissionInfo> extraPermissions = new HashMap<>();
-  private Map<String, Resources> resources = new HashMap<>();
+  public final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
+  public final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  public final Map<String, PackageStats> packageStatsMap = new HashMap<>();
+  public final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
+  public final Map<ComponentName, RobolectricPackageManager.ComponentState> componentList = new LinkedHashMap<>();
+  public final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
+  public final Map<String, Drawable> applicationIcons = new HashMap<>();
+  public final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  public final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
+  public final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  public final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
+  public final Map<Integer, String> namesForUid = new HashMap<>();
+  public final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  public final Map<String, String> packageInstallerMap = new HashMap<>();
+  public boolean queryIntentImplicitly = false;
+  public Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  public Map<String, Resources> resources = new HashMap<>();
 
   public DefaultPackageManager(AndroidManifest appManifest) {
     addManifest(appManifest);
-  }
-
-  public Resources getResourcesForApplication(ApplicationInfo applicationInfo) throws NameNotFoundException {
-    return getResourcesForApplication(applicationInfo.packageName);
   }
 
   public Resources getResourcesForApplication(String appPackageName) throws NameNotFoundException {
@@ -480,27 +476,6 @@ public class DefaultPackageManager {
     drawableList.put(intent.getComponent(), d);
   }
 
-  public Intent getLaunchIntentForPackage(String packageName) {
-    Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
-    intentToResolve.addCategory(Intent.CATEGORY_INFO);
-    intentToResolve.setPackage(packageName);
-    List<ResolveInfo> ris = queryIntentActivities(intentToResolve, 0);
-
-    if (ris == null || ris.isEmpty()) {
-      intentToResolve.removeCategory(Intent.CATEGORY_INFO);
-      intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
-      intentToResolve.setPackage(packageName);
-      ris = queryIntentActivities(intentToResolve, 0);
-    }
-    if (ris == null || ris.isEmpty()) {
-      return null;
-    }
-    Intent intent = new Intent(intentToResolve);
-    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    intent.setClassName(ris.get(0).activityInfo.packageName, ris.get(0).activityInfo.name);
-    return intent;
-  }
-
   public void addPermissionInfo(PermissionInfo permissionInfo) {
     extraPermissions.put(permissionInfo.name, permissionInfo);
   }
@@ -571,10 +546,6 @@ public class DefaultPackageManager {
       default:
         throw new IllegalArgumentException("unknown protection level " + protectionLevel);
     }
-  }
-
-  public CharSequence getApplicationLabel(ApplicationInfo info) {
-    return info.name;
   }
 
   public Drawable getApplicationIcon(String packageName) {
@@ -1189,22 +1160,6 @@ public class DefaultPackageManager {
     }
   }
 
-  public String[] canonicalToCurrentPackageNames(String[] strings) {
-    return new String[0];
-  }
-
-
-  public Intent getLeanbackLaunchIntentForPackage(String s) {
-    return null;
-  }
-
-  public int[] getPackageGids(String packageName) throws NameNotFoundException {
-    return new int[0];
-  }
-
-  public int getPackageUid(String packageName, int userHandle) throws NameNotFoundException {
-    return 0;
-  }
 
   public List<PermissionInfo> queryPermissionsByGroup(String group, int flags) throws NameNotFoundException {
     List<PermissionInfo> result = new LinkedList<>();
@@ -1223,25 +1178,12 @@ public class DefaultPackageManager {
     return result;
   }
 
-  public PermissionGroupInfo getPermissionGroupInfo(String name, int flags) throws NameNotFoundException {
-    return null;
-  }
-
-  public List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
-    return null;
-  }
-
   public List<PackageInfo> getPackagesHoldingPermissions(String[] permissions, int flags) {
     return null;
   }
 
   public boolean isPermissionRevokedByPolicy(String permName, String pkgName) {
     return false;
-  }
-
-
-  public String getPermissionControllerPackageName() {
-    return null;
   }
 
 
@@ -1269,10 +1211,6 @@ public class DefaultPackageManager {
   }
 
   public void updatePermissionFlags(String permissionName, String packageName, int flagMask, int flagValues, UserHandle user) {
-  }
-
-  public int checkSignatures(int uid1, int uid2) {
-    return 0;
   }
 
   public int getUidForSharedUser(String sharedUserName) throws NameNotFoundException {
@@ -1303,10 +1241,6 @@ public class DefaultPackageManager {
     return null;
   }
 
-  public ProviderInfo resolveContentProviderAsUser(String s, int i, int i1) {
-    return null;
-  }
-
   public List<ProviderInfo> queryContentProviders(String processName, int uid, int flags) {
     return null;
   }
@@ -1324,10 +1258,6 @@ public class DefaultPackageManager {
   }
 
   public Drawable getActivityBanner(Intent intent) throws NameNotFoundException {
-    return null;
-  }
-
-  public Drawable getApplicationIcon(ApplicationInfo info) {
     return null;
   }
 
@@ -1360,10 +1290,6 @@ public class DefaultPackageManager {
   }
 
   public Drawable getUserBadgedDrawableForDensity(Drawable drawable, UserHandle userHandle, Rect rect, int i) {
-    return null;
-  }
-
-  public Drawable getUserBadgeForDensity(UserHandle userHandle, int i) {
     return null;
   }
 
@@ -1403,20 +1329,10 @@ public class DefaultPackageManager {
   public void deleteApplicationCacheFiles(String packageName, IPackageDataObserver observer) {
   }
 
-  public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
-  }
-
-  public void freeStorageAndNotify(String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {
-  }
-
   public void freeStorage(long freeStorageSize, IntentSender pi) {
   }
 
   public void freeStorage(String volumeUuid, long freeStorageSize, IntentSender pi) {
-  }
-
-  public boolean isSafeMode() {
-    return false;
   }
 
   public void addOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
