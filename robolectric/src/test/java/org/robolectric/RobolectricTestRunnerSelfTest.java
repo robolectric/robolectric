@@ -85,7 +85,7 @@ public class RobolectricTestRunnerSelfTest {
 
   @AfterClass
   public static void resetStaticState_shouldBeCalled_afterAppTearDown() {
-    assertThat(order).containsExactly("onTerminate", "reset");
+    assertThat(order).containsExactly("onTerminate");
   }
 
   @AfterClass
