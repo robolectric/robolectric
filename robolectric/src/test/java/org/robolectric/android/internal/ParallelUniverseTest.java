@@ -3,6 +3,8 @@ package org.robolectric.android.internal;
 import android.app.Application;
 
 import android.os.Build;
+import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos.Run;
+import java.lang.reflect.Method;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,11 +17,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.*;
-import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunners.SelfTest.class)
@@ -47,10 +46,21 @@ public class ParallelUniverseTest {
     pu.setSdkConfig(new SdkConfig(Build.VERSION_CODES.M));
   }
 
+  public void dummyMethodForTest() {}
+
+  private static Method getDummyMethodForTest() {
+    try {
+      return ParallelUniverseTest.class.getMethod("dummyMethodForTest");
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void setUpApplicationState(Config defaultConfig) {
     ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(),
+    Method method = getDummyMethodForTest();
+    pu.setUpApplicationState(method, new DefaultTestLifecycle(),
         new AndroidManifest(null, null, null, "package"), defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
