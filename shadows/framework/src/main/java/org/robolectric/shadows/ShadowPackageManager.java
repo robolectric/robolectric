@@ -858,7 +858,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
-    queryIntentImplicitly = queryIntentImplicitly;
+    this.queryIntentImplicitly = queryIntentImplicitly;
   }
 
   @Override
@@ -956,6 +956,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   /**
    * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
    */
+  @Override
   public void doPendingUninstallCallbacks() {
     boolean hasDeletePackagesPermission = false;
     String[] requestedPermissions =
@@ -992,6 +993,8 @@ public class ShadowPackageManager implements RobolectricPackageManager {
    * Returns package names successfully deleted with {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
    * Note that like real {@link PackageManager} the calling context must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
    */
+
+  @Override
   public Set<String> getDeletedPackages() {
     return deletedPackages;
   }
@@ -1032,6 +1035,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   public static class IntentComparator implements Comparator<Intent> {
 
+    @Override
     public int compare(Intent i1, Intent i2) {
       if (i1 == null && i2 == null) return 0;
       if (i1 == null && i2 != null) return -1;
