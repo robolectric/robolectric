@@ -74,7 +74,6 @@ import org.robolectric.manifest.ServiceData;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
-
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
     List<PackageInfo> result = new ArrayList<>();
@@ -128,8 +127,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public boolean hasSystemFeature(String name) {
-    return systemFeatureList.containsKey(
-        name) ? systemFeatureList.get(name) : false;
+    return systemFeatureList.containsKey(name) ? systemFeatureList.get(name) : false;
   }
 
   @Implementation
@@ -165,7 +163,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public int getApplicationEnabledSetting(String packageName) {
     try {
-        PackageInfo packageInfo = getPackageInfo(packageName, -1);
+        getPackageInfo(packageName, -1);
     } catch (NameNotFoundException e) {
         throw new IllegalArgumentException(e);
     }

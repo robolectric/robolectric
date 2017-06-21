@@ -93,14 +93,49 @@ public class ShadowPackageManager implements RobolectricPackageManager {
       Pair.create("android:testOnly", FLAG_TEST_ONLY),
       Pair.create("android:vmSafeMode", FLAG_VM_SAFE_MODE)
   );
-  protected Map<String, Boolean> permissionRationaleMap = new HashMap<>();
-  protected List<FeatureInfo> systemAvailableFeatures = new LinkedList<>();
-  private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
-  protected final Map<Integer, Integer> verificationResults = new HashMap<>();
-  protected final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
-  protected final Map<String, String> currentToCanonicalNames = new HashMap<>();
 
-  public final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
+  private static final List<Pair<String, Integer>> CONFIG_OPTIONS = asList(
+      Pair.create("mcc", ActivityInfo.CONFIG_MCC),
+      Pair.create("mnc", ActivityInfo.CONFIG_MNC),
+      Pair.create("locale", ActivityInfo.CONFIG_LOCALE),
+      Pair.create("touchscreen", ActivityInfo.CONFIG_TOUCHSCREEN),
+      Pair.create("keyboard", ActivityInfo.CONFIG_KEYBOARD),
+      Pair.create("keyboardHidden", ActivityInfo.CONFIG_KEYBOARD_HIDDEN),
+      Pair.create("navigation", ActivityInfo.CONFIG_NAVIGATION),
+      Pair.create("screenLayout", ActivityInfo.CONFIG_SCREEN_LAYOUT),
+      Pair.create("fontScale", ActivityInfo.CONFIG_FONT_SCALE),
+      Pair.create("uiMode", ActivityInfo.CONFIG_UI_MODE),
+      Pair.create("orientation", ActivityInfo.CONFIG_ORIENTATION),
+      Pair.create("screenSize", ActivityInfo.CONFIG_SCREEN_SIZE),
+      Pair.create("smallestScreenSize", ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE)
+  );
+
+
+  Map<String, Boolean> permissionRationaleMap = new HashMap<>();
+  List<FeatureInfo> systemAvailableFeatures = new LinkedList<>();
+  final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
+  final Map<String, PackageStats> packageStatsMap = new HashMap<>();
+  final Map<String, String> packageInstallerMap = new HashMap<>();
+  final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  final Map<Integer, String> namesForUid = new HashMap<>();
+  final Map<Integer, Integer> verificationResults = new HashMap<>();
+  final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
+  final Map<String, String> currentToCanonicalNames = new HashMap<>();
+  final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
+  final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
+  final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
+  final Map<String, Drawable> applicationIcons = new HashMap<>();
+  final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
+  final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
+  boolean queryIntentImplicitly = false;
+  Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  public Map<String, Resources> resources = new HashMap<>();
+  private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
+  private Set<String> deletedPackages = new HashSet<>();
+  Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
   
   public ShadowPackageManager() {
     addManifest(RuntimeEnvironment.getAppManifest());
@@ -115,7 +150,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
    * @param meta Meta data to put in to a bundle
    * @return bundle containing the meta data
    */
-  protected static Bundle metaDataToBundle(Map<String, Object> meta) {
+  static Bundle metaDataToBundle(Map<String, Object> meta) {
     if (meta.size() == 0) {
         return null;
     }
@@ -137,7 +172,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   }
 
   // From com.android.server.pm.PackageManagerService.compareSignatures().
-  protected static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
+  static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
     if (signatures1 == null) {
       return (signatures2 == null) ? SIGNATURE_NEITHER_SIGNED
           : SIGNATURE_FIRST_NOT_SIGNED;
@@ -153,7 +188,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     return signatures1set.equals(signatures2set) ? SIGNATURE_MATCH : SIGNATURE_NO_MATCH;
   }
 
-  protected static String resolvePackageName(String packageName, ComponentName componentName) {
+  static String resolvePackageName(String packageName, ComponentName componentName) {
     String classString = componentName.getClassName();
     int index = classString.indexOf('.');
     if (index == -1) {
@@ -164,7 +199,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     return classString;
   }
 
-  protected static PathPermission[] createPathPermissions(List<PathPermissionData> pathPermissionDatas) {
+  static PathPermission[] createPathPermissions(List<PathPermissionData> pathPermissionDatas) {
     PathPermission[] pathPermissions = new PathPermission[pathPermissionDatas.size()];
     for (int i = 0; i < pathPermissions.length; i++) {
       PathPermissionData data = pathPermissionDatas.get(i);
@@ -188,7 +223,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     return pathPermissions;
   }
 
-  protected static IntentFilter matchIntentFilter(Intent intent, List<IntentFilterData> intentFilters) {
+  static IntentFilter matchIntentFilter(Intent intent, List<IntentFilterData> intentFilters) {
     for (IntentFilterData intentFilterData : intentFilters) {
       List<String> actionList = intentFilterData.getActions();
       List<String> categoryList = intentFilterData.getCategories();
@@ -247,7 +282,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     return null;
   }
 
-  protected static ResolveInfo getResolveInfo(ServiceData service, IntentFilter intentFilter,
+  static ResolveInfo getResolveInfo(ServiceData service, IntentFilter intentFilter,
       String packageName) {
     try {
       ResolveInfo info = new ResolveInfo();
@@ -285,7 +320,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     }
   }
 
-  protected static PermissionInfo createPermissionInfo(int flags,
+  static PermissionInfo createPermissionInfo(int flags,
       PermissionItemData permissionItemData) throws NameNotFoundException {
     PermissionInfo permissionInfo = new PermissionInfo();
     String packageName = RuntimeEnvironment.getAppManifest().getPackageName();
@@ -854,6 +889,7 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     }
     return result;
   }
+
   public long getVerificationExtendedTimeout(int id) {
     Long result = verificationTimeoutExtension.get(id);
     if (result == null) {
@@ -960,29 +996,6 @@ public class ShadowPackageManager implements RobolectricPackageManager {
     return deletedPackages;
   }
 
-  public final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
-  public final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
-  public final Map<String, PackageStats> packageStatsMap = new HashMap<>();
-  public final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
-  public final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
-  public final Map<String, Drawable> applicationIcons = new HashMap<>();
-  public final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-  public final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
-  public final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
-  public final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-  public final Map<Integer, String> namesForUid = new HashMap<>();
-  public final Map<Integer, String[]> packagesForUid = new HashMap<>();
-  public final Map<String, String> packageInstallerMap = new HashMap<>();
-  public boolean queryIntentImplicitly = false;
-  public Map<String, PermissionInfo> extraPermissions = new HashMap<>();
-  public Map<String, Resources> resources = new HashMap<>();
-
-
-
-
-
-
-
   protected List<ResolveInfo> queryIntent(Intent intent, int flags) {
     List<ResolveInfo> result = resolveInfoForIntent.get(intent);
     if (result == null) {
@@ -991,25 +1004,6 @@ public class ShadowPackageManager implements RobolectricPackageManager {
       return result;
     }
   }
-  
-  private Set<String> deletedPackages = new HashSet<>();
-  public Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
-
-  private static final List<Pair<String, Integer>> CONFIG_OPTIONS = asList(
-      Pair.create("mcc", ActivityInfo.CONFIG_MCC),
-      Pair.create("mnc", ActivityInfo.CONFIG_MNC),
-      Pair.create("locale", ActivityInfo.CONFIG_LOCALE),
-      Pair.create("touchscreen", ActivityInfo.CONFIG_TOUCHSCREEN),
-      Pair.create("keyboard", ActivityInfo.CONFIG_KEYBOARD),
-      Pair.create("keyboardHidden", ActivityInfo.CONFIG_KEYBOARD_HIDDEN),
-      Pair.create("navigation", ActivityInfo.CONFIG_NAVIGATION),
-      Pair.create("screenLayout", ActivityInfo.CONFIG_SCREEN_LAYOUT),
-      Pair.create("fontScale", ActivityInfo.CONFIG_FONT_SCALE),
-      Pair.create("uiMode", ActivityInfo.CONFIG_UI_MODE),
-      Pair.create("orientation", ActivityInfo.CONFIG_ORIENTATION),
-      Pair.create("screenSize", ActivityInfo.CONFIG_SCREEN_SIZE),
-      Pair.create("smallestScreenSize", ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE)
-  );
 
   protected static int getConfigChanges(ActivityData activityData) {
     String s = activityData.getConfigChanges();
@@ -1037,7 +1031,6 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   }
 
   public static class IntentComparator implements Comparator<Intent> {
-
 
     public int compare(Intent i1, Intent i2) {
       if (i1 == null && i2 == null) return 0;
