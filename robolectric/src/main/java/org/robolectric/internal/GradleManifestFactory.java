@@ -30,6 +30,7 @@ public class GradleManifestFactory implements ManifestFactory {
     final FileFsFile res;
     final FileFsFile assets;
     final FileFsFile manifest;
+    // other things!
 
     if (FileFsFile.from(buildOutputDir, "data-binding-layout-out").exists()) {
       // Android gradle plugin 1.5.0+ puts the merged layouts in data-binding-layout-out.

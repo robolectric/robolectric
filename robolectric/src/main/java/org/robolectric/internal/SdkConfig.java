@@ -22,6 +22,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
       addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "0", "1.6", "REL");
       addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "0", "1.6", "REL");
       addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "0", "1.6", "REL");
+  // ... and more changes!
       addSdk(Build.VERSION_CODES.KITKAT, "4.4_r1", "1", "1.7", "REL");
       addSdk(Build.VERSION_CODES.LOLLIPOP, "5.0.0_r2", "1", "1.7", "REL");
       addSdk(Build.VERSION_CODES.LOLLIPOP_MR1, "5.1.1_r9", "1", "1.7", "REL");
@@ -78,6 +79,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
   public int hashCode() {
     return apiLevel;
   }
+  // other new things?
 
   @Override
   public String toString() {
@@ -124,6 +126,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
     }
 
   // more changes outside of private blocks...
+  // ... and still more!
     @Override
     public int hashCode() {
       return androidVersion.hashCode() * 31 + robolectricVersion.hashCode();
