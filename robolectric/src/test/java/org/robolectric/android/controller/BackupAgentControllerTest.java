@@ -21,7 +21,7 @@ public class BackupAgentControllerTest {
 
   @Test
   public void shouldSetBaseContext() throws Exception {
-    MyBackupAgent myBackupAgent = backupAgentController.setUp().get();
+    MyBackupAgent myBackupAgent = backupAgentController.get();
     assertThat(myBackupAgent.getBaseContext()).isEqualTo(RuntimeEnvironment.application.getBaseContext());
   }
 
