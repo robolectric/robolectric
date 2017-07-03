@@ -34,16 +34,19 @@ public class ShadowNotification {
   }
 
   public CharSequence getContentText() {
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      return realNotification.extras.getString(Notification.EXTRA_TEXT);
+    CharSequence text = getApiLevel() >= N
+            ? realNotification.extras.getString(Notification.EXTRA_TEXT)
+            : findText(applyContentView(), "text");
+    CharSequence text2 = getApiLevel() >= N
+            ? realNotification.extras.getString(Notification.EXTRA_SUB_TEXT)
+            : findText(applyContentView(), "text2");
+
+    if (text2 == null || text2.length() == 0) {
+      return text;
+    } else if (text == null || text.length() == 0) {
+      return text2;
     } else {
-      TextView textView = (TextView) applyContentView().findViewById(getInternalResourceId("text"));
-      TextView textView2 = (TextView) applyContentView().findViewById(getInternalResourceId("text2"));
-      if (textView2.getVisibility() != View.GONE && textView2.getText() != null) {
-        return new StringBuilder().append(textView.getText()).append(" ").append(textView2.getText()).toString();
-      } else {
-        return textView.getText();
-      }
+      return new StringBuilder().append(text).append(" ").append(text2).toString();
     }
   }
 
