@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
 
 @Implements(value = JobScheduler.class, minSdk = LOLLIPOP)
 public abstract class ShadowJobScheduler {
@@ -30,6 +31,9 @@ public abstract class ShadowJobScheduler {
 
   @Implementation
   public abstract List<JobInfo> getAllPendingJobs();
+
+  @Implementation(minSdk = N)
+  public abstract JobInfo getPendingJob(int jobId);
 
   public abstract void failOnJob(int jobId);
 
@@ -62,6 +66,11 @@ public abstract class ShadowJobScheduler {
     @Override @Implementation
     public List<JobInfo> getAllPendingJobs() {
       return new ArrayList<>(scheduledJobs.values());
+    }
+
+    @Override @Implementation(minSdk = N)
+    public JobInfo getPendingJob(int jobId) {
+      return scheduledJobs.get(jobId);
     }
 
     @Override
