@@ -31,6 +31,9 @@ public class StringResources {
     if (text.length() > 1 && text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"') {
       text = text.substring(1, text.length() - 1);
     }
+    // remove non-escaped double quotes
+    text = text.replaceAll("(?<!\\\\)\"", "");
+
     int i = 0;
     int length = text.length();
     StringBuilder result = new StringBuilder(text.length());

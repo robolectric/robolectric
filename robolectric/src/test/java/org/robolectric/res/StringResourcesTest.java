@@ -14,6 +14,9 @@ public class StringResourcesTest {
   public void escape_shouldEscapeStrings() {
     assertThat(StringResources.escape("\"This'll work\"")).isEqualTo("This'll work");
     assertThat(StringResources.escape("This\\'ll also work")).isEqualTo("This'll also work");
+
+    assertThat(StringResources.escape("This is a \\\"good string\\\".")).isEqualTo("This is a \"good string\".");
+    assertThat(StringResources.escape("This is a \"bad string\".")).isEqualTo("This is a bad string.");
   }
 
   @Test
