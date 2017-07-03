@@ -58,25 +58,32 @@ public class ShadowNotificationBuilderTest {
   }
 
   @Test
-  public void build_setsContentTextOnNotification() throws Exception {
+  public void build_getContentText_setsContentTextOnNotification() throws Exception {
     Notification notification = builder.setContentText("Hello Text").build();
 
     assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Hello Text");
   }
 
   @Test
+  public void build_setsContentTextOnNotification() throws Exception {
+    Notification notification = builder.setContentText("Hello Text").build();
+
+    assertThat(shadowOf(notification).getCombinedContentText().toString()).isEqualTo("Hello Text");
+  }
+
+  @Test
   public void build_setsSubTextOnNotification() throws Exception {
     Notification notification = builder.setSubText("Greetings SubText").build();
 
-    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Greetings SubText");
+    assertThat(shadowOf(notification).getCombinedContentText().toString()).isEqualTo("Greetings SubText");
   }
 
   @Test
   public void build_setsContentTextAndSubTextOnNotification() throws Exception {
     Notification notification = builder.setContentText("Hello Text").setSubText("Greetings SubText").build();
 
-    assertThat(shadowOf(notification).getContentText().toString()).contains("Hello Text");
-    assertThat(shadowOf(notification).getContentText().toString()).contains("Greetings SubText");
+    assertThat(shadowOf(notification).getCombinedContentText().toString()).contains("Hello Text");
+    assertThat(shadowOf(notification).getCombinedContentText().toString()).contains("Greetings SubText");
   }
 
   @Test
@@ -148,17 +155,24 @@ public class ShadowNotificationBuilderTest {
   }
 
   @Test
-  public void build_handlesNullContentText() {
+  public void build_getContentText_handlesNullContentText() {
     Notification notification = builder.setContentText(null).build();
 
     assertThat(shadowOf(notification).getContentText()).isNullOrEmpty();
   }
 
   @Test
+  public void build_handlesNullContentText() {
+    Notification notification = builder.setContentText(null).build();
+
+    assertThat(shadowOf(notification).getCombinedContentText()).isNullOrEmpty();
+  }
+
+  @Test
   public void build_handlesNullSubText() {
     Notification notification = builder.setSubText(null).build();
 
-    assertThat(shadowOf(notification).getContentText()).isNullOrEmpty();
+    assertThat(shadowOf(notification).getCombinedContentText()).isNullOrEmpty();
   }
 
   @Test

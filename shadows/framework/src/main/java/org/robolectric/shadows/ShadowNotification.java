@@ -33,13 +33,23 @@ public class ShadowNotification {
         : findText(applyContentView(), "title");
   }
 
+  /**
+   * @deprecated use @{link #getCombinedContentText()} instead for better subText support.
+   */
+  @Deprecated
   public CharSequence getContentText() {
+    return getApiLevel() >= N
+        ? realNotification.extras.getString(Notification.EXTRA_TEXT)
+        : findText(applyContentView(), "text");
+  }
+
+  public CharSequence getCombinedContentText() {
     CharSequence text = getApiLevel() >= N
-            ? realNotification.extras.getString(Notification.EXTRA_TEXT)
-            : findText(applyContentView(), "text");
+        ? realNotification.extras.getString(Notification.EXTRA_TEXT)
+        : findText(applyContentView(), "text");
     CharSequence text2 = getApiLevel() >= N
-            ? realNotification.extras.getString(Notification.EXTRA_SUB_TEXT)
-            : findText(applyContentView(), "text2");
+        ? realNotification.extras.getString(Notification.EXTRA_SUB_TEXT)
+        : findText(applyContentView(), "text2");
 
     if (text2 == null || text2.length() == 0) {
       return text;
