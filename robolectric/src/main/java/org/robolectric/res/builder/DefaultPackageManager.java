@@ -18,6 +18,7 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
+import android.Manifest;
 import android.app.PackageInstallObserver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -83,6 +84,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
@@ -165,17 +167,26 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-    if (packageInfos.containsKey(packageName)) {
-      return packageInfos.get(packageName);
+    PackageInfo info = packageInfos.get(packageName);
+    if (info != null) {
+      if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
+        throw new NameNotFoundException("Package is disabled, can't find");
+      }
+      return info;
+    } else {
+      throw new NameNotFoundException(packageName);
     }
-
-    throw new NameNotFoundException(packageName);
   }
 
   @Override
   public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
+      if (getApplicationEnabledSetting(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
+        throw new NameNotFoundException("Package is disabled, can't find");
+      }
       return info.applicationInfo;
     } else {
       throw new NameNotFoundException(packageName);
@@ -265,23 +276,26 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     AndroidManifest androidManifest = androidManifests.get(packageName);
     String classString = resolvePackageName(packageName, className);
 
-    for (ContentProviderData contentProviderData : androidManifest.getContentProviders()) {
-      if (contentProviderData.getClassName().equals(classString)) {
-        ProviderInfo providerInfo = new ProviderInfo();
-        providerInfo.packageName = packageName;
-        providerInfo.name = contentProviderData.getClassName();
-        providerInfo.authority = contentProviderData.getAuthorities(); // todo: support multiple authorities
-        providerInfo.readPermission = contentProviderData.getReadPermission();
-        providerInfo.writePermission = contentProviderData.getWritePermission();
-        providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
-        providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
-        if ((flags & GET_META_DATA) != 0) {
+    if (androidManifest != null) {
+      for (ContentProviderData contentProviderData : androidManifest.getContentProviders()) {
+        if (contentProviderData.getClassName().equals(classString)) {
+          ProviderInfo providerInfo = new ProviderInfo();
+          providerInfo.packageName = packageName;
+          providerInfo.name = contentProviderData.getClassName();
+          providerInfo.authority = contentProviderData.getAuthorities(); // todo: support multiple authorities
+          providerInfo.readPermission = contentProviderData.getReadPermission();
+          providerInfo.writePermission = contentProviderData.getWritePermission();
+          providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
           providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
+          if ((flags & GET_META_DATA) != 0) {
+            providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
+          }
+          return providerInfo;
         }
-        return providerInfo;
       }
     }
-    return null;
+
+    throw new NameNotFoundException("Package not found: " + packageName);
   }
 
   private PathPermission[] createPathPermissions(List<PathPermissionData> pathPermissionDatas) {
@@ -343,26 +357,38 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
   public ServiceInfo getServiceInfo(ComponentName className, int flags) throws NameNotFoundException {
     String packageName = className.getPackageName();
     AndroidManifest androidManifest = androidManifests.get(packageName);
-    String serviceName = className.getClassName();
-    ServiceData serviceData = androidManifest.getServiceData(serviceName);
-    if (serviceData == null) {
-      throw new NameNotFoundException(serviceName);
+    if (androidManifest != null) {
+      String serviceName = className.getClassName();
+      ServiceData serviceData = androidManifest.getServiceData(serviceName);
+      if (serviceData == null) {
+        throw new NameNotFoundException(serviceName);
+      }
+
+      ServiceInfo serviceInfo = new ServiceInfo();
+      serviceInfo.packageName = packageName;
+      serviceInfo.name = serviceName;
+      serviceInfo.applicationInfo = getApplicationInfo(packageName, flags);
+      serviceInfo.permission = serviceData.getPermission();
+      if ((flags & GET_META_DATA) != 0) {
+        serviceInfo.metaData = metaDataToBundle(serviceData.getMetaData().getValueMap());
+      }
+      return serviceInfo;
     }
-    
-    ServiceInfo serviceInfo = new ServiceInfo();
-    serviceInfo.packageName = packageName;
-    serviceInfo.name = serviceName;
-    serviceInfo.applicationInfo = getApplicationInfo(packageName, flags);
-    serviceInfo.permission = serviceData.getPermission();
-    if ((flags & GET_META_DATA) != 0) {
-      serviceInfo.metaData = metaDataToBundle(serviceData.getMetaData().getValueMap());
-    }
-    return serviceInfo;   
+    return null;
   }
 
   @Override
   public List<PackageInfo> getInstalledPackages(int flags) {
-    return new ArrayList<>(packageInfos.values());
+    List<PackageInfo> result = new ArrayList<>();
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      if (applicationEnabledSettingMap.get(packageInfo.packageName)
+          != COMPONENT_ENABLED_STATE_DISABLED
+          || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
+            result.add(packageInfo);
+          }
+    }
+
+    return result;
   }
 
   @Override
@@ -534,16 +560,24 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
       throw new NameNotFoundException(name);
     }
 
-    permissionInfo = new PermissionInfo();
+    permissionInfo = createPermissionInfo(flags, permissionItemData);
+
+    return permissionInfo;
+  }
+
+  private PermissionInfo createPermissionInfo(int flags,
+      PermissionItemData permissionItemData) throws NameNotFoundException {
+    PermissionInfo permissionInfo = new PermissionInfo();
     String packageName = applicationManifest.getPackageName();
     permissionInfo.packageName = packageName;
-    permissionInfo.name = name;
+    permissionInfo.name = permissionItemData.getName();
     permissionInfo.group = permissionItemData.getPermissionGroup();
     permissionInfo.protectionLevel = decodeProtectionLevel(permissionItemData.getProtectionLevel());
 
     String descriptionRef = permissionItemData.getDescription();
     if (descriptionRef != null) {
-      ResName descResName = AttributeResource.getResourceReference(descriptionRef, packageName, "string");
+      ResName descResName = AttributeResource
+          .getResourceReference(descriptionRef, packageName, "string");
       permissionInfo.descriptionRes = appResourceTable.getResourceId(descResName);
     }
 
@@ -560,7 +594,6 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     if ((flags & GET_META_DATA) != 0) {
       permissionInfo.metaData = metaDataToBundle(permissionItemData.getMetaData().getValueMap());
     }
-
     return permissionInfo;
   }
 
@@ -661,7 +694,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     List<PackageInfo> packages = getInstalledPackages(flags);
     for (PackageInfo aPackage : packages) {
       ApplicationInfo appInfo = aPackage.applicationInfo;
-      if (archiveFilePath.equals(appInfo.sourceDir)) {
+      if (appInfo != null && archiveFilePath.equals(appInfo.sourceDir)) {
         return aPackage;
       }
     }
@@ -689,7 +722,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     addPackage(packageInfo, new PackageStats(packageInfo.packageName));
   }
 
-  public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
+  @Override public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
     packageInfos.put(packageInfo.packageName, packageInfo);
@@ -697,6 +730,9 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     Resources r = new Resources(new AssetManager(), null, null);
     resources.put(packageInfo.packageName, r);
+    if (packageInfo.applicationInfo != null) {
+      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+    }
   }
 
   @Override
@@ -902,7 +938,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
           resolveInfo.resolvePackageName = packageName;
           resolveInfo.activityInfo = new ActivityInfo();
           resolveInfo.activityInfo.targetActivity = activityName;
-
+          resolveInfo.activityInfo.name = activityData.getName();
           resolveInfoList.add(resolveInfo);
         }
       }
@@ -1039,14 +1075,14 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return result;
   }
 
-  public void setPackagesForCallingUid(String... packagesForCallingUid) {
+  @Override public void setPackagesForCallingUid(String... packagesForCallingUid) {
     setPackagesForUid(Binder.getCallingUid(), packagesForCallingUid);
   }
 
   /**
    * Override value returned by {@link #getPackagesForUid(int)}.
    */
-  public void setPackagesForUid(int uid, String... packagesForCallingUid) {
+  @Override public void setPackagesForUid(int uid, String... packagesForCallingUid) {
     this.packagesForUid.put(uid, packagesForCallingUid);
   }
 
@@ -1292,7 +1328,20 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   @Override
   public List<PermissionInfo> queryPermissionsByGroup(String group, int flags) throws NameNotFoundException {
-    return null;
+    List<PermissionInfo> result = new LinkedList<>();
+    for (PermissionInfo permissionInfo : extraPermissions.values()) {
+      if (Objects.equals(permissionInfo.group, group)) {
+        result.add(permissionInfo);
+      }
+    }
+
+    for (PermissionItemData permissionItemData : applicationManifest.getPermissions().values()) {
+      if (Objects.equals(permissionItemData.getPermissionGroup(), group)) {
+        result.add(createPermissionInfo(flags, permissionItemData));
+      }
+    }
+
+    return result;
   }
 
   @Override
@@ -1359,7 +1408,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   }
 
-  public boolean shouldShowRequestPermissionRationale(String permission) {
+  @Override public boolean shouldShowRequestPermissionRationale(String permission) {
     return false;
   }
 
@@ -1767,9 +1816,15 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
   public void verifyPendingInstall(int id, int verificationCode) {
   }
 
+  private boolean mExtendTimeoutCalled = false;
+
   @Override
   public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
+    mExtendTimeoutCalled = true;
+  }
 
+  public boolean wasExtendVerificationTimeoutCalled() {
+    return mExtendTimeoutCalled;
   }
 
   @Override
@@ -1787,8 +1842,48 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return null;
   }
 
+  private Set<String> deletedPackages = new HashSet<>();
+  private Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
+
   @Override
   public void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
+    pendingDeleteCallbacks.put(packageName, observer);
+  }
+
+  public void doPendingUninstallCallbacks() {
+    boolean hasDeletePackagesPermission = false;
+    String[] requestedPermissions =
+        packageInfos.get(applicationManifest.getPackageName()).requestedPermissions;
+    if (requestedPermissions != null) {
+      for (String permission : requestedPermissions) {
+        if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {
+          hasDeletePackagesPermission = true;
+          break;
+        }
+      }
+    }
+
+    for (String packageName : pendingDeleteCallbacks.keySet()) {
+      int resultCode = PackageManager.DELETE_FAILED_INTERNAL_ERROR;
+
+      PackageInfo removed = packageInfos.get(packageName);
+      if (hasDeletePackagesPermission && removed != null) {
+        packageInfos.remove(packageName);
+        deletedPackages.add(packageName);
+        resultCode = PackageManager.DELETE_SUCCEEDED;
+      }
+
+      try {
+        pendingDeleteCallbacks.get(packageName).packageDeleted(packageName, resultCode);
+      } catch (RemoteException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    pendingDeleteCallbacks.clear();
+  }
+
+  public Set<String> getDeletedPackages() {
+    return deletedPackages;
   }
 
   @Override
@@ -1806,7 +1901,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     return Collections.emptyList();
   }
 
-  public boolean isPackageSuspendedForUser(String packageName, int userId) {
+  @Override public boolean isPackageSuspendedForUser(String packageName, int userId) {
     return false;
   }
 
@@ -1815,86 +1910,86 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   }
 
-  public String[] setPackagesSuspendedAsUser(
+  @Override public String[] setPackagesSuspendedAsUser(
       String[] packageNames, boolean suspended, int userId) {
     return null;
   }
 
-  public void flushPackageRestrictionsAsUser(int userId) {
+  @Override public void flushPackageRestrictionsAsUser(int userId) {
   }
 
-  public void deleteApplicationCacheFilesAsUser(String packageName, int userId,
+  @Override public void deleteApplicationCacheFilesAsUser(String packageName, int userId,
       IPackageDataObserver observer) {
   }
 
-  public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer,
+  @Override public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer,
       int flags, int userId) {
   }
 
-  public String getDefaultBrowserPackageNameAsUser(int userId) {
+  @Override public String getDefaultBrowserPackageNameAsUser(int userId) {
     return null;
   }
 
-  public boolean updateIntentVerificationStatusAsUser(String packageName, int status,
+  @Override public boolean updateIntentVerificationStatusAsUser(String packageName, int status,
       int userId) {
     return false;
   }
 
-  public int getIntentVerificationStatusAsUser(String packageName, int userId) {
+  @Override public int getIntentVerificationStatusAsUser(String packageName, int userId) {
     return 0;
   }
 
-  public int installExistingPackageAsUser(String packageName, int userId)
+  @Override public int installExistingPackageAsUser(String packageName, int userId)
       throws NameNotFoundException {
     return 0;
   }
 
-  public boolean setDefaultBrowserPackageNameAsUser(String packageName,
+  @Override public boolean setDefaultBrowserPackageNameAsUser(String packageName,
       int userId) {
     return false;
   }
-  public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
+  @Override public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
     return null;
   }
 
-  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent,
+  @Override public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent,
       int flags, int userId) {
     return null;
   }
-  public boolean hasSystemFeature(String name, int version) {
+  @Override public boolean hasSystemFeature(String name, int version) {
     return false;
   }
 
-  public String getServicesSystemSharedLibraryPackageName() {
+  @Override public String getServicesSystemSharedLibraryPackageName() {
     return null;
   }
 
-  public List<PackageInfo> getInstalledPackagesAsUser(int flags,
+  @Override public List<PackageInfo> getInstalledPackagesAsUser(int flags,
       int userId) {
     return null;
   }
-  public ApplicationInfo getApplicationInfoAsUser(String packageName,
+  @Override public ApplicationInfo getApplicationInfoAsUser(String packageName,
       int flags, int userId) throws NameNotFoundException {
     return null;
   }
-  public int getPackageUidAsUser(String packageName, int userId)
+  @Override public int getPackageUidAsUser(String packageName, int userId)
       throws NameNotFoundException {
     return 0;
   }
 
-  public int getPackageUidAsUser(String packageName, int flags,
+  @Override public int getPackageUidAsUser(String packageName, int flags,
       int userId) throws NameNotFoundException {
     return 0;
   }
-  public int[] getPackageGids(String packageName, int flags)
+  @Override public int[] getPackageGids(String packageName, int flags)
       throws NameNotFoundException {
     return null;
   }
-  public PackageInfo getPackageInfoAsUser(String packageName,
+  @Override public PackageInfo getPackageInfoAsUser(String packageName,
       int flags, int userId) throws NameNotFoundException {
     return null;
   }
-  public String getSharedSystemSharedLibraryPackageName() {
+  @Override public String getSharedSystemSharedLibraryPackageName() {
     return "";
   }
 

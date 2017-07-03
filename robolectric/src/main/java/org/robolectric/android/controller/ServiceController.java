@@ -26,13 +26,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }
 
-  /**
-   * @deprecated This is a no-op, it's safe to remove this call.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public ServiceController<T> attach() {
+  private ServiceController<T> attach() {
     if (attached) {
       return this;
     }
@@ -65,12 +59,12 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     return this;
   }
 
-  public ServiceController<T> create() {
+  @Override public ServiceController<T> create() {
     invokeWhilePaused("onCreate");
     return this;
   }
 
-  public ServiceController<T> destroy() {
+  @Override public ServiceController<T> destroy() {
     invokeWhilePaused("onDestroy");
     return this;
   }

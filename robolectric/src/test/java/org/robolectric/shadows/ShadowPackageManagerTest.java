@@ -5,26 +5,18 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.FeatureInfo;
-import android.content.pm.IPackageStatsObserver;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageInstaller;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageStats;
-import android.content.pm.PathPermission;
-import android.content.pm.PermissionInfo;
-import android.content.pm.ProviderInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
-import android.content.pm.Signature;
+import android.content.pm.*;
 import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,16 +36,8 @@ import java.util.List;
 import static android.content.pm.ApplicationInfo.*;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
-import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_MATCH;
-import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
-import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
+import static android.content.pm.PackageManager.*;
+import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -277,9 +261,24 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getApplicationInfo_ThisApplication() throws Exception {
-    ApplicationInfo info = shadowPackageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test
+  public void getApplicationInfo_uninstalledApplication_includeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), MATCH_UNINSTALLED_PACKAGES);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test(expected = PackageManager.NameNotFoundException.class)
+  public void getApplicationInfo_uninstalledApplication_dontIncludeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -369,8 +368,8 @@ public class ShadowPackageManagerTest {
     List<ResolveInfo> activities = shadowPackageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
-    assertThat(activities.get(0).resolvePackageName.toString()).isEqualTo("org.robolectric");
-    assertThat(activities.get(0).activityInfo.targetActivity.toString()).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
   }
 
   @Test
@@ -383,8 +382,9 @@ public class ShadowPackageManagerTest {
     List<ResolveInfo> activities = shadowPackageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
-    assertThat(activities.get(0).resolvePackageName.toString()).isEqualTo("org.robolectric");
-    assertThat(activities.get(0).activityInfo.targetActivity.toString()).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).activityInfo.name).isEqualTo("org.robolectric.shadows.TestActivityAlias");
   }
 
   @Test
@@ -540,6 +540,11 @@ public class ShadowPackageManagerTest {
     assertThat(providerInfo2.authority).isEqualTo("org.robolectric.authority2");
   }
 
+  @Test(expected = NameNotFoundException.class)
+  public void getProviderInfo_packageNotFoundShouldThrowException() throws Exception {
+    packageManager.getProviderInfo(new ComponentName("non.existent.package", ".tester.FullyQualifiedClassName"), 0);
+  }
+
   @Test
   @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
@@ -666,6 +671,36 @@ public class ShadowPackageManagerTest {
     PackageInfo packageInfo = shadowPackageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
     assertThat(permissions).isNull();
+  }
+
+  @Test
+  public void getPackageInfo_uninstalledPackage_includeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    PackageInfo info = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), MATCH_UNINSTALLED_PACKAGES);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test(expected = PackageManager.NameNotFoundException.class)
+  public void getPackageInfo_uninstalledPackage_dontIncludeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), 0);
+  }
+
+  @Test
+  public void getInstalledPackages_uninstalledPackage_includeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES)).isNotEmpty();
+    assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES).get(0).packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test
+  public void getInstalledPackages_uninstalledPackage_dontIncludeUninstalled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getInstalledPackages(0)).isEmpty();
   }
 
   @Test
@@ -1010,6 +1045,14 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void extendPendingInstallTimeout() {
+    packageManager.extendVerificationTimeout(1234, 0, 1000);
+
+    assertThat(shadowPackageManager.getVerificationExtendedTimeout(1234)).isEqualTo(1000);
+  }
+
+  @Test
   @Config(minSdk = N)
   public void whenPackageNotPresent_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
@@ -1212,6 +1255,68 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
+  public void queryPermissionsByGroup_noMetaData() throws Exception {
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", 0);
+    assertThat(permissions).hasSize(1);
+
+    PermissionInfo permission = permissions.get(0);
+
+    assertThat(permission.group).isEqualTo("my_permission_group");
+    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.metaData).isNull();
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
+  public void queryPermissionsByGroup_withMetaData() throws Exception {
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", PackageManager.GET_META_DATA);
+    assertThat(permissions).hasSize(1);
+
+    PermissionInfo permission = permissions.get(0);
+
+    assertThat(permission.group).isEqualTo("my_permission_group");
+    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.metaData).isNotNull();
+    assertThat(permission.metaData.getString("meta_data_name")).isEqualTo("meta_data_value");
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestWithPermissions.xml")
+  public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup() throws Exception {
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
+
+    assertThat(Iterables.transform(permissions, getPermissionNames()))
+        .containsExactlyInAnyOrder("permission_with_minimal_fields", "permission_with_literal_label");
+  }
+
+  @Test
+  public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup_with_addPermissionInfo() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "some_name";
+    shadowPackageManager.addPermissionInfo(permissionInfo);
+
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
+    assertThat(permissions).hasSize(1);
+
+    assertThat(permissions.get(0).name).isEqualTo(permissionInfo.name);
+  }
+
+  @Test
+  public void queryPermissionsByGroup_with_addPermissionInfo() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "some_name";
+    permissionInfo.group = "some_group";
+    shadowPackageManager.addPermissionInfo(permissionInfo);
+
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(permissionInfo.group, 0);
+    assertThat(permissions).hasSize(1);
+
+    assertThat(permissions.get(0).name).isEqualTo(permissionInfo.name);
+    assertThat(permissions.get(0).group).isEqualTo(permissionInfo.group);
+  }
+
+  @Test
   public void getDefaultActivityIcon() {
     assertThat(packageManager.getDefaultActivityIcon()).isNotNull();
   }
@@ -1259,5 +1364,50 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addPackage(packageInfo);
 
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
+  }
+
+  @Test
+  public void deletePackage() throws Exception {
+    // Apps must have the android.permission.DELETE_PACKAGES set to delete packages.
+    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), 0).requestedPermissions =
+        new String[] { android.Manifest.permission.DELETE_PACKAGES };
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "test.package";
+    shadowPackageManager.addPackage(packageInfo);
+
+    IPackageDeleteObserver mockObserver = mock(IPackageDeleteObserver.class);
+    packageManager.deletePackage(packageInfo.packageName, mockObserver, 0);
+
+    shadowPackageManager.doPendingUninstallCallbacks();
+
+    assertThat(shadowPackageManager.getDeletedPackages()).contains(packageInfo.packageName);
+    verify(mockObserver).packageDeleted(packageInfo.packageName, PackageManager.DELETE_SUCCEEDED);
+  }
+
+  @Test
+  public void deletePackage_missingRequiredPermission() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "test.package";
+    shadowPackageManager.addPackage(packageInfo);
+
+    IPackageDeleteObserver mockObserver = mock(IPackageDeleteObserver.class);
+    packageManager.deletePackage(packageInfo.packageName, mockObserver, 0);
+
+    shadowPackageManager.doPendingUninstallCallbacks();
+
+    assertThat(shadowPackageManager.getDeletedPackages()).hasSize(0);
+    verify(mockObserver).packageDeleted(packageInfo.packageName, PackageManager.DELETE_FAILED_INTERNAL_ERROR);
+  }
+
+  private static Function<PermissionInfo, String> getPermissionNames() {
+    return new Function<PermissionInfo, String>() {
+      @Nullable
+      @Override
+      public String apply(@Nullable PermissionInfo permissionInfo) {
+        return permissionInfo.name;
+      }
+    };
   }
 }
