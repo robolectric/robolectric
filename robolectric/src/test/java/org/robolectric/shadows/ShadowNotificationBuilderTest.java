@@ -65,6 +65,21 @@ public class ShadowNotificationBuilderTest {
   }
 
   @Test
+  public void build_setsSubTextOnNotification() throws Exception {
+    Notification notification = builder.setSubText("Greetings SubText").build();
+
+    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Greetings SubText");
+  }
+
+  @Test
+  public void build_setsContentTextAndSubTextOnNotification() throws Exception {
+    Notification notification = builder.setContentText("Hello Text").setSubText("Greetings SubText").build();
+
+    assertThat(shadowOf(notification).getContentText().toString()).contains("Hello Text");
+    assertThat(shadowOf(notification).getContentText().toString()).contains("Greetings SubText");
+  }
+
+  @Test
   public void build_setsTickerOnNotification() throws Exception {
     Notification notification = builder.setTicker("My ticker").build();
 
@@ -135,6 +150,13 @@ public class ShadowNotificationBuilderTest {
   @Test
   public void build_handlesNullContentText() {
     Notification notification = builder.setContentText(null).build();
+
+    assertThat(shadowOf(notification).getContentText()).isNullOrEmpty();
+  }
+
+  @Test
+  public void build_handlesNullSubText() {
+    Notification notification = builder.setSubText(null).build();
 
     assertThat(shadowOf(notification).getContentText()).isNullOrEmpty();
   }
