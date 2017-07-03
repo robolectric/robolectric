@@ -16,7 +16,11 @@ public class StringResourcesTest {
     assertThat(StringResources.escape("This\\'ll also work")).isEqualTo("This'll also work");
 
     assertThat(StringResources.escape("This is a \\\"good string\\\".")).isEqualTo("This is a \"good string\".");
-    assertThat(StringResources.escape("This is a \"bad string\".")).isEqualTo("This is a bad string.");
+    assertThat(StringResources.escape("This is a \"bad string with unescaped double quotes\"."))
+        .isEqualTo("This is a bad string with unescaped double quotes.");
+
+    assertThat(StringResources.escape("Text with escaped backslash followed by an \\\\\"unescaped double quote."))
+        .isEqualTo("Text with escaped backslash followed by an \\unescaped double quote.");
   }
 
   @Test

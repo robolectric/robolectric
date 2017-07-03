@@ -31,19 +31,16 @@ public class StringResources {
     if (text.length() > 1 && text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"') {
       text = text.substring(1, text.length() - 1);
     }
-    // remove non-escaped double quotes
-    text = text.replaceAll("(?<!\\\\)\"", "");
-
     int i = 0;
     int length = text.length();
     StringBuilder result = new StringBuilder(text.length());
     while (true) {
       int j = text.indexOf('\\', i);
       if (j == -1) {
-        result.append(text.substring(i));
+        result.append(removeUnescapedDoubleQuotes(text.substring(i)));
         break;
       }
-      result.append(text.substring(i, j));
+      result.append(removeUnescapedDoubleQuotes(text.substring(i, j)));
       if (j == length - 1) {
         // dangling backslash
         break;
@@ -98,5 +95,9 @@ public class StringResources {
       // IllegalArgumentException of Character.toChars().
       throw new IllegalArgumentException("Invalid code point: \\u" + codePoint, e);
     }
+  }
+
+  private static String removeUnescapedDoubleQuotes(String input) {
+    return input.replaceAll("\"", "");
   }
 }
