@@ -38,6 +38,19 @@ public class StringResourcesTest {
     }
   }
 
+  @Test
+  public void escape_shouldRemoveUnescapedDoubleQuotes() {
+    Map<String, String> tests = new HashMap<>();
+    tests.put("a\\\"b", "a\"b");
+    tests.put("a\\\\\"b", "a\\b");
+    tests.put("a\\\\\\\"b", "a\\\"b");
+    tests.put("a\\\\\\\\\"b", "a\\\\b");
+
+    for (Map.Entry<String, String> t : tests.entrySet()) {
+      assertThat(StringResources.processStringResources(t.getKey())).isEqualTo(t.getValue());
+    }
+  }
+
   // Unsupported escape codes should be ignored.
   @Test
   public void escape_shouldIgnoreUnsupportedEscapeCodes() {
