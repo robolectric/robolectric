@@ -1,7 +1,7 @@
 allprojects {
     repositories {
-        mavenLocal()
         jcenter()
+        maven { url "https://maven.google.com" }
     }
 
     group = "org.robolectric"
@@ -9,11 +9,15 @@ allprojects {
 }
 
 buildscript {
-    repositories { jcenter() }
+    repositories {
+        jcenter()
+        maven { url "https://maven.google.com" }
+    }
 
     dependencies {
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
         classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+        classpath 'com.android.tools.build:gradle:3.0.0-alpha1'
     }
 }
 

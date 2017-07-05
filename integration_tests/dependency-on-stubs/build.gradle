@@ -2,14 +2,21 @@ plugins {
     id "net.ltgt.errorprone" version "0.0.11"
 }
 
-apply plugin: RoboJavaModulePlugin
+apply plugin: 'com.android.library'
 
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
+android {
+    compileSdkVersion 26
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+}
 
 dependencies {
     compile project(":robolectric")
     compile "junit:junit:4.12"
-    testCompile "com.google.android:android-stubs:26"
 
     // Testing dependencies
     testCompile "org.assertj:assertj-core:3.8.0"
