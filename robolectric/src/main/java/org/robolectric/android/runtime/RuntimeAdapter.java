@@ -11,7 +11,6 @@ import android.graphics.Rect;
  * Interface between Robolectric runtime and shadows-core.
  */
 public interface RuntimeAdapter {
-  void callActivityAttach(Object component, Context baseContext, Class<?> activityThreadClass, Application application, Intent intent, ActivityInfo activityInfo, String activityTitle, Class<?> nonConfigurationInstancesClass);
 
   void callViewRootImplDispatchResized(Object component, Rect frame, Rect overscanInsets,
       Rect contentInsets, Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
