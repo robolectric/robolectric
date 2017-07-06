@@ -3,7 +3,6 @@ package org.robolectric.android.internal;
 import android.app.Application;
 
 import android.os.Build;
-import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos.Run;
 import java.lang.reflect.Method;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
