@@ -42,7 +42,7 @@ jar {
 // change local artifact name to match dependencies
 install {
     repositories.mavenInstaller {
-        pom.artifactId = 'shadows-core'
+        pom.artifactId = 'framework'
     }
 }
 
