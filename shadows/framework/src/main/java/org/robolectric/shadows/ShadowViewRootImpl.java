@@ -5,11 +5,13 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Looper;
 import android.util.MergedConfiguration;
+import android.view.Display;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -27,75 +29,78 @@ public class ShadowViewRootImpl {
   public void playSoundEffect(int effectId) {
   }
 
-  public void callDispatchResized(Rect frame, Rect overscanInsets,
-      Rect contentInsets, Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
-      Configuration newConfig) {
+  public void callDispatchResized() {
+    Display display = Shadow.newInstanceOf(Display.class);
+    Rect frame = new Rect();
+    display.getRectSize(frame);
+    Rect zeroSizedRect = new Rect(0, 0, 0, 0);
+
     int apiLevel = RuntimeEnvironment.getApiLevel();
     ViewRootImpl component = realObject;
     if (apiLevel <= Build.VERSION_CODES.JELLY_BEAN) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(int.class, frame.width()),
           ClassParameter.from(int.class, frame.height()),
-          ClassParameter.from(Rect.class, contentInsets),
-          ClassParameter.from(Rect.class, visibleInsets),
-          ClassParameter.from(boolean.class, reportDraw),
-          ClassParameter.from(Configuration.class, newConfig));
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(Configuration.class, null));
     } else if (apiLevel <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, contentInsets),
-          ClassParameter.from(Rect.class, visibleInsets),
-          ClassParameter.from(boolean.class, reportDraw),
-          ClassParameter.from(Configuration.class, newConfig));
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(Configuration.class, null));
     } else if (apiLevel <= Build.VERSION_CODES.KITKAT) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, overscanInsets),
-          ClassParameter.from(Rect.class, contentInsets),
-          ClassParameter.from(Rect.class, visibleInsets),
-          ClassParameter.from(boolean.class, reportDraw),
-          ClassParameter.from(Configuration.class, newConfig));
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(Configuration.class, null));
     } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP_MR1) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, overscanInsets),
-          ClassParameter.from(Rect.class, contentInsets),
-          ClassParameter.from(Rect.class, visibleInsets),
-          ClassParameter.from(Rect.class, stableInsets),
-          ClassParameter.from(boolean.class, reportDraw),
-          ClassParameter.from(Configuration.class, newConfig));
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(Configuration.class, null));
     } else if (apiLevel <= Build.VERSION_CODES.M) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, overscanInsets),
-          ClassParameter.from(Rect.class, contentInsets),
-          ClassParameter.from(Rect.class, visibleInsets),
-          ClassParameter.from(Rect.class, stableInsets),
-          ClassParameter.from(Rect.class, outsets),
-          ClassParameter.from(boolean.class, reportDraw),
-          ClassParameter.from(Configuration.class, newConfig));
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(Configuration.class, null));
     } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, overscanInsets),
-          ClassParameter.from(Rect.class, contentInsets),
-          ClassParameter.from(Rect.class, visibleInsets),
-          ClassParameter.from(Rect.class, stableInsets),
-          ClassParameter.from(Rect.class, outsets),
-          ClassParameter.from(boolean.class, reportDraw),
-          ClassParameter.from(Configuration.class, newConfig),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(Configuration.class, null),
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false));
     } else if (apiLevel == Build.VERSION_CODES.O) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, overscanInsets),
-          ClassParameter.from(Rect.class, contentInsets),
-          ClassParameter.from(Rect.class, visibleInsets),
-          ClassParameter.from(Rect.class, stableInsets),
-          ClassParameter.from(Rect.class, outsets),
-          ClassParameter.from(boolean.class, reportDraw),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
           ClassParameter.from(MergedConfiguration.class, null),
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(boolean.class, false),

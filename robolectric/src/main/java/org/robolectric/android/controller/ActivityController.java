@@ -1,5 +1,10 @@
 package org.robolectric.android.controller;
 
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.extract;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
@@ -7,20 +12,12 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
-
-import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.extract;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
 
@@ -136,11 +133,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (root != null) {
       // If a test pause thread before creating an activity, root will be null as runPaused is waiting
       // Related to issue #1582
-      Display display = Shadow.newInstanceOf(Display.class);
-      Rect frame = new Rect();
-      display.getRectSize(frame);
-      Rect insets = new Rect(0, 0, 0, 0);
-      ((ShadowViewRootImpl) extract(root)).callDispatchResized(frame, insets, insets, insets, insets, insets, true, null);
+      ((ShadowViewRootImpl) extract(root)).callDispatchResized();
     }
 
     return this;
