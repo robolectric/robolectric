@@ -56,8 +56,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       return this;
     }
 
-    final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
-    shadowOf(component).callAttach(getIntent(), info);
+    shadowOf(component).callAttach(getIntent());
     attached = true;
     return this;
   }

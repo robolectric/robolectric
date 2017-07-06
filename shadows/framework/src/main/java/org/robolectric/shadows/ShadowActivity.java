@@ -17,6 +17,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Build;
@@ -104,12 +106,20 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return title;
   }
 
-  public void callAttach(Intent intent, ActivityInfo activityInfo) {
+  public void callAttach(Intent intent) {
     String activityTitle = getActivityTitle();
     int apiLevel = RuntimeEnvironment.getApiLevel();
     Application application = RuntimeEnvironment.application;
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
     Class<?> nonConfigurationInstancesClass = getNonConfigurationClass();
+
+    ActivityInfo activityInfo;
+    try {
+      activityInfo = application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), realActivity.getClass().getName()), PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
+    } catch (NameNotFoundException e) {
+      throw new RuntimeException();
+    }
+
     if (apiLevel <= Build.VERSION_CODES.KITKAT) {
       ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
