@@ -1,22 +1,43 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+
 import android.R;
-import android.app.*;
+import android.app.Activity;
+import android.app.ActivityThread;
+import android.app.Application;
+import android.app.Dialog;
+import android.app.Fragment;
+import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
-import android.view.*;
-
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewRootImpl;
+import android.view.Window;
 import com.android.internal.app.IVoiceInteractor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -25,20 +46,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
@@ -75,7 +82,30 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ReflectionHelpers.setField(realActivity, "mApplication", application);
   }
 
-  public void callAttach(Intent intent, ActivityInfo activityInfo, String activityTitle) {
+  private String getActivityTitle() {
+    String title = null;
+
+    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
+
+    if (appManifest == null) return null;
+    String labelRef = appManifest.getActivityLabel(realActivity.getClass().getName());
+
+    if (labelRef != null) {
+      if (labelRef.startsWith("@")) {
+        /* Label refers to a string value, get the resource identifier */
+        int labelRes = RuntimeEnvironment.application.getResources().getIdentifier(labelRef.replace("@", ""), "string", appManifest.getPackageName());
+        /* Get the resource ID, use the activity to look up the actual string */
+        title = RuntimeEnvironment.application.getString(labelRes);
+      } else {
+        title = labelRef; /* Label isn't an identifier, use it directly as the title */
+      }
+    }
+
+    return title;
+  }
+
+  public void callAttach(Intent intent, ActivityInfo activityInfo) {
+    String activityTitle = getActivityTitle();
     int apiLevel = RuntimeEnvironment.getApiLevel();
     Application application = RuntimeEnvironment.application;
     Context baseContext = RuntimeEnvironment.application.getBaseContext();

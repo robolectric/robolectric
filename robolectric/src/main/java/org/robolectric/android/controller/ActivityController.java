@@ -13,8 +13,6 @@ import android.view.Display;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
@@ -25,7 +23,6 @@ import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
-  private final ShadowsAdapter shadowsAdapter;
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     return new ActivityController<>(shadowsAdapter, activity, intent).attach();
@@ -37,7 +34,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
   private ActivityController(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     super(shadowsAdapter, activity, intent);
-    this.shadowsAdapter = shadowsAdapter;
   }
 
   /**
@@ -60,9 +56,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
       return this;
     }
 
-    final String title = getActivityTitle();
     final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
-    shadowOf(component).callAttach(getIntent(), info, title);
+    shadowOf(component).callAttach(getIntent(), info);
     attached = true;
     return this;
   }
@@ -73,29 +68,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
     } catch (PackageManager.NameNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private String getActivityTitle() {
-    String title = null;
-
-    /* Get the label for the activity from the manifest */
-    ShadowApplicationAdapter shadowApplicationAdapter = shadowsAdapter.getApplicationAdapter(component);
-    AndroidManifest appManifest = shadowApplicationAdapter.getAppManifest();
-    if (appManifest == null) return null;
-    String labelRef = appManifest.getActivityLabel(component.getClass().getName());
-
-    if (labelRef != null) {
-      if (labelRef.startsWith("@")) {
-        /* Label refers to a string value, get the resource identifier */
-        int labelRes = RuntimeEnvironment.application.getResources().getIdentifier(labelRef.replace("@", ""), "string", appManifest.getPackageName());
-        /* Get the resource ID, use the activity to look up the actual string */
-        title = RuntimeEnvironment.application.getString(labelRes);
-      } else {
-        title = labelRef; /* Label isn't an identifier, use it directly as the title */
-      }
-    }
-
-    return title;
   }
 
   public ActivityController<T> create(final Bundle bundle) {

@@ -17,8 +17,6 @@ public interface ShadowsAdapter {
 
   String getShadowActivityThreadClassName();
 
-  ShadowApplicationAdapter getApplicationAdapter(Activity component);
-
   void setupLogging();
 
   String getShadowContextImplClassName();
@@ -27,9 +25,5 @@ public interface ShadowsAdapter {
 
   interface ShadowLooperAdapter {
     void runPaused(Runnable runnable);
-  }
-
-  interface ShadowApplicationAdapter {
-    AndroidManifest getAppManifest();
   }
 }
