@@ -127,6 +127,16 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
     return this;
   }
 
+  public SupportFragmentController<F> saveInstanceState(final Bundle outState) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.saveInstanceState(outState);
+      }
+    });
+    return this;
+  }
+
   /**
    * @deprecated Use {@link #of(Fragment, Class, Intent)} instead.
    *
