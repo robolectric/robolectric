@@ -927,7 +927,7 @@ public class SQLiteDatabaseTest {
     /////////////////////
 
     private File writableCopyOf(File testDbOrig) throws IOException {
-        Path tempDir = TempDirectory.create();
+        Path tempDir = new TempDirectory("test").create("sqlite");
         File testDb = tempDir.resolve("sqlite-db-dump.sql").toFile();
         Files.copy(testDbOrig, testDb);
         return testDb;

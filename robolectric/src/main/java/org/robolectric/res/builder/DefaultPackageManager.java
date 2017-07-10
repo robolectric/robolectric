@@ -71,8 +71,6 @@ import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -742,12 +740,22 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
-    applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
+    setUpPackageStorage(applicationInfo);
 
     packageInfo.applicationInfo = applicationInfo;
 
     addPackage(packageInfo);
+  }
+
+  private void setUpPackageStorage(ApplicationInfo applicationInfo) {
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
+
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+    }
   }
 
   @Override
@@ -824,13 +832,9 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
-    applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    setUpPackageStorage(applicationInfo);
 
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      applicationInfo.credentialProtectedDataDir = TempDirectory.create().toAbsolutePath().toString();
-      applicationInfo.deviceProtectedDataDir = TempDirectory.create().toAbsolutePath().toString();
-    }
     applicationInfo.labelRes = labelRes;
     String labelRef = androidManifest.getLabelRef();
     if (labelRef != null && !labelRef.startsWith("@")) {
@@ -1044,15 +1048,6 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
       }
     }
     return PackageManager.PERMISSION_DENIED;
-  }
-
-  @Override
-  public void reset() {
-    for (PackageInfo info : packageInfos.values()) {
-      if (info.applicationInfo != null && info.applicationInfo.dataDir != null) {
-        TempDirectory.destroy(Paths.get(info.applicationInfo.dataDir));
-      }
-    }
   }
 
   @Override

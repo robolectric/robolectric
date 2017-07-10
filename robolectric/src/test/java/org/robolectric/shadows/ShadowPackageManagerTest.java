@@ -1366,6 +1366,16 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
   }
 
+
+
+  @Test
+  public void addPackageMultipleTimesShouldWork() throws Exception {
+    shadowPackageManager.addPackage("test.package");
+
+    // Shouldn't throw exception
+    shadowPackageManager.addPackage("test.package");
+  }
+
   @Test
   public void deletePackage() throws Exception {
     // Apps must have the android.permission.DELETE_PACKAGES set to delete packages.

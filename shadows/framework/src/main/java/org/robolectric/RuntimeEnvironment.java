@@ -1,11 +1,11 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.content.pm.PackageManager;
 
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.TempDirectory;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
@@ -21,6 +21,7 @@ public class RuntimeEnvironment {
   private static ResourceTable systemResourceTable;
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
+  private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -95,9 +96,6 @@ public class RuntimeEnvironment {
    */
   @Deprecated
   public static void setRobolectricPackageManager(RobolectricPackageManager newPackageManager) {
-    if (packageManager != null) {
-      packageManager.reset();
-    }
     packageManager = newPackageManager;
   }
 
@@ -170,5 +168,13 @@ public class RuntimeEnvironment {
 
   public static ResourceTable getCompileTimeResourceTable() {
     return compileTimeResourceTable;
+  }
+
+  public static void setTempDirectory(TempDirectory tempDirectory) {
+    RuntimeEnvironment.tempDirectory = tempDirectory;
+  }
+
+  public static TempDirectory getTempDirectory() {
+    return tempDirectory;
   }
 }
