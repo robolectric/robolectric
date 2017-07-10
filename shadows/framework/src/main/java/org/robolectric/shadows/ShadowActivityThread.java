@@ -38,6 +38,8 @@ public class ShadowActivityThread {
           }
         } else if (method.getName().equals("notifyPackageUse")) {
           return null;
+        } else if (method.getName().equals("getPackageInstaller")) {
+          return null;
         }
         throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
       }

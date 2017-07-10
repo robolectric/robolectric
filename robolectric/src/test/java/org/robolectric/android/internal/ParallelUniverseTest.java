@@ -156,7 +156,7 @@ public class ParallelUniverseTest {
     setUpApplicationState(c);
     assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v23");
   }
-  
+
   @Test
   public void tearDownApplication_invokesOnTerminate() {
     RuntimeEnvironment.application = mock(Application.class);
