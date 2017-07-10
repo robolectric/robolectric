@@ -315,11 +315,6 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   }
 
   @Override
-  public void reset() {
-    RuntimeEnvironment.getRobolectricPackageManager().reset();
-  }
-
-  @Override
   public void setNameForUid(int uid, String name) {
     RuntimeEnvironment.getRobolectricPackageManager().setNameForUid(uid, name);
   }

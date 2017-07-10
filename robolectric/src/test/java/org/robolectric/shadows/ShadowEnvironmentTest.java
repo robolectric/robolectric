@@ -20,7 +20,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-public class ShadowEnvironmentTest {
+public class  ShadowEnvironmentTest {
 
   @After
   public void tearDown() throws Exception {
@@ -113,20 +113,6 @@ public class ShadowEnvironmentTest {
     assertThat(Environment.isExternalStorageEmulated(file)).isTrue();
     ShadowEnvironment.reset();
     assertThat(Environment.isExternalStorageEmulated(file)).isFalse();
-  }
-
-  @Test
-  public void reset_shouldCleanupTempDirectories() {
-    Environment.getExternalStorageDirectory();
-    Environment.getExternalStoragePublicDirectory(null);
-    File c = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-
-    ShadowEnvironment.reset();
-
-    // only c should actually be deleted
-    assertNull(ShadowEnvironment.EXTERNAL_CACHE_DIR);
-    assertNull(ShadowEnvironment.EXTERNAL_FILES_DIR);
-    assertThat(c).doesNotExist();
   }
 
   @Test
