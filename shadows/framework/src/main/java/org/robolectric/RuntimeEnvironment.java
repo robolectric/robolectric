@@ -6,6 +6,7 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -84,7 +85,7 @@ public class RuntimeEnvironment {
    * </pre>
    */
   @Deprecated
-  public static RobolectricPackageManager getRobolectricPackageManager() {
+  public static ShadowPackageManager getRobolectricPackageManager() {
     return Shadow.extract(RuntimeEnvironment.application.getPackageManager());
   }
 
