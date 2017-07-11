@@ -58,8 +58,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setTempDirectory(new TempDirectory(
-        method.getClass().getSimpleName() + "_" + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_")));
+    RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
@@ -144,6 +143,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
+  }
+
+  /**
+   * Create a file system safe directory path name for the current test.
+   */
+  private String createTestDataDirRootPath(Method method) {
+    return method.getClass().getSimpleName() + "_" + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override

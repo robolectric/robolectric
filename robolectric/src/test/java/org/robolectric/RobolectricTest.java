@@ -149,8 +149,6 @@ public class RobolectricTest {
     assertThat(activity.isVisible()).isTrue();
   }
 
-  private List<String> order = new ArrayList<>();
-
   @Implements(View.class)
   public static class TestShadowView {
     @Implementation

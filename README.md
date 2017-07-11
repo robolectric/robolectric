@@ -60,6 +60,8 @@ You will need to have portions of the Android SDK available in your local Maven 
 
     ./scripts/install-dependencies.rb
 
+*Note*: You'll need Maven installed, `ANDROID_HOME` set and to have the SDK and Google APIs for API Level 23 downloaded to do this.
+
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
     ./gradlew clean assemble install compileTest

@@ -136,11 +136,11 @@ public class ShadowPackageManager implements RobolectricPackageManager {
   private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
   private Set<String> deletedPackages = new HashSet<>();
   Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
-  
+
   public ShadowPackageManager() {
     addManifest(RuntimeEnvironment.getAppManifest());
   }
-  
+
   /**
    * Goes through the meta data and puts each value in to a
    * bundle as the correct type.
