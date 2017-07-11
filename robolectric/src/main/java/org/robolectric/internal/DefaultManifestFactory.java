@@ -60,6 +60,6 @@ public class DefaultManifestFactory implements ManifestFactory {
 
   @Override
   public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
-    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(), manifestIdentifier.getAssetDir());
+    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(), manifestIdentifier.getAssetDir(), manifestIdentifier.getPackageName());
   }
 }

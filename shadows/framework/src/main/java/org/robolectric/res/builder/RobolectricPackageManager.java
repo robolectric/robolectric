@@ -99,8 +99,6 @@ public interface RobolectricPackageManager {
 
   void setQueryIntentImplicitly(boolean queryIntentImplicitly);
 
-  void reset();
-
   void setNameForUid(int uid, String name);
 
   void setPackagesForCallingUid(String... packagesForCallingUid);
