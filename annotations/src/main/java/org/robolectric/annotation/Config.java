@@ -78,8 +78,11 @@ public @interface Config {
   /**
    * Reference to the BuildConfig class created by the Gradle build system.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
+   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
    * @return Reference to BuildConfig class.
    */
+  @Deprecated
   Class<?> constants() default Void.class;  // DEFAULT_CONSTANTS
 
   /**
