@@ -2,8 +2,6 @@ package org.robolectric.shadows.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
-import org.robolectric.res.Fs;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -14,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +25,7 @@ import java.util.logging.Logger;
  */
 public class SQLiteLibraryLoader {
   private static SQLiteLibraryLoader instance;
+  private static File nativeLibraryPath;
   private static final String SQLITE4JAVA = "sqlite4java";
   private static final String OS_WIN = "windows", OS_LINUX = "linux", OS_MAC = "mac";
 
@@ -70,11 +70,17 @@ public class SQLiteLibraryLoader {
   }
 
   public File getNativeLibraryPath() {
-    String tempPath = System.getProperty("java.io.tmpdir");
-    if (tempPath == null) {
-      throw new IllegalStateException("Java temporary directory is not defined (java.io.tmpdir)");
+    if (nativeLibraryPath != null) {
+      return nativeLibraryPath;
     }
-    return new File(Fs.fileFromPath(tempPath).join("robolectric-libs", getLibName()).getPath());
+    try {
+      nativeLibraryPath =
+          Files.createTempDirectory("robolectric-libs").resolve(getLibName()).toFile();
+      nativeLibraryPath.deleteOnExit();
+    } catch (IOException e) {
+      throw new RuntimeException("could not create " + nativeLibraryPath);
+    }
+    return nativeLibraryPath;
   }
 
   public void mustReload() {
