@@ -189,7 +189,6 @@ public final class R {
     public static final int robolectric = 0x7f060011;
     public static final int an_image_or_vector = 0x7f060012;
     public static final int vector = 0x7f060013;
-    public static final int text_file_posing_as_image = 0x7f060014;
   }
 
   public static final class layout {

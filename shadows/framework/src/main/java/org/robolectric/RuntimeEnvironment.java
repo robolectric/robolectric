@@ -6,7 +6,6 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
-
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 public class RuntimeEnvironment {

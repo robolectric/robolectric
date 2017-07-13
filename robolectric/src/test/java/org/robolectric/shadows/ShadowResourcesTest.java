@@ -6,6 +6,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
@@ -522,16 +524,18 @@ public class ShadowResourcesTest {
 
   @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
+    Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
+    assertThat(bitmap.getHeight()).isEqualTo(53);
+    assertThat(bitmap.getWidth()).isEqualTo(64);
   }
 
   @Test @Config(qualifiers = "hdpi")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
+    Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
+    assertThat(bitmap.getHeight()).isEqualTo(100);
+    assertThat(bitmap.getWidth()).isEqualTo(100);
   }
 
   @Test
