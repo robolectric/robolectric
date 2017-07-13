@@ -27,7 +27,7 @@ public class ShadowEnvironment {
   private static final Map<File, Boolean> STORAGE_EMULATED = new HashMap<>();
   private static final Map<File, Boolean> STORAGE_REMOVABLE = new HashMap<>();
   private static boolean sIsExternalStorageEmulated;
-  private static final Path tmpExternalFilesDirBase = TempDirectory.create();
+  private static Path tmpExternalFilesDirBase;
   private static final List<File> externalDirs = new LinkedList<>();
   private static Map<Path, String> storageState = new HashMap<>();
 
@@ -59,13 +59,13 @@ public class ShadowEnvironment {
 
   @Implementation
   public static File getExternalStorageDirectory() {
-    if (!exists(EXTERNAL_CACHE_DIR)) EXTERNAL_CACHE_DIR = TempDirectory.create();
+    if (!exists(EXTERNAL_CACHE_DIR)) EXTERNAL_CACHE_DIR = RuntimeEnvironment.getTempDirectory().create("external-cache");
     return EXTERNAL_CACHE_DIR.toFile();
   }
 
   @Implementation
   public static File getExternalStoragePublicDirectory(String type) {
-    if (!exists(EXTERNAL_FILES_DIR)) EXTERNAL_FILES_DIR = TempDirectory.create();
+    if (!exists(EXTERNAL_FILES_DIR)) EXTERNAL_FILES_DIR = RuntimeEnvironment.getTempDirectory().create("external-files");
     if (type == null) return EXTERNAL_FILES_DIR.toFile();
     Path path = EXTERNAL_FILES_DIR.resolve(type);
     try {
@@ -78,8 +78,6 @@ public class ShadowEnvironment {
 
   @Resetter
   public static void reset() {
-    TempDirectory.destroy(EXTERNAL_CACHE_DIR);
-    TempDirectory.destroy(EXTERNAL_FILES_DIR);
 
     EXTERNAL_CACHE_DIR = null;
     EXTERNAL_FILES_DIR = null;
@@ -88,7 +86,6 @@ public class ShadowEnvironment {
     STORAGE_REMOVABLE.clear();
 
     storageState = new HashMap<>();
-    TempDirectory.destroy(tmpExternalFilesDirBase);
     externalDirs.clear();
 
     sIsExternalStorageEmulated = false;
@@ -175,6 +172,9 @@ public class ShadowEnvironment {
       externalFileDir = null;
     } else {
       try {
+        if (tmpExternalFilesDirBase == null) {
+          tmpExternalFilesDirBase = RuntimeEnvironment.getTempDirectory().create("external-files-base");
+        }
         externalFileDir = tmpExternalFilesDirBase.resolve(path);
         Files.createDirectories(externalFileDir);
         externalDirs.add(externalFileDir.toFile());
