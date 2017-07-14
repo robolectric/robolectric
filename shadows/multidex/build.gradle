@@ -15,7 +15,7 @@ shadows {
 dependencies {
     compileOnly project(":shadows/framework")
 
-    compileOnly "com.android.support:multidex:1.0.1"
+    compileOnly "com.android.support:multidex:1.0.2"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
