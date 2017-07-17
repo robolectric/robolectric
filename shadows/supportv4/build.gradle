@@ -19,7 +19,7 @@ configurations {
 dependencies {
     // Project dependencies
     compileOnly project(":robolectric")
-    compileOnly project(":shadows/framework")
+    compileOnly project(":shadows:framework")
 
     // Compile dependencies
     compileOnly AndroidSdk.MAX_SDK.coordinates
