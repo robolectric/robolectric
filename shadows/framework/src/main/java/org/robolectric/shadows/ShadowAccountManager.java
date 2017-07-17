@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 
 import java.io.IOException;
 import java.util.*;

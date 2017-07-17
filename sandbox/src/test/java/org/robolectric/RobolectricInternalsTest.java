@@ -7,7 +7,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -79,7 +78,7 @@ public class RobolectricInternalsTest {
   }
 
   private static ShadowConstructors shadowOf(Constructors realObject) {
-    Object shadow = ShadowExtractor.extract(realObject);
+    Object shadow = Shadow.extract(realObject);
     assertThat(shadow).isNotNull().isInstanceOf(ShadowConstructors.class);
     return (ShadowConstructors) shadow;
   }

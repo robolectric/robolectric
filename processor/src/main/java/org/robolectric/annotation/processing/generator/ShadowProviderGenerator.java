@@ -143,7 +143,7 @@ public class ShadowProviderGenerator extends Generator {
         writer.println("  @Deprecated");
       }
       writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
-      writer.println("    return (" + shadow + ") ShadowExtractor.extract(actual);");
+      writer.println("    return (" + shadow + ") Shadow.extract(actual);");
       writer.println("  }");
       writer.println();
     }

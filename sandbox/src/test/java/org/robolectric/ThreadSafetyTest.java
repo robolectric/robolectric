@@ -8,7 +8,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.SandboxConfig;
 
 import java.lang.reflect.Field;
@@ -26,7 +25,7 @@ public class ThreadSafetyTest {
     for (int i = 0; i < 100; i++) { // :-(
       InstrumentedThread instrumentedThread = new InstrumentedThread();
       instrumentedThread.start();
-      Object shadowFromThisThread = ShadowExtractor.extract(instrumentedThread);
+      Object shadowFromThisThread = Shadow.extract(instrumentedThread);
 
       instrumentedThread.join();
       Object shadowFromOtherThread = field.get(instrumentedThread);
@@ -40,7 +39,7 @@ public class ThreadSafetyTest {
 
     @Override
     public void run() {
-      shadowFromOtherThread = (InstrumentedThreadShadow) ShadowExtractor.extract(this);
+      shadowFromOtherThread = Shadow.extract(this);
     }
   }
 
