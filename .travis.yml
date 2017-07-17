@@ -29,7 +29,7 @@ before_install:
   - ./scripts/install-dependencies.rb
 
 script:
-  - ./gradlew clean assemble install compileTest --info --stacktrace
+  - ./gradlew clean assemble install compileTestJava --info --stacktrace
   - NO_REBUILD=true ./gradlew test --no-rebuild --continue --info --stacktrace -Drobolectric.enabledSdks=$APIs
 
 after_success:

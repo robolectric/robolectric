@@ -64,7 +64,7 @@ You will need to have portions of the Android SDK available in your local Maven 
 
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
-    ./gradlew clean assemble install compileTest
+    ./gradlew clean assemble install compileTestJava
 
 ### Using Snapshots
 
