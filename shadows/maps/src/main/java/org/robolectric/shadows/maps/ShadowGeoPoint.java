@@ -3,7 +3,7 @@ package org.robolectric.shadows.maps;
 import com.google.android.maps.GeoPoint;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(GeoPoint.class)
 public class ShadowGeoPoint {
@@ -28,7 +28,7 @@ public class ShadowGeoPoint {
   @Override @Implementation
   public boolean equals(Object o) {
     if (o == null) return false;
-    o = ShadowExtractor.extract(o);
+    o = Shadow.extract(o);
     if (o == null) return false;
     if (this == o) return true;
     if (getClass() != o.getClass()) return false;

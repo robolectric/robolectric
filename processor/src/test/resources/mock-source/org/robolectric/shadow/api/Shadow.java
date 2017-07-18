@@ -1,6 +1,6 @@
-package org.robolectric.internal;
+package org.robolectric.shadow.api;
 
-public class ShadowExtractor {
+public class Shadow {
 
   public static Object extract(Object source) {
     return null;
