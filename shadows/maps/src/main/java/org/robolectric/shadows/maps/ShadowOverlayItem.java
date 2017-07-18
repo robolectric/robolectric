@@ -4,7 +4,7 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Strings;
 
 @Implements(OverlayItem.class)
@@ -37,7 +37,7 @@ public class ShadowOverlayItem {
   @Override @Implementation
   public boolean equals(Object o) {
     if (o == null) return false;
-    o = ShadowExtractor.extract(o);
+    o = Shadow.extract(o);
     if (o == null) return false;
     if (this == o) return true;
     if (getClass() != o.getClass()) return false;

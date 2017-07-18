@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.util.TestRunnerWithManifest;
 
@@ -178,6 +178,6 @@ public class ShadowDialogFragmentTest {
   }
 
   private static ShadowDialog shadowOf(Dialog dialog) {
-    return (ShadowDialog) ShadowExtractor.extract(dialog);
+    return (ShadowDialog) Shadow.extract(dialog);
   }
 }

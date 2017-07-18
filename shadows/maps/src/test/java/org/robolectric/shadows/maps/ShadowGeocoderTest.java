@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import java.util.List;
@@ -61,6 +61,6 @@ public class ShadowGeocoderTest {
   }
 
   private ShadowGeocoder shadowOf(Geocoder geocoder) {
-    return (ShadowGeocoder) ShadowExtractor.extract(geocoder);
+    return (ShadowGeocoder) Shadow.extract(geocoder);
   }
 }

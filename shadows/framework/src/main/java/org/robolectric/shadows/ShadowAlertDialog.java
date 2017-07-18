@@ -11,7 +11,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -111,7 +111,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
   public ShadowAlertController getShadowAlertController() {
     AlertController alert = ReflectionHelpers.getField(realAlertDialog, "mAlert");
-    return (ShadowAlertController) ShadowExtractor.extract(alert);
+    return (ShadowAlertController) Shadow.extract(alert);
   }
 
   @Implements(AlertDialog.Builder.class)

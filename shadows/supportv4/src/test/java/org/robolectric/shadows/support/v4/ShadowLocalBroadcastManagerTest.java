@@ -9,7 +9,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import java.util.ArrayList;
@@ -137,6 +137,6 @@ public class ShadowLocalBroadcastManagerTest {
   }
 
   private ShadowLocalBroadcastManager shadowOf(LocalBroadcastManager localBroadcastManager) {
-    return (ShadowLocalBroadcastManager) ShadowExtractor.extract(localBroadcastManager);
+    return (ShadowLocalBroadcastManager) Shadow.extract(localBroadcastManager);
   }
 }
