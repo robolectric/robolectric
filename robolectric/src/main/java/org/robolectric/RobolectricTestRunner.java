@@ -362,6 +362,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return properties;
     } catch (IOException e) {
       return null;
+    } finally {
+      try {
+        resourceAsStream.close();
+      } catch (IOException e) {
+        throw new RuntimeException("couldn't close test_config.properties", e);
+      }
     }
   }
 
