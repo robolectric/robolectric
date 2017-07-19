@@ -490,23 +490,23 @@ public class ShadowPackageManager implements RobolectricPackageManager {
 
   @Override
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-    List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
-    if (infoList1 == null) {
-      infoList1 = new ArrayList<>();
-      resolveInfoForIntent.put(intent, infoList1);
+    List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
+    if (infoList == null) {
+      infoList = new ArrayList<>();
+      resolveInfoForIntent.put(intent, infoList);
     }
-    List<ResolveInfo> infoList = infoList1;
+
     infoList.add(info);
   }
 
   @Override
   public void removeResolveInfosForIntent(Intent intent, String packageName) {
-    List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
-    if (infoList1 == null) {
-      infoList1 = new ArrayList<>();
-      resolveInfoForIntent.put(intent, infoList1);
+    List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
+    if (infoList == null) {
+      infoList = new ArrayList<>();
+      resolveInfoForIntent.put(intent, infoList);
     }
-    List<ResolveInfo> infoList = infoList1;
+
     for (Iterator<ResolveInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
       if (resolveInfo.activityInfo.packageName.equals(packageName)) {

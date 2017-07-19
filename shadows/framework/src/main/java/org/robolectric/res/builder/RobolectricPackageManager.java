@@ -22,81 +22,97 @@ public interface RobolectricPackageManager {
   /**
    * @deprecated Prefer {@link PackageManager#getPackageInfo(String, int)} instead.
    */
+  @Deprecated
   PackageInfo getPackageInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;
 
   /**
    * @deprecated Prefer {@link PackageManager#getApplicationInfo(String, int)} instead.
    */
+  @Deprecated
   ApplicationInfo getApplicationInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;
 
   /**
    * @deprecated Prefer {@link PackageManager#getActivityInfo(ComponentName, int)} instead.
    */
+  @Deprecated
   ActivityInfo getActivityInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
 
   /**
    * @deprecated Prefer {@link PackageManager#getReceiverInfo(ComponentName, int)} instead.
    */
+  @Deprecated
   ActivityInfo getReceiverInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
 
   /**
    * @deprecated Prefer {@link PackageManager#getServiceInfo(ComponentName, int)} instead.
    */
+  @Deprecated
   ServiceInfo getServiceInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
 
   /**
    * @deprecated Prefer {@link PackageManager#getInstalledPackages(int)} instead.
    */
+  @Deprecated
   List<PackageInfo> getInstalledPackages(int flags);
 
   /**
    * @deprecated Prefer {@link PackageManager#queryIntentActivities(Intent, int)} instead.
    */
+  @Deprecated
   List<ResolveInfo> queryIntentActivities(Intent intent, int flags);
 
   /**
    * @deprecated Prefer {@link PackageManager#queryIntentServices(Intent, int)} instead.
    */
+  @Deprecated
   List<ResolveInfo> queryIntentServices(Intent intent, int flags);
 
   /**
    * @deprecated Prefer {@link PackageManager#queryBroadcastReceivers(Intent, int)} instead.
    */
+  @Deprecated
   List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags);
 
   /**
    * @deprecated Prefer {@link PackageManager#resolveActivity(Intent, int)} instead.
    */
+  @Deprecated
   ResolveInfo resolveActivity(Intent intent, int flags);
 
   /**
    * @deprecated Prefer {@link PackageManager#resolveService(Intent, int)} instead.
    */
+  @Deprecated
   ResolveInfo resolveService(Intent intent, int flags);
 
   /**
    * @deprecated Prefer {@link PackageManager#getApplicationIcon(String)} instead.
    */
+  @Deprecated
   Drawable getApplicationIcon(String packageName) throws PackageManager.NameNotFoundException;
 
   /**
    * @deprecated Prefer {@link PackageManager#getLaunchIntentForPackage(String)} instead.
    */
+  @Deprecated
   Intent getLaunchIntentForPackage(String packageName);
 
   /**
    * @deprecated Prefer {@link PackageManager#getApplicationLabel(ApplicationInfo)} instead.
    */
+  @Deprecated
   CharSequence getApplicationLabel(ApplicationInfo info);
 
   /**
    * @deprecated Prefer {@link PackageManager#setComponentEnabledSetting(ComponentName, int, int)} instead.
    */
+  @Deprecated
   void setComponentEnabledSetting(ComponentName componentName, int newState, int flags);
 
   /**
    * @deprecated Prefer {@link PackageManager#hasSystemFeature(String)} instead.
    */
+  @Deprecated
   boolean hasSystemFeature(String name);
 
   void doPendingUninstallCallbacks();
