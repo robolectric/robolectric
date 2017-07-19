@@ -1,21 +1,20 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import java.util.List;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
   private PhoneStateListener listener;
+  private int callState;
   private int eventFlags;
   private String deviceId;
   private String groupIdLevel1;
@@ -183,6 +182,15 @@ public class ShadowTelephonyManager {
 
   public void setCellLocation(CellLocation cellLocation) {
     this.cellLocation = cellLocation;
+  }
+
+  @Implementation
+  public int getCallState() {
+    return callState;
+  }
+
+  public void setCallState(int callState) {
+    this.callState = callState;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)

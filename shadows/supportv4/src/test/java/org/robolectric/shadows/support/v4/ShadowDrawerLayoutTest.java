@@ -5,8 +5,7 @@ import android.support.v4.widget.DrawerLayout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.shadows.support.v4.ShadowDrawerLayout;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +23,6 @@ public class ShadowDrawerLayoutTest {
   }
 
   private ShadowDrawerLayout shadowOf(DrawerLayout drawerLayout) {
-    return (ShadowDrawerLayout) ShadowExtractor.extract(drawerLayout);
+    return (ShadowDrawerLayout) Shadow.extract(drawerLayout);
   }
 }

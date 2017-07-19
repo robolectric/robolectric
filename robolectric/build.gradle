@@ -30,7 +30,7 @@ dependencies {
 
     // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
-    compile project(":shadows/framework")
+    compile project(":shadows:framework")
 
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk16:1.46"
@@ -72,7 +72,7 @@ checkApiChanges {
             project(":junit"),
             project(":resources"),
             project(":sandbox"),
-            project(":shadows/framework"),
+            project(":shadows:framework"),
             project(":utils"),
             project(":shadowapi"),
     ]

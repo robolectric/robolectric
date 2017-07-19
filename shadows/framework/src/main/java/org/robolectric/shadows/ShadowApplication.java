@@ -32,9 +32,9 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
@@ -811,7 +811,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public void setSystemService(String key, Object service) {
-    ShadowContextImpl shadowContext = (ShadowContextImpl) ShadowExtractor.extract(realApplication.getBaseContext());
+    ShadowContextImpl shadowContext = Shadow.extract(realApplication.getBaseContext());
     shadowContext.setSystemService(key, service);
   }
 

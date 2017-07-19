@@ -6,7 +6,7 @@ import libcore.io.MemoryMappedFile;
 import libcore.io.Streams;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +38,7 @@ public class ShadowMemoryMappedFile {
             }
             try {
                 MemoryMappedFile memoryMappedFile = new MemoryMappedFile(0L, 0L);
-                ShadowMemoryMappedFile shadowMemoryMappedFile = (ShadowMemoryMappedFile) ShadowExtractor.extract(memoryMappedFile);
+                ShadowMemoryMappedFile shadowMemoryMappedFile = Shadow.extract(memoryMappedFile);
                 shadowMemoryMappedFile.bytes = Streams.readFully(is);
                 return memoryMappedFile;
             } catch (IOException e) {

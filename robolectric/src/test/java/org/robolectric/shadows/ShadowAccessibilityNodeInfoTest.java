@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ShadowExtractor;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccessibilityNodeInfoTest {

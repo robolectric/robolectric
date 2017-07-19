@@ -13,14 +13,10 @@ import org.robolectric.util.Scheduler;
 public interface ShadowsAdapter {
   Scheduler getBackgroundScheduler();
 
-  ShadowActivityAdapter getShadowActivityAdapter(Activity component);
-
   ShadowLooperAdapter getMainLooper();
 
   // todo remove
   String getShadowActivityThreadClassName();
-
-  ShadowApplicationAdapter getApplicationAdapter(Activity component);
 
   void setupLogging();
 
@@ -28,16 +24,7 @@ public interface ShadowsAdapter {
 
   void bind(Application application, AndroidManifest appManifest);
 
-  interface ShadowActivityAdapter {
-
-    void setThemeFromManifest();
-  }
-
   interface ShadowLooperAdapter {
     void runPaused(Runnable runnable);
-  }
-
-  interface ShadowApplicationAdapter {
-    AndroidManifest getAppManifest();
   }
 }

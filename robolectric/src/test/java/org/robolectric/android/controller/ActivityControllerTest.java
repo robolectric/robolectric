@@ -5,18 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.assertStringsInclude;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.android.runtime.RuntimeAdapter;
-import org.robolectric.android.runtime.RuntimeAdapterFactory;
-import org.robolectric.shadows.CoreShadowsAdapter;
-import org.robolectric.shadows.ShadowLooper;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -27,12 +15,19 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Window;
 import android.widget.LinearLayout;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
-import org.robolectric.util.TestRunnable;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.CoreShadowsAdapter;
+import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.util.Scheduler;
+import org.robolectric.util.TestRunnable;
 
 @RunWith(TestRunners.SelfTest.class)
 public class ActivityControllerTest {
@@ -218,16 +213,6 @@ public class ActivityControllerTest {
     assertThat(activity).isNotNull();
   }
 
-  @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void shouldUseCorrectRuntimeAdapter() {
-    ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", 15);
-    MyActivity activity = Robolectric.buildActivity(MyActivity.class).setup().get();
-    assertThat(activity).isNotNull();
-    RuntimeAdapter adapter = RuntimeAdapterFactory.getInstance();
-    assertThat(adapter.getClass().getName()).isEqualTo("org.robolectric.android.runtime.Api19RuntimeAdapter");
-  }
-  
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
