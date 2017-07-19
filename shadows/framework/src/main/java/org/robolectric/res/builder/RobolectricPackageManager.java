@@ -19,29 +19,87 @@ import org.robolectric.manifest.AndroidManifest;
 
 public interface RobolectricPackageManager {
 
-  void doPendingUninstallCallbacks();
-
+  /**
+   * @deprecated Prefer {@link PackageManager#getPackageInfo(String, int)} instead.
+   */
   PackageInfo getPackageInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;
 
+  /**
+   * @deprecated Prefer {@link PackageManager#getApplicationInfo(String, int)} instead.
+   */
   ApplicationInfo getApplicationInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;
 
+  /**
+   * @deprecated Prefer {@link PackageManager#getActivityInfo(ComponentName, int)} instead.
+   */
   ActivityInfo getActivityInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
 
+  /**
+   * @deprecated Prefer {@link PackageManager#getReceiverInfo(ComponentName, int)} instead.
+   */
   ActivityInfo getReceiverInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
 
+  /**
+   * @deprecated Prefer {@link PackageManager#getServiceInfo(ComponentName, int)} instead.
+   */
   ServiceInfo getServiceInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
-  
+
+  /**
+   * @deprecated Prefer {@link PackageManager#getInstalledPackages(int)} instead.
+   */
   List<PackageInfo> getInstalledPackages(int flags);
 
+  /**
+   * @deprecated Prefer {@link PackageManager#queryIntentActivities(Intent, int)} instead.
+   */
   List<ResolveInfo> queryIntentActivities(Intent intent, int flags);
 
+  /**
+   * @deprecated Prefer {@link PackageManager#queryIntentServices(Intent, int)} instead.
+   */
   List<ResolveInfo> queryIntentServices(Intent intent, int flags);
 
+  /**
+   * @deprecated Prefer {@link PackageManager#queryBroadcastReceivers(Intent, int)} instead.
+   */
   List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags);
 
+  /**
+   * @deprecated Prefer {@link PackageManager#resolveActivity(Intent, int)} instead.
+   */
   ResolveInfo resolveActivity(Intent intent, int flags);
 
+  /**
+   * @deprecated Prefer {@link PackageManager#resolveService(Intent, int)} instead.
+   */
   ResolveInfo resolveService(Intent intent, int flags);
+
+  /**
+   * @deprecated Prefer {@link PackageManager#getApplicationIcon(String)} instead.
+   */
+  Drawable getApplicationIcon(String packageName) throws PackageManager.NameNotFoundException;
+
+  /**
+   * @deprecated Prefer {@link PackageManager#getLaunchIntentForPackage(String)} instead.
+   */
+  Intent getLaunchIntentForPackage(String packageName);
+
+  /**
+   * @deprecated Prefer {@link PackageManager#getApplicationLabel(ApplicationInfo)} instead.
+   */
+  CharSequence getApplicationLabel(ApplicationInfo info);
+
+  /**
+   * @deprecated Prefer {@link PackageManager#setComponentEnabledSetting(ComponentName, int, int)} instead.
+   */
+  void setComponentEnabledSetting(ComponentName componentName, int newState, int flags);
+
+  /**
+   * @deprecated Prefer {@link PackageManager#hasSystemFeature(String)} instead.
+   */
+  boolean hasSystemFeature(String name);
+
+  void doPendingUninstallCallbacks();
 
   void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info);
 
@@ -57,17 +115,9 @@ public interface RobolectricPackageManager {
 
   void addActivityIcon(Intent intent, Drawable d);
 
-  Drawable getApplicationIcon(String packageName) throws PackageManager.NameNotFoundException;
-
   void setApplicationIcon(String packageName, Drawable d);
 
-  Intent getLaunchIntentForPackage(String packageName);
-
-  CharSequence getApplicationLabel(ApplicationInfo info);
-
   void setApplicationEnabledSetting(String packageName, int newState, int flags);
-
-  void setComponentEnabledSetting(ComponentName componentName, int newState, int flags);
 
   void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity);
 
@@ -81,11 +131,10 @@ public interface RobolectricPackageManager {
 
   void addPackage(String packageName);
 
-  void addManifest(AndroidManifest androidManifest, int labelRes);
+  @Deprecated
+  void addManifest(AndroidManifest androidManifest);
 
   void removePackage(String packageName);
-
-  boolean hasSystemFeature(String name);
 
   void setSystemFeature(String name, boolean supported);
 
