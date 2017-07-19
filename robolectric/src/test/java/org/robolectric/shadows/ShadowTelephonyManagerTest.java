@@ -140,7 +140,7 @@ public class ShadowTelephonyManagerTest {
   @Test
   public void getCallState() {
     shadowTelephonyManager.setCallState(TelephonyManager.CALL_STATE_OFFHOOK);
-    assertThat(telephonyMananger.getCallState()).isEqualTo(TelephonyManager.CALL_STATE_OFFHOOK);
+    assertThat(telephonyManager.getCallState()).isEqualTo(TelephonyManager.CALL_STATE_OFFHOOK);
   }
 
   @Test
