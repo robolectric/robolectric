@@ -371,7 +371,9 @@ public class ShadowTimeTest {
   @Test
   public void shouldFormat2445() throws Exception {
     Time t = new Time();
+    t.timezone = "PST";
     assertEquals("19700101T000000", t.format2445());
+    
     t.timezone = Time.TIMEZONE_UTC;
     //2445 formatted date should hava a Z postfix
     assertEquals("19700101T000000Z",t.format2445());
