@@ -2,7 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 
-import org.robolectric.internal.Shadow;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.RobolectricPackageManager;
