@@ -5,8 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.app.Application;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -74,17 +72,6 @@ public class RuntimeEnvironment {
 
   public static void setActivityThread(Object newActivityThread) {
     activityThread = newActivityThread;
-  }
-
-  /**
-   * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
-   * <pre>
-   *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
-   * </pre>
-   */
-  @Deprecated
-  public static RobolectricPackageManager getRobolectricPackageManager() {
-    return Shadow.extract(RuntimeEnvironment.application.getPackageManager());
   }
 
   public static String getQualifiers() {
