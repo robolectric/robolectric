@@ -21,7 +21,6 @@ import static android.os.Build.VERSION_CODES.*;
 /**
  * Shadow for {@link android.net.wifi.WifiManager}.
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
   private static float sSignalLevelInPercent = 1f;
@@ -33,6 +32,7 @@ public class ShadowWifiManager {
   private final Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   private Pair<Integer, Boolean> lastEnabledNetwork;
   private DhcpInfo dhcpInfo;
+  private boolean isScanAlwaysAvailable = true;
 
   @Implementation
   public boolean setWifiEnabled(boolean wifiEnabled) {
@@ -144,6 +144,11 @@ public class ShadowWifiManager {
     return dhcpInfo;
   }
 
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public boolean isScanAlwaysAvailable() {
+    return isScanAlwaysAvailable;
+  }
+
   public static void setSignalLevelInPercent(float level) {
     if (level < 0 || level > 1) {
       throw new IllegalArgumentException("level needs to be between 0 and 1");
@@ -169,6 +174,10 @@ public class ShadowWifiManager {
 
   public boolean wasConfigurationSaved() {
     return wasSaved;
+  }
+
+  public void setIsScanAlwaysAvailable(boolean isScanAlwaysAvailable) {
+    this.isScanAlwaysAvailable = isScanAlwaysAvailable;
   }
 
   private void checkAccessWifiStatePermission() {
