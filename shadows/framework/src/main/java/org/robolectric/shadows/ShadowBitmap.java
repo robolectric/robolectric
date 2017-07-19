@@ -576,6 +576,11 @@ public class ShadowBitmap {
     }
   }
 
+  @Implementation
+  public Bitmap extractAlpha() {
+    return realBitmap;
+  }
+
   @Override
   public String toString() {
     return "Bitmap{description='" + description + '\'' + ", width=" + width + ", height=" + height + '}';
