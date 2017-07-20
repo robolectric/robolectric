@@ -31,6 +31,9 @@ import java.util.Map;
 /** Represents a generic chunk. */
 public class Chunk {
 
+  private static final int UINT16_SIZE = 2;
+  private static final int UINT32_SIZE = 4;
+
   private final ByteBuffer buffer;
   private final int offset;
   private Type type;
@@ -180,15 +183,15 @@ public class Chunk {
     }
 
     public int getStringCount() {
-      return super.buffer.getInt(super.offset + OFFSET_FIRST_HEADER);
+      return super.buffer.getInt(getChunkStart() + OFFSET_FIRST_HEADER);
     }
 
     public int getStyleCount() {
-      return super.buffer.getInt(super.offset + OFFSET_STYLE_COUNT);
+      return super.buffer.getInt(getChunkStart() + OFFSET_STYLE_COUNT);
     }
 
     public int getFlags() {
-      return super.buffer.getInt(super.offset + OFFSET_FLAGS);
+      return super.buffer.getInt(getChunkStart() + OFFSET_FLAGS);
     }
 
     public boolean isUTF8() {
@@ -205,29 +208,33 @@ public class Chunk {
     }
 
     public int getStringStart() {
-      return super.buffer.getInt(super.offset + OFFSET_STRING_START);
+      return super.buffer.getInt(getChunkStart() + OFFSET_STRING_START);
     }
 
     public int getStyleStart() {
-      return super.buffer.getInt(super.offset + OFFSET_STYLE_START);
+      return super.buffer.getInt(getChunkStart() + OFFSET_STYLE_START);
     }
 
     public int[] getStringIndicies() {
       int[] result = new int[getStringCount()];
-      int start = OFFSET_STRING_INDICIES;
-      for (int i : result) {
-        result[i] = super.offset + super.buffer.getInt(start);
-        start =+ 4;
+      int start = getChunkStart() + OFFSET_STRING_INDICIES;
+      for (int i = 0; i < result.length; i++) {
+        result[i] = super.buffer.getInt(start);
+        start += UINT32_SIZE;
       }
       return result;
     }
 
+    private int getChunkStart() {
+      return super.offset;
+    }
+
     public int[] getStyleIndicies() {
       int[] result = new int[getStyleCount()];
-      int start = OFFSET_STRING_INDICIES + getStringCount() * 4;
+      int start = getChunkStart() + OFFSET_STRING_INDICIES + (getStringCount() * UINT32_SIZE);
       for (int i : result) {
-        result[i] = super.offset + super.buffer.getInt(start);
-        start =+ 4;
+        result[i] = super.buffer.getInt(start);
+        start += UINT32_SIZE;
       }
       return result;
     }
@@ -235,7 +242,8 @@ public class Chunk {
     public List<String> getStrings() {
       List<String> result = new LinkedList<>();
       for (int i : getStringIndicies()) {
-        result.add(ResourceString.decodeString(super.buffer, i, getStringType()));
+        int stringStartIdx = getChunkStart() + getStringStart() + i;
+        result.add(ResourceString.decodeString(super.buffer, stringStartIdx, getStringType()));
       }
       return result;
     }
