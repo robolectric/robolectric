@@ -23,6 +23,7 @@ import com.google.common.primitives.Shorts;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -164,10 +165,15 @@ public class Chunk {
   }
 
   public static class StringPoolChunk extends Chunk {
+    // These are the defined flags for the "flags" field of ResourceStringPoolHeader
+    private static final int SORTED_FLAG = 1 << 0;
+    private static final int UTF8_FLAG   = 1 << 8;
+
     private static final int OFFSET_STYLE_COUNT = OFFSET_FIRST_HEADER + 4;
     private static final int OFFSET_FLAGS = OFFSET_STYLE_COUNT + 4;
     private static final int OFFSET_STRING_START = OFFSET_FLAGS + 4;
     private static final int OFFSET_STYLE_START = OFFSET_STRING_START + 4;
+    private static final int OFFSET_STRING_INDICIES = OFFSET_STYLE_START + 4;
 
     public StringPoolChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
       super(buffer, chunkStartPosition, type);
@@ -185,12 +191,58 @@ public class Chunk {
       return super.buffer.getInt(super.offset + OFFSET_FLAGS);
     }
 
+    public boolean isUTF8() {
+      return (getFlags() & UTF8_FLAG) != 0;
+    }
+
+    /**
+     * True if this string pool contains already-sorted strings.
+     *
+     * @return true if @{code strings} are sorted.
+     */
+    public boolean isSorted() {
+      return (getFlags() & SORTED_FLAG) != 0;
+    }
+
     public int getStringStart() {
       return super.buffer.getInt(super.offset + OFFSET_STRING_START);
     }
 
     public int getStyleStart() {
       return super.buffer.getInt(super.offset + OFFSET_STYLE_START);
+    }
+
+    public int[] getStringIndicies() {
+      int[] result = new int[getStringCount()];
+      int start = OFFSET_STRING_INDICIES;
+      for (int i : result) {
+        result[i] = super.offset + super.buffer.getInt(start);
+        start =+ 4;
+      }
+      return result;
+    }
+
+    public int[] getStyleIndicies() {
+      int[] result = new int[getStyleCount()];
+      int start = OFFSET_STRING_INDICIES + getStringCount() * 4;
+      for (int i : result) {
+        result[i] = super.offset + super.buffer.getInt(start);
+        start =+ 4;
+      }
+      return result;
+    }
+
+    public List<String> getStrings() {
+      List<String> result = new LinkedList<>();
+      for (int i : getStringIndicies()) {
+        result.add(ResourceString.decodeString(super.buffer, i, getStringType()));
+      }
+      return result;
+    }
+
+    /** Returns the type of strings in this pool. */
+    public ResourceString.Type getStringType() {
+      return isUTF8() ? ResourceString.Type.UTF8 : ResourceString.Type.UTF16;
     }
 
     public void dump() {
@@ -200,6 +252,9 @@ public class Chunk {
       System.out.println("Flags: " + getFlags());
       System.out.println("String start: " + getStringStart());
       System.out.println("Style start: " + getStyleStart());
+      System.out.println("String indicies: " + Arrays.toString(getStringIndicies()));
+      System.out.println("Style indicies: " + Arrays.toString(getStyleIndicies()));
+      System.out.println("Style indicies: " + getStrings());
     }
   }
 
@@ -269,7 +324,7 @@ public class Chunk {
       System.out.println("TypeStrings: ");
       getTypeStringPool().dump();
       System.out.println("TypeKeys: ");
-      getKeyStringPool().dump();
+//      getKeyStringPool().dump();
     }
 
     public static class TypeSpecChunk extends Chunk {
