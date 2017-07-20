@@ -17,6 +17,7 @@ import org.robolectric.annotation.Config;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -61,6 +62,16 @@ public class ShadowWifiManagerTest {
 
     wifiManager.setWifiEnabled(false);
     assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getIsScanAlwaysAvailable() {
+    shadowWifiManager.setIsScanAlwaysAvailable(true);
+    assertThat(wifiManager.isScanAlwaysAvailable()).isEqualTo(true);
+
+    shadowWifiManager.setIsScanAlwaysAvailable(false);
+    assertThat(wifiManager.isScanAlwaysAvailable()).isEqualTo(false);
   }
 
   @Test
