@@ -232,7 +232,7 @@ public class Chunk {
     public int[] getStyleIndicies() {
       int[] result = new int[getStyleCount()];
       int start = getChunkStart() + OFFSET_STRING_INDICIES + (getStringCount() * UINT32_SIZE);
-      for (int i : result) {
+      for (int i = 0; i < result.length; i++) {
         result[i] = super.buffer.getInt(start);
         start += UINT32_SIZE;
       }
@@ -246,6 +246,82 @@ public class Chunk {
         result.add(ResourceString.decodeString(super.buffer, stringStartIdx, getStringType()));
       }
       return result;
+    }
+
+    private List<StringPoolStyle> getStyles() {
+      List<StringPoolStyle> result = new ArrayList<>();
+      // After the array of offsets for the strings in the pool, we have an offset for the styles
+      // in this pool.
+      for (int i : getStyleIndicies()) {
+        int styleOffset = getChunkStart() + getStringStart() + i;
+        result.add(new StringPoolStyle(super.buffer, styleOffset));
+      }
+      return result;
+    }
+
+    public class StringPoolStyle {
+
+      // Styles are a list of integers with 0xFFFFFFFF serving as a sentinel value.
+      static final int RES_STRING_POOL_SPAN_END = 0xFFFFFFFF;
+      private final ByteBuffer buffer;
+      private final int offset;
+
+      public StringPoolStyle(ByteBuffer buffer, int offset) {
+        this.buffer = buffer;
+        this.offset = offset;
+      }
+
+      public List<StringPoolSpan> getSpans() {
+        List<StringPoolSpan> result = new LinkedList<>();
+        int idx = offset;
+        int nameIndex = buffer.getInt(idx);
+        while (nameIndex != RES_STRING_POOL_SPAN_END) {
+          result.add(new StringPoolSpan(buffer, idx));
+          idx += StringPoolSpan.SPAN_LENGTH;
+          nameIndex = buffer.getInt(offset);
+        }
+        return result;
+      }
+
+      public void dump() {
+        System.out.println("Style:");
+        for (StringPoolSpan stringPoolSpan : getSpans()) {
+          stringPoolSpan.dump();
+        }
+      }
+    }
+
+    public class StringPoolSpan {
+      static final int SPAN_LENGTH = 12;
+      private final ByteBuffer buffer;
+      private final int offset;
+
+      public StringPoolSpan(ByteBuffer buffer, int offset) {
+
+        this.buffer = buffer;
+        this.offset = offset;
+
+        int nameIndex = buffer.getInt(offset);
+        int start = buffer.getInt(offset + 4);
+        int stop = buffer.getInt(offset + 8);
+      }
+
+      public int getNameIndex() {
+        return buffer.getInt(offset);
+      }
+
+      public int getStart() {
+        return buffer.getInt(offset + 4);
+      }
+
+      public int getEnd() {
+        return buffer.getInt(offset + 8);
+      }
+
+      public void dump() {
+        System.out.println(String.format("StringPoolSpan{%s, start=%d, stop=%d}",
+            getNameIndex(), getStart(), getEnd()));
+      }
     }
 
     /** Returns the type of strings in this pool. */
@@ -262,7 +338,11 @@ public class Chunk {
       System.out.println("Style start: " + getStyleStart());
       System.out.println("String indicies: " + Arrays.toString(getStringIndicies()));
       System.out.println("Style indicies: " + Arrays.toString(getStyleIndicies()));
-      System.out.println("Style indicies: " + getStrings());
+      System.out.println("String: " + getStrings());
+      System.out.println("Styles:");
+      for (StringPoolStyle stringPoolStyle : getStyles()) {
+        stringPoolStyle.dump();
+      }
     }
   }
 
