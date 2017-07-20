@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+<boolean name="boolean" value="true" />
+<string name="string">foobar</string>
+<set name="stringSet">
+<string>string3</string>
+<string>string1</string>
+<string>string2</string>
+</set>
+<float name="float" value="1.1" />
+<int name="int" value="2" />
+<long name="long" value="3" />
+</map>
