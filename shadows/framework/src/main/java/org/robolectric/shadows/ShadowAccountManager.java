@@ -1,23 +1,22 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+
 import android.accounts.*;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.util.Scheduler.IdleState;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
@@ -100,20 +99,20 @@ public class ShadowAccountManager {
         return false;
       }
     }
-    
+
     if (!accounts.add(account)) {
-    	return false;
+      return false;
     }
-    
+
     setPassword(account, password);
-    
+
     if(userdata != null) {
       for (String key : userdata.keySet()) {
         setUserData(account, key, userdata.get(key).toString());
       }
     }
-    
-    return true;    
+
+    return true;
   }
 
   @Implementation
@@ -145,12 +144,14 @@ public class ShadowAccountManager {
       throw new IllegalArgumentException("account is null");
     }
 
-	  return start(new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
-      @Override
-      public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        return removeAccountExplicitly(account);
-      }
-    });
+    return start(
+        new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
+          @Override
+          public Boolean doWork()
+              throws OperationCanceledException, IOException, AuthenticatorException {
+            return removeAccountExplicitly(account);
+          }
+        });
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
@@ -203,53 +204,53 @@ public class ShadowAccountManager {
     if (!userData.containsKey(account)) {
       return null;
     }
-    
+
     Map<String, String> userDataMap = userData.get(account);
     if (userDataMap.containsKey(key)) {
       return userDataMap.get(key);
     }
 
-	return null;
+    return null;
   }
-  
+
   @Implementation
   public void setUserData(Account account, String key, String value) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
-    
+
     if (!userData.containsKey(account)) {
       userData.put(account, new HashMap<String, String>());
     }
-    
+
     Map<String, String> userDataMap = userData.get(account);
-    
+
     if (value == null) {
       userDataMap.remove(key);
     } else {
       userDataMap.put(key, value);
     }
   }
-  
+
   @Implementation
   public void setPassword (Account account, String password) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
-    
+
     if (password == null) {
       passwords.remove(account);
     } else {
       passwords.put(account, password);
     }
   }
-  
+
   @Implementation
   public String getPassword (Account account) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
-	
+
     if (passwords.containsKey(account)) {
       return passwords.get(account);
     } else {
@@ -507,19 +508,21 @@ public class ShadowAccountManager {
       if (started) return;
       started = true;
 
-      handler.post(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            result = doWork();
-          } catch (OperationCanceledException | IOException | AuthenticatorException e) {
-            exception = e;
-          }
-          if (callback != null) {
-            callback.run(BaseRoboAccountManagerFuture.this);
-          }
-        }
-      });
+      try {
+        result = doWork();
+      } catch (OperationCanceledException | IOException | AuthenticatorException e) {
+        exception = e;
+      }
+
+      if (callback != null) {
+        handler.post(
+            new Runnable() {
+              @Override
+              public void run() {
+                callback.run(BaseRoboAccountManagerFuture.this);
+              }
+            });
+      }
     }
 
     @Override
