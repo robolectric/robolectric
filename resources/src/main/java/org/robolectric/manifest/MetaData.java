@@ -1,14 +1,13 @@
 package org.robolectric.manifest;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public final class MetaData {
   private final Map<String, Object> valueMap = new LinkedHashMap<>();

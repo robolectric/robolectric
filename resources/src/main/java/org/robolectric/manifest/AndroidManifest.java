@@ -1,17 +1,6 @@
 package org.robolectric.manifest;
 
 import com.google.common.base.Preconditions;
-import javax.annotation.Nullable;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.ResourceTable;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +10,16 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.res.ResourceTable;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
