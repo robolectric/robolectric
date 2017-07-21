@@ -8,9 +8,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.Foo;
 import org.robolectric.testing.ShadowFoo;
 
@@ -32,7 +32,7 @@ public class ShadowWranglerIntegrationTest {
   @SandboxConfig(shadows = {ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class})
   public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
     AClassWithDefaultConstructor instance = new AClassWithDefaultConstructor();
-    assertThat(ShadowExtractor.extract(instance)).isExactlyInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
+    assertThat(Shadow.<Object>extract(instance)).isExactlyInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
     assertThat(instance.initialized).isTrue();
   }
 
@@ -87,7 +87,7 @@ public class ShadowWranglerIntegrationTest {
   @SandboxConfig(shadows = {ShadowFoo.class})
   public void testShadowSelectionSearchesSuperclasses() throws Exception {
     TextFoo textFoo = new TextFoo(name);
-    assertEquals(ShadowFoo.class, ShadowExtractor.extract(textFoo).getClass());
+    assertEquals(ShadowFoo.class, Shadow.extract(textFoo).getClass());
   }
 
   @Test
@@ -230,11 +230,11 @@ public class ShadowWranglerIntegrationTest {
   }
 
   private ShadowFoo shadowOf(Foo foo) {
-    return (ShadowFoo) ShadowExtractor.extract(foo);
+    return (ShadowFoo) Shadow.extract(foo);
   }
 
   private ShadowTextFoo shadowOf(TextFoo foo) {
-    return (ShadowTextFoo) ShadowExtractor.extract(foo);
+    return (ShadowTextFoo) Shadow.extract(foo);
   }
 
   @Implements(Foo.class)

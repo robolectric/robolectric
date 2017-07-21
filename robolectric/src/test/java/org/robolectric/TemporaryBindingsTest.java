@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowView;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,7 @@ public class TemporaryBindingsTest {
   @Test
   @Config(shadows = TemporaryShadowView.class)
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTests() throws Exception {
-    TemporaryShadowView shadowView = (TemporaryShadowView) ShadowExtractor.extract(new View(RuntimeEnvironment.application));
+    TemporaryShadowView shadowView = Shadow.extract(new View(RuntimeEnvironment.application));
     assertThat(shadowView.getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
   }
 

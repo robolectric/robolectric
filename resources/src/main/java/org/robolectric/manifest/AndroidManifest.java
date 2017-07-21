@@ -425,7 +425,7 @@ public class AndroidManifest {
   }
 
   /***
-   * Allows RobolectricPackageManager to provide
+   * Allows ShadowPackageManager to provide
    * a resource index for initialising the resource attributes in all the metadata elements
    * @param resourceTable used for getting resource IDs from string identifiers
    */

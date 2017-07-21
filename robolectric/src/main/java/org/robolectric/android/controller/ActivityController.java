@@ -1,34 +1,25 @@
 package org.robolectric.android.controller;
 
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.extract;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
-import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.android.runtime.RuntimeAdapter;
-import org.robolectric.android.runtime.RuntimeAdapterFactory;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
-import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
-
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
-  private final ShadowsAdapter shadowsAdapter;
-  private ShadowActivityAdapter shadowReference;
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     return new ActivityController<>(shadowsAdapter, activity, intent).attach();
@@ -40,8 +31,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
   private ActivityController(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     super(shadowsAdapter, activity, intent);
-    this.shadowsAdapter = shadowsAdapter;
-    shadowReference = shadowsAdapter.getShadowActivityAdapter(this.component);
   }
 
   /**
@@ -64,18 +53,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       return this;
     }
 
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
-
-    final String title = getActivityTitle();
-    final ClassLoader cl = baseContext.getClassLoader();
-    final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
-    final Class<?> threadClass = getActivityThreadClass(cl);
-    final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
-
-    final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
-
-    shadowReference.setThemeFromManifest();
+    shadowOf(component).callAttach(getIntent());
     attached = true;
     return this;
   }
@@ -86,45 +64,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
     } catch (PackageManager.NameNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private Class<?> getActivityThreadClass(ClassLoader cl) {
-    try {
-      return cl.loadClass(shadowsAdapter.getShadowActivityThreadClassName());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private Class<?> getNonConfigurationClass(ClassLoader cl) {
-    try {
-      return cl.loadClass("android.app.Activity$NonConfigurationInstances");
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private String getActivityTitle() {
-    String title = null;
-
-    /* Get the label for the activity from the manifest */
-    ShadowApplicationAdapter shadowApplicationAdapter = shadowsAdapter.getApplicationAdapter(component);
-    AndroidManifest appManifest = shadowApplicationAdapter.getAppManifest();
-    if (appManifest == null) return null;
-    String labelRef = appManifest.getActivityLabel(component.getClass().getName());
-
-    if (labelRef != null) {
-      if (labelRef.startsWith("@")) {
-        /* Label refers to a string value, get the resource identifier */
-        int labelRes = RuntimeEnvironment.application.getResources().getIdentifier(labelRef.replace("@", ""), "string", appManifest.getPackageName());
-        /* Get the resource ID, use the activity to look up the actual string */
-        title = RuntimeEnvironment.application.getString(labelRes);
-      } else {
-        title = labelRef; /* Label isn't an identifier, use it directly as the title */
-      }
-    }
-
-    return title;
   }
 
   public ActivityController<T> create(final Bundle bundle) {
@@ -194,13 +133,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (root != null) {
       // If a test pause thread before creating an activity, root will be null as runPaused is waiting
       // Related to issue #1582
-      Display display = Shadow.newInstanceOf(Display.class);
-      Rect frame = new Rect();
-      display.getRectSize(frame);
-      Rect insets = new Rect(0, 0, 0, 0);
-      final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-      runtimeAdapter.callViewRootImplDispatchResized(
-          root, frame, insets, insets, insets, insets, insets, true, null);
+      ((ShadowViewRootImpl) extract(root)).callDispatchResized();
     }
 
     return this;
@@ -303,11 +236,10 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Setup controller for the new activity
           attached = false;
           component = recreatedActivity;
-          shadowReference = shadowsAdapter.getShadowActivityAdapter(component);
           attach();
           
           // Set saved non config instance
-          Shadows.shadowOf(recreatedActivity).setLastNonConfigurationInstance(nonConfigInstance);
+          shadowOf(recreatedActivity).setLastNonConfigurationInstance(nonConfigInstance);
           
             // Create lifecycle
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,

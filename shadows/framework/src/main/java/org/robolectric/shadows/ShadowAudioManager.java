@@ -1,13 +1,11 @@
 package org.robolectric.shadows;
 
 import android.media.AudioManager;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AudioManager.class)
@@ -33,10 +31,12 @@ public class ShadowAudioManager {
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
-  private boolean wiredHeadsetOn;
   private boolean bluetoothA2dpOn;
+  private boolean isBluetoothScoOn;
   private boolean isSpeakerphoneOn;
   private boolean isMicrophoneMuted = false;
+  private boolean isMusicActive;
+  private boolean wiredHeadsetOn;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -159,6 +159,25 @@ public class ShadowAudioManager {
   @Implementation
   public boolean isMicrophoneMute() {
     return isMicrophoneMuted;
+  }
+
+  @Implementation
+  public boolean isBluetoothScoOn() {
+    return isBluetoothScoOn;
+  }
+
+  @Implementation
+  public void setBluetoothScoOn(boolean isBluetoothScoOn) {
+    this.isBluetoothScoOn = isBluetoothScoOn;
+  }
+
+  @Implementation
+  public boolean isMusicActive() {
+    return isMusicActive;
+  }
+
+  public void setIsMusicActive(boolean isMusicActive) {
+    this.isMusicActive = isMusicActive;
   }
 
   public AudioFocusRequest getLastAudioFocusRequest() {

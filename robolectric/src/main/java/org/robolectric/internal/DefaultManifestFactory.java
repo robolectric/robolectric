@@ -4,6 +4,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
+import org.robolectric.util.Logger;
 
 import java.net.URL;
 import java.util.List;
@@ -29,7 +30,7 @@ public class DefaultManifestFactory implements ManifestFactory {
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
-      manifestFile = null;
+      Logger.info("@Config(manifest = Config.NONE) specified while using Build System API, ignoring");
     } else if (!Config.DEFAULT_MANIFEST_NAME.equals(manifestConfig)) {
       manifestFile = resolveFile(manifestConfig);
     }
@@ -60,6 +61,6 @@ public class DefaultManifestFactory implements ManifestFactory {
 
   @Override
   public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
-    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(), manifestIdentifier.getAssetDir());
+    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(), manifestIdentifier.getAssetDir(), manifestIdentifier.getPackageName());
   }
 }

@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.app.Application;
-import android.content.res.Configuration;
 import android.os.Looper;
 
 import org.robolectric.Shadows;
@@ -22,17 +20,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public ShadowActivityAdapter getShadowActivityAdapter(Activity component) {
-    final ShadowActivity shadow = Shadows.shadowOf(component);
-    return new ShadowActivityAdapter() {
-
-      @Override public void setThemeFromManifest() {
-        shadow.setThemeFromManifest();
-      }
-    };
-  }
-
-  @Override
   public ShadowLooperAdapter getMainLooper() {
     final ShadowLooper shadow = Shadows.shadowOf(Looper.getMainLooper());
     return new ShadowLooperAdapter() {
@@ -45,15 +32,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   @Override
   public String getShadowActivityThreadClassName() {
     return ShadowActivityThread.CLASS_NAME;
-  }
-
-  @Override
-  public ShadowApplicationAdapter getApplicationAdapter(final Activity component) {
-    return new ShadowApplicationAdapter() {
-      @Override public AndroidManifest getAppManifest() {
-        return ShadowApplication.getInstance().getAppManifest();
-      }
-    };
   }
 
   @Override

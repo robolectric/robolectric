@@ -1,22 +1,36 @@
 package org.robolectric.shadows;
 
+import android.os.Build.VERSION;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
+import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
+import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
+import static android.telephony.PhoneStateListener.LISTEN_NONE;
+import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
+import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
-  private PhoneStateListener listener;
-  private int eventFlags;
+
+  private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
+  private PhoneStateListener lastListener;
+  private int lastEventFlags;
+
   private String deviceId;
   private String groupIdLevel1;
   private String networkOperatorName;
@@ -30,31 +44,62 @@ public class ShadowTelephonyManager {
   private int simState = TelephonyManager.SIM_STATE_READY;
   private String line1Number;
   private int networkType;
-  private List<CellInfo> allCellInfo;
-  private CellLocation cellLocation;
+  private List<CellInfo> allCellInfo = Collections.emptyList();
+  private CellLocation cellLocation = null;
+  private int callState = CALL_STATE_IDLE;
+  private String incomingPhoneNumber = null;
 
   @Implementation
-  public void listen(PhoneStateListener listener, int events) {
-    this.listener = listener;
-    this.eventFlags = events;
+  public void listen(PhoneStateListener listener, int flags) {
+    lastListener = listener;
+    lastEventFlags = flags;
+
+    if (flags == LISTEN_NONE) {
+      phoneStateRegistrations.remove(listener);
+    } else {
+      initListener(listener, flags);
+      phoneStateRegistrations.put(listener, flags);
+    }
   }
 
   /**
    * Returns the most recent listener passed to #listen().
    *
    * @return Phone state listener.
+   * @deprecated Avoid using.
    */
+  @Deprecated
   public PhoneStateListener getListener() {
-    return listener;
+    return lastListener;
   }
 
   /**
    * Returns the most recent flags passed to #listen().
    *
    * @return Event flags.
+   * @deprecated Avoid using.
    */
+  @Deprecated
   public int getEventFlags() {
-    return eventFlags;
+    return lastEventFlags;
+  }
+
+  @Implementation
+  public int getCallState() {
+    return callState;
+  }
+
+  public void setCallState(int callState, String incomingPhoneNumber) {
+    if (callState != CALL_STATE_RINGING) {
+      incomingPhoneNumber = null;
+    }
+
+    this.callState = callState;
+    this.incomingPhoneNumber = incomingPhoneNumber;
+
+    for (PhoneStateListener listener : getListenersForFlags(LISTEN_CALL_STATE)) {
+      listener.onCallStateChanged(callState, incomingPhoneNumber);
+    }
   }
 
   @Implementation
@@ -174,6 +219,12 @@ public class ShadowTelephonyManager {
 
   public void setAllCellInfo(List<CellInfo> allCellInfo) {
     this.allCellInfo = allCellInfo;
+
+    if (VERSION.SDK_INT >= JELLY_BEAN_MR1) {
+      for (PhoneStateListener listener : getListenersForFlags(LISTEN_CELL_INFO)) {
+        listener.onCellInfoChanged(allCellInfo);
+      }
+    }
   }
 
   @Implementation
@@ -183,6 +234,10 @@ public class ShadowTelephonyManager {
 
   public void setCellLocation(CellLocation cellLocation) {
     this.cellLocation = cellLocation;
+
+    for (PhoneStateListener listener : getListenersForFlags(LISTEN_CELL_LOCATION)) {
+      listener.onCellLocationChanged(cellLocation);
+    }
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -192,5 +247,31 @@ public class ShadowTelephonyManager {
 
   public void setGroupIdLevel1(String groupIdLevel1) {
     this.groupIdLevel1 = groupIdLevel1;
+  }
+
+  private void initListener(PhoneStateListener listener, int flags) {
+    if ((flags & LISTEN_CALL_STATE) != 0) {
+      listener.onCallStateChanged(callState, incomingPhoneNumber);
+    }
+    if ((flags & LISTEN_CELL_INFO) != 0) {
+      if (VERSION.SDK_INT >= JELLY_BEAN_MR1) {
+        listener.onCellInfoChanged(allCellInfo);
+      }
+    }
+    if ((flags & LISTEN_CELL_LOCATION) != 0) {
+      listener.onCellLocationChanged(cellLocation);
+    }
+  }
+
+  private Iterable<PhoneStateListener> getListenersForFlags(int flags) {
+    return Iterables.filter(
+        phoneStateRegistrations.keySet(),
+        new Predicate<PhoneStateListener>() {
+          @Override
+          public boolean apply(PhoneStateListener input) {
+            // only select PhoneStateListeners with matching flags
+            return (phoneStateRegistrations.get(input) & flags) != 0;
+          }
+        });
   }
 }
