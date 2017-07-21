@@ -67,8 +67,8 @@ public class ShadowPackageManagerTest {
 
   @Before
   public void setUp() {
-    shadowPackageManager = shadowOf(RuntimeEnvironment.application.getPackageManager());
     packageManager = RuntimeEnvironment.application.getPackageManager();
+    shadowPackageManager = shadowOf(packageManager);
   }
 
   @Test
@@ -151,12 +151,12 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(manifest = "TestAndroidManifestWithPermissions.xml")
   public void testCheckPermissions() throws Exception {
-    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, shadowPackageManager.checkPermission("android.permission.GET_TASKS", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.GET_TASKS", RuntimeEnvironment.application.getPackageName()));
 
-    assertEquals(PackageManager.PERMISSION_DENIED, shadowPackageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_DENIED, shadowPackageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
+    assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
   }
 
   @Test
