@@ -19,9 +19,11 @@ package org.robolectric.res.arsc;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Shorts;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -58,6 +60,14 @@ public class Chunk {
 
   public int getChunkLength() {
     return buffer.getInt(offset + OFFSET_CHUNK_LENGTH);
+  }
+
+  protected int getChunkStart() {
+    return offset;
+  }
+
+  protected int getChunkEnd() {
+    return offset + getChunkLength();
   }
 
   /** Types of chunks that can exist. */
@@ -129,7 +139,16 @@ public class Chunk {
     System.out.println("Chunk Type:  " + getType());
     System.out.println("Chunk Start:  " + offset);
     System.out.println("Header Length: " + getHeaderLength());
-    System.out.println("Chunk Length: " + getChunkLength());
+    System.out.println("Chunk Length:  " + getChunkLength());
+    byte[] header = new byte[getHeaderLength()];
+    buffer.position(offset);
+    buffer.get(header);
+    System.out.println("Header: " + BaseEncoding.base16().lowerCase().encode(header));
+
+    buffer.position(offset);
+    byte[] chunk = new byte[getChunkLength()];
+    buffer.get(chunk);
+    System.out.println("Chunk:  " + BaseEncoding.base16().lowerCase().encode(chunk));
   }
 
   public static class TableChunk extends Chunk {
@@ -225,10 +244,6 @@ public class Chunk {
       return result;
     }
 
-    private int getChunkStart() {
-      return super.offset;
-    }
-
     public int[] getStyleIndicies() {
       int[] result = new int[getStyleCount()];
       int start = getChunkStart() + OFFSET_STRING_INDICIES + (getStringCount() * UINT32_SIZE);
@@ -257,6 +272,27 @@ public class Chunk {
         result.add(new StringPoolStyle(super.buffer, styleOffset));
       }
       return result;
+    }
+
+    /** Returns the type of strings in this pool. */
+    public ResourceString.Type getStringType() {
+      return isUTF8() ? ResourceString.Type.UTF8 : ResourceString.Type.UTF16;
+    }
+
+    public void dump() {
+      super.dump();
+      System.out.println("String count: " + getStringCount());
+      System.out.println("Style count: " + getStyleCount());
+      System.out.println("Flags: " + getFlags());
+      System.out.println("String start: " + getStringStart());
+      System.out.println("Style start: " + getStyleStart());
+      System.out.println("String indicies: " + Arrays.toString(getStringIndicies()));
+      System.out.println("Style indicies: " + Arrays.toString(getStyleIndicies()));
+      System.out.println("String: " + getStrings());
+      System.out.println("Styles:");
+      for (StringPoolStyle stringPoolStyle : getStyles()) {
+        stringPoolStyle.dump();
+      }
     }
 
     public class StringPoolStyle {
@@ -323,31 +359,11 @@ public class Chunk {
             getNameIndex(), getStart(), getEnd()));
       }
     }
-
-    /** Returns the type of strings in this pool. */
-    public ResourceString.Type getStringType() {
-      return isUTF8() ? ResourceString.Type.UTF8 : ResourceString.Type.UTF16;
-    }
-
-    public void dump() {
-      super.dump();
-      System.out.println("String count: " + getStringCount());
-      System.out.println("Style count: " + getStyleCount());
-      System.out.println("Flags: " + getFlags());
-      System.out.println("String start: " + getStringStart());
-      System.out.println("Style start: " + getStyleStart());
-      System.out.println("String indicies: " + Arrays.toString(getStringIndicies()));
-      System.out.println("Style indicies: " + Arrays.toString(getStyleIndicies()));
-      System.out.println("String: " + getStrings());
-      System.out.println("Styles:");
-      for (StringPoolStyle stringPoolStyle : getStyles()) {
-        stringPoolStyle.dump();
-      }
-    }
   }
 
   public static class PackageChunk extends Chunk {
 
+    public static final int PACKAGE_NAME_SIZE = 256;
     private static final int OFFSET_NAME = OFFSET_FIRST_HEADER + 4;
     private static final int OFFSET_TYPE_STRINGS = OFFSET_NAME + 2 * 128;
     private static final int OFFSET_LAST_PUBLIC_TYPE = OFFSET_TYPE_STRINGS + 4;
@@ -363,15 +379,14 @@ public class Chunk {
       return super.buffer.getInt(super.offset + OFFSET_FIRST_HEADER);
     }
 
-    public char[] getName() {
-      char[] name = new char[128];
-      super.buffer.position(super.offset + OFFSET_NAME);
-      for (int i = 0; i < name.length; i++) {
-        name[i] = super.buffer.getChar();
-      }
-      return name;
+    public String getName() {
+      Charset utf16 = Charset.forName("UTF-16LE");
+      return new String(super.buffer.array(), getChunkStart() + OFFSET_NAME, PACKAGE_NAME_SIZE, utf16);
     }
 
+    /**
+     * Offset from the beginning of this Chunk to where the Type StringPool begins.
+     */
     public int getTypeStrings() {
       return super.buffer.getInt(super.offset + OFFSET_TYPE_STRINGS);
     }
@@ -393,17 +408,21 @@ public class Chunk {
     }
 
     public StringPoolChunk getTypeStringPool() {
-      return new StringPoolChunk(super.buffer, getTypeStrings(), Type.STRING_POOL);
+      return new StringPoolChunk(super.buffer, getChunkStart() + getTypeStrings(), Type.STRING_POOL);
     }
 
     public StringPoolChunk getKeyStringPool() {
-      return new StringPoolChunk(super.buffer, getKeyStrings(), Type.STRING_POOL);
+      return new StringPoolChunk(super.buffer, getChunkStart() + getKeyStrings(), Type.STRING_POOL);
+    }
+
+    public TypeSpecChunk getTypeSpec() {
+      return new TypeSpecChunk(super.buffer, getKeyStringPool().getChunkEnd(), Type.TABLE_TYPE);
     }
 
     public void dump() {
       super.dump();
       System.out.println("ID: " + getId());
-      System.out.println("Name: " + new String(getName()));
+      System.out.println("Name: " + getName());
       System.out.println("Type Strings (String pool start idx): " + getTypeStrings());
       System.out.println("Last public type index: " + getLastPublicType());
       System.out.println("Key Strings (String pool start idx): " + getKeyStrings());
@@ -412,13 +431,61 @@ public class Chunk {
       System.out.println("TypeStrings: ");
       getTypeStringPool().dump();
       System.out.println("TypeKeys: ");
-//      getKeyStringPool().dump();
+      getKeyStringPool().dump();
+      getTypeSpec().dump();
     }
 
     public static class TypeSpecChunk extends Chunk {
 
+      private final byte id;
+      private final byte res0;
+      private final short res1;
+      private final int entryCount;
+      private final int entriesStart;
+      private int[] payload;
+
       public TypeSpecChunk(ByteBuffer buffer, int offset, Type type) {
         super(buffer, offset, type);
+        buffer.position(16);
+        id = buffer.get();
+        res0 = buffer.get();
+        res1 = buffer.getShort();
+        entryCount = buffer.getInt();
+        entriesStart = buffer.getInt();
+        payload = new int[entryCount];
+        for (int i = 0; i < entryCount; i++) {
+          payload[i] = buffer.getInt();
+        }
+      }
+
+      public byte getId() {
+        return id;
+      }
+
+      public byte getRes0() {
+        return res0;
+      }
+
+      public short getRes1() {
+        return res1;
+      }
+
+      public int getEntriesStart() {
+        return entriesStart;
+      }
+
+      public int[] getPayload() {
+        return payload;
+      }
+
+      public void dump() {
+        super.dump();
+        System.out.println("id = " + id);
+        System.out.println("res0 = " + res0);
+        System.out.println("res1 = " + res1);
+        System.out.println("entryCount = " + entryCount);
+        System.out.println("entriesStart = " + entriesStart);
+        System.out.println("payload = " + Arrays.toString(payload));
       }
     }
   }
