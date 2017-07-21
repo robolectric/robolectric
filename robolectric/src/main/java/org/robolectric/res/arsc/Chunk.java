@@ -48,6 +48,8 @@ public class Chunk {
     this.buffer = buffer;
     this.offset = offset;
     this.type = type;
+    short typeCode = buffer.getShort(offset);
+    Preconditions.checkArgument(typeCode == type.code(), "Invalid chunk type, expected: " + type + " but got " + typeCode);
   }
 
   public Type getType() {
@@ -419,6 +421,10 @@ public class Chunk {
       return new TypeSpecChunk(super.buffer, getKeyStringPool().getChunkEnd(), Type.TABLE_TYPE_SPEC);
     }
 
+    public TypeChunk getTypeChunk() {
+      return new TypeChunk(super.buffer, getTypeSpec().getChunkEnd(), Type.TABLE_TYPE);
+    }
+
     public void dump() {
       super.dump();
       System.out.println("ID: " + getId());
@@ -433,6 +439,7 @@ public class Chunk {
       System.out.println("TypeKeys: ");
       getKeyStringPool().dump();
       getTypeSpec().dump();
+      getTypeChunk().dump();
     }
 
     public static class TypeSpecChunk extends Chunk {
@@ -441,7 +448,6 @@ public class Chunk {
       private final byte res0;
       private final short res1;
       private final int entryCount;
-      private final int entriesStart;
       private int[] payload;
 
       public TypeSpecChunk(ByteBuffer buffer, int offset, Type type) {
@@ -451,7 +457,53 @@ public class Chunk {
         res0 = buffer.get();
         res1 = buffer.getShort();
         entryCount = buffer.getInt();
+      }
+
+      public byte getId() {
+        return id;
+      }
+
+      public byte getRes0() {
+        return res0;
+      }
+
+      public short getRes1() {
+        return res1;
+      }
+
+      public int[] getPayload() {
+        return payload;
+      }
+
+      public void dump() {
+        super.dump();
+        System.out.println("id = " + id);
+        System.out.println("res0 = " + res0);
+        System.out.println("res1 = " + res1);
+        System.out.println("entryCount = " + entryCount);
+        System.out.println("payload = " + Arrays.toString(payload));
+      }
+    }
+
+    public static class TypeChunk extends Chunk {
+
+      private final byte id;
+      private final byte res0;
+      private final short res1;
+      private final int entryCount;
+      private final int entriesStart;
+      private final byte[] config = new byte[44];
+      private int[] payload;
+
+      public TypeChunk(ByteBuffer buffer, int offset, Type type) {
+        super(buffer, offset, type);
+        buffer.position(16);
+        id = buffer.get();
+        res0 = buffer.get();
+        res1 = buffer.getShort();
+        entryCount = buffer.getInt();
         entriesStart = buffer.getInt();
+        buffer.get(config);
         payload = new int[entryCount];
         for (int i = 0; i < entryCount; i++) {
           payload[i] = buffer.getInt();
