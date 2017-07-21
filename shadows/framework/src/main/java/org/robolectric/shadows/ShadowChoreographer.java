@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Choreographer;
+import android.view.Choreographer.FrameCallback;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -49,11 +50,13 @@ public class ShadowChoreographer {
   }
 
   /**
-   * Allows application to specify a fixed amount of delay when postFrameCallback or postCallback is
-   * invoked. The default delay value is 0. This can be used to avoid infinite animation tasks to be
-   * spawned when the Robolectric scheduler is in paused mode.
+   * Allows application to specify a fixed amount of delay when
+   * {@link #postFrameCallback(FrameCallback)} or {@link #postCallback(int, Runnable, Object)} is
+   * invoked. The default delay value is `0`. This can be used to avoid infinite animation tasks to
+   * be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in
+   * {@link org.robolectric.util.Scheduler.IdleState#PAUSED} mode.
    */
-  public static void setPostCallbackDeley(int delayMillis) {
+  public static void setPostCallbackDelay(int delayMillis) {
     postCallbackDelayMillis = delayMillis;
   }
 
@@ -62,6 +65,19 @@ public class ShadowChoreographer {
     return instance.get();
   }
 
+  /**
+   * The default implementation will call {@link #postCallbackDelayed(int, Runnable, Object, long)}
+   * with no delay. {@link android.animation.AnimationHandler} calls this method to schedule
+   * animation updates infinitely. Because during a Robolectric test the system time is paused and
+   * execution of the event loop is invoked for each test instruction, the behavior of
+   * AnimationHandler would result in endless looping (the execution of the task results in a new
+   * animation task created and scheduled to the front of the event loop queue).
+   *
+   * To prevent endless looping, a test may call {@link #setPostCallbackDelay(int)} to specify a
+   * small delay when animation is scheduled.
+   *
+   * @see #setPostCallbackDelay(int)
+   */
   @Implementation
   public void postCallback(int callbackType, Runnable action, Object token) {
     postCallbackDelayed(callbackType, action, token, postCallbackDelayMillis);
@@ -78,17 +94,17 @@ public class ShadowChoreographer {
   }
 
   /**
-   * The default implementation will call postFrameCallbackDelayed with 0 delay. AnimationHandler
-   * is calling this method to schedule animation update infinitely. Because during Robolectric
-   * test,
-   * the system time is paused and execution of event loop is invoked for each test instruction,
-   * the behavior of AnimationHandler would result in endless generation of its animation update
-   * task
-   * (the execution of the task results in a new animation task created and scheduled to the front
-   * of the event loop queue).
+   * The default implementation will call {@link #postFrameCallbackDelayed(FrameCallback, long)}
+   * with no delay. {@link android.animation.AnimationHandler} calls this method to schedule
+   * animation updates infinitely. Because during a Robolectric test the system time is paused and
+   * execution of the event loop is invoked for each test instruction, the behavior of
+   * AnimationHandler would result in endless looping (the execution of the task results in a new
+   * animation task created and scheduled to the front of the event loop queue).
    *
-   * So it makes sense to allow application to specify a small amount of delay during animation
-   * schedule in Robolectric tests to avoid the endless loop.
+   * To prevent endless looping, a test may call {@link #setPostCallbackDelay(int)} to specify a
+   * small delay when animation is scheduled.
+   *
+   * @see #setPostCallbackDelay(int)
    */
   @Implementation
   public void postFrameCallback(final Choreographer.FrameCallback callback) {
