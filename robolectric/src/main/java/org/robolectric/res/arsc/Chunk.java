@@ -416,7 +416,7 @@ public class Chunk {
     }
 
     public TypeSpecChunk getTypeSpec() {
-      return new TypeSpecChunk(super.buffer, getKeyStringPool().getChunkEnd(), Type.TABLE_TYPE);
+      return new TypeSpecChunk(super.buffer, getKeyStringPool().getChunkEnd(), Type.TABLE_TYPE_SPEC);
     }
 
     public void dump() {
