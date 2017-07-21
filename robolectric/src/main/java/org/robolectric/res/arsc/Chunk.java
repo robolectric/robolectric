@@ -314,7 +314,7 @@ public class Chunk {
         while (nameIndex != RES_STRING_POOL_SPAN_END) {
           result.add(new StringPoolSpan(buffer, idx));
           idx += StringPoolSpan.SPAN_LENGTH;
-          nameIndex = buffer.getInt(offset);
+          nameIndex = buffer.getInt(idx);
         }
         return result;
       }
