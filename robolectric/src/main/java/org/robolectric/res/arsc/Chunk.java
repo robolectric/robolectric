@@ -444,11 +444,11 @@ public class Chunk {
     }
 
     public StringPoolChunk getTypeStringPool() {
-      return new StringPoolChunk(super.buffer, getChunkStart() + getTypeStrings(), Type.STRING_POOL);
+      return (StringPoolChunk) chunkMap.get(getChunkStart() + getTypeStrings());
     }
 
     public StringPoolChunk getKeyStringPool() {
-      return new StringPoolChunk(super.buffer, getChunkStart() + getKeyStrings(), Type.STRING_POOL);
+      return (StringPoolChunk) chunkMap.get(getChunkStart() + getKeyStrings());
     }
 
     public void init() {
@@ -485,7 +485,7 @@ public class Chunk {
       System.out.println("Last public key index: " + getLastPublicKey());
       System.out.println("TypeId Offset: " + getTypeIdOffset());
 //      System.out.println("TypeStrings: ");
-//      getTypeStringPool().dump();
+
 //      System.out.println("TypeKeys: ");
       init();
 
@@ -493,7 +493,9 @@ public class Chunk {
         System.out.println("chunkOffset = " + chunkOffset);
         chunkMap.get(chunkOffset).dump();
       }
-//      getKeyStringPool().dump();
+      System.out.println("--------------------------");
+      getKeyStringPool().dump();
+      getTypeStringPool().dump();
 //      getTypeSpec().dump();
 //      getTypeChunk().dump();
     }
