@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.annotation.NonNull;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
@@ -18,7 +19,9 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -29,6 +32,7 @@ public class ShadowPendingIntent {
   @RealObject
   PendingIntent realPendingIntent;
 
+  @NonNull
   private Intent[] savedIntents;
   private Context savedContext;
   private boolean isActivityIntent;
@@ -40,32 +44,48 @@ public class ShadowPendingIntent {
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
+    Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags, Bundle options) {
+    Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getActivities(Context context, int requestCode, Intent[] intents, int flags) {
+    Objects.requireNonNull(intents, "intents may not be null");
     return create(context, intents, true, false, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getActivities(Context context, int requestCode, Intent[] intents, int flags, Bundle options) {
+    Objects.requireNonNull(intents, "intents may not be null");
     return create(context, intents, true, false, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getBroadcast(Context context, int requestCode, Intent intent, int flags) {
+    Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, false, true, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
+    Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, false, false, true, requestCode, flags);
+  }
+
+  @Implementation
+  public void cancel() {
+    for (Iterator i = createdIntents.iterator(); i.hasNext();) {
+      if (i.next() == realPendingIntent) {
+        i.remove();
+        break;
+      }
+    }
   }
 
   @Implementation
@@ -155,27 +175,23 @@ public class ShadowPendingIntent {
     if (this == o) return true;
     if (o == null || realPendingIntent.getClass() != o.getClass()) return false;
     ShadowPendingIntent that = shadowOf((PendingIntent) o);
-    if (savedContext != null) {
-      String packageName = savedContext.getPackageName();
-      String thatPackageName = that.savedContext.getPackageName();
-      if (packageName != null ? !packageName.equals(thatPackageName) : thatPackageName != null) return false;
-    } else {
-      if (that.savedContext != null) return false;
-    }
-    if (this.savedIntents == null) {
-      return that.savedIntents == null;
-    }
-    if (that.savedIntents == null) {
+
+    String packageName = savedContext == null ? null : savedContext.getPackageName();
+    String thatPackageName = that.savedContext == null ? null : that.savedContext.getPackageName();
+    if (!Objects.equals(packageName, thatPackageName)) {
       return false;
     }
+
     if (this.savedIntents.length != that.savedIntents.length) {
       return false;
     }
+
     for (int i = 0; i < this.savedIntents.length; i++) {
       if (!this.savedIntents[i].filterEquals(that.savedIntents[i])) {
         return false;
       }
     }
+
     if (this.requestCode != that.requestCode) {
       return false;
     }
