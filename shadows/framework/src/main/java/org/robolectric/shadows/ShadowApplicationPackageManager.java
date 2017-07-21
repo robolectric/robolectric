@@ -9,7 +9,6 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
@@ -57,7 +56,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -278,6 +276,28 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     if (resolveInfoList.isEmpty() && queryIntentImplicitly) {
       resolveInfoList = queryImplicitIntent(intent, flags);
+    }
+
+    // If the flag is set, no further filtering will happen.
+    if ((flags & PackageManager.MATCH_ALL) == PackageManager.MATCH_ALL) {
+      return resolveInfoList;
+    }
+
+    // Create a copy of the list for filtering
+    resolveInfoList = new ArrayList<>(resolveInfoList);
+
+    if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
+      for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
+        ResolveInfo resolveInfo = iterator.next();
+        if (resolveInfo.activityInfo == null || resolveInfo.activityInfo.applicationInfo == null) {
+          iterator.remove();
+        } else {
+          final int applicationFlags = resolveInfo.activityInfo.applicationInfo.flags;
+          if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
+            iterator.remove();
+          }
+        }
+      }
     }
 
     return resolveInfoList;
