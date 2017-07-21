@@ -26,9 +26,12 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
+import org.robolectric.res.arsc.Chunk.PackageChunk.TypeSpecChunk;
 
 /** Represents a generic chunk. */
 public class Chunk {
@@ -38,18 +41,25 @@ public class Chunk {
 
   private final ByteBuffer buffer;
   private final int offset;
+  private final short headerLength;
+  private final int chunkLength;
   private Type type;
 
   private static final int OFFSET_HEADER_SIZE = 2;
   private static final int OFFSET_CHUNK_LENGTH = 4;
   private static final int OFFSET_FIRST_HEADER = 8;
+  private final short typeCode;
 
   public Chunk(ByteBuffer buffer, int offset, Type type) {
     this.buffer = buffer;
     this.offset = offset;
     this.type = type;
-    short typeCode = buffer.getShort(offset);
-    Preconditions.checkArgument(typeCode == type.code(), "Invalid chunk type, expected: " + type + " but got " + typeCode);
+    buffer.position(offset);
+    typeCode = buffer.getShort();
+    headerLength = buffer.getShort();
+    chunkLength = buffer.getInt();
+    Preconditions.checkArgument(
+        typeCode == type.code(), "Invalid chunk type, expected: " + type + " but got " + typeCode);
   }
 
   public Type getType() {
@@ -57,11 +67,11 @@ public class Chunk {
   }
 
   public short getHeaderLength() {
-    return buffer.getShort(offset + OFFSET_HEADER_SIZE);
+    return headerLength;
   }
 
   public int getChunkLength() {
-    return buffer.getInt(offset + OFFSET_CHUNK_LENGTH);
+    return chunkLength;
   }
 
   protected int getChunkStart() {
@@ -70,6 +80,10 @@ public class Chunk {
 
   protected int getChunkEnd() {
     return offset + getChunkLength();
+  }
+
+  protected int getPayloadStart() {
+    return getChunkStart() + getHeaderLength();
   }
 
   /** Types of chunks that can exist. */
@@ -133,6 +147,10 @@ public class Chunk {
         chunk = new StringPoolChunk(buffer, chunkStartPosition, type);
       } else if (Type.TABLE_PACKAGE.equals(type)) {
         chunk = new PackageChunk(buffer, chunkStartPosition, type);
+      } else if (Type.TABLE_TYPE.equals(type)) {
+        chunk = new TypeChunk(buffer, chunkStartPosition, type);
+      } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
+        chunk = new TypeSpecChunk(buffer, chunkStartPosition, type);
       }
       return (T) chunk;
   }
@@ -365,48 +383,64 @@ public class Chunk {
 
   public static class PackageChunk extends Chunk {
 
-    public static final int PACKAGE_NAME_SIZE = 256;
+    public static final int PACKAGE_NAME_SIZE = 128 * 2;
     private static final int OFFSET_NAME = OFFSET_FIRST_HEADER + 4;
     private static final int OFFSET_TYPE_STRINGS = OFFSET_NAME + 2 * 128;
     private static final int OFFSET_LAST_PUBLIC_TYPE = OFFSET_TYPE_STRINGS + 4;
     private static final int OFFSET_KEY_STRINGS = OFFSET_LAST_PUBLIC_TYPE + 4;
     private static final int OFFSET_LAST_PUBLIC_KEY = OFFSET_KEY_STRINGS + 4;
     private static final int OFFSET_TYPE_ID_OFFSET = OFFSET_LAST_PUBLIC_KEY + 4;
+    private final int id;
+    private final String name;
+    private final int typeStrings;
+    private final int lastPublicType;
+    private final int keyStrings;
+    private final int lastPublicKey;
+    private final int typeIdOffset;
+    Map<Integer, Chunk> chunkMap = new HashMap<>();
 
     public PackageChunk(ByteBuffer buffer, int offset, Type type) {
       super(buffer, offset, type);
+      id = buffer.getInt();
+      byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
+      buffer.get(nameBytes);
+      name = new String(nameBytes, Charset.forName("UTF-16LE"));
+      typeStrings = buffer.getInt();
+      lastPublicType = buffer.getInt();
+      keyStrings = buffer.getInt();
+      lastPublicKey = buffer.getInt();
+      typeIdOffset = buffer.getInt();
     }
 
     public int getId() {
-      return super.buffer.getInt(super.offset + OFFSET_FIRST_HEADER);
+      return id;
     }
 
     public String getName() {
-      Charset utf16 = Charset.forName("UTF-16LE");
-      return new String(super.buffer.array(), getChunkStart() + OFFSET_NAME, PACKAGE_NAME_SIZE, utf16);
+      return name;
     }
 
     /**
      * Offset from the beginning of this Chunk to where the Type StringPool begins.
      */
     public int getTypeStrings() {
-      return super.buffer.getInt(super.offset + OFFSET_TYPE_STRINGS);
+      return typeStrings;
     }
 
     public int getLastPublicType() {
-      return super.buffer.getInt(super.offset + OFFSET_LAST_PUBLIC_TYPE);
+      return lastPublicType;
     }
 
     public int getKeyStrings() {
-      return super.buffer.getInt(super.offset + OFFSET_KEY_STRINGS);
+      return keyStrings;
     }
 
     public int getLastPublicKey() {
-      return super.buffer.getInt(super.offset + OFFSET_LAST_PUBLIC_KEY);
+      return lastPublicKey;
     }
 
     public int getTypeIdOffset() {
-      return super.buffer.getInt(super.offset + OFFSET_TYPE_ID_OFFSET);
+      return typeIdOffset;
     }
 
     public StringPoolChunk getTypeStringPool() {
@@ -415,6 +449,22 @@ public class Chunk {
 
     public StringPoolChunk getKeyStringPool() {
       return new StringPoolChunk(super.buffer, getChunkStart() + getKeyStrings(), Type.STRING_POOL);
+    }
+
+    public void init() {
+      int start = super.offset + super.getHeaderLength();
+      int offset = start;
+      int end = super.getChunkEnd();
+      int position = super.buffer.position();
+      super.buffer.position(getPayloadStart());
+
+      while (offset < end) {
+        Chunk chunk = Chunk.readChunk(super.buffer, offset);
+        chunkMap.put(offset, chunk);
+        offset += chunk.getChunkLength();
+      }
+
+      super.buffer.position(position);
     }
 
     public TypeSpecChunk getTypeSpec() {
@@ -434,12 +484,18 @@ public class Chunk {
       System.out.println("Key Strings (String pool start idx): " + getKeyStrings());
       System.out.println("Last public key index: " + getLastPublicKey());
       System.out.println("TypeId Offset: " + getTypeIdOffset());
-      System.out.println("TypeStrings: ");
-      getTypeStringPool().dump();
-      System.out.println("TypeKeys: ");
-      getKeyStringPool().dump();
-      getTypeSpec().dump();
-      getTypeChunk().dump();
+//      System.out.println("TypeStrings: ");
+//      getTypeStringPool().dump();
+//      System.out.println("TypeKeys: ");
+      init();
+
+      for (Integer chunkOffset : chunkMap.keySet()) {
+        System.out.println("chunkOffset = " + chunkOffset);
+        chunkMap.get(chunkOffset).dump();
+      }
+//      getKeyStringPool().dump();
+//      getTypeSpec().dump();
+//      getTypeChunk().dump();
     }
 
     public static class TypeSpecChunk extends Chunk {
