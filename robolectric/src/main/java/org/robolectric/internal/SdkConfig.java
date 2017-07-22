@@ -14,6 +14,7 @@ import java.util.Set;
 public class SdkConfig implements Comparable<SdkConfig> {
   // additional visible changes!
 
+  // still other changes outside of private blocks...
   // changes outside of private blocks...
 
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS = Collections.unmodifiableMap(new HashMap<Integer, SdkVersion>() {
