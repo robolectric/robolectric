@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class SdkConfig implements Comparable<SdkConfig> {
+  // additional visible changes!
 
   // changes outside of private blocks...
 
