@@ -452,7 +452,6 @@ public class Chunk {
 
       public TypeSpecChunk(ByteBuffer buffer, int offset, Type type) {
         super(buffer, offset, type);
-        buffer.position(16);
         id = buffer.get();
         res0 = buffer.get();
         res1 = buffer.getShort();
@@ -494,10 +493,10 @@ public class Chunk {
       private final int entriesStart;
       private final byte[] config = new byte[44];
       private int[] payload;
+      private List<Entry> entries = new LinkedList<>();
 
       public TypeChunk(ByteBuffer buffer, int offset, Type type) {
         super(buffer, offset, type);
-        buffer.position(16);
         id = buffer.get();
         res0 = buffer.get();
         res1 = buffer.getShort();
@@ -507,6 +506,11 @@ public class Chunk {
         payload = new int[entryCount];
         for (int i = 0; i < entryCount; i++) {
           payload[i] = buffer.getInt();
+        }
+
+        for (int i = 0; i < payload.length; i++) {
+          int entryOffset = payload[i];
+          entries.add(Entry.createEntry(buffer, offset + entriesStart + entryOffset));
         }
       }
 
@@ -538,6 +542,101 @@ public class Chunk {
         System.out.println("entryCount = " + entryCount);
         System.out.println("entriesStart = " + entriesStart);
         System.out.println("payload = " + Arrays.toString(payload));
+        for (Entry entry : entries) {
+          entry.dump();
+        }
+      }
+
+      public static abstract class Entry {
+
+        private static final int FLAG_COMPLEX = 0x0001;
+
+        private final short headerLength;
+        private final short flags;
+        private final int key;
+
+        public static Entry createEntry(ByteBuffer buffer, int entryOffset) {
+          buffer.position(entryOffset);
+          short headerLength = buffer.getShort();
+          short flags = buffer.getShort();
+          if ((flags & Entry.FLAG_COMPLEX) != 0) {
+            return new ValueEntry(buffer, entryOffset, headerLength, flags);
+          } else {
+            return new MapEntry(buffer, entryOffset, headerLength, flags);
+          }
+        }
+
+        public Entry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
+          this.headerLength = headerLength;
+          this.flags = flags;
+          key = buffer.getInt();
+        }
+
+        public void dump() {
+          System.out.println("ENTRY");
+          System.out.println("headerLength = " + headerLength);
+          System.out.println("flags = " + flags);
+          System.out.println("key = " + key);
+        }
+      }
+
+      public static class ValueEntry extends Entry {
+
+        private final Value value;
+
+        public ValueEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
+          super(buffer, entryOffset, headerLength, flags);
+          value = new Value(buffer);
+        }
+
+        Value getValue() {
+          return value;
+        }
+
+        public void dump() {
+          super.dump();
+          value.dump();
+        }
+
+        public static class Value {
+
+          private final byte res0;
+          private final byte dataType;
+          private final int data;
+          private final short size;
+
+          public Value(ByteBuffer buffer) {
+            size = buffer.getShort();
+            res0 = buffer.get();
+            dataType = buffer.get();
+            data = buffer.getInt();
+          }
+
+          public void dump() {
+            System.out.println("size = " + size);
+            System.out.println("res0 = " + res0);
+            System.out.println("dataType = " + dataType);
+            System.out.println("data = " + data);
+          }
+        }
+      }
+
+      public static class MapEntry extends Entry {
+
+        private final int parent;
+        private final int count;
+
+        public MapEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
+          super(buffer, entryOffset, headerLength, flags);
+          parent = buffer.getInt();
+          count = buffer.getInt();
+        }
+
+        public void dump() {
+          super.dump();
+          System.out.println("parent = " + parent);
+          System.out.println("count = " + count);
+        }
       }
     }
   }
