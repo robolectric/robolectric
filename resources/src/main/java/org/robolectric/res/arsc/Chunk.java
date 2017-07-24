@@ -129,10 +129,10 @@ public class Chunk {
   }
 
   public static TableChunk newInstance(ByteBuffer buffer) {
-    return readChunk(buffer, 0);
+    return readChunk(buffer, 0, null);
   }
 
-  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition) {
+  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition, Chunk parentChunk) {
     Type type;
       short aShort = buffer.getShort(chunkStartPosition);
       if (aShort == -1) {
@@ -148,7 +148,7 @@ public class Chunk {
       } else if (Type.TABLE_PACKAGE.equals(type)) {
         chunk = new PackageChunk(buffer, chunkStartPosition, type);
       } else if (Type.TABLE_TYPE.equals(type)) {
-        chunk = new TypeChunk(buffer, chunkStartPosition, type);
+        chunk = new TypeChunk(buffer, chunkStartPosition, type, (PackageChunk) parentChunk);
       } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
         chunk = new TypeSpecChunk(buffer, chunkStartPosition, type);
       }
@@ -178,11 +178,11 @@ public class Chunk {
 
     public TableChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
       super(buffer, chunkStartPosition, type);
-      stringPoolChunk = readChunk(buffer, getHeaderLength());
+      stringPoolChunk = readChunk(buffer, getHeaderLength(), this);
 
       int packageChunkOffset = getHeaderLength() + stringPoolChunk.getChunkLength();
       for (int i = 0; i < getPackageCount(); i++) {
-        PackageChunk packageChunk = readChunk(buffer, packageChunkOffset);
+        PackageChunk packageChunk = readChunk(buffer, packageChunkOffset, this);
         packageChunks.add(packageChunk);
         packageChunkOffset = packageChunk.getChunkLength();
       }
@@ -203,6 +203,10 @@ public class Chunk {
       for (PackageChunk packageChunk : packageChunks) {
         packageChunk.dump();
       }
+    }
+
+    public List<PackageChunk> getPackageChunks() {
+      return packageChunks;
     }
   }
 
@@ -402,6 +406,7 @@ public class Chunk {
     private final int lastPublicKey;
     private final int typeIdOffset;
     Map<Integer, Chunk> chunkMap = new HashMap<>();
+    private boolean initialized;
 
     public PackageChunk(ByteBuffer buffer, int offset, Type type) {
       super(buffer, offset, type);
@@ -448,22 +453,30 @@ public class Chunk {
     }
 
     public StringPoolChunk getTypeStringPool() {
+      ensureChunkMapLoaded();
       return (StringPoolChunk) chunkMap.get(getChunkStart() + getTypeStrings());
     }
 
     public StringPoolChunk getKeyStringPool() {
+      ensureChunkMapLoaded();
       return (StringPoolChunk) chunkMap.get(getChunkStart() + getKeyStrings());
     }
 
+    synchronized private void ensureChunkMapLoaded() {
+      if (!initialized) {
+        init();
+        initialized = true;
+      }
+    }
+
     public void init() {
-      int start = super.offset + super.getHeaderLength();
-      int offset = start;
+      int offset = getPayloadStart();
       int end = super.getChunkEnd();
       int position = super.buffer.position();
-      super.buffer.position(getPayloadStart());
+      //super.buffer.position(getPayloadStart());
 
       while (offset < end) {
-        Chunk chunk = Chunk.readChunk(super.buffer, offset);
+        Chunk chunk = Chunk.readChunk(super.buffer, offset, this);
         chunkMap.put(offset, chunk);
         offset += chunk.getChunkLength();
       }
@@ -493,6 +506,7 @@ public class Chunk {
 //      System.out.println("TypeKeys: ");
       init();
 
+      ensureChunkMapLoaded();
       for (Integer chunkOffset : chunkMap.keySet()) {
         System.out.println("chunkOffset = " + chunkOffset);
         chunkMap.get(chunkOffset).dump();
