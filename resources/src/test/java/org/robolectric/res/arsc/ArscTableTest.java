@@ -54,10 +54,11 @@ public class ArscTableTest {
 
   @Test
   public void getPackageName() {
-    assertThat(arscTable.getPackageName()).isEqualTo("org.robolectric.resources");
+    assertThat(arscTable.getPackageName(R.string.first_string)).isEqualTo("org.robolectric.resources");
+    assertThat(arscTable.getPackageName(R.string.second_string)).isEqualTo("org.robolectric.resources");
   }
 
-  @Test @Ignore
+  @Test
   public void testGetString() throws Exception {
     assertThat(arscTable.getString(R.string.first_string)).isEqualTo("sheep");
     assertThat(arscTable.getString(R.string.second_string)).isEqualTo("goat");

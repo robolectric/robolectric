@@ -140,7 +140,7 @@ public class Chunk {
       }
 
       type = Type.fromCode(aShort);
-      Chunk chunk = null;
+      Chunk chunk;
       if (Type.TABLE.equals(type)) {
         chunk = new TableChunk(buffer, chunkStartPosition, type);
       } else if (Type.STRING_POOL.equals(type)) {
@@ -151,6 +151,8 @@ public class Chunk {
         chunk = new TypeChunk(buffer, chunkStartPosition, type, (PackageChunk) parentChunk);
       } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
         chunk = new TypeSpecChunk(buffer, chunkStartPosition, type);
+      } else {
+        throw new IllegalArgumentException("unknown table type " + aShort);
       }
       return (T) chunk;
   }
@@ -174,7 +176,7 @@ public class Chunk {
   public static class TableChunk extends Chunk {
 
     StringPoolChunk stringPoolChunk;
-    List<PackageChunk> packageChunks = new ArrayList<>();
+    Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
     public TableChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
       super(buffer, chunkStartPosition, type);
@@ -183,7 +185,7 @@ public class Chunk {
       int packageChunkOffset = getHeaderLength() + stringPoolChunk.getChunkLength();
       for (int i = 0; i < getPackageCount(); i++) {
         PackageChunk packageChunk = readChunk(buffer, packageChunkOffset, this);
-        packageChunks.add(packageChunk);
+        packageChunks.put(packageChunk.getId(), packageChunk);
         packageChunkOffset = packageChunk.getChunkLength();
       }
     }
@@ -200,13 +202,13 @@ public class Chunk {
       super.dump();
       System.out.println("Package count: " + getPackageCount());
       getStringPoolChunk().dump();
-      for (PackageChunk packageChunk : packageChunks) {
-        packageChunk.dump();
-      }
+//      for (PackageChunk packageChunk : packageChunks) {
+//        packageChunk.dump();
+//      }
     }
 
-    public List<PackageChunk> getPackageChunks() {
-      return packageChunks;
+    public PackageChunk getPackageChunk(int packageId) {
+      return packageChunks.get(packageId);
     }
   }
 
