@@ -577,26 +577,6 @@ public class Chunk {
           System.out.println("flags = " + flags);
           System.out.println("key = " + key);
         }
-      }
-
-      public static class ValueEntry extends Entry {
-
-        private final Value value;
-
-        public ValueEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
-          super(buffer, entryOffset, headerLength, flags);
-          value = new Value(buffer);
-        }
-
-        Value getValue() {
-          return value;
-        }
-
-        public void dump() {
-          System.out.println("VALUE ENTRY");
-          super.dump();
-          value.dump();
-        }
 
         public static class Value {
 
@@ -619,6 +599,27 @@ public class Chunk {
             System.out.println("data = " + data);
           }
         }
+      }
+
+      public static class ValueEntry extends Entry {
+
+        private final Value value;
+
+        public ValueEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
+          super(buffer, entryOffset, headerLength, flags);
+          value = new Value(buffer);
+        }
+
+        Value getValue() {
+          return value;
+        }
+
+        public void dump() {
+          System.out.println("VALUE ENTRY");
+          super.dump();
+          value.dump();
+        }
+
       }
 
       public static class MapEntry extends Entry {
