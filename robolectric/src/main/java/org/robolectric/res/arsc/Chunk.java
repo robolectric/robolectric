@@ -283,6 +283,10 @@ public class Chunk {
       return result;
     }
 
+    public String getString(int i) {
+      return getStrings().get(i);
+    }
+
     private List<StringPoolStyle> getStyles() {
       List<StringPoolStyle> result = new ArrayList<>();
       // After the array of offsets for the strings in the pool, we have an offset for the styles
@@ -472,7 +476,7 @@ public class Chunk {
     }
 
     public TypeChunk getTypeChunk() {
-      return new TypeChunk(super.buffer, getTypeSpec().getChunkEnd(), Type.TABLE_TYPE);
+      return new TypeChunk(super.buffer, getTypeSpec().getChunkEnd(), Type.TABLE_TYPE, this);
     }
 
     public void dump() {
@@ -510,7 +514,6 @@ public class Chunk {
 
       public TypeSpecChunk(ByteBuffer buffer, int offset, Type type) {
         super(buffer, offset, type);
-        buffer.position(16);
         id = buffer.get();
         res0 = buffer.get();
         res1 = buffer.getShort();
@@ -550,22 +553,37 @@ public class Chunk {
       private final short res1;
       private final int entryCount;
       private final int entriesStart;
+      private PackageChunk packageChunk;
       private final byte[] config = new byte[44];
       private int[] payload;
+      private List<Entry> entries = new LinkedList<>();
 
-      public TypeChunk(ByteBuffer buffer, int offset, Type type) {
+      public TypeChunk(ByteBuffer buffer, int offset, Type type, PackageChunk packageChunk) {
         super(buffer, offset, type);
-        buffer.position(16);
         id = buffer.get();
         res0 = buffer.get();
         res1 = buffer.getShort();
         entryCount = buffer.getInt();
         entriesStart = buffer.getInt();
+        this.packageChunk = packageChunk;
         buffer.get(config);
         payload = new int[entryCount];
         for (int i = 0; i < entryCount; i++) {
           payload[i] = buffer.getInt();
         }
+
+        for (int i = 0; i < payload.length; i++) {
+          int entryOffset = payload[i];
+          entries.add(Entry.createEntry(buffer, offset + entriesStart + entryOffset));
+        }
+      }
+
+      /** Returns the name of the type this chunk represents (e.g. string, attr, id). */
+      public String getTypeName() {
+        Preconditions.checkNotNull(packageChunk, "%s has no parent package.", getClass());
+        StringPoolChunk typePool = packageChunk.getTypeStringPool();
+        Preconditions.checkNotNull(typePool, "%s's parent package has no type pool.", getClass());
+        return typePool.getString(getId() - 1);  // - 1 here to convert to 0-based index
       }
 
       public byte getId() {
@@ -591,11 +609,131 @@ public class Chunk {
       public void dump() {
         super.dump();
         System.out.println("id = " + id);
+        System.out.println("TypeName = " + getTypeName());
         System.out.println("res0 = " + res0);
         System.out.println("res1 = " + res1);
         System.out.println("entryCount = " + entryCount);
         System.out.println("entriesStart = " + entriesStart);
         System.out.println("payload = " + Arrays.toString(payload));
+        for (Entry entry : entries) {
+          entry.dump();
+        }
+      }
+
+      public static abstract class Entry {
+
+        private static final int FLAG_COMPLEX = 0x0001;
+
+        private final short headerLength;
+        private final short flags;
+        private final int key;
+
+        public static Entry createEntry(ByteBuffer buffer, int entryOffset) {
+          buffer.position(entryOffset);
+          short headerLength = buffer.getShort();
+          short flags = buffer.getShort();
+          if ((flags & Entry.FLAG_COMPLEX) != 0) {
+            return new ValueEntry(buffer, entryOffset, headerLength, flags);
+          } else {
+            return new MapEntry(buffer, entryOffset, headerLength, flags);
+          }
+        }
+
+        public Entry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
+          this.headerLength = headerLength;
+          this.flags = flags;
+          key = buffer.getInt();
+        }
+
+        public void dump() {
+          System.out.println("headerLength = " + headerLength);
+          System.out.println("flags = " + flags);
+          System.out.println("key = " + key);
+        }
+
+        public static class Value {
+
+          private final byte res0;
+          private final byte dataType;
+          private final int data;
+          private final short size;
+
+          public Value(ByteBuffer buffer) {
+            size = buffer.getShort();
+            res0 = buffer.get();
+            dataType = buffer.get();
+            data = buffer.getInt();
+          }
+
+          public void dump() {
+            System.out.println("size = " + size);
+            System.out.println("res0 = " + res0);
+            System.out.println("dataType = " + dataType);
+            System.out.println("data = " + data);
+          }
+        }
+      }
+
+      public static class ValueEntry extends Entry {
+
+        private final Value value;
+
+        public ValueEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
+          super(buffer, entryOffset, headerLength, flags);
+          value = new Value(buffer);
+        }
+
+        Value getValue() {
+          return value;
+        }
+
+        public void dump() {
+          System.out.println("VALUE ENTRY");
+          super.dump();
+          value.dump();
+        }
+
+      }
+
+      public static class MapEntry extends Entry {
+
+        private final int parent;
+        private final int count;
+        private List<Map> maps = new LinkedList<>();
+
+        public MapEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
+          super(buffer, entryOffset, headerLength, flags);
+          parent = buffer.getInt();
+          count = buffer.getInt();
+          for (int i = 0; i < count; i++) {
+            maps.add(new Map(buffer));
+          }
+        }
+
+        public void dump() {
+          System.out.println("VALUE ENTRY");
+          super.dump();
+          System.out.println("parent = " + parent);
+          System.out.println("count = " + count);
+          for (Map map : maps) {
+            map.dump();
+          }
+        }
+      }
+
+      public static class Map {
+        private final int name;
+        private final ValueEntry.Value value;
+
+        public Map(ByteBuffer buffer) {
+          name = buffer.getInt();
+          value = new ValueEntry.Value(buffer);
+        }
+
+        public void dump() {
+          System.out.println("name = " + name);
+          value.dump();
+        }
       }
     }
   }
