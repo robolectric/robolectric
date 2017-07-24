@@ -573,7 +573,6 @@ public class Chunk {
         }
 
         public void dump() {
-          System.out.println("ENTRY");
           System.out.println("headerLength = " + headerLength);
           System.out.println("flags = " + flags);
           System.out.println("key = " + key);
@@ -594,6 +593,7 @@ public class Chunk {
         }
 
         public void dump() {
+          System.out.println("VALUE ENTRY");
           super.dump();
           value.dump();
         }
@@ -625,17 +625,40 @@ public class Chunk {
 
         private final int parent;
         private final int count;
+        private List<Map> maps = new LinkedList<>();
 
         public MapEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
           super(buffer, entryOffset, headerLength, flags);
           parent = buffer.getInt();
           count = buffer.getInt();
+          for (int i = 0; i < count; i++) {
+            maps.add(new Map(buffer));
+          }
         }
 
         public void dump() {
+          System.out.println("VALUE ENTRY");
           super.dump();
           System.out.println("parent = " + parent);
           System.out.println("count = " + count);
+          for (Map map : maps) {
+            map.dump();
+          }
+        }
+      }
+
+      public static class Map {
+        private final int name;
+        private final ValueEntry.Value value;
+
+        public Map(ByteBuffer buffer) {
+          name = buffer.getInt();
+          value = new ValueEntry.Value(buffer);
+        }
+
+        public void dump() {
+          System.out.println("name = " + name);
+          value.dump();
         }
       }
     }
