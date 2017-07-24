@@ -60,12 +60,19 @@ public class ArscTableTest {
   @Test @Ignore
   public void testGetString() throws Exception {
     assertThat(arscTable.getString(R.string.first_string)).isEqualTo("sheep");
+    assertThat(arscTable.getString(R.string.second_string)).isEqualTo("goat");
   }
 
   @Test
-  public void shouldResolveResIdToTypeAndKey() throws Exception {
+  public void shouldResolveResIdToType() throws Exception {
     assertThat(arscTable.getTypeName(R.string.first_string)).isEqualTo("string");
+    assertThat(arscTable.getTypeName(R.string.second_string)).isEqualTo("string");
+  }
+
+  @Test
+  public void shouldResolveResIdToKey() throws Exception {
     assertThat(arscTable.getKeyName(R.string.first_string)).isEqualTo("first_string");
+    assertThat(arscTable.getKeyName(R.string.second_string)).isEqualTo("second_string");
   }
 
 }

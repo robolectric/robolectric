@@ -220,9 +220,11 @@ public class Chunk {
     private static final int OFFSET_STRING_START = OFFSET_FLAGS + 4;
     private static final int OFFSET_STYLE_START = OFFSET_STRING_START + 4;
     private static final int OFFSET_STRING_INDICIES = OFFSET_STYLE_START + 4;
+    private final int stringsStart;
 
     public StringPoolChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
       super(buffer, chunkStartPosition, type);
+      stringsStart = super.buffer.getInt(getChunkStart() + OFFSET_STRING_START);
     }
 
     public int getStringCount() {
@@ -250,22 +252,15 @@ public class Chunk {
       return (getFlags() & SORTED_FLAG) != 0;
     }
 
-    public int getStringStart() {
-      return super.buffer.getInt(getChunkStart() + OFFSET_STRING_START);
+    /**
+     * Return the offset to the string data, from the beginning of this Chunk.
+     */
+    private int getStringsStart() {
+      return stringsStart;
     }
 
     public int getStyleStart() {
       return super.buffer.getInt(getChunkStart() + OFFSET_STYLE_START);
-    }
-
-    public int[] getStringIndicies() {
-      int[] result = new int[getStringCount()];
-      int start = getChunkStart() + OFFSET_STRING_INDICIES;
-      for (int i = 0; i < result.length; i++) {
-        result[i] = super.buffer.getInt(start);
-        start += UINT32_SIZE;
-      }
-      return result;
     }
 
     public int[] getStyleIndicies() {
@@ -278,17 +273,12 @@ public class Chunk {
       return result;
     }
 
-    public List<String> getStrings() {
-      List<String> result = new LinkedList<>();
-      for (int i : getStringIndicies()) {
-        int stringStartIdx = getChunkStart() + getStringStart() + i;
-        result.add(ResourceString.decodeString(super.buffer, stringStartIdx, getStringType()));
-      }
-      return result;
-    }
-
     public String getString(int i) {
-      return getStrings().get(i);
+      int chunkStart = getChunkStart();
+      int start = chunkStart + OFFSET_STRING_INDICIES;
+      int valueIndex = super.buffer.getInt(start + i * UINT32_SIZE);
+      int stringStartIdx = chunkStart + getStringsStart() + valueIndex;
+      return ResourceString.decodeString(super.buffer, stringStartIdx, getStringType());
     }
 
     private List<StringPoolStyle> getStyles() {
@@ -296,7 +286,7 @@ public class Chunk {
       // After the array of offsets for the strings in the pool, we have an offset for the styles
       // in this pool.
       for (int i : getStyleIndicies()) {
-        int styleOffset = getChunkStart() + getStringStart() + i;
+        int styleOffset = getChunkStart() + getStringsStart() + i;
         result.add(new StringPoolStyle(super.buffer, styleOffset));
       }
       return result;
@@ -312,11 +302,9 @@ public class Chunk {
       System.out.println("String count: " + getStringCount());
       System.out.println("Style count: " + getStyleCount());
       System.out.println("Flags: " + getFlags());
-      System.out.println("String start: " + getStringStart());
+      System.out.println("String start: " + getStringsStart());
       System.out.println("Style start: " + getStyleStart());
-      System.out.println("String indicies: " + Arrays.toString(getStringIndicies()));
       System.out.println("Style indicies: " + Arrays.toString(getStyleIndicies()));
-      System.out.println("String: " + getStrings());
       System.out.println("Styles:");
       for (StringPoolStyle stringPoolStyle : getStyles()) {
         stringPoolStyle.dump();
