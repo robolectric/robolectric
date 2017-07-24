@@ -265,6 +265,10 @@ public class Chunk {
       return result;
     }
 
+    public String getString(int i) {
+      return getStrings().get(i);
+    }
+
     private List<StringPoolStyle> getStyles() {
       List<StringPoolStyle> result = new ArrayList<>();
       // After the array of offsets for the strings in the pool, we have an offset for the styles
@@ -422,7 +426,7 @@ public class Chunk {
     }
 
     public TypeChunk getTypeChunk() {
-      return new TypeChunk(super.buffer, getTypeSpec().getChunkEnd(), Type.TABLE_TYPE);
+      return new TypeChunk(super.buffer, getTypeSpec().getChunkEnd(), Type.TABLE_TYPE, this);
     }
 
     public void dump() {
@@ -491,17 +495,19 @@ public class Chunk {
       private final short res1;
       private final int entryCount;
       private final int entriesStart;
+      private PackageChunk packageChunk;
       private final byte[] config = new byte[44];
       private int[] payload;
       private List<Entry> entries = new LinkedList<>();
 
-      public TypeChunk(ByteBuffer buffer, int offset, Type type) {
+      public TypeChunk(ByteBuffer buffer, int offset, Type type, PackageChunk packageChunk) {
         super(buffer, offset, type);
         id = buffer.get();
         res0 = buffer.get();
         res1 = buffer.getShort();
         entryCount = buffer.getInt();
         entriesStart = buffer.getInt();
+        this.packageChunk = packageChunk;
         buffer.get(config);
         payload = new int[entryCount];
         for (int i = 0; i < entryCount; i++) {
@@ -512,6 +518,14 @@ public class Chunk {
           int entryOffset = payload[i];
           entries.add(Entry.createEntry(buffer, offset + entriesStart + entryOffset));
         }
+      }
+
+      /** Returns the name of the type this chunk represents (e.g. string, attr, id). */
+      public String getTypeName() {
+        Preconditions.checkNotNull(packageChunk, "%s has no parent package.", getClass());
+        StringPoolChunk typePool = packageChunk.getTypeStringPool();
+        Preconditions.checkNotNull(typePool, "%s's parent package has no type pool.", getClass());
+        return typePool.getString(getId() - 1);  // - 1 here to convert to 0-based index
       }
 
       public byte getId() {
@@ -537,6 +551,7 @@ public class Chunk {
       public void dump() {
         super.dump();
         System.out.println("id = " + id);
+        System.out.println("TypeName = " + getTypeName());
         System.out.println("res0 = " + res0);
         System.out.println("res1 = " + res1);
         System.out.println("entryCount = " + entryCount);
