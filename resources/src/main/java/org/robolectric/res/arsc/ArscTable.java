@@ -1,17 +1,13 @@
 package org.robolectric.res.arsc;
 
 import com.google.common.collect.Iterables;
-import java.nio.charset.Charset;
 import java.util.List;
 import org.robolectric.res.ResourceIds;
 import org.robolectric.res.android.ResTableEntry;
-import org.robolectric.res.android.ResValue;
 import org.robolectric.res.arsc.Chunk.PackageChunk;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk.Entry;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk.Entry.Value;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk.SimpleEntry;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeSpecChunk;
 import org.robolectric.res.arsc.Chunk.StringPoolChunk;
 import org.robolectric.res.arsc.Chunk.TableChunk;
 
@@ -198,29 +194,10 @@ public class ArscTable {
 
     SimpleEntry resultEntry = (SimpleEntry) entries.get(ResourceIds.getEntryIdentifier(resId));
     if (resultEntry != null) {
-      return new ResTableEntry(new ResValue(resultEntry.getValue().getDataType(), resultEntry.getValue().getData()));
+      return new ResTableEntry(resultEntry.getValue());
     } else {
       return null;
     }
-  }
-
-  public String getString(int resId) {
-    int packageId = ResourceIds.getPackageIdentifier(resId);
-    int typeId = ResourceIds.getTypeIdentifier(resId);
-    TypeSpecChunk typeSpec = chunk.getPackageChunk(packageId).getTypeSpec(typeId);
-    List<TypeChunk> types = chunk.getPackageChunk(packageId).getTypes(typeId);
-
-    for (TypeChunk type : types) {
-      for (Entry entry : type.getEntries()) {
-        SimpleEntry simpleEntry = (SimpleEntry)entry;
-        if (simpleEntry != null) {
-          Value value = simpleEntry.getValue();
-          int data = value.getData();
-          System.out.println(chunk.getValuesStringPool().getString(data));
-        }
-      }
-    }
-    return null;
   }
 
   public String getTypeName(int resId) {
@@ -251,22 +228,6 @@ public class ArscTable {
     String rawName = chunk.getPackageChunk(packageId).getName();
     int firstNull = rawName.indexOf(0);
     return rawName.substring(0, firstNull);
-  }
-
-  public int getInt(int resId) {
-    int packageId = ResourceIds.getPackageIdentifier(resId);
-    int typeId = ResourceIds.getTypeIdentifier(resId);
-    TypeSpecChunk typeSpec = chunk.getPackageChunk(packageId).getTypeSpec(typeId);
-    List<TypeChunk> types = chunk.getPackageChunk(packageId).getTypes(typeId);
-
-    for (TypeChunk type : types) {
-      for (Entry entry : type.getEntries()) {
-        SimpleEntry simpleEntry = (SimpleEntry)entry;
-        Value value = simpleEntry.getValue();
-        return value.getData();
-      }
-    }
-    return -1;
   }
 }
 

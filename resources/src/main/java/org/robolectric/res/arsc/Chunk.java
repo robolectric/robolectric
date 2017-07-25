@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.res.android.ResValue;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeSpecChunk;
 
@@ -624,6 +625,14 @@ abstract public class Chunk {
         }
       }
 
+      public static ResValue createValue(ByteBuffer buffer) {
+        short size = buffer.getShort();
+        byte res0 = buffer.get();
+        byte dataType = buffer.get();
+        int data = buffer.getInt();
+        return new ResValue(dataType, data);
+      }
+
       /** Returns the name of the type this chunk represents (e.g. string, attr, id). */
       public String getTypeName() {
         Preconditions.checkNotNull(packageChunk, "%s has no parent package.", getClass());
@@ -710,66 +719,21 @@ abstract public class Chunk {
           System.out.println("flags = " + flags);
           System.out.println("key = " + key);
         }
-
-        public static class Value {
-
-          private final byte res0;
-          private final byte dataType;
-          private final int data;
-          private final short size;
-
-          public Value(ByteBuffer buffer) {
-            size = buffer.getShort();
-            res0 = buffer.get();
-            dataType = buffer.get();
-            data = buffer.getInt();
-
-            dump();
-          }
-
-          public void dump() {
-            System.out.println("size = " + size);
-            System.out.println("res0 = " + res0);
-            System.out.println("dataType = " + Integer.toHexString(dataType));
-            System.out.println("data = " + Integer.toHexString(data));
-          }
-
-          public int getData() {
-            return data;
-          }
-
-          public byte getDataType() {
-            return dataType;
-          }
-
-          @Override
-          public String toString() {
-            return "Value{" +
-                "data=" + data + ", dataType=" + dataType +
-                '}';
-          }
-        }
       }
 
       public static class SimpleEntry extends Entry {
 
-        private final Value value;
+        private final ResValue value;
 
         public SimpleEntry(ByteBuffer buffer, int entryOffset, short headerLength, short flags) {
           super(buffer, entryOffset, headerLength, flags);
           System.out.println("SimpleEntry at " + Integer.toHexString(entryOffset));
-          value = new Value(buffer);
+          value = createValue(buffer);
           dump();
         }
 
-        Value getValue() {
+        ResValue getValue() {
           return value;
-        }
-
-        public void dump() {
-          System.out.println("VALUE ENTRY");
-          super.dump();
-          value.dump();
         }
 
         @Override
@@ -808,17 +772,17 @@ abstract public class Chunk {
 
       public static class Map {
         private final int name;
-        private final SimpleEntry.Value value;
+        private final ResValue value;
 
         public Map(ByteBuffer buffer) {
           name = buffer.getInt();
           System.out.println("name = " + name);
-          value = new SimpleEntry.Value(buffer);
+          value = createValue(buffer);
         }
 
         public void dump() {
           System.out.println("name = " + name);
-          value.dump();
+          System.out.println(value);
         }
       }
     }

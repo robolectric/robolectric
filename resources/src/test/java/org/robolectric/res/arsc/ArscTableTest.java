@@ -52,16 +52,14 @@ public class ArscTableTest {
   }
 
   @Test
-  public void getInteger() {
+  public void testGetEntry_intType() {
     ResTableEntry entry = arscTable.getEntry(R.integer.flock_size, 0);
     assertThat(entry.value.dataType).isEqualTo(Type.INT_DEC.code());
     assertThat(entry.value.data).isEqualTo(1234);
   }
 
   @Test
-  public void testGetString() throws Exception {
-
-
+  public void testGetEntry_stringType() throws Exception {
     assertThat(arscTable.getEntry(R.string.first_string, 0).value.dataType).isEqualTo(Type.STRING.code());
 
 //
