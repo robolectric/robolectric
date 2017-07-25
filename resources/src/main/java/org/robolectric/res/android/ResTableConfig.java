@@ -13,10 +13,14 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Describes a particular resource configuration. */
-public class ResourceConfiguration {
+/**
+ * Describes a particular resource configuration.
+ *
+ * <p>frameworks/base/include/androidfw/ResourceTypes.h (struct ResTable_config)
+ */
+public class ResTableConfig {
 
-  /** The different types of configs that can be present in a {@link ResourceConfiguration}. */
+  /** The different types of configs that can be present in a {@link ResTableConfig}. */
   public enum Type {
     MCC,
     MNC,
@@ -226,18 +230,18 @@ public class ResourceConfiguration {
    * @param sdkVersion The SDK version of the returned configuration.
    * @return A copy of this configuration with the only difference being #sdkVersion.
    */
-  public final ResourceConfiguration withSdkVersion(int sdkVersion) {
+  public final ResTableConfig withSdkVersion(int sdkVersion) {
     if (sdkVersion == this.sdkVersion) {
       return this;
     }
-    return new ResourceConfiguration(size, mcc, mnc, language, region,
+    return new ResTableConfig(size, mcc, mnc, language, region,
         orientation, touchscreen, density, keyboard, navigation, inputFlags,
         screenWidth, screenHeight, sdkVersion, minorVersion, screenLayout, uiMode,
         smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant,
         screenLayout2, unknown);
   }
 
-  public ResourceConfiguration(int size, int mcc, int mnc, byte[] language, byte[] region,
+  public ResTableConfig(int size, int mcc, int mnc, byte[] language, byte[] region,
       int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
       int screenWidth, int screenHeight, int sdkVersion, int minorVersion, int screenLayout,
       int uiMode, int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
@@ -316,7 +320,7 @@ public class ResourceConfiguration {
   @SuppressWarnings("mutable")
   private final byte[] unknown;
 
-  public static ResourceConfiguration create(ByteBuffer buffer) {
+  public static ResTableConfig create(ByteBuffer buffer) {
     int startPosition = buffer.position();  // The starting buffer position to calculate bytes read.
     int size = buffer.getInt();
     int mcc = buffer.getShort() & 0xFFFF;
@@ -375,7 +379,7 @@ public class ResourceConfiguration {
     byte[] unknown = new byte[size - bytesRead];
     buffer.get(unknown);
 
-    return new ResourceConfiguration(size, mcc, mnc, language, region, orientation,
+    return new ResTableConfig(size, mcc, mnc, language, region, orientation,
         touchscreen, density, keyboard, navigation, inputFlags, screenWidth, screenHeight,
         sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp,
         screenHeightDp, localeScript, localeVariant, screenLayout2, unknown);
@@ -443,7 +447,7 @@ public class ResourceConfiguration {
   /**
    * Returns a map of the configuration parts for {@link #toString}.
    *
-   * <p>If a configuration part is not defined for this {@link ResourceConfiguration}, its value
+   * <p>If a configuration part is not defined for this {@link ResTableConfig}, its value
    * will be the empty string.
    */
   public final Map<Type, String> toStringParts() {
@@ -503,7 +507,7 @@ public class ResourceConfiguration {
   public static final int MASK_NAVHIDDEN = 0x000c;
 
 
-  boolean isBetterThan(ResourceConfiguration o, ResourceConfiguration requested) {
+  boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
     if (requested != null) {
       if (imsi() != 0 || o.imsi() != 0) {
         if ((mcc != o.mcc) && requested.mcc != 0) {
@@ -840,12 +844,12 @@ public class ResourceConfiguration {
   }
 
   // TODO Convert from C
-  private boolean isLocaleBetterThan(ResourceConfiguration o, ResourceConfiguration requested) {
+  private boolean isLocaleBetterThan(ResTableConfig o, ResTableConfig requested) {
     return false;
   }
 
   // TODO Convert from C
-  private boolean isMoreSpecificThan(ResourceConfiguration o) {
+  private boolean isMoreSpecificThan(ResTableConfig o) {
     return false;
   }
 
