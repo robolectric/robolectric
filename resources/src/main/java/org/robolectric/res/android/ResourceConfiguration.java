@@ -484,5 +484,370 @@ public class ResourceConfiguration {
     V value = map.get(key);
     return value != null ? value : defaultValue;
   }
+
+
+  // constants for isBetterThan...
+  private static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
+  private static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
+  private static final int ACONFIGURATION_SCREENSIZE_NORMAL = SCREENLAYOUT_SIZE_NORMAL;
+  private static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
+  private static final int MASK_SCREENLONG = SCREENLAYOUT_LONG_MASK;
+  private static final int MASK_SCREENROUND = SCREENLAYOUT_ROUND_MASK;
+  private static final int MASK_UI_MODE_TYPE = UI_MODE_TYPE_MASK;
+  private static final int MASK_UI_MODE_NIGHT = UI_MODE_NIGHT_MASK;
+  private static final int ACONFIGURATION_DENSITY_MEDIUM = DENSITY_DPI_MDPI;
+  private static final int DENSITY_MEDIUM = ACONFIGURATION_DENSITY_MEDIUM;
+  private static final int ACONFIGURATION_DENSITY_ANY = DENSITY_DPI_ANY;
+  private static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
+  private static final int MASK_KEYSHIDDEN = 0x0003;
+  public static final int MASK_NAVHIDDEN = 0x000c;
+
+
+  boolean isBetterThan(ResourceConfiguration o, ResourceConfiguration requested) {
+    if (requested != null) {
+      if (imsi() != 0 || o.imsi() != 0) {
+        if ((mcc != o.mcc) && requested.mcc != 0) {
+          return (mcc != 0);
+        }
+
+        if ((mnc != o.mnc) && requested.mnc != 0) {
+          return (mnc != 0);
+        }
+      }
+
+      if (isLocaleBetterThan(o, requested)) {
+        return true;
+      }
+
+      if (screenLayout != 0 || o.screenLayout != 0) {
+        if (((screenLayout^o.screenLayout) & MASK_LAYOUTDIR) != 0
+            && (requested.screenLayout & MASK_LAYOUTDIR) != 0) {
+          int myLayoutDir = screenLayout & MASK_LAYOUTDIR;
+          int oLayoutDir = o.screenLayout & MASK_LAYOUTDIR;
+          return (myLayoutDir > oLayoutDir);
+        }
+      }
+
+      if (smallestScreenWidthDp != 0 || o.smallestScreenWidthDp != 0) {
+        // The configuration closest to the actual size is best.
+        // We assume that larger configs have already been filtered
+        // out at this point.  That means we just want the largest one.
+        if (smallestScreenWidthDp != o.smallestScreenWidthDp) {
+          return smallestScreenWidthDp > o.smallestScreenWidthDp;
+        }
+      }
+
+      if (screenSizeDp() != 0 || o.screenSizeDp() != 0) {
+        // "Better" is based on the sum of the difference between both
+        // width and height from the requested dimensions.  We are
+        // assuming the invalid configs (with smaller dimens) have
+        // already been filtered.  Note that if a particular dimension
+        // is unspecified, we will end up with a large value (the
+        // difference between 0 and the requested dimension), which is
+        // good since we will prefer a config that has specified a
+        // dimension value.
+        int myDelta = 0, otherDelta = 0;
+        if (requested.screenWidthDp != 0) {
+          myDelta += requested.screenWidthDp - screenWidthDp;
+          otherDelta += requested.screenWidthDp - o.screenWidthDp;
+        }
+        if (requested.screenHeightDp != 0) {
+          myDelta += requested.screenHeightDp - screenHeightDp;
+          otherDelta += requested.screenHeightDp - o.screenHeightDp;
+        }
+
+        if (myDelta != otherDelta) {
+          return myDelta < otherDelta;
+        }
+      }
+
+      if (screenLayout != 0 || o.screenLayout != 0) {
+        if (((screenLayout^o.screenLayout) & MASK_SCREENSIZE) != 0
+            && (requested.screenLayout & MASK_SCREENSIZE) != 0) {
+          // A little backwards compatibility here: undefined is
+          // considered equivalent to normal.  But only if the
+          // requested size is at least normal; otherwise, small
+          // is better than the default.
+          int mySL = (screenLayout & MASK_SCREENSIZE);
+          int oSL = (o.screenLayout & MASK_SCREENSIZE);
+          int fixedMySL = mySL;
+          int fixedOSL = oSL;
+          if ((requested.screenLayout & MASK_SCREENSIZE) >= SCREENSIZE_NORMAL) {
+            if (fixedMySL == 0) fixedMySL = SCREENSIZE_NORMAL;
+            if (fixedOSL == 0) fixedOSL = SCREENSIZE_NORMAL;
+          }
+          // For screen size, the best match is the one that is
+          // closest to the requested screen size, but not over
+          // (the not over part is dealt with in match() below).
+          if (fixedMySL == fixedOSL) {
+            // If the two are the same, but 'this' is actually
+            // undefined, then the other is really a better match.
+            if (mySL == 0) return false;
+            return true;
+          }
+          if (fixedMySL != fixedOSL) {
+            return fixedMySL > fixedOSL;
+          }
+        }
+        if (((screenLayout^o.screenLayout) & MASK_SCREENLONG) != 0
+            && (requested.screenLayout & MASK_SCREENLONG) != 0) {
+          return (screenLayout & MASK_SCREENLONG) != 0;
+        }
+      }
+
+      if (screenLayout2 != 0 || o.screenLayout2 != 0) {
+        if (((screenLayout2^o.screenLayout2) & MASK_SCREENROUND) != 0 &&
+            (requested.screenLayout2 & MASK_SCREENROUND) != 0) {
+          return (screenLayout2 & MASK_SCREENROUND) != 0;
+        }
+      }
+
+      if ((orientation != o.orientation) && requested.orientation != 0) {
+        return (orientation) != 0;
+      }
+
+      if (uiMode != 0 || o.uiMode != 0) {
+        if (((uiMode^o.uiMode) & MASK_UI_MODE_TYPE) != 0
+            && (requested.uiMode & MASK_UI_MODE_TYPE) != 0) {
+          return (uiMode & MASK_UI_MODE_TYPE) != 0;
+        }
+        if (((uiMode^o.uiMode) & MASK_UI_MODE_NIGHT) != 0
+            && (requested.uiMode & MASK_UI_MODE_NIGHT) != 0) {
+          return (uiMode & MASK_UI_MODE_NIGHT) != 0;
+        }
+      }
+
+      if (screenType() != 0 || o.screenType() != 0) {
+        if (density != o.density) {
+          // Use the system default density (DENSITY_MEDIUM, 160dpi) if none specified.
+                final int thisDensity = density != 0 ? density : DENSITY_MEDIUM;
+                final int otherDensity = o.density != 0 ? o.density : DENSITY_MEDIUM;
+
+          // We always prefer DENSITY_ANY over scaling a density bucket.
+          if (thisDensity == DENSITY_ANY) {
+            return true;
+          } else if (otherDensity == DENSITY_ANY) {
+            return false;
+          }
+
+          int requestedDensity = requested.density;
+          if (requested.density == 0 ||
+              requested.density == DENSITY_ANY) {
+            requestedDensity = DENSITY_MEDIUM;
+          }
+
+          // DENSITY_ANY is now dealt with. We should look to
+          // pick a density bucket and potentially scale it.
+          // Any density is potentially useful
+          // because the system will scale it.  Scaling down
+          // is generally better than scaling up.
+          int h = thisDensity;
+          int l = otherDensity;
+          boolean bImBigger = true;
+          if (l > h) {
+            int t = h;
+            h = l;
+            l = t;
+            bImBigger = false;
+          }
+
+          if (requestedDensity >= h) {
+            // requested value higher than both l and h, give h
+            return bImBigger;
+          }
+          if (l >= requestedDensity) {
+            // requested value lower than both l and h, give l
+            return !bImBigger;
+          }
+          // saying that scaling down is 2x better than up
+          if (((2 * l) - requestedDensity) * h > requestedDensity * requestedDensity) {
+            return !bImBigger;
+          } else {
+            return bImBigger;
+          }
+        }
+
+        if ((touchscreen != o.touchscreen) && requested.touchscreen != 0) {
+          return (touchscreen) != 0;
+        }
+      }
+
+      if (input() != 0 || o.input() != 0) {
+            final int keysHidden = inputFlags & MASK_KEYSHIDDEN;
+            final int oKeysHidden = o.inputFlags & MASK_KEYSHIDDEN;
+        if (keysHidden != oKeysHidden) {
+                final int reqKeysHidden =
+              requested.inputFlags & MASK_KEYSHIDDEN;
+          if (reqKeysHidden != 0) {
+
+            if (keysHidden == 0) return false;
+            if (oKeysHidden == 0) return true;
+            // For compatibility, we count KEYSHIDDEN_NO as being
+            // the same as KEYSHIDDEN_SOFT.  Here we disambiguate
+            // these by making an exact match more specific.
+            if (reqKeysHidden == keysHidden) return true;
+            if (reqKeysHidden == oKeysHidden) return false;
+          }
+        }
+
+            final int navHidden = inputFlags & MASK_NAVHIDDEN;
+            final int oNavHidden = o.inputFlags & MASK_NAVHIDDEN;
+        if (navHidden != oNavHidden) {
+                final int reqNavHidden =
+              requested.inputFlags & MASK_NAVHIDDEN;
+          if (reqNavHidden != 0) {
+
+            if (navHidden == 0) return false;
+            if (oNavHidden == 0) return true;
+          }
+        }
+
+        if ((keyboard != o.keyboard) && requested.keyboard != 0) {
+          return (keyboard) != 0;
+        }
+
+        if ((navigation != o.navigation) && requested.navigation != 0) {
+          return (navigation) != 0;
+        }
+      }
+
+      if (screenSize() != 0 || o.screenSize() != 0) {
+        // "Better" is based on the sum of the difference between both
+        // width and height from the requested dimensions.  We are
+        // assuming the invalid configs (with smaller sizes) have
+        // already been filtered.  Note that if a particular dimension
+        // is unspecified, we will end up with a large value (the
+        // difference between 0 and the requested dimension), which is
+        // good since we will prefer a config that has specified a
+        // size value.
+        int myDelta = 0, otherDelta = 0;
+        if (requested.screenWidth != 0) {
+          myDelta += requested.screenWidth - screenWidth;
+          otherDelta += requested.screenWidth - o.screenWidth;
+        }
+        if (requested.screenHeight != 0) {
+          myDelta += requested.screenHeight - screenHeight;
+          otherDelta += requested.screenHeight - o.screenHeight;
+        }
+        if (myDelta != otherDelta) {
+          return myDelta < otherDelta;
+        }
+      }
+
+      if (version() != 0 || o.version() != 0) {
+        if ((sdkVersion != o.sdkVersion) && requested.sdkVersion != 0) {
+          return (sdkVersion > o.sdkVersion);
+        }
+
+        if ((minorVersion != o.minorVersion) &&
+            requested.minorVersion != 0) {
+          return (minorVersion) != 0;
+        }
+      }
+
+      return false;
+    }
+    return isMoreSpecificThan(o);
+  }
+
+  /**
+   *     union {
+   struct {
+   // Mobile country code (from SIM).  0 means "any".
+   uint16_t mcc;
+   // Mobile network code (from SIM).  0 means "any".
+   uint16_t mnc;
+   };
+   uint32_t imsi;
+   };
+   */
+  private int imsi() {
+    return (mcc & 0xffff) << 16 | (mnc & 0xffff);
+  }
+
+  /**
+   *     union {
+   struct {
+   uint16_t screenWidth;
+   uint16_t screenHeight;
+   };
+   uint32_t screenSize;
+   };
+   */
+  private int screenSize() {
+    return (screenWidth & 0xffff) << 16 | (screenHeight & 0xffff);
+  }
+
+
+  /**
+   *     union {
+   struct {
+   uint16_t screenWidthDp;
+   uint16_t screenHeightDp;
+   };
+   uint32_t screenSizeDp;
+   };
+   */
+  private int screenSizeDp() {
+    // screenWidthDp and screenHeightDp are really shorts...
+    return (screenWidthDp & 0xffff) << 16 | (screenHeightDp & 0xffff);
+  }
+
+  /**
+     union {
+     struct {
+     uint8_t orientation;
+     uint8_t touchscreen;
+     uint16_t density;
+     };
+     uint32_t screenType;
+     };
+   */
+  private int screenType() {
+    return (orientation & 0xff << 24) | (touchscreen * 0xff << 16) | density & 0xffff;
+  }
+
+  /**
+   *
+   union {
+   struct {
+   uint8_t keyboard;
+   uint8_t navigation;
+   uint8_t inputFlags;
+   uint8_t inputPad0;
+   };
+   uint32_t input;
+   };
+   */
+  private int input() {
+    // TODO is Pad Zeros?
+    return (keyboard & 0xff << 24) | (navigation & 0xff << 16) | (inputFlags & 0xff << 8);
+  }
+
+  /**
+   *     union {
+   struct {
+   uint16_t sdkVersion;
+   // For now minorVersion must always be 0!!!  Its meaning
+   // is currently undefined.
+   uint16_t minorVersion;
+   };
+   uint32_t version;
+   };
+   */
+  private int version() {
+    return (sdkVersion & 0xffff) << 16 | (minorVersion & 0xffff);
+  }
+
+  // TODO Convert from C
+  private boolean isLocaleBetterThan(ResourceConfiguration o, ResourceConfiguration requested) {
+    return false;
+  }
+
+  // TODO Convert from C
+  private boolean isMoreSpecificThan(ResourceConfiguration o) {
+    return false;
+  }
+
 }
 
