@@ -316,7 +316,7 @@ public class ResourceConfiguration {
   @SuppressWarnings("mutable")
   private final byte[] unknown;
 
-  static ResourceConfiguration create(ByteBuffer buffer) {
+  public static ResourceConfiguration create(ByteBuffer buffer) {
     int startPosition = buffer.position();  // The starting buffer position to calculate bytes read.
     int size = buffer.getInt();
     int mcc = buffer.getShort() & 0xFFFF;

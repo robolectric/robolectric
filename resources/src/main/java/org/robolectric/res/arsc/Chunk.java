@@ -34,6 +34,7 @@ import org.robolectric.res.android.ResTableEntry;
 import org.robolectric.res.android.ResTableMap;
 import org.robolectric.res.android.ResTableMapEntry;
 import org.robolectric.res.android.ResValue;
+import org.robolectric.res.android.ResourceConfiguration;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeSpecChunk;
 
@@ -535,7 +536,7 @@ abstract public class Chunk {
       private final byte id;
       private final int entryCount;
       private final int entriesStart;
-      private final byte[] config;
+      private final ResourceConfiguration config;
       private List<ResTableEntry> entries = new LinkedList<>();
 
       public TypeChunk(ByteBuffer buffer, int offset, Type type) {
@@ -546,9 +547,7 @@ abstract public class Chunk {
         Preconditions.checkArgument(buffer.getShort() == 0); // Res1 Unused - must be 0
         entryCount = buffer.getInt();
         entriesStart = buffer.getInt();
-        int configSize = buffer.getInt() - 4;
-        config = new byte[configSize];
-        buffer.get(config);
+        config = ResourceConfiguration.create(buffer);
         int[] payload = new int[entryCount];
         for (int i = 0; i < entryCount; i++) {
           payload[i] = buffer.getInt();
