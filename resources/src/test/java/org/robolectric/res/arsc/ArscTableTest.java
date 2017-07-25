@@ -65,6 +65,11 @@ public class ArscTableTest {
   }
 
   @Test
+  public void testGetInteger() throws Exception {
+    assertThat(arscTable.getInt(R.integer.flock_size)).isEqualTo(1234);
+  }
+
+  @Test
   public void shouldResolveResIdToType() throws Exception {
     assertThat(arscTable.getTypeName(R.string.first_string)).isEqualTo("string");
     assertThat(arscTable.getTypeName(R.string.second_string)).isEqualTo("string");
