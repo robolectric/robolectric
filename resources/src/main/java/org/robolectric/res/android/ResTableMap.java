@@ -87,13 +87,13 @@ public final class ResTableMap {
   int nameIdent; // name->ident
   ResValue value;
 
-  ResTableMap(int ident, ResValue value) {
+  public ResTableMap(int ident, ResValue value) {
     nameIdent = ident;
     this.value = value;
   }
 
   // Copy constructor.
-  ResTableMap(ResTableMap that) {
+  public ResTableMap(ResTableMap that) {
     this(that.nameIdent, new ResValue(that.value));
   }
 }

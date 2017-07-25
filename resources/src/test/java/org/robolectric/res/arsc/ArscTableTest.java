@@ -61,12 +61,6 @@ public class ArscTableTest {
   @Test
   public void testGetEntry_stringType() throws Exception {
     assertThat(arscTable.getEntry(R.string.first_string, 0).value.dataType).isEqualTo(Type.STRING.code());
-
-//
-//    assertThat(arscTable.getEntry(R.string.first_string, 0)).isEqualTo("sheep");
-//
-//
-//    assertThat(arscTable.getEntry(R.string.second_string, 0)).isEqualTo("goat");
   }
 
 
@@ -80,11 +74,5 @@ public class ArscTableTest {
   public void shouldResolveResIdToType() throws Exception {
     assertThat(arscTable.getTypeName(R.string.first_string)).isEqualTo("string");
     assertThat(arscTable.getTypeName(R.string.second_string)).isEqualTo("string");
-  }
-
-  @Test
-  public void shouldResolveResIdToKey() throws Exception {
-    assertThat(arscTable.getKeyName(R.string.first_string)).isEqualTo("first_string");
-    assertThat(arscTable.getKeyName(R.string.second_string)).isEqualTo("second_string");
   }
 }

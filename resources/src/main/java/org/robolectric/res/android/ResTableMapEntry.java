@@ -19,7 +19,7 @@ public final class ResTableMapEntry extends ResTableEntry {
     this(array, 0);
   }
 
-  ResTableMapEntry(List<ResTableMap> array, int parent) {
+  public ResTableMapEntry(List<ResTableMap> array, int parent) {
     this.flags = FLAG_COMPLEX;
     this.array = array;
     count = array.size();

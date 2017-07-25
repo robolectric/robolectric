@@ -4,16 +4,10 @@ import com.google.common.collect.Iterables;
 import java.util.List;
 import org.robolectric.res.ResourceIds;
 import org.robolectric.res.android.ResTableEntry;
-import org.robolectric.res.arsc.Chunk.PackageChunk;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk.Entry;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk.SimpleEntry;
 import org.robolectric.res.arsc.Chunk.StringPoolChunk;
 import org.robolectric.res.arsc.Chunk.TableChunk;
 
-/**
- * Created by jongerrish on 7/13/17.
- */
 public class ArscTable {
 
   private TableChunk chunk;
@@ -190,14 +184,9 @@ public class ArscTable {
         .getTypes(ResourceIds.getTypeIdentifier(resId));
 
     TypeChunk onlyElement = Iterables.getFirst(types, null);
-    List<Entry> entries = onlyElement.getEntries();
+    List<ResTableEntry> entries = onlyElement.getEntries();
 
-    SimpleEntry resultEntry = (SimpleEntry) entries.get(ResourceIds.getEntryIdentifier(resId));
-    if (resultEntry != null) {
-      return new ResTableEntry(resultEntry.getValue());
-    } else {
-      return null;
-    }
+    return entries.get(ResourceIds.getEntryIdentifier(resId));
   }
 
   public String getTypeName(int resId) {
@@ -205,22 +194,6 @@ public class ArscTable {
     int packageId = ResourceIds.getPackageIdentifier(resId);
     StringPoolChunk stringPool = chunk.getPackageChunk(packageId).getTypeStringPool();
     return stringPool.getString(typeId - 1); // TT in PPTTEEEE is 1 indexed
-  }
-
-  public String getKeyName(int resId) {
-    int typeId = ResourceIds.getTypeIdentifier(resId);
-    int keyId = ResourceIds.getEntryIdentifier(resId);
-    int packageId = ResourceIds.getPackageIdentifier(resId);
-    PackageChunk packageChunk = chunk.getPackageChunk(packageId);
-
-    List<TypeChunk> types = chunk.getPackageChunk(ResourceIds.getPackageIdentifier(resId))
-        .getTypes(typeId);
-    TypeChunk typeChunk = types.get(0);
-    int keyNameStringId = typeChunk.getEntries().get(keyId).key;
-
-    StringPoolChunk stringPool = packageChunk.getKeyStringPool();
-
-    return stringPool.getString(keyNameStringId); // EEEE in PPTTEEEE is 0 indexed
   }
 
   public String getPackageName(int resId) {
