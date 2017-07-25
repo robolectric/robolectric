@@ -738,6 +738,10 @@ abstract public class Chunk {
             return data;
           }
 
+          public byte getDataType() {
+            return dataType;
+          }
+
           @Override
           public String toString() {
             return "Value{" +

@@ -5,12 +5,16 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.zip.ZipInputStream;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.res.ResourceIds;
+import org.robolectric.res.android.ResTableEntry;
+import org.robolectric.res.android.Type;
 import org.robolectric.res.arsc.Chunk;
 
 import java.io.InputStream;
@@ -48,25 +52,30 @@ public class ArscTableTest {
   }
 
   @Test
-  public void testSomething() throws Exception {
-    chunk.dump();
+  public void getInteger() {
+    ResTableEntry entry = arscTable.getEntry(R.integer.flock_size, 0);
+    assertThat(entry.value.dataType).isEqualTo(Type.INT_DEC.code());
+    assertThat(entry.value.data).isEqualTo(1234);
   }
+
+  @Test
+  public void testGetString() throws Exception {
+
+
+    assertThat(arscTable.getEntry(R.string.first_string, 0).value.dataType).isEqualTo(Type.STRING.code());
+
+//
+//    assertThat(arscTable.getEntry(R.string.first_string, 0)).isEqualTo("sheep");
+//
+//
+//    assertThat(arscTable.getEntry(R.string.second_string, 0)).isEqualTo("goat");
+  }
+
 
   @Test
   public void getPackageName() {
     assertThat(arscTable.getPackageName(R.string.first_string)).isEqualTo("org.robolectric.resources");
     assertThat(arscTable.getPackageName(R.string.second_string)).isEqualTo("org.robolectric.resources");
-  }
-
-  @Test
-  public void testGetString() throws Exception {
-    assertThat(arscTable.getString(R.string.first_string)).isEqualTo("sheep");
-    assertThat(arscTable.getString(R.string.second_string)).isEqualTo("goat");
-  }
-
-  @Test
-  public void testGetInteger() throws Exception {
-    assertThat(arscTable.getInt(R.integer.flock_size)).isEqualTo(1234);
   }
 
   @Test
@@ -80,5 +89,4 @@ public class ArscTableTest {
     assertThat(arscTable.getKeyName(R.string.first_string)).isEqualTo("first_string");
     assertThat(arscTable.getKeyName(R.string.second_string)).isEqualTo("second_string");
   }
-
 }
