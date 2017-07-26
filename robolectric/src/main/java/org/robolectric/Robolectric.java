@@ -123,7 +123,7 @@ public class Robolectric {
   }
 
   public static <T extends BackupAgent> T setupBackupAgent(Class<T> backupAgentClass) {
-    return buildBackupAgent(backupAgentClass).setUp().get();
+    return buildBackupAgent(backupAgentClass).create().get();
   }
 
   /**
