@@ -118,8 +118,8 @@ public class ResTableConfig {
       ORIENTATION_LANDSCAPE, "land");
 
   private static final int SCREENLAYOUT_LAYOUTDIR_MASK = 0xC0;
-  private static final int SCREENLAYOUT_LAYOUTDIR_LTR  = 0x40;
-  private static final int SCREENLAYOUT_LAYOUTDIR_RTL  = 0x80;
+  static final int SCREENLAYOUT_LAYOUTDIR_LTR  = 0x40;
+  static final int SCREENLAYOUT_LAYOUTDIR_RTL  = 0x80;
   private static final Map<Integer, String> SCREENLAYOUT_LAYOUTDIR_VALUES = ImmutableMap.of(
       SCREENLAYOUT_LAYOUTDIR_LTR, "ldltr",
       SCREENLAYOUT_LAYOUTDIR_RTL, "ldrtl");

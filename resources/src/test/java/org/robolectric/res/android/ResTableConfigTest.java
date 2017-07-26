@@ -92,6 +92,21 @@ public class ResTableConfigTest {
         .isTrue();
   }
 
+  @Test
+  public void isBetterThan_layoutDirection_() {
+    // Requested matches this configuration
+    assertThat(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build()
+        .isBetterThan(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_LTR).build(),
+            newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build()))
+        .isTrue();
+
+    // Requested matches this configuration
+    assertThat(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_LTR).build()
+        .isBetterThan(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build(),
+            newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build()))
+        .isFalse();
+  }
+
   public static ResTableConfigBuilder newBuilder() {
     return new ResTableConfigBuilder();
   }
@@ -137,6 +152,11 @@ public class ResTableConfigTest {
 
     public ResTableConfigBuilder setLanguage(byte[] language) {
       this.language = language;
+      return this;
+    }
+
+    public ResTableConfigBuilder setLayoutDirection(int layoutDirection) {
+      screenLayout = layoutDirection;
       return this;
     }
   }
