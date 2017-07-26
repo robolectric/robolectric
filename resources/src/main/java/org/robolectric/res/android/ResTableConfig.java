@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
+import com.google.common.primitives.UnsignedInteger;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,7 +24,7 @@ public class ResTableConfig {
   // Codes for specially handled languages and regions
   static final byte[] kEnglish = new byte[] {'e', 'n'};  // packed version of "en"
   static final byte[] kUnitedStates = new byte[] {'U', 'S'};  // packed version of "US"
-  static final byte[] kFilipino = new byte[] {(byte)0xAD, 0x05};  // packed version of "fil" ported from C {'\xAD', '\x05'} // TODO How to pack this into two bytes?
+  static final byte[] kFilipino = new byte[] {(byte)0xAD, 0x05};  // packed version of "fil" ported from C {'\xAD', '\x05'}
   static final byte[] kTagalog = new byte[] {'t', 'l'};  // packed version of "tl"
 
   /** The different types of configs that can be present in a {@link ResTableConfig}. */
@@ -820,8 +821,7 @@ public class ResTableConfig {
    };
    */
   int locale() {
-    // TODO Implement this
-    return 0;
+    return (language[0] & 0xff << 24) | (language[1] * 0xff << 16) | (country[0] & 0xffff << 8) | (country[1] & 0xffff);
   }
 
   private boolean isLocaleBetterThan(ResTableConfig o, ResTableConfig requested) {
@@ -869,11 +869,11 @@ public class ResTableConfig {
           } else {
             return !(o.country[0] == '\0' || areIdentical(o.country, kUnitedStates));
           }
-        } else if (localeDataIsCloseToUsEnglish(requested.country)) {
+        } else if (LocaleData.localeDataIsCloseToUsEnglish(requested.country)) {
           if (language[0] != '\0') {
-            return localeDataIsCloseToUsEnglish(country);
+            return LocaleData.localeDataIsCloseToUsEnglish(country);
           } else {
-            return !localeDataIsCloseToUsEnglish(o.country);
+            return !LocaleData.localeDataIsCloseToUsEnglish(o.country);
           }
         }
       }
@@ -890,7 +890,7 @@ public class ResTableConfig {
     // check the country and variant.
 
     // See if any of the regions is better than the other.
-    final int region_comparison = localeDataCompareRegions(
+    final int region_comparison = LocaleData.localeDataCompareRegions(
         country, o.country,
         requested.language, requested.localeScript, requested.country);
     if (region_comparison != 0) {
@@ -912,18 +912,6 @@ public class ResTableConfig {
       return true;
     }
 
-    return false;
-  }
-
-  // From android/frameworks/base/libs/androidfw/LocaleData.cpp
-  // TODO: Implement me
-  private int localeDataCompareRegions(byte[] country, byte[] country1, byte[] language, byte[] localeScript, byte[] country2) {
-    return 0;
-  }
-
-  // From android/frameworks/base/libs/androidfw/LocaleData.cpp
-  // TODO: Implement me
-  private boolean localeDataIsCloseToUsEnglish(byte[] country) {
     return false;
   }
 

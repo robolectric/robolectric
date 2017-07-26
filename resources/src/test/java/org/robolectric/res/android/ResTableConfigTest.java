@@ -12,6 +12,14 @@ public class ResTableConfigTest {
 
   public static final int MCC_US_CARRIER = 310;
   public static final int MCC_US_VERIZON = 4;
+  public static final byte[] LANGUAGE_FRENCH = new byte[] {'f', 'r'};
+  private static final byte[] LANGUAGE_SPANISH = new byte[]{'e', 's'};
+
+  @Test
+  public void isBetterThan_emptyConfig() {
+    // When a configuration is not specified the result is always false
+    assertThat(newBuilder().build().isBetterThan(newBuilder().build(), newBuilder().build())).isFalse();
+  }
 
   /**
    * https://developer.android.com/guide/topics/resources/providing-resources.html#MccQualifier
@@ -19,9 +27,6 @@ public class ResTableConfigTest {
    */
   @Test
   public void isBetterThan_mcc() {
-    // When a configuration is not specified the result is always false
-    assertThat(newBuilder().build().isBetterThan(newBuilder().build(), newBuilder().build())).isFalse();
-
     // When requested is less of a match
     assertThat(newBuilder().setMcc(MCC_US_CARRIER).build()
         .isBetterThan(newBuilder().setMcc(MCC_US_CARRIER).build(), newBuilder().build()))
@@ -59,8 +64,32 @@ public class ResTableConfigTest {
 
     // When requested is a better match - any US Carrier is not a better match to US + Verizon
     assertThat(newBuilder().setMcc(MCC_US_CARRIER).setMnc(MCC_US_VERIZON).build()
-        .isBetterThan(newBuilder().setMcc(MCC_US_CARRIER).setMnc(MCC_US_VERIZON).build(), (newBuilder().setMcc(MCC_US_CARRIER).build())))
+        .isBetterThan(newBuilder().setMcc(MCC_US_CARRIER).setMnc(MCC_US_VERIZON).build(), newBuilder().setMcc(MCC_US_CARRIER).build()))
         .isFalse();
+  }
+
+  @Test
+  public void isBetterThan_language() {
+    // When requested has no language, is not a better match
+    assertThat(newBuilder().setLanguage(LANGUAGE_FRENCH).build()
+        .isBetterThan(newBuilder().setLanguage(LANGUAGE_FRENCH).build(), newBuilder().build()))
+        .isFalse();
+  }
+
+  @Test
+  public void isBetterThan_language_comparedNotSame_requestedEnglish() {
+    // When requested has no language, is not a better match
+    assertThat(newBuilder().setLanguage(LANGUAGE_FRENCH).build()
+        .isBetterThan(newBuilder().setLanguage(LANGUAGE_SPANISH).build(), newBuilder().setLanguage(ResTableConfig.kEnglish).build()))
+        .isTrue();
+  }
+
+  @Test
+  public void isBetterThan_language_comparedNotSame_requestedEnglishUS() {
+    // When requested has no language, is not a better match
+    assertThat(newBuilder().setLanguage(LANGUAGE_FRENCH).build()
+        .isBetterThan(newBuilder().setLanguage(LANGUAGE_SPANISH).build(), newBuilder().setLanguage(ResTableConfig.kEnglish).build()))
+        .isTrue();
   }
 
   public static ResTableConfigBuilder newBuilder() {
@@ -103,6 +132,11 @@ public class ResTableConfigTest {
 
     public ResTableConfigBuilder setMnc(int mnc) {
       this.mnc = mnc;
+      return this;
+    }
+
+    public ResTableConfigBuilder setLanguage(byte[] language) {
+      this.language = language;
       return this;
     }
   }
