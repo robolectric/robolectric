@@ -6,7 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
-import java.nio.ByteBuffer;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +19,12 @@ import java.util.Map;
  * <p>frameworks/base/include/androidfw/ResourceTypes.h (struct ResTable_config)
  */
 public class ResTableConfig {
+
+  // Codes for specially handled languages and regions
+  static final byte[] kEnglish = new byte[] {'e', 'n'};  // packed version of "en"
+  static final byte[] kUnitedStates = new byte[] {'U', 'S'};  // packed version of "US"
+  static final byte[] kFilipino = new byte[] {(byte)0xAD, 0x05};  // packed version of "fil" ported from C {'\xAD', '\x05'} // TODO How to pack this into two bytes?
+  static final byte[] kTagalog = new byte[] {'t', 'l'};  // packed version of "tl"
 
   /** The different types of configs that can be present in a {@link ResTableConfig}. */
   public enum Type {
@@ -183,11 +189,11 @@ public class ResTableConfig {
     return unpackLanguage();
   }
 
-  /** Returns a packed 2-byte region code. */
+  /** Returns a packed 2-byte country code. */
   @SuppressWarnings("mutable")
-  private final byte[] region;
+  private final byte[] country;
 
-  /** Returns {@link #region} as an unpacked string representation. */
+  /** Returns {@link #country} as an unpacked string representation. */
   public final String regionString() {
     return unpackRegion();
   }
@@ -222,14 +228,14 @@ public class ResTableConfig {
     if (sdkVersion == this.sdkVersion) {
       return this;
     }
-    return new ResTableConfig(size, mcc, mnc, language, region,
+    return new ResTableConfig(size, mcc, mnc, language, country,
         orientation, touchscreen, density, keyboard, navigation, inputFlags,
         screenWidth, screenHeight, sdkVersion, minorVersion, screenLayout, uiMode,
         smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant,
         screenLayout2, unknown);
   }
 
-  public ResTableConfig(int size, int mcc, int mnc, byte[] language, byte[] region,
+  public ResTableConfig(int size, int mcc, int mnc, byte[] language, byte[] country,
       int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
       int screenWidth, int screenHeight, int sdkVersion, int minorVersion, int screenLayout,
       int uiMode, int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
@@ -238,7 +244,7 @@ public class ResTableConfig {
     this.mcc = mcc;
     this.mnc = mnc;
     this.language = language;
-    this.region = region;
+    this.country = country;
     this.orientation = orientation;
     this.touchscreen = touchscreen;
     this.density = density;
@@ -313,11 +319,11 @@ public class ResTableConfig {
   }
 
   private String unpackRegion() {
-    return unpackLanguageOrRegion(region, 0x30);
+    return unpackLanguageOrRegion(country, 0x30);
   }
 
   private String unpackLanguageOrRegion(byte[] value, int base) {
-    Preconditions.checkState(value.length == 2, "Language or region value must be 2 bytes.");
+    Preconditions.checkState(value.length == 2, "Language or country value must be 2 bytes.");
     if (value[0] == 0 && value[1] == 0) {
       return "";
     }
@@ -336,7 +342,7 @@ public class ResTableConfig {
     return mcc == 0
         && mnc == 0
         && Arrays.equals(language, new byte[2])
-        && Arrays.equals(region, new byte[2])
+        && Arrays.equals(country, new byte[2])
         && orientation == 0
         && touchscreen == 0
         && density == 0
@@ -769,9 +775,167 @@ public class ResTableConfig {
     return (sdkVersion & 0xffff) << 16 | (minorVersion & 0xffff);
   }
 
-  // TODO Convert from C
+  /**
+   union {
+   struct {
+   // This field can take three different forms:
+   // - \0\0 means "any".
+   //
+   // - Two 7 bit ascii values interpreted as ISO-639-1 language
+   //   codes ('fr', 'en' etc. etc.). The high bit for both bytes is
+   //   zero.
+   //
+   // - A single 16 bit little endian packed value representing an
+   //   ISO-639-2 3 letter language code. This will be of the form:
+   //
+   //   {1, t, t, t, t, t, s, s, s, s, s, f, f, f, f, f}
+   //
+   //   bit[0, 4] = first letter of the language code
+   //   bit[5, 9] = second letter of the language code
+   //   bit[10, 14] = third letter of the language code.
+   //   bit[15] = 1 always
+   //
+   // For backwards compatibility, languages that have unambiguous
+   // two letter codes are represented in that format.
+   //
+   // The layout is always bigendian irrespective of the runtime
+   // architecture.
+   char language[2];
+
+   // This field can take three different forms:
+   // - \0\0 means "any".
+   //
+   // - Two 7 bit ascii values interpreted as 2 letter country
+   //   codes ('US', 'GB' etc.). The high bit for both bytes is zero.
+   //
+   // - An UN M.49 3 digit country code. For simplicity, these are packed
+   //   in the same manner as the language codes, though we should need
+   //   only 10 bits to represent them, instead of the 15.
+   //
+   // The layout is always bigendian irrespective of the runtime
+   // architecture.
+   char country[2];
+   };
+   uint32_t locale;
+   };
+   */
+  int locale() {
+    // TODO Implement this
+    return 0;
+  }
+
   private boolean isLocaleBetterThan(ResTableConfig o, ResTableConfig requested) {
+    if (requested.locale() == 0) {
+      // The request doesn't have a locale, so no resource is better
+      // than the other.
+      return false;
+    }
+
+    if (locale() == 0 && o.locale() == 0) {
+      // The locale part of both resources is empty, so none is better
+      // than the other.
+      return false;
+    }
+
+    // Non-matching locales have been filtered out, so both resources
+    // match the requested locale.
+    //
+    // Because of the locale-related checks in match() and the checks, we know
+    // that:
+    // 1) The resource languages are either empty or match the request;
+    // and
+    // 2) If the request's script is known, the resource scripts are either
+    //    unknown or match the request.
+
+    if (!langsAreEquivalent(language, o.language)) {
+      // The languages of the two resources are not equivalent. If we are
+      // here, we can only assume that the two resources matched the request
+      // because one doesn't have a language and the other has a matching
+      // language.
+      //
+      // We consider the one that has the language specified a better match.
+      //
+      // The exception is that we consider no-language resources a better match
+      // for US English and similar locales than locales that are a descendant
+      // of Internatinal English (en-001), since no-language resources are
+      // where the US English resource have traditionally lived for most apps.
+      if (areIdentical(requested.language, kEnglish)) {
+        if (areIdentical(requested.country, kUnitedStates)) {
+          // For US English itself, we consider a no-locale resource a
+          // better match if the other resource has a country other than
+          // US specified.
+          if (language[0] != '\0') {
+            return country[0] == '\0' || areIdentical(country, kUnitedStates);
+          } else {
+            return !(o.country[0] == '\0' || areIdentical(o.country, kUnitedStates));
+          }
+        } else if (localeDataIsCloseToUsEnglish(requested.country)) {
+          if (language[0] != '\0') {
+            return localeDataIsCloseToUsEnglish(country);
+          } else {
+            return !localeDataIsCloseToUsEnglish(o.country);
+          }
+        }
+      }
+      return (language[0] != '\0');
+    }
+
+    // If we are here, both the resources have an equivalent non-empty language
+    // to the request.
+    //
+    // Because the languages are equivalent, computeScript() always returns a
+    // non-empty script for languages it knows about, and we have passed the
+    // script checks in match(), the scripts are either all unknown or are all
+    // the same. So we can't gain anything by checking the scripts. We need to
+    // check the country and variant.
+
+    // See if any of the regions is better than the other.
+    final int region_comparison = localeDataCompareRegions(
+        country, o.country,
+        requested.language, requested.localeScript, requested.country);
+    if (region_comparison != 0) {
+      return (region_comparison > 0);
+    }
+
+    // The regions are the same. Try the variant.
+    final boolean localeMatches = Arrays.equals(localeVariant, requested.localeVariant);
+    final boolean otherMatches = Arrays.equals(o.localeVariant, requested.localeVariant);
+    if (localeMatches != otherMatches) {
+      return localeMatches;
+    }
+
+    // Finally, the languages, although equivalent, may still be different
+    // (like for Tagalog and Filipino). Identical is better than just
+    // equivalent.
+    if (areIdentical(language, requested.language)
+        && !areIdentical(o.language, requested.language)) {
+      return true;
+    }
+
     return false;
+  }
+
+  // From android/frameworks/base/libs/androidfw/LocaleData.cpp
+  // TODO: Implement me
+  private int localeDataCompareRegions(byte[] country, byte[] country1, byte[] language, byte[] localeScript, byte[] country2) {
+    return 0;
+  }
+
+  // From android/frameworks/base/libs/androidfw/LocaleData.cpp
+  // TODO: Implement me
+  private boolean localeDataIsCloseToUsEnglish(byte[] country) {
+    return false;
+  }
+
+  private boolean langsAreEquivalent(final byte[] lang1, final byte[] lang2) {
+    return areIdentical(lang1, lang2) ||
+        (areIdentical(lang1, kTagalog) && areIdentical(lang2, kFilipino)) ||
+        (areIdentical(lang1, kFilipino) && areIdentical(lang2, kTagalog));
+  }
+
+  // Checks if two language or country codes are identical
+  private boolean  areIdentical(final byte[] code1, final byte[] code2) {
+    return code1[0] == code2[0] && code1[1] == code2[1];
   }
 
   // TODO Convert from C
