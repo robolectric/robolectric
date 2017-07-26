@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Choreographer;
+import android.view.Choreographer.FrameCallback;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -24,6 +25,7 @@ public class ShadowChoreographer {
   private static final Thread MAIN_THREAD = Thread.currentThread();
   private static SoftThreadLocal<Choreographer> instance = makeThreadLocal();
   private Handler handler = new Handler(Looper.myLooper());
+  private static volatile int postCallbackDelayMillis = 0;
 
   private static SoftThreadLocal<Choreographer> makeThreadLocal() {
     return new SoftThreadLocal<Choreographer>() {
@@ -33,14 +35,50 @@ public class ShadowChoreographer {
         if (looper == null) {
           throw new IllegalStateException("The current thread must have a looper!");
         }
-        return Shadow.newInstance(Choreographer.class, new Class[]{Looper.class}, new Object[]{looper});
+
+        // Choreographer's constructor changes somewhere in Android O...
+        try {
+          Choreographer.class.getDeclaredConstructor(Looper.class);
+          return Shadow.newInstance(Choreographer.class, new Class[]{Looper.class}, new Object[]{looper});
+        } catch (NoSuchMethodException e) {
+          return Shadow.newInstance(Choreographer.class, new Class[]{Looper.class, int.class}, new Object[]{looper, 0});
+        }
       }
     };
+  }
+
+  /**
+   * Allows application to specify a fixed amount of delay when
+   * {@link #postFrameCallback(FrameCallback)} or {@link #postCallback(int, Runnable, Object)} is
+   * invoked. The default delay value is `0`. This can be used to avoid infinite animation tasks to
+   * be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in
+   * {@link org.robolectric.util.Scheduler.IdleState#PAUSED} mode.
+   */
+  public static void setPostCallbackDelay(int delayMillis) {
+    postCallbackDelayMillis = delayMillis;
   }
 
   @Implementation
   public static Choreographer getInstance() {
     return instance.get();
+  }
+
+  /**
+   * The default implementation will call {@link #postCallbackDelayed(int, Runnable, Object, long)}
+   * with no delay. {@link android.animation.AnimationHandler} calls this method to schedule
+   * animation updates infinitely. Because during a Robolectric test the system time is paused and
+   * execution of the event loop is invoked for each test instruction, the behavior of
+   * AnimationHandler would result in endless looping (the execution of the task results in a new
+   * animation task created and scheduled to the front of the event loop queue).
+   *
+   * To prevent endless looping, a test may call {@link #setPostCallbackDelay(int)} to specify a
+   * small delay when animation is scheduled.
+   *
+   * @see #setPostCallbackDelay(int)
+   */
+  @Implementation
+  public void postCallback(int callbackType, Runnable action, Object token) {
+    postCallbackDelayed(callbackType, action, token, postCallbackDelayMillis);
   }
 
   @Implementation
@@ -53,8 +91,26 @@ public class ShadowChoreographer {
     handler.removeCallbacks(action, token);
   }
 
+  /**
+   * The default implementation will call {@link #postFrameCallbackDelayed(FrameCallback, long)}
+   * with no delay. {@link android.animation.AnimationHandler} calls this method to schedule
+   * animation updates infinitely. Because during a Robolectric test the system time is paused and
+   * execution of the event loop is invoked for each test instruction, the behavior of
+   * AnimationHandler would result in endless looping (the execution of the task results in a new
+   * animation task created and scheduled to the front of the event loop queue).
+   *
+   * To prevent endless looping, a test may call {@link #setPostCallbackDelay(int)} to specify a
+   * small delay when animation is scheduled.
+   *
+   * @see #setPostCallbackDelay(int)
+   */
   @Implementation
-  public void postFrameCallbackDelayed(final Choreographer.FrameCallback callback, long delayMillis) {
+  public void postFrameCallback(final FrameCallback callback) {
+    postFrameCallbackDelayed(callback, postCallbackDelayMillis);
+  }
+
+  @Implementation
+  public void postFrameCallbackDelayed(final FrameCallback callback, long delayMillis) {
     handler.postAtTime(new Runnable() {
       @Override public void run() {
         callback.doFrame(getFrameTimeNanos());
@@ -63,7 +119,7 @@ public class ShadowChoreographer {
   }
 
   @Implementation
-  public void removeFrameCallback(Choreographer.FrameCallback callback) {
+  public void removeFrameCallback(FrameCallback callback) {
     handler.removeCallbacksAndMessages(callback);
   }
 

@@ -10,7 +10,7 @@ public class Utils {
   // it hasn't been specified on the input file list.
   public static final JavaFileObject ROBO_SOURCE = forResource("mock-source/Robolectric.java");
   public static final JavaFileObject SHADOW_PROVIDER_SOURCE = forResource("mock-source/org/robolectric/internal/ShadowProvider.java");
-  public static final JavaFileObject SHADOW_EXTRACTOR_SOURCE = forResource("mock-source/org/robolectric/internal/ShadowExtractor.java");
+  public static final JavaFileObject SHADOW_EXTRACTOR_SOURCE = forResource("mock-source/org/robolectric/shadow/api/Shadow.java");
 
   public static String toResourcePath(String clazzName) {
     return clazzName.replace('.', '/') + ".java";

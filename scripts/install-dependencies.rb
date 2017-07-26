@@ -161,7 +161,7 @@ MAPS_REVISION_VERSION = "1"
 
 # Mavenize all dependencies
 
-install_stubs(23)
+install_stubs(26)
 
 install_map(MAPS_GROUP_ID, MAPS_ARTIFACT_ID, MAPS_API_VERSION, MAPS_REVISION_VERSION)
 

@@ -18,7 +18,7 @@ configurations {
 
 dependencies {
     // Project dependencies
-    compileOnly project(":shadows/framework")
+    compileOnly project(":shadows:framework")
 
     // Compile dependencies
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"

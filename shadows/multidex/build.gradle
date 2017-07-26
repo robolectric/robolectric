@@ -13,7 +13,7 @@ shadows {
 }
 
 dependencies {
-    compileOnly project(":shadows/framework")
+    compileOnly project(":shadows:framework")
 
     compileOnly "com.android.support:multidex:1.0.1"
 

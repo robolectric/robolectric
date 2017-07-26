@@ -1,13 +1,12 @@
 package org.robolectric;
 
-import android.app.Application;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
+import android.app.Application;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 public class RuntimeEnvironment {
   public static Application application;
@@ -15,13 +14,13 @@ public class RuntimeEnvironment {
   private volatile static Thread mainThread = Thread.currentThread();
   private static String qualifiers;
   private static Object activityThread;
-  private static RobolectricPackageManager packageManager;
   private static int apiLevel;
   private static Scheduler masterScheduler;
   private static ResourceTable systemResourceTable;
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
+  private static AndroidManifest appManifest;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -73,30 +72,6 @@ public class RuntimeEnvironment {
 
   public static void setActivityThread(Object newActivityThread) {
     activityThread = newActivityThread;
-  }
-
-  /**
-   * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
-   * <pre>
-   *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
-   * </pre>
-   */
-  @Deprecated
-  public static RobolectricPackageManager getRobolectricPackageManager() {
-    return packageManager;
-  }
-
-  /**
-   * @deprecated Use {@link org.robolectric.shadows.ShadowPackageManager} instead.
-   * <pre>
-   *   ShadowPackageManager shadowPackageManager = shadowOf(context.getPackageManager());
-   * </pre>
-   *
-   * If there is functionality you are missing you can extend ShadowPackageManager.
-   */
-  @Deprecated
-  public static void setRobolectricPackageManager(RobolectricPackageManager newPackageManager) {
-    packageManager = newPackageManager;
   }
 
   public static String getQualifiers() {
@@ -168,6 +143,14 @@ public class RuntimeEnvironment {
 
   public static ResourceTable getCompileTimeResourceTable() {
     return compileTimeResourceTable;
+  }
+
+  public static void setApplicationManifest(AndroidManifest appManifest) {
+    RuntimeEnvironment.appManifest = appManifest;
+  }
+
+  public static AndroidManifest getAppManifest() {
+    return RuntimeEnvironment.appManifest;
   }
 
   public static void setTempDirectory(TempDirectory tempDirectory) {

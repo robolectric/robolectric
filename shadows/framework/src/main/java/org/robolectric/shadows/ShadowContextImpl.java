@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.*;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+
 import android.accounts.IAccountManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
@@ -21,6 +25,9 @@ import android.os.Looper;
 import android.os.UserHandle;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -28,14 +35,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import static android.os.Build.VERSION_CODES.*;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl {
@@ -99,6 +98,9 @@ public class ShadowContextImpl {
     }
     if (getApiLevel() >= LOLLIPOP_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");
+    }
+    if (getApiLevel() >= N_MR1) {
+      SYSTEM_SERVICE_MAP.put(Context.SHORTCUT_SERVICE, "android.content.pm.ShortcutManager");
     }
   }
 
