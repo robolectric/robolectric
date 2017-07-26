@@ -78,6 +78,7 @@ public class RoboMenuItem implements MenuItem {
 
   @Override
   public MenuItem setTitle(int title) {
+    this.title = context.getResources().getString(title);
     return this;
   }
 
