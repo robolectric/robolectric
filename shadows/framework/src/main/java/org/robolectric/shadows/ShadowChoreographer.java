@@ -1,12 +1,10 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -107,12 +105,12 @@ public class ShadowChoreographer {
    * @see #setPostCallbackDelay(int)
    */
   @Implementation
-  public void postFrameCallback(final Choreographer.FrameCallback callback) {
+  public void postFrameCallback(final FrameCallback callback) {
     postFrameCallbackDelayed(callback, postCallbackDelayMillis);
   }
 
   @Implementation
-  public void postFrameCallbackDelayed(final Choreographer.FrameCallback callback, long delayMillis) {
+  public void postFrameCallbackDelayed(final FrameCallback callback, long delayMillis) {
     handler.postAtTime(new Runnable() {
       @Override public void run() {
         callback.doFrame(getFrameTimeNanos());
@@ -121,7 +119,7 @@ public class ShadowChoreographer {
   }
 
   @Implementation
-  public void removeFrameCallback(Choreographer.FrameCallback callback) {
+  public void removeFrameCallback(FrameCallback callback) {
     handler.removeCallbacksAndMessages(callback);
   }
 
