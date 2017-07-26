@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- mcc310 = US Carrier mnc=004 = Verizon-->
+    <bool name="is_verizon">true</bool>
+</resources>

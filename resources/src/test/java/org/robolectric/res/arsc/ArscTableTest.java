@@ -63,6 +63,11 @@ public class ArscTableTest {
     assertThat(arscTable.getEntry(R.string.first_string, 0).value.dataType).isEqualTo(Type.STRING.code());
   }
 
+  @Test
+  public void testGetEntry_boolType() throws Exception {
+    assertThat(arscTable.getEntry(R.bool.is_verizon, 0).value.dataType).isEqualTo(Type.INT_BOOLEAN.code());
+    assertThat(arscTable.getEntry(R.bool.is_verizon, 0).value.dataType).isEqualTo(0);
+  }
 
   @Test
   public void getPackageName() {

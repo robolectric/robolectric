@@ -1,6 +1,6 @@
 #!/bin/bash
 
-aapt=$ANDROID_HOME/build-tools/26.0.0/aapt
+aapt=$ANDROID_HOME/build-tools/26.0.0-preview/aapt
 raw=`pwd`/resources/src/test/resources/rawresources
 binary=`pwd`/resources/src/test/resources/binaryresources
 javaSrc=`pwd`/resources/src/test/java

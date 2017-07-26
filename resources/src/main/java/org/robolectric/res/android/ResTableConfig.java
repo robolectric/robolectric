@@ -430,6 +430,9 @@ public class ResTableConfig {
   public static final int MASK_NAVHIDDEN = 0x000c;
 
 
+  /**
+   * Is {@code requested} a better match to this {@link ResTableConfig} object than {@code o}
+   */
   boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
     if (requested != null) {
       if (imsi() != 0 || o.imsi() != 0) {
