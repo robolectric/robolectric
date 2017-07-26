@@ -1,7 +1,6 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Join;
-import org.robolectric.util.Util;
+import static java.util.Arrays.asList;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -20,8 +19,8 @@ import java.util.NavigableSet;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import static java.util.Arrays.asList;
+import org.robolectric.util.Join;
+import org.robolectric.util.Util;
 
 abstract public class Fs {
   public static Fs fromJar(URL url) {

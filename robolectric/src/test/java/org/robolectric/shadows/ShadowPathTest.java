@@ -1,18 +1,17 @@
 package org.robolectric.shadows;
 
-import android.graphics.Path;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.shadow.api.Shadow;
-
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
+
+import android.graphics.Path;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
+import org.robolectric.shadow.api.Shadow;
 
 
 @RunWith(TestRunners.MultiApiSelfTest.class)

@@ -1,13 +1,12 @@
 package org.robolectric.android.internal;
 
+import static org.junit.Assert.assertEquals;
+
 import android.app.Application;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.TestApplication;
-import org.robolectric.android.internal.ClassNameResolver;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class ClassNameResolverTest {

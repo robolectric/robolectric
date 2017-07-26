@@ -1,15 +1,14 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertArrayEquals;
+
 import android.text.TextPaint;
 import android.text.TextUtils;
+import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-
-import java.util.Arrays;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertArrayEquals;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowTextUtilsTest {

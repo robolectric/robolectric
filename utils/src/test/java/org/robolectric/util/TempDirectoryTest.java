@@ -1,10 +1,9 @@
 package org.robolectric.util;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

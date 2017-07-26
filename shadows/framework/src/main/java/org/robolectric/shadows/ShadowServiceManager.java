@@ -8,10 +8,9 @@ import android.os.IInterface;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.util.Map;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = ServiceManager.class, isInAndroidSdk = false)

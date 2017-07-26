@@ -1,16 +1,16 @@
 package org.robolectric;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.RobolectricInternals;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.robolectric.internal.bytecode.SandboxConfig;
 
 @RunWith(SandboxTestRunner.class)
 public class StaticInitializerTest {

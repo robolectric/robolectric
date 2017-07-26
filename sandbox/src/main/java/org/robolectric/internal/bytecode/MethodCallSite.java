@@ -1,10 +1,9 @@
 package org.robolectric.internal.bytecode;
 
+import static org.robolectric.internal.bytecode.MethodCallSite.Kind.STATIC;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
-import java.lang.invoke.MutableCallSite;
-
-import static org.robolectric.internal.bytecode.MethodCallSite.Kind.STATIC;
 
 public class MethodCallSite extends RoboCallSite {
   private final String name;

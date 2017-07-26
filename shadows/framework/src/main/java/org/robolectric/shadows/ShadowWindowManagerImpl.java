@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManagerImpl;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @Implements(value = WindowManagerImpl.class, isInAndroidSdk = false)
 public class ShadowWindowManagerImpl extends ShadowWindowManager {

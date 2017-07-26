@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.app.DownloadManager.Request;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
+
 import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -8,11 +13,6 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-
-import static android.app.DownloadManager.Request;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowDownloadManagerTest {

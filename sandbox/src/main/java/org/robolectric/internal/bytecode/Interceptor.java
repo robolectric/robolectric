@@ -1,11 +1,10 @@
 package org.robolectric.internal.bytecode;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import javax.annotation.Nonnull;
 import org.robolectric.util.Function;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodType;
 
 public abstract class Interceptor {
   private MethodRef[] methodRefs;

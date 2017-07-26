@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
@@ -9,18 +12,13 @@ import android.os.Message;
 import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
-import com.android.server.accessibility.AccessibilityManagerService;
+import java.util.List;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.util.List;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {

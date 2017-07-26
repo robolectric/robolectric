@@ -1,26 +1,13 @@
 package org.robolectric.res;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.gradleAppResources;
+import static org.robolectric.util.TestUtil.testResources;
+
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.gradleAppResources;
-import static org.robolectric.util.TestUtil.sdkResources;
-import static org.robolectric.util.TestUtil.testResources;
 
 @RunWith(JUnit4.class)
 public class ResourceParserTest {

@@ -15,10 +15,8 @@ import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

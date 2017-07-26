@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import java.util.List;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,10 +13,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.shadow.api.Shadow;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCameraParametersTest {

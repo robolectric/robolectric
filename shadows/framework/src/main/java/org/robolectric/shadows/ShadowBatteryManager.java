@@ -1,15 +1,13 @@
 package org.robolectric.shadows;
 
-import android.os.BatteryManager;
-
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+
+import android.os.BatteryManager;
+import java.util.HashMap;
+import java.util.Map;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(BatteryManager.class)
 public class ShadowBatteryManager {

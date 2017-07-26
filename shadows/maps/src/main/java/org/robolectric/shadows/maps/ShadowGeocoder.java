@@ -2,16 +2,14 @@ package org.robolectric.shadows.maps;
 
 import android.location.Address;
 import android.location.Geocoder;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Geocoder.class)
 public class ShadowGeocoder {

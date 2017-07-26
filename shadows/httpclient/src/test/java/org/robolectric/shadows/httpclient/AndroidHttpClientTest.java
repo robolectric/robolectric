@@ -1,6 +1,9 @@
 package org.robolectric.shadows.httpclient;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.net.http.AndroidHttpClient;
+import java.io.IOException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
@@ -8,10 +11,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.Strings;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunnerWithManifest.class)
 public class AndroidHttpClientTest {

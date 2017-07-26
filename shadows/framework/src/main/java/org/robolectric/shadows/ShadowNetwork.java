@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
-import android.net.Network;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
+import android.net.Network;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 @Implements(value = Network.class, minSdk = LOLLIPOP)
 public class ShadowNetwork {

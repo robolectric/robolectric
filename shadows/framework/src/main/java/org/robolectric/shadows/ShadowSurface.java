@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import android.view.Surface;
 import android.graphics.SurfaceTexture;
+import android.view.Surface;
 import org.robolectric.annotation.Implements;
 
 @Implements(Surface.class)

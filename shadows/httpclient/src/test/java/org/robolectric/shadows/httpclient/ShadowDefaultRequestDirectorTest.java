@@ -1,5 +1,19 @@
 package org.robolectric.shadows.httpclient;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.robolectric.shadows.httpclient.Shadows.shadowOf;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import junit.framework.Assert;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -21,17 +35,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.util.Strings;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.robolectric.shadows.httpclient.Shadows.shadowOf;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowDefaultRequestDirectorTest {

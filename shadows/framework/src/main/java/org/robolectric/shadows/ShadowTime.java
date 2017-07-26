@@ -1,23 +1,21 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.text.format.Time;
 import android.util.TimeFormatException;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Strftime;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Strftime;
 
 @Implements(value = Time.class)
 public class ShadowTime {

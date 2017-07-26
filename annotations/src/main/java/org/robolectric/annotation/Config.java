@@ -1,9 +1,6 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
-
-import javax.annotation.Nonnull;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -15,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Configuration settings that can be used on a per-class or per-test basis.

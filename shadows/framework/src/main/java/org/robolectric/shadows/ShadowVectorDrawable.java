@@ -15,16 +15,15 @@
 package org.robolectric.shadows;
 
 
-import android.graphics.drawable.VectorDrawable;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadows.ShadowVirtualRefBasePtr.get;
 import static org.robolectric.shadows.ShadowVirtualRefBasePtr.put;
+
+import android.graphics.drawable.VectorDrawable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = VectorDrawable.class, minSdk = N)
 public class ShadowVectorDrawable extends ShadowDrawable {

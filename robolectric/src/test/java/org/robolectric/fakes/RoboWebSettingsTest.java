@@ -1,12 +1,12 @@
 package org.robolectric.fakes;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.webkit.WebSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.internal.DoNotInstrument;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DoNotInstrument
 @RunWith(TestRunners.SelfTest.class)

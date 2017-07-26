@@ -1,12 +1,11 @@
 package org.robolectric;
 
-import org.junit.runners.model.InitializationError;
-import org.robolectric.annotation.Config;
+import static org.robolectric.util.TestUtil.resourceFile;
 
 import java.lang.reflect.Method;
 import java.util.Locale;
-
-import static org.robolectric.util.TestUtil.resourceFile;
+import org.junit.runners.model.InitializationError;
+import org.robolectric.annotation.Config;
 
 public class TestRunners {
 

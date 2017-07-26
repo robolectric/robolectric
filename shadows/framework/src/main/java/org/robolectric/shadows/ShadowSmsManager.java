@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.List;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
 @Implements(value = SmsManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManager {

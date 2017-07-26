@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
 import com.android.internal.util.VirtualRefBasePtr;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = VirtualRefBasePtr.class, isInAndroidSdk = false)
 public class ShadowVirtualRefBasePtr {

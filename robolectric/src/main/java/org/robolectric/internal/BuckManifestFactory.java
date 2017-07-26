@@ -1,12 +1,5 @@
 package org.robolectric.internal;
 
-import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.util.Logger;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +7,12 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
+import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.util.Logger;
 
 public class BuckManifestFactory implements ManifestFactory {
 

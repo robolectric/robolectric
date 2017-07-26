@@ -1,13 +1,11 @@
 package org.robolectric.shadows;
 
 import android.media.audiofx.AudioEffect;
-
+import java.util.LinkedList;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-
-import java.util.LinkedList;
-import java.util.List;
 
 @Implements(AudioEffect.class)
 public class ShadowAudioEffect {

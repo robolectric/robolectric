@@ -1,17 +1,15 @@
 package org.robolectric.res;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.StringReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import java.io.StringReader;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JUnit4.class)
 public class StaxValueLoaderTest {

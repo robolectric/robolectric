@@ -5,16 +5,15 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.util.AttributeSet;
 import android.util.StateSet;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 @Implements(StateListDrawable.class)
 public class ShadowStateListDrawable extends ShadowDrawable {

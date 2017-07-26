@@ -1,14 +1,14 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
+
 import android.util.AttributeSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.res.AttributeResource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}

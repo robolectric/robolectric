@@ -1,9 +1,8 @@
 package org.robolectric.res;
 
+import java.io.InputStream;
 import javax.annotation.Nonnull;
 import org.robolectric.res.builder.XmlBlock;
-
-import java.io.InputStream;
 
 public interface ResourceTable {
 

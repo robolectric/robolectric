@@ -1,5 +1,7 @@
 package org.robolectric.android;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -8,14 +10,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.SelfTest.class)
 public class ResourceLoaderTest {

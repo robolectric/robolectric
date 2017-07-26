@@ -2,7 +2,6 @@ package org.robolectric.fakes;
 
 import android.database.DatabaseUtils;
 import android.net.Uri;
-
 import java.util.ArrayList;
 import java.util.List;
 

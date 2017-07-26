@@ -1,8 +1,7 @@
 package org.robolectric.internal;
 
-import org.robolectric.res.FsFile;
-
 import java.util.List;
+import org.robolectric.res.FsFile;
 
 public class ManifestIdentifier {
   private final FsFile manifestFile;

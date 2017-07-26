@@ -1,9 +1,8 @@
 package org.robolectric.res;
 
-import javax.annotation.Nonnull;
-
 import java.io.IOException;
 import java.io.InputStream;
+import javax.annotation.Nonnull;
 
 public interface FsFile {
   boolean exists();

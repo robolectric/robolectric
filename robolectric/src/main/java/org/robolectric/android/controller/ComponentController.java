@@ -1,7 +1,6 @@
 package org.robolectric.android.controller;
 
 import android.content.Intent;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;

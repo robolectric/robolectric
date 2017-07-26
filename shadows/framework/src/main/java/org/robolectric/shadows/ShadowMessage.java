@@ -1,19 +1,22 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.getField;
+import static org.robolectric.util.ReflectionHelpers.getStaticField;
+import static org.robolectric.util.ReflectionHelpers.setField;
+import static org.robolectric.util.ReflectionHelpers.setStaticField;
+
 import android.os.Handler;
 import android.os.Message;
-
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-
-import static android.os.Build.VERSION_CODES.*;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.*;
-import static org.robolectric.util.ReflectionHelpers.*;
 
 @Implements(Message.class)
 public class ShadowMessage {

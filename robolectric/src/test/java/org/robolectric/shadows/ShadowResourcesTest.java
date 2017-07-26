@@ -1,5 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -18,6 +24,8 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
 import android.view.Display;
+import java.io.File;
+import java.io.InputStream;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,15 +40,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
-
-import java.io.File;
-import java.io.InputStream;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowResourcesTest {

@@ -1,10 +1,18 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.TestUtil.newConfig;
+
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -13,15 +21,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(TestRunners.SelfTest.class)
 public class DefaultTestLifecycleTest {

@@ -1,14 +1,13 @@
 package org.robolectric;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.StringReader;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
-
-import java.io.StringReader;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.SelfTest.class)
 public class IncludedDependenciesTest {
