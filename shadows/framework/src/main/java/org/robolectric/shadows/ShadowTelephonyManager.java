@@ -84,11 +84,21 @@ public class ShadowTelephonyManager {
     return lastEventFlags;
   }
 
+  /** Call state may be specified via {@link #setCallState(int)}. */
   @Implementation
   public int getCallState() {
     return callState;
   }
 
+  /** Sets the current call state to the desired state and updates any listeners. */
+  public void setCallState(int callState) {
+    setCallState(callState, null);
+  }
+
+  /**
+   * Sets the current call state with the option to specify an incoming phone number for the
+   * CALL_STATE_RINGING state. The incoming phone number will be ignored for all other cases.
+   */
   public void setCallState(int callState, String incomingPhoneNumber) {
     if (callState != CALL_STATE_RINGING) {
       incomingPhoneNumber = null;
