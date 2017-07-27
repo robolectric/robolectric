@@ -3,11 +3,13 @@ package org.robolectric.fakes;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.MenuItem;
 import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,13 +17,15 @@ import org.robolectric.R;
 
 @RunWith(AndroidJUnit4.class)
 public class RoboMenuItemTest {
+  private Context context;
   private MenuItem item;
   private TestOnActionExpandListener listener;
 
   @Before
   public void setUp() throws Exception {
-    item = new RoboMenuItem(ApplicationProvider.getApplicationContext());
+    context = ApplicationProvider.getApplicationContext();
     listener = new TestOnActionExpandListener();
+    item = new RoboMenuItem(context);
     item.setOnActionExpandListener(listener);
   }
 
@@ -54,15 +58,19 @@ public class RoboMenuItemTest {
 
   @Test
   public void expandActionView_shouldSetExpandedTrue() {
-    item.setActionView(new View(ApplicationProvider.getApplicationContext()));
+    View actionView = new View(context);
+    item.setActionView(actionView);
+    assertThat(item.getActionView()).isEqualTo(actionView);
     assertThat(item.expandActionView()).isTrue();
     assertThat(item.isActionViewExpanded()).isTrue();
   }
 
   @Test
   public void expandActionView_shouldInvokeListener() {
-    item.setActionView(new View(ApplicationProvider.getApplicationContext()));
-    item.expandActionView();
+    View actionView = new View(context);
+    item.setActionView(actionView);
+    assertThat(item.getActionView()).isEqualTo(actionView);
+    assertThat(item.expandActionView()).isTrue();
     assertThat(listener.expanded).isTrue();
   }
 
@@ -74,7 +82,9 @@ public class RoboMenuItemTest {
 
   @Test
   public void collapseActionView_shouldSetExpandedFalse() {
-    item.setActionView(new View(ApplicationProvider.getApplicationContext()));
+    View actionView = new View(context);
+    item.setActionView(actionView);
+    assertThat(item.getActionView()).isEqualTo(actionView);
     item.expandActionView();
     assertThat(item.collapseActionView()).isTrue();
     assertThat(item.isActionViewExpanded()).isFalse();
@@ -82,9 +92,11 @@ public class RoboMenuItemTest {
 
   @Test
   public void collapseActionView_shouldInvokeListener() {
-    item.setActionView(new View(ApplicationProvider.getApplicationContext()));
+    View actionView = new View(context);
+    item.setActionView(actionView);
+    assertThat(item.getActionView()).isEqualTo(actionView);
     listener.expanded = true;
-    item.collapseActionView();
+    assertThat(item.collapseActionView()).isTrue();
     assertThat(listener.expanded).isFalse();
   }
 
@@ -141,8 +153,7 @@ public class RoboMenuItemTest {
 
   @Test
   public void getIcon_shouldReturnDrawableFromSetIconDrawable() {
-    Drawable testDrawable =
-        ApplicationProvider.getApplicationContext().getResources().getDrawable(R.drawable.an_image);
+    Drawable testDrawable = context.getDrawable(R.drawable.an_image);
     assertThat(testDrawable).isNotNull();
     assertThat(item.getIcon()).isNull();
     item.setIcon(testDrawable);
@@ -161,17 +172,32 @@ public class RoboMenuItemTest {
     assertThat(item.setOnActionExpandListener(listener)).isSameInstanceAs(item);
   }
 
+  @Test
+  public void setTitle_shouldNullifyOnZero() {
+    item.setTitle("title");
+    assertThat(item.getTitle()).isNotNull();
+    item.setTitle(0);
+    assertThat(item.getTitle()).isNull();
+  }
+
+  @Test
+  public void setTitle_shouldSetTitleFromResourceId() {
+    assertThat(item.getTitle()).isNull();
+    item.setTitle(R.string.app_name);
+    assertThat(item.getTitle()).isEqualTo(context.getString(R.string.app_name));
+  }
+
   static class TestOnActionExpandListener implements MenuItem.OnActionExpandListener {
     private boolean expanded = false;
 
     @Override
-    public boolean onMenuItemActionExpand(MenuItem menuItem) {
+    public boolean onMenuItemActionExpand(@Nonnull MenuItem menuItem) {
       expanded = true;
       return true;
     }
 
     @Override
-    public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+    public boolean onMenuItemActionCollapse(@Nonnull MenuItem menuItem) {
       expanded = false;
       return true;
     }
