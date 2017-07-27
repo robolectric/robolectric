@@ -17,4 +17,8 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   public int getResourceId() {
     return ReflectionHelpers.getField(realArrayAdapter, "mResource");
   }
+  
+  public int getDropDownViewResourceId() {
+    return ReflectionHelpers.getField(realArrayAdapter, "mDropDownResource");
+  }
 }
