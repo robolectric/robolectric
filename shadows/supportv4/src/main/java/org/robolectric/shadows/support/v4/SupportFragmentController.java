@@ -127,23 +127,6 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
     return this;
   }
 
-  /**
-   * @deprecated Use {@link #of(Fragment, Class, Intent)} instead.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  @Override
-  public SupportFragmentController<F> withIntent(final Intent intent) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.withIntent(intent);
-      }
-    });
-    return this;
-  }
-
   private static class FragmentControllerActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
