@@ -438,6 +438,21 @@ public class AndroidManifestTest {
     ActivityData activityData = config.getActivityData("org.robolectric.shadows.TestActivity");
     assertThat(activityData.isExported()).isTrue();
   }
+
+  @Test
+  public void servicesWithoutIntentFiltersNotExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithServices.xml");
+    ServiceData serviceData = config.getServiceData("com.bar.ServiceWithoutIntentFilter");
+    assertThat(serviceData.isExported()).isFalse();
+  }
+
+  @Test
+  public void servicesWithIntentFiltersExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithServices.xml");
+    ServiceData serviceData = config.getServiceData("com.foo.Service");
+    assertThat(serviceData.isExported()).isTrue();
+  }
+
   /////////////////////////////
 
   private AndroidManifest newConfigWith(String fileName, String usesSdkAttrs) throws IOException {

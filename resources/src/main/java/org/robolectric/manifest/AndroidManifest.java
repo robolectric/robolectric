@@ -274,14 +274,27 @@ public class AndroidManifest {
 
   private void parseServices(Node applicationNode) {
     for (Node serviceNode : getChildrenTags(applicationNode, "service")) {
-      Node namedItem = serviceNode.getAttributes().getNamedItem("android:name");
-      if (namedItem == null) continue;
+      final NamedNodeMap attributes = serviceNode.getAttributes();
+      final int attrCount = attributes.getLength();
+      final HashMap<String, String> serviceAttrs = new HashMap<>(attributes.getLength());
+      for(int i = 0; i < attrCount; i++) {
+        Node attr = attributes.item(i);
+        String v = attr.getNodeValue();
+        if( v != null) {
+          serviceAttrs.put(attr.getNodeName(), v);
+        }
+      }
 
-      String serviceName = resolveClassRef(namedItem.getTextContent());
+      String serviceName = resolveClassRef(serviceAttrs.get("android:name"));
+      if (serviceName == null) {
+        continue;
+      }
+      serviceAttrs.put("android:name", serviceName);
+
       MetaData metaData = new MetaData(getChildrenTags(serviceNode, "meta-data"));
 
       final List<IntentFilterData> intentFilterData = parseIntentFilters(serviceNode);
-      ServiceData service = new ServiceData(serviceName, metaData, intentFilterData);
+      ServiceData service = new ServiceData(serviceAttrs, metaData, intentFilterData);
       List<Node> intentFilters = getChildrenTags(serviceNode, "intent-filter");
       for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -292,10 +305,6 @@ public class AndroidManifest {
         }
       }
 
-      Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
-      if (permissionItem != null) {
-        service.setPermission(permissionItem.getTextContent());
-      }
       serviceDatas.put(serviceName, service);
     }
   }
@@ -597,6 +606,7 @@ public class AndroidManifest {
   }
 
   public ServiceData getServiceData(String serviceClassName) {
+    parseAndroidManifest();
     return serviceDatas.get(serviceClassName);
   }
 
