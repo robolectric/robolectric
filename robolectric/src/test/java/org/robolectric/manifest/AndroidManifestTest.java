@@ -425,6 +425,19 @@ public class AndroidManifestTest {
     assertThat(wrongFields).isEmpty();
   }
 
+  @Test
+  public void activitiesWithoutIntentFiltersNotExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestForActivities.xml");
+    ActivityData activityData = config.getActivityData("org.robolectric.shadows.TestActivity");
+    assertThat(activityData.isExported()).isFalse();
+  }
+
+  @Test
+  public void activitiesWithIntentFiltersExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
+    ActivityData activityData = config.getActivityData("org.robolectric.shadows.TestActivity");
+    assertThat(activityData.isExported()).isTrue();
+  }
   /////////////////////////////
 
   private AndroidManifest newConfigWith(String fileName, String usesSdkAttrs) throws IOException {
