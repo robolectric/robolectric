@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
@@ -8,7 +11,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.MediaScannerConnection;
 import android.os.IBinder;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,9 +18,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.shadow.api.Shadow;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowServiceTest {

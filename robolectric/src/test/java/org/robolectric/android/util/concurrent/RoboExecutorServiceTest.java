@@ -1,21 +1,19 @@
 package org.robolectric.android.util.concurrent;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.android.util.concurrent.RoboExecutorService;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.Scheduler;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.util.Scheduler;
 
 @RunWith(TestRunners.SelfTest.class)
 public class RoboExecutorServiceTest {

@@ -1,19 +1,18 @@
 package org.robolectric.shadows;
 
-import android.util.Log;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.List;
-
 import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.shadows.ShadowLog.LogItem;
+
+import android.util.Log;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowLogTest {

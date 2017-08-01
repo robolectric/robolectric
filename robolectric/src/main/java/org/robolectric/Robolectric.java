@@ -2,14 +2,18 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.Service;
 import android.app.IntentService;
+import android.app.Service;
 import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
-
 import android.util.AttributeSet;
 import android.view.View;
+import java.util.ServiceLoader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -19,16 +23,11 @@ import org.robolectric.android.controller.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.*;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.ServiceLoader;
 
 public class Robolectric {
   private static ShadowsAdapter shadowsAdapter = null;

@@ -1,5 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static junit.framework.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
@@ -15,9 +24,10 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
-
 import com.google.common.util.concurrent.SettableFuture;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,19 +35,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static junit.framework.Assert.assertEquals;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContextWrapperTest {

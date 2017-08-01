@@ -1,25 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.ContextWrapper;
-import android.content.DialogInterface;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.android.CustomView;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
@@ -29,6 +9,25 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.ContextWrapper;
+import android.content.DialogInterface;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
+import org.robolectric.android.CustomView;
+import org.robolectric.annotation.Config;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAlertDialogTest {

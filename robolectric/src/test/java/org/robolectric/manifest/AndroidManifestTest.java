@@ -1,9 +1,20 @@
 package org.robolectric.manifest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.robolectric.util.TestUtil.newConfig;
+import static org.robolectric.util.TestUtil.resourceFile;
+
 import android.Manifest;
 import android.content.Intent;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -11,18 +22,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.newConfig;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 @RunWith(JUnit4.class)
 public class AndroidManifestTest {

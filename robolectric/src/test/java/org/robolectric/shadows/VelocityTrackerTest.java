@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

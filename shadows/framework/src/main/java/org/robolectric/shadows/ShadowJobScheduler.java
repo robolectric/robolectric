@@ -1,21 +1,19 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
+
 import android.app.JobSchedulerImpl;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
-
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.N;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = JobScheduler.class, minSdk = LOLLIPOP)
 public abstract class ShadowJobScheduler {

@@ -1,12 +1,14 @@
 package org.robolectric.util;
 
+import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
+import static org.robolectric.util.Scheduler.IdleState.PAUSED;
+import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
-
-import static org.robolectric.util.Scheduler.IdleState.*;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in

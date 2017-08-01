@@ -1,15 +1,14 @@
 package org.robolectric.internal;
 
 import android.os.Build;
-import javax.annotation.Nonnull;
-import org.robolectric.internal.dependency.DependencyJar;
-import org.robolectric.util.Logger;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.util.Logger;
 
 public class SdkConfig implements Comparable<SdkConfig> {
 

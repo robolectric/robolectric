@@ -1,5 +1,8 @@
 package org.robolectric.shadows.support.v4;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
 import android.app.Activity;
 import android.support.v4.widget.DrawerLayout;
 import org.junit.Test;
@@ -7,9 +10,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowDrawerLayoutTest {

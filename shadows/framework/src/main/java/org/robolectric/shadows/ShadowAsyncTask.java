@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
 import android.os.AsyncTask;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.SimpleFuture;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.SimpleFuture;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {

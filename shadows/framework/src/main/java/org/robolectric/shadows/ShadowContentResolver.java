@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.accounts.Account;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
@@ -17,17 +19,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
-import org.robolectric.fakes.BaseCursor;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.NamedStream;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +30,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
-
-import static org.robolectric.Shadows.shadowOf;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.fakes.BaseCursor;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.NamedStream;
 
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {

@@ -1,11 +1,19 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.robolectric.util.TestUtil.resourceFile;
+
 import android.app.Application;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.internal.TextListener;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
@@ -19,18 +27,6 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {

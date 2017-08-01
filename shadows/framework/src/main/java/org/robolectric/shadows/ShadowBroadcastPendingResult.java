@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
 import android.content.BroadcastReceiver;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -9,10 +13,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 @Implements(BroadcastReceiver.PendingResult.class)
 public final class ShadowBroadcastPendingResult {

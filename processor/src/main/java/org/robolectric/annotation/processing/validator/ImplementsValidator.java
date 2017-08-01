@@ -2,10 +2,8 @@ package org.robolectric.annotation.processing.validator;
 
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.Trees;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.processing.DocumentedMethod;
-import org.robolectric.annotation.processing.RobolectricModel;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -19,8 +17,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
-import java.util.ArrayList;
-import java.util.List;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.processing.DocumentedMethod;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.Implements}.

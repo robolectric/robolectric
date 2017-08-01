@@ -1,8 +1,8 @@
 package org.robolectric.annotation.processing.validator;
 
-import javax.tools.JavaFileObject;
-
 import static com.google.testing.compile.JavaFileObjects.forResource;
+
+import javax.tools.JavaFileObject;
 
 public class Utils {
   // So that we can test compilation without Robolectric.java included, this has not been put in its

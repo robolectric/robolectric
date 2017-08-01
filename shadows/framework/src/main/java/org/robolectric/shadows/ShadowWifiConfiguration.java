@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
+import java.util.BitSet;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.util.BitSet;
 
 @Implements(WifiConfiguration.class)
 public class ShadowWifiConfiguration {

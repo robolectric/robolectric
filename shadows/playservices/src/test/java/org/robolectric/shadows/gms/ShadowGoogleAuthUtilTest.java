@@ -6,12 +6,11 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.google.android.gms.auth.AccountChangeEvent;
-import com.google.android.gms.auth.GoogleAuthUtil;
-
 import android.accounts.Account;
 import android.content.Intent;
-
+import com.google.android.gms.auth.AccountChangeEvent;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,8 +22,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.gms.ShadowGoogleAuthUtil.GoogleAuthUtilImpl;
-
-import java.util.List;
 
 /**
  * Unit test for {@link ShadowGoogleAuthUtil}.

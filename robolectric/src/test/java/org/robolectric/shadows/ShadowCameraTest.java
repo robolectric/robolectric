@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
+
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
@@ -12,9 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCameraTest {

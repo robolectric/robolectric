@@ -1,15 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import java.text.FieldPosition;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
 import libcore.icu.DateIntervalFormat;
-import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = DateIntervalFormat.class, isInAndroidSdk = false, minSdk = KITKAT)
 public class ShadowDateIntervalFormat {

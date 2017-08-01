@@ -1,7 +1,7 @@
 package org.robolectric.annotation.processing.validator;
 
-import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertAbout;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 
 import org.junit.Test;

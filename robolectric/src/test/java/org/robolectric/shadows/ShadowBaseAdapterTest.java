@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowBaseAdapterTest {

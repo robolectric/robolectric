@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import android.app.TimePickerDialog;
 import android.content.Context;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(value = TimePickerDialog.class, inheritImplementationMethods = true)
 public class ShadowTimePickerDialog extends ShadowAlertDialog {

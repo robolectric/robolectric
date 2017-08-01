@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.webkit.CookieManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCookieManagerTest {

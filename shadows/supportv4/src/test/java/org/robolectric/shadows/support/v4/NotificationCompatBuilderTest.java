@@ -1,17 +1,15 @@
 package org.robolectric.shadows.support.v4;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.app.Notification;
 import android.support.v4.app.NotificationCompat;
-
 import com.android.internal.R;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunnerWithManifest.class)
 @Config(sdk = 19)

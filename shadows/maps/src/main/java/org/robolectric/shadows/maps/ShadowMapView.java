@@ -1,5 +1,10 @@
 package org.robolectric.shadows.maps;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadows.maps.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -7,27 +12,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ZoomButtonsController;
-
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.shadows.maps.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {

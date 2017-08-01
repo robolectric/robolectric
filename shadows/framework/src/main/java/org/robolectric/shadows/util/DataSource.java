@@ -1,10 +1,9 @@
 package org.robolectric.shadows.util;
 
-import java.io.FileDescriptor;
-import java.util.Map;
-
 import android.content.Context;
 import android.net.Uri;
+import java.io.FileDescriptor;
+import java.util.Map;
 
 /**
  * Opaque class for uniquely identifying a media data source,

@@ -2,13 +2,12 @@ package org.robolectric.shadows;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
+import java.util.Map;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.Map;
 
 @Implements(ContentProviderOperation.class)
 public class ShadowContentProviderOperation {

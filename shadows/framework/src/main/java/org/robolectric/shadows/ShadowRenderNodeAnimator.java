@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import android.view.RenderNodeAnimator;
@@ -8,11 +13,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @Implements(value = RenderNodeAnimator.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
 public class ShadowRenderNodeAnimator {

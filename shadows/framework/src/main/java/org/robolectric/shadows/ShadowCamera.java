@@ -1,21 +1,20 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.robolectric.shadow.api.Shadow.*;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(Camera.class)
 public class ShadowCamera {

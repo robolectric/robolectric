@@ -1,24 +1,25 @@
 package org.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.ReflectionHelpers.callConstructor;
+import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
+import static org.robolectric.util.ReflectionHelpers.getField;
+import static org.robolectric.util.ReflectionHelpers.setField;
 
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Scheduler;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.*;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMessageQueueTest {

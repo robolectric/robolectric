@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

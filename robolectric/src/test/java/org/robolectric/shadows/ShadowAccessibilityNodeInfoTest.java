@@ -9,9 +9,8 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
-
+import android.view.accessibility.AccessibilityWindowInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

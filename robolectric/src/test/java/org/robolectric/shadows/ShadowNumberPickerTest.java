@@ -1,14 +1,14 @@
 package org.robolectric.shadows;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import android.widget.NumberPicker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowNumberPickerTest {

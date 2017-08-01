@@ -1,19 +1,18 @@
 package org.robolectric.shadows;
 
-import android.util.AttributeSet;
-import android.widget.ProgressBar;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.RuntimeEnvironment.application;
+
+import android.util.AttributeSet;
+import android.widget.ProgressBar;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowProgressBarTest {

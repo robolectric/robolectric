@@ -1,20 +1,19 @@
 package org.robolectric.shadows;
 
-import libcore.io.BufferIterator;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
 import android.system.ErrnoException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import libcore.io.BufferIterator;
 import libcore.io.MemoryMappedFile;
 import libcore.io.Streams;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
  * This is used by Android to load and inferFromValue time zone information. Robolectric emulates

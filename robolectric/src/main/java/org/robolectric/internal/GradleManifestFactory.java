@@ -1,14 +1,13 @@
 package org.robolectric.internal;
 
+import java.io.File;
+import java.net.URL;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.io.File;
-import java.net.URL;
 
 public class GradleManifestFactory implements ManifestFactory {
   @Override

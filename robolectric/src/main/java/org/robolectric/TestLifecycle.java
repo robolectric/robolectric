@@ -1,9 +1,8 @@
 package org.robolectric;
 
+import java.lang.reflect.Method;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
-
-import java.lang.reflect.Method;
 
 public interface TestLifecycle<T> {
   T createApplication(Method method, AndroidManifest appManifest, Config config);

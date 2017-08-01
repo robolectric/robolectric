@@ -1,9 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RobolectricModel;
-
 import java.util.List;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -13,6 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.Diagnostic.Kind;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.RealObject}.

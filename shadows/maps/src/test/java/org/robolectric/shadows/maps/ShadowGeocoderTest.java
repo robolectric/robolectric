@@ -1,20 +1,18 @@
 package org.robolectric.shadows.maps;
 
+import static junit.framework.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import android.location.Address;
 import android.location.Geocoder;
-
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import java.util.List;
-
-import static junit.framework.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowGeocoderTest {

@@ -1,15 +1,14 @@
 package org.robolectric.internal;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.util.Pair;
-
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class SandboxFactory {
   public static final SandboxFactory INSTANCE = new SandboxFactory();

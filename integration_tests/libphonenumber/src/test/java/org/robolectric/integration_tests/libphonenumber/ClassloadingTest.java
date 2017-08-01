@@ -1,13 +1,13 @@
 package org.robolectric.integration_tests.libphonenumber;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = Config.ALL_SDKS )

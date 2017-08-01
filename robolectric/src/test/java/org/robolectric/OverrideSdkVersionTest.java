@@ -1,14 +1,13 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.os.Build;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowApplication;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.SelfTest.class)
 public class OverrideSdkVersionTest {

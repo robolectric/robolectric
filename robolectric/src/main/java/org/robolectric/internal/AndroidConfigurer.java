@@ -1,21 +1,20 @@
 package org.robolectric.internal;
 
+import java.util.ServiceLoader;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestLifecycle;
+import org.robolectric.android.fakes.RoboCharsets;
+import org.robolectric.android.fakes.RoboExtendedResponseCache;
+import org.robolectric.android.fakes.RoboResponseSource;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
-import org.robolectric.android.fakes.RoboCharsets;
-import org.robolectric.android.fakes.RoboExtendedResponseCache;
-import org.robolectric.android.fakes.RoboResponseSource;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
-
-import java.util.ServiceLoader;
 
 public class AndroidConfigurer {
   public static void withConfig(InstrumentationConfiguration.Builder builder, Config config) {

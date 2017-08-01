@@ -1,12 +1,11 @@
 package org.robolectric.internal.bytecode;
 
-import org.robolectric.util.Function;
+import static java.util.Arrays.asList;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.Arrays.asList;
+import org.robolectric.util.Function;
 
 public class Interceptors {
   private final Map<MethodRef, Interceptor> interceptors = new HashMap<>();

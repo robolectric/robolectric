@@ -1,16 +1,15 @@
 package org.robolectric.internal;
 
+import static java.util.Collections.emptyList;
+
+import java.net.URL;
+import java.util.List;
+import java.util.Properties;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
-
-import java.net.URL;
-import java.util.List;
-import java.util.Properties;
-
-import static java.util.Collections.emptyList;
 
 public class DefaultManifestFactory implements ManifestFactory {
   private Properties properties;

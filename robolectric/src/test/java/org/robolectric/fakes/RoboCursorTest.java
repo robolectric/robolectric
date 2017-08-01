@@ -1,5 +1,9 @@
 package org.robolectric.fakes;
 
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -8,10 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.SelfTest.class)
 public class RoboCursorTest {

@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+
 import android.app.KeyguardManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-
-import static android.os.Build.VERSION_CODES.M;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {

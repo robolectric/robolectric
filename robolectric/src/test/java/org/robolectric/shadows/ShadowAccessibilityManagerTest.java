@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.content.Context.ACCESSIBILITY_SERVICE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
@@ -11,10 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-
-import static android.content.Context.ACCESSIBILITY_SERVICE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccessibilityManagerTest {

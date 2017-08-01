@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import android.content.ContentResolver;
 import android.database.CharArrayBuffer;
 import android.database.ContentObserver;
@@ -8,17 +13,13 @@ import android.database.CursorWrapper;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
-
-import java.lang.reflect.Method;
-import java.util.HashMap;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCursorWrapperTest {

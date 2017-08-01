@@ -1,17 +1,15 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
-
-import java.util.Arrays;
-import java.util.Properties;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.robolectric.annotation.Config.DEFAULT_VALUE_INT;
 
 @RunWith(JUnit4.class)
 public class ConfigTest {

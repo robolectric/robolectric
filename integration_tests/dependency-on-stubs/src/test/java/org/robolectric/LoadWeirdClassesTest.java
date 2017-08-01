@@ -1,5 +1,8 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
@@ -9,9 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class) @Config(sdk = Config.ALL_SDKS)
 public class LoadWeirdClassesTest {

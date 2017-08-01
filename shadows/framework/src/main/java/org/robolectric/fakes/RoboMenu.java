@@ -7,12 +7,11 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
-import org.robolectric.RuntimeEnvironment;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.robolectric.RuntimeEnvironment;
 
 /**
  * Robolectric implementation of {@link android.view.Menu}.

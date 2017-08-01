@@ -1,15 +1,5 @@
 package org.robolectric.shadows;
 
-import android.os.Handler;
-import android.os.Message;
-import android.os.MessageQueue;
-
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.Scheduler;
-
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -19,6 +9,15 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
+
+import android.os.Handler;
+import android.os.Message;
+import android.os.MessageQueue;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.Scheduler;
 
 /**
  * Robolectric puts {@link android.os.Message}s into the scheduler queue instead of sending

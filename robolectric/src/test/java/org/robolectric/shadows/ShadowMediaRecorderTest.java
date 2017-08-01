@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 import android.hardware.Camera;
 import android.media.MediaRecorder;
@@ -10,8 +11,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.shadow.api.Shadow;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMediaRecorderTest {

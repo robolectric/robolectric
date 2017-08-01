@@ -1,13 +1,13 @@
 package org.robolectric.res;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.sdkResources;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.sdkResources;
 
 @RunWith(JUnit4.class)
 public class StyleResourceLoaderTest {

@@ -1,5 +1,8 @@
 package org.robolectric.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,10 +12,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.res.ResourcePath;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JUnit4.class)
 public class BuckManifestFactoryTest {
