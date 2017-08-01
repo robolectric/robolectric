@@ -129,7 +129,7 @@ public class ShadowPackageManager {
   final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
   final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-  boolean queryIntentImplicitly = false;
+  boolean queryIntentImplicitly = true;
   Map<String, PermissionInfo> extraPermissions = new HashMap<>();
   public Map<String, Resources> resources = new HashMap<>();
   private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());

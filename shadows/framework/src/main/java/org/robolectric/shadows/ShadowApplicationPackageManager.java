@@ -323,7 +323,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           resolveInfo.resolvePackageName = packageName;
           resolveInfo.activityInfo = new ActivityInfo();
           resolveInfo.activityInfo.targetActivity = activityName;
+          resolveInfo.activityInfo.packageName = packageName;
           resolveInfo.activityInfo.name = activityData.getName();
+          PackageInfo packageInfo = packageInfos.get(packageName);
+          if (packageInfo != null) {
+            resolveInfo.activityInfo.applicationInfo = packageInfo.applicationInfo;
+          }
+
           resolveInfoList.add(resolveInfo);
         }
       }

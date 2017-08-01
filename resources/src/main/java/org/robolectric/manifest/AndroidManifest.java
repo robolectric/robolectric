@@ -1,17 +1,6 @@
 package org.robolectric.manifest;
 
 import com.google.common.base.Preconditions;
-import javax.annotation.Nullable;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.ResourceTable;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +10,16 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.res.ResourceTable;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
@@ -438,6 +437,10 @@ public class AndroidManifest {
     if (applicationMetaData != null) {
       applicationMetaData.init(resourceTable, packageName);
     }
+
+    for (ActivityData activityData : activityDatas.values()) {
+      activityData.getMetaData().init(resourceTable, packageName);
+    }
     for (PackageItemData receiver : receivers) {
       receiver.getMetaData().init(resourceTable, packageName);
     }
@@ -446,6 +449,9 @@ public class AndroidManifest {
     }
     for (ContentProviderData providerData : providers) {
       providerData.getMetaData().init(resourceTable, packageName);
+    }
+    for (PermissionItemData permissionItemData : permissions.values()) {
+      permissionItemData.getMetaData().init(resourceTable, packageName);
     }
   }
 
@@ -540,10 +546,12 @@ public class AndroidManifest {
 
   public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
+
     if (applicationMetaData == null) {
-      applicationMetaData = new MetaData(Collections.<Node>emptyList());
+      return Collections.emptyMap();
+    } else {
+      return applicationMetaData.getValueMap();
     }
-    return applicationMetaData.getValueMap();
   }
 
   public ResourcePath getResourcePath() {
