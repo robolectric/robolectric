@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowSyncResultTest {
 

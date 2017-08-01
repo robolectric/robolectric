@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import static android.content.res.Configuration.SCREENLAYOUT_UNDEFINED;
 import static org.assertj.core.api.Assertions.assertThat;
 

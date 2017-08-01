@@ -34,6 +34,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 /**
  * Shadow of {@link android.view.accessibility.AccessibilityNodeInfo} that allows a test to set
  * properties that are locked in the original class. It also keeps track of calls to

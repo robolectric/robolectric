@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.ContentValues;

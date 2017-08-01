@@ -14,7 +14,6 @@
 
 package org.robolectric.shadows;
 
-
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadows.ShadowVirtualRefBasePtr.get;
 import static org.robolectric.shadows.ShadowVirtualRefBasePtr.put;

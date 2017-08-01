@@ -12,7 +12,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.shadow.api.Shadow;
 
-
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowPaintTest {
 
