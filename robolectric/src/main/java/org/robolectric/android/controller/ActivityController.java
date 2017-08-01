@@ -33,21 +33,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
     super(shadowsAdapter, activity, intent);
   }
 
-  /**
-   * @deprecated Use {@link org.robolectric.Robolectric#buildActivity(Class, Intent)} instead.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public ActivityController<T> withIntent(Intent intent) {
-    super.withIntent(intent);
-
-    // This is a hack to support existing usages where withIntent() is called after attach().
-    ReflectionHelpers.setField(component, "mIntent", getIntent());
-    ReflectionHelpers.setField(component, "mComponent", getIntent().getComponent());
-    return myself;
-  }
-
   private ActivityController<T> attach() {
     if (attached) {
       return this;
