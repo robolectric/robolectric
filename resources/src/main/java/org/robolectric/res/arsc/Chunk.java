@@ -107,31 +107,31 @@ abstract public class Chunk {
 
   protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition) {
     Type type;
-      short aShort = buffer.getShort(chunkStartPosition);
-      if (aShort == -1) {
-        return null;
-      }
-      buffer.position(chunkStartPosition);
-      type = Type.fromCode(aShort);
-      Chunk chunk;
+    buffer.position(chunkStartPosition);
     ResChunkHeader header = new ResChunkHeader();
     header.type = buffer.getShort();
+    if (header.type == -1) {
+      return null;
+    }
     header.headerSize = buffer.getShort();
     header.size = buffer.getInt();
+
+    type = Type.fromCode(header.type);
+    Chunk chunk;
     if (Type.TABLE.equals(type)) {
-        chunk = new TableChunk(buffer, chunkStartPosition, header);
-      } else if (Type.STRING_POOL.equals(type)) {
-        chunk = new StringPoolChunk(buffer, chunkStartPosition, header);
-      } else if (Type.TABLE_PACKAGE.equals(type)) {
-        chunk = new PackageChunk(buffer, chunkStartPosition, header);
-      } else if (Type.TABLE_TYPE.equals(type)) {
-        chunk = new TypeChunk(buffer, chunkStartPosition, header);
-      } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
-        chunk = new TypeSpecChunk(buffer, chunkStartPosition, header);
-      } else {
-        throw new IllegalArgumentException("unknown table type " + aShort);
-      }
-      return (T) chunk;
+      chunk = new TableChunk(buffer, chunkStartPosition, header);
+    } else if (Type.STRING_POOL.equals(type)) {
+      chunk = new StringPoolChunk(buffer, chunkStartPosition, header);
+    } else if (Type.TABLE_PACKAGE.equals(type)) {
+      chunk = new PackageChunk(buffer, chunkStartPosition, header);
+    } else if (Type.TABLE_TYPE.equals(type)) {
+      chunk = new TypeChunk(buffer, chunkStartPosition, header);
+    } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
+      chunk = new TypeSpecChunk(buffer, chunkStartPosition, header);
+    } else {
+      throw new IllegalArgumentException("unknown table type " + header.type);
+    }
+    return (T) chunk;
   }
 
   private void dump() {
