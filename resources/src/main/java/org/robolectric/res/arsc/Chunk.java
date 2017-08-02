@@ -125,10 +125,10 @@ abstract public class Chunk {
   }
 
   public static TableChunk newInstance(ByteBuffer buffer) {
-    return readChunk(buffer, 0, null);
+    return readChunk(buffer, 0);
   }
 
-  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition, Chunk parentChunk) {
+  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition) {
     Type type;
       short aShort = buffer.getShort(chunkStartPosition);
       if (aShort == -1) {
@@ -176,11 +176,11 @@ abstract public class Chunk {
 
     public TableChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
       super(buffer, chunkStartPosition);
-      valuesStringPool = readChunk(buffer, getHeaderLength(), this);
+      valuesStringPool = readChunk(buffer, getHeaderLength());
 
       int packageChunkOffset = getHeaderLength() + valuesStringPool.getChunkLength();
       for (int i = 0; i < getPackageCount(); i++) {
-        PackageChunk packageChunk = readChunk(buffer, packageChunkOffset, this);
+        PackageChunk packageChunk = readChunk(buffer, packageChunkOffset);
         packageChunks.put(packageChunk.getId(), packageChunk);
         packageChunkOffset = packageChunk.getChunkLength();
       }
@@ -399,15 +399,15 @@ abstract public class Chunk {
       int position = buffer.position();
 
       // read type string pool
-      typeStringPool = Chunk.readChunk(buffer, payloadStart, this);
+      typeStringPool = Chunk.readChunk(buffer, payloadStart);
       payloadStart += typeStringPool.getChunkLength();
 
       // read key string pool
-      keyStringPool = Chunk.readChunk(buffer, payloadStart, this);
+      keyStringPool = Chunk.readChunk(buffer, payloadStart);
       payloadStart += keyStringPool.getChunkLength();
 
       while (payloadStart < end) {
-        Chunk chunk = Chunk.readChunk(buffer, payloadStart, this);
+        Chunk chunk = Chunk.readChunk(buffer, payloadStart);
         chunksByOffset.put(payloadStart, chunk);
         switch (Type.fromCode(chunk.header.type)) {
           case TABLE_TYPE_SPEC:
