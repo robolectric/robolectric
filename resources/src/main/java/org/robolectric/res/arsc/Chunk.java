@@ -66,8 +66,6 @@ abstract public class Chunk {
         header.type == type.code(), "Invalid chunk type, expected: " + type + " but got " + header.type);
   }
 
-  abstract public int getId();
-
   public Type getType() {
     return type;
   }
@@ -196,11 +194,6 @@ abstract public class Chunk {
       }
     }
 
-    @Override
-    public int getId() {
-      return 0;
-    }
-
     public int getPackageCount() {
       return super.buffer.getInt(OFFSET_FIRST_HEADER);
     }
@@ -229,11 +222,6 @@ abstract public class Chunk {
     public StringPoolChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
       super(buffer, chunkStartPosition, type);
       stringsStart = super.buffer.getInt(getChunkStart() + OFFSET_STRING_START);
-    }
-
-    @Override
-    public int getId() {
-      return 0;
     }
 
     public int getStringCount() {
@@ -431,11 +419,11 @@ abstract public class Chunk {
         chunksByOffset.put(payloadStart, chunk);
         switch (chunk.getType()) {
           case TABLE_TYPE_SPEC:
-            typeSpecsByTypeId.put(chunk.getId(), (TypeSpecChunk) chunk);
+            typeSpecsByTypeId.put(((TypeSpecChunk)chunk).getId(), (TypeSpecChunk) chunk);
             break;
           case TABLE_TYPE:
             List<TypeChunk> typeChunks = typesByTypeId
-                .computeIfAbsent(chunk.getId(), integer -> new ArrayList<>());
+                .computeIfAbsent(((TypeChunk)chunk).getId(), integer -> new ArrayList<>());
             typeChunks.add((TypeChunk) chunk);
             break;
           default:
