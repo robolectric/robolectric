@@ -48,26 +48,18 @@ abstract public class Chunk {
 
   private final ByteBuffer buffer;
   private final int offset;
-  private final ResChunkHeader header;
-  private Type type;
+  final ResChunkHeader header;
 
   private static final int OFFSET_FIRST_HEADER = 8;
 
-  public Chunk(ByteBuffer buffer, int offset, Type type) {
+  public Chunk(ByteBuffer buffer, int offset) {
     this.buffer = buffer;
     this.offset = offset;
-    this.type = type;
-    buffer.position(offset);
+
     header = new ResChunkHeader();
     header.type = buffer.getShort();
     header.headerSize = buffer.getShort();
     header.size = buffer.getInt();
-    Preconditions.checkArgument(
-        header.type == type.code(), "Invalid chunk type, expected: " + type + " but got " + header.type);
-  }
-
-  public Type getType() {
-    return type;
   }
 
   public short getHeaderLength() {
@@ -142,7 +134,7 @@ abstract public class Chunk {
       if (aShort == -1) {
         return null;
       }
-
+      buffer.position(chunkStartPosition);
       type = Type.fromCode(aShort);
       Chunk chunk;
       if (Type.TABLE.equals(type)) {
@@ -162,7 +154,7 @@ abstract public class Chunk {
   }
 
   private void dump() {
-    System.out.println("Chunk Type:  " + getType());
+    System.out.println("Chunk Type:  " + Type.fromCode(header.type));
     System.out.println("Chunk Start:  " + offset);
     System.out.println("Header Length: " + getHeaderLength());
     System.out.println("Chunk Length:  " + getChunkLength());
@@ -183,7 +175,7 @@ abstract public class Chunk {
     private final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
     public TableChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
-      super(buffer, chunkStartPosition, type);
+      super(buffer, chunkStartPosition);
       valuesStringPool = readChunk(buffer, getHeaderLength(), this);
 
       int packageChunkOffset = getHeaderLength() + valuesStringPool.getChunkLength();
@@ -220,7 +212,7 @@ abstract public class Chunk {
     private final int stringsStart;
 
     public StringPoolChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
-      super(buffer, chunkStartPosition, type);
+      super(buffer, chunkStartPosition);
       stringsStart = super.buffer.getInt(getChunkStart() + OFFSET_STRING_START);
     }
 
@@ -391,7 +383,7 @@ abstract public class Chunk {
     private StringPoolChunk keyStringPool;
 
     public PackageChunk(ByteBuffer buffer, int offset, Type type) {
-      super(buffer, offset, type);
+      super(buffer, offset);
       id = buffer.getInt();
       byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
       buffer.get(nameBytes);
@@ -417,7 +409,7 @@ abstract public class Chunk {
       while (payloadStart < end) {
         Chunk chunk = Chunk.readChunk(buffer, payloadStart, this);
         chunksByOffset.put(payloadStart, chunk);
-        switch (chunk.getType()) {
+        switch (Type.fromCode(chunk.header.type)) {
           case TABLE_TYPE_SPEC:
             typeSpecsByTypeId.put(((TypeSpecChunk)chunk).getId(), (TypeSpecChunk) chunk);
             break;
@@ -491,7 +483,7 @@ abstract public class Chunk {
       private int[] payload;
 
       public TypeSpecChunk(ByteBuffer buffer, int offset, Type type) {
-        super(buffer, offset, type);
+        super(buffer, offset);
         id = buffer.get();
         res0 = buffer.get();
         res1 = buffer.getShort();
@@ -524,7 +516,7 @@ abstract public class Chunk {
       private List<ResTableEntry> entries = new LinkedList<>();
 
       public TypeChunk(ByteBuffer buffer, int offset, Type type) {
-        super(buffer, offset, type);
+        super(buffer, offset);
         id = buffer.get();
         System.out.println("TypeId: " + id);
         Preconditions.checkArgument(buffer.get() == 0); // Res0 Unused - must be 0
