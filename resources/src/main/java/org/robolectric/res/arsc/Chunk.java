@@ -52,14 +52,11 @@ abstract public class Chunk {
 
   private static final int OFFSET_FIRST_HEADER = 8;
 
-  public Chunk(ByteBuffer buffer, int offset) {
+  public Chunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
     this.buffer = buffer;
     this.offset = offset;
 
-    header = new ResChunkHeader();
-    header.type = buffer.getShort();
-    header.headerSize = buffer.getShort();
-    header.size = buffer.getInt();
+    this.header = header;
   }
 
   /** Types of chunks that can exist. */
@@ -117,16 +114,20 @@ abstract public class Chunk {
       buffer.position(chunkStartPosition);
       type = Type.fromCode(aShort);
       Chunk chunk;
-      if (Type.TABLE.equals(type)) {
-        chunk = new TableChunk(buffer, chunkStartPosition);
+    ResChunkHeader header = new ResChunkHeader();
+    header.type = buffer.getShort();
+    header.headerSize = buffer.getShort();
+    header.size = buffer.getInt();
+    if (Type.TABLE.equals(type)) {
+        chunk = new TableChunk(buffer, chunkStartPosition, header);
       } else if (Type.STRING_POOL.equals(type)) {
-        chunk = new StringPoolChunk(buffer, chunkStartPosition);
+        chunk = new StringPoolChunk(buffer, chunkStartPosition, header);
       } else if (Type.TABLE_PACKAGE.equals(type)) {
-        chunk = new PackageChunk(buffer, chunkStartPosition);
+        chunk = new PackageChunk(buffer, chunkStartPosition, header);
       } else if (Type.TABLE_TYPE.equals(type)) {
-        chunk = new TypeChunk(buffer, chunkStartPosition);
+        chunk = new TypeChunk(buffer, chunkStartPosition, header);
       } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
-        chunk = new TypeSpecChunk(buffer, chunkStartPosition);
+        chunk = new TypeSpecChunk(buffer, chunkStartPosition, header);
       } else {
         throw new IllegalArgumentException("unknown table type " + aShort);
       }
@@ -154,8 +155,8 @@ abstract public class Chunk {
     private final StringPoolChunk valuesStringPool;
     private final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
-    public TableChunk(ByteBuffer buffer, int chunkStartPosition) {
-      super(buffer, chunkStartPosition);
+    public TableChunk(ByteBuffer buffer, int chunkStartPosition, ResChunkHeader header) {
+      super(buffer, chunkStartPosition, header);
       valuesStringPool = readChunk(buffer, header.headerSize);
 
       int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
@@ -191,8 +192,8 @@ abstract public class Chunk {
     private static final int OFFSET_STRING_INDICIES = OFFSET_STYLE_START + 4;
     private final int stringsStart;
 
-    public StringPoolChunk(ByteBuffer buffer, int offset) {
-      super(buffer, offset);
+    public StringPoolChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+      super(buffer, offset, header);
       stringsStart = super.buffer.getInt(offset + OFFSET_STRING_START);
     }
 
@@ -362,8 +363,8 @@ abstract public class Chunk {
     private StringPoolChunk typeStringPool;
     private StringPoolChunk keyStringPool;
 
-    public PackageChunk(ByteBuffer buffer, int offset) {
-      super(buffer, offset);
+    public PackageChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+      super(buffer, offset, header);
       id = buffer.getInt();
       byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
       buffer.get(nameBytes);
@@ -462,8 +463,8 @@ abstract public class Chunk {
       private final int entryCount;
       private int[] payload;
 
-      public TypeSpecChunk(ByteBuffer buffer, int offset) {
-        super(buffer, offset);
+      public TypeSpecChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+        super(buffer, offset, header);
         id = buffer.get();
         res0 = buffer.get();
         res1 = buffer.getShort();
@@ -495,8 +496,8 @@ abstract public class Chunk {
       private final ResTableConfig config;
       private List<ResTableEntry> entries = new LinkedList<>();
 
-      public TypeChunk(ByteBuffer buffer, int offset) {
-        super(buffer, offset);
+      public TypeChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+        super(buffer, offset, header);
         id = buffer.get();
         System.out.println("TypeId: " + id);
         Preconditions.checkArgument(buffer.get() == 0); // Res0 Unused - must be 0
