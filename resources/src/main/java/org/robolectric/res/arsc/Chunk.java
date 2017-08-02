@@ -44,7 +44,6 @@ import org.robolectric.res.arsc.Chunk.PackageChunk.TypeSpecChunk;
 /** Represents a generic chunk. */
 abstract public class Chunk {
 
-  private static final int UINT16_SIZE = 2;
   private static final int UINT32_SIZE = 4;
 
   private final ByteBuffer buffer;
@@ -390,11 +389,6 @@ abstract public class Chunk {
   public static class PackageChunk extends Chunk {
 
     public static final int PACKAGE_NAME_SIZE = 128 * 2;
-    private static final int OFFSET_NAME = OFFSET_FIRST_HEADER + 4;
-    private static final int OFFSET_TYPE_STRINGS = OFFSET_NAME + 2 * 128;
-    private static final int OFFSET_LAST_PUBLIC_TYPE = OFFSET_TYPE_STRINGS + 4;
-    private static final int OFFSET_KEY_STRINGS = OFFSET_LAST_PUBLIC_TYPE + 4;
-    private static final int OFFSET_LAST_PUBLIC_KEY = OFFSET_KEY_STRINGS + 4;
     private final int id;
     private final String name;
     private final int typeStrings;
@@ -423,7 +417,6 @@ abstract public class Chunk {
       int payloadStart = getPayloadStart();
       int end = getChunkEnd();
       int position = buffer.position();
-      //super.buffer.position(getPayloadStart());
 
       // read type string pool
       typeStringPool = Chunk.readChunk(buffer, payloadStart, this);
