@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.robolectric.res.android.ResChunkHeader;
 import org.robolectric.res.android.ResTableEntry;
 import org.robolectric.res.android.ResTableMap;
 import org.robolectric.res.android.ResTableMapEntry;
@@ -47,28 +49,25 @@ abstract public class Chunk {
 
   private final ByteBuffer buffer;
   private final int offset;
-  private final short headerLength;
-  private final int chunkLength;
+  private final ResChunkHeader header;
   private Type type;
 
-  private static final int OFFSET_HEADER_SIZE = 2;
-  private static final int OFFSET_CHUNK_LENGTH = 4;
   private static final int OFFSET_FIRST_HEADER = 8;
-  private final short typeCode;
 
   public Chunk(ByteBuffer buffer, int offset, Type type) {
     this.buffer = buffer;
     this.offset = offset;
     this.type = type;
     buffer.position(offset);
-    typeCode = buffer.getShort();
-    headerLength = buffer.getShort();
-    chunkLength = buffer.getInt();
+    header = new ResChunkHeader();
+    header.type = buffer.getShort();
+    header.headerSize = buffer.getShort();
+    header.size = buffer.getInt();
     Preconditions.checkArgument(
-        typeCode == type.code(), "Invalid chunk type, expected: " + type + " but got " + typeCode);
+        header.type == type.code(), "Invalid chunk type, expected: " + type + " but got " + header.type);
 
     System.out.println("Chunk at " + offset + " (" + type + "):");
-    byte[] chunk = new byte[chunkLength];
+    byte[] chunk = new byte[header.size];
     int oldPosition = buffer.position();
     buffer.position(offset);
     buffer.get(chunk);
@@ -83,11 +82,11 @@ abstract public class Chunk {
   }
 
   public short getHeaderLength() {
-    return headerLength;
+    return header.headerSize;
   }
 
   public int getChunkLength() {
-    return chunkLength;
+    return header.size;
   }
 
   protected int getChunkStart() {
