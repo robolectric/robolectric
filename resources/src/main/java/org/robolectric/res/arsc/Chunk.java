@@ -138,15 +138,15 @@ abstract public class Chunk {
       type = Type.fromCode(aShort);
       Chunk chunk;
       if (Type.TABLE.equals(type)) {
-        chunk = new TableChunk(buffer, chunkStartPosition, type);
+        chunk = new TableChunk(buffer, chunkStartPosition);
       } else if (Type.STRING_POOL.equals(type)) {
-        chunk = new StringPoolChunk(buffer, chunkStartPosition, type);
+        chunk = new StringPoolChunk(buffer, chunkStartPosition);
       } else if (Type.TABLE_PACKAGE.equals(type)) {
-        chunk = new PackageChunk(buffer, chunkStartPosition, type);
+        chunk = new PackageChunk(buffer, chunkStartPosition);
       } else if (Type.TABLE_TYPE.equals(type)) {
-        chunk = new TypeChunk(buffer, chunkStartPosition, type);
+        chunk = new TypeChunk(buffer, chunkStartPosition);
       } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
-        chunk = new TypeSpecChunk(buffer, chunkStartPosition, type);
+        chunk = new TypeSpecChunk(buffer, chunkStartPosition);
       } else {
         throw new IllegalArgumentException("unknown table type " + aShort);
       }
@@ -174,7 +174,7 @@ abstract public class Chunk {
     private final StringPoolChunk valuesStringPool;
     private final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
-    public TableChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
+    public TableChunk(ByteBuffer buffer, int chunkStartPosition) {
       super(buffer, chunkStartPosition);
       valuesStringPool = readChunk(buffer, getHeaderLength());
 
@@ -211,7 +211,7 @@ abstract public class Chunk {
     private static final int OFFSET_STRING_INDICIES = OFFSET_STYLE_START + 4;
     private final int stringsStart;
 
-    public StringPoolChunk(ByteBuffer buffer, int chunkStartPosition, Type type) {
+    public StringPoolChunk(ByteBuffer buffer, int chunkStartPosition) {
       super(buffer, chunkStartPosition);
       stringsStart = super.buffer.getInt(getChunkStart() + OFFSET_STRING_START);
     }
@@ -382,7 +382,7 @@ abstract public class Chunk {
     private StringPoolChunk typeStringPool;
     private StringPoolChunk keyStringPool;
 
-    public PackageChunk(ByteBuffer buffer, int offset, Type type) {
+    public PackageChunk(ByteBuffer buffer, int offset) {
       super(buffer, offset);
       id = buffer.getInt();
       byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
@@ -482,7 +482,7 @@ abstract public class Chunk {
       private final int entryCount;
       private int[] payload;
 
-      public TypeSpecChunk(ByteBuffer buffer, int offset, Type type) {
+      public TypeSpecChunk(ByteBuffer buffer, int offset) {
         super(buffer, offset);
         id = buffer.get();
         res0 = buffer.get();
@@ -515,7 +515,7 @@ abstract public class Chunk {
       private final ResTableConfig config;
       private List<ResTableEntry> entries = new LinkedList<>();
 
-      public TypeChunk(ByteBuffer buffer, int offset, Type type) {
+      public TypeChunk(ByteBuffer buffer, int offset) {
         super(buffer, offset);
         id = buffer.get();
         System.out.println("TypeId: " + id);
