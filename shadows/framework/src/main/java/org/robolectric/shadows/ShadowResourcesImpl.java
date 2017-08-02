@@ -1,6 +1,18 @@
 package org.robolectric.shadows;
 
-import android.content.res.*;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.ResourcesImpl;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -26,12 +38,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)
 public class ShadowResourcesImpl {
@@ -227,4 +233,16 @@ public class ShadowResourcesImpl {
     return drawable;
   }
 
+  @Implementation(minSdk = O)
+  public Drawable loadDrawable(Resources wrapper,  TypedValue value, int id, int density, Resources.Theme theme) {
+    Drawable drawable = directlyOn(realResourcesImpl, ResourcesImpl.class, "loadDrawable",
+        from(Resources.class, wrapper),
+        from(TypedValue.class, value),
+        from(int.class, id),
+        from(int.class, density),
+        from(Resources.Theme.class, theme));
+
+    ShadowResources.setCreatedFromResId(wrapper, id, drawable);
+    return drawable;
+  }
 }
