@@ -65,14 +65,6 @@ abstract public class Chunk {
     header.size = buffer.getInt();
     Preconditions.checkArgument(
         header.type == type.code(), "Invalid chunk type, expected: " + type + " but got " + header.type);
-
-    System.out.println("Chunk at " + offset + " (" + type + "):");
-    byte[] chunk = new byte[header.size];
-    int oldPosition = buffer.position();
-    buffer.position(offset);
-    buffer.get(chunk);
-    System.out.println(BaseEncoding.base16().lowerCase().withSeparator(" ", 8).encode(chunk));
-    buffer.position(oldPosition);
   }
 
   abstract public int getId();
@@ -403,7 +395,6 @@ abstract public class Chunk {
     private static final int OFFSET_LAST_PUBLIC_TYPE = OFFSET_TYPE_STRINGS + 4;
     private static final int OFFSET_KEY_STRINGS = OFFSET_LAST_PUBLIC_TYPE + 4;
     private static final int OFFSET_LAST_PUBLIC_KEY = OFFSET_KEY_STRINGS + 4;
-    private static final int OFFSET_TYPE_ID_OFFSET = OFFSET_LAST_PUBLIC_KEY + 4;
     private final int id;
     private final String name;
     private final int typeStrings;
