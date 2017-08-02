@@ -1,12 +1,12 @@
 package org.robolectric.res.android;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
-import com.google.common.primitives.UnsignedInteger;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -892,7 +892,7 @@ public class ResTableConfig {
     // See if any of the regions is better than the other.
     final int region_comparison = LocaleData.localeDataCompareRegions(
         country, o.country,
-        requested.language, requested.localeScript, requested.country);
+        requested.language, str(requested.localeScript), requested.country);
     if (region_comparison != 0) {
       return (region_comparison > 0);
     }
@@ -913,6 +913,10 @@ public class ResTableConfig {
     }
 
     return false;
+  }
+
+  private String str(byte[] country) {
+    return new String(country, UTF_8);
   }
 
   private boolean langsAreEquivalent(final byte[] lang1, final byte[] lang2) {

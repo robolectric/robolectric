@@ -1,9 +1,12 @@
 #!/bin/bash
 
-aapt=$ANDROID_HOME/build-tools/26.0.0-preview/aapt
-raw=`pwd`/resources/src/test/resources/rawresources
-binary=`pwd`/resources/src/test/resources/binaryresources
-javaSrc=`pwd`/resources/src/test/java
+resourcesProjDir=`dirname $0`
+echo $resourcesProjDir
+
+aapt=$ANDROID_HOME/build-tools/26.0.1/aapt
+raw=$resourcesProjDir/src/test/resources/rawresources
+binary=$resourcesProjDir/src/test/resources/binaryresources
+javaSrc=$resourcesProjDir/src/test/java
 
 mkdir -p $binary
 mkdir -p $javaSrc
