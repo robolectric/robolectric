@@ -62,26 +62,6 @@ abstract public class Chunk {
     header.size = buffer.getInt();
   }
 
-  public short getHeaderLength() {
-    return header.headerSize;
-  }
-
-  public int getChunkLength() {
-    return header.size;
-  }
-
-  protected int getChunkStart() {
-    return offset;
-  }
-
-  protected int getChunkEnd() {
-    return offset + getChunkLength();
-  }
-
-  protected int getPayloadStart() {
-    return getChunkStart() + getHeaderLength();
-  }
-
   /** Types of chunks that can exist. */
   public enum Type {
     NULL(0x0000),
@@ -156,15 +136,15 @@ abstract public class Chunk {
   private void dump() {
     System.out.println("Chunk Type:  " + Type.fromCode(header.type));
     System.out.println("Chunk Start:  " + offset);
-    System.out.println("Header Length: " + getHeaderLength());
-    System.out.println("Chunk Length:  " + getChunkLength());
-    byte[] header = new byte[getHeaderLength()];
+    System.out.println("Header Length: " + header.headerSize);
+    System.out.println("Chunk Length:  " + header.size);
+    byte[] header = new byte[this.header.headerSize];
     buffer.position(offset);
     buffer.get(header);
     System.out.println("Header: " + BaseEncoding.base16().lowerCase().encode(header));
 
     buffer.position(offset);
-    byte[] chunk = new byte[getChunkLength()];
+    byte[] chunk = new byte[this.header.size];
     buffer.get(chunk);
     System.out.println("Chunk:  " + BaseEncoding.base16().lowerCase().encode(chunk));
   }
@@ -176,13 +156,13 @@ abstract public class Chunk {
 
     public TableChunk(ByteBuffer buffer, int chunkStartPosition) {
       super(buffer, chunkStartPosition);
-      valuesStringPool = readChunk(buffer, getHeaderLength());
+      valuesStringPool = readChunk(buffer, header.headerSize);
 
-      int packageChunkOffset = getHeaderLength() + valuesStringPool.getChunkLength();
+      int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
       for (int i = 0; i < getPackageCount(); i++) {
         PackageChunk packageChunk = readChunk(buffer, packageChunkOffset);
         packageChunks.put(packageChunk.getId(), packageChunk);
-        packageChunkOffset = packageChunk.getChunkLength();
+        packageChunkOffset = packageChunk.header.size;
       }
     }
 
@@ -211,21 +191,21 @@ abstract public class Chunk {
     private static final int OFFSET_STRING_INDICIES = OFFSET_STYLE_START + 4;
     private final int stringsStart;
 
-    public StringPoolChunk(ByteBuffer buffer, int chunkStartPosition) {
-      super(buffer, chunkStartPosition);
-      stringsStart = super.buffer.getInt(getChunkStart() + OFFSET_STRING_START);
+    public StringPoolChunk(ByteBuffer buffer, int offset) {
+      super(buffer, offset);
+      stringsStart = super.buffer.getInt(offset + OFFSET_STRING_START);
     }
 
     public int getStringCount() {
-      return super.buffer.getInt(getChunkStart() + OFFSET_FIRST_HEADER);
+      return super.buffer.getInt(super.offset + OFFSET_FIRST_HEADER);
     }
 
     public int getStyleCount() {
-      return super.buffer.getInt(getChunkStart() + OFFSET_STYLE_COUNT);
+      return super.buffer.getInt(super.offset + OFFSET_STYLE_COUNT);
     }
 
     public int getFlags() {
-      return super.buffer.getInt(getChunkStart() + OFFSET_FLAGS);
+      return super.buffer.getInt(super.offset + OFFSET_FLAGS);
     }
 
     public boolean isUTF8() {
@@ -249,12 +229,12 @@ abstract public class Chunk {
     }
 
     public int getStyleStart() {
-      return super.buffer.getInt(getChunkStart() + OFFSET_STYLE_START);
+      return super.buffer.getInt(super.offset + OFFSET_STYLE_START);
     }
 
     public int[] getStyleIndicies() {
       int[] result = new int[getStyleCount()];
-      int start = getChunkStart() + OFFSET_STRING_INDICIES + (getStringCount() * UINT32_SIZE);
+      int start = super.offset + OFFSET_STRING_INDICIES + (getStringCount() * UINT32_SIZE);
       for (int i = 0; i < result.length; i++) {
         result[i] = super.buffer.getInt(start);
         start += UINT32_SIZE;
@@ -263,7 +243,7 @@ abstract public class Chunk {
     }
 
     public String getString(int i) {
-      int chunkStart = getChunkStart();
+      int chunkStart = super.offset;
       int start = chunkStart + OFFSET_STRING_INDICIES;
       int valueIndex = super.buffer.getInt(start + i * UINT32_SIZE);
       int stringStartIdx = chunkStart + getStringsStart() + valueIndex;
@@ -275,7 +255,7 @@ abstract public class Chunk {
       // After the array of offsets for the strings in the pool, we have an offset for the styles
       // in this pool.
       for (int i : getStyleIndicies()) {
-        int styleOffset = getChunkStart() + getStringsStart() + i;
+        int styleOffset = super.offset + getStringsStart() + i;
         result.add(new StringPoolStyle(super.buffer, styleOffset));
       }
       return result;
@@ -394,17 +374,17 @@ abstract public class Chunk {
       lastPublicKey = buffer.getInt();
       typeIdOffset = buffer.getInt();
 
-      int payloadStart = getPayloadStart();
-      int end = getChunkEnd();
+      int payloadStart = super.offset + header.headerSize;
+      int end = offset + header.size;
       int position = buffer.position();
 
       // read type string pool
       typeStringPool = Chunk.readChunk(buffer, payloadStart);
-      payloadStart += typeStringPool.getChunkLength();
+      payloadStart += typeStringPool.header.size;
 
       // read key string pool
       keyStringPool = Chunk.readChunk(buffer, payloadStart);
-      payloadStart += keyStringPool.getChunkLength();
+      payloadStart += keyStringPool.header.size;
 
       while (payloadStart < end) {
         Chunk chunk = Chunk.readChunk(buffer, payloadStart);
@@ -421,7 +401,7 @@ abstract public class Chunk {
           default:
             // no op
         }
-        payloadStart += chunk.getChunkLength();
+        payloadStart += chunk.header.size;
       }
 
       buffer.position(position);

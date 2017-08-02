@@ -19,4 +19,5 @@ public class ResChunkHeader {
     // any child chunks).  If this value is the same as chunkSize, there is
     // no data associated with the chunk.
     public int size;
+
 }
