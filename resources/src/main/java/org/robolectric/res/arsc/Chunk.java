@@ -104,12 +104,11 @@ abstract public class Chunk {
   }
 
   public static TableChunk newInstance(ByteBuffer buffer) {
-    return readChunk(buffer, 0);
+    return readChunk(buffer, 0, getResChunkHeader(buffer, 0));
   }
 
-  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition) {
+  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition, ResChunkHeader header) {
     Type type;
-    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
     if (header == null) return null;
 
     type = Type.fromCode(header.type);
@@ -153,11 +152,11 @@ abstract public class Chunk {
       tableHeader = new ResTableHeader();
       tableHeader.header = header;
       tableHeader.packageCount = buffer.getInt();
-      valuesStringPool = readChunk(buffer, header.headerSize);
+      valuesStringPool = readChunk(buffer, header.headerSize, getResChunkHeader(buffer, header.headerSize));
 
       int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
       for (int i = 0; i < tableHeader.packageCount; i++) {
-        PackageChunk packageChunk = readChunk(buffer, packageChunkOffset);
+        PackageChunk packageChunk = readChunk(buffer, packageChunkOffset, getResChunkHeader(buffer, packageChunkOffset));
         packageChunks.put(packageChunk.tablePackage.id, packageChunk);
         packageChunkOffset = packageChunk.header.size;
       }
@@ -339,15 +338,15 @@ abstract public class Chunk {
       int position = buffer.position();
 
       // read type string pool
-      typeStringPool = Chunk.readChunk(buffer, payloadStart);
+      typeStringPool = Chunk.readChunk(buffer, payloadStart, getResChunkHeader(buffer, payloadStart));
       payloadStart += typeStringPool.header.size;
 
       // read key string pool
-      keyStringPool = Chunk.readChunk(buffer, payloadStart);
+      keyStringPool = Chunk.readChunk(buffer, payloadStart, getResChunkHeader(buffer, payloadStart));
       payloadStart += keyStringPool.header.size;
 
       while (payloadStart < end) {
-        Chunk chunk = Chunk.readChunk(buffer, payloadStart);
+        Chunk chunk = Chunk.readChunk(buffer, payloadStart, getResChunkHeader(buffer, payloadStart));
         chunksByOffset.put(payloadStart, chunk);
         switch (Type.fromCode(chunk.header.type)) {
           case TABLE_TYPE_SPEC:
