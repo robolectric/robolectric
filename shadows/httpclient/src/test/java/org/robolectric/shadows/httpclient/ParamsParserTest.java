@@ -1,6 +1,8 @@
 package org.robolectric.shadows.httpclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import android.os.Build;
+
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import java.util.Map;
 import org.apache.http.client.methods.HttpDelete;
@@ -9,7 +11,12 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
+@RunWith(RobolectricTestRunner.class)
+@Config(maxSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
 public class ParamsParserTest {
   @Test
   public void parseParams_shouldParsePostEntitiesIntoParams() throws Exception {

@@ -29,7 +29,6 @@
 package org.robolectric.shadows.httpclient;
 
 import java.net.URI;
-import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -39,7 +38,6 @@ import org.apache.http.client.methods.HttpRequestBase;
  *
  * @since 4.0
  */
-@NotThreadSafe
 class HttpRedirect extends HttpRequestBase {
 
   private String method;

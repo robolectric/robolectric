@@ -1,5 +1,7 @@
 package org.robolectric.shadows.httpclient;
 
+import android.os.Build;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -12,9 +14,11 @@ import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.protocol.HttpContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.TestRunnerWithManifest;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(maxSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
 public class FakeHttpTest {
 
   @Test

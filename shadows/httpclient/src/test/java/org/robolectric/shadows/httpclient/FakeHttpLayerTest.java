@@ -1,6 +1,8 @@
 package org.robolectric.shadows.httpclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import android.os.Build;
+
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import java.io.IOException;
 import org.apache.http.HttpEntity;
@@ -12,7 +14,12 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
+@RunWith(RobolectricTestRunner.class)
+@Config(maxSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
 public class FakeHttpLayerTest {
   private FakeHttpLayer.RequestMatcherBuilder requestMatcherBuilder;
 

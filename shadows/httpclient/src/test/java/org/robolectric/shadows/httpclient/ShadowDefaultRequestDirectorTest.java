@@ -1,6 +1,8 @@
 package org.robolectric.shadows.httpclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import android.os.Build;
+
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -15,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+
+import android.os.Build;
 import junit.framework.Assert;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -34,11 +38,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.TestRunnerWithManifest;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(maxSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
 public class ShadowDefaultRequestDirectorTest {
-
   private DefaultRequestDirector requestDirector;
   private ConnectionKeepAliveStrategy connectionKeepAliveStrategy;
 

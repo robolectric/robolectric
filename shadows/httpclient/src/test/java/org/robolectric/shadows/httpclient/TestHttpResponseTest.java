@@ -1,13 +1,20 @@
 package org.robolectric.shadows.httpclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import android.os.Build;
+
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
+@RunWith(RobolectricTestRunner.class)
+@Config(maxSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
 public class TestHttpResponseTest {
 
   @Test
