@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -235,4 +236,16 @@ public class ShadowResourcesImpl {
     return drawable;
   }
 
+  @Implementation(minSdk = O)
+  public Drawable loadDrawable(Resources wrapper,  TypedValue value, int id, int density, Resources.Theme theme) {
+    Drawable drawable = directlyOn(realResourcesImpl, ResourcesImpl.class, "loadDrawable",
+        from(Resources.class, wrapper),
+        from(TypedValue.class, value),
+        from(int.class, id),
+        from(int.class, density),
+        from(Resources.Theme.class, theme));
+
+    ShadowResources.setCreatedFromResId(wrapper, id, drawable);
+    return drawable;
+  }
 }
