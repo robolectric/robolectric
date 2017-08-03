@@ -109,14 +109,8 @@ abstract public class Chunk {
 
   protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition) {
     Type type;
-    buffer.position(chunkStartPosition);
-    ResChunkHeader header = new ResChunkHeader();
-    header.type = buffer.getShort();
-    if (header.type == -1) {
-      return null;
-    }
-    header.headerSize = buffer.getShort();
-    header.size = buffer.getInt();
+    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
+    if (header == null) return null;
 
     type = Type.fromCode(header.type);
     Chunk chunk;
@@ -134,6 +128,18 @@ abstract public class Chunk {
       throw new IllegalArgumentException("unknown table type " + header.type);
     }
     return (T) chunk;
+  }
+
+  private static ResChunkHeader getResChunkHeader(ByteBuffer buffer, int chunkStartPosition) {
+    buffer.position(chunkStartPosition);
+    ResChunkHeader header = new ResChunkHeader();
+    header.type = buffer.getShort();
+    if (header.type == -1) {
+      return null;
+    }
+    header.headerSize = buffer.getShort();
+    header.size = buffer.getInt();
+    return header;
   }
 
   public static class TableChunk extends Chunk {
@@ -306,8 +312,6 @@ abstract public class Chunk {
 
   public static class PackageChunk extends Chunk {
 
-    public static final int PACKAGE_NAME_SIZE = 128 * 2;
-//    private final String name;
     private final Map<Integer, Chunk> chunksByOffset = new HashMap<>();
     private final Map<Integer, TypeSpecChunk> typeSpecsByTypeId = new HashMap<>();
     private final Map<Integer, List<TypeChunk>> typesByTypeId = new HashMap<>();
@@ -320,12 +324,9 @@ abstract public class Chunk {
       super(buffer, offset, header);
       tablePackage = new ResTablePackage();
       tablePackage.id = buffer.getInt();
-//      byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
-//      buffer.get(nameBytes);
       for (int i = 0; i < tablePackage.name.length; i++) {
         tablePackage.name[i] = buffer.getChar();
       }
-//      name = new String(nameBytes, Charset.forName("UTF-16LE"));
       tablePackage.header = header;
       tablePackage.typeStrings = buffer.getInt();
       tablePackage.lastPublicType = buffer.getInt();
