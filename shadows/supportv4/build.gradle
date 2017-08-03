@@ -2,14 +2,24 @@ plugins {
     id "net.ltgt.errorprone" version "0.0.11"
 }
 
-new RoboJavaModulePlugin(
-        deploy: true
-).apply(project)
+apply plugin: 'com.android.library'
 
-apply plugin: ShadowsPlugin
+android {
+    defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                className 'org.robolectric.annotation.processing.RobolectricProcessor'
+                arguments = [ 'org.robolectric.annotation.processing.shadowPackage' : 'org.robolectric.shadows.support.v4' ]
+            }
+        }
+    }
 
-shadows {
-    packageName "org.robolectric.shadows.support.v4"
+    compileSdkVersion 26
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 configurations {
@@ -17,19 +27,17 @@ configurations {
 }
 
 dependencies {
-    // Project dependencies
+    annotationProcessor project(":processor")
+
     compileOnly project(":robolectric")
     compileOnly project(":shadows:framework")
 
-    // Compile dependencies
-    compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "com.android.support:support-v4:26.0.0-alpha1"
     compileOnly "com.android.support:support-compat:26.0.0-alpha1"
     compileOnly "com.android.support:support-core-ui:26.0.0-alpha1"
     compileOnly "com.android.support:support-core-utils:26.0.0-alpha1"
     compileOnly "com.android.support:support-fragment:26.0.0-alpha1"
 
-    // Testing dependencies
     testCompile project(":robolectric")
     testCompile "junit:junit:4.12"
     testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
@@ -37,22 +45,17 @@ dependencies {
     testCompile "org.mockito:mockito-core:2.5.4"
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testRuntime AndroidSdk.MAX_SDK.coordinates
-    testRuntime "com.android.support:support-v4:26.0.0-alpha1"
-    testRuntime "com.android.support:support-compat:26.0.0-alpha1"
-    testRuntime "com.android.support:support-core-ui:26.0.0-alpha1"
-    testRuntime "com.android.support:support-core-utils:26.0.0-alpha1"
-    testRuntime "com.android.support:support-fragment:26.0.0-alpha1"
+    testCompile "com.android.support:support-v4:26.0.0-alpha1"
+    testCompile "com.android.support:support-compat:26.0.0-alpha1"
+    testCompile "com.android.support:support-core-ui:26.0.0-alpha1"
+    testCompile "com.android.support:support-core-utils:26.0.0-alpha1"
+    testCompile "com.android.support:support-fragment:26.0.0-alpha1"
 }
 
+// TODO - Figure out how to migrate this
 // change local artifact name to match dependencies
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-support-v4'
-    }
-}
-
-// hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin
-//   needs the compileClasspath order patched too (bug?)
-sourceSets.test.compileClasspath = configurations.earlyTestRuntime + sourceSets.test.compileClasspath
-sourceSets.test.runtimeClasspath = configurations.earlyTestRuntime + sourceSets.test.runtimeClasspath
+//install {
+//    repositories.mavenInstaller {
+//        pom.artifactId = 'shadows-support-v4'
+//    }
+//}
