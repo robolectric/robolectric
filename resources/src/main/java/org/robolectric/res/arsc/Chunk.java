@@ -36,6 +36,7 @@ import org.robolectric.res.android.ResChunkHeader;
 import org.robolectric.res.android.ResTableEntry;
 import org.robolectric.res.android.ResTableMap;
 import org.robolectric.res.android.ResTableMapEntry;
+import org.robolectric.res.android.ResTablePackage;
 import org.robolectric.res.android.ResTableType;
 import org.robolectric.res.android.ResTableTypeSpec;
 import org.robolectric.res.android.ResValue;
@@ -164,7 +165,7 @@ abstract public class Chunk {
       int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
       for (int i = 0; i < getPackageCount(); i++) {
         PackageChunk packageChunk = readChunk(buffer, packageChunkOffset);
-        packageChunks.put(packageChunk.getId(), packageChunk);
+        packageChunks.put(packageChunk.tablePackage.id, packageChunk);
         packageChunkOffset = packageChunk.header.size;
       }
     }
@@ -352,30 +353,28 @@ abstract public class Chunk {
   public static class PackageChunk extends Chunk {
 
     public static final int PACKAGE_NAME_SIZE = 128 * 2;
-    private final int id;
     private final String name;
-    private final int typeStrings;
-    private final int lastPublicType;
-    private final int keyStrings;
-    private final int lastPublicKey;
-    private final int typeIdOffset;
     private final Map<Integer, Chunk> chunksByOffset = new HashMap<>();
     private final Map<Integer, TypeSpecChunk> typeSpecsByTypeId = new HashMap<>();
     private final Map<Integer, List<TypeChunk>> typesByTypeId = new HashMap<>();
     private StringPoolChunk typeStringPool;
     private StringPoolChunk keyStringPool;
 
+    private ResTablePackage tablePackage;
+
     public PackageChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
       super(buffer, offset, header);
-      id = buffer.getInt();
+      tablePackage = new ResTablePackage();
+      tablePackage.id = buffer.getInt();
       byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
       buffer.get(nameBytes);
       name = new String(nameBytes, Charset.forName("UTF-16LE"));
-      typeStrings = buffer.getInt();
-      lastPublicType = buffer.getInt();
-      keyStrings = buffer.getInt();
-      lastPublicKey = buffer.getInt();
-      typeIdOffset = buffer.getInt();
+      tablePackage.header = header;
+      tablePackage.typeStrings = buffer.getInt();
+      tablePackage.lastPublicType = buffer.getInt();
+      tablePackage.keyStrings = buffer.getInt();
+      tablePackage.lastPublicKey = buffer.getInt();
+      tablePackage.typeIdOffset = buffer.getInt();
 
       int payloadStart = super.offset + header.headerSize;
       int end = offset + header.size;
@@ -410,16 +409,8 @@ abstract public class Chunk {
       buffer.position(position);
     }
 
-    public int getId() {
-      return id;
-    }
-
     public String getName() {
       return name;
-    }
-
-    public int getKeyStrings() {
-      return keyStrings;
     }
 
     public StringPoolChunk getTypeStringPool() {
