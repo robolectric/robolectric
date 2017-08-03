@@ -24,9 +24,7 @@ import com.google.common.primitives.Shorts;
 
 import com.google.common.primitives.UnsignedBytes;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,6 +32,7 @@ import java.util.Map;
 
 import org.robolectric.res.android.ResChunkHeader;
 import org.robolectric.res.android.ResTableEntry;
+import org.robolectric.res.android.ResTableHeader;
 import org.robolectric.res.android.ResTableMap;
 import org.robolectric.res.android.ResTableMapEntry;
 import org.robolectric.res.android.ResTablePackage;
@@ -137,41 +136,25 @@ abstract public class Chunk {
     return (T) chunk;
   }
 
-  private void dump() {
-    System.out.println("Chunk Type:  " + Type.fromCode(header.type));
-    System.out.println("Chunk Start:  " + offset);
-    System.out.println("Header Length: " + header.headerSize);
-    System.out.println("Chunk Length:  " + header.size);
-    byte[] header = new byte[this.header.headerSize];
-    buffer.position(offset);
-    buffer.get(header);
-    System.out.println("Header: " + BaseEncoding.base16().lowerCase().encode(header));
-
-    buffer.position(offset);
-    byte[] chunk = new byte[this.header.size];
-    buffer.get(chunk);
-    System.out.println("Chunk:  " + BaseEncoding.base16().lowerCase().encode(chunk));
-  }
-
   public static class TableChunk extends Chunk {
 
+    private final ResTableHeader tableHeader;
     private final StringPoolChunk valuesStringPool;
     private final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
     public TableChunk(ByteBuffer buffer, int chunkStartPosition, ResChunkHeader header) {
       super(buffer, chunkStartPosition, header);
+      tableHeader = new ResTableHeader();
+      tableHeader.header = header;
+      tableHeader.packageCount = buffer.getInt();
       valuesStringPool = readChunk(buffer, header.headerSize);
 
       int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
-      for (int i = 0; i < getPackageCount(); i++) {
+      for (int i = 0; i < tableHeader.packageCount; i++) {
         PackageChunk packageChunk = readChunk(buffer, packageChunkOffset);
         packageChunks.put(packageChunk.tablePackage.id, packageChunk);
         packageChunkOffset = packageChunk.header.size;
       }
-    }
-
-    public int getPackageCount() {
-      return super.buffer.getInt(OFFSET_FIRST_HEADER);
     }
 
     public StringPoolChunk getValuesStringPool() {
@@ -232,10 +215,6 @@ abstract public class Chunk {
       return stringsStart;
     }
 
-    public int getStyleStart() {
-      return super.buffer.getInt(super.offset + OFFSET_STYLE_START);
-    }
-
     public int[] getStyleIndicies() {
       int[] result = new int[getStyleCount()];
       int start = super.offset + OFFSET_STRING_INDICIES + (getStringCount() * UINT32_SIZE);
@@ -254,34 +233,9 @@ abstract public class Chunk {
       return ResourceString.decodeString(super.buffer, stringStartIdx, getStringType());
     }
 
-    private List<StringPoolStyle> getStyles() {
-      List<StringPoolStyle> result = new ArrayList<>();
-      // After the array of offsets for the strings in the pool, we have an offset for the styles
-      // in this pool.
-      for (int i : getStyleIndicies()) {
-        int styleOffset = super.offset + getStringsStart() + i;
-        result.add(new StringPoolStyle(super.buffer, styleOffset));
-      }
-      return result;
-    }
-
     /** Returns the type of strings in this pool. */
     public ResourceString.Type getStringType() {
       return isUTF8() ? ResourceString.Type.UTF8 : ResourceString.Type.UTF16;
-    }
-
-    public void dump() {
-      super.dump();
-      System.out.println("String count: " + getStringCount());
-      System.out.println("Style count: " + getStyleCount());
-      System.out.println("Flags: " + getFlags());
-      System.out.println("String start: " + getStringsStart());
-      System.out.println("Style start: " + getStyleStart());
-      System.out.println("Style indicies: " + Arrays.toString(getStyleIndicies()));
-      System.out.println("Styles:");
-      for (StringPoolStyle stringPoolStyle : getStyles()) {
-        stringPoolStyle.dump();
-      }
     }
 
     public class StringPoolStyle {
@@ -316,7 +270,7 @@ abstract public class Chunk {
       }
     }
 
-    public class StringPoolSpan {
+    public static class StringPoolSpan {
       static final int SPAN_LENGTH = 12;
       private final ByteBuffer buffer;
       private final int offset;
@@ -353,7 +307,7 @@ abstract public class Chunk {
   public static class PackageChunk extends Chunk {
 
     public static final int PACKAGE_NAME_SIZE = 128 * 2;
-    private final String name;
+//    private final String name;
     private final Map<Integer, Chunk> chunksByOffset = new HashMap<>();
     private final Map<Integer, TypeSpecChunk> typeSpecsByTypeId = new HashMap<>();
     private final Map<Integer, List<TypeChunk>> typesByTypeId = new HashMap<>();
@@ -366,9 +320,12 @@ abstract public class Chunk {
       super(buffer, offset, header);
       tablePackage = new ResTablePackage();
       tablePackage.id = buffer.getInt();
-      byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
-      buffer.get(nameBytes);
-      name = new String(nameBytes, Charset.forName("UTF-16LE"));
+//      byte[] nameBytes = new byte[PACKAGE_NAME_SIZE];
+//      buffer.get(nameBytes);
+      for (int i = 0; i < tablePackage.name.length; i++) {
+        tablePackage.name[i] = buffer.getChar();
+      }
+//      name = new String(nameBytes, Charset.forName("UTF-16LE"));
       tablePackage.header = header;
       tablePackage.typeStrings = buffer.getInt();
       tablePackage.lastPublicType = buffer.getInt();
@@ -410,7 +367,7 @@ abstract public class Chunk {
     }
 
     public String getName() {
-      return name;
+      return new String(tablePackage.name);
     }
 
     public StringPoolChunk getTypeStringPool() {
