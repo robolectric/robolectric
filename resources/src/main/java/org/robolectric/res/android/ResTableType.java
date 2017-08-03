@@ -26,7 +26,7 @@ package org.robolectric.res.android;
  *
  * ResTable_type from androidfw/include/androidfw/ResourceTypes.h
  */
-class ResTableType {
+public class ResTableType {
     static final int NO_ENTRY = 0xFFFFFFFF;
 
     // If set, the entry is sparse, and encodes both the entry ID and offset into each entry,
@@ -35,24 +35,24 @@ class ResTableType {
     // platforms.
     static final int FLAG_SPARSE = 0x01;
 
-    ResChunkHeader header;
+    public ResChunkHeader header;
 
     // The type identifier this chunk is holding.  Type IDs start
     // at 1 (corresponding to the value of the type bits in a
     // resource identifier).  0 is invalid.
-    byte id;
+    public byte id;
 
-    byte flags;
+    public byte flags;
 
     // Must be 0.
-    short reserved;
+    public short reserved;
 
     // Number of uint32_t entry indices that follow.
-    int entryCount;
+    public int entryCount;
 
     // Offset from header where ResTable_entry data starts.
-    int entriesStart;
+    public int entriesStart;
 
     // Configuration this collection of entries is designed for. This must always be last.
-    ResTableConfig config;
+    public ResTableConfig config;
 };

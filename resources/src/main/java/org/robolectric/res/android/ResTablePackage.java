@@ -5,7 +5,7 @@ package org.robolectric.res.android;
  * one or more ResTable_type and ResTable_typeSpec structures containing the
  * entry values for each resource type.
  */
-class ResTablePackage {
+public class ResTablePackage {
     ResChunkHeader header;
 
     // If this is a base package, its ID.  Package IDs start

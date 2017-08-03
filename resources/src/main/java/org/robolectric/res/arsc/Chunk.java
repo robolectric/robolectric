@@ -36,6 +36,7 @@ import org.robolectric.res.android.ResChunkHeader;
 import org.robolectric.res.android.ResTableEntry;
 import org.robolectric.res.android.ResTableMap;
 import org.robolectric.res.android.ResTableMapEntry;
+import org.robolectric.res.android.ResTableType;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
@@ -490,32 +491,32 @@ abstract public class Chunk {
       /** The minimum size in bytes that this config must be to contain the screenConfig extension. */
       private static final int SCREEN_CONFIG_EXTENSION_MIN_SIZE = 52;
 
-      private final byte id;
-      private final int entryCount;
-      private final int entriesStart;
-      private final ResTableConfig config;
+      private final ResTableType type;
       private List<ResTableEntry> entries = new LinkedList<>();
 
       public TypeChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
         super(buffer, offset, header);
-        id = buffer.get();
-        System.out.println("TypeId: " + id);
-        Preconditions.checkArgument(buffer.get() == 0); // Res0 Unused - must be 0
-        Preconditions.checkArgument(buffer.getShort() == 0); // Res1 Unused - must be 0
-        entryCount = buffer.getInt();
-        entriesStart = buffer.getInt();
-        config = createConfig(buffer);
-        int[] payload = new int[entryCount];
-        for (int i = 0; i < entryCount; i++) {
+        type = new ResTableType();
+        type.header = header;
+        type.id = buffer.get();
+        type.flags = buffer.get();
+        Preconditions.checkArgument(type.flags == 0); // Res0 Unused - must be 0
+        type.reserved = buffer.getShort();
+        Preconditions.checkArgument(type.reserved == 0); // Res1 Unused - must be 0
+        type.entryCount = buffer.getInt();
+        type.entriesStart = buffer.getInt();
+        type.config = createConfig(buffer);
+        int[] payload = new int[type.entryCount];
+        for (int i = 0; i < type.entryCount; i++) {
           payload[i] = buffer.getInt();
         }
 
-        for (int i = 0; i < entryCount; i++) {
+        for (int i = 0; i < type.entryCount; i++) {
           int entryOffset = payload[i];
           if (entryOffset == -1) {
             entries.add(null);
           } else {
-            entries.add(createEntry(buffer, offset + entriesStart + entryOffset));
+            entries.add(createEntry(buffer, offset + type.entriesStart + entryOffset));
           }
         }
       }
@@ -634,7 +635,7 @@ abstract public class Chunk {
       }
 
       public int getId() {
-        return id;
+        return type.id;
       }
 
       public List<ResTableEntry> getEntries() {
