@@ -11,7 +11,7 @@ package org.robolectric.res.android;
  * resource has been made public.
  */
 public class ResTableTypeSpec {
-    ResChunkHeader header;
+    public ResChunkHeader header;
 
     // The type identifier this chunk is holding.  Type IDs start
     // at 1 (corresponding to the value of the type bits in a

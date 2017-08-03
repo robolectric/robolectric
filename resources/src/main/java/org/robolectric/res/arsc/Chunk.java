@@ -394,11 +394,11 @@ abstract public class Chunk {
         chunksByOffset.put(payloadStart, chunk);
         switch (Type.fromCode(chunk.header.type)) {
           case TABLE_TYPE_SPEC:
-            typeSpecsByTypeId.put(((TypeSpecChunk)chunk).getId(), (TypeSpecChunk) chunk);
+            typeSpecsByTypeId.put((int) ((TypeSpecChunk) chunk).typeSpec.id, (TypeSpecChunk) chunk);
             break;
           case TABLE_TYPE:
             List<TypeChunk> typeChunks = typesByTypeId
-                .computeIfAbsent(((TypeChunk)chunk).getId(), integer -> new ArrayList<>());
+                .computeIfAbsent((int) ((TypeChunk) chunk).type.id, integer -> new ArrayList<>());
             typeChunks.add((TypeChunk) chunk);
             break;
           default:
@@ -418,27 +418,8 @@ abstract public class Chunk {
       return name;
     }
 
-    /**
-     * Offset from the beginning of this Chunk to where the Type StringPool begins.
-     */
-    public int getTypeStrings() {
-      return typeStrings;
-    }
-
-    public int getLastPublicType() {
-      return lastPublicType;
-    }
-
     public int getKeyStrings() {
       return keyStrings;
-    }
-
-    public int getLastPublicKey() {
-      return lastPublicKey;
-    }
-
-    public int getTypeIdOffset() {
-      return typeIdOffset;
     }
 
     public StringPoolChunk getTypeStringPool() {
@@ -464,14 +445,11 @@ abstract public class Chunk {
       public TypeSpecChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
         super(buffer, offset, header);
         typeSpec = new ResTableTypeSpec();
+        typeSpec.header = header;
         typeSpec.id = buffer.get();
         typeSpec.res0 = buffer.get();
         typeSpec.res1 = buffer.getShort();
         typeSpec.entryCount = buffer.getInt();
-      }
-
-      public int getId() {
-        return typeSpec.id;
       }
     }
 
@@ -630,10 +608,6 @@ abstract public class Chunk {
             touchscreen, density, keyboard, navigation, inputFlags, screenWidth, screenHeight,
             sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp,
             screenHeightDp, localeScript, localeVariant, screenLayout2, unknown);
-      }
-
-      public int getId() {
-        return type.id;
       }
 
       public List<ResTableEntry> getEntries() {
