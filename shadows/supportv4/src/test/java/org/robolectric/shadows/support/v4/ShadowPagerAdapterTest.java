@@ -8,9 +8,11 @@ import android.view.View;
 import java.lang.reflect.Method;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.TestRunnerWithManifest;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.ALL_SDKS)
 public class ShadowPagerAdapterTest {
   @Test
   public void shouldNotifyDataSetChanged() throws Exception {
@@ -34,8 +36,6 @@ public class ShadowPagerAdapterTest {
     public boolean isViewFromObject(View view, Object object) {
       return false;
     }
-
-
   }
 
   private class TestDataSetObserver extends DataSetObserver {

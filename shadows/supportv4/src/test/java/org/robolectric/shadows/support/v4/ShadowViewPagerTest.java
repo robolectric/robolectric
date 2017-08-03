@@ -12,10 +12,12 @@ import android.view.View;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.TestRunnerWithManifest;
+import org.robolectric.annotation.Config;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.ALL_SDKS)
 public class ShadowViewPagerTest {
 
   private ViewPager pager;

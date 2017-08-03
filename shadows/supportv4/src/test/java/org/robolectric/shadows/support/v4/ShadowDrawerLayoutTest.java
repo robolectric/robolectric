@@ -8,10 +8,12 @@ import android.support.v4.widget.DrawerLayout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.ALL_SDKS)
 public class ShadowDrawerLayoutTest {
 
   @Test

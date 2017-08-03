@@ -6,10 +6,12 @@ import android.net.Uri;
 import android.support.v4.content.CursorLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.TestRunnerWithManifest;
+import org.robolectric.annotation.Config;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.ALL_SDKS)
 public class ShadowCursorLoaderTest {
   @Test
   public void testGetters() {

@@ -6,10 +6,11 @@ import android.os.Build;
 import android.support.v4.os.BuildCompat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.ALL_SDKS)
 public class BuildCompatTest {
 
   @Test
