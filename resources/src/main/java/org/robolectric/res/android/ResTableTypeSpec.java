@@ -10,21 +10,21 @@ package org.robolectric.res.android;
  * resources for that configuration.  In addition, the high bit is set if that
  * resource has been made public.
  */
-class ResTableTypeSpec {
+public class ResTableTypeSpec {
     ResChunkHeader header;
 
     // The type identifier this chunk is holding.  Type IDs start
     // at 1 (corresponding to the value of the type bits in a
     // resource identifier).  0 is invalid.
-    byte id;
+    public byte id;
 
     // Must be 0.
-    byte res0;
+    public byte res0;
     // Must be 0.
-    short res1;
+    public short res1;
 
     // Number of uint32_t entry configuration masks that follow.
-    int entryCount;
+    public int entryCount;
 
     // Additional flag indicating an entry is public.
     int SPEC_PUBLIC = 0x40000000;

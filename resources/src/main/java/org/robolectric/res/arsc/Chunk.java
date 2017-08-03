@@ -37,6 +37,7 @@ import org.robolectric.res.android.ResTableEntry;
 import org.robolectric.res.android.ResTableMap;
 import org.robolectric.res.android.ResTableMapEntry;
 import org.robolectric.res.android.ResTableType;
+import org.robolectric.res.android.ResTableTypeSpec;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
@@ -458,22 +459,19 @@ abstract public class Chunk {
 
     public static class TypeSpecChunk extends Chunk {
 
-      private final byte id;
-      private final byte res0;
-      private final short res1;
-      private final int entryCount;
-      private int[] payload;
+      public final ResTableTypeSpec typeSpec;
 
       public TypeSpecChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
         super(buffer, offset, header);
-        id = buffer.get();
-        res0 = buffer.get();
-        res1 = buffer.getShort();
-        entryCount = buffer.getInt();
+        typeSpec = new ResTableTypeSpec();
+        typeSpec.id = buffer.get();
+        typeSpec.res0 = buffer.get();
+        typeSpec.res1 = buffer.getShort();
+        typeSpec.entryCount = buffer.getInt();
       }
 
       public int getId() {
-        return id;
+        return typeSpec.id;
       }
     }
 
