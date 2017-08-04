@@ -3,20 +3,21 @@ package org.robolectric.shadows.support.v4;
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.SimpleFuture;
 
 @Implements(AsyncTaskLoader.class)
 public class ShadowAsyncTaskLoader<D> {
   @RealObject private AsyncTaskLoader<D> realLoader;
-  private SimpleFuture<D> future;
+  private FutureTask<D> future;
 
   public void __constructor__(Context context) {
     BackgroundWorker worker = new BackgroundWorker();
-    future = new SimpleFuture<D>(worker) {
+    future = new FutureTask<D>(worker) {
       @Override protected void done() {
         try {
           final D result = get();
@@ -27,6 +28,8 @@ public class ShadowAsyncTaskLoader<D> {
           });
         } catch (InterruptedException e) {
           // Ignore
+        } catch (ExecutionException e) {
+          throw new RuntimeException(e.getCause());
         }
       }
     };
