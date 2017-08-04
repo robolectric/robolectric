@@ -1,5 +1,15 @@
 package org.robolectric;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.Assert;
 import org.junit.runner.Runner;
@@ -11,17 +21,6 @@ import org.junit.runners.model.TestClass;
 import org.robolectric.internal.DeepCloner;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkEnvironment;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * A Parameterized test runner for Robolectric. Copied from the {@link Parameterized} class, then modified the custom

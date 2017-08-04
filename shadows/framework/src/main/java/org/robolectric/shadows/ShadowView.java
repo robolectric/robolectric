@@ -1,5 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.getField;
+import static org.robolectric.util.ReflectionHelpers.setField;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -22,23 +29,18 @@ import android.view.ViewParent;
 import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import java.io.PrintStream;
+import java.lang.reflect.Method;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.*;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.android.AccessibilityUtil;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
-
-import java.io.PrintStream;
-import java.lang.reflect.Method;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.util.ReflectionHelpers.getField;
-import static org.robolectric.util.ReflectionHelpers.setField;
 
 @Implements(View.class)
 public class ShadowView {

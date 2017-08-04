@@ -1,20 +1,19 @@
 package org.robolectric.shadows;
 
-import android.view.View;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Adapter;
 import android.widget.ListView;
 import com.android.internal.app.AlertController;
+import java.lang.reflect.InvocationTargetException;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.lang.reflect.InvocationTargetException;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @Implements(value = AlertController.class, isInAndroidSdk = false)
 public class ShadowAlertController {

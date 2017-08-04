@@ -1,6 +1,17 @@
 package org.robolectric.android;
 
+import static java.lang.invoke.MethodHandles.constant;
+import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodType.methodType;
+import static java.util.Arrays.asList;
+
 import android.content.Context;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
@@ -9,20 +20,6 @@ import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-
-import static java.lang.invoke.MethodHandles.constant;
-import static java.lang.invoke.MethodHandles.dropArguments;
-import static java.lang.invoke.MethodType.methodType;
-import static java.util.Arrays.asList;
 
 public class AndroidInterceptors {
   private static final MethodHandles.Lookup lookup = MethodHandles.lookup();

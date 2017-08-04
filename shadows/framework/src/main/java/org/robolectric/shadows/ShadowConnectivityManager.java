@@ -1,24 +1,21 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-
-import android.net.NetworkRequest;
 import android.net.Network;
-
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
-
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {

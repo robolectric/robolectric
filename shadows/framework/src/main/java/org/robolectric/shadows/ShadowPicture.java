@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Picture;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

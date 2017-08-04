@@ -1,13 +1,11 @@
 package org.robolectric;
 
 import android.app.Application;
-
-import org.robolectric.annotation.Config;
-import org.robolectric.android.internal.ClassNameResolver;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.android.ApplicationTestUtil;
-
 import java.lang.reflect.Method;
+import org.robolectric.android.ApplicationTestUtil;
+import org.robolectric.android.internal.ClassNameResolver;
+import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 
 public class DefaultTestLifecycle implements TestLifecycle {
 

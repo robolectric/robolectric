@@ -17,11 +17,10 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.ResName;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.res.ResName;
 
 /**
  * Helper class to provide various conversion method used in handling android resources.

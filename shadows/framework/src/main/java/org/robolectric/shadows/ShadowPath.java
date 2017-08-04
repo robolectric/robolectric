@@ -1,15 +1,14 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
+import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
+
 import android.graphics.Path;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
-import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 
 /**
  * The shadow only supports straight-line paths.

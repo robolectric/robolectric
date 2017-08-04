@@ -8,12 +8,11 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.os.Handler;
 import android.os.Looper;
 import com.google.common.base.Preconditions;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Implements(WifiP2pManager.class)
 public class ShadowWifiP2pManager {

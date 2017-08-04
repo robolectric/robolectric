@@ -1,11 +1,11 @@
 package org.robolectric.shadows.util;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Application;
 import android.content.Context;
-import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadow.api.Shadow;
-
-import static org.robolectric.Shadows.shadowOf;
+import org.robolectric.shadows.ShadowApplication;
 
 public abstract class AppSingletonizer<T> {
   private final Class<T> clazz;

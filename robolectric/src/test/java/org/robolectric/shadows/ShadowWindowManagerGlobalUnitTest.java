@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.app.Activity;
 import android.view.WindowManagerGlobal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 import org.robolectric.android.FailureListener;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.robolectric.annotation.Config;
 
 @RunWith(JUnit4.class)
 public class ShadowWindowManagerGlobalUnitTest {

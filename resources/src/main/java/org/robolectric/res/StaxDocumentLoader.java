@@ -1,11 +1,11 @@
 package org.robolectric.res;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 public class StaxDocumentLoader extends DocumentLoader {
   private static final NodeHandler NO_OP_HANDLER = new NodeHandler();

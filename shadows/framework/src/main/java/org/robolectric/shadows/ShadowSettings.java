@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
 import android.content.ContentResolver;
 import android.provider.Settings;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)

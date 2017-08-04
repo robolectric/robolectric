@@ -1,6 +1,9 @@
 package org.robolectric.manifest;
 
 import com.google.common.collect.ImmutableList;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,10 +13,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Tests for {@link MetaData}

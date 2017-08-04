@@ -1,5 +1,9 @@
 package org.robolectric.internal.bytecode;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,11 +12,6 @@ import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Function;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unchecked")
 @RunWith(JUnit4.class)

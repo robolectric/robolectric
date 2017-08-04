@@ -1,7 +1,6 @@
 package org.robolectric.android.controller;
 
 import android.content.Intent;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;
@@ -32,17 +31,6 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
 
   public T get() {
     return component;
-  }
-
-  /**
-   * @deprecated Use the appropriate builder in {@link org.robolectric.Robolectric} instead.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  public C withIntent(Intent intent) {
-    this.intent = intent;
-    return myself;
   }
 
   public abstract C create();

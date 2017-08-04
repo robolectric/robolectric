@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
 import android.content.AsyncTaskLoader;
-import org.robolectric.util.SimpleFuture;
+import android.content.Context;
+import java.util.concurrent.Callable;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Implementation;
-import java.util.concurrent.Callable;
+import org.robolectric.util.SimpleFuture;
 
 @Implements(AsyncTaskLoader.class)
 public class ShadowAsyncTaskLoader<D> {

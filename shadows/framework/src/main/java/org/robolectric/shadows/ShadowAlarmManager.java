@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.M;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.M;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlarmManager.class)

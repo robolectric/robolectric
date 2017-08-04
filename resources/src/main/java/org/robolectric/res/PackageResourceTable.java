@@ -2,11 +2,10 @@ package org.robolectric.res;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import javax.annotation.Nonnull;
-import org.robolectric.res.builder.XmlBlock;
-
 import java.io.IOException;
 import java.io.InputStream;
+import javax.annotation.Nonnull;
+import org.robolectric.res.builder.XmlBlock;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01

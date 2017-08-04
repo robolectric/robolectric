@@ -1,16 +1,14 @@
 package org.robolectric.shadows;
 
-import android.os.StatFs;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
+import android.os.StatFs;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Robolectic doesn't provide actual filesystem stats; rather, it provides the ability to specify stats values in advance.

@@ -1,5 +1,9 @@
 package org.robolectric.shadows.support.v4;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,10 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunnerWithManifest.class)
 public class SupportFragmentControllerTest {
@@ -124,20 +124,6 @@ public class SupportFragmentControllerTest {
     verify(fragment).onResume();
     verify(fragment).onPause();
     verify(fragment).onStop();
-  }
-
-  @Test
-  public void withIntent_deprecated() {
-    final LoginFragment fragment = new LoginFragment();
-    final SupportFragmentController<LoginFragment> controller = SupportFragmentController.of(fragment, LoginActivity.class);
-
-    Intent intent = new Intent("test_action");
-    intent.putExtra("test_key", "test_value");
-    controller.withIntent(intent).create();
-
-    Intent intentInFragment = controller.get().getActivity().getIntent();
-    assertThat(intentInFragment.getAction()).isEqualTo("test_action");
-    assertThat(intentInFragment.getExtras().getString("test_key")).isEqualTo("test_value");
   }
 
   @Test

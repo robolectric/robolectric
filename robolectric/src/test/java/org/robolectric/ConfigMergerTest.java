@@ -1,6 +1,15 @@
 package org.robolectric;
 
+import static com.google.common.collect.ImmutableMap.of;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
+import static org.robolectric.util.TestUtil.stringify;
+
 import android.app.Application;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,17 +18,6 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.util.ReflectionHelpers;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import static com.google.common.collect.ImmutableMap.of;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
-import static org.robolectric.util.TestUtil.stringify;
 
 @RunWith(JUnit4.class)
 public class ConfigMergerTest {

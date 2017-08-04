@@ -1,8 +1,6 @@
 package org.robolectric.internal.dependency;
 
 import java.io.File;
-import java.lang.String;
-import java.lang.StringBuilder;
 import java.net.MalformedURLException;
 import java.net.URL;
 

@@ -4,7 +4,6 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.IBinder;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;

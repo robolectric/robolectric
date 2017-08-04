@@ -1,5 +1,11 @@
 package org.robolectric.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.joinPath;
+import static org.robolectric.util.TestUtil.newFile;
+
+import java.io.File;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,13 +18,6 @@ import org.robolectric.gradleapp.BuildConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.res.FsFile;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.joinPath;
-import static org.robolectric.util.TestUtil.newFile;
 
 @RunWith(JUnit4.class)
 public class GradleManifestFactoryTest {

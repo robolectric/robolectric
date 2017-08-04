@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static org.junit.Assert.assertEquals;
+
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
@@ -10,9 +13,6 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowDisplayTest {

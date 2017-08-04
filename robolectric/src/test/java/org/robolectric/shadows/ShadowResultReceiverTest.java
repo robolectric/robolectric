@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
+import static org.junit.Assert.assertEquals;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowResultReceiverTest {

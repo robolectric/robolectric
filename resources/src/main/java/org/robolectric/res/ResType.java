@@ -1,8 +1,7 @@
 package org.robolectric.res;
 
-import javax.annotation.Nullable;
-
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 public enum ResType {
   DRAWABLE,

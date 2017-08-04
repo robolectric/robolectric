@@ -4,10 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.shadow.api.Shadow;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.annotation.internal.Instrument;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * Configuration rules for {@link SandboxClassLoader}.

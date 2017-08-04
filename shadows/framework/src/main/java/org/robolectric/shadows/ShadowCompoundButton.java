@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.graphics.drawable.Drawable;
 import android.widget.CompoundButton;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import static org.robolectric.shadow.api.Shadow.*;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CompoundButton.class)

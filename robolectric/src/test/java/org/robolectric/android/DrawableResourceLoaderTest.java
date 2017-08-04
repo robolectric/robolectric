@@ -1,5 +1,12 @@
 package org.robolectric.android;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.util.TestUtil.assertInstanceOf;
+
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.content.res.Resources;
@@ -7,7 +14,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
-
 import android.graphics.drawable.VectorDrawable;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,13 +22,6 @@ import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 @RunWith(TestRunners.SelfTest.class) // todo: @Config(sdk=ALL_SDKS) or something
 public class DrawableResourceLoaderTest {

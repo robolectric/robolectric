@@ -1,0 +1,20 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.10"
+}
+
+apply plugin: RoboJavaModulePlugin
+
+dependencies {
+    compile project(":robolectric")
+    compile "junit:junit:4.12"
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+    compile "com.android.support:support-compat:26.0.0-alpha1"
+    compile "com.android.support:support-fragment:26.0.0-alpha1"
+
+    // Testing dependencies
+    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
+    testCompile "com.android.support:support-compat:26.0.0-alpha1"
+    testCompile "com.android.support:support-fragment:26.0.0-alpha1"
+    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "org.mockito:mockito-core:2.5.4"
+}

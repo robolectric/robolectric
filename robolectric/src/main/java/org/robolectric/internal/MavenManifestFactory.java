@@ -1,14 +1,15 @@
 package org.robolectric.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 
 public class MavenManifestFactory implements ManifestFactory {
 

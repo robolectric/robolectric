@@ -1,9 +1,6 @@
 package org.robolectric;
 
-import android.app.Activity;
 import android.app.Application;
-import android.content.res.Configuration;
-
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.Scheduler;
 

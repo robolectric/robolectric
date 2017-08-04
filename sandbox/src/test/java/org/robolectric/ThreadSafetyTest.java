@@ -1,5 +1,8 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.lang.reflect.Field;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
@@ -7,12 +10,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.internal.bytecode.SandboxConfig;
-
-import java.lang.reflect.Field;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(SandboxTestRunner.class)
 public class ThreadSafetyTest {

@@ -1,5 +1,9 @@
 package org.robolectric.shadows.gms;
 
+import android.accounts.Account;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import com.google.android.gms.auth.AccountChangeEvent;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -7,19 +11,12 @@ import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.auth.UserRecoverableNotifiedException;
 import com.google.common.base.Preconditions;
-
-import android.accounts.Account;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Calls to static method of {@link GoogleAuthUtil} will be redirected to the provided

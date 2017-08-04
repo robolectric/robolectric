@@ -1,9 +1,8 @@
 package org.robolectric.fakes;
 
-import android.os.Vibrator;
-import android.os.VibrationEffect;
-
 import android.media.AudioAttributes;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**

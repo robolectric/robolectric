@@ -1,14 +1,12 @@
 package org.robolectric.shadows;
 
-import android.widget.Filter;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import android.widget.Filter;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowFilterTest {

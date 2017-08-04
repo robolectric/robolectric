@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.RuntimeEnvironment;
-import android.content.AsyncTaskLoader;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.AsyncTaskLoader;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAsyncTaskLoaderTest {

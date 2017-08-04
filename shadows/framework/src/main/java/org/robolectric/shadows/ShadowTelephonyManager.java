@@ -1,5 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
+import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
+import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
+import static android.telephony.PhoneStateListener.LISTEN_NONE;
+import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
+import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
+
 import android.os.Build.VERSION;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
@@ -10,19 +19,9 @@ import com.google.common.collect.Iterables;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
-import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
-import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
-import static android.telephony.PhoneStateListener.LISTEN_NONE;
-import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
-import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {

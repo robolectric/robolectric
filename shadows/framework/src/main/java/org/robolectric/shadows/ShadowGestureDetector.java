@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.view.GestureDetector.OnDoubleTapListener;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.content.Context;
 import android.os.Handler;
 import android.view.GestureDetector;
@@ -8,10 +12,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-
-import static android.view.GestureDetector.OnDoubleTapListener;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GestureDetector.class)

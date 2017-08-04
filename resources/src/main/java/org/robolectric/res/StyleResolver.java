@@ -1,9 +1,8 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Strings;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.util.Strings;
 
 public class StyleResolver implements Style {
   private final List<StyleData> styles = new ArrayList<>();

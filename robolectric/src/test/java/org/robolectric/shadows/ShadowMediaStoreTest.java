@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-
 import static android.provider.MediaStore.Images;
 import static android.provider.MediaStore.Video;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMediaStoreTest {

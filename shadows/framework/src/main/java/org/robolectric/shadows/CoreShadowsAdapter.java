@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Application;
 import android.os.Looper;
-
 import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.Scheduler;
-
-import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Interface between the Robolectric runtime and the shadows-core module.

@@ -1,11 +1,10 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Strings;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.robolectric.util.Strings;
 
 public class StyleData implements Style {
   private final String packageName;

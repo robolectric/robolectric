@@ -1,13 +1,12 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
+import java.util.List;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.Util;
-
-import java.util.List;
 
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;

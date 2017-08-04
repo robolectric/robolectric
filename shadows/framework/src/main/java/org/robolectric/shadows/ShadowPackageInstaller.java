@@ -1,27 +1,25 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.content.Context;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
-import android.content.pm.IPackageInstaller;
 import android.content.pm.PackageInstaller;
-import android.content.pm.PackageManager;
 import android.os.Handler;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.*;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.Shadows.shadowOf;
 
 @Implements(value = PackageInstaller.class, minSdk = LOLLIPOP)
 public class ShadowPackageInstaller {

@@ -1,21 +1,20 @@
 package org.robolectric.shadows;
 
-import android.content.ClipData;
-import android.content.ClipDescription;
-import android.content.ClipboardManager;
-import android.content.ClipboardManager.OnPrimaryClipChangedListener;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
-
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+
+import android.content.ClipData;
+import android.content.ClipDescription;
+import android.content.ClipboardManager;
+import android.content.ClipboardManager.OnPrimaryClipChangedListener;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)

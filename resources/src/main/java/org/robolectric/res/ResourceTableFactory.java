@@ -1,9 +1,8 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Logger;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import org.robolectric.util.Logger;
 
 public class ResourceTableFactory {
   /**
