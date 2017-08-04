@@ -67,4 +67,16 @@ public class QualifiersTest {
     assertThat(Qualifiers.getOrientation("port")).isEqualTo("port");
     assertThat(Qualifiers.getOrientation("port-v7")).isEqualTo("port");
   }
+
+  @Test public void getLanguage() {
+    assertThat(Qualifiers.getLanguage("en")).isEqualTo("en");
+    assertThat(Qualifiers.getLanguage("en-rUS")).isEqualTo("en");
+    assertThat(Qualifiers.getLanguage("en-rUS-port")).isEqualTo("en");
+  }
+
+  @Test public void getCountry() {
+    assertThat(Qualifiers.getCountry("en")).isEqualTo("en");
+    assertThat(Qualifiers.getCountry("en-rUS")).isEqualTo("en");
+    assertThat(Qualifiers.getCountry("en-rUS-port")).isEqualTo("en");
+  }
 }

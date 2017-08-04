@@ -4,21 +4,50 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.view.View;
 import android.widget.TextView;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+
+import java.util.Locale;
 
 @Config(qualifiers = "en")
 @RunWith(TestRunners.SelfTest.class)
 public class QualifiersTest {
 
+  private Resources resources;
+
+  @Before
+  public void setUp() {
+    resources = RuntimeEnvironment.application.getResources();
+  }
+
   @Test
   @Config(qualifiers = "land")
   public void orientation() throws Exception {
-    assertThat(Robolectric.setupActivity(Activity.class).getResources().getConfiguration().orientation)
-        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(resources.getConfiguration().orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  @Config(qualifiers = "en")
+  @Test public void shouldBeEnglish() {
+    Locale locale = resources.getConfiguration().locale;
+    assertThat(locale.getLanguage()).isEqualTo("en");
+  }
+
+  @Config(qualifiers = "ja")
+  @Test public void shouldBeJapanese() {
+    Locale locale = resources.getConfiguration().locale;
+    assertThat(locale.getLanguage()).isEqualTo("ja");
+  }
+
+  @Config(qualifiers = "fr")
+  @Test public void shouldBeFrench() {
+    Locale locale = resources.getConfiguration().locale;
+    assertThat(locale.getLanguage()).isEqualTo("fr");
   }
 
   @Test
