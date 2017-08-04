@@ -2,39 +2,47 @@ plugins {
     id "net.ltgt.errorprone" version "0.0.11"
 }
 
-new RoboJavaModulePlugin(
-        deploy: true
-).apply(project)
+apply plugin: 'com.android.library'
 
-apply plugin: ShadowsPlugin
+android {
+    defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                className 'org.robolectric.annotation.processing.RobolectricProcessor'
+                arguments = [ 'org.robolectric.annotation.processing.shadowPackage' : 'org.robolectric.shadows.gms' ]
+            }
+        }
+    }
 
-shadows {
-    packageName "org.robolectric.shadows.gms"
+    compileSdkVersion 26
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
+    annotationProcessor project(":processor")
     compileOnly project(":shadows:framework")
 
-    compileOnly "com.android.support:support-fragment:26.0.0-alpha1"
-    compileOnly "com.google.android.gms:play-services-base:8.4.0"
-    compileOnly "com.google.android.gms:play-services-basement:8.4.0"
-
-    compileOnly AndroidSdk.MAX_SDK.coordinates
+    compileOnly "com.android.support:support-fragment:26.0.0"
+    compileOnly "com.google.android.gms:play-services-base:11.0.4"
+    compileOnly "com.google.android.gms:play-services-auth:11.0.4"
 
     // Testing dependencies
-    testCompile project(":robolectric")
-    testCompile "junit:junit:4.12"
-    testCompile "org.assertj:assertj-core:3.8.0"
-    testCompile "org.mockito:mockito-core:2.5.4"
-    testRuntime "com.android.support:support-fragment:26.0.0-alpha1"
-    testRuntime "com.google.android.gms:play-services-base:8.4.0"
-    testRuntime "com.google.android.gms:play-services-basement:8.4.0"
-
-    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.assertj:assertj-core:3.8.0"
+    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "com.android.support:support-fragment:26.0.0"
+    testImplementation "com.google.android.gms:play-services-base:11.0.4"
+    testImplementation "com.google.android.gms:play-services-basement:11.0.4"
+    testImplementation "com.google.android.gms:play-services-auth:11.0.4"
 }
 
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-play-services'
-    }
-}
+//install {
+//    repositories.mavenInstaller {
+//        pom.artifactId = 'shadows-play-services'
+//    }
+//}
