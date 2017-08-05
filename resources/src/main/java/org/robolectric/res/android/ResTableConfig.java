@@ -3,7 +3,15 @@ package org.robolectric.res.android;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_DEFAULT;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_HIGH;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_LOW;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_MEDIUM;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_NONE;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_TV;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XHIGH;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XXHIGH;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XXXHIGH;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_ANY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_NO;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_SOFT;
@@ -122,6 +130,16 @@ public class ResTableConfig {
   public static final int UI_MODE_NIGHT_NO = ACONFIGURATION_UI_MODE_NIGHT_NO << SHIFT_UI_MODE_NIGHT;
   public static final int UI_MODE_NIGHT_YES = ACONFIGURATION_UI_MODE_NIGHT_YES << SHIFT_UI_MODE_NIGHT;
 
+  public static final int DENSITY_DEFAULT = ACONFIGURATION_DENSITY_DEFAULT;
+  public static final int DENSITY_LOW = ACONFIGURATION_DENSITY_LOW;
+  public static final int DENSITY_MEDIUM = ACONFIGURATION_DENSITY_MEDIUM;
+  public static final int DENSITY_TV = ACONFIGURATION_DENSITY_TV;
+  public static final int DENSITY_HIGH = ACONFIGURATION_DENSITY_HIGH;
+  public static final int DENSITY_XHIGH = ACONFIGURATION_DENSITY_XHIGH;
+  public static final int DENSITY_XXHIGH = ACONFIGURATION_DENSITY_XXHIGH;
+  public static final int DENSITY_XXXHIGH = ACONFIGURATION_DENSITY_XXXHIGH;
+  public static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
+  public static final int DENSITY_NONE = ACONFIGURATION_DENSITY_NONE;
 
   /** The below constants are from android.content.res.Configuration. */
   private static final int DENSITY_DPI_UNDEFINED = 0;
@@ -701,8 +719,6 @@ public class ResTableConfig {
   public static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
   static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
-  private static final int DENSITY_MEDIUM = ACONFIGURATION_DENSITY_MEDIUM;
-  private static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
   private static final int MASK_KEYSHIDDEN = 0x0003;
 
   private static final int KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY;
