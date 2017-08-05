@@ -1,6 +1,15 @@
 package org.robolectric.res;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.res.ResTableConfig.DENSITY_ANY;
+import static org.robolectric.res.ResTableConfig.DENSITY_HIGH;
+import static org.robolectric.res.ResTableConfig.DENSITY_LOW;
+import static org.robolectric.res.ResTableConfig.DENSITY_MEDIUM;
+import static org.robolectric.res.ResTableConfig.DENSITY_NONE;
+import static org.robolectric.res.ResTableConfig.DENSITY_TV;
+import static org.robolectric.res.ResTableConfig.DENSITY_XHIGH;
+import static org.robolectric.res.ResTableConfig.DENSITY_XXHIGH;
+import static org.robolectric.res.ResTableConfig.DENSITY_XXXHIGH;
 import static org.robolectric.res.ResTableConfig.HDR_NO;
 import static org.robolectric.res.ResTableConfig.HDR_YES;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_ANY;
@@ -227,5 +236,63 @@ public class ConfigDescriptionTest {
     assertThat(config.uiMode).isEqualTo(UI_MODE_NIGHT_NO);
   }
 
+  @Test public void parsedensity_any() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("anydpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_ANY);
+  }
 
+  @Test public void parsedensity_nodpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("nodpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_NONE);
+  }
+
+  @Test public void parsedensity_ldpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("ldpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_LOW);
+  }
+
+  @Test public void parsedensity_mdpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("mdpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_MEDIUM);
+  }
+
+  @Test public void parsedensity_tvdpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("tvdpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_TV);
+  }
+
+  @Test public void parsedensity_hdpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("hdpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_HIGH);
+  }
+
+  @Test public void parsedensity_xhdpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("xhdpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_XHIGH);
+  }
+
+  @Test public void parsedensity_xxhdpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("xxhdpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_XXHIGH);
+  }
+
+  @Test public void parsedensity_xxxhdpi() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("xxxhdpi", config);
+    assertThat(config.density).isEqualTo(DENSITY_XXXHIGH);
+  }
+
+  @Test public void parsedensity_specificDpt() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("720dpi", config);
+    assertThat(config.density).isEqualTo(720);
+  }
 }

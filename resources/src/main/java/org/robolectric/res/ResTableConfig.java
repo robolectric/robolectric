@@ -153,6 +153,55 @@ public class ResTableConfig {
      */
     public static final int ACONFIGURATION_UI_MODE_NIGHT_YES = 0x2;
 
+    /** Density: default density. */
+    public static final int ACONFIGURATION_DENSITY_DEFAULT = 0;
+    /**
+     * Density: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#DensityQualifier">ldpi</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_DENSITY_LOW = 120;
+    /**
+     * Density: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#DensityQualifier">mdpi</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_DENSITY_MEDIUM = 160;
+    /**
+     * Density: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#DensityQualifier">tvdpi</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_DENSITY_TV = 213;
+    /**
+     * Density: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#DensityQualifier">hdpi</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_DENSITY_HIGH = 240;
+    /**
+     * Density: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#DensityQualifier">xhdpi</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_DENSITY_XHIGH = 320;
+    /**
+     * Density: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#DensityQualifier">xxhdpi</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_DENSITY_XXHIGH = 480;
+    /**
+     * Density: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#DensityQualifier">xxxhdpi</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_DENSITY_XXXHIGH = 640;
+    /** Density: any density. */
+    public static final int ACONFIGURATION_DENSITY_ANY = 0xfffe;
+    /** Density: no density specified. */
+    public static final int ACONFIGURATION_DENSITY_NONE = 0xffff;
+
     // screenLayout bits for layout direction.
     public static final int MASK_LAYOUTDIR = 0xC0;
     public static final int SHIFT_LAYOUTDIR = 6;
@@ -216,6 +265,16 @@ public class ResTableConfig {
     public static final int UI_MODE_NIGHT_NO = ACONFIGURATION_UI_MODE_NIGHT_NO << SHIFT_UI_MODE_NIGHT;
     public static final int UI_MODE_NIGHT_YES = ACONFIGURATION_UI_MODE_NIGHT_YES << SHIFT_UI_MODE_NIGHT;
 
+    public static final int DENSITY_DEFAULT = ACONFIGURATION_DENSITY_DEFAULT;
+    public static final int DENSITY_LOW = ACONFIGURATION_DENSITY_LOW;
+    public static final int DENSITY_MEDIUM = ACONFIGURATION_DENSITY_MEDIUM;
+    public static final int DENSITY_TV = ACONFIGURATION_DENSITY_TV;
+    public static final int DENSITY_HIGH = ACONFIGURATION_DENSITY_HIGH;
+    public static final int DENSITY_XHIGH = ACONFIGURATION_DENSITY_XHIGH;
+    public static final int DENSITY_XXHIGH = ACONFIGURATION_DENSITY_XXHIGH;
+    public static final int DENSITY_XXXHIGH = ACONFIGURATION_DENSITY_XXXHIGH;
+    public static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
+    public static final int DENSITY_NONE = ACONFIGURATION_DENSITY_NONE;
 
     public int mcc;
     public int mnc;
@@ -227,4 +286,5 @@ public class ResTableConfig {
     public int colorMode;
     public int orientation;
     public int uiMode;
+    public int density;
 }

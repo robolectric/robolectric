@@ -27,6 +27,7 @@ public class ConfigDescription {
   private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
   private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
   private static final Pattern SCREEN_HEIGHT_PATTERN = Pattern.compile("^h([0-9]+)dp");
+  private static final Pattern DENSITY_PATTERN = Pattern.compile("^([0-9]+)dpi");
 
   public class LocaleValue {
 
@@ -507,6 +508,61 @@ public class ConfigDescription {
   }
 
   private boolean parseDensity(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) out.density = ResTableConfig.DENSITY_DEFAULT;
+      return true;
+    }
+
+    if (Objects.equals(name, "anydpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_ANY;
+      return true;
+    }
+
+    if (Objects.equals(name, "nodpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_NONE;
+      return true;
+    }
+
+    if (Objects.equals(name, "ldpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_LOW;
+      return true;
+    }
+
+    if (Objects.equals(name, "mdpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_MEDIUM;
+      return true;
+    }
+
+    if (Objects.equals(name, "tvdpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_TV;
+      return true;
+    }
+
+    if (Objects.equals(name, "hdpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_HIGH;
+      return true;
+    }
+
+    if (Objects.equals(name, "xhdpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_XHIGH;
+      return true;
+    }
+
+    if (Objects.equals(name, "xxhdpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_XXHIGH;
+      return true;
+    }
+
+    if (Objects.equals(name, "xxxhdpi")) {
+      if (out != null) out.density = ResTableConfig.DENSITY_XXXHIGH;
+      return true;
+    }
+
+    Matcher matcher = DENSITY_PATTERN.matcher(name);
+    if (matcher.matches()) {
+      out.density = Integer.parseInt(matcher.group(1));
+      return true;
+    }
     return false;
   }
 
