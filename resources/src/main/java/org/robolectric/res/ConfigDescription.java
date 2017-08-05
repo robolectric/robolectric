@@ -25,6 +25,7 @@ public class ConfigDescription {
   private static final Pattern MCC_PATTERN = Pattern.compile("mcc([\\d]+)");
   private static final Pattern MNC_PATTERN = Pattern.compile("mnc([\\d]+)");
   private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
+  private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
 
   public class LocaleValue {
 
@@ -260,6 +261,18 @@ public class ConfigDescription {
   }
 
   private boolean parseScreenWidthDp(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) {
+        out.screenWidthDp = ResTableConfig.SCREENWIDTH_ANY;
+      }
+      return true;
+    }
+
+    Matcher matcher = SCREEN_WIDTH_PATTERN.matcher(name);
+    if (matcher.matches()) {
+      out.screenWidthDp = Integer.parseInt(matcher.group(1));
+      return true;
+    }
     return false;
   }
 
