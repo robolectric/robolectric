@@ -24,6 +24,7 @@ public class ConfigDescription {
 
   private static final Pattern MCC_PATTERN = Pattern.compile("mcc([\\d]+)");
   private static final Pattern MNC_PATTERN = Pattern.compile("mnc([\\d]+)");
+  private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
 
   public class LocaleValue {
 
@@ -243,6 +244,18 @@ public class ConfigDescription {
   }
 
   private boolean parseSmallestScreenWidthDp(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) {
+        out.smallestScreenWidthDp = ResTableConfig.SCREENWIDTH_ANY;
+      }
+      return true;
+    }
+
+    Matcher matcher = SMALLEST_SCREEN_WIDTH_PATTERN.matcher(name);
+    if (matcher.matches()) {
+      out.smallestScreenWidthDp = Integer.parseInt(matcher.group(1));
+      return true;
+    }
     return false;
   }
 

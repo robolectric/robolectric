@@ -22,7 +22,10 @@ public class ResTableConfig {
     public static final int LAYOUTDIR_LTR = ACONFIGURATION_LAYOUTDIR_LTR << SHIFT_LAYOUTDIR;
     public static final int LAYOUTDIR_RTL = ACONFIGURATION_LAYOUTDIR_RTL << SHIFT_LAYOUTDIR;
 
+    public static final int SCREENWIDTH_ANY = 0;
+
     public int mcc;
     public int mnc;
     public int screenLayout;
+    public int smallestScreenWidthDp;
 }
