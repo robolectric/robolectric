@@ -38,7 +38,6 @@ public class ConfigDescription {
 
     LocaleValue locale;
 
-
     boolean success = !part_iter.hasNext();
     if (part_iter.hasNext() && parseMcc(part_iter.peek(), out)) {
       part_iter.next();
@@ -294,6 +293,43 @@ public class ConfigDescription {
   }
 
   private boolean parseScreenLayoutSize(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) {
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
+                ResTableConfig.SCREENSIZE_ANY;
+      }
+      return true;
+    } else if (Objects.equals(name, "small")) {
+      if (out != null) {
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
+                ResTableConfig.SCREENSIZE_SMALL;
+      }
+      return true;
+    } else if (Objects.equals(name, "normal")) {
+      if (out != null) {
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
+                ResTableConfig.SCREENSIZE_NORMAL;
+      }
+      return true;
+    } else if (Objects.equals(name, "large")) {
+      if (out != null) {
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
+                ResTableConfig.SCREENSIZE_LARGE;
+      }
+      return true;
+    } else if (Objects.equals(name, "xlarge")) {
+      if (out != null) {
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
+                ResTableConfig.SCREENSIZE_XLARGE;
+      }
+      return true;
+    }
+
     return false;
   }
 
