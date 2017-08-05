@@ -26,6 +26,16 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSI
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_NORMAL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_SMALL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_XLARGE;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_NO;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_YES;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_APPLIANCE;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_CAR;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_DESK;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_NORMAL;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_TELEVISION;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_WATCH;
 import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
 import static org.robolectric.res.android.ResTable.kDebugTableSuperNoisy;
 import static org.robolectric.res.android.Util.ALOGI;
@@ -94,6 +104,23 @@ public class ResTableConfig {
 //  public static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
   public static final int SCREENSIZE_LARGE = ACONFIGURATION_SCREENSIZE_LARGE;
   public static final int SCREENSIZE_XLARGE = ACONFIGURATION_SCREENSIZE_XLARGE;
+
+  // uiMode bits for the mode type.
+  public static final int MASK_UI_MODE_TYPE = 0x0f;
+  public static final int UI_MODE_TYPE_ANY = ACONFIGURATION_UI_MODE_TYPE_ANY;
+  public static final int UI_MODE_TYPE_NORMAL = ACONFIGURATION_UI_MODE_TYPE_NORMAL;
+  public static final int UI_MODE_TYPE_DESK = ACONFIGURATION_UI_MODE_TYPE_DESK;
+  public static final int UI_MODE_TYPE_CAR = ACONFIGURATION_UI_MODE_TYPE_CAR;
+  public static final int UI_MODE_TYPE_TELEVISION = ACONFIGURATION_UI_MODE_TYPE_TELEVISION;
+  public static final int UI_MODE_TYPE_APPLIANCE = ACONFIGURATION_UI_MODE_TYPE_APPLIANCE;
+  public static final int UI_MODE_TYPE_WATCH = ACONFIGURATION_UI_MODE_TYPE_WATCH;
+
+  // uiMode bits for the night switch;
+  public static final int MASK_UI_MODE_NIGHT = 0x30;
+  public static final int SHIFT_UI_MODE_NIGHT = 4;
+  public static final int UI_MODE_NIGHT_ANY = ACONFIGURATION_UI_MODE_NIGHT_ANY << SHIFT_UI_MODE_NIGHT;
+  public static final int UI_MODE_NIGHT_NO = ACONFIGURATION_UI_MODE_NIGHT_NO << SHIFT_UI_MODE_NIGHT;
+  public static final int UI_MODE_NIGHT_YES = ACONFIGURATION_UI_MODE_NIGHT_YES << SHIFT_UI_MODE_NIGHT;
 
 
   /** The below constants are from android.content.res.Configuration. */
@@ -200,18 +227,11 @@ public class ResTableConfig {
       TOUCHSCREEN_FINGER, "finger");
 
   private static final int UI_MODE_NIGHT_MASK = 0x30;
-  private static final int UI_MODE_NIGHT_NO   = 0x10;
-  private static final int UI_MODE_NIGHT_YES  = 0x20;
   private static final Map<Integer, String> UI_MODE_NIGHT_VALUES = ImmutableMap.of(
       UI_MODE_NIGHT_NO, "notnight",
       UI_MODE_NIGHT_YES, "night");
 
   private static final int UI_MODE_TYPE_MASK       = 0x0F;
-  private static final int UI_MODE_TYPE_DESK       = 0x02;
-  private static final int UI_MODE_TYPE_CAR        = 0x03;
-  private static final int UI_MODE_TYPE_TELEVISION = 0x04;
-  private static final int UI_MODE_TYPE_APPLIANCE  = 0x05;
-  private static final int UI_MODE_TYPE_WATCH      = 0x06;
   private static final Map<Integer, String> UI_MODE_TYPE_VALUES = ImmutableMap.of(
       UI_MODE_TYPE_DESK, "desk",
       UI_MODE_TYPE_CAR, "car",
@@ -279,7 +299,6 @@ public class ResTableConfig {
   int screenWidth;
   int screenHeight;
   int sdkVersion;
-  public int colorMode;
 
   /**
    * Returns a copy of this resource configuration with a different {@link #sdkVersion}, or this
@@ -682,8 +701,6 @@ public class ResTableConfig {
   public static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
   static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
-  private static final int MASK_UI_MODE_TYPE = UI_MODE_TYPE_MASK;
-  private static final int MASK_UI_MODE_NIGHT = UI_MODE_NIGHT_MASK;
   private static final int DENSITY_MEDIUM = ACONFIGURATION_DENSITY_MEDIUM;
   private static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
   private static final int MASK_KEYSHIDDEN = 0x0003;

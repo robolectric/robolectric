@@ -363,10 +363,59 @@ public class ConfigDescription {
   }
 
   private boolean parseUiModeType(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
+            ResTableConfig.UI_MODE_TYPE_ANY;
+      return true;
+    } else if (Objects.equals(name, "desk")) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
+            ResTableConfig.UI_MODE_TYPE_DESK;
+      return true;
+    } else if (Objects.equals(name, "car")) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
+            ResTableConfig.UI_MODE_TYPE_CAR;
+      return true;
+    } else if (Objects.equals(name, "television")) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
+            ResTableConfig.UI_MODE_TYPE_TELEVISION;
+      return true;
+    } else if (Objects.equals(name, "appliance")) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
+            ResTableConfig.UI_MODE_TYPE_APPLIANCE;
+      return true;
+    } else if (Objects.equals(name, "watch")) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
+            ResTableConfig.UI_MODE_TYPE_WATCH;
+      return true;
+    }
+
     return false;
   }
 
   private boolean parseUiModeNight(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_NIGHT) |
+            ResTableConfig.UI_MODE_NIGHT_ANY;
+      return true;
+    } else if (Objects.equals(name, "night")) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_NIGHT) |
+            ResTableConfig.UI_MODE_NIGHT_YES;
+      return true;
+    } else if (Objects.equals(name, "notnight")) {
+      if (out != null)
+        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_NIGHT) |
+            ResTableConfig.UI_MODE_NIGHT_NO;
+      return true;
+    }
+
     return false;
   }
 
