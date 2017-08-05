@@ -61,4 +61,10 @@ public class ConfigDescriptionTest {
     new ConfigDescription().parse("sw320dp", config);
     assertThat(config.smallestScreenWidthDp).isEqualTo(320);
   }
+
+  @Test public void getScreenWidth() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("w480dp", config);
+    assertThat(config.screenWidthDp).isEqualTo(480);
+  }
 }
