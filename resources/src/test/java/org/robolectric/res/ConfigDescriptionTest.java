@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_ANY;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_LTR;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_RTL;
+import static org.robolectric.res.ResTableConfig.SCREENLONG_NO;
+import static org.robolectric.res.ResTableConfig.SCREENLONG_YES;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_LARGE;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_NORMAL;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_SMALL;
@@ -94,15 +96,23 @@ public class ConfigDescriptionTest {
     assertThat(config.smallestScreenWidthDp).isEqualTo(320);
   }
 
-  @Test public void getScreenWidth() {
+  @Test public void parse_screenWidth() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("w480dp", config);
     assertThat(config.screenWidthDp).isEqualTo(480);
   }
 
-  @Test public void getScreenHeight() {
+  @Test public void parse_screenLayoutLong_long() {
     ResTableConfig config = new ResTableConfig();
-    new ConfigDescription().parse("h1024dp", config);
-    assertThat(config.screenHeightDp).isEqualTo(1024);
+    new ConfigDescription().parse("long", config);
+    assertThat(config.screenLayout).isEqualTo(SCREENLONG_YES);
   }
+
+  @Test public void parse_screenLayoutLong_notlong() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("notlong", config);
+    assertThat(config.screenLayout).isEqualTo(SCREENLONG_NO);
+  }
+
+
 }

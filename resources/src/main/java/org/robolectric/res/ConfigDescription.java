@@ -334,6 +334,26 @@ public class ConfigDescription {
   }
 
   private boolean parseScreenLayoutLong(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENLONG) |
+                ResTableConfig.SCREENLONG_ANY;
+      return true;
+    } else if (Objects.equals(name, "long")) {
+      if (out != null)
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENLONG) |
+                ResTableConfig.SCREENLONG_YES;
+      return true;
+    } else if (Objects.equals(name, "notlong")) {
+      if (out != null)
+        out.screenLayout =
+            (out.screenLayout & ~ResTableConfig.MASK_SCREENLONG) |
+                ResTableConfig.SCREENLONG_NO;
+      return true;
+    }
+
     return false;
   }
 
