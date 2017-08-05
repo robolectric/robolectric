@@ -26,6 +26,7 @@ public class ConfigDescription {
   private static final Pattern MNC_PATTERN = Pattern.compile("mnc([\\d]+)");
   private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
   private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
+  private static final Pattern SCREEN_HEIGHT_PATTERN = Pattern.compile("^h([0-9]+)dp");
 
   public class LocaleValue {
 
@@ -277,6 +278,18 @@ public class ConfigDescription {
   }
 
   private boolean parseScreenHeightDp(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) {
+        out.screenHeightDp = ResTableConfig.SCREENWIDTH_ANY;
+      }
+      return true;
+    }
+
+    Matcher matcher = SCREEN_HEIGHT_PATTERN.matcher(name);
+    if (matcher.matches()) {
+      out.screenHeightDp = Integer.parseInt(matcher.group(1));
+      return true;
+    }
     return false;
   }
 

@@ -67,4 +67,10 @@ public class ConfigDescriptionTest {
     new ConfigDescription().parse("w480dp", config);
     assertThat(config.screenWidthDp).isEqualTo(480);
   }
+
+  @Test public void getScreenHeight() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("h1024dp", config);
+    assertThat(config.screenHeightDp).isEqualTo(1024);
+  }
 }
