@@ -54,4 +54,11 @@ public class ConfigDescriptionTest {
     new ConfigDescription().parse("any", config);
     assertThat(config.screenLayout).isEqualTo(LAYOUTDIR_ANY);
   }
+
+  @Test
+  public void parse_smallestScreenWidth() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("sw320dp", config);
+    assertThat(config.smallestScreenWidthDp).isEqualTo(320);
+  }
 }
