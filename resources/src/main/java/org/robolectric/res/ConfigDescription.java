@@ -358,18 +358,89 @@ public class ConfigDescription {
   }
 
   private boolean parseScreenRound(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.screenLayout2 =
+            (out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
+                ResTableConfig.SCREENROUND_ANY;
+      return true;
+    } else if (Objects.equals(name, "round")) {
+      if (out != null)
+        out.screenLayout2 =
+            (out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
+                ResTableConfig.SCREENROUND_YES;
+      return true;
+    } else if (Objects.equals(name, "notround")) {
+      if (out != null)
+        out.screenLayout2 =
+            (out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
+                ResTableConfig.SCREENROUND_NO;
+      return true;
+    }
     return false;
   }
 
   private boolean parseWideColorGamut(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.colorMode =
+            (out.colorMode & ~ResTableConfig.MASK_WIDE_COLOR_GAMUT) |
+                ResTableConfig.WIDE_COLOR_GAMUT_ANY;
+      return true;
+    } else if (Objects.equals(name, "widecg")) {
+      if (out != null)
+        out.colorMode =
+            (out.colorMode & ~ResTableConfig.MASK_WIDE_COLOR_GAMUT) |
+                ResTableConfig.WIDE_COLOR_GAMUT_YES;
+      return true;
+    } else if (Objects.equals(name, "nowidecg")) {
+      if (out != null)
+        out.colorMode =
+            (out.colorMode & ~ResTableConfig.MASK_WIDE_COLOR_GAMUT) |
+                ResTableConfig.WIDE_COLOR_GAMUT_NO;
+      return true;
+    }
     return false;
   }
 
   private boolean parseHdr(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.colorMode =
+            (out.colorMode & ~ResTableConfig.MASK_HDR) |
+                ResTableConfig.HDR_ANY;
+      return true;
+    } else if (Objects.equals(name, "highdr")) {
+      if (out != null)
+        out.colorMode =
+            (out.colorMode & ~ResTableConfig.MASK_HDR) |
+                ResTableConfig.HDR_YES;
+      return true;
+    } else if (Objects.equals(name, "lowdr")) {
+      if (out != null)
+        out.colorMode =
+            (out.colorMode & ~ResTableConfig.MASK_HDR) |
+                ResTableConfig.HDR_NO;
+      return true;
+    }
     return false;
   }
 
   private boolean parseOrientation(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+        if (out != null) out.orientation = out.ORIENTATION_ANY;
+      return true;
+    } else if (Objects.equals(name, "port")) {
+      if (out != null) out.orientation = out.ORIENTATION_PORT;
+      return true;
+    } else if (Objects.equals(name, "land")) {
+      if (out != null) out.orientation = out.ORIENTATION_LAND;
+      return true;
+    } else if (Objects.equals(name, "square")) {
+      if (out != null) out.orientation = out.ORIENTATION_SQUARE;
+      return true;
+    }
+
     return false;
   }
 

@@ -1,15 +1,24 @@
 package org.robolectric.res;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.res.ResTableConfig.HDR_NO;
+import static org.robolectric.res.ResTableConfig.HDR_YES;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_ANY;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_LTR;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_RTL;
+import static org.robolectric.res.ResTableConfig.ORIENTATION_LAND;
+import static org.robolectric.res.ResTableConfig.ORIENTATION_PORT;
+import static org.robolectric.res.ResTableConfig.ORIENTATION_SQUARE;
 import static org.robolectric.res.ResTableConfig.SCREENLONG_NO;
 import static org.robolectric.res.ResTableConfig.SCREENLONG_YES;
+import static org.robolectric.res.ResTableConfig.SCREENROUND_NO;
+import static org.robolectric.res.ResTableConfig.SCREENROUND_YES;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_LARGE;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_NORMAL;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_SMALL;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_XLARGE;
+import static org.robolectric.res.ResTableConfig.WIDE_COLOR_GAMUT_NO;
+import static org.robolectric.res.ResTableConfig.WIDE_COLOR_GAMUT_YES;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,6 +121,60 @@ public class ConfigDescriptionTest {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("notlong", config);
     assertThat(config.screenLayout).isEqualTo(SCREENLONG_NO);
+  }
+
+  @Test public void parse_screenRound_round() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("round", config);
+    assertThat(config.screenLayout2).isEqualTo(SCREENROUND_YES);
+  }
+
+  @Test public void parse_screenRound_notround() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("notround", config);
+    assertThat(config.screenLayout2).isEqualTo(SCREENROUND_NO);
+  }
+
+  @Test public void parse_wideColorGamut_yes() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("widecg", config);
+    assertThat(config.colorMode).isEqualTo(WIDE_COLOR_GAMUT_YES);
+  }
+
+  @Test public void parse_wideColorGamut_no() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("nowidecg", config);
+    assertThat(config.colorMode).isEqualTo(WIDE_COLOR_GAMUT_NO);
+  }
+
+  @Test public void parse_hdr_high() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("highdr", config);
+    assertThat(config.colorMode).isEqualTo(HDR_YES);
+  }
+
+  @Test public void parse_hdr_low() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("lowdr", config);
+    assertThat(config.colorMode).isEqualTo(HDR_NO);
+  }
+
+  @Test public void parse_orientation_port() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("port", config);
+    assertThat(config.orientation).isEqualTo(ORIENTATION_PORT);
+  }
+
+  @Test public void parse_orientation_land() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("land", config);
+    assertThat(config.orientation).isEqualTo(ORIENTATION_LAND);
+  }
+
+  @Test public void parse_orientation_square() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("square", config);
+    assertThat(config.orientation).isEqualTo(ORIENTATION_SQUARE);
   }
 
 

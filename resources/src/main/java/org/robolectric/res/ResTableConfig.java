@@ -62,6 +62,45 @@ public class ResTableConfig {
      */
     public static final int ACONFIGURATION_SCREENLONG_YES = 0x2;
 
+    public static final int ACONFIGURATION_SCREENROUND_ANY = 0x00;
+    public static final int ACONFIGURATION_SCREENROUND_NO = 0x1;
+    public static final int ACONFIGURATION_SCREENROUND_YES = 0x2;
+
+    /** Wide color gamut: not specified. */
+    public static final int ACONFIGURATION_WIDE_COLOR_GAMUT_ANY = 0x00;
+    /**
+     * Wide color gamut: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#WideColorGamutQualifier">no
+     * nowidecg</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_WIDE_COLOR_GAMUT_NO = 0x1;
+    /**
+     * Wide color gamut: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#WideColorGamutQualifier">
+     * widecg</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_WIDE_COLOR_GAMUT_YES = 0x2;
+
+    /** HDR: not specified. */
+    public static final int ACONFIGURATION_HDR_ANY = 0x00;
+    /**
+     * HDR: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#HDRQualifier">
+     * lowdr</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_HDR_NO = 0x1;
+    /**
+     * HDR: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#HDRQualifier">
+     * highdr</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_HDR_YES = 0x2;
+
+    public static final int ACONFIGURATION_ORIENTATION_ANY  = 0x0000;
+    public static final int ACONFIGURATION_ORIENTATION_PORT = 0x0001;
+    public static final int ACONFIGURATION_ORIENTATION_LAND = 0x0002;
+    public static final int ACONFIGURATION_ORIENTATION_SQUARE = 0x0003;
+
     // screenLayout bits for layout direction.
     public static final int MASK_LAYOUTDIR = 0xC0;
     public static final int SHIFT_LAYOUTDIR = 6;
@@ -84,10 +123,36 @@ public class ResTableConfig {
     public static final int SCREENLONG_NO = ACONFIGURATION_SCREENLONG_NO << SHIFT_SCREENLONG;
     public static final int SCREENLONG_YES = ACONFIGURATION_SCREENLONG_YES << SHIFT_SCREENLONG;
 
+    // screenLayout2 bits for round/notround.
+    public static final int MASK_SCREENROUND = 0x03;
+    public static final int SCREENROUND_ANY = ACONFIGURATION_SCREENROUND_ANY;
+    public static final int SCREENROUND_NO = ACONFIGURATION_SCREENROUND_NO;
+    public static final int SCREENROUND_YES = ACONFIGURATION_SCREENROUND_YES;
+
+    public static final int MASK_WIDE_COLOR_GAMUT = 0x03;
+    public static final int WIDE_COLOR_GAMUT_ANY = ACONFIGURATION_WIDE_COLOR_GAMUT_ANY;
+    public static final int WIDE_COLOR_GAMUT_NO = ACONFIGURATION_WIDE_COLOR_GAMUT_NO;
+    public static final int WIDE_COLOR_GAMUT_YES = ACONFIGURATION_WIDE_COLOR_GAMUT_YES;
+
+    // colorMode bits for HDR/LDR.
+    public static final int MASK_HDR = 0x0c;
+    public static final int SHIFT_COLOR_MODE_HDR = 2;
+    public static final int HDR_ANY = ACONFIGURATION_HDR_ANY << SHIFT_COLOR_MODE_HDR;
+    public static final int HDR_NO = ACONFIGURATION_HDR_NO << SHIFT_COLOR_MODE_HDR;
+    public static final int HDR_YES = ACONFIGURATION_HDR_YES << SHIFT_COLOR_MODE_HDR;
+
+    public static final int ORIENTATION_ANY  = ACONFIGURATION_ORIENTATION_ANY;
+    public static final int ORIENTATION_PORT = ACONFIGURATION_ORIENTATION_PORT;
+    public static final int ORIENTATION_LAND = ACONFIGURATION_ORIENTATION_LAND;
+    public static final int ORIENTATION_SQUARE = ACONFIGURATION_ORIENTATION_SQUARE;
+
     public int mcc;
     public int mnc;
     public int screenLayout;
     public int smallestScreenWidthDp;
     public int screenWidthDp;
     public int screenHeightDp;
+    public int screenLayout2;
+    public int colorMode;
+    public int orientation;
 }
