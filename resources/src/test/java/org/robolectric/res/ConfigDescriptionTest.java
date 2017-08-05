@@ -4,6 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_ANY;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_LTR;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_RTL;
+import static org.robolectric.res.ResTableConfig.SCREENSIZE_LARGE;
+import static org.robolectric.res.ResTableConfig.SCREENSIZE_NORMAL;
+import static org.robolectric.res.ResTableConfig.SCREENSIZE_SMALL;
+import static org.robolectric.res.ResTableConfig.SCREENSIZE_XLARGE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +57,34 @@ public class ConfigDescriptionTest {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("any", config);
     assertThat(config.screenLayout).isEqualTo(LAYOUTDIR_ANY);
+  }
+
+  @Test
+  public void parse_screenSize_small() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("small", config);
+    assertThat(config.screenLayout).isEqualTo(SCREENSIZE_SMALL);
+  }
+
+  @Test
+  public void parse_screenSize_normal() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("normal", config);
+    assertThat(config.screenLayout).isEqualTo(SCREENSIZE_NORMAL);
+  }
+
+  @Test
+  public void parse_screenSize_large() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("large", config);
+    assertThat(config.screenLayout).isEqualTo(SCREENSIZE_LARGE);
+  }
+
+  @Test
+  public void parse_screenSize_xlarge() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("xlarge", config);
+    assertThat(config.screenLayout).isEqualTo(SCREENSIZE_XLARGE);
   }
 
   @Test
