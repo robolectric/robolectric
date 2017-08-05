@@ -4,6 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.res.android.ResTableConfig.LAYOUTDIR_ANY;
 import static org.robolectric.res.android.ResTableConfig.LAYOUTDIR_LTR;
 import static org.robolectric.res.android.ResTableConfig.LAYOUTDIR_RTL;
+import static org.robolectric.res.android.ResTableConfig.ORIENTATION_LAND;
+import static org.robolectric.res.android.ResTableConfig.ORIENTATION_PORT;
+import static org.robolectric.res.android.ResTableConfig.ORIENTATION_SQUARE;
+import static org.robolectric.res.android.ResTableConfig.SCREENLONG_NO;
+import static org.robolectric.res.android.ResTableConfig.SCREENROUND_NO;
+import static org.robolectric.res.android.ResTableConfig.SCREENROUND_YES;
 import static org.robolectric.res.android.ResTableConfig.SCREENSIZE_LARGE;
 import static org.robolectric.res.android.ResTableConfig.SCREENSIZE_NORMAL;
 import static org.robolectric.res.android.ResTableConfig.SCREENSIZE_SMALL;
@@ -105,4 +111,41 @@ public class ConfigDescriptionTest {
     new ConfigDescription().parse("h1024dp", config);
     assertThat(config.screenHeightDp).isEqualTo(1024);
   }
+
+  @Test public void parse_screenLayoutLong_notlong() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("notlong", config);
+    assertThat(config.screenLayout).isEqualTo(SCREENLONG_NO);
+  }
+
+  @Test public void parse_screenRound_round() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("round", config);
+    assertThat(config.screenLayout2).isEqualTo(SCREENROUND_YES);
+  }
+
+  @Test public void parse_screenRound_notround() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("notround", config);
+    assertThat(config.screenLayout2).isEqualTo(SCREENROUND_NO);
+  }
+
+  @Test public void parse_orientation_port() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("port", config);
+    assertThat(config.orientation).isEqualTo(ORIENTATION_PORT);
+  }
+
+  @Test public void parse_orientation_land() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("land", config);
+    assertThat(config.orientation).isEqualTo(ORIENTATION_LAND);
+  }
+
+  @Test public void parse_orientation_square() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("square", config);
+    assertThat(config.orientation).isEqualTo(ORIENTATION_SQUARE);
+  }
+
 }

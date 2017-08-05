@@ -2,19 +2,40 @@ package org.robolectric.res.android;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_MEDIUM;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_NO;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_SOFT;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_YES;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_LAYOUTDIR_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_LAYOUTDIR_LTR;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_LAYOUTDIR_RTL;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_LAND;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_PORT;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_SQUARE;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENLONG_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENLONG_NO;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENLONG_YES;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENROUND_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENROUND_NO;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENROUND_YES;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_LARGE;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_NORMAL;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_SMALL;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_XLARGE;
 import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
 import static org.robolectric.res.android.ResTable.kDebugTableSuperNoisy;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.dtohs;
-import static org.robolectric.res.android.Util.htodl;
-import static org.robolectric.res.android.Util.htods;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,50 +79,6 @@ public class ResTableConfig {
     NAVIGATION,
     SDK_VERSION
   }
-
-  /** Layout direction: not specified. */
-  public static final int ACONFIGURATION_LAYOUTDIR_ANY  = 0x00;
-  /**
-   * Layout direction: value that corresponds to
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#LayoutDirectionQualifier">ldltr</a> resource qualifier specified.
-   */
-  public static final int ACONFIGURATION_LAYOUTDIR_LTR  = 0x01;
-  /**
-   * Layout direction: value that corresponds to
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#LayoutDirectionQualifier">ldrtl</a> resource qualifier specified.
-   */
-  public static final int ACONFIGURATION_LAYOUTDIR_RTL  = 0x02;
-
-  /** Screen size: not specified. */
-  public static final int ACONFIGURATION_SCREENSIZE_ANY  = 0x00;
-  /**
-   * Screen size: value indicating the screen is at least
-   * approximately 320x426 dp units, corresponding to the
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#ScreenSizeQualifier">small</a>
-   * resource qualifier.
-   */
-  public static final int ACONFIGURATION_SCREENSIZE_SMALL = 0x01;
-  /**
-   * Screen size: value indicating the screen is at least
-   * approximately 320x470 dp units, corresponding to the
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#ScreenSizeQualifier">normal</a>
-   * resource qualifier.
-   */
-//  public static final int ACONFIGURATION_SCREENSIZE_NORMAL = 0x02;
-  /**
-   * Screen size: value indicating the screen is at least
-   * approximately 480x640 dp units, corresponding to the
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#ScreenSizeQualifier">large</a>
-   * resource qualifier.
-   */
-  public static final int ACONFIGURATION_SCREENSIZE_LARGE = 0x03;
-  /**
-   * Screen size: value indicating the screen is at least
-   * approximately 720x960 dp units, corresponding to the
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#ScreenSizeQualifier">xlarge</a>
-   * resource qualifier.
-   */
-  public static final int ACONFIGURATION_SCREENSIZE_XLARGE = 0x04;
 
   // screenLayout bits for layout direction.
 //  public static final int MASK_LAYOUTDIR = 0xC0;
@@ -242,27 +219,23 @@ public class ResTableConfig {
       UI_MODE_TYPE_APPLIANCE, "appliance",
       UI_MODE_TYPE_WATCH, "watch");
 
+  // screenLayout bits for wide/long screen variation.
+  public static final int MASK_SCREENLONG = 0x30;
+  public static final int SHIFT_SCREENLONG = 4;
+  public static final int SCREENLONG_ANY = ACONFIGURATION_SCREENLONG_ANY << SHIFT_SCREENLONG;
+  public static final int SCREENLONG_NO = ACONFIGURATION_SCREENLONG_NO << SHIFT_SCREENLONG;
+  public static final int SCREENLONG_YES = ACONFIGURATION_SCREENLONG_YES << SHIFT_SCREENLONG;
 
-  /** Keyboard availability: not specified. */
-  private static final int ACONFIGURATION_KEYSHIDDEN_ANY = 0x0000;
-  /**
-   * Keyboard availability: value corresponding to the
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keysexposed</a>
-   * resource qualifier.
-   */
-  private static final int ACONFIGURATION_KEYSHIDDEN_NO = 0x0001;
-  /**
-   * Keyboard availability: value corresponding to the
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keyshidden</a>
-   * resource qualifier.
-   */
-  private static final int ACONFIGURATION_KEYSHIDDEN_YES = 0x0002;
-  /**
-   * Keyboard availability: value corresponding to the
-   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keyssoft</a>
-   * resource qualifier.
-   */
-  private static final int ACONFIGURATION_KEYSHIDDEN_SOFT = 0x0003;
+  // screenLayout2 bits for round/notround.
+  public static final int MASK_SCREENROUND = 0x03;
+  public static final int SCREENROUND_ANY = ACONFIGURATION_SCREENROUND_ANY;
+  public static final int SCREENROUND_NO = ACONFIGURATION_SCREENROUND_NO;
+  public static final int SCREENROUND_YES = ACONFIGURATION_SCREENROUND_YES;
+
+  public static final int ORIENTATION_ANY  = ACONFIGURATION_ORIENTATION_ANY;
+  public static final int ORIENTATION_PORT = ACONFIGURATION_ORIENTATION_PORT;
+  public static final int ORIENTATION_LAND = ACONFIGURATION_ORIENTATION_LAND;
+  public static final int ORIENTATION_SQUARE = ACONFIGURATION_ORIENTATION_SQUARE;
 
   /** The number of bytes that this resource configuration takes up. */
   int size;
@@ -306,6 +279,7 @@ public class ResTableConfig {
   int screenWidth;
   int screenHeight;
   int sdkVersion;
+  public int colorMode;
 
   /**
    * Returns a copy of this resource configuration with a different {@link #sdkVersion}, or this
@@ -707,15 +681,10 @@ public class ResTableConfig {
   // constants for isBetterThan...
   public static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
-  private static final int ACONFIGURATION_SCREENSIZE_NORMAL = SCREENLAYOUT_SIZE_NORMAL;
   static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
-  private static final int MASK_SCREENLONG = SCREENLAYOUT_LONG_MASK;
-  private static final int MASK_SCREENROUND = SCREENLAYOUT_ROUND_MASK;
   private static final int MASK_UI_MODE_TYPE = UI_MODE_TYPE_MASK;
   private static final int MASK_UI_MODE_NIGHT = UI_MODE_NIGHT_MASK;
-  private static final int ACONFIGURATION_DENSITY_MEDIUM = DENSITY_DPI_MDPI;
   private static final int DENSITY_MEDIUM = ACONFIGURATION_DENSITY_MEDIUM;
-  private static final int ACONFIGURATION_DENSITY_ANY = DENSITY_DPI_ANY;
   private static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
   private static final int MASK_KEYSHIDDEN = 0x0003;
 

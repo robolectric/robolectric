@@ -2,7 +2,6 @@ package org.robolectric.res.android;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
-import org.robolectric.res.android.ResTableConfig;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -108,20 +107,6 @@ public class ConfigDescription {
     }
 
     if (part_iter.hasNext() && parseScreenRound(part_iter.peek(), out)) {
-      part_iter.next();
-      if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
-      }
-    }
-
-    if (part_iter.hasNext() && parseWideColorGamut(part_iter.peek(), out)) {
-      part_iter.next();
-      if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
-      }
-    }
-
-    if (part_iter.hasNext() && parseHdr(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
         success = !part_iter.hasNext();
@@ -337,18 +322,43 @@ public class ConfigDescription {
   }
 
   private boolean parseScreenRound(String name, ResTableConfig out) {
-    return false;
-  }
-
-  private boolean parseWideColorGamut(String name, ResTableConfig out) {
-    return false;
-  }
-
-  private boolean parseHdr(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.screenLayout2 =
+            (byte) ((out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
+                            ResTableConfig.SCREENROUND_ANY);
+      return true;
+    } else if (Objects.equals(name, "round")) {
+      if (out != null)
+        out.screenLayout2 =
+            (byte) ((out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
+                            ResTableConfig.SCREENROUND_YES);
+      return true;
+    } else if (Objects.equals(name, "notround")) {
+      if (out != null)
+        out.screenLayout2 =
+            (byte) ((out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
+                            ResTableConfig.SCREENROUND_NO);
+      return true;
+    }
     return false;
   }
 
   private boolean parseOrientation(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+        if (out != null) out.orientation = out.ORIENTATION_ANY;
+      return true;
+    } else if (Objects.equals(name, "port")) {
+      if (out != null) out.orientation = out.ORIENTATION_PORT;
+      return true;
+    } else if (Objects.equals(name, "land")) {
+      if (out != null) out.orientation = out.ORIENTATION_LAND;
+      return true;
+    } else if (Objects.equals(name, "square")) {
+      if (out != null) out.orientation = out.ORIENTATION_SQUARE;
+      return true;
+    }
+
     return false;
   }
 
