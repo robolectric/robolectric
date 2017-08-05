@@ -29,4 +29,5 @@ public class ResTableConfig {
     public int screenLayout;
     public int smallestScreenWidthDp;
     public int screenWidthDp;
+    public int screenHeightDp;
 }
