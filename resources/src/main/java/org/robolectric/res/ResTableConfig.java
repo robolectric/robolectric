@@ -101,6 +101,58 @@ public class ResTableConfig {
     public static final int ACONFIGURATION_ORIENTATION_LAND = 0x0002;
     public static final int ACONFIGURATION_ORIENTATION_SQUARE = 0x0003;
 
+    /** UI mode: not specified. */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_ANY = 0x00;
+    /**
+     * UI mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">no
+     * UI mode type</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_NORMAL = 0x01;
+    /**
+     * UI mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">desk</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_DESK = 0x02;
+    /**
+     * UI mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">car</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_CAR = 0x03;
+    /**
+     * UI mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">television</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_TELEVISION = 0x04;
+    /**
+     * UI mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">appliance</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_APPLIANCE = 0x05;
+    /**
+     * UI mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">watch</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_WATCH = 0x06;
+    /**
+     * UI mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">vr</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_TYPE_VR_HEADSET = 0x07;
+
+    /** UI night mode: not specified.*/
+    public static final int ACONFIGURATION_UI_MODE_NIGHT_ANY = 0x00;
+    /**
+     * UI night mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#NightQualifier">notnight</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_NIGHT_NO = 0x1;
+    /**
+     * UI night mode: value that corresponds to
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#NightQualifier">night</a> resource qualifier specified.
+     */
+    public static final int ACONFIGURATION_UI_MODE_NIGHT_YES = 0x2;
+
     // screenLayout bits for layout direction.
     public static final int MASK_LAYOUTDIR = 0xC0;
     public static final int SHIFT_LAYOUTDIR = 6;
@@ -146,6 +198,25 @@ public class ResTableConfig {
     public static final int ORIENTATION_LAND = ACONFIGURATION_ORIENTATION_LAND;
     public static final int ORIENTATION_SQUARE = ACONFIGURATION_ORIENTATION_SQUARE;
 
+    // uiMode bits for the mode type.
+    public static final int MASK_UI_MODE_TYPE = 0x0f;
+    public static final int UI_MODE_TYPE_ANY = ACONFIGURATION_UI_MODE_TYPE_ANY;
+    public static final int UI_MODE_TYPE_NORMAL = ACONFIGURATION_UI_MODE_TYPE_NORMAL;
+    public static final int UI_MODE_TYPE_DESK = ACONFIGURATION_UI_MODE_TYPE_DESK;
+    public static final int UI_MODE_TYPE_CAR = ACONFIGURATION_UI_MODE_TYPE_CAR;
+    public static final int UI_MODE_TYPE_TELEVISION = ACONFIGURATION_UI_MODE_TYPE_TELEVISION;
+    public static final int UI_MODE_TYPE_APPLIANCE = ACONFIGURATION_UI_MODE_TYPE_APPLIANCE;
+    public static final int UI_MODE_TYPE_WATCH = ACONFIGURATION_UI_MODE_TYPE_WATCH;
+    public static final int UI_MODE_TYPE_VR_HEADSET = ACONFIGURATION_UI_MODE_TYPE_VR_HEADSET;
+
+    // uiMode bits for the night switch;
+    public static final int MASK_UI_MODE_NIGHT = 0x30;
+    public static final int SHIFT_UI_MODE_NIGHT = 4;
+    public static final int UI_MODE_NIGHT_ANY = ACONFIGURATION_UI_MODE_NIGHT_ANY << SHIFT_UI_MODE_NIGHT;
+    public static final int UI_MODE_NIGHT_NO = ACONFIGURATION_UI_MODE_NIGHT_NO << SHIFT_UI_MODE_NIGHT;
+    public static final int UI_MODE_NIGHT_YES = ACONFIGURATION_UI_MODE_NIGHT_YES << SHIFT_UI_MODE_NIGHT;
+
+
     public int mcc;
     public int mnc;
     public int screenLayout;
@@ -155,4 +226,5 @@ public class ResTableConfig {
     public int screenLayout2;
     public int colorMode;
     public int orientation;
+    public int uiMode;
 }

@@ -17,6 +17,14 @@ import static org.robolectric.res.ResTableConfig.SCREENSIZE_LARGE;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_NORMAL;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_SMALL;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_XLARGE;
+import static org.robolectric.res.ResTableConfig.UI_MODE_NIGHT_NO;
+import static org.robolectric.res.ResTableConfig.UI_MODE_NIGHT_YES;
+import static org.robolectric.res.ResTableConfig.UI_MODE_TYPE_APPLIANCE;
+import static org.robolectric.res.ResTableConfig.UI_MODE_TYPE_CAR;
+import static org.robolectric.res.ResTableConfig.UI_MODE_TYPE_DESK;
+import static org.robolectric.res.ResTableConfig.UI_MODE_TYPE_TELEVISION;
+import static org.robolectric.res.ResTableConfig.UI_MODE_TYPE_VR_HEADSET;
+import static org.robolectric.res.ResTableConfig.UI_MODE_TYPE_WATCH;
 import static org.robolectric.res.ResTableConfig.WIDE_COLOR_GAMUT_NO;
 import static org.robolectric.res.ResTableConfig.WIDE_COLOR_GAMUT_YES;
 
@@ -175,6 +183,48 @@ public class ConfigDescriptionTest {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("square", config);
     assertThat(config.orientation).isEqualTo(ORIENTATION_SQUARE);
+  }
+
+  @Test public void parse_uiModeType_car() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("car", config);
+    assertThat(config.uiMode).isEqualTo(UI_MODE_TYPE_CAR);
+  }
+
+  @Test public void parse_uiModeType_television() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("television", config);
+    assertThat(config.uiMode).isEqualTo(UI_MODE_TYPE_TELEVISION);
+  }
+
+  @Test public void parse_uiModeType_appliance() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("appliance", config);
+    assertThat(config.uiMode).isEqualTo(UI_MODE_TYPE_APPLIANCE);
+  }
+
+  @Test public void parse_uiModeType_watch() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("watch", config);
+    assertThat(config.uiMode).isEqualTo(UI_MODE_TYPE_WATCH);
+  }
+
+  @Test public void parse_uiModeType_vrheadset() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("vrheadset", config);
+    assertThat(config.uiMode).isEqualTo(UI_MODE_TYPE_VR_HEADSET);
+  }
+
+  @Test public void parse_uiModeNight_night() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("night", config);
+    assertThat(config.uiMode).isEqualTo(UI_MODE_NIGHT_YES);
+  }
+
+  @Test public void parse_uiModeNight_notnight() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("notnight", config);
+    assertThat(config.uiMode).isEqualTo(UI_MODE_NIGHT_NO);
   }
 
 
