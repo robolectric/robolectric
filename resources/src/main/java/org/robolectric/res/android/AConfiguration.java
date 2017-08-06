@@ -17,6 +17,7 @@ public class AConfiguration {
    */
   public static final int ACONFIGURATION_ORIENTATION_LAND = 0x0002;
   /** @deprecated Not currently supported or used. */
+  @Deprecated
   public static final int ACONFIGURATION_ORIENTATION_SQUARE = 0x0003;
   /** Touchscreen: not specified. */
   public static final int ACONFIGURATION_TOUCHSCREEN_ANY  = 0x0000;
@@ -27,6 +28,7 @@ public class AConfiguration {
    */
   public static final int ACONFIGURATION_TOUCHSCREEN_NOTOUCH  = 0x0001;
   /** @deprecated Not currently supported or used. */
+  @Deprecated
   public static final int ACONFIGURATION_TOUCHSCREEN_STYLUS  = 0x0002;
   /**
    * Touchscreen: value corresponding to the

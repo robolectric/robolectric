@@ -151,13 +151,13 @@ public class ConfigDescriptionTest {
   @Test public void parse_screenRound_round() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("round", config);
-    assertThat(config.screenLayout2).isEqualTo(SCREENROUND_YES);
+    assertThat(config.screenLayout2).isEqualTo((byte) SCREENROUND_YES);
   }
 
   @Test public void parse_screenRound_notround() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("notround", config);
-    assertThat(config.screenLayout2).isEqualTo(SCREENROUND_NO);
+    assertThat(config.screenLayout2).isEqualTo((byte) SCREENROUND_NO);
   }
 
   @Test public void parse_orientation_port() {
@@ -385,4 +385,17 @@ public class ConfigDescriptionTest {
     assertThat(config.minorVersion).isEqualTo(0);
   }
 
+  @Test public void parse_language() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("en", config);
+    assertThat(config.languageString()).isEqualTo("en");
+    assertThat(config.minorVersion).isEqualTo(0);
+  }
+
+  @Test public void parse_languageAndRegion() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("fr-rFR", config);
+    assertThat(config.languageString()).isEqualTo("fr");
+    assertThat(config.regionString()).isEqualTo("FR");
+  }
 }

@@ -452,11 +452,11 @@ public class ResTableConfig {
 
   /** The ISO-15924 short name for the script corresponding to this configuration. */
   @SuppressWarnings("mutable")
-  private final byte[] localeScript;
+  final byte[] localeScript;
 
   /** A single BCP-47 variant subtag. */
   @SuppressWarnings("mutable")
-  private final byte[] localeVariant;
+  final byte[] localeVariant;
 
   /** An extension to {@link #screenLayout}. Contains round/notround qualifier. */
   byte screenLayout2;
@@ -522,7 +522,7 @@ public class ResTableConfig {
 
   /* static */ void packLanguageOrRegion(final byte[] in, final byte base,
       final byte out[]) {
-    if (in[2] == 0 || in[2] == '-') {
+    if (in.length < 3 || in[2] == 0 || in[2] == '-') {
       out[0] = in[0];
       out[1] = in[1];
     } else {
@@ -539,8 +539,18 @@ public class ResTableConfig {
     packLanguageOrRegion(language, (byte) 'a', this.language);
   }
 
+  void packLanguage(final String language) {
+    byte[] bytes = language == null ? new byte[2] : language.getBytes();
+    packLanguageOrRegion(bytes, (byte) 'a', this.language);
+  }
+
   void packRegion(final byte[] region) {
     packLanguageOrRegion(region, (byte) '0', this.country);
+  }
+
+  void packRegion(final String region) {
+    byte[] bytes = region == null ? new byte[2] : region.getBytes();
+    packLanguageOrRegion(bytes, (byte) '0', this.country);
   }
 
   private String unpackLanguage() {
