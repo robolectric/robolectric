@@ -339,7 +339,7 @@ public class ResTableConfig {
     return unpackRegion();
   }
 
-  int orientation;
+  public int orientation;
   int touchscreen;
   int density;
   int keyboard;
@@ -446,8 +446,8 @@ public class ResTableConfig {
     return uiMode & UI_MODE_NIGHT_MASK;
   }
 
-  int smallestScreenWidthDp;
-  int screenWidthDp;
+  public int smallestScreenWidthDp;
+  public int screenWidthDp;
   int screenHeightDp;
 
   /** The ISO-15924 short name for the script corresponding to this configuration. */
