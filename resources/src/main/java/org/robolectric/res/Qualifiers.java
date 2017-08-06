@@ -195,13 +195,4 @@ public class Qualifiers {
     }
     return null;
   }
-
-  public static String getLanguage(String qualifiers) {
-    return "";
-  }
-
-  public static String getCountry(String qualifiers) {
-    return "";
-  }
-
 }

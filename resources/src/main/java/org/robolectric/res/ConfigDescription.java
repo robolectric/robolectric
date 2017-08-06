@@ -159,7 +159,7 @@ public class ConfigDescription {
     }
   }
 
-  boolean parse(final String str, ResTableConfig out) {
+  public boolean parse(final String str, ResTableConfig out) {
     PeekingIterator<String> part_iter = Iterators
         .peekingIterator(Arrays.asList(str.toLowerCase().split("-")).iterator());
 

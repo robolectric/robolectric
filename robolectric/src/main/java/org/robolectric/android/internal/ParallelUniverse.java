@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Looper;
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -26,7 +27,9 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.res.ConfigDescription;
 import org.robolectric.res.Qualifiers;
+import org.robolectric.res.ResTableConfig;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
@@ -77,24 +80,27 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
+    ConfigDescription configDescription = new ConfigDescription();
+    ResTableConfig resTab = new ResTableConfig();
+    configDescription.parse(config.qualifiers(), resTab);
+
     String qualifiers = Qualifiers.addPlatformVersion(config.qualifiers(), sdkConfig.getApiLevel());
     qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
     qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
+    RuntimeEnvironment.setQualifiers(qualifiers);
+
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
-    configuration.smallestScreenWidthDp = Qualifiers.getSmallestScreenWidth(qualifiers);
-    configuration.screenWidthDp = Qualifiers.getScreenWidth(qualifiers);
-    String orientation = Qualifiers.getOrientation(qualifiers);
-    if ("land".equals(orientation)) {
-      configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
-    } else if ("port".equals(orientation)) {
-      configuration.orientation = Configuration.ORIENTATION_PORTRAIT;
-    } else {
-      configuration.orientation = Configuration.ORIENTATION_UNDEFINED;
+    configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp != 0 ? resTab.smallestScreenWidthDp : 320;
+    configuration.screenWidthDp = resTab.screenWidthDp != 0 ? resTab.screenWidthDp : 320 ;
+    configuration.orientation = resTab.orientation;
+    if (resTab.language != null && resTab.region != null) {
+      configuration.locale = new Locale(resTab.language, resTab.region);
+    } else if (resTab.language != null) {
+      configuration.locale = new Locale(resTab.language);
     }
 
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
-    RuntimeEnvironment.setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
