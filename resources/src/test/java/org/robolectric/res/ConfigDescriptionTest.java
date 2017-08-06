@@ -12,6 +12,9 @@ import static org.robolectric.res.ResTableConfig.DENSITY_XXHIGH;
 import static org.robolectric.res.ResTableConfig.DENSITY_XXXHIGH;
 import static org.robolectric.res.ResTableConfig.HDR_NO;
 import static org.robolectric.res.ResTableConfig.HDR_YES;
+import static org.robolectric.res.ResTableConfig.KEYSHIDDEN_NO;
+import static org.robolectric.res.ResTableConfig.KEYSHIDDEN_SOFT;
+import static org.robolectric.res.ResTableConfig.KEYSHIDDEN_YES;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_ANY;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_LTR;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_RTL;
@@ -26,6 +29,9 @@ import static org.robolectric.res.ResTableConfig.SCREENSIZE_LARGE;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_NORMAL;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_SMALL;
 import static org.robolectric.res.ResTableConfig.SCREENSIZE_XLARGE;
+import static org.robolectric.res.ResTableConfig.TOUCHSCREEN_FINGER;
+import static org.robolectric.res.ResTableConfig.TOUCHSCREEN_NOTOUCH;
+import static org.robolectric.res.ResTableConfig.TOUCHSCREEN_STYLUS;
 import static org.robolectric.res.ResTableConfig.UI_MODE_NIGHT_NO;
 import static org.robolectric.res.ResTableConfig.UI_MODE_NIGHT_YES;
 import static org.robolectric.res.ResTableConfig.UI_MODE_TYPE_APPLIANCE;
@@ -236,55 +242,55 @@ public class ConfigDescriptionTest {
     assertThat(config.uiMode).isEqualTo(UI_MODE_NIGHT_NO);
   }
 
-  @Test public void parsedensity_any() {
+  @Test public void parse_density_any() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("anydpi", config);
     assertThat(config.density).isEqualTo(DENSITY_ANY);
   }
 
-  @Test public void parsedensity_nodpi() {
+  @Test public void parse_density_nodpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("nodpi", config);
     assertThat(config.density).isEqualTo(DENSITY_NONE);
   }
 
-  @Test public void parsedensity_ldpi() {
+  @Test public void parse_density_ldpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("ldpi", config);
     assertThat(config.density).isEqualTo(DENSITY_LOW);
   }
 
-  @Test public void parsedensity_mdpi() {
+  @Test public void parse_density_mdpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("mdpi", config);
     assertThat(config.density).isEqualTo(DENSITY_MEDIUM);
   }
 
-  @Test public void parsedensity_tvdpi() {
+  @Test public void parse_density_tvdpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("tvdpi", config);
     assertThat(config.density).isEqualTo(DENSITY_TV);
   }
 
-  @Test public void parsedensity_hdpi() {
+  @Test public void parse_density_hdpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("hdpi", config);
     assertThat(config.density).isEqualTo(DENSITY_HIGH);
   }
 
-  @Test public void parsedensity_xhdpi() {
+  @Test public void parse_density_xhdpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("xhdpi", config);
     assertThat(config.density).isEqualTo(DENSITY_XHIGH);
   }
 
-  @Test public void parsedensity_xxhdpi() {
+  @Test public void parse_density_xxhdpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("xxhdpi", config);
     assertThat(config.density).isEqualTo(DENSITY_XXHIGH);
   }
 
-  @Test public void parsedensity_xxxhdpi() {
+  @Test public void parse_density_xxxhdpi() {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("xxxhdpi", config);
     assertThat(config.density).isEqualTo(DENSITY_XXXHIGH);
@@ -294,5 +300,41 @@ public class ConfigDescriptionTest {
     ResTableConfig config = new ResTableConfig();
     new ConfigDescription().parse("720dpi", config);
     assertThat(config.density).isEqualTo(720);
+  }
+
+  @Test public void parse_touchscreen_notouch() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("notouch", config);
+    assertThat(config.touchscreen).isEqualTo(TOUCHSCREEN_NOTOUCH);
+  }
+
+  @Test public void parse_touchscreen_stylus() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("stylus", config);
+    assertThat(config.touchscreen).isEqualTo(TOUCHSCREEN_STYLUS);
+  }
+
+  @Test public void parse_touchscreen_finger() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("finger", config);
+    assertThat(config.touchscreen).isEqualTo(TOUCHSCREEN_FINGER);
+  }
+
+  @Test public void parse_keysHidden_keysexposed() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("keysexposed", config);
+    assertThat(config.inputFlags).isEqualTo(KEYSHIDDEN_NO);
+  }
+
+  @Test public void parse_keysHidden_keyshidden() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("keyshidden", config);
+    assertThat(config.inputFlags).isEqualTo(KEYSHIDDEN_YES);
+  }
+
+  @Test public void parse_keysHidden_keyssoft() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("keyssoft", config);
+    assertThat(config.inputFlags).isEqualTo(KEYSHIDDEN_SOFT);
   }
 }
