@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class ConfigDescription {
 
   /**
-   * Constant used to to represent MNC (Mobile Network Code) zero.
+   * finalant used to to represent MNC (Mobile Network Code) zero.
    * 0 cannot be used, since it is used to represent an undefined MNC.
    */
   private static final int ACONFIGURATION_MNC_ZERO = 0xffff;
@@ -28,6 +28,8 @@ public class ConfigDescription {
   private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
   private static final Pattern SCREEN_HEIGHT_PATTERN = Pattern.compile("^h([0-9]+)dp");
   private static final Pattern DENSITY_PATTERN = Pattern.compile("^([0-9]+)dpi");
+  private static final Pattern HEIGHT_WIDTH_PATTERN = Pattern.compile("^([0-9]+)x([0-9]+)");
+  private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("v([0-9]+)$");
 
   public class LocaleValue {
 
@@ -610,22 +612,104 @@ public class ConfigDescription {
   }
 
   private boolean parseKeyboard(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) out.keyboard = out.KEYBOARD_ANY;
+      return true;
+    } else if (Objects.equals(name, "nokeys")) {
+      if (out != null) out.keyboard = out.KEYBOARD_NOKEYS;
+      return true;
+    } else if (Objects.equals(name, "qwerty")) {
+      if (out != null) out.keyboard = out.KEYBOARD_QWERTY;
+      return true;
+    } else if (Objects.equals(name, "12key")) {
+      if (out != null) out.keyboard = out.KEYBOARD_12KEY;
+      return true;
+    }
+
     return false;
   }
 
   private boolean parseNavHidden(String name, ResTableConfig out) {
+    byte mask = 0;
+    byte value = 0;
+    if (Objects.equals(name, kWildcardName)) {
+      mask = ResTableConfig.MASK_NAVHIDDEN;
+      value = ResTableConfig.NAVHIDDEN_ANY;
+    } else if (Objects.equals(name, "navexposed")) {
+      mask = ResTableConfig.MASK_NAVHIDDEN;
+      value = ResTableConfig.NAVHIDDEN_NO;
+    } else if (Objects.equals(name, "navhidden")) {
+      mask = ResTableConfig.MASK_NAVHIDDEN;
+      value = ResTableConfig.NAVHIDDEN_YES;
+    }
+
+    if (mask != 0) {
+      if (out != null) out.inputFlags = (out.inputFlags & ~mask) | value;
+      return true;
+    }
+
     return false;
   }
 
   private boolean parseNavigation(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) out.navigation = out.NAVIGATION_ANY;
+      return true;
+    } else if (Objects.equals(name, "nonav")) {
+      if (out != null) out.navigation = out.NAVIGATION_NONAV;
+      return true;
+    } else if (Objects.equals(name, "dpad")) {
+      if (out != null) out.navigation = out.NAVIGATION_DPAD;
+      return true;
+    } else if (Objects.equals(name, "trackball")) {
+      if (out != null) out.navigation = out.NAVIGATION_TRACKBALL;
+      return true;
+    } else if (Objects.equals(name, "wheel")) {
+      if (out != null) out.navigation = out.NAVIGATION_WHEEL;
+      return true;
+    }
+
     return false;
   }
 
   private boolean parseScreenSize(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) {
+        out.screenWidth = out.SCREENWIDTH_ANY;
+        out.screenHeight = out.SCREENHEIGHT_ANY;
+      }
+      return true;
+    }
+
+    Matcher matcher = HEIGHT_WIDTH_PATTERN.matcher(name);
+    if (matcher.matches()) {
+      int w = Integer.parseInt(matcher.group(1));
+      int h = Integer.parseInt(matcher.group(2));
+      if (w < h) {
+        return false;
+      }
+      out.screenWidth = w;
+      out.screenHeight = h;
+      return true;
+    }
     return false;
   }
 
   private boolean parseVersion(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) {
+        out.sdkVersion = out.SDKVERSION_ANY;
+        out.minorVersion = out.MINORVERSION_ANY;
+      }
+      return true;
+    }
+
+    Matcher matcher = VERSION_QUALIFIER_PATTERN.matcher(name);
+    if (matcher.matches()) {
+      out.sdkVersion = Integer.parseInt(matcher.group(1));
+      out.minorVersion = 0;
+      return true;
+    }
     return false;
   }
 

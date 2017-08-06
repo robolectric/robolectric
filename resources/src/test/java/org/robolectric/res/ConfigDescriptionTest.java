@@ -12,12 +12,21 @@ import static org.robolectric.res.ResTableConfig.DENSITY_XXHIGH;
 import static org.robolectric.res.ResTableConfig.DENSITY_XXXHIGH;
 import static org.robolectric.res.ResTableConfig.HDR_NO;
 import static org.robolectric.res.ResTableConfig.HDR_YES;
+import static org.robolectric.res.ResTableConfig.KEYBOARD_12KEY;
+import static org.robolectric.res.ResTableConfig.KEYBOARD_NOKEYS;
+import static org.robolectric.res.ResTableConfig.KEYBOARD_QWERTY;
 import static org.robolectric.res.ResTableConfig.KEYSHIDDEN_NO;
 import static org.robolectric.res.ResTableConfig.KEYSHIDDEN_SOFT;
 import static org.robolectric.res.ResTableConfig.KEYSHIDDEN_YES;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_ANY;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_LTR;
 import static org.robolectric.res.ResTableConfig.LAYOUTDIR_RTL;
+import static org.robolectric.res.ResTableConfig.NAVHIDDEN_NO;
+import static org.robolectric.res.ResTableConfig.NAVHIDDEN_YES;
+import static org.robolectric.res.ResTableConfig.NAVIGATION_DPAD;
+import static org.robolectric.res.ResTableConfig.NAVIGATION_NONAV;
+import static org.robolectric.res.ResTableConfig.NAVIGATION_TRACKBALL;
+import static org.robolectric.res.ResTableConfig.NAVIGATION_WHEEL;
 import static org.robolectric.res.ResTableConfig.ORIENTATION_LAND;
 import static org.robolectric.res.ResTableConfig.ORIENTATION_PORT;
 import static org.robolectric.res.ResTableConfig.ORIENTATION_SQUARE;
@@ -337,4 +346,80 @@ public class ConfigDescriptionTest {
     new ConfigDescription().parse("keyssoft", config);
     assertThat(config.inputFlags).isEqualTo(KEYSHIDDEN_SOFT);
   }
+
+  @Test public void parse_keyboard_nokeys() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("nokeys", config);
+    assertThat(config.keyboard).isEqualTo(KEYBOARD_NOKEYS);
+  }
+
+  @Test public void parse_keyboard_qwerty() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("qwerty", config);
+    assertThat(config.keyboard).isEqualTo(KEYBOARD_QWERTY);
+  }
+
+  @Test public void parse_keyboard_12key() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("12key", config);
+    assertThat(config.keyboard).isEqualTo(KEYBOARD_12KEY);
+  }
+
+  @Test public void parse_navHidden_navexposed() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("navexposed", config);
+    assertThat(config.inputFlags).isEqualTo(NAVHIDDEN_NO);
+  }
+
+  @Test public void parse_navHidden_navhidden() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("navhidden", config);
+    assertThat(config.inputFlags).isEqualTo(NAVHIDDEN_YES);
+  }
+
+  @Test public void parse_navigation_nonav() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("nonav", config);
+    assertThat(config.navigation).isEqualTo(NAVIGATION_NONAV);
+  }
+
+  @Test public void parse_navigation_dpad() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("dpad", config);
+    assertThat(config.navigation).isEqualTo(NAVIGATION_DPAD);
+  }
+
+  @Test public void parse_navigation_trackball() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("trackball", config);
+    assertThat(config.navigation).isEqualTo(NAVIGATION_TRACKBALL);
+  }
+
+  @Test public void parse_navigation_wheel() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("wheel", config);
+    assertThat(config.navigation).isEqualTo(NAVIGATION_WHEEL);
+  }
+
+  @Test public void parse_screenSize() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("480x320", config);
+    assertThat(config.screenWidth).isEqualTo(480);
+    assertThat(config.screenHeight).isEqualTo(320);
+  }
+
+  @Test public void parse_screenSize_ignoreWidthLessThanHeight() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("320x480", config);
+    assertThat(config.screenWidth).isEqualTo(0);
+    assertThat(config.screenHeight).isEqualTo(0);
+  }
+
+  @Test public void parse_version() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("v12", config);
+    assertThat(config.sdkVersion).isEqualTo(12);
+    assertThat(config.minorVersion).isEqualTo(0);
+  }
+
 }

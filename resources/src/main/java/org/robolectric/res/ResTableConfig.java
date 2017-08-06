@@ -240,6 +240,70 @@ public class ResTableConfig {
      */
     public static final int ACONFIGURATION_KEYSHIDDEN_SOFT = 0x0003;
 
+    /** Keyboard: not specified. */
+    public static final int ACONFIGURATION_KEYBOARD_ANY  = 0x0000;
+    /**
+     * Keyboard: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#ImeQualifier">nokeys</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_KEYBOARD_NOKEYS  = 0x0001;
+    /**
+     * Keyboard: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#ImeQualifier">qwerty</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_KEYBOARD_QWERTY  = 0x0002;
+    /**
+     * Keyboard: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#ImeQualifier">12key</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_KEYBOARD_12KEY  = 0x0003;
+
+    /** Navigation availability: not specified. */
+    public static final int ACONFIGURATION_NAVHIDDEN_ANY = 0x0000;
+    /**
+     * Navigation availability: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#NavAvailQualifier">navexposed</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_NAVHIDDEN_NO = 0x0001;
+    /**
+     * Navigation availability: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#NavAvailQualifier">navhidden</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_NAVHIDDEN_YES = 0x0002;
+
+
+    /** Navigation: not specified. */
+    public static final int ACONFIGURATION_NAVIGATION_ANY  = 0x0000;
+    /**
+     * Navigation: value corresponding to the
+     * <a href="@@dacRoot/guide/topics/resources/providing-resources.html#NavigationQualifier">nonav</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_NAVIGATION_NONAV  = 0x0001;
+    /**
+     * Navigation: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#NavigationQualifier">dpad</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_NAVIGATION_DPAD  = 0x0002;
+    /**
+     * Navigation: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#NavigationQualifier">trackball</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_NAVIGATION_TRACKBALL  = 0x0003;
+    /**
+     * Navigation: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#NavigationQualifier">wheel</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_NAVIGATION_WHEEL  = 0x0004;
+
     // screenLayout bits for layout direction.
     public static final int MASK_LAYOUTDIR = 0xC0;
     public static final int SHIFT_LAYOUTDIR = 6;
@@ -325,6 +389,28 @@ public class ResTableConfig {
     public static final byte KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES;
     public static final byte KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
 
+    public static final int KEYBOARD_ANY  = ACONFIGURATION_KEYBOARD_ANY;
+    public static final int KEYBOARD_NOKEYS  = ACONFIGURATION_KEYBOARD_NOKEYS;
+    public static final int KEYBOARD_QWERTY  = ACONFIGURATION_KEYBOARD_QWERTY;
+    public static final int KEYBOARD_12KEY  = ACONFIGURATION_KEYBOARD_12KEY;
+
+    public static final int MASK_NAVHIDDEN = 0x000c;
+    public static final int SHIFT_NAVHIDDEN = 2;
+    public static final byte NAVHIDDEN_ANY = ACONFIGURATION_NAVHIDDEN_ANY << SHIFT_NAVHIDDEN;
+    public static final byte NAVHIDDEN_NO = ACONFIGURATION_NAVHIDDEN_NO << SHIFT_NAVHIDDEN;
+    public static final byte NAVHIDDEN_YES = ACONFIGURATION_NAVHIDDEN_YES << SHIFT_NAVHIDDEN;
+
+    public static final int NAVIGATION_ANY  = ACONFIGURATION_NAVIGATION_ANY;
+    public static final int NAVIGATION_NONAV  = ACONFIGURATION_NAVIGATION_NONAV;
+    public static final int NAVIGATION_DPAD  = ACONFIGURATION_NAVIGATION_DPAD;
+    public static final int NAVIGATION_TRACKBALL  = ACONFIGURATION_NAVIGATION_TRACKBALL;
+    public static final int NAVIGATION_WHEEL  = ACONFIGURATION_NAVIGATION_WHEEL;
+
+    public static final int SCREENHEIGHT_ANY = 0;
+
+    public static final int SDKVERSION_ANY = 0;
+    public static final int MINORVERSION_ANY = 0;
+
     public int mcc;
     public int mnc;
     public int screenLayout;
@@ -338,4 +424,10 @@ public class ResTableConfig {
     public int density;
     public int touchscreen;
     public int inputFlags;
+    public int keyboard;
+    public int navigation;
+    public int screenWidth;
+    public int screenHeight;
+    public int sdkVersion;
+    public int minorVersion;
 }
