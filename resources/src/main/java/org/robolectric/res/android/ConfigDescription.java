@@ -480,10 +480,45 @@ public class ConfigDescription {
   }
 
   private boolean parseTouchscreen(String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) out.touchscreen = out.TOUCHSCREEN_ANY;
+      return true;
+    } else if (Objects.equals(name, "notouch")) {
+      if (out != null) out.touchscreen = out.TOUCHSCREEN_NOTOUCH;
+      return true;
+    } else if (Objects.equals(name, "stylus")) {
+      if (out != null) out.touchscreen = out.TOUCHSCREEN_STYLUS;
+      return true;
+    } else if (Objects.equals(name, "finger")) {
+      if (out != null) out.touchscreen = out.TOUCHSCREEN_FINGER;
+      return true;
+    }
+
     return false;
   }
 
   private boolean parseKeysHidden(String name, ResTableConfig out) {
+    byte mask = 0;
+    byte value = 0;
+    if (Objects.equals(name, kWildcardName)) {
+      mask = ResTableConfig.MASK_KEYSHIDDEN;
+      value = ResTableConfig.KEYSHIDDEN_ANY;
+    } else if (Objects.equals(name, "keysexposed")) {
+      mask = ResTableConfig.MASK_KEYSHIDDEN;
+      value = ResTableConfig.KEYSHIDDEN_NO;
+    } else if (Objects.equals(name, "keyshidden")) {
+      mask = ResTableConfig.MASK_KEYSHIDDEN;
+      value = ResTableConfig.KEYSHIDDEN_YES;
+    } else if (Objects.equals(name, "keyssoft")) {
+      mask = ResTableConfig.MASK_KEYSHIDDEN;
+      value = ResTableConfig.KEYSHIDDEN_SOFT;
+    }
+
+    if (mask != 0) {
+      if (out != null) out.inputFlags = (out.inputFlags & ~mask) | value;
+      return true;
+    }
+
     return false;
   }
 

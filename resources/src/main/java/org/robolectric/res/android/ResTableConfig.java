@@ -34,6 +34,10 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSI
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_NORMAL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_SMALL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_XLARGE;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_FINGER;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_NOTOUCH;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_STYLUS;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_ANY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_NO;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_YES;
@@ -141,6 +145,17 @@ public class ResTableConfig {
   public static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
   public static final int DENSITY_NONE = ACONFIGURATION_DENSITY_NONE;
 
+  public static final int TOUCHSCREEN_ANY  = ACONFIGURATION_TOUCHSCREEN_ANY;
+  public static final int TOUCHSCREEN_NOTOUCH  = ACONFIGURATION_TOUCHSCREEN_NOTOUCH;
+  public static final int TOUCHSCREEN_STYLUS  = ACONFIGURATION_TOUCHSCREEN_STYLUS;
+  public static final int TOUCHSCREEN_FINGER  = ACONFIGURATION_TOUCHSCREEN_FINGER;
+
+  public static final int MASK_KEYSHIDDEN = 0x0003;
+  public static final byte KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY;
+  public static final byte KEYSHIDDEN_NO = ACONFIGURATION_KEYSHIDDEN_NO;
+  public static final byte KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES;
+  public static final byte KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
+
   /** The below constants are from android.content.res.Configuration. */
   private static final int DENSITY_DPI_UNDEFINED = 0;
   private static final int DENSITY_DPI_LDPI = 120;
@@ -238,8 +253,6 @@ public class ResTableConfig {
       SCREENLAYOUT_SIZE_LARGE, "large",
       SCREENLAYOUT_SIZE_XLARGE, "xlarge");
 
-  private static final int TOUCHSCREEN_NOTOUCH = 1;
-  private static final int TOUCHSCREEN_FINGER  = 3;
   private static final Map<Integer, String> TOUCHSCREEN_VALUES = ImmutableMap.of(
       TOUCHSCREEN_NOTOUCH, "notouch",
       TOUCHSCREEN_FINGER, "finger");
@@ -719,15 +732,6 @@ public class ResTableConfig {
   public static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
   static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
-  private static final int MASK_KEYSHIDDEN = 0x0003;
-
-  private static final int KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY;
-  private static final int KEYSHIDDEN_NO = ACONFIGURATION_KEYSHIDDEN_NO;
-  private static final int KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES;
-  private static final int KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
-
-
-
 
 
   public static final int MASK_NAVHIDDEN = 0x000c;

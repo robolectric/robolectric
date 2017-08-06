@@ -202,6 +202,44 @@ public class ResTableConfig {
     /** Density: no density specified. */
     public static final int ACONFIGURATION_DENSITY_NONE = 0xffff;
 
+    /** Touchscreen: not specified. */
+    public static final int ACONFIGURATION_TOUCHSCREEN_ANY  = 0x0000;
+    /**
+     * Touchscreen: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#TouchscreenQualifier">notouch</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_TOUCHSCREEN_NOTOUCH  = 0x0001;
+    /** @deprecated Not currently supported or used. */
+    public static final int ACONFIGURATION_TOUCHSCREEN_STYLUS  = 0x0002;
+    /**
+     * Touchscreen: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#TouchscreenQualifier">finger</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_TOUCHSCREEN_FINGER  = 0x0003;
+
+    /** Keyboard availability: not specified. */
+    public static final int ACONFIGURATION_KEYSHIDDEN_ANY = 0x0000;
+    /**
+     * Keyboard availability: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keysexposed</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_KEYSHIDDEN_NO = 0x0001;
+    /**
+     * Keyboard availability: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keyshidden</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_KEYSHIDDEN_YES = 0x0002;
+    /**
+     * Keyboard availability: value corresponding to the
+     * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keyssoft</a>
+     * resource qualifier.
+     */
+    public static final int ACONFIGURATION_KEYSHIDDEN_SOFT = 0x0003;
+
     // screenLayout bits for layout direction.
     public static final int MASK_LAYOUTDIR = 0xC0;
     public static final int SHIFT_LAYOUTDIR = 6;
@@ -276,6 +314,17 @@ public class ResTableConfig {
     public static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
     public static final int DENSITY_NONE = ACONFIGURATION_DENSITY_NONE;
 
+    public static final int TOUCHSCREEN_ANY  = ACONFIGURATION_TOUCHSCREEN_ANY;
+    public static final int TOUCHSCREEN_NOTOUCH  = ACONFIGURATION_TOUCHSCREEN_NOTOUCH;
+    public static final int TOUCHSCREEN_STYLUS  = ACONFIGURATION_TOUCHSCREEN_STYLUS;
+    public static final int TOUCHSCREEN_FINGER  = ACONFIGURATION_TOUCHSCREEN_FINGER;
+
+    public static final int MASK_KEYSHIDDEN = 0x0003;
+    public static final byte KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY;
+    public static final byte KEYSHIDDEN_NO = ACONFIGURATION_KEYSHIDDEN_NO;
+    public static final byte KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES;
+    public static final byte KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
+
     public int mcc;
     public int mnc;
     public int screenLayout;
@@ -287,4 +336,6 @@ public class ResTableConfig {
     public int orientation;
     public int uiMode;
     public int density;
+    public int touchscreen;
+    public int inputFlags;
 }
