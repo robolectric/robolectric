@@ -430,4 +430,16 @@ public class ResTableConfig {
     public int screenHeight;
     public int sdkVersion;
     public int minorVersion;
+    public String localeScript;
+    public String localeVariant;
+    public String language;
+    public String region;
+
+    public void packLanguage(String language) {
+        this.language = language;
+    }
+
+    public void packRegion(String region) {
+        this.region = region;
+    }
 }

@@ -422,4 +422,17 @@ public class ConfigDescriptionTest {
     assertThat(config.minorVersion).isEqualTo(0);
   }
 
+  @Test public void parse_language() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("en", config);
+    assertThat(config.language).isEqualTo("en");
+    assertThat(config.minorVersion).isEqualTo(0);
+  }
+
+  @Test public void parse_languageAndRegion() {
+    ResTableConfig config = new ResTableConfig();
+    new ConfigDescription().parse("fr-rFR", config);
+    assertThat(config.language).isEqualTo("fr");
+    assertThat(config.region).isEqualTo("FR");
+  }
 }
