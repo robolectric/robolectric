@@ -12,6 +12,10 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XHIGH;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XXHIGH;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XXXHIGH;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_12KEY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_NOKEYS;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_QWERTY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_ANY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_NO;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_SOFT;
@@ -19,6 +23,14 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDD
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_LAYOUTDIR_ANY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_LAYOUTDIR_LTR;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_LAYOUTDIR_RTL;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVHIDDEN_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVHIDDEN_NO;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVHIDDEN_YES;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_DPAD;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_NONAV;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_TRACKBALL;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_WHEEL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_ANY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_LAND;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_PORT;
@@ -156,6 +168,28 @@ public class ResTableConfig {
   public static final byte KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES;
   public static final byte KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
 
+  public static final int KEYBOARD_ANY  = ACONFIGURATION_KEYBOARD_ANY;
+  public static final int KEYBOARD_NOKEYS  = ACONFIGURATION_KEYBOARD_NOKEYS;
+  public static final int KEYBOARD_QWERTY  = ACONFIGURATION_KEYBOARD_QWERTY;
+  public static final int KEYBOARD_12KEY  = ACONFIGURATION_KEYBOARD_12KEY;
+
+  public static final int MASK_NAVHIDDEN = 0x000c;
+  public static final int SHIFT_NAVHIDDEN = 2;
+  public static final byte NAVHIDDEN_ANY = ACONFIGURATION_NAVHIDDEN_ANY << SHIFT_NAVHIDDEN;
+  public static final byte NAVHIDDEN_NO = ACONFIGURATION_NAVHIDDEN_NO << SHIFT_NAVHIDDEN;
+  public static final byte NAVHIDDEN_YES = ACONFIGURATION_NAVHIDDEN_YES << SHIFT_NAVHIDDEN;
+
+  public static final int NAVIGATION_ANY  = ACONFIGURATION_NAVIGATION_ANY;
+  public static final int NAVIGATION_NONAV  = ACONFIGURATION_NAVIGATION_NONAV;
+  public static final int NAVIGATION_DPAD  = ACONFIGURATION_NAVIGATION_DPAD;
+  public static final int NAVIGATION_TRACKBALL  = ACONFIGURATION_NAVIGATION_TRACKBALL;
+  public static final int NAVIGATION_WHEEL  = ACONFIGURATION_NAVIGATION_WHEEL;
+
+  public static final int SCREENHEIGHT_ANY = 0;
+
+  public static final int SDKVERSION_ANY = 0;
+  public static final int MINORVERSION_ANY = 0;
+
   /** The below constants are from android.content.res.Configuration. */
   private static final int DENSITY_DPI_UNDEFINED = 0;
   private static final int DENSITY_DPI_LDPI = 120;
@@ -181,9 +215,6 @@ public class ResTableConfig {
           .put(DENSITY_DPI_NONE, "nodpi")
           .build();
 
-  private static final int KEYBOARD_NOKEYS = 1;
-  private static final int KEYBOARD_QWERTY = 2;
-  private static final int KEYBOARD_12KEY  = 3;
   private static final Map<Integer, String> KEYBOARD_VALUES = ImmutableMap.of(
       KEYBOARD_NOKEYS, "nokeys",
       KEYBOARD_QWERTY, "qwerty",
@@ -198,10 +229,6 @@ public class ResTableConfig {
       KEYBOARDHIDDEN_YES, "keyshidden",
       KEYBOARDHIDDEN_SOFT, "keyssoft");
 
-  private static final int NAVIGATION_NONAV     = 1;
-  private static final int NAVIGATION_DPAD      = 2;
-  private static final int NAVIGATION_TRACKBALL = 3;
-  private static final int NAVIGATION_WHEEL     = 4;
   private static final Map<Integer, String> NAVIGATION_VALUES = ImmutableMap.of(
       NAVIGATION_NONAV, "nonav",
       NAVIGATION_DPAD, "dpad",
@@ -733,8 +760,6 @@ public class ResTableConfig {
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
   static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
 
-
-  public static final int MASK_NAVHIDDEN = 0x000c;
 
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
