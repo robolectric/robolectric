@@ -1,9 +1,13 @@
 package org.robolectric.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Application;
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,6 +17,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,10 +39,6 @@ public abstract class TestUtil {
   public static final String TEST_PACKAGE = R.class.getPackage().getName();
   public static File testDirLocation;
 
-  public static void assertEquals(Collection<?> expected, Collection<?> actual) {
-    org.junit.Assert.assertEquals(stringify(expected), stringify(actual));
-  }
-
   public static String stringify(Collection<?> collection) {
     StringBuilder buf = new StringBuilder();
     for (Object o : collection) {
@@ -45,12 +46,6 @@ public abstract class TestUtil {
       buf.append(o);
     }
     return buf.toString();
-  }
-
-  public static <T> void assertInstanceOf(Class<? extends T> expectedClass, T object) {
-    Class actualClass = object.getClass();
-    assertTrue(expectedClass + " should be assignable from " + actualClass,
-        expectedClass.isAssignableFrom(actualClass));
   }
 
   public static FsFile resourcesBaseDir() {
@@ -130,40 +125,6 @@ public abstract class TestUtil {
     return new AndroidManifest(resourceFile(androidManifestFile), null, null);
   }
 
-  public static String readString(InputStream is) throws IOException {
-    Writer writer = new StringWriter();
-    char[] buffer = new char[1024];
-    try {
-      Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-      int n;
-      while ((n = reader.read(buffer)) != -1) {
-        writer.write(buffer, 0, n);
-      }
-    } finally {
-      is.close();
-    }
-    return writer.toString();
-  }
-
-  public static String joinPath(String... parts) {
-    File file = new File(parts[0]);
-    for (int i = 1; i < parts.length; i++) {
-      String part = parts[i];
-      file = new File(file, part);
-    }
-    return file.getPath();
-  }
-
-  public static File newFile(File file, String contents) throws IOException {
-    FileWriter fileWriter = new FileWriter(file);
-    try {
-      fileWriter.write(contents);
-    } finally {
-      fileWriter.close();
-    }
-    return file;
-  }
-
   public static String stringify(Config config) {
     int[] sdk = config.sdk();
     String manifest = config.manifest();
@@ -204,17 +165,6 @@ public abstract class TestUtil {
         "instrumentedPackages" + Arrays.toString(sortedInstrumentedPackages) + "\n" +
         "libraries=" + Arrays.toString(sortedLibraries) + "\n" +
         "constants=" + constants;
-  }
-
-  public static void assertStringsInclude(List<String> list, String... expectedStrings) {
-    List<String> original = new ArrayList<>(list);
-    for (String expectedEvent : expectedStrings) {
-      int index = list.indexOf(expectedEvent);
-      if (index == -1) {
-        assertThat(original).containsExactly(expectedStrings);
-      }
-      list.subList(0, index + 1).clear();
-    }
   }
 
   private static DependencyResolver getDependencyResolver() {
