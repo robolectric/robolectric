@@ -10,6 +10,7 @@ public class ShadowGeoPoint {
   private int lat;
   private int lng;
 
+  @Implementation
   public void __constructor__(int lat, int lng) {
     this.lat = lat;
     this.lng = lng;

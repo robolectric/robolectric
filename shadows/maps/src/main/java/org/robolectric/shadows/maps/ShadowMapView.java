@@ -49,6 +49,7 @@ public class ShadowMapView extends ShadowViewGroup {
   private boolean preLoadWasCalled;
   private boolean canCoverCenter = true;
 
+  @Implementation
   public void __constructor__(Context context, AttributeSet attributeSet) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
@@ -64,6 +65,7 @@ public class ShadowMapView extends ShadowViewGroup {
         ClassParameter.from(int.class, 0));
   }
 
+  @Implementation
   @Override public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;

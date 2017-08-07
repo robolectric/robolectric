@@ -14,6 +14,7 @@ import org.robolectric.shadows.ShadowActivity;
 public class ShadowMapActivity extends ShadowActivity {
   private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
 
+  @Implementation
   @Override public void __constructor__() {
   }
 
