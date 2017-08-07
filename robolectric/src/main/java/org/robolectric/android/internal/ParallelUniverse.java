@@ -69,7 +69,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     try {
       appManifest.initMetaData(appResourceTable);
     } catch (RoboNotFoundException e1) {
-      throw new Resources.NotFoundException(e1.getMessage(), e1);
+      throw new Resources.NotFoundException(e1.getMessage());
     }
     RuntimeEnvironment.setApplicationManifest(appManifest);
 
