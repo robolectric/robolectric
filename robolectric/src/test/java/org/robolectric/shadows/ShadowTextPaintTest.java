@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
 import static junit.framework.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import android.os.Build;
 import android.text.TextPaint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowTextPaintTest {
@@ -13,6 +16,15 @@ public class ShadowTextPaintTest {
   @Test
   public void measureText_returnsStringLengthAsMeasurement() throws Exception {
     TextPaint paint = new TextPaint();
-    assertEquals(4f, paint.measureText("1234"));
+    paint.getFontMetrics();
+    assertEquals(4.0f, paint.measureText("1234"));
+  }
+
+  @Test
+  @Config(rendering = true, sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void measureText_returnRealMeasurements() throws Exception {
+    TextPaint paint = new TextPaint();
+    paint.getFontMetrics();
+    assertThat(paint.measureText("1234")).isGreaterThan(0);
   }
 }

@@ -44,6 +44,7 @@ public class ShadowWebView extends ShadowViewGroup {
   private int goBackInvocations = 0;
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
+  private WebView.PictureListener pictureListener;
 
   @HiddenApi @Implementation
   public void ensureProviderCreated() {
@@ -162,6 +163,14 @@ public class ShadowWebView extends ShadowViewGroup {
 
   public WebViewClient getWebViewClient() {
     return webViewClient;
+  }
+
+  public void setPictureListener(WebView.PictureListener listener) {
+    pictureListener = listener;
+  }
+
+  public WebView.PictureListener getPictureListener() {
+    return pictureListener;
   }
 
   @Implementation

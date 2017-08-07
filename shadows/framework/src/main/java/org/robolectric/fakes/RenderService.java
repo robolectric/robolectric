@@ -1,0 +1,282 @@
+package org.robolectric.fakes;
+import com.android.ide.common.rendering.LayoutLibrary;
+import com.android.ide.common.rendering.api.DrawableParams;
+import com.android.ide.common.rendering.api.HardwareConfig;
+import com.android.ide.common.rendering.api.IImageFactory;
+import com.android.ide.common.rendering.api.ILayoutPullParser;
+import com.android.ide.common.rendering.api.IProjectCallback;
+import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.RenderSession;
+import com.android.ide.common.rendering.api.ResourceValue;
+import com.android.ide.common.rendering.api.Result;
+import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
+import com.android.ide.common.resources.ResourceResolver;
+import com.android.ide.common.resources.configuration.FolderConfiguration;
+import com.android.resources.ResourceType;
+import com.android.resources.ScreenOrientation;
+
+import org.robolectric.shadows.ShadowBridgeXmlBlockParser;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+/**
+ * The {@link RenderService} provides rendering service and easy config.
+ */
+public class RenderService {
+  private static int currentLayoutId = ShadowBridgeXmlBlockParser.NOT_DEFINED_LAYOUT_RES_ID;
+
+  // The following fields are set through the constructor and are required.
+  private final IProjectCallback projectCallback;
+  private final ResourceResolver resourceResolver;
+  private final LayoutLibrary layoutLib;
+  private final FolderConfiguration config;
+
+  // The following fields are optional or configurable using the various chained
+  // setters:
+  private int width;
+  private int height;
+  private int minSdkVersion = -1;
+  private int targetSdkVersion = -1;
+  private float Xdpi = -1;
+  private float Ydpi = -1;
+  private RenderingMode renderingMode = RenderingMode.NORMAL;
+  private LayoutLog logger;
+  private Integer overrideBgColor;
+  private boolean showDecorations = true;
+  private String appLabel;
+  private String appIconName;
+  private IImageFactory imageFactory;
+  private SessionParams params;
+
+  RenderService(LayoutLibrary layoutLibrary, ResourceResolver resources, FolderConfiguration folderConfiguration,
+      IProjectCallback callback) {
+    layoutLib = layoutLibrary;
+    resourceResolver = resources;
+    config = folderConfiguration;
+    projectCallback = callback;
+  }
+
+  public SessionParams getSessionParams() {
+    return params;
+  }
+
+  public RenderService setLog(LayoutLog l) {
+    logger = l;
+    return this;
+  }
+
+  public RenderService setRenderingMode(RenderingMode mode) {
+    renderingMode = mode;
+    return this;
+  }
+
+  public RenderService setOverrideBgColor(Integer color) {
+    overrideBgColor = color;
+    return this;
+  }
+
+  public RenderService setDecorations(boolean show) {
+    showDecorations = show;
+    return this;
+  }
+
+  public RenderService setAppInfo(String label, String icon) {
+    appLabel = label;
+    appIconName = icon;
+    return this;
+  }
+
+  public RenderService setMinSdkVersion(int min) {
+    minSdkVersion = min;
+    return this;
+  }
+
+  public RenderService setTargetSdkVersion(int target) {
+    targetSdkVersion = target;
+    return this;
+  }
+
+  public RenderService setExactDeviceDpi(float xdpi, float ydpi) {
+    Xdpi = xdpi;
+    Ydpi = ydpi;
+    return this;
+  }
+
+  public RenderService setImageFactory(IImageFactory factory) {
+    imageFactory = factory;
+    return this;
+  }
+
+  private void finishConfiguration() {
+    if (logger == null) {
+      // Silent logging
+      logger = new LayoutLog();
+    }
+  }
+
+  public SessionParams getParamsFromFile(String layoutName)
+      throws FileNotFoundException, XmlPullParserException {
+    finishConfiguration();
+    if (resourceResolver == null) {
+      // Abort the rendering if the resources are not found.
+      return null;
+    }
+    // find the layout to run
+    ResourceValue value = resourceResolver.getProjectResource(ResourceType.LAYOUT, layoutName);
+    if (value == null || value.getValue() == null) {
+      throw new IllegalArgumentException("layout does not exist");
+    }
+    File layoutFile = new File(value.getValue());
+    ILayoutPullParser parser = null;
+    parser = new XmlParser();
+    parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+    parser.setInput(new FileInputStream(layoutFile), "UTF-8"); // $NON-NLS-1$
+    versionAndConstantsSetUp();
+    HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
+        config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
+        Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
+        config.getScreenOrientationQualifier().getValue(), false);
+    SessionParams p = new SessionParams(parser, renderingMode, this/* projectKey*/, hardwareConfigconfig,
+        resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
+    params = p;
+    // Request margin and baseline information.
+    // TODO: Be smarter about setting this; start without it, and on the first request
+    // for an extended view info, re-render in the same session, and then set a flag
+    // which will cause this to create extended view info each time from then on in the
+    // same session
+    params.setExtendedViewInfoMode(true);
+    if (!showDecorations) {
+      params.setForceNoDecor();
+    } else {
+      if (appLabel == null) {
+        appLabel = "Random App";
+      }
+      params.setAppLabel(appLabel);
+      params.setAppIcon(appIconName); // ok to be null
+    }
+    if (overrideBgColor != null) {
+      params.setOverrideBgColor(overrideBgColor.intValue());
+    }
+    // set the Image Overlay as the image factory.
+    params.setImageFactory(imageFactory);
+    return params;
+  }
+
+  public RenderSession createRenderSession(String layoutName, int layoutResId)
+      throws FileNotFoundException, XmlPullParserException {
+    finishConfiguration();
+    if (resourceResolver == null) {
+      // Abort the rendering if the resources are not found.
+      return null;
+    }
+    // find the layout to run
+    ResourceValue value = resourceResolver.getProjectResource(ResourceType.LAYOUT, layoutName);
+    if (value == null || value.getValue() == null) {
+      throw new IllegalArgumentException("layout does not exist");
+    }
+    File layoutFile = new File(value.getValue());
+    ILayoutPullParser parser = null;
+    parser = new XmlParser();
+    parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+    parser.setInput(new FileInputStream(layoutFile), "UTF-8"); // $NON-NLS-1$
+    versionAndConstantsSetUp();
+    HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
+        config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
+        Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
+        config.getScreenOrientationQualifier().getValue(), false);
+    SessionParams p = new SessionParams(parser, renderingMode, this/* projectKey*/, hardwareConfigconfig,
+        resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
+    params = p;
+    currentLayoutId = layoutResId;
+    // Request margin and baseline information.
+    // TODO: Be smarter about setting this; start without it, and on the first request
+    // for an extended view info, re-render in the same session, and then set a flag
+    // which will cause this to create extended view info each time from then on in the
+    // same session
+    params.setExtendedViewInfoMode(true);
+    if (!showDecorations) {
+      params.setForceNoDecor();
+    } else {
+      if (appLabel == null) {
+        appLabel = "Random App";
+      }
+      params.setAppLabel(appLabel);
+      params.setAppIcon(appIconName); // ok to be null
+    }
+    if (overrideBgColor != null) {
+      params.setOverrideBgColor(overrideBgColor.intValue());
+    }
+    // set the Image Overlay as the image factory.
+    params.setImageFactory(imageFactory);
+    try {
+      return layoutLib.createSession(params);
+    } catch (RuntimeException t) {
+      // Exceptions from the bridge
+      logger.error(null, t.getLocalizedMessage(), t, null);
+      throw t;
+    }
+  }
+
+  private void versionAndConstantsSetUp() {
+    int size1 = config.getScreenDimensionQualifier().getValue1();
+    int size2 = config.getScreenDimensionQualifier().getValue2();
+    ScreenOrientation orientation = config.getScreenOrientationQualifier().getValue();
+    switch (orientation) {
+      case LANDSCAPE:
+        width = size1 < size2 ? size2 : size1;
+        height = size1 < size2 ? size1 : size2;
+        break;
+      case PORTRAIT:
+        width = size1 < size2 ? size1 : size2;
+        height = size1 < size2 ? size2 : size1;
+        break;
+      case SQUARE:
+        width = height = size1;
+        break;
+    }
+    if (minSdkVersion == -1) {
+      minSdkVersion = config.getVersionQualifier().getVersion();
+    }
+    if (targetSdkVersion == -1) {
+      targetSdkVersion = config.getVersionQualifier().getVersion();
+    }
+    if (Xdpi == -1) {
+      Xdpi = config.getDensityQualifier().getValue().getDpiValue();
+    }
+    if (Ydpi == -1) {
+      Ydpi = config.getDensityQualifier().getValue().getDpiValue();
+    }
+  }
+
+  public BufferedImage renderDrawable(ResourceValue drawableResourceValue) {
+    if (drawableResourceValue == null) {
+      return null;
+    }
+    finishConfiguration();
+    versionAndConstantsSetUp();
+    HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
+        config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
+        Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
+        config.getScreenOrientationQualifier().getValue(), false);
+    DrawableParams params = new DrawableParams(drawableResourceValue, this, hardwareConfigconfig,
+        resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
+    params.setForceNoDecor();
+    Result result = layoutLib.renderDrawable(params);
+    if (result != null && result.isSuccess()) {
+      Object data = result.getData();
+      if (data instanceof BufferedImage) {
+        return (BufferedImage) data;
+      }
+    }
+    return null;
+  }
+  
+  public static int getCurrentLayoutId() {
+    return currentLayoutId;
+  }
+}

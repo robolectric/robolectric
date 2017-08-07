@@ -59,6 +59,11 @@ dependencies {
     compile "com.ibm.icu:icu4j:53.1"
     compile "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
+    compileOnly "com.android.tools.layoutlib:layoutlib-api:24.2.3"
+    compileOnly "com.android.tools:sdk-common:24.2.3"
+    compileOnly "com.android.tools:common:24.2.3"
+    compileOnly "com.android.tools:sdklib:24.2.3"
+
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"

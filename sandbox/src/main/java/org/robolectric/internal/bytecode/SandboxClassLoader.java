@@ -35,6 +35,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -50,14 +51,27 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
+import android.content.res.Resources.Theme;
+import android.text.TextPaint;
+import android.view.Surface;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
+
+import dalvik.system.VMRuntime;
+
 /**
- * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
+ * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
+ * shadow classes.
  */
 public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   private final URLClassLoader systemClassLoader;
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
   private final Map<String, String> classesToRemap;
+  private final boolean isGraphicsEnabled;
   private final Set<MethodRef> methodsToIntercept;
 
   public SandboxClassLoader(InstrumentationConfiguration config) {
@@ -68,6 +82,19 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     super(systemClassLoader.getURLs(), systemClassLoader.getParent());
     this.systemClassLoader = systemClassLoader;
 
+    this.config = config;
+    this.isGraphicsEnabled = false;
+    this.urls = new URLClassLoader(urls, null);
+    classesToRemap = convertToSlashes(config.classNameTranslations());
+    methodsToIntercept = convertToSlashes(config.methodsToIntercept());
+    for (URL url : urls) {
+      Logger.debug("Loading classes from: %s", url);
+    }
+  }
+
+  public InstrumentingClassLoader(InstrumentationConfiguration config, boolean graphics, URL... urls) {
+    super(InstrumentingClassLoader.class.getClassLoader());
+    this.isGraphicsEnabled = graphics;
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(config.classNameTranslations());
@@ -373,6 +400,32 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
       for (MethodNode method : methods) {
+        if (isGraphicsEnabled) {
+          String delegateAnnotationName = "L" + LayoutlibDelegate.class.getName().replace('.', '/') + ";";
+          if (method.name.equals("draw")) {
+            continue;
+          }
+          if (method.visibleAnnotations != null) {
+            for (Object visibleAnnotation : method.visibleAnnotations) {
+              AnnotationNode node = (AnnotationNode) visibleAnnotation;
+              if (node.desc.equals(delegateAnnotationName))
+                continue;
+            }
+          }
+
+          if (internalClassName.replace('/', '.').startsWith("android.graphics.")
+              || internalClassName.replace('/', '.').startsWith(Surface.class.getName())
+              || internalClassName.replace('/', '.').startsWith(LinearLayout.class.getName())
+              || internalClassName.replace('/', '.').startsWith(TextView.class.getName())
+              || internalClassName.replace('/', '.').startsWith(ImageView.class.getName())
+              || internalClassName.replace('/', '.').startsWith(TextPaint.class.getName())
+              || internalClassName.replace('/', '.').startsWith(VMRuntime.class.getName())
+              || internalClassName.replace('/', '.').startsWith(Theme.class.getName())
+              ) {
+            return;
+          }
+        }
+
         foundMethods.add(method.name + method.desc);
 
         filterSpecialMethods(method);

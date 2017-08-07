@@ -21,6 +21,7 @@ public class RuntimeEnvironment {
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static AndroidManifest appManifest;
+  private static boolean isRendering;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -72,6 +73,14 @@ public class RuntimeEnvironment {
 
   public static void setActivityThread(Object newActivityThread) {
     activityThread = newActivityThread;
+  }
+
+  public static boolean isRendering() {
+    return isRendering;
+  }
+
+  public static void setRendering(boolean rendering) {
+    isRendering = rendering;
   }
 
   public static String getQualifiers() {

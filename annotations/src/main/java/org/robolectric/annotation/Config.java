@@ -40,6 +40,7 @@ public @interface Config {
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
   String DEFAULT_BUILD_FOLDER = "build";
+  boolean DEFAULT_RENDERING = false;
 
   int ALL_SDKS = -2;
   int TARGET_SDK = -3;
@@ -172,6 +173,8 @@ public @interface Config {
    */
   String[] libraries() default {};  // DEFAULT_LIBRARIES;
 
+  boolean rendering() default DEFAULT_RENDERING;
+
   class Implementation implements Config {
     private final int[] sdk;
     private final int minSdk;
@@ -188,9 +191,11 @@ public @interface Config {
     private final String[] instrumentedPackages;
     private final Class<? extends Application> application;
     private final String[] libraries;
+    private final boolean rendering;
 
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
+
       return new Implementation(
           parseSdkArrayProperty(properties.getProperty("sdk", "")),
           parseSdkInt(properties.getProperty("minSdk", "-1")),
@@ -206,7 +211,8 @@ public @interface Config {
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
           parseApplication(properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
-          parseClass(properties.getProperty("constants", ""))
+          parseClass(properties.getProperty("constants", "")),
+          Boolean.parseBoolean(properties.getProperty("rendering"))
       );
     }
 
@@ -279,7 +285,7 @@ public @interface Config {
       }
     }
 
-    public Implementation(int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants, boolean rendering) {
       this.sdk = sdk;
       this.minSdk = minSdk;
       this.maxSdk = maxSdk;
@@ -295,6 +301,7 @@ public @interface Config {
       this.application = application;
       this.libraries = libraries;
       this.constants = constants;
+      this.rendering = rendering;
 
       validate(this);
     }
@@ -374,6 +381,11 @@ public @interface Config {
       return libraries;
     }
 
+    @Override
+    public boolean rendering() {
+      return rendering;
+    }
+
     @Nonnull @Override
     public Class<? extends Annotation> annotationType() {
       return Config.class;
@@ -396,6 +408,7 @@ public @interface Config {
     protected Class<? extends Application> application = DEFAULT_APPLICATION;
     protected String[] libraries = new String[0];
     protected Class<?> constants = Void.class;
+    protected Boolean rendering = null;
 
     public Builder() {
     }
@@ -549,6 +562,8 @@ public @interface Config {
       libraries.addAll(Arrays.asList(overlayConfig.libraries()));
       this.libraries = libraries.toArray(new String[libraries.size()]);
 
+      this.rendering = overlayConfig.rendering();
+
       return this;
     }
 
@@ -561,7 +576,7 @@ public @interface Config {
     }
 
     public Implementation build() {
-      return new Implementation(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+      return new Implementation(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants, rendering);
     }
 
     public static boolean isDefaultApplication(Class<? extends Application> clazz) {

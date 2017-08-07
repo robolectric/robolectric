@@ -30,6 +30,9 @@ public class ShadowProviderGenerator extends Generator {
   private final String shadowPackage;
   private final boolean shouldInstrumentPackages;
 
+  private static final String EXCLUDED_CLASS_NAME = "com.android.layoutlib.bridge.android.BridgeContext";
+  private static final String EXCLUDED_CLASS = "BridgeContext";
+
   public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment,
                                  String shadowPackage, boolean shouldInstrumentPackages) {
     this.messager = environment.getMessager();
@@ -72,7 +75,9 @@ public class ShadowProviderGenerator extends Generator {
   void generate(PrintWriter writer) {
     writer.print("package " + shadowPackage + ";\n");
     for (String name : model.getImports()) {
-      writer.println("import " + name + ';');
+      if (!name.equals(EXCLUDED_CLASS_NAME)) {
+        writer.println("import " + name + ';');
+      }
     }
     writer.println();
     writer.println("/**");
@@ -138,13 +143,15 @@ public class ShadowProviderGenerator extends Generator {
       }
       final String actual = model.getReferentFor(actualType) + paramUseStr;
       final String shadow = model.getReferentFor(shadowType) + paramUseStr;
-      if (shadowType.getAnnotation(Deprecated.class) != null) {
-        writer.println("  @Deprecated");
+      if (!actual.equals(EXCLUDED_CLASS)) {
+        if (shadowType.getAnnotation(Deprecated.class) != null) {
+          writer.println("  @Deprecated");
+        }
+        writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
+        writer.println("    return (" + shadow + ") Shadow.extract(actual);");
+        writer.println("  }");
+        writer.println();
       }
-      writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
-      writer.println("    return (" + shadow + ") Shadow.extract(actual);");
-      writer.println("  }");
-      writer.println();
     }
 
     writer.println("  public void reset() {");

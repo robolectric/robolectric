@@ -1,0 +1,66 @@
+package org.robolectric.shadows;
+
+import com.android.ide.common.rendering.LayoutLibrary;
+import com.android.ide.common.rendering.api.Bridge;
+import com.android.ide.common.sdk.LoadStatus;
+import com.android.layoutlib.api.ILayoutBridge;
+import com.android.utils.ILogger;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
+/**
+ * Shadow for {@link com.android.ide.common.rendering.LayoutLibrary}.
+ */
+@Implements(value = LayoutLibrary.class, isInAndroidSdk = false)
+public class ShadowLayoutLibrary {
+  @Implementation
+  public static LayoutLibrary load(String layoutLibJarOsPath, ILogger log, String toolName) {
+    Bridge bridge = null;
+    ILayoutBridge legacyBridge = null;
+    ClassLoader classLoader = null;
+    try {
+      // get the URL for the file.
+      File f = new File(layoutLibJarOsPath);
+      if (f.isFile() == false) {
+        if (log != null) {
+          log.error(null, "layoutlib.jar is missing!"); // $NON-NLS-1$
+        }
+      } else {
+        classLoader = Bridge.class.getClassLoader();
+        // load the class
+        Class<?> clazz = classLoader.loadClass(LayoutLibrary.CLASS_BRIDGE);
+        if (clazz != null) {
+          // instantiate an object of the class.
+          Constructor<?> constructor = clazz.getConstructor();
+          if (constructor != null) {
+            Object bridgeObject = constructor.newInstance();
+            if (bridgeObject instanceof ILayoutBridge) {
+              legacyBridge = (ILayoutBridge) bridgeObject;
+            } else if (bridgeObject instanceof Bridge) {
+              bridge = (Bridge) bridgeObject;
+            }
+          }
+        }
+      }
+    } catch (Throwable t) {
+      Throwable cause = t;
+      while (cause.getCause() != null) {
+        cause = cause.getCause();
+      }
+      // log the error.
+      if (log != null) {
+        log.error(t, "Failed to load the LayoutLib: " + cause.getMessage());
+      }
+    }
+    return ReflectionHelpers.callConstructor(LayoutLibrary.class,
+        ClassParameter.from(Bridge.class, bridge),
+        ClassParameter.from(ILayoutBridge.class, legacyBridge),
+        ClassParameter.from(ClassLoader.class, classLoader),
+        ClassParameter.from(LoadStatus.class, LoadStatus.LOADED),
+        ClassParameter.from(String.class, null));
+  }
+}

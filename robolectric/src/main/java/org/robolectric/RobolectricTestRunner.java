@@ -206,7 +206,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return createClassLoaderConfig(new Config.Builder(((RobolectricFrameworkMethod) method).config) {
       @Override
       public Config.Implementation build() {
-        return new MethodPassThrough(method, sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+        return new MethodPassThrough(method, sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants, rendering);
       }
     }.build());
   }
@@ -278,7 +278,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
     return SandboxFactory.INSTANCE.getSdkEnvironment(
-        createClassLoaderConfig(method), getJarResolver(), sdkConfig);
+        createClassLoaderConfig(method), getJarResolver(), sdkConfig, roboMethod.config.rendering());
   }
 
   @Override
@@ -481,8 +481,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static class MethodPassThrough extends Config.Implementation {
     private FrameworkMethod method;
 
-    private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
-      super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+    private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants, boolean rendering) {
+      super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants, rendering);
       this.method = method;
     }
   }

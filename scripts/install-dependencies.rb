@@ -85,6 +85,25 @@ def install_stubs(api)
   install("com.google.android", "android-stubs", "#{api}", path)
 end
 
+def patch_android_jar(originalVersion, api)
+  system("mvn dependency:get -DgroupId=org.robolectric -DartifactId=android-all -Dversion=#{originalVersion} -Dpackaging=jar -Dtransitive=false -DremoteRepositories=https://oss.sonatype.org/content/groups/public/")
+  dir  = "#{ENV['HOME']}/.m2/repository/org/robolectric/android-all/#{originalVersion}/"
+  path = "#{dir}/android-all-#{originalVersion}.jar"
+
+  layoutlibpath = "#{ENV['ANDROID_HOME']}/platforms/android-#{api}/data/layoutlib.jar"
+  unless File.exists?(layoutlibpath)
+    puts "Android SDK platform #{api} doesn't exist, please download it from the Android SDK Manager"
+    exit 1
+  end
+  puts "Patching android lib #{api} for rendering"
+  install("org.robolectric", "android-all", "#{originalVersion}-render", path)
+  Dir.mktmpdir('robolectric-dependencies') do |dir|
+    system("cd #{dir}; jar xf #{ENV['ANDROID_HOME']}/platforms/android-#{api}/data/layoutlib.jar; rm android/view/accessibility/AccessibilityManager*; jar uvf ~/.m2/repository/org/robolectric/android-all/#{originalVersion}-render/android-all-#{originalVersion}-render.jar .")
+    block.call(dir) if block_given?
+  end
+
+end
+
 # Local repository paths
 ANDROID_HOME = ENV['ANDROID_HOME']
 ADDONS = "#{ANDROID_HOME}/add-ons"

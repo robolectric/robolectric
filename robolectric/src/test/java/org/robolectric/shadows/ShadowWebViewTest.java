@@ -40,13 +40,13 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldRecordLastLoadedUrlForRequestWithAdditionalHeaders() {
-    webView.loadUrl("http://example.com", null);
+    shadowWebView.loadUrl("http://example.com", null);
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
     assertThat(shadowOf(webView).getLastAdditionalHttpHeaders()).isNull();
 
     Map<String, String> additionalHttpHeaders = new HashMap<>(1);
     additionalHttpHeaders.put("key1", "value1");
-    webView.loadUrl("http://example.com", additionalHttpHeaders);
+    shadowWebView.loadUrl("http://example.com", additionalHttpHeaders);
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
     assertThat(shadowOf(webView).getLastAdditionalHttpHeaders()).isNotNull();
     assertThat(shadowOf(webView).getLastAdditionalHttpHeaders()).containsKey("key1");
@@ -75,7 +75,7 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldReturnSettings() {
-    WebSettings webSettings = webView.getSettings();
+    WebSettings webSettings = shadowWebView.getSettings();
 
     assertThat(webSettings).isNotNull();
   }
@@ -97,7 +97,23 @@ public class ShadowWebViewTest {
     assertThat(shadowWebView.getWebChromeClient()).isSameAs(webChromeClient);
   }
 
+/*
   @Test
+  public void shouldRecordPictureListener() {
+    WebView.PictureListener pictureListener = new WebView.PictureListener() {
+      @Override
+      public void onNewPicture(WebView view, Picture picture) {
+        ;
+      }
+    };
+
+    //assertThat(shadowWebView.getPictureListener()).isNull();
+    webView.setPictureListener(pictureListener);
+    assertThat(ReflectionHelpers.callInstanceMethod(shadowWebView, "getPictureListener")).isSameAs(pictureListener);
+  }
+*/
+
+@Test
   public void shouldRecordJavascriptInteraces() {
     String[] names = {"name1", "name2"};
     for (String name : names) {
@@ -143,7 +159,7 @@ public class ShadowWebViewTest {
   public void shouldRecordClearCacheWithoutDiskFiles() {
     assertThat(shadowWebView.wasClearCacheCalled()).isFalse();
 
-    webView.clearCache(false);
+    shadowWebView.clearCache(false);
     assertThat(shadowWebView.wasClearCacheCalled()).isTrue();
     assertThat(shadowWebView.didClearCacheIncludeDiskFiles()).isFalse();
   }
@@ -152,7 +168,7 @@ public class ShadowWebViewTest {
   public void shouldRecordClearCacheWithDiskFiles() {
     assertThat(shadowWebView.wasClearCacheCalled()).isFalse();
 
-    webView.clearCache(true);
+    shadowWebView.clearCache(true);
     assertThat(shadowWebView.wasClearCacheCalled()).isTrue();
     assertThat(shadowWebView.didClearCacheIncludeDiskFiles()).isTrue();
   }
@@ -188,17 +204,17 @@ public class ShadowWebViewTest {
   @Test
   public void shouldRecordOnPause() {
     assertThat(shadowWebView.wasOnPauseCalled()).isFalse();
-    webView.onPause();
+    shadowWebView.onPause();
     assertThat(shadowWebView.wasOnPauseCalled()).isTrue();
   }
 
   @Test
   public void shouldRecordOnResume() {
     assertThat(shadowWebView.wasOnResumeCalled()).isFalse();
-    webView.onResume();
+    shadowWebView.onResume();
     assertThat(shadowWebView.wasOnResumeCalled()).isTrue();
   }
-  
+
   @Test
   public void shouldReturnPreviouslySetLayoutParams() {
     assertThat(webView.getLayoutParams()).isNull();
@@ -206,5 +222,5 @@ public class ShadowWebViewTest {
     webView.setLayoutParams(params);
     assertThat(webView.getLayoutParams()).isSameAs(params);
   }
-  
+
 }

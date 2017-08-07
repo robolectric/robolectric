@@ -12,6 +12,27 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
+import com.android.ide.common.rendering.api.HardwareConfig;
+import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.resources.ResourceItem;
+import com.android.ide.common.resources.ResourceRepository;
+import com.android.ide.common.resources.ResourceResolver;
+import com.android.ide.common.resources.configuration.FolderConfiguration;
+import com.android.io.FolderWrapper;
+import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.impl.RenderAction;
+import com.android.resources.Density;
+import com.android.resources.Keyboard;
+import com.android.resources.KeyboardState;
+import com.android.resources.Navigation;
+import com.android.resources.NavigationState;
+import com.android.resources.ScreenOrientation;
+import com.android.resources.ScreenRatio;
+import com.android.resources.ScreenSize;
+import com.android.resources.TouchScreen;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -22,18 +43,27 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
+import org.robolectric.fakes.ProjectCallback;
+import org.robolectric.fakes.RenderService;
+import org.robolectric.fakes.RenderServiceFactory;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowBridgeContext;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+import org.xmlpull.v1.XmlPullParserException;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
+  private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
+  private static RenderService renderService;
+  private static ResourceResolver renderResources;
+  private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
   private boolean loggingInitialized = false;
@@ -95,6 +125,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
+    RuntimeEnvironment.setRendering(sdkConfig.isRendering());
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
@@ -141,8 +172,151 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
 
+      if (sdkConfig.isRendering()) {
+        final String SDK = System.getenv("ANDROID_HOME");
+        File f = new File(SDK + "/platforms/android-" + sdkConfig.getApiLevel());
+        RenderServiceFactory factory = RenderServiceFactory.create(f);
+        String appResDir = "";
+        if (appManifest != null) {
+          appResDir = appManifest.getResDirectory().getPath();
+          RuntimeEnvironment.setResourceDir(appResDir);
+        }
+        ResourceRepository projectRes =
+            new ResourceRepository(new FolderWrapper(appResDir), false/*isFramework*/) {
+              @Override
+              protected ResourceItem createResourceItem(String name) {
+                return new ResourceItem(name);
+              }
+            };
+        projectRes.loadResources();
+        // create the rendering config
+        FolderConfiguration folderConfig =
+            RenderServiceFactory.createConfig(1280, 800, ScreenSize.XLARGE, ScreenRatio.LONG,
+                ScreenOrientation.PORTRAIT, Density.MEDIUM, TouchScreen.FINGER, KeyboardState.SOFT,
+                Keyboard.QWERTY, NavigationState.EXPOSED, Navigation.NONAV, 21/*api level*/);
+        // create the resource resolver once for the given config.
+        String themeKey = null;
+        boolean isProjectTheme;
+        if (appManifest.getThemeRef() != null && appManifest.getThemeRef().length() > 1) {
+          String themeRef = appManifest.getThemeRef().substring(1); //Remove '@'
+          if (themeRef.contains("android")) {
+            // Framework theme
+            isProjectTheme = false;
+          } else {
+            // Project theme
+            isProjectTheme = true;
+          }
+          int indexOfSlash = themeRef.indexOf('/');
+          if (indexOfSlash >= 0) {
+            themeKey = themeRef.substring(indexOfSlash + 1);
+          } else {
+            themeKey = "Theme";
+            isProjectTheme = false;
+          }
+        } else {
+          isProjectTheme = false;
+          themeKey = "Theme";
+        }
+
+        // create the render service
+        if (renderService == null) {
+          renderResources = factory.createResourceResolver(folderConfig, projectRes, themeKey, isProjectTheme);
+          renderService = factory.createService(renderResources, folderConfig, new ProjectCallback());
+        }
+
+        try {
+          initBridgeResources("activity_main");
+          } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        } catch (XmlPullParserException e) {
+          e.printStackTrace();
+        }
+      }
+
       application.onCreate();
+    } else if (sdkConfig.isRendering() && appManifest == null) {
+      throw new RuntimeException("Please provide a manifest for rendering");
     }
+  }
+
+  public static void initBridgeResources(String layoutName) throws FileNotFoundException, XmlPullParserException {
+    SessionParams params;
+    params = renderService.getParamsFromFile(layoutName);
+    HardwareConfig hardwareConfig = params.getHardwareConfig();
+
+    DisplayMetrics metrics = new DisplayMetrics();
+    metrics.densityDpi = (metrics.noncompatDensityDpi = hardwareConfig.getDensity().getDpiValue());
+
+    metrics.density = (metrics.noncompatDensity = metrics.densityDpi / 160.0F);
+
+    metrics.scaledDensity = (metrics.noncompatScaledDensity = metrics.density);
+
+    metrics.widthPixels = (metrics.noncompatWidthPixels = hardwareConfig.getScreenWidth());
+    metrics.heightPixels = (metrics.noncompatHeightPixels = hardwareConfig.getScreenHeight());
+    metrics.xdpi = (metrics.noncompatXdpi = hardwareConfig.getXdpi());
+    metrics.ydpi = (metrics.noncompatYdpi = hardwareConfig.getYdpi());
+    BridgeContext bridgeContext =
+        ShadowBridgeContext.obtain(params.getProjectKey(), metrics, renderResources, null, params.getProjectCallback(),
+            getConfiguration(params), params.getTargetSdkVersion(), params.isRtlSupported());
+    bridgeContext.initResources();
+    ReflectionHelpers.setStaticField(RenderAction.class, "sCurrentContext", bridgeContext);
+  }
+
+  private static Configuration getConfiguration(SessionParams params) {
+    Configuration config = new Configuration();
+
+    HardwareConfig hardwareConfig = params.getHardwareConfig();
+
+    ScreenSize screenSize = hardwareConfig.getScreenSize();
+    if (screenSize != null) {
+      switch (screenSize)
+      {
+      case SMALL:
+        config.screenLayout |= 0x1;
+        break;
+      case NORMAL:
+        config.screenLayout |= 0x2;
+        break;
+      case LARGE:
+        config.screenLayout |= 0x3;
+        break;
+      case XLARGE:
+        config.screenLayout |= 0x4;
+      }
+    }
+    Density density = hardwareConfig.getDensity();
+    if (density == null) {
+      density = Density.MEDIUM;
+    }
+    config.screenWidthDp = (hardwareConfig.getScreenWidth() / density.getDpiValue());
+    config.screenHeightDp = (hardwareConfig.getScreenHeight() / density.getDpiValue());
+    if (config.screenHeightDp < config.screenWidthDp) {
+      config.smallestScreenWidthDp = config.screenHeightDp;
+    } else {
+      config.smallestScreenWidthDp = config.screenWidthDp;
+    }
+    config.densityDpi = density.getDpiValue();
+
+    config.compatScreenWidthDp = config.screenWidthDp;
+    config.compatScreenHeightDp = config.screenHeightDp;
+
+    ScreenOrientation orientation = hardwareConfig.getOrientation();
+    if (orientation != null) {
+      switch (orientation)
+      {
+      case PORTRAIT:
+        config.orientation = 1;
+        break;
+      case LANDSCAPE:
+        config.orientation = 2;
+        break;
+      case SQUARE:
+        config.orientation = 3;
+      }
+    } else {
+      config.orientation = 0;
+    }
+    return config;
   }
 
   /**

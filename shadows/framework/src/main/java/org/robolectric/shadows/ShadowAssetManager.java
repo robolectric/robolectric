@@ -385,6 +385,59 @@ public final class ShadowAssetManager {
     }
     resName = resolvedResName;
 
+/*
+#if ($api >= 21)
+    if (RuntimeEnvironment.isRendering()) {
+      try {
+        // Rendering, use Bridge loader
+        Class cls = Class.forName(ShadowBridgeContext.CLASS_NAME);
+        String jarFileName = block.getFilename();
+        int exclamationIndex = jarFileName.indexOf('!');
+        String pathInSDK = jarFileName.substring(exclamationIndex+1);
+        String fullPath = System.getenv("ANDROID_HOME") + "/platforms/android-" + RuntimeEnvironment.getApiLevel() + "/data" + pathInSDK;
+        if (!block.getPackageName().equals("android")) {
+          // This is project resource ,just load file
+          fullPath = jarFileName;
+        }
+        File f = new File(fullPath);
+        XmlPullParser parser = ParserFactory.create(f);
+        Class<XmlResourceParser> bridgeXmlBlockParserClass = (Class<XmlResourceParser>) Class.forName("com.android.layoutlib.bridge.android.BridgeXmlBlockParser");
+        Class renderActionClass = Class.forName("com.android.layoutlib.bridge.impl.RenderAction");
+
+        Object result = ReflectionHelpers.callConstructor(bridgeXmlBlockParserClass,
+            ClassParameter.from(XmlPullParser.class, parser),
+            ClassParameter.from(cls, ReflectionHelpers.getStaticField(renderActionClass, "sCurrentContext")),
+            ClassParameter.from(boolean.class, block.getPackageName().equals("android")));
+        if (type.equals("layout")) {
+          ShadowBridgeXmlBlockParser shadow = (ShadowBridgeXmlBlockParser) ShadowExtractor.extract(result);
+          shadow.setLayoutResId(id);
+        }
+        return (XmlResourceParser) result;
+      } catch (ClassNotFoundException e) {
+        //Not rendering, use Robolectric loader
+        if (block == null) {
+          throw new Resources.NotFoundException();
+        }
+        return ResourceParser.from(block, resName.packageName, getResourceLoader().getResourceIndex());
+      } catch (FileNotFoundException e) {
+        Resources.NotFoundException newE = new Resources.NotFoundException();
+        newE.initCause(e);
+        throw newE;
+      } catch (XmlPullParserException e) {
+        Resources.NotFoundException newE = new Resources.NotFoundException();
+        newE.initCause(e);
+        throw newE;
+      }
+    } else {
+      //Not rendering, use Robolectric loader
+      if (block == null) {
+        throw new Resources.NotFoundException();
+      }
+      return ResourceParser.from(block, resName.packageName, getResourceLoader().getResourceIndex());
+    }
+#else
+
+ */
     XmlBlock block = resourceTable.getXml(resName, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());

@@ -8,6 +8,7 @@ import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -29,6 +30,7 @@ import android.view.ViewParent;
 import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import org.robolectric.RuntimeEnvironment;
@@ -38,6 +40,10 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourcePath;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
@@ -574,6 +580,42 @@ public class ShadowView {
 
   public void setMyParent(ViewParent viewParent) {
     directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+  }
+
+  public void updateViewId(AttributeSet attributeSet, int defStyleValue) {
+    final TypedArray a = realView.getContext().obtainStyledAttributes(attributeSet, com.android.internal.R.styleable.View, defStyleValue, 0);
+    if (RuntimeEnvironment.isRendering()
+        && attributeSet.getClass().getName().equals(ShadowBridgeXmlBlockParser.CLASS_NAME)
+        && a instanceof BridgeTypedArray
+        && a.hasValue(com.android.internal.R.styleable.View_id)) {
+      ShadowBridgeXmlBlockParser shadowAttr = (ShadowBridgeXmlBlockParser) ShadowExtractor.extract(attributeSet);
+      if (shadowAttr.getLayoutResId() != ShadowBridgeXmlBlockParser.NOT_DEFINED_LAYOUT_RES_ID) {
+        int resId = shadowAttr.getLayoutResId();
+        ShadowResources shadowResources = (ShadowResources) ShadowExtractor.extract(realView.getContext().getResources());
+        if (realView.getContext().getClass().getName().equals(ShadowBridgeContext.CLASS_NAME)) {
+          // Use runtime context instead
+          shadowResources = (ShadowResources) ShadowExtractor.extract(RuntimeEnvironment.application.getResources());
+        }
+        ResName resName = shadowResources.resolveResName(resId);
+        String rName = resName.packageName.concat(".R");
+        try {
+          Class rclassClass = Class.forName(rName);
+          FsFile resFsFile = Fs.newFile(new File(RuntimeEnvironment.getResourceDir()));
+          ResourcePath rPath = new ResourcePath(rclassClass, rclassClass.getPackage().getName(), resFsFile.join("res"), resFsFile.join("assets"));
+          ResourceIndex index = new MergedResourceIndex(new ResourceExtractor(rPath));
+          ResourceValue[] bridgeResourceValues = ReflectionHelpers.getField(a, "mResourceData");
+          ResourceValue idValue = bridgeResourceValues[com.android.internal.R.styleable.View_id];
+          if (idValue.getValue() == null && !idValue.isFramework()) {
+            String idNeeded = idValue.getType() + "/" + idValue.getName();
+            int idFoundInR = resName.getResourceId(index, idNeeded, rclassClass.getPackage().getName());
+            realView.setId(idFoundInR);
+          }
+        } catch (ClassNotFoundException e) {
+          // Resource R file not found
+          System.err.println("Can't locate R.java file");
+        }
+      }
+    }
   }
 
   private View directly() {

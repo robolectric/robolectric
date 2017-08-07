@@ -285,12 +285,12 @@ public class ShadowBitmapTest {
     Bitmap b = Bitmap.createBitmap(10, 20, Bitmap.Config.ARGB_8888);
     Bitmap.createBitmap(b, 0, 0, 20, 10, null, false);
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForNegativeWidth() {
     Bitmap.createBitmap(-100, 10, Bitmap.Config.ARGB_8888);
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForZeroHeight() {
     Bitmap.createBitmap(100, 0, Bitmap.Config.ARGB_8888);
