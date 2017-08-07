@@ -9,6 +9,7 @@ import org.robolectric.annotation.Implements;
 @Implements(MediaRecorder.class)
 public class ShadowMediaRecorder {
   @SuppressWarnings("UnusedDeclaration")
+  @Implementation
   public static void __staticInitializer__() {
     // don't bind the JNI library
   }
@@ -46,6 +47,7 @@ public class ShadowMediaRecorder {
   private MediaRecorder.OnErrorListener errorListener;
   private MediaRecorder.OnInfoListener infoListener;
 
+  @Implementation
   public void __constructor__() {
     state = STATE_INITIAL;
   }
