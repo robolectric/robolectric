@@ -173,6 +173,7 @@ public class ShadowAccessibilityNodeInfo {
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
+  @Implementation
   public void __constructor__() {
     ReflectionHelpers.setStaticField(AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
   }
@@ -1241,6 +1242,7 @@ public class ShadowAccessibilityNodeInfo {
     private int id;
     private CharSequence label;
 
+    @Implementation
     public void __constructor__(int id, CharSequence label) {
       if (((id & (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK")) == 0) && Integer.bitCount(id) != 1) {
         throw new IllegalArgumentException("Invalid standard action id");
