@@ -11,6 +11,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowMessenger {
   private Handler handler;
 
+  @Implementation
   public void __constructor__(Handler handler) {
     this.handler = handler;
   }

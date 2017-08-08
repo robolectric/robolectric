@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.Rect;
 import android.view.TouchDelegate;
 import android.view.View;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
@@ -12,6 +13,7 @@ public class ShadowTouchDelegate {
   private Rect bounds;
   private View delegateView;
 
+  @Implementation
   public void __constructor__( Rect bounds, View delegateView ){
     this.bounds = bounds;
     this.delegateView = delegateView;

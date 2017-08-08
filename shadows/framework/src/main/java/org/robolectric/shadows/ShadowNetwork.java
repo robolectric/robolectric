@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.net.Network;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
@@ -21,6 +22,7 @@ public class ShadowNetwork {
     return network;
   }
 
+  @Implementation
   public void __constructor__(int netId) {
     this.netId = netId;
   }

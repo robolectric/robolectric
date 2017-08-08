@@ -14,6 +14,7 @@ public class ShadowNetworkInfo {
   private int connectionSubType;
   private NetworkInfo.DetailedState detailedState;
 
+  @Implementation
   public static void __staticInitializer__() {
   }
 
