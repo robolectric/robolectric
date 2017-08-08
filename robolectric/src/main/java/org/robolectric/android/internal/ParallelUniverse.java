@@ -10,6 +10,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import java.lang.reflect.Method;
@@ -94,10 +96,17 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp != 0 ? resTab.smallestScreenWidthDp : 320;
     configuration.screenWidthDp = resTab.screenWidthDp != 0 ? resTab.screenWidthDp : 320 ;
     configuration.orientation = resTab.orientation;
+    Locale locale = null;
     if (resTab.language != null && resTab.region != null) {
-      configuration.locale = new Locale(resTab.language, resTab.region);
+      locale = new Locale(resTab.language, resTab.region);
     } else if (resTab.language != null) {
-      configuration.locale = new Locale(resTab.language);
+      locale = new Locale(resTab.language);
+    }
+
+    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.M) {
+      configuration.setLocale(locale);
+    } else {
+      configuration.locale = locale;
     }
 
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());

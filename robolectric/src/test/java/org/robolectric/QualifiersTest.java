@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
+import android.os.LocaleList;
 import android.view.View;
 import android.widget.TextView;
 
@@ -16,7 +19,7 @@ import org.robolectric.annotation.Config;
 import java.util.Locale;
 
 @Config(qualifiers = "en")
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(TestRunners.MultiApiSelfTest.class)
 public class QualifiersTest {
 
   private Resources resources;
@@ -32,8 +35,7 @@ public class QualifiersTest {
     assertThat(resources.getConfiguration().orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
   }
 
-  @Config(qualifiers = "en")
-  @Test public void shouldBeEnglish() {
+  @Test public void shouldBeEnglish_fromClassConfig() {
     Locale locale = resources.getConfiguration().locale;
     assertThat(locale.getLanguage()).isEqualTo("en");
   }
@@ -44,21 +46,20 @@ public class QualifiersTest {
     assertThat(locale.getLanguage()).isEqualTo("ja");
   }
 
-  @Config(qualifiers = "fr")
-  @Test public void shouldBeFrench() {
+  @Config(qualifiers = "fr-rCA")
+  @Test
+  public void locale() {
     Locale locale = resources.getConfiguration().locale;
     assertThat(locale.getLanguage()).isEqualTo("fr");
+    assertThat(locale.getCountry()).isEqualTo("CA");
   }
 
+  @Config(minSdk = VERSION_CODES.N, qualifiers = "fr-rCA")
   @Test
-  public void shouldGetFromClass() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("en");
-  }
-
-  @Test @Config(qualifiers = "fr")
-  public void shouldGetFromMethod() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("fr");
-  }
+  public void localeList() {
+    LocaleList localeList = resources.getConfiguration().getLocales();
+    assertThat(localeList.get(0).getLanguage()).isEqualTo("fr");
+    assertThat(localeList.get(0).getCountry()).isEqualTo("CA");  }
 
   @Test @Config(qualifiers = "de")
   public void getQuantityString() throws Exception {
@@ -68,7 +69,7 @@ public class QualifiersTest {
   @Test
   public void inflateLayout_defaultsTo_sw320dp() throws Exception {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
-    TextView textView = (TextView) view.findViewById(R.id.text1);
+    TextView textView = view.findViewById(R.id.text1);
     assertThat(textView.getText()).isEqualTo("320");
 
     assertThat(RuntimeEnvironment.application.getResources().getConfiguration().smallestScreenWidthDp).isEqualTo(320);
@@ -77,7 +78,7 @@ public class QualifiersTest {
   @Test @Config(qualifiers = "sw720dp")
   public void inflateLayout_overridesTo_sw720dp() throws Exception {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
-    TextView textView = (TextView) view.findViewById(R.id.text1);
+    TextView textView = view.findViewById(R.id.text1);
     assertThat(textView.getText()).isEqualTo("720");
 
     assertThat(RuntimeEnvironment.application.getResources().getConfiguration().smallestScreenWidthDp).isEqualTo(720);
