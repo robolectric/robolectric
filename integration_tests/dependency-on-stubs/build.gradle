@@ -6,6 +6,7 @@ apply plugin: 'com.android.library'
 
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 android {
+    buildToolsVersion '26.0.1'
     compileSdkVersion 26
     testOptions {
         unitTests {
