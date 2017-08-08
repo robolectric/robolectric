@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -173,7 +172,8 @@ public class ShadowDialogTest {
   public void shouldFindViewsWithinAContentViewThatWasPreviouslySet() throws Exception {
     Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
-    assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
+    assertThat(dialog.<TextView>findViewById(R.id.title)).isInstanceOf(
+        (Class<? extends TextView>) TextView.class);
   }
 
   @Test

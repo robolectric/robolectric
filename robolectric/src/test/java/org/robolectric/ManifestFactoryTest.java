@@ -3,9 +3,9 @@ package org.robolectric;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.resourceFile;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,10 +52,10 @@ public class ManifestFactoryTest {
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
     String baseDir = "./" + TestUtil.resourcesBaseDir().getPath();
     assertEquals(asList(
-        joinPath(baseDir, "res"),
-        joinPath(baseDir, "lib1", "res"),
-        joinPath(baseDir, "lib1", "..", "lib3", "res"),
-        joinPath(baseDir, "lib1", "..", "lib2", "res")),
+        Paths.get(baseDir, "res").toString(),
+        Paths.get(baseDir, "lib1", "res").toString(),
+        Paths.get(baseDir, "lib1", "..", "lib3", "res").toString(),
+        Paths.get(baseDir, "lib1", "..", "lib2", "res").toString()),
         resourcePaths);
   }
 

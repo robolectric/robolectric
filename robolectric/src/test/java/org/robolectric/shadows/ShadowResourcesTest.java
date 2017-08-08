@@ -24,8 +24,10 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
 import android.view.Display;
+import com.google.common.io.CharStreams;
 import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +45,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowResourcesTest {
+
   private Resources resources;
 
   @Before
@@ -98,7 +101,8 @@ public class ShadowResourcesTest {
 
   @Test
   public void getStringShouldConvertCodePoints() {
-    assertThat(resources.getString(R.string.non_breaking_space)).isEqualTo("Closing soon:\u00A05pm");
+    assertThat(resources.getString(R.string.non_breaking_space))
+        .isEqualTo("Closing soon:\u00A05pm");
     assertThat(resources.getString(R.string.space)).isEqualTo("Closing soon: 5pm");
   }
 
@@ -109,13 +113,17 @@ public class ShadowResourcesTest {
 
   @Test
   public void getText_withLayoutId() throws Exception {
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith(File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith(
+        File.separator + "src" + File.separator + "test" + File.separator + "resources"
+            + File.separator + "res" + File.separator + "layout" + File.separator
+            + "different_screen_sizes.xml");
   }
 
   @Test
   public void getStringArray() throws Exception {
     assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[]{"foo", "bar"});
-    assertThat(resources.getStringArray(R.array.greetings)).isEqualTo(new String[]{"hola", "Hello"});
+    assertThat(resources.getStringArray(R.array.greetings))
+        .isEqualTo(new String[]{"hola", "Hello"});
   }
 
   @Test
@@ -146,10 +154,14 @@ public class ShadowResourcesTest {
     assertThat(valuesTypedArray.getDimension(5, 0.0f)).isEqualTo(8.0f);
     assertThat(valuesTypedArray.getDimension(6, 0.0f)).isEqualTo(12.0f);
     assertThat(valuesTypedArray.getDimension(7, 0.0f)).isEqualTo(6.0f);
-    assertThat(valuesTypedArray.getDimension(8, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 3.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(9, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_IN, 4.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(10, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 36.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(11, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PT, 18.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(8, 0.0f))
+        .isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 3.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(9, 0.0f))
+        .isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_IN, 4.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(10, 0.0f))
+        .isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 36.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(11, 0.0f))
+        .isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PT, 18.0f, displayMetrics));
 
     final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
     assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
@@ -161,7 +173,8 @@ public class ShadowResourcesTest {
       assertThat(refsTypedArray.getType(4)).isEqualTo(TypedValue.TYPE_NULL);
     }
 
-    assertThat(shadowOf(refsTypedArray.getDrawable(5)).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
+    assertThat(shadowOf(refsTypedArray.getDrawable(5)).getCreatedFromResId())
+        .isEqualTo(R.drawable.an_image);
     assertThat(refsTypedArray.getColor(6, Color.BLACK)).isEqualTo(Color.parseColor("#ff5c00"));
 
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
@@ -194,9 +207,12 @@ public class ShadowResourcesTest {
   @Test
   public void getIntArray() throws Exception {
     assertThat(resources.getIntArray(R.array.empty_int_array)).isEqualTo(new int[]{});
-    assertThat(resources.getIntArray(R.array.zero_to_four_int_array)).isEqualTo(new int[]{0, 1, 2, 3, 4});
-    assertThat(resources.getIntArray(R.array.with_references_int_array)).isEqualTo(new int[]{0, 2000, 1});
-    assertThat(resources.getIntArray(R.array.referenced_colors_int_array)).isEqualTo(new int[]{0x1, 0xFFFFFFFF, 0xFF000000, 0xFFF5F5F5, 0x802C76AD});
+    assertThat(resources.getIntArray(R.array.zero_to_four_int_array))
+        .isEqualTo(new int[]{0, 1, 2, 3, 4});
+    assertThat(resources.getIntArray(R.array.with_references_int_array))
+        .isEqualTo(new int[]{0, 2000, 1});
+    assertThat(resources.getIntArray(R.array.referenced_colors_int_array))
+        .isEqualTo(new int[]{0x1, 0xFFFFFFFF, 0xFF000000, 0xFFF5F5F5, 0x802C76AD});
   }
 
   @Test
@@ -215,7 +231,8 @@ public class ShadowResourcesTest {
     assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
     assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
     assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 240);
-    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 240)));
+    assertThat(resources.getDimension(R.dimen.test_mm_dimen))
+        .isEqualTo(((float) (42f / 25.4 * 240)));
     assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
     assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12 / 0.3f);
     assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5);
@@ -274,10 +291,13 @@ public class ShadowResourcesTest {
     assertThat(resources.getFraction(R.fraction.half_of_parent, myself, myParent)).isEqualTo(300f);
 
     assertThat(resources.getFraction(R.fraction.quarter_as_item, myself, myParent)).isEqualTo(75f);
-    assertThat(resources.getFraction(R.fraction.quarter_of_parent_as_item, myself, myParent)).isEqualTo(150f);
+    assertThat(resources.getFraction(R.fraction.quarter_of_parent_as_item, myself, myParent))
+        .isEqualTo(150f);
 
-    assertThat(resources.getFraction(R.fraction.fifth_as_reference, myself, myParent)).isEqualTo(60f, Offset.offset(0.01f));
-    assertThat(resources.getFraction(R.fraction.fifth_of_parent_as_reference, myself, myParent)).isEqualTo(120f, Offset.offset(0.01f));
+    assertThat(resources.getFraction(R.fraction.fifth_as_reference, myself, myParent))
+        .isEqualTo(60f, Offset.offset(0.01f));
+    assertThat(resources.getFraction(R.fraction.fifth_of_parent_as_reference, myself, myParent))
+        .isEqualTo(120f, Offset.offset(0.01f));
   }
 
   @Test
@@ -337,7 +357,8 @@ public class ShadowResourcesTest {
 
   @Test
   public void testGetColorStateList() {
-    assertThat(resources.getColorStateList(R.color.color_state_list)).isInstanceOf(ColorStateList.class);
+    assertThat(resources.getColorStateList(R.color.color_state_list))
+        .isInstanceOf(ColorStateList.class);
   }
 
   @Test
@@ -347,7 +368,8 @@ public class ShadowResourcesTest {
 
   @Test
   public void testGetNinePatchDrawable() {
-    assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
+    assertThat(resources.getDrawable(R.drawable.nine_patch_drawable))
+        .isInstanceOf(NinePatchDrawable.class);
   }
 
   @Test(expected = Resources.NotFoundException.class)
@@ -396,13 +418,16 @@ public class ShadowResourcesTest {
    * Public framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/public.xml
    * Private framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/symbols.xml
    *
-   * These generate android.R and com.android.internal.R respectively, when Framework Java code does not need to reference a framework resource
-   * it will not have an R value generated. Robolectric is then missing an identifier for this resource so we must generate a placeholder ourselves.
+   * These generate android.R and com.android.internal.R respectively, when Framework Java code does
+   * not need to reference a framework resource it will not have an R value generated. Robolectric
+   * is then missing an identifier for this resource so we must generate a placeholder ourselves.
    */
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP) // android:color/secondary_text_material_dark was added in API 21
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  // android:color/secondary_text_material_dark was added in API 21
   public void shouldGenerateIdsForResourcesThatAreMissingRValues() throws Exception {
-    int identifier_missing_from_r_file = resources.getIdentifier("secondary_text_material_dark", "color", "android");
+    int identifier_missing_from_r_file = resources
+        .getIdentifier("secondary_text_material_dark", "color", "android");
 
     // We expect Robolectric to generate a placeholder identifier where one was not generated in the android R files.
     assertThat(identifier_missing_from_r_file).isNotEqualTo(0);
@@ -413,10 +438,12 @@ public class ShadowResourcesTest {
 
   @Test
   public void testDensity() {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1f);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density)
+        .isEqualTo(1f);
 
     shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density)
+        .isEqualTo(1.5f);
 
     Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
@@ -424,8 +451,10 @@ public class ShadowResourcesTest {
 
   @Test
   public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels)
+        .isEqualTo(800);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels)
+        .isEqualTo(480);
   }
 
   @Test
@@ -440,18 +469,22 @@ public class ShadowResourcesTest {
 
   @Test
   public void applicationResourcesShouldHaveBothSystemAndLocalValues() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getString(android.R.string.copy)).isEqualTo("Copy");
-    assertThat(RuntimeEnvironment.application.getResources().getString(R.string.copy)).isEqualTo("Local Copy");
+    assertThat(RuntimeEnvironment.application.getResources().getString(android.R.string.copy))
+        .isEqualTo("Copy");
+    assertThat(RuntimeEnvironment.application.getResources().getString(R.string.copy))
+        .isEqualTo("Local Copy");
   }
 
   @Test
   public void systemResourcesShouldReturnCorrectSystemId() throws Exception {
-    assertThat(Resources.getSystem().getIdentifier("copy", "string", "android")).isEqualTo(android.R.string.copy);
+    assertThat(Resources.getSystem().getIdentifier("copy", "string", "android"))
+        .isEqualTo(android.R.string.copy);
   }
 
   @Test
   public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
-    assertThat(Resources.getSystem().getIdentifier("copy", "string", TestUtil.TEST_PACKAGE)).isEqualTo(0);
+    assertThat(Resources.getSystem().getIdentifier("copy", "string", TestUtil.TEST_PACKAGE))
+        .isEqualTo(0);
   }
 
   @Test
@@ -495,42 +528,49 @@ public class ShadowResourcesTest {
   public void openRawResource_shouldLoadRawResources() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("raw txt file contents");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream, "UTF-8")))
+        .isEqualTo("raw txt file contents");
   }
 
   @Test
   public void openRawResource_shouldLoadRawResourcesFromLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream, "UTF-8")))
+        .isEqualTo("from lib3");
   }
 
   @Test
   public void openRawResource_shouldLoadRawResourcesFromSecondaryLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_2);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib2");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream, "UTF-8")))
+        .isEqualTo("I'm only defined in lib2");
   }
 
   @Test
   public void openRawResource_shouldLoadRawResourcesFromTertiaryLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_3);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib3");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream, "UTF-8")))
+        .isEqualTo("I'm only defined in lib3");
   }
 
   @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream, "UTF-8")))
+        .isEqualTo("drawable.png image\n");
   }
 
-  @Test @Config(qualifiers = "hdpi")
+  @Test
+  @Config(qualifiers = "hdpi")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
+    assertThat(CharStreams.toString(new InputStreamReader(resourceStream, "UTF-8")))
+        .isEqualTo("drawable-hdpi.png image\n");
   }
 
   @Test
@@ -654,11 +694,13 @@ public class ShadowResourcesTest {
     arr.getValue(0, value);
     arr.recycle();
 
-    assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT).isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
+    assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT)
+        .isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
   }
 
   @Test
-  public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() throws Exception {
+  public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder()
+      throws Exception {
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
@@ -670,17 +712,19 @@ public class ShadowResourcesTest {
         .addAttribute(android.R.attr.viewportHeight, "24.0")
         .build();
 
-    TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
-        android.R.attr.viewportWidth,
-        android.R.attr.viewportHeight
-    }, 0, 0);
+    TypedArray typedArray = RuntimeEnvironment.application.getTheme()
+        .obtainStyledAttributes(attributes, new int[]{
+            android.R.attr.viewportWidth,
+            android.R.attr.viewportHeight
+        }, 0, 0);
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
     typedArray.recycle();
   }
 
   @Test
-  public void obtainStyledAttributes_shouldCheckXmlFirst_fromXmlLoadedFromResources() throws Exception {
+  public void obtainStyledAttributes_shouldCheckXmlFirst_fromXmlLoadedFromResources()
+      throws Exception {
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
@@ -692,10 +736,11 @@ public class ShadowResourcesTest {
     xml.next();
     AttributeSet attributeSet = Xml.asAttributeSet(xml);
 
-    TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributeSet, new int[] {
-        android.R.attr.viewportWidth,
-        android.R.attr.viewportHeight
-    }, 0, 0);
+    TypedArray typedArray = RuntimeEnvironment.application.getTheme()
+        .obtainStyledAttributes(attributeSet, new int[]{
+            android.R.attr.viewportWidth,
+            android.R.attr.viewportHeight
+        }, 0, 0);
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
     typedArray.recycle();
@@ -714,10 +759,11 @@ public class ShadowResourcesTest {
         .addAttribute(android.R.attr.viewportHeight, "@integer/test_integer2")
         .build();
 
-    TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
-        android.R.attr.viewportWidth,
-        android.R.attr.viewportHeight
-    }, 0, 0);
+    TypedArray typedArray = RuntimeEnvironment.application.getTheme()
+        .obtainStyledAttributes(attributes, new int[]{
+            android.R.attr.viewportWidth,
+            android.R.attr.viewportHeight
+        }, 0, 0);
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(2000);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(9);
     typedArray.recycle();
@@ -726,7 +772,8 @@ public class ShadowResourcesTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void whenAttrIsDefinedInRuntimeSdk_getResourceName_findsResource() {
-    assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
+    assertThat(RuntimeEnvironment.application.getResources()
+        .getResourceName(android.R.attr.viewportHeight))
         .isEqualTo("android:attr/viewportHeight");
   }
 
@@ -735,15 +782,18 @@ public class ShadowResourcesTest {
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
     //   numberPickerStyle from com.internal.android.R
-    assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
+    assertThat(RuntimeEnvironment.application.getResources()
+        .getResourceName(android.R.attr.viewportHeight))
         .isEqualTo("android:attr/numberPickerStyle");
 
-    assertThat(RuntimeEnvironment.application.getResources().getIdentifier("viewportHeight", "attr", "android")).isEqualTo(0);
+    assertThat(RuntimeEnvironment.application.getResources()
+        .getIdentifier("viewportHeight", "attr", "android")).isEqualTo(0);
   }
 
   @Test
   public void subClassInitializedOK() {
-    SubClassResources subClassResources = new SubClassResources(RuntimeEnvironment.application.getResources());
+    SubClassResources subClassResources = new SubClassResources(
+        RuntimeEnvironment.application.getResources());
     assertThat(subClassResources.openRawResource(R.raw.raw_resource)).isNotNull();
   }
 
@@ -752,7 +802,8 @@ public class ShadowResourcesTest {
     final Resources.Theme theme = resources.newTheme();
 
     theme.applyStyle(R.style.MyBlackTheme, true);
-    TypedArray arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColorHint});
+    TypedArray arr = theme.obtainStyledAttributes(
+        new int[]{android.R.attr.windowBackground, android.R.attr.textColorHint});
 
     final TypedValue blackBackgroundColor = new TypedValue();
     arr.getValue(0, blackBackgroundColor);
@@ -760,7 +811,9 @@ public class ShadowResourcesTest {
     arr.recycle();
 
     theme.applyStyle(R.style.MyBlueTheme, true);
-    arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColor, android.R.attr.textColorHint});
+    arr = theme.obtainStyledAttributes(
+        new int[]{android.R.attr.windowBackground, android.R.attr.textColor,
+            android.R.attr.textColorHint});
 
     final TypedValue blueBackgroundColor = new TypedValue();
     arr.getValue(0, blueBackgroundColor);
@@ -783,7 +836,8 @@ public class ShadowResourcesTest {
 
     // Apply black theme
     theme.applyStyle(R.style.MyBlackTheme, true);
-    TypedArray arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColorHint});
+    TypedArray arr = theme.obtainStyledAttributes(
+        new int[]{android.R.attr.windowBackground, android.R.attr.textColorHint});
 
     final TypedValue blackBackgroundColor = new TypedValue();
     arr.getValue(0, blackBackgroundColor);
@@ -797,7 +851,9 @@ public class ShadowResourcesTest {
 
     // Apply blue theme
     theme.applyStyle(R.style.MyBlueTheme, false);
-    arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColor, android.R.attr.textColorHint});
+    arr = theme.obtainStyledAttributes(
+        new int[]{android.R.attr.windowBackground, android.R.attr.textColor,
+            android.R.attr.textColorHint});
 
     final TypedValue blueBackgroundColor = new TypedValue();
     arr.getValue(0, blueBackgroundColor);
@@ -889,6 +945,7 @@ public class ShadowResourcesTest {
   }
 
   private static class SubClassResources extends Resources {
+
     public SubClassResources(Resources res) {
       super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
     }

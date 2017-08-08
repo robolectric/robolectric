@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.joinPath;
 
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
@@ -18,6 +17,7 @@ import android.util.AttributeSet;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -73,11 +73,11 @@ public class ShadowAssetManagerTest {
     files = Arrays.asList(assetManager.list(testPath));
     assertTrue(files.contains("extra"));
 
-    testPath = joinPath("docs", "extra");
+    testPath = Paths.get("docs", "extra").toString();
     files = Arrays.asList(assetManager.list(testPath));
     assertTrue(files.contains("testing"));
 
-    testPath = joinPath("docs", "extra", "testing");
+    testPath = Paths.get("docs", "extra", "testing").toString();
     files = Arrays.asList(assetManager.list(testPath));
     assertTrue(files.contains("hello.txt"));
 
