@@ -52,6 +52,7 @@ public class ShadowAccountManager {
   private Handler mainHandler;
   private RoboAccountManagerFuture pendingAddFuture;
 
+  @Implementation
   public void __constructor__(Context context, IAccountManager service) {
     mainHandler = new Handler(context.getMainLooper());
   }

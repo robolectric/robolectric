@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.graphics.LinearGradient;
 import android.graphics.Shader;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -15,6 +16,7 @@ public class ShadowLinearGradient {
   private int color1;
   private Shader.TileMode tile;
 
+  @Implementation
   public void __constructor__(float x0, float y0, float x1, float y1, int color0, int color1, Shader.TileMode tile) {
     this.x0 = x0;
     this.y0 = y0;
