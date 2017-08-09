@@ -67,6 +67,15 @@ public class ShadowUserManager {
     bundle.putBoolean(restrictionKey, value);
   }
 
+  /**
+   * Removes all user restrictions set of a user identified by {@code userHandle}.
+   */
+  public void clearUserRestrictions(UserHandle userHandle) {
+    if (userRestrictions.containsKey(userHandle)) {
+      userRestrictions.remove(userHandle);
+    }
+  }
+
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public Bundle getUserRestrictions(UserHandle userHandle) {
     return getUserRestrictionsForUser(userHandle);
