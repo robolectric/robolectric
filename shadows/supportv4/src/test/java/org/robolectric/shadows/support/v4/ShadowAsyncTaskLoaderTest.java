@@ -61,7 +61,7 @@ public class ShadowAsyncTaskLoaderTest {
   }
 
   public class TestLoader extends AsyncTaskLoader<Integer> {
-    private final Integer data;
+    private Integer data;
 
     public TestLoader(Integer data) {
       super(RuntimeEnvironment.application);
@@ -77,6 +77,10 @@ public class ShadowAsyncTaskLoaderTest {
     @Override
     public void deliverResult(Integer data) {
       transcript.add("deliverResult " + data.toString());
+    }
+
+    public void setData(int newData) {
+      this.data = newData;
     }
   }
 }
