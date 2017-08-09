@@ -4,26 +4,19 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.zip.ZipInputStream;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.robolectric.res.ResourceIds;
-import org.robolectric.res.android.ResTableEntry;
-import org.robolectric.res.android.Type;
-import org.robolectric.res.arsc.Chunk;
-
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.robolectric.res.android.ResTableEntry;
+import org.robolectric.res.android.Type;
 import org.robolectric.res.arsc.Chunk.TableChunk;
-import org.robolectric.res.arsc.ArscTable;
 import org.robolectric.resources.R;
 
 /**
@@ -67,7 +60,7 @@ public class ArscTableTest {
   public void testGetEntry_boolType() throws Exception {
     assertThat(arscTable.getEntry(R.bool.is_verizon, 0).value.dataType).isEqualTo(Type.INT_BOOLEAN.code());
     // Uncomment when we start selecting correct configuration
-    // assertThat(arscTable.getEntry(R.bool.is_verizon, 0).value.dataType).isEqualTo(0);
+//    assertThat(arscTable.getEntry(R.bool.is_verizon, 0).value.dataType).isEqualTo(0);
   }
 
   @Test

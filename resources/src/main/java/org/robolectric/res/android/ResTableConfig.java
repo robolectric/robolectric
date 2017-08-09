@@ -328,7 +328,7 @@ public class ResTableConfig {
     if (value[0] == 0 && value[1] == 0) {
       return "";
     }
-    if ((UnsignedBytes.toInt(value[0]) & 0x80) != 0) {
+    if (isTruthy(UnsignedBytes.toInt(value[0]) & 0x80)) {
       byte[] result = new byte[3];
       result[0] = (byte) (base + (value[1] & 0x1F));
       result[1] = (byte) (base + ((value[1] & 0xE0) >>> 5) + ((value[0] & 0x03) << 3));
@@ -382,16 +382,16 @@ public class ResTableConfig {
    */
   public final Map<Type, String> toStringParts() {
     Map<Type, String> result = new LinkedHashMap<>();  // Preserve order for #toString().
-    result.put(Type.MCC, mcc != 0 ? "mcc" + mcc : "");
-    result.put(Type.MNC, mnc != 0 ? "mnc" + mnc : "");
+    result.put(Type.MCC, isTruthy(mcc) ? "mcc" + mcc : "");
+    result.put(Type.MNC, isTruthy(mnc) ? "mnc" + mnc : "");
     result.put(Type.LANGUAGE_STRING, !languageString().isEmpty() ? "" + languageString() : "");
     result.put(Type.REGION_STRING, !regionString().isEmpty() ? "r" + regionString() : "");
     result.put(Type.SCREEN_LAYOUT_DIRECTION,
         getOrDefault(SCREENLAYOUT_LAYOUTDIR_VALUES, screenLayoutDirection(), ""));
     result.put(Type.SMALLEST_SCREEN_WIDTH_DP,
-        smallestScreenWidthDp != 0 ? "sw" + smallestScreenWidthDp + "dp" : "");
-    result.put(Type.SCREEN_WIDTH_DP, screenWidthDp != 0 ? "w" + screenWidthDp + "dp" : "");
-    result.put(Type.SCREEN_HEIGHT_DP, screenHeightDp != 0 ? "h" + screenHeightDp + "dp" : "");
+        isTruthy(smallestScreenWidthDp) ? "sw" + smallestScreenWidthDp + "dp" : "");
+    result.put(Type.SCREEN_WIDTH_DP, isTruthy(screenWidthDp) ? "w" + screenWidthDp + "dp" : "");
+    result.put(Type.SCREEN_HEIGHT_DP, isTruthy(screenHeightDp) ? "h" + screenHeightDp + "dp" : "");
     result.put(Type.SCREEN_LAYOUT_SIZE,
         getOrDefault(SCREENLAYOUT_SIZE_VALUES, screenLayoutSize(), ""));
     result.put(Type.SCREEN_LAYOUT_LONG,
@@ -408,7 +408,7 @@ public class ResTableConfig {
     result.put(Type.NAVIGATION_HIDDEN,
         getOrDefault(NAVIGATIONHIDDEN_VALUES, navigationHidden(), ""));
     result.put(Type.NAVIGATION, getOrDefault(NAVIGATION_VALUES, navigation, ""));
-    result.put(Type.SDK_VERSION, sdkVersion != 0 ? "v" + sdkVersion : "");
+    result.put(Type.SDK_VERSION, isTruthy(sdkVersion) ? "v" + sdkVersion : "");
     return result;
   }
 
@@ -437,18 +437,20 @@ public class ResTableConfig {
   public static final int MASK_NAVHIDDEN = 0x000c;
 
 
+  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
+
   /**
    * Is {@code requested} a better match to this {@link ResTableConfig} object than {@code o}
    */
   boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
-    if (requested != null) {
-      if (imsi() != 0 || o.imsi() != 0) {
-        if ((mcc != o.mcc) && requested.mcc != 0) {
-          return (mcc != 0);
+    if (isTruthy(requested)) {
+      if (isTruthy(imsi()) || o.isTruthy(o.imsi())) {
+        if ((mcc != o.mcc) && isTruthy(requested.mcc)) {
+          return (isTruthy(mcc));
         }
 
-        if ((mnc != o.mnc) && requested.mnc != 0) {
-          return (mnc != 0);
+        if ((mnc != o.mnc) && isTruthy(requested.mnc)) {
+          return (isTruthy(mnc));
         }
       }
 
@@ -456,16 +458,16 @@ public class ResTableConfig {
         return true;
       }
 
-      if (screenLayout != 0 || o.screenLayout != 0) {
-        if (((screenLayout^o.screenLayout) & MASK_LAYOUTDIR) != 0
-            && (requested.screenLayout & MASK_LAYOUTDIR) != 0) {
+      if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
+        if (isTruthy((screenLayout^o.screenLayout) & MASK_LAYOUTDIR)
+            && isTruthy(requested.screenLayout & MASK_LAYOUTDIR)) {
           int myLayoutDir = screenLayout & MASK_LAYOUTDIR;
           int oLayoutDir = o.screenLayout & MASK_LAYOUTDIR;
           return (myLayoutDir > oLayoutDir);
         }
       }
 
-      if (smallestScreenWidthDp != 0 || o.smallestScreenWidthDp != 0) {
+      if (isTruthy(smallestScreenWidthDp) || isTruthy(o.smallestScreenWidthDp)) {
         // The configuration closest to the actual size is best.
         // We assume that larger configs have already been filtered
         // out at this point.  That means we just want the largest one.
@@ -474,7 +476,7 @@ public class ResTableConfig {
         }
       }
 
-      if (screenSizeDp() != 0 || o.screenSizeDp() != 0) {
+      if (isTruthy(screenSizeDp()) || isTruthy(o.screenSizeDp())) {
         // "Better" is based on the sum of the difference between both
         // width and height from the requested dimensions.  We are
         // assuming the invalid configs (with smaller dimens) have
@@ -484,11 +486,11 @@ public class ResTableConfig {
         // good since we will prefer a config that has specified a
         // dimension value.
         int myDelta = 0, otherDelta = 0;
-        if (requested.screenWidthDp != 0) {
+        if (isTruthy(requested.screenWidthDp)) {
           myDelta += requested.screenWidthDp - screenWidthDp;
           otherDelta += requested.screenWidthDp - o.screenWidthDp;
         }
-        if (requested.screenHeightDp != 0) {
+        if (isTruthy(requested.screenHeightDp)) {
           myDelta += requested.screenHeightDp - screenHeightDp;
           otherDelta += requested.screenHeightDp - o.screenHeightDp;
         }
@@ -498,9 +500,9 @@ public class ResTableConfig {
         }
       }
 
-      if (screenLayout != 0 || o.screenLayout != 0) {
-        if (((screenLayout^o.screenLayout) & MASK_SCREENSIZE) != 0
-            && (requested.screenLayout & MASK_SCREENSIZE) != 0) {
+      if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
+        if (isTruthy((screenLayout^o.screenLayout) & MASK_SCREENSIZE)
+            && isTruthy(requested.screenLayout & MASK_SCREENSIZE)) {
           // A little backwards compatibility here: undefined is
           // considered equivalent to normal.  But only if the
           // requested size is at least normal; otherwise, small
@@ -527,38 +529,38 @@ public class ResTableConfig {
           }
         }
         if (((screenLayout^o.screenLayout) & MASK_SCREENLONG) != 0
-            && (requested.screenLayout & MASK_SCREENLONG) != 0) {
-          return (screenLayout & MASK_SCREENLONG) != 0;
+            && isTruthy(requested.screenLayout & MASK_SCREENLONG)) {
+          return isTruthy(screenLayout & MASK_SCREENLONG);
         }
       }
 
-      if (screenLayout2 != 0 || o.screenLayout2 != 0) {
+      if (isTruthy(screenLayout2) || isTruthy(o.screenLayout2)) {
         if (((screenLayout2^o.screenLayout2) & MASK_SCREENROUND) != 0 &&
-            (requested.screenLayout2 & MASK_SCREENROUND) != 0) {
-          return (screenLayout2 & MASK_SCREENROUND) != 0;
+            isTruthy(requested.screenLayout2 & MASK_SCREENROUND)) {
+          return isTruthy(screenLayout2 & MASK_SCREENROUND);
         }
       }
 
-      if ((orientation != o.orientation) && requested.orientation != 0) {
-        return (orientation) != 0;
+      if ((orientation != o.orientation) && isTruthy(requested.orientation)) {
+        return isTruthy(orientation);
       }
 
-      if (uiMode != 0 || o.uiMode != 0) {
+      if (isTruthy(uiMode) || isTruthy(o.uiMode)) {
         if (((uiMode^o.uiMode) & MASK_UI_MODE_TYPE) != 0
-            && (requested.uiMode & MASK_UI_MODE_TYPE) != 0) {
-          return (uiMode & MASK_UI_MODE_TYPE) != 0;
+            && isTruthy(requested.uiMode & MASK_UI_MODE_TYPE)) {
+          return isTruthy(uiMode & MASK_UI_MODE_TYPE);
         }
         if (((uiMode^o.uiMode) & MASK_UI_MODE_NIGHT) != 0
-            && (requested.uiMode & MASK_UI_MODE_NIGHT) != 0) {
-          return (uiMode & MASK_UI_MODE_NIGHT) != 0;
+            && isTruthy(requested.uiMode & MASK_UI_MODE_NIGHT)) {
+          return isTruthy(uiMode & MASK_UI_MODE_NIGHT);
         }
       }
 
-      if (screenType() != 0 || o.screenType() != 0) {
+      if (isTruthy(screenType()) || isTruthy(o.screenType())) {
         if (density != o.density) {
           // Use the system default density (DENSITY_MEDIUM, 160dpi) if none specified.
-                final int thisDensity = density != 0 ? density : DENSITY_MEDIUM;
-                final int otherDensity = o.density != 0 ? o.density : DENSITY_MEDIUM;
+                final int thisDensity = isTruthy(density) ? density : DENSITY_MEDIUM;
+                final int otherDensity = isTruthy(o.density) ? o.density : DENSITY_MEDIUM;
 
           // We always prefer DENSITY_ANY over scaling a density bucket.
           if (thisDensity == DENSITY_ANY) {
@@ -604,18 +606,18 @@ public class ResTableConfig {
           }
         }
 
-        if ((touchscreen != o.touchscreen) && requested.touchscreen != 0) {
-          return (touchscreen) != 0;
+        if ((touchscreen != o.touchscreen) && isTruthy(requested.touchscreen)) {
+          return isTruthy(touchscreen);
         }
       }
 
-      if (input() != 0 || o.input() != 0) {
+      if (isTruthy(input()) || isTruthy(o.input())) {
             final int keysHidden = inputFlags & MASK_KEYSHIDDEN;
             final int oKeysHidden = o.inputFlags & MASK_KEYSHIDDEN;
         if (keysHidden != oKeysHidden) {
                 final int reqKeysHidden =
               requested.inputFlags & MASK_KEYSHIDDEN;
-          if (reqKeysHidden != 0) {
+          if (isTruthy(reqKeysHidden)) {
 
             if (keysHidden == 0) return false;
             if (oKeysHidden == 0) return true;
@@ -632,23 +634,23 @@ public class ResTableConfig {
         if (navHidden != oNavHidden) {
                 final int reqNavHidden =
               requested.inputFlags & MASK_NAVHIDDEN;
-          if (reqNavHidden != 0) {
+          if (isTruthy(reqNavHidden)) {
 
             if (navHidden == 0) return false;
             if (oNavHidden == 0) return true;
           }
         }
 
-        if ((keyboard != o.keyboard) && requested.keyboard != 0) {
-          return (keyboard) != 0;
+        if ((keyboard != o.keyboard) && isTruthy(requested.keyboard)) {
+          return isTruthy(keyboard);
         }
 
-        if ((navigation != o.navigation) && requested.navigation != 0) {
-          return (navigation) != 0;
+        if ((navigation != o.navigation) && isTruthy(requested.navigation)) {
+          return isTruthy(navigation);
         }
       }
 
-      if (screenSize() != 0 || o.screenSize() != 0) {
+      if (isTruthy(screenSize()) || isTruthy(o.screenSize())) {
         // "Better" is based on the sum of the difference between both
         // width and height from the requested dimensions.  We are
         // assuming the invalid configs (with smaller sizes) have
@@ -658,11 +660,11 @@ public class ResTableConfig {
         // good since we will prefer a config that has specified a
         // size value.
         int myDelta = 0, otherDelta = 0;
-        if (requested.screenWidth != 0) {
+        if (isTruthy(requested.screenWidth)) {
           myDelta += requested.screenWidth - screenWidth;
           otherDelta += requested.screenWidth - o.screenWidth;
         }
-        if (requested.screenHeight != 0) {
+        if (isTruthy(requested.screenHeight)) {
           myDelta += requested.screenHeight - screenHeight;
           otherDelta += requested.screenHeight - o.screenHeight;
         }
@@ -671,20 +673,28 @@ public class ResTableConfig {
         }
       }
 
-      if (version() != 0 || o.version() != 0) {
-        if ((sdkVersion != o.sdkVersion) && requested.sdkVersion != 0) {
+      if (isTruthy(version()) || isTruthy(o.version())) {
+        if ((sdkVersion != o.sdkVersion) && isTruthy(requested.sdkVersion)) {
           return (sdkVersion > o.sdkVersion);
         }
 
         if ((minorVersion != o.minorVersion) &&
-            requested.minorVersion != 0) {
-          return (minorVersion) != 0;
+            isTruthy(requested.minorVersion)) {
+          return isTruthy(minorVersion);
         }
       }
 
       return false;
     }
     return isMoreSpecificThan(o);
+  }
+
+  private boolean isTruthy(int i) {
+    return i != 0;
+  }
+
+  private boolean isTruthy(Object o) {
+    return o != null;
   }
 
   /**

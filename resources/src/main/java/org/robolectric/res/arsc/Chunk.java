@@ -50,7 +50,7 @@ abstract public class Chunk {
 
   private final ByteBuffer buffer;
   private final int offset;
-  ResChunkHeader header;
+  final ResChunkHeader header;
 
   private static final int OFFSET_FIRST_HEADER = 8;
 
@@ -185,7 +185,6 @@ abstract public class Chunk {
 
     public StringPoolChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
       super(buffer, offset, header);
-      this.header = header;
       stringsStart = super.buffer.getInt(offset + OFFSET_STRING_START);
     }
 
