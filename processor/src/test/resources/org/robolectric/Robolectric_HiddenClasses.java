@@ -4,7 +4,6 @@ import com.example.objects.Dummy;
 import com.example.objects.OuterDummy2;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Generated;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2;
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInnerPackage;
@@ -14,7 +13,6 @@ import org.robolectric.annotation.processing.shadows.ShadowPrivate;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadow.api.Shadow;
 
-@Generated("org.robolectric.annotation.processing.RobolectricProcessor")
 @SuppressWarnings({"unchecked","deprecation"})
 public class Shadows implements ShadowProvider {
   private static final Map<String, String> SHADOW_MAP = new HashMap<>(6);
