@@ -151,7 +151,7 @@ public class ShadowAsyncTaskTest {
       asyncTask.execute();
       fail("Task swallowed onPostExecute() exception!");
     } catch (RuntimeException e) {
-      assertThat(e.getCause().getMessage()).isEqualTo("java.lang.RuntimeException: Don't swallow me!");
+      assertThat(e.getCause().getMessage()).isEqualTo("Don't swallow me!");
     }
   }
 
