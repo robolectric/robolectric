@@ -78,6 +78,18 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void clearUserRestrictions() {
+    assertThat(userManager.getUserRestrictions().size()).isEqualTo(0);
+    shadowOf(userManager)
+        .setUserRestriction(Process.myUserHandle(), UserManager.ENSURE_VERIFY_APPS, true);
+    assertThat(userManager.getUserRestrictions().size()).isEqualTo(1);
+
+    shadowOf(userManager).clearUserRestrictions(Process.myUserHandle());
+    assertThat(userManager.getUserRestrictions().size()).isEqualTo(0);
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void isManagedProfile() {
     assertThat(userManager.isManagedProfile()).isFalse();
