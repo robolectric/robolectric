@@ -27,7 +27,7 @@ package org.robolectric.res.android;
  * ResTable_type from androidfw/include/androidfw/ResourceTypes.h
  */
 public class ResTableType {
-    static final int NO_ENTRY = 0xFFFFFFFF;
+    public static final int NO_ENTRY = 0xFFFFFFFF;
 
     // If set, the entry is sparse, and encodes both the entry ID and offset into each entry,
     // and a binary search is used to find the key. Only available on platforms >= O.

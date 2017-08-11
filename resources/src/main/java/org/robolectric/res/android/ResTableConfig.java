@@ -442,7 +442,7 @@ public class ResTableConfig {
   /**
    * Is {@code requested} a better match to this {@link ResTableConfig} object than {@code o}
    */
-  boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
+  public boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
     if (isTruthy(requested)) {
       if (isTruthy(imsi()) || o.isTruthy(o.imsi())) {
         if ((mcc != o.mcc) && isTruthy(requested.mcc)) {
