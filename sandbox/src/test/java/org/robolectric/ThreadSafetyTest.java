@@ -1,5 +1,8 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.lang.reflect.Field;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
@@ -7,13 +10,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.SandboxConfig;
-
-import java.lang.reflect.Field;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(SandboxTestRunner.class)
 public class ThreadSafetyTest {
@@ -26,7 +24,7 @@ public class ThreadSafetyTest {
     for (int i = 0; i < 100; i++) { // :-(
       InstrumentedThread instrumentedThread = new InstrumentedThread();
       instrumentedThread.start();
-      Object shadowFromThisThread = ShadowExtractor.extract(instrumentedThread);
+      Object shadowFromThisThread = Shadow.extract(instrumentedThread);
 
       instrumentedThread.join();
       Object shadowFromOtherThread = field.get(instrumentedThread);
@@ -40,7 +38,7 @@ public class ThreadSafetyTest {
 
     @Override
     public void run() {
-      shadowFromOtherThread = (InstrumentedThreadShadow) ShadowExtractor.extract(this);
+      shadowFromOtherThread = Shadow.extract(this);
     }
   }
 

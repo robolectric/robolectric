@@ -2,10 +2,8 @@ package org.robolectric.annotation.processing.validator;
 
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.Trees;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.processing.DocumentedMethod;
-import org.robolectric.annotation.processing.RobolectricModel;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -18,9 +16,11 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
-import java.util.ArrayList;
-import java.util.List;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.processing.DocumentedMethod;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.Implements}.
@@ -29,6 +29,9 @@ public class ImplementsValidator extends Validator {
 
   public static final String IMPLEMENTS_CLASS = "org.robolectric.annotation.Implements";
   public static final int MAX_SUPPORTED_ANDROID_SDK = 10000; // Now == Build.VERSION_CODES.O
+
+  public static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
+  public static final String CONSTRUCTOR_METHOD_NAME = "__constructor__";
 
   private final ProcessingEnvironment env;
 
@@ -52,6 +55,8 @@ public class ImplementsValidator extends Validator {
   @Override
   public Void visitType(TypeElement elem, Element parent) {
     captureJavadoc(elem);
+
+    validateShadowMethods(elem);
 
     // Don't import nested classes because some of them have the same name.
     AnnotationMirror am = getCurrentAnnotation();
@@ -127,6 +132,20 @@ public class ImplementsValidator extends Validator {
     }
     model.addShadowType(elem, type);
     return null;
+  }
+
+  private void validateShadowMethods(TypeElement elem) {
+    for (Element memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
+      ExecutableElement methodElement = (ExecutableElement) memberElement;
+      Implementation implementation = memberElement.getAnnotation(Implementation.class);
+
+      String methodName = methodElement.getSimpleName().toString();
+      if (methodName.equals(CONSTRUCTOR_METHOD_NAME) || methodName.equals(STATIC_INITIALIZER_METHOD_NAME)) {
+        if (implementation == null) {
+          messager.printMessage(Kind.ERROR, "Shadow methods must be annotated @Implementation", methodElement);
+        }
+      }
+    }
   }
 
   private void captureJavadoc(TypeElement elem) {

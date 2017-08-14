@@ -1,9 +1,6 @@
 package org.robolectric.res;
 
 import com.google.common.annotations.VisibleForTesting;
-import javax.annotation.Nonnull;
-import org.robolectric.util.Util;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -11,6 +8,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
+import org.robolectric.util.Util;
 
 public class FileFsFile implements FsFile {
   @VisibleForTesting

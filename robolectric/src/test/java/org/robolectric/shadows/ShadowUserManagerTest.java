@@ -1,23 +1,24 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
-import android.os.*;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.content.Context;
+import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Process;
+import android.os.UserHandle;
+import android.os.UserManager;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-
-import java.util.List;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.N;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowUserManagerTest {
@@ -74,6 +75,18 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).setUserRestriction(newUserHandle(10), UserManager.DISALLOW_CAMERA, true);
 
     assertThat(userManager.hasUserRestriction(UserManager.DISALLOW_CAMERA)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void clearUserRestrictions() {
+    assertThat(userManager.getUserRestrictions().size()).isEqualTo(0);
+    shadowOf(userManager)
+        .setUserRestriction(Process.myUserHandle(), UserManager.ENSURE_VERIFY_APPS, true);
+    assertThat(userManager.getUserRestrictions().size()).isEqualTo(1);
+
+    shadowOf(userManager).clearUserRestrictions(Process.myUserHandle());
+    assertThat(userManager.getUserRestrictions().size()).isEqualTo(0);
   }
 
   @Test

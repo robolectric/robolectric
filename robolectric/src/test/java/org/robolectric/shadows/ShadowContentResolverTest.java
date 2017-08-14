@@ -1,5 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.accounts.Account;
 import android.app.Activity;
 import android.app.Application;
@@ -24,6 +32,15 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,24 +53,6 @@ import org.robolectric.fakes.BaseCursor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowContentResolverTest {

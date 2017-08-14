@@ -1,21 +1,27 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
 import android.content.AsyncTaskLoader;
-import org.robolectric.util.SimpleFuture;
+import android.content.Context;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Implementation;
-import java.util.concurrent.Callable;
 
 @Implements(AsyncTaskLoader.class)
 public class ShadowAsyncTaskLoader<D> {
   @RealObject private AsyncTaskLoader<D> realObject;
-  private SimpleFuture<D> future;
+  private BackgroundWorker worker;
 
+  @Implementation
   public void __constructor__(Context context) {
-    BackgroundWorker worker = new BackgroundWorker();
-    future = new SimpleFuture<D>(worker) {
+    worker = new BackgroundWorker();
+  }
+
+  @Implementation
+  public void onForceLoad() {
+    FutureTask<D> future = new FutureTask<D>(worker) {
       @Override
       protected void done() {
         try {
@@ -28,19 +34,13 @@ public class ShadowAsyncTaskLoader<D> {
           });
         } catch (InterruptedException e) {
           // Ignore
+        } catch (ExecutionException e) {
+          throw new RuntimeException(e.getCause());
         }
       }
     };
-  }
 
-  @Implementation
-  public void onForceLoad() {
-    ShadowApplication.getInstance().getBackgroundThreadScheduler().post(new Runnable() {
-      @Override
-      public void run() {
-        future.run();
-      }
-    });
+    ShadowApplication.getInstance().getBackgroundThreadScheduler().post(future);
   }
 
   private final class BackgroundWorker implements Callable<D> {

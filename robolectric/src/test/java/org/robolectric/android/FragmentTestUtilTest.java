@@ -4,19 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.FragmentTestUtil.startFragment;
 import static org.robolectric.util.FragmentTestUtil.startVisibleFragment;
 
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.TestRunners;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.SelfTest.class)
 public class FragmentTestUtilTest {

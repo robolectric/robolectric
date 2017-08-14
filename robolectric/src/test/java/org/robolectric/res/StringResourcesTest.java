@@ -1,12 +1,15 @@
 package org.robolectric.res;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.*;
 
 @RunWith(JUnit4.class)
 public class StringResourcesTest {

@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.content.ContentProvider;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @Implements(ContentProvider.class)
 public class ShadowContentProvider {

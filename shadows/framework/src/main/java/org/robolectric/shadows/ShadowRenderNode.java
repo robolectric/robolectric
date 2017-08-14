@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import android.view.RenderNode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 @Implements(value = RenderNode.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
 public class ShadowRenderNode {

@@ -9,14 +9,13 @@ import android.view.View;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TabWidget;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)

@@ -1,14 +1,13 @@
 package org.robolectric.android;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class FailureListener extends RunListener {
   @Nonnull

@@ -5,21 +5,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import android.accounts.Account;
+import android.os.Bundle;
+import android.os.Parcel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-
-import android.accounts.Account;
-import android.os.Bundle;
-import android.os.Parcel;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowParcelTest {

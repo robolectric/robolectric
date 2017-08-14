@@ -1,5 +1,27 @@
 package org.robolectric.internal.bytecode;
 
+import static java.lang.invoke.MethodType.methodType;
+import static org.objectweb.asm.Type.ARRAY;
+import static org.objectweb.asm.Type.OBJECT;
+import static org.objectweb.asm.Type.VOID;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -27,29 +49,6 @@ import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.invoke.CallSite;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-
-import static java.lang.invoke.MethodType.methodType;
-import static org.objectweb.asm.Type.ARRAY;
-import static org.objectweb.asm.Type.OBJECT;
-import static org.objectweb.asm.Type.VOID;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.

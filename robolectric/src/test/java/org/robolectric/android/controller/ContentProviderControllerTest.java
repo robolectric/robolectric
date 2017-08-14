@@ -1,5 +1,7 @@
 package org.robolectric.android.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -8,7 +10,8 @@ import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.net.Uri;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,11 +19,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.SelfTest.class)
 @Config(manifest = Config.NONE, sdk = 23)

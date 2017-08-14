@@ -2,15 +2,13 @@ package org.robolectric.shadows;
 
 import android.app.ActivityThread;
 import android.content.pm.PackageManager;
-
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
@@ -37,6 +35,8 @@ public class ShadowActivityThread {
             return null;
           }
         } else if (method.getName().equals("notifyPackageUse")) {
+          return null;
+        } else if (method.getName().equals("getPackageInstaller")) {
           return null;
         }
         throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");

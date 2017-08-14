@@ -133,23 +133,6 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     return this;
   }
 
-  /**
-   * @deprecated Use {@link org.robolectric.Robolectric#buildFragment(Class, Class, Intent)} instead.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  @Override
-  public FragmentController<F> withIntent(final Intent intent) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.withIntent(intent);
-      }
-    });
-    return this;
-  }
-
   private static class FragmentControllerActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {

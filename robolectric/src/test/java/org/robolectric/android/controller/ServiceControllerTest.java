@@ -2,13 +2,7 @@ package org.robolectric.android.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.*;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import static org.robolectric.util.TestUtil.assertStringsInclude;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -16,13 +10,15 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import org.robolectric.android.controller.ServiceController;
-import org.robolectric.shadows.CoreShadowsAdapter;
-import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.util.TestUtil;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.shadows.CoreShadowsAdapter;
+import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(TestRunners.SelfTest.class)
 public class ServiceControllerTest {

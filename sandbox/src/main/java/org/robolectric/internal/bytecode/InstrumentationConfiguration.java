@@ -4,11 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.shadow.api.Shadow;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,6 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.annotation.internal.Instrument;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * Configuration rules for {@link SandboxClassLoader}.
@@ -31,25 +29,8 @@ public class InstrumentationConfiguration {
       Shadow.class.getName(),
 
       // these classes are deprecated and will be removed soon:
-      ShadowExtractor.class.getName(),
-      "org.robolectric.internal.Shadow",
-      "org.robolectric.res.builder.DefaultPackageManager",
-      "org.robolectric.res.builder.DefaultPackageManager$1",
-      "org.robolectric.res.builder.DefaultPackageManager$IntentComparator",
-      "org.robolectric.res.builder.DefaultPackageManager$RoboPackageInstaller",
-      "org.robolectric.res.builder.DefaultPackageManager$RoboPackageInstaller$1",
-      "org.robolectric.res.builder.RobolectricPackageManager",
-      "org.robolectric.res.builder.StubPackageManager",
-      "org.robolectric.util.AccessibilityUtil",
-      "org.robolectric.util.ActivityController",
-      "org.robolectric.util.ApplicationTestUtil",
-      "org.robolectric.util.ContentProviderController",
-      "org.robolectric.util.FragmentController",
       "org.robolectric.util.FragmentTestUtil",
-      "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity",
-      "org.robolectric.util.IntentServiceController",
-      "org.robolectric.util.ServiceController",
-      "org.robolectric.util.concurrent.RoboExecutorService"
+      "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity"
   );
 
   private final List<String> instrumentedPackages;

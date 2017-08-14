@@ -1,21 +1,19 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
-
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Shadow of {@link android.view.accessibility.AccessibilityWindowInfo} that allows a test to set
@@ -50,6 +48,7 @@ public class ShadowAccessibilityWindowInfo {
   @RealObject
   private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
 
+  @Implementation
   public void __constructor__() {}
 
   @Implementation
@@ -63,8 +62,7 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   public static AccessibilityWindowInfo obtain(AccessibilityWindowInfo window) {
-    final ShadowAccessibilityWindowInfo shadowInfo =
-        ((ShadowAccessibilityWindowInfo) ShadowExtractor.extract(window));
+    final ShadowAccessibilityWindowInfo shadowInfo = Shadow.extract(window);
     final AccessibilityWindowInfo obtainedInstance = shadowInfo.getClone();
     StrictEqualityWindowWrapper wrapper = new StrictEqualityWindowWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
@@ -74,8 +72,7 @@ public class ShadowAccessibilityWindowInfo {
   private AccessibilityWindowInfo getClone() {
     final AccessibilityWindowInfo newInfo =
         ReflectionHelpers.callConstructor(AccessibilityWindowInfo.class);
-    final ShadowAccessibilityWindowInfo newShadow =
-        (ShadowAccessibilityWindowInfo) ShadowExtractor.extract(newInfo);
+    final ShadowAccessibilityWindowInfo newShadow = Shadow.extract(newInfo);
 
     newShadow.boundsInScreen = new Rect(boundsInScreen);
     newShadow.parent = parent;
@@ -110,8 +107,7 @@ public class ShadowAccessibilityWindowInfo {
   public static boolean areThereUnrecycledWindows(boolean printUnrecycledWindowsToSystemErr) {
     if (printUnrecycledWindowsToSystemErr) {
       for (final StrictEqualityWindowWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityWindowInfo shadow =
-            ((ShadowAccessibilityWindowInfo) ShadowExtractor.extract(wrapper.mInfo));
+        final ShadowAccessibilityWindowInfo shadow = Shadow.extract(wrapper.mInfo);
 
         System.err.println(String.format(
             "Leaked type = %d, id = %d. Stack trace:", shadow.getType(), shadow.getId()));
@@ -132,8 +128,7 @@ public class ShadowAccessibilityWindowInfo {
     }
 
     final AccessibilityWindowInfo window = (AccessibilityWindowInfo) object;
-    final ShadowAccessibilityWindowInfo otherShadow =
-        (ShadowAccessibilityWindowInfo) ShadowExtractor.extract(window);
+    final ShadowAccessibilityWindowInfo otherShadow = Shadow.extract(window);
 
     boolean areEqual = (type == otherShadow.getType());
     areEqual &= (parent == otherShadow.getParent());
@@ -268,7 +263,7 @@ public class ShadowAccessibilityWindowInfo {
     }
 
     children.add(child);
-    ((ShadowAccessibilityWindowInfo) ShadowExtractor.extract(child)).parent =
+    ((ShadowAccessibilityWindowInfo) Shadow.extract(child)).parent =
         mRealAccessibilityWindowInfo;
   }
 

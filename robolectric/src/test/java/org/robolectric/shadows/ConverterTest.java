@@ -1,14 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.res.*;
-
-import java.io.File;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.robolectric.res.Fs;
+import org.robolectric.res.ResType;
+import org.robolectric.res.TypedResource;
+import org.robolectric.res.XmlContext;
 
 @RunWith(TestRunners.SelfTest.class)
 public class ConverterTest {

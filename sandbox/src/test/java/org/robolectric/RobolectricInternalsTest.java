@@ -1,17 +1,16 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.SandboxConfig;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SandboxConfig(shadows={ RobolectricInternalsTest.ShadowConstructors.class })
 @RunWith(SandboxTestRunner.class)
@@ -79,7 +78,7 @@ public class RobolectricInternalsTest {
   }
 
   private static ShadowConstructors shadowOf(Constructors realObject) {
-    Object shadow = ShadowExtractor.extract(realObject);
+    Object shadow = Shadow.extract(realObject);
     assertThat(shadow).isNotNull().isInstanceOf(ShadowConstructors.class);
     return (ShadowConstructors) shadow;
   }

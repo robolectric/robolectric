@@ -1,6 +1,17 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.robolectric.util.ReflectionHelpers.callConstructor;
+
 import android.os.Build;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -19,18 +30,6 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {

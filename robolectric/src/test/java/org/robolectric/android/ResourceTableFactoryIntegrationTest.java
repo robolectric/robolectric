@@ -1,12 +1,12 @@
 package org.robolectric.android;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ResName;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.SelfTest.class)
 public class ResourceTableFactoryIntegrationTest {

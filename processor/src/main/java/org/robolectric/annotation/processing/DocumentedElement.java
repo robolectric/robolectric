@@ -1,7 +1,5 @@
 package org.robolectric.annotation.processing;
 
-import com.google.gson.JsonObject;
-
 import java.util.regex.Pattern;
 
 public abstract class DocumentedElement {

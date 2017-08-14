@@ -1,14 +1,5 @@
 package org.robolectric.internal.bytecode;
 
-import org.robolectric.util.ReflectionHelpers;
-
-import java.lang.invoke.CallSite;
-import java.lang.invoke.ConstantCallSite;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.SwitchPoint;
-
 import static java.lang.invoke.MethodHandles.catchException;
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
@@ -19,6 +10,14 @@ import static java.lang.invoke.MethodHandles.throwException;
 import static java.lang.invoke.MethodType.methodType;
 import static org.robolectric.internal.bytecode.MethodCallSite.Kind.REGULAR;
 import static org.robolectric.internal.bytecode.MethodCallSite.Kind.STATIC;
+
+import java.lang.invoke.CallSite;
+import java.lang.invoke.ConstantCallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.SwitchPoint;
+import org.robolectric.util.ReflectionHelpers;
 
 public class InvokeDynamicSupport {
   @SuppressWarnings("unused")

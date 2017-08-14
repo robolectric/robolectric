@@ -1,15 +1,14 @@
 package org.robolectric.internal;
 
 import android.os.Build;
-import javax.annotation.Nonnull;
-import org.robolectric.internal.dependency.DependencyJar;
-import org.robolectric.util.Logger;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.util.Logger;
 
 public class SdkConfig implements Comparable<SdkConfig> {
 
@@ -26,7 +25,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
       addSdk(Build.VERSION_CODES.M, "6.0.1_r3", "0", "1.7", "REL");
       addSdk(Build.VERSION_CODES.N, "7.0.0_r1", "0", "1.8", "REL");
       addSdk(Build.VERSION_CODES.N_MR1, "7.1.0_r7", "0", "1.8", "REL");
-      addSdk(Build.VERSION_CODES.O, "o-preview-2", "0", "1.8", "O");
+      addSdk(Build.VERSION_CODES.O, "o-preview-4", "0", "1.8", "O");
     }
 
     private void addSdk(int sdkVersion, String androidVersion, String frameworkSdkBuildVersion, String minJdkVersion, String codeName) {

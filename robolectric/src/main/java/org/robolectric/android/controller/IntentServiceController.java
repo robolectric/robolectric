@@ -1,17 +1,16 @@
 package org.robolectric.android.controller;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.app.Application;
-import android.app.Service;
 import android.app.IntentService;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.util.ReflectionHelpers;
-
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class IntentServiceController<T extends IntentService> extends ComponentController<IntentServiceController<T>, T> {
   private final String shadowActivityThreadClassName;
@@ -92,4 +91,15 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
       invokeWhilePaused("onHandleIntent", from(Intent.class, getIntent()));
       return this;
     }
+
+  /**
+   * @deprecated Use the appropriate builder in {@link org.robolectric.Robolectric} instead.
+   *
+   * This method will be removed in Robolectric 3.6.
+   */
+  @Deprecated
+  public IntentServiceController<T> withIntent(Intent intent) {
+    this.intent = intent;
+    return this;
+  }
 }

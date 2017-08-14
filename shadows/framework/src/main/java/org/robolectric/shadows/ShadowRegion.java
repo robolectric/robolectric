@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import android.graphics.Region;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
 
 @Implements(Region.class)
 public class ShadowRegion {

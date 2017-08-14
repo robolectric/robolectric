@@ -4,13 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import android.content.res.Resources;
-
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
-
-import java.util.List;
 
 @RunWith(TestRunners.SelfTest.class)
 public class ResourceMergerTest {

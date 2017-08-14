@@ -1,15 +1,15 @@
 package org.robolectric.internal;
 
-import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
+import static java.util.Collections.emptyList;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
-
-import static java.util.Collections.emptyList;
+import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.util.Logger;
 
 public class DefaultManifestFactory implements ManifestFactory {
   private Properties properties;
@@ -29,7 +29,7 @@ public class DefaultManifestFactory implements ManifestFactory {
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
-      manifestFile = null;
+      Logger.info("@Config(manifest = Config.NONE) specified while using Build System API, ignoring");
     } else if (!Config.DEFAULT_MANIFEST_NAME.equals(manifestConfig)) {
       manifestFile = resolveFile(manifestConfig);
     }

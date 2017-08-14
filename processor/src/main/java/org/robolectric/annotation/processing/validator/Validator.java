@@ -1,7 +1,5 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RobolectricModel;
-
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -17,6 +15,7 @@ import javax.lang.model.util.AbstractElementVisitor6;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
  * Base class for validators.

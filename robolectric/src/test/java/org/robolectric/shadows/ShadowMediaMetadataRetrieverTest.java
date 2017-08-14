@@ -1,20 +1,5 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-
-import java.io.FileDescriptor;
-import java.util.HashMap;
-import java.util.Map;
-
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
@@ -23,6 +8,19 @@ import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addException;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addFrame;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addMetadata;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
+import java.io.FileDescriptor;
+import java.util.HashMap;
+import java.util.Map;
+import org.assertj.core.api.Assertions;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMediaMetadataRetrieverTest {

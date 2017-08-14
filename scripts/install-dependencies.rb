@@ -85,32 +85,6 @@ def install_stubs(api)
   install("com.google.android", "android-stubs", "#{api}", path)
 end
 
-def install_map(group_id, artifact_id, api, revision)
-  dir  = "#{ADDONS}/addon-google_apis-google-#{api}"
-  path = "#{dir}/libs/maps.jar"
-
-  unless File.exists?(path)
-    puts "#{group_id}:#{artifact_id} not found!"
-    puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}."
-    exit 1
-  end
-
-  revision_match = File.read("#{dir}/manifest.ini").match(/^revision=(\d+)$/)
-  if revision_match.nil?
-    puts "Manifest file missing revision number."
-    puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}."
-  end
-  manifest_revision = revision_match[1].strip
-  if manifest_revision != revision
-    puts "#{group_id}:#{artifact_id} is an incompatible revision!"
-    puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}. Expected revision #{revision} but was #{manifest_revision}."
-    exit 1
-  end
-
-  puts "Installing Maps API #{group_id}:#{artifact_id}, API #{api}, revision #{revision}."
-  install(group_id, artifact_id, "#{api}_r#{revision}", path)
-end
-
 # Local repository paths
 ANDROID_HOME = ENV['ANDROID_HOME']
 ADDONS = "#{ANDROID_HOME}/add-ons"
@@ -153,17 +127,9 @@ PLAY_SERVICES_VERSION = "8.4.0"
 PLAY_SERVICES_BASE = "play-services-base"
 PLAY_SERVICES_BASEMENT = "play-services-basement"
 
-# Maps API maven constants
-MAPS_GROUP_ID = "com.google.android.maps"
-MAPS_ARTIFACT_ID = "maps"
-MAPS_API_VERSION = "23"
-MAPS_REVISION_VERSION = "1"
-
 # Mavenize all dependencies
 
-install_stubs(23)
-
-install_map(MAPS_GROUP_ID, MAPS_ARTIFACT_ID, MAPS_API_VERSION, MAPS_REVISION_VERSION)
+install_stubs(26)
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_TRAILING_VERSION)
 

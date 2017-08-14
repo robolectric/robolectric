@@ -1,7 +1,15 @@
 package org.robolectric.internal.dependency;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,15 +18,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class PropertiesDependencyResolverTest {

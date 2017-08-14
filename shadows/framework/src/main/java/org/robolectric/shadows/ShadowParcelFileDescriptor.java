@@ -1,18 +1,16 @@
 package org.robolectric.shadows;
 
 import android.os.ParcelFileDescriptor;
-
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
+import org.robolectric.Shadows;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(ParcelFileDescriptor.class)
 public class ShadowParcelFileDescriptor {

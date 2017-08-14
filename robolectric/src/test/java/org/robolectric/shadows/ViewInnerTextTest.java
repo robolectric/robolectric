@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static org.junit.Assert.assertEquals;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -9,9 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-
-import static org.junit.Assert.assertEquals;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ViewInnerTextTest {

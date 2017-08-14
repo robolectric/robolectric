@@ -1,21 +1,20 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.robolectric.shadow.api.Shadow.*;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(Camera.class)
 public class ShadowCamera {
@@ -39,6 +38,7 @@ public class ShadowCamera {
   @RealObject
   private Camera realCamera;
 
+  @Implementation
   public void __constructor__() {
     locked = true;
     previewing = false;
@@ -435,6 +435,7 @@ public class ShadowCamera {
   public static class ShadowSize {
     @RealObject private Camera.Size realCameraSize;
 
+    @Implementation
     public void __constructor__(Camera camera, int width, int height) {
       realCameraSize.width = width;
       realCameraSize.height = height;

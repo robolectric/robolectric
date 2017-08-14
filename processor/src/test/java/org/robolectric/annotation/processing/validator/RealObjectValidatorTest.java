@@ -3,12 +3,11 @@ package org.robolectric.annotation.processing.validator;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
-
-import org.junit.Test;
+import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.Test;
 import org.robolectric.annotation.processing.RobolectricProcessor;
 
 public class RealObjectValidatorTest {

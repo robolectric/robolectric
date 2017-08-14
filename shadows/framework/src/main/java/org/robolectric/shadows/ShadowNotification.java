@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
+
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -9,17 +13,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
-import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
 
 @Implements(Notification.class)
 public class ShadowNotification {

@@ -1,20 +1,19 @@
 package org.robolectric.shadows;
 
-import libcore.io.BufferIterator;
-import android.system.ErrnoException;
-import libcore.io.MemoryMappedFile;
-import libcore.io.Streams;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
+import android.system.ErrnoException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import libcore.io.BufferIterator;
+import libcore.io.MemoryMappedFile;
+import libcore.io.Streams;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * This is used by Android to load and inferFromValue time zone information. Robolectric emulates
@@ -38,7 +37,7 @@ public class ShadowMemoryMappedFile {
             }
             try {
                 MemoryMappedFile memoryMappedFile = new MemoryMappedFile(0L, 0L);
-                ShadowMemoryMappedFile shadowMemoryMappedFile = (ShadowMemoryMappedFile) ShadowExtractor.extract(memoryMappedFile);
+                ShadowMemoryMappedFile shadowMemoryMappedFile = Shadow.extract(memoryMappedFile);
                 shadowMemoryMappedFile.bytes = Streams.readFully(is);
                 return memoryMappedFile;
             } catch (IOException e) {

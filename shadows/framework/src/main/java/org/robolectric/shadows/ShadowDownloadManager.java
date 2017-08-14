@@ -4,17 +4,16 @@ import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Pair;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 @Implements(DownloadManager.class)
 public class ShadowDownloadManager {

@@ -1,17 +1,18 @@
 package org.robolectric.shadows.httpclient;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.net.http.AndroidHttpClient;
+import com.google.common.io.CharStreams;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.Strings;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunnerWithManifest.class)
 public class AndroidHttpClientTest {
@@ -34,6 +35,7 @@ public class AndroidHttpClientTest {
     FakeHttp.addPendingHttpResponse(200, "foo");
     HttpResponse resp = client.execute(new HttpGet("/foo"));
     assertThat(resp.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(resp.getEntity().getContent())).isEqualTo("foo");
+    assertThat(CharStreams.toString(new InputStreamReader(resp.getEntity().getContent())))
+        .isEqualTo("foo");
   }
 }

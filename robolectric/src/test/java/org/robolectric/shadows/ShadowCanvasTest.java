@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -14,11 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.shadow.api.Shadow;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowCanvasTest {

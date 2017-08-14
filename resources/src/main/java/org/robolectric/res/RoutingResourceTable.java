@@ -1,12 +1,11 @@
 package org.robolectric.res;
 
-import javax.annotation.Nonnull;
-import org.robolectric.res.builder.XmlBlock;
-
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import org.robolectric.res.builder.XmlBlock;
 
 public class RoutingResourceTable implements ResourceTable {
   private static final PackageResourceTable EMPTY_RESOURCE_TABLE = new ResourceTableFactory().newResourceTable("");

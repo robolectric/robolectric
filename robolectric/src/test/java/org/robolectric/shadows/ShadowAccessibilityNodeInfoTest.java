@@ -9,16 +9,14 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
-
+import android.view.accessibility.AccessibilityWindowInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ShadowExtractor;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccessibilityNodeInfoTest {

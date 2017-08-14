@@ -5,22 +5,23 @@ import android.app.NotificationManager;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = NotificationManager.class, looseSignatures = true)
 public class ShadowNotificationManager {
+  private boolean mAreNotificationsEnabled = true;
   private Map<Key, Notification> notifications = new HashMap<>();
   private final Map<String, Object> notificationChannels = new HashMap<>();
   private final Map<String, Object> notificationChannelGroups = new HashMap<>();
+  private final Map<String, Object> deletedNotificationChannels = new HashMap<>();
 
   @Implementation
   public void notify(int id, Notification notification) {
@@ -48,6 +49,15 @@ public class ShadowNotificationManager {
   @Implementation
   public void cancelAll() {
     notifications.clear();
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  public boolean areNotificationsEnabled() {
+    return mAreNotificationsEnabled;
+  }
+
+  public void setNotificationsEnabled(boolean areNotificationsEnabled) {
+    mAreNotificationsEnabled = areNotificationsEnabled;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.M)
@@ -90,12 +100,37 @@ public class ShadowNotificationManager {
   @Implementation(minSdk = Build.VERSION_CODES.O)
   public void createNotificationChannel(Object /*NotificationChannel*/ channel) {
     String id = ReflectionHelpers.callInstanceMethod(channel, "getId");
-    notificationChannels.put(id, channel);
+    // Per documentation, recreating a deleted channel should have the same settings as the old
+    // deleted channel. See
+    // https://developer.android.com/reference/android/app/NotificationManager.html#deleteNotificationChannel%28java.lang.String%29
+    // for more info.
+    if (deletedNotificationChannels.containsKey(id)) {
+      notificationChannels.put(id, deletedNotificationChannels.remove(id));
+    } else {
+      notificationChannels.put(id, channel);
+    }
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
   public List<Object /*NotificationChannel*/> getNotificationChannels() {
     return ImmutableList.copyOf(notificationChannels.values());
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void deleteNotificationChannel(String channelId) {
+    if (getNotificationChannel(channelId) != null) {
+      Object /*NotificationChannel*/ channel = notificationChannels.remove(channelId);
+      deletedNotificationChannels.put(channelId, channel);
+    }
+  }
+
+  /**
+   * Checks whether a channel is considered a "deleted" channel by Android. This is a channel that
+   * was created but later deleted. If a channel is created that was deleted before, it recreates
+   * the channel with the old settings.
+   */
+  public boolean isChannelDeleted(String channelId) {
+    return deletedNotificationChannels.containsKey(channelId);
   }
 
   public Object /*NotificationChannelGroup*/ getNotificationChannelGroup(String id) {

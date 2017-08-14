@@ -1,5 +1,23 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.INITIALIZED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PAUSED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PLAYBACK_COMPLETED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARING;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STARTED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
+import static org.robolectric.shadows.ShadowMediaPlayer.addException;
+import static org.robolectric.shadows.util.DataSource.toDataSource;
+
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -9,11 +27,6 @@ import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,12 +43,6 @@ import org.robolectric.shadows.ShadowMediaPlayer.State;
 import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowMediaPlayer.addException;
-import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
-import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowMediaPlayerTest {
