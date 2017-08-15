@@ -25,6 +25,7 @@ import com.google.common.primitives.Shorts;
 import com.google.common.primitives.UnsignedBytes;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -170,6 +171,10 @@ abstract public class Chunk {
     public PackageChunk getPackageChunk(int packageId) {
       return packageChunks.get(packageId);
     }
+
+    public Collection<PackageChunk> getPackageChunks() {
+      return packageChunks.values();
+    }
   }
 
   public static class StringPoolChunk extends Chunk {
@@ -314,6 +319,7 @@ abstract public class Chunk {
 
     private final Map<Integer, Chunk> chunksByOffset = new HashMap<>();
     private final Map<Integer, TypeSpecChunk> typeSpecsByTypeId = new HashMap<>();
+    private final List<TypeSpecChunk> typeSpecs = new ArrayList<>();
     private final Map<Integer, List<TypeChunk>> typesByTypeId = new HashMap<>();
     private StringPoolChunk typeStringPool;
     private StringPoolChunk keyStringPool;
@@ -352,6 +358,7 @@ abstract public class Chunk {
         switch (Type.fromCode(chunk.header.type)) {
           case TABLE_TYPE_SPEC:
             typeSpecsByTypeId.put((int) ((TypeSpecChunk) chunk).typeSpec.id, (TypeSpecChunk) chunk);
+            typeSpecs.add((TypeSpecChunk)chunk);
             break;
           case TABLE_TYPE:
             List<TypeChunk> typeChunks = typesByTypeId
@@ -365,6 +372,10 @@ abstract public class Chunk {
       }
 
       buffer.position(position);
+    }
+
+    public ResTablePackage getTablePackage() {
+      return tablePackage;
     }
 
     public String getName() {
@@ -383,8 +394,20 @@ abstract public class Chunk {
       return typeSpecsByTypeId.get(typeId);
     }
 
+    public Map<Integer, TypeSpecChunk> getTypeSpecsByTypeId() {
+      return typeSpecsByTypeId;
+    }
+
     public List<TypeChunk> getTypes(int typeId) {
       return typesByTypeId.get(typeId);
+    }
+
+    public Map<Integer, List<TypeChunk>> getTypesByTypeId() {
+      return typesByTypeId;
+    }
+
+    public List<TypeSpecChunk> getTypeSpecs() {
+      return typeSpecs;
     }
 
     public static class TypeSpecChunk extends Chunk {
@@ -416,7 +439,7 @@ abstract public class Chunk {
       /** The minimum size in bytes that this config must be to contain the screenConfig extension. */
       private static final int SCREEN_CONFIG_EXTENSION_MIN_SIZE = 52;
 
-      private final ResTableType type;
+      public final ResTableType type;
       private List<ResTableEntry> entries = new LinkedList<>();
 
       public TypeChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
@@ -444,6 +467,8 @@ abstract public class Chunk {
             entries.add(createEntry(buffer, offset + type.entriesStart + entryOffset));
           }
         }
+
+        type.entries = entries;
       }
 
       public static ResValue createValue(ByteBuffer buffer) {

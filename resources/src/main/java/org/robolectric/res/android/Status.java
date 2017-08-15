@@ -4,5 +4,6 @@ public enum Status {
   NO_ERROR,
   BAD_INDEX,
   BAD_TYPE,
-  UNKNOWN_ERROR
+  UNKNOWN_ERROR,
+  NO_MEMORY
 }

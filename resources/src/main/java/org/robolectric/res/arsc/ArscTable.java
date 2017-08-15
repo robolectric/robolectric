@@ -3,7 +3,6 @@ package org.robolectric.res.arsc;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import org.robolectric.res.ResourceIds;
-import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTableEntry;
 import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
 import org.robolectric.res.arsc.Chunk.StringPoolChunk;

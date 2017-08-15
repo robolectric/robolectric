@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import java.util.List;
+
 /**
  * A collection of resource entries for a particular resource data
  * type.
@@ -56,7 +58,9 @@ public class ResTableType {
     // Configuration this collection of entries is designed for. This must always be last.
     public ResTableConfig config;
 
-    public int[] eindex(short dtohs) {
+    public List<ResTableEntry> entries;
+
+    public int[] eindex(short offset) {
         // todo
         return new int[0];
     }
