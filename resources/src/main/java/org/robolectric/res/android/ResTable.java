@@ -14,16 +14,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.robolectric.res.ResourceIds;
-import org.robolectric.res.arsc.Chunk;
-import org.robolectric.res.arsc.Chunk.PackageChunk;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeSpecChunk;
-import org.robolectric.res.arsc.Chunk.TableChunk;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
 //   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
@@ -75,35 +69,7 @@ public class ResTable {
   void add(InputStream is) throws IOException {
     byte[] buf = ByteStreams.toByteArray(is);
     ByteBuffer buffer = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
-    TableChunk chunk = Chunk.newInstance(buffer);
-
-    for (PackageChunk packageChunk : chunk.getPackageChunks()) {
-      ResTablePackage resTablePackage = packageChunk.getTablePackage();
-      PackageGroup packageGroup = new PackageGroup(this, new String(resTablePackage.name),
-          resTablePackage.id,
-          false, false);
-
-      for (TypeSpecChunk typeSpecChunk : packageChunk.getTypeSpecs()) {
-        ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
-        Type type = new Type(new Header(this), new Package(this, new Header(this), resTablePackage), typeSpec.entryCount);
-        type.typeSpec = typeSpec;
-
-        List<TypeChunk> types = packageChunk.getTypes(typeSpec.id);
-        if (types != null) {
-          for (TypeChunk typeChunk : types) {
-            type.configs.add(typeChunk.type);
-          }
-        }
-
-        List<Type> typeList = packageGroup.types.get(typeSpec.id);
-        if (typeList == null) {
-          typeList = new LinkedList<>();
-          packageGroup.types.put((int)typeSpec.id, typeList);
-        }
-        typeList.add(type);
-      }
-      mPackageGroups.put(resTablePackage.id, packageGroup);
-    }
+    Chunk.read(buffer, this);
   }
 
 //  Status add(final Object data, int size, final int cookie, boolean copyData) {
@@ -535,9 +501,9 @@ public class ResTable {
   // A group of objects describing a particular resource package.
   // The first in 'package' is always the root object (from the resource
   // table that defined the package); the ones after are skins on top of it.
-  static class PackageGroup
+  public static class PackageGroup
   {
-    PackageGroup(
+    public PackageGroup(
         ResTable _owner, final String _name, int _id,
         boolean appAsLib, boolean _isSystemAsset)
 //        : owner(_owner)
@@ -638,7 +604,7 @@ public class ResTable {
     // the 'types' array.
     List<ResTablePackage>                packages;
 
-    final Map<Integer, List<Type>>       types = new HashMap<>();
+    public final Map<Integer, List<Type>>       types = new HashMap<>();
 
     byte                         largestTypeId;
 
@@ -712,12 +678,12 @@ public class ResTable {
     final Header header;
     final Package _package_;
     public final int entryCount;
-    ResTableTypeSpec typeSpec;
+    public ResTableTypeSpec typeSpec;
     public final int[] typeSpecFlags;
     public IdmapEntries                    idmapEntries = new IdmapEntries();
     public List<ResTableType> configs;
 
-    Type(final Header _header, final Package _package, int count)
+    public Type(final Header _header, final Package _package, int count)
   //        : header(_header), package(_package), entryCount(count),
   //  typeSpec(NULL), typeSpecFlags(NULL) { }
     {

@@ -13,17 +13,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.res.android.ResTable.Entry;
-import org.robolectric.res.arsc.Chunk.TableChunk;
 import org.robolectric.resources.R;
 
-/**
- * Created by jongerrish on 7/13/17.
- */
 @RunWith(JUnit4.class)
 public class ResTableTest {
 
   private ByteBuffer order;
-  private TableChunk chunk;
   private ResTable resTable;
 
   @Before

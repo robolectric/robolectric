@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.robolectric.res.arsc;
+package org.robolectric.res.android;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -25,25 +25,17 @@ import com.google.common.primitives.Shorts;
 import com.google.common.primitives.UnsignedBytes;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.robolectric.res.android.Ref;
-import org.robolectric.res.android.ResChunkHeader;
-import org.robolectric.res.android.ResTableEntry;
-import org.robolectric.res.android.ResTableHeader;
-import org.robolectric.res.android.ResTableMap;
-import org.robolectric.res.android.ResTableMapEntry;
-import org.robolectric.res.android.ResTablePackage;
-import org.robolectric.res.android.ResTableType;
-import org.robolectric.res.android.ResTableTypeSpec;
-import org.robolectric.res.android.ResValue;
-import org.robolectric.res.android.ResTableConfig;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeChunk;
-import org.robolectric.res.arsc.Chunk.PackageChunk.TypeSpecChunk;
+import org.robolectric.res.android.ResTable.Header;
+import org.robolectric.res.android.ResTable.Package;
+import org.robolectric.res.android.ResTable.PackageGroup;
+import org.robolectric.res.android.Chunk.PackageChunk.TypeChunk;
+import org.robolectric.res.android.Chunk.PackageChunk.TypeSpecChunk;
+import org.robolectric.res.arsc.ResourceString;
 
 /** Represents a generic chunk. */
 abstract public class Chunk {
@@ -105,30 +97,37 @@ abstract public class Chunk {
     }
   }
 
-  public static TableChunk newInstance(ByteBuffer buffer) {
-    return readChunk(buffer, 0, getResChunkHeader(buffer, 0));
+  public static void read(ByteBuffer buffer, ResTable resTable) {
+    readTableChunk(buffer, resTable);
   }
 
-  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition, ResChunkHeader header) {
-    Type type;
+  protected static StringPoolChunk readStringPool(ByteBuffer buffer, int chunkStartPosition) {
+    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
     if (header == null) return null;
+    Type type = Type.fromCode(header.type);
+    assert type == Type.STRING_POOL;
+    return new StringPoolChunk(buffer, chunkStartPosition, header);
+  }
 
-    type = Type.fromCode(header.type);
-    Chunk chunk;
-    if (Type.TABLE.equals(type)) {
-      chunk = new TableChunk(buffer, chunkStartPosition, header);
-    } else if (Type.STRING_POOL.equals(type)) {
-      chunk = new StringPoolChunk(buffer, chunkStartPosition, header);
-    } else if (Type.TABLE_PACKAGE.equals(type)) {
-      chunk = new PackageChunk(buffer, chunkStartPosition, header);
-    } else if (Type.TABLE_TYPE.equals(type)) {
-      chunk = new TypeChunk(buffer, chunkStartPosition, header);
+  protected static PackageChunk readPackageChunk(ByteBuffer buffer, int chunkStartPosition) {
+    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
+    if (header == null) return null;
+    Type type = Type.fromCode(header.type);
+    assert type == Type.TABLE_PACKAGE;
+    return new PackageChunk(buffer, chunkStartPosition, header);
+  }
+
+  protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition) {
+    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
+    if (header == null) return null;
+    Type type = Type.fromCode(header.type);
+    if (Type.TABLE_TYPE.equals(type)) {
+      return (T) new TypeChunk(buffer, chunkStartPosition, header);
     } else if (Type.TABLE_TYPE_SPEC.equals(type)) {
-      chunk = new TypeSpecChunk(buffer, chunkStartPosition, header);
+      return (T) new TypeSpecChunk(buffer, chunkStartPosition, header);
     } else {
       throw new IllegalArgumentException("unknown table type " + header.type);
     }
-    return (T) chunk;
   }
 
   private static ResChunkHeader getResChunkHeader(ByteBuffer buffer, int chunkStartPosition) {
@@ -143,38 +142,55 @@ abstract public class Chunk {
     return header;
   }
 
-  public static class TableChunk extends Chunk {
+  public static void readTableChunk(ByteBuffer buffer, ResTable resTable) {
+    ResChunkHeader header = getResChunkHeader(buffer, 0);
+    Type chunkType = Type.fromCode(header.type);
+    assert chunkType == Type.TABLE;
 
-    private final ResTableHeader tableHeader;
-    private final StringPoolChunk valuesStringPool;
-    private final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
+    final ResTableHeader tableHeader;
+    final StringPoolChunk valuesStringPool;
+    final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
-    public TableChunk(ByteBuffer buffer, int chunkStartPosition, ResChunkHeader header) {
-      super(buffer, chunkStartPosition, header);
-      tableHeader = new ResTableHeader();
-      tableHeader.header = header;
-      tableHeader.packageCount = buffer.getInt();
-      valuesStringPool = readChunk(buffer, header.headerSize, getResChunkHeader(buffer, header.headerSize));
+    tableHeader = new ResTableHeader();
+    tableHeader.header = header;
+    tableHeader.packageCount = buffer.getInt();
+    valuesStringPool = readStringPool(buffer, header.headerSize);
 
-      int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
-      for (int i = 0; i < tableHeader.packageCount; i++) {
-        PackageChunk packageChunk = readChunk(buffer, packageChunkOffset, getResChunkHeader(buffer, packageChunkOffset));
-        packageChunks.put(packageChunk.tablePackage.id, packageChunk);
-        packageChunkOffset = packageChunk.header.size;
+    int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
+    for (int i = 0; i < tableHeader.packageCount; i++) {
+      PackageChunk packageChunk = readPackageChunk(buffer, packageChunkOffset);
+      packageChunks.put(packageChunk.tablePackage.id, packageChunk);
+      packageChunkOffset = packageChunk.header.size;
+    }
+
+    for (PackageChunk packageChunk : packageChunks.values()) {
+      ResTablePackage resTablePackage = packageChunk.getTablePackage();
+      PackageGroup packageGroup = new PackageGroup(resTable, new String(resTablePackage.name),
+          resTablePackage.id,
+          false, false);
+
+      for (TypeSpecChunk typeSpecChunk : packageChunk.getTypeSpecs()) {
+        ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
+        ResTable.Type type = new ResTable.Type(new Header(resTable), new Package(resTable, new Header(resTable), resTablePackage), typeSpec.entryCount);
+        type.typeSpec = typeSpec;
+
+        List<TypeChunk> types = packageChunk.getTypes(typeSpec.id);
+        if (types != null) {
+          for (TypeChunk typeChunk : types) {
+            type.configs.add(typeChunk.type);
+          }
+        }
+
+        List<ResTable.Type> typeList = packageGroup.types.get(typeSpec.id);
+        if (typeList == null) {
+          typeList = new LinkedList<>();
+          packageGroup.types.put((int)typeSpec.id, typeList);
+        }
+        typeList.add(type);
       }
+      resTable.mPackageGroups.put(resTablePackage.id, packageGroup);
     }
 
-    public StringPoolChunk getValuesStringPool() {
-      return valuesStringPool;
-    }
-
-    public PackageChunk getPackageChunk(int packageId) {
-      return packageChunks.get(packageId);
-    }
-
-    public Collection<PackageChunk> getPackageChunks() {
-      return packageChunks.values();
-    }
   }
 
   public static class StringPoolChunk extends Chunk {
@@ -345,15 +361,15 @@ abstract public class Chunk {
       int position = buffer.position();
 
       // read type string pool
-      typeStringPool = Chunk.readChunk(buffer, payloadStart, getResChunkHeader(buffer, payloadStart));
+      typeStringPool = Chunk.readStringPool(buffer, payloadStart);
       payloadStart += typeStringPool.header.size;
 
       // read key string pool
-      keyStringPool = Chunk.readChunk(buffer, payloadStart, getResChunkHeader(buffer, payloadStart));
+      keyStringPool = Chunk.readStringPool(buffer, payloadStart);
       payloadStart += keyStringPool.header.size;
 
       while (payloadStart < end) {
-        Chunk chunk = Chunk.readChunk(buffer, payloadStart, getResChunkHeader(buffer, payloadStart));
+        Chunk chunk = Chunk.readChunk(buffer, payloadStart);
         chunksByOffset.put(payloadStart, chunk);
         switch (Type.fromCode(chunk.header.type)) {
           case TABLE_TYPE_SPEC:
