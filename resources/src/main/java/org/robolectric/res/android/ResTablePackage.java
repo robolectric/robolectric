@@ -2,7 +2,7 @@ package org.robolectric.res.android;
 
 /**
  * A collection of resource data types within a package.  Followed by
- * one or more ResTable_type and ResTable_typeSpec structures containing the
+ * one or more Type and ResTable_typeSpec structures containing the
  * entry values for each resource type.
  */
 public class ResTablePackage {

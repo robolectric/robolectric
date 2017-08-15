@@ -133,11 +133,15 @@ public class ResTableConfigTest {
         int screenHeightDp;
         byte[] localeScript = new byte[4];
         byte[] localeVariant = new byte[8];
-        int screenLayout2;
+        byte screenLayout2;
+        byte screenConfigPad1;
+        short screenConfigPad2;
 
     ResTableConfig build() {
       return new ResTableConfig(0, mcc, mnc, language, region, orientation, touchscreen, density, keyboard, navigation, inputFlags, screenWidth,
-          screenHeight, sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant, screenLayout2, null);
+          screenHeight, sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant, screenLayout2,
+          screenConfigPad1, screenConfigPad2, null
+      );
     }
 
     public ResTableConfigBuilder setMcc(int mcc) {

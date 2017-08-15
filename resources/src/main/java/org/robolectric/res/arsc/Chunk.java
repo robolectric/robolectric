@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.robolectric.res.android.Ref;
 import org.robolectric.res.android.ResChunkHeader;
 import org.robolectric.res.android.ResTableEntry;
 import org.robolectric.res.android.ResTableHeader;
@@ -456,7 +457,7 @@ abstract public class Chunk {
       public static ResTableEntry createEntry(ByteBuffer buffer, int entryOffset) {
         System.out.println("entryOffset = " + entryOffset);
         buffer.position(entryOffset);
-        short headerLength = buffer.getShort();
+        short size = buffer.getShort();
         short flags = buffer.getShort();
         System.out.println("flags = " + flags);
         ResTableEntry entry;
@@ -465,7 +466,7 @@ abstract public class Chunk {
           System.out.println("SimpleEntry at " + Integer.toHexString(entryOffset));
           ResValue value = createValue(buffer);
 
-          entry = new ResTableEntry(value);
+          entry = new ResTableEntry(size, flags, key, value);
         } else {
           ArrayList<ResTableMap> mapEntries = new ArrayList<>();
 
@@ -478,10 +479,8 @@ abstract public class Chunk {
             mapEntries.add(new ResTableMap(name, value));
           }
 
-          entry = new ResTableMapEntry(mapEntries, parent);
+          entry = new ResTableMapEntry(size, flags, key, mapEntries, parent);
         }
-
-        entry.flags = flags;
 
         int oldPosition = buffer.position();
         byte[] chunk = new byte[buffer.position() - entryOffset];
@@ -523,7 +522,9 @@ abstract public class Chunk {
         int screenHeightDp = 0;
         byte[] localeScript = new byte[4];
         byte[] localeVariant = new byte[8];
-        int screenLayout2 = 0;
+        byte screenLayout2 = 0;
+        byte screenConfigPad1 = 0;
+        short screenConfigPad2 = 0;
 
         if (size >= SCREEN_CONFIG_MIN_SIZE) {
           screenLayout = UnsignedBytes.toInt(buffer.get());
@@ -542,9 +543,9 @@ abstract public class Chunk {
         }
 
         if (size >= SCREEN_CONFIG_EXTENSION_MIN_SIZE) {
-          screenLayout2 = UnsignedBytes.toInt(buffer.get());
-          buffer.get();  // Reserved padding
-          buffer.getShort();  // More reserved padding
+          screenLayout2 = (byte) UnsignedBytes.toInt(buffer.get());
+          screenConfigPad1 = buffer.get();  // Reserved padding
+          screenConfigPad2 = buffer.getShort();  // More reserved padding
         }
 
         // After parsing everything that's known, account for anything that's unknown.
@@ -555,7 +556,7 @@ abstract public class Chunk {
         return new ResTableConfig(size, mcc, mnc, language, region, orientation,
             touchscreen, density, keyboard, navigation, inputFlags, screenWidth, screenHeight,
             sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp,
-            screenHeightDp, localeScript, localeVariant, screenLayout2, unknown);
+            screenHeightDp, localeScript, localeVariant, screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
       }
 
       public List<ResTableEntry> getEntries() {

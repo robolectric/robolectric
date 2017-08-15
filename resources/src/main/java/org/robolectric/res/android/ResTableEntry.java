@@ -17,13 +17,15 @@ public class ResTableEntry {
   public static final int FLAG_PUBLIC = 0x0002;
   public static final int FLAG_WEAK = 0x0004;
 
-  public int flags;
-  public ResValue value;
+  public final short size;
+  public final int key;
+  public final int flags;
+  public final ResValue value;
 
-  public ResTableEntry() {}
-
-  public ResTableEntry(ResValue value) {
-    this.flags = 0;
+  public ResTableEntry(short size, int flags, int key, ResValue value) {
+    this.size = size;
+    this.key = key;
+    this.flags = flags;
     this.value = value;
   }
 }

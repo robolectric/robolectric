@@ -24,7 +24,7 @@ package org.robolectric.res.android;
  * It would be nice to have an additional ordered index of entries, so
  * we can do a binary search if trying to find a resource by string name.
  *
- * ResTable_type from androidfw/include/androidfw/ResourceTypes.h
+ * Type from androidfw/include/androidfw/ResourceTypes.h
  */
 public class ResTableType {
     public static final int NO_ENTRY = 0xFFFFFFFF;
@@ -55,4 +55,14 @@ public class ResTableType {
 
     // Configuration this collection of entries is designed for. This must always be last.
     public ResTableConfig config;
+
+    public int[] eindex(short dtohs) {
+        // todo
+        return new int[0];
+    }
+
+    public ResTableEntry getEntry(int offset) {
+        // todo
+        return null;
+    }
 };

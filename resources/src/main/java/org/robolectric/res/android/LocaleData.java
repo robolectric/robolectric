@@ -1,9 +1,12 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.LocaleDataTables.LIKELY_SCRIPTS;
 import static org.robolectric.res.android.LocaleDataTables.MAX_PARENT_DEPTH;
 import static org.robolectric.res.android.LocaleDataTables.REPRESENTATIVE_LOCALES;
+import static org.robolectric.res.android.LocaleDataTables.SCRIPT_CODES;
 import static org.robolectric.res.android.LocaleDataTables.SCRIPT_PARENTS;
 
+import java.util.Arrays;
 import java.util.Map;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/LocaleData.cpp
@@ -22,6 +25,7 @@ public class LocaleData {
     return (packed_locale & 0x0000FFFF) != 0;
   }
 
+  private static final int SCRIPT_LENGTH = 4;
   private static final int PACKED_ROOT = 0; // to represent the root locale
 
   private static int findParent(int packed_locale, final String script) {
@@ -151,34 +155,35 @@ public class LocaleData {
     return right - left;
   }
 
-//  void localeDataComputeScript(byte[] out, final byte[] language, final byte[] region) {
-//    if (language[0] == '\0') {
-//      out[0] = '\0';
-//      out[1] = '\0';
-//      out[2] = '\0';
-//      out[3] = '\0';
-//      return;
-//    }
-//    int lookup_key = packLocale(language, region);
-//    Byte lookup_result = LIKELY_SCRIPTS.get(lookup_key);
-//    if (lookup_result == null) {
-//      // We couldn't find the locale. Let's try without the region
-//      if (region[0] != '\0') {
-//        lookup_key = dropRegion(lookup_key);
-//        lookup_result = LIKELY_SCRIPTS.get(lookup_key);
-//        if (lookup_result != null) {
-//          memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);
-//          return;
-//        }
-//      }
-//      // We don't know anything about the locale
+  static void localeDataComputeScript(byte[] out, final byte[] language, final byte[] region) {
+    if (language[0] == '\0') {
 //      memset(out, '\0', SCRIPT_LENGTH);
-//      return;
-//    } else {
-//      // We found the locale.
+      Arrays.fill(out, (byte) 0);
+      return;
+    }
+    int lookup_key = packLocale(language, region);
+    Byte lookup_result = LIKELY_SCRIPTS.get(lookup_key);
+    if (lookup_result == null) {
+      // We couldn't find the locale. Let's try without the region
+      if (region[0] != '\0') {
+        lookup_key = dropRegion(lookup_key);
+        lookup_result = LIKELY_SCRIPTS.get(lookup_key);
+        if (lookup_result != null) {
+//          memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);
+          System.arraycopy(SCRIPT_CODES[lookup_result], 0, out, 0, SCRIPT_LENGTH);
+          return;
+        }
+      }
+      // We don't know anything about the locale
+//      memset(out, '\0', SCRIPT_LENGTH);
+      Arrays.fill(out, (byte) 0);
+      return;
+    } else {
+      // We found the locale.
 //      memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);
-//    }
-//  }
+      System.arraycopy(SCRIPT_CODES[lookup_result], 0, out, 0, SCRIPT_LENGTH);
+    }
+  }
 
   static final int[] ENGLISH_STOP_LIST = {
       0x656E0000, // en

@@ -2,6 +2,13 @@ package org.robolectric.res.android;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
+import static org.robolectric.res.android.ResTable.kDebugTableSuperNoisy;
+import static org.robolectric.res.android.Util.ALOGI;
+import static org.robolectric.res.android.Util.dtohs;
+import static org.robolectric.res.android.Util.htodl;
+import static org.robolectric.res.android.Util.htods;
+import static org.robolectric.res.android.Util.isTruthy;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -175,6 +182,28 @@ public class ResTableConfig {
       UI_MODE_TYPE_APPLIANCE, "appliance",
       UI_MODE_TYPE_WATCH, "watch");
 
+
+  /** Keyboard availability: not specified. */
+  private static final int ACONFIGURATION_KEYSHIDDEN_ANY = 0x0000;
+  /**
+   * Keyboard availability: value corresponding to the
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keysexposed</a>
+   * resource qualifier.
+   */
+  private static final int ACONFIGURATION_KEYSHIDDEN_NO = 0x0001;
+  /**
+   * Keyboard availability: value corresponding to the
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keyshidden</a>
+   * resource qualifier.
+   */
+  private static final int ACONFIGURATION_KEYSHIDDEN_YES = 0x0002;
+  /**
+   * Keyboard availability: value corresponding to the
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keyssoft</a>
+   * resource qualifier.
+   */
+  private static final int ACONFIGURATION_KEYSHIDDEN_SOFT = 0x0003;
+
   /** The number of bytes that this resource configuration takes up. */
   private final int size;
 
@@ -233,14 +262,15 @@ public class ResTableConfig {
         orientation, touchscreen, density, keyboard, navigation, inputFlags,
         screenWidth, screenHeight, sdkVersion, minorVersion, screenLayout, uiMode,
         smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant,
-        screenLayout2, unknown);
+        screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
   }
 
   public ResTableConfig(int size, int mcc, int mnc, byte[] language, byte[] country,
       int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
       int screenWidth, int screenHeight, int sdkVersion, int minorVersion, int screenLayout,
       int uiMode, int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-      byte[] localeScript, byte[] localeVariant, int screenLayout2, byte[] unknown) {
+      byte[] localeScript, byte[] localeVariant, byte screenLayout2, byte screenConfigPad1,
+      short screenConfigPad2, byte[] unknown) {
     this.size = size;
     this.mcc = mcc;
     this.mnc = mnc;
@@ -264,6 +294,8 @@ public class ResTableConfig {
     this.localeScript = localeScript;
     this.localeVariant = localeVariant;
     this.screenLayout2 = screenLayout2;
+    this.screenConfigPad1 = screenConfigPad1;
+    this.screenConfigPad2 = screenConfigPad2;
     this.unknown = unknown;
   }
 
@@ -309,19 +341,51 @@ public class ResTableConfig {
   private final byte[] localeVariant;
 
   /** An extension to {@link #screenLayout}. Contains round/notround qualifier. */
-  private final int screenLayout2;
+  private final byte screenLayout2;
+  private final byte screenConfigPad1;
+  private final short screenConfigPad2;
 
   /** Any remaining bytes in this resource configuration that are unaccounted for. */
   @SuppressWarnings("mutable")
   private final byte[] unknown;
 
-  private String unpackLanguage() {
-    return unpackLanguageOrRegion(language, 0x61);
+
+  /**
+   *     // An extension of screenConfig.
+   union {
+   struct {
+   uint8_t screenLayout2;      // Contains round/notround qualifier.
+   uint8_t screenConfigPad1;   // Reserved padding.
+   uint16_t screenConfigPad2;  // Reserved padding.
+   };
+   uint32_t screenConfig2;
+   };
+   */
+  private int screenConfig2() {
+    return (screenLayout2 & 0xff << 24) | (screenConfigPad1 * 0xff << 16) | screenConfigPad2 & 0xffff;
   }
 
-  private String unpackRegion() {
-    return unpackLanguageOrRegion(country, 0x30);
-  }
+  // If false and localeScript is set, it means that the script of the locale
+  // was explicitly provided.
+  //
+  // If true, it means that localeScript was automatically computed.
+  // localeScript may still not be set in this case, which means that we
+  // tried but could not compute a script.
+  boolean localeScriptWasComputed;
+
+// --------------------------------------------------------------------
+// --------------------------------------------------------------------
+// --------------------------------------------------------------------
+
+//  void copyFromDeviceNoSwap(final ResTableConfig o) {
+//    final int size = dtohl(o.size);
+//    if (size >= sizeof(ResTable_config)) {
+//        *this = o;
+//    } else {
+//      memcpy(this, &o, size);
+//      memset(((uint8_t*)this)+size, 0, sizeof(ResTable_config)-size);
+//    }
+//  }
 
   private String unpackLanguageOrRegion(byte[] value, int base) {
     Preconditions.checkState(value.length == 2, "Language or country value must be 2 bytes.");
@@ -337,6 +401,159 @@ public class ResTableConfig {
     }
     return new String(value, US_ASCII);
   }
+
+  /* static */ void packLanguageOrRegion(final byte[] in, final byte base,
+      final byte out[]) {
+    if (in[2] == 0 || in[2] == '-') {
+      out[0] = in[0];
+      out[1] = in[1];
+    } else {
+      byte first = (byte) ((in[0] - base) & 0x007f);
+      byte second = (byte) ((in[1] - base) & 0x007f);
+      byte third = (byte) ((in[2] - base) & 0x007f);
+
+      out[0] = (byte) (0x80 | (third << 2) | (second >> 3));
+      out[1] = (byte) ((second << 5) | first);
+    }
+  }
+
+  void packLanguage(final byte[] language) {
+    packLanguageOrRegion(language, (byte) 'a', this.language);
+  }
+
+  void packRegion(final byte[] region) {
+    packLanguageOrRegion(region, (byte) '0', this.country);
+  }
+
+  private String unpackLanguage() {
+    return unpackLanguageOrRegion(language, 0x61);
+  }
+
+  private String unpackRegion() {
+    return unpackLanguageOrRegion(country, 0x30);
+  }
+
+//  void copyFromDtoH(final ResTableConfig o) {
+//    copyFromDeviceNoSwap(o);
+//    size = sizeof(ResTable_config);
+//    mcc = dtohs(mcc);
+//    mnc = dtohs(mnc);
+//    density = dtohs(density);
+//    screenWidth = dtohs(screenWidth);
+//    screenHeight = dtohs(screenHeight);
+//    sdkVersion = dtohs(sdkVersion);
+//    minorVersion = dtohs(minorVersion);
+//    smallestScreenWidthDp = dtohs(smallestScreenWidthDp);
+//    screenWidthDp = dtohs(screenWidthDp);
+//    screenHeightDp = dtohs(screenHeightDp);
+//  }
+
+//  void ResTable_config::copyFromDtoH(const ResTable_config& o) {
+  static ResTableConfig fromDtoH(final ResTableConfig o) {
+    return new ResTableConfig(
+        0 /*sizeof(ResTable_config)*/,
+        dtohs((short) o.mcc),
+        dtohs((short) o.mnc),
+        o.language,
+        o.country,
+        o.orientation,
+        o.touchscreen,
+        dtohs((short) o.density),
+        o.keyboard,
+        o.navigation,
+        o.inputFlags,
+        dtohs((short) o.screenWidth),
+        dtohs((short) o.screenHeight),
+        dtohs((short) o.sdkVersion),
+        dtohs((short) o.minorVersion),
+        o.screenLayout,
+        o.uiMode,
+        dtohs((short) o.smallestScreenWidthDp),
+        dtohs((short) o.screenWidthDp),
+        dtohs((short) o.screenHeightDp),
+        o.localeScript,
+        o.localeVariant,
+        o.screenLayout2,
+        o.screenConfigPad1,
+        o.screenConfigPad2,
+        o.unknown
+    );
+  }
+
+  void swapHtoD() {
+//    size = htodl(size);
+//    mcc = htods(mcc);
+//    mnc = htods(mnc);
+//    density = htods(density);
+//    screenWidth = htods(screenWidth);
+//    screenHeight = htods(screenHeight);
+//    sdkVersion = htods(sdkVersion);
+//    minorVersion = htods(minorVersion);
+//    smallestScreenWidthDp = htods(smallestScreenWidthDp);
+//    screenWidthDp = htods(screenWidthDp);
+//    screenHeightDp = htods(screenHeightDp);
+  }
+
+  static final int compareLocales(final ResTableConfig l, final ResTableConfig r) {
+    if (l.locale() != r.locale()) {
+      // NOTE: This is the old behaviour with respect to comparison orders.
+      // The diff value here doesn't make much sense (given our bit packing scheme)
+      // but it's stable, and that's all we need.
+      return l.locale() - r.locale();
+    }
+
+    // The language & region are equal, so compare the scripts and variants.
+    final byte emptyScript[] = {'\0', '\0', '\0', '\0'};
+    final byte[] lScript = l.localeScriptWasComputed ? emptyScript : l.localeScript;
+    final byte[] rScript = r.localeScriptWasComputed ? emptyScript : r.localeScript;
+//    int script = memcmp(lScript, rScript);
+//    if (script) {
+//      return script;
+//    }
+    int d = arrayCompare(lScript, rScript);
+    if (d != 0) return d;
+
+    // The language, region and script are equal, so compare variants.
+    //
+    // This should happen very infrequently (if at all.)
+    return arrayCompare(l.localeVariant, r.localeVariant);
+  }
+
+  private static int arrayCompare(byte[] l, byte[] r) {
+    for (int i = 0; i < l.length; i++) {
+      byte l0 = l[i];
+      byte r0 = r[i];
+      int d = l0 - r0;
+      if (d != 0) return d;
+    }
+    return 0;
+  }
+
+  int compare(final ResTableConfig o) {
+    int diff = imsi() - o.imsi();
+    if (diff != 0) return diff;
+    diff = compareLocales(this, o);
+    if (diff != 0) return diff;
+    diff = (screenType() - o.screenType());
+    if (diff != 0) return diff;
+    diff = (input() - o.input());
+    if (diff != 0) return diff;
+    diff = (screenSize() - o.screenSize());
+    if (diff != 0) return diff;
+    diff = (version() - o.version());
+    if (diff != 0) return diff;
+    diff = (screenLayout - o.screenLayout);
+    if (diff != 0) return diff;
+    diff = (screenLayout2 - o.screenLayout2);
+    if (diff != 0) return diff;
+    diff = (uiMode - o.uiMode);
+    if (diff != 0) return diff;
+    diff = (smallestScreenWidthDp - o.smallestScreenWidthDp);
+    if (diff != 0) return diff;
+    diff = (screenSizeDp() - o.screenSizeDp());
+    return diff;
+  }
+
 
   /** Returns true if this is the default "any" configuration. */
   public final boolean isDefault() {
@@ -434,6 +651,16 @@ public class ResTableConfig {
   private static final int ACONFIGURATION_DENSITY_ANY = DENSITY_DPI_ANY;
   private static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
   private static final int MASK_KEYSHIDDEN = 0x0003;
+
+  private static final int KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY;
+  private static final int KEYSHIDDEN_NO = ACONFIGURATION_KEYSHIDDEN_NO;
+  private static final int KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES;
+  private static final int KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
+
+
+
+
+
   public static final int MASK_NAVHIDDEN = 0x000c;
 
 
@@ -444,7 +671,7 @@ public class ResTableConfig {
    */
   public boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
     if (isTruthy(requested)) {
-      if (isTruthy(imsi()) || o.isTruthy(o.imsi())) {
+      if (isTruthy(imsi()) || isTruthy(o.imsi())) {
         if ((mcc != o.mcc) && isTruthy(requested.mcc)) {
           return (isTruthy(mcc));
         }
@@ -689,12 +916,182 @@ public class ResTableConfig {
     return isMoreSpecificThan(o);
   }
 
-  private boolean isTruthy(int i) {
-    return i != 0;
-  }
+  boolean match(final ResTableConfig settings) {
+    if (imsi() != 0) {
+      if (mcc != 0 && mcc != settings.mcc) {
+        return false;
+      }
+      if (mnc != 0 && mnc != settings.mnc) {
+        return false;
+      }
+    }
+    if (locale() != 0) {
+      // Don't consider country and variants when deciding matches.
+      // (Theoretically, the variant can also affect the script. For
+      // example, "ar-alalc97" probably implies the Latin script, but since
+      // CLDR doesn't support getting likely scripts for that, we'll assume
+      // the variant doesn't change the script.)
+      //
+      // If two configs differ only in their country and variant,
+      // they can be weeded out in the isMoreSpecificThan test.
+      if (language[0] != settings.language[0] || language[1] != settings.language[1]) {
+        return false;
+      }
 
-  private boolean isTruthy(Object o) {
-    return o != null;
+      // For backward compatibility and supporting private-use locales, we
+      // fall back to old behavior if we couldn't determine the script for
+      // either of the desired locale or the provided locale. But if we could determine
+      // the scripts, they should be the same for the locales to match.
+      boolean countriesMustMatch = false;
+      byte[] computed_script = new byte[4];
+      byte[] script = null;
+      if (settings.localeScript[0] == '\0') { // could not determine the request's script
+        countriesMustMatch = true;
+      } else {
+        if (localeScript[0] == '\0' && !localeScriptWasComputed) {
+          // script was not provided or computed, so we try to compute it
+          localeDataComputeScript(computed_script, language, country);
+          if (computed_script[0] == '\0') { // we could not compute the script
+            countriesMustMatch = true;
+          } else {
+            script = computed_script;
+          }
+        } else { // script was provided, so just use it
+          script = localeScript;
+        }
+      }
+
+      if (countriesMustMatch) {
+        if (country[0] != '\0'
+            && (country[0] != settings.country[0]
+            || country[1] != settings.country[1])) {
+          return false;
+        }
+      } else {
+        if (Arrays.equals(script, settings.localeScript)) {
+          return false;
+        }
+      }
+    }
+
+    if (screenConfig() != 0) {
+        final int layoutDir = screenLayout&MASK_LAYOUTDIR;
+        final int setLayoutDir = settings.screenLayout&MASK_LAYOUTDIR;
+      if (layoutDir != 0 && layoutDir != setLayoutDir) {
+        return false;
+      }
+
+        final int screenSize = screenLayout&MASK_SCREENSIZE;
+        final int setScreenSize = settings.screenLayout&MASK_SCREENSIZE;
+      // Any screen sizes for larger screens than the setting do not
+      // match.
+      if (screenSize != 0 && screenSize > setScreenSize) {
+        return false;
+      }
+
+        final int screenLong = screenLayout&MASK_SCREENLONG;
+        final int setScreenLong = settings.screenLayout&MASK_SCREENLONG;
+      if (screenLong != 0 && screenLong != setScreenLong) {
+        return false;
+      }
+
+        final int uiModeType = uiMode&MASK_UI_MODE_TYPE;
+        final int setUiModeType = settings.uiMode&MASK_UI_MODE_TYPE;
+      if (uiModeType != 0 && uiModeType != setUiModeType) {
+        return false;
+      }
+
+        final int uiModeNight = uiMode&MASK_UI_MODE_NIGHT;
+        final int setUiModeNight = settings.uiMode&MASK_UI_MODE_NIGHT;
+      if (uiModeNight != 0 && uiModeNight != setUiModeNight) {
+        return false;
+      }
+
+      if (smallestScreenWidthDp != 0
+          && smallestScreenWidthDp > settings.smallestScreenWidthDp) {
+        return false;
+      }
+    }
+
+    if (screenConfig2() != 0) {
+        final int screenRound = screenLayout2 & MASK_SCREENROUND;
+        final int setScreenRound = settings.screenLayout2 & MASK_SCREENROUND;
+      if (screenRound != 0 && screenRound != setScreenRound) {
+        return false;
+      }
+    }
+
+    if (screenSizeDp() != 0) {
+      if (screenWidthDp != 0 && screenWidthDp > settings.screenWidthDp) {
+        if (kDebugTableSuperNoisy) {
+          ALOGI("Filtering out width %d in requested %d", screenWidthDp,
+              settings.screenWidthDp);
+        }
+        return false;
+      }
+      if (screenHeightDp != 0 && screenHeightDp > settings.screenHeightDp) {
+        if (kDebugTableSuperNoisy) {
+          ALOGI("Filtering out height %d in requested %d", screenHeightDp,
+              settings.screenHeightDp);
+        }
+        return false;
+      }
+    }
+    if (screenType() != 0) {
+      if (orientation != 0 && orientation != settings.orientation) {
+        return false;
+      }
+      // density always matches - we can scale it.  See isBetterThan
+      if (touchscreen != 0 && touchscreen != settings.touchscreen) {
+        return false;
+      }
+    }
+    if (input() != 0) {
+        final int keysHidden = inputFlags&MASK_KEYSHIDDEN;
+        final int setKeysHidden = settings.inputFlags&MASK_KEYSHIDDEN;
+      if (keysHidden != 0 && keysHidden != setKeysHidden) {
+        // For compatibility, we count a request for KEYSHIDDEN_NO as also
+        // matching the more recent KEYSHIDDEN_SOFT.  Basically
+        // KEYSHIDDEN_NO means there is some kind of keyboard available.
+        if (kDebugTableSuperNoisy) {
+          ALOGI("Matching keysHidden: have=%d, config=%d\n", keysHidden, setKeysHidden);
+        }
+        if (keysHidden != KEYSHIDDEN_NO || setKeysHidden != KEYSHIDDEN_SOFT) {
+          if (kDebugTableSuperNoisy) {
+            ALOGI("No match!");
+          }
+          return false;
+        }
+      }
+        final int navHidden = inputFlags&MASK_NAVHIDDEN;
+        final int setNavHidden = settings.inputFlags&MASK_NAVHIDDEN;
+      if (navHidden != 0 && navHidden != setNavHidden) {
+        return false;
+      }
+      if (keyboard != 0 && keyboard != settings.keyboard) {
+        return false;
+      }
+      if (navigation != 0 && navigation != settings.navigation) {
+        return false;
+      }
+    }
+    if (screenSize() != 0) {
+      if (screenWidth != 0 && screenWidth > settings.screenWidth) {
+        return false;
+      }
+      if (screenHeight != 0 && screenHeight > settings.screenHeight) {
+        return false;
+      }
+    }
+    if (version() != 0) {
+      if (sdkVersion != 0 && sdkVersion > settings.sdkVersion) {
+        return false;
+      }
+      if (minorVersion != 0 && minorVersion != settings.minorVersion) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -723,6 +1120,21 @@ public class ResTableConfig {
    */
   private int screenSize() {
     return (screenWidth & 0xffff) << 16 | (screenHeight & 0xffff);
+  }
+
+
+  /**
+   union {
+   struct {
+   uint8_t screenLayout;
+   uint8_t uiMode;
+   uint16_t smallestScreenWidthDp;
+   };
+   uint32_t screenConfig;
+   };
+   */
+  private int screenConfig() {
+    return (screenLayout & 0xff << 24) | (uiMode * 0xff << 16) | smallestScreenWidthDp & 0xffff;
   }
 
 

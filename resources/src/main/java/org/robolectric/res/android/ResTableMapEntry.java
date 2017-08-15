@@ -9,18 +9,14 @@ import java.util.List;
 public final class ResTableMapEntry extends ResTableEntry {
   // Resource identifier of the parent mapping, or 0 if there is none.
   // This is always treated as a TYPE_DYNAMIC_REFERENCE.
-  int parentIdent; // parent->ident
+  public final int parentIdent; // parent->ident
   // Number of name/value pairs that follow for FLAG_COMPLEX.
-  int count;
+  public final int count;
 
-  List<ResTableMap> array;
+  public final List<ResTableMap> array;
 
-  ResTableMapEntry(List<ResTableMap> array) {
-    this(array, 0);
-  }
-
-  public ResTableMapEntry(List<ResTableMap> array, int parent) {
-    this.flags = FLAG_COMPLEX;
+  public ResTableMapEntry(short size, short flags, int key, List<ResTableMap> array, int parent) {
+    super(size, flags, key, null);
     this.array = array;
     count = array.size();
     parentIdent = parent;
