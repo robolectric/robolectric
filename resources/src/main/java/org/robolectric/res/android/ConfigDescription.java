@@ -1,9 +1,8 @@
-package org.robolectric.res;
-
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
+package org.robolectric.res.android;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
+import org.robolectric.res.android.ResTableConfig;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -429,6 +428,7 @@ public class ConfigDescription {
   }
 
   private void ApplyVersionForCompatibility(ResTableConfig out) {
-
+    // temp hack
+    out.sdkVersion = 4;
   }
 }

@@ -25,7 +25,7 @@ public class LocaleData {
     return (packed_locale & 0x0000FFFF) != 0;
   }
 
-  private static final int SCRIPT_LENGTH = 4;
+  static final int SCRIPT_LENGTH = 4;
   private static final int PACKED_ROOT = 0; // to represent the root locale
 
   private static int findParent(int packed_locale, final String script) {

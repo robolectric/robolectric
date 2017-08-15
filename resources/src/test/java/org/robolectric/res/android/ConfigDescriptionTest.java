@@ -1,13 +1,13 @@
-package org.robolectric.res;
+package org.robolectric.res.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.res.ResTableConfig.LAYOUTDIR_ANY;
-import static org.robolectric.res.ResTableConfig.LAYOUTDIR_LTR;
-import static org.robolectric.res.ResTableConfig.LAYOUTDIR_RTL;
-import static org.robolectric.res.ResTableConfig.SCREENSIZE_LARGE;
-import static org.robolectric.res.ResTableConfig.SCREENSIZE_NORMAL;
-import static org.robolectric.res.ResTableConfig.SCREENSIZE_SMALL;
-import static org.robolectric.res.ResTableConfig.SCREENSIZE_XLARGE;
+import static org.robolectric.res.android.ResTableConfig.LAYOUTDIR_ANY;
+import static org.robolectric.res.android.ResTableConfig.LAYOUTDIR_LTR;
+import static org.robolectric.res.android.ResTableConfig.LAYOUTDIR_RTL;
+import static org.robolectric.res.android.ResTableConfig.SCREENSIZE_LARGE;
+import static org.robolectric.res.android.ResTableConfig.SCREENSIZE_NORMAL;
+import static org.robolectric.res.android.ResTableConfig.SCREENSIZE_SMALL;
+import static org.robolectric.res.android.ResTableConfig.SCREENSIZE_XLARGE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

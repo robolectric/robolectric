@@ -5,13 +5,11 @@ import static org.robolectric.res.android.Status.BAD_TYPE;
 import static org.robolectric.res.android.Status.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.dtohl;
-import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -20,9 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceIds;
 import org.robolectric.res.arsc.Chunk;
 import org.robolectric.res.arsc.Chunk.PackageChunk;
@@ -88,8 +83,6 @@ public class ResTable {
           resTablePackage.id,
           false, false);
 
-      ArrayList<Type> moreTypes = new ArrayList<>();
-      int typeId = 0;
       for (TypeSpecChunk typeSpecChunk : packageChunk.getTypeSpecs()) {
         ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
         Type type = new Type(new Header(this), new Package(this, new Header(this), resTablePackage), typeSpec.entryCount);
@@ -102,7 +95,6 @@ public class ResTable {
           }
         }
 
-        moreTypes.add(type);
         List<Type> typeList = packageGroup.types.get(typeSpec.id);
         if (typeList == null) {
           typeList = new LinkedList<>();
@@ -343,16 +335,21 @@ public class ResTable {
 //    return mError;
 //  }
 
-  Entry getEntry(int resId) {
+  Entry getEntry(int resId, String qualifiers) {
     return getEntry(ResourceIds.getPackageIdentifier(resId),
         ResourceIds.getTypeIdentifier(resId),
-        ResourceIds.getEntryIdentifier(resId));
+        ResourceIds.getEntryIdentifier(resId), qualifiers);
   }
 
-  Entry getEntry(int packageId, int typeIndex, int entryIndex) {
+  Entry getEntry(int packageId, int typeIndex, int entryIndex, String qualifiers) {
+    ResTableConfig config = new ResTableConfig();
+    if (qualifiers != null) {
+      new ConfigDescription().parse(qualifiers, config);
+    }
+
     PackageGroup packageGroup = mPackageGroups.get(packageId);
     Ref<Entry> outEntryRef = new Ref<>(null);
-    getEntry(packageGroup, typeIndex, entryIndex, null, outEntryRef);
+    getEntry(packageGroup, typeIndex, entryIndex, config, outEntryRef);
     return outEntryRef.get();
   }
 
