@@ -413,7 +413,7 @@ public class ConfigDescriptionTest {
     assertThat(config.languageString()).isEqualTo("en");
     assertThat(config.regionString()).isEqualTo("US");
     assertThat(config.smallestScreenWidthDp).isEqualTo(320);
-    assertThat(config.sdkVersion).isEqualTo(7);
+    assertThat(config.sdkVersion).isEqualTo(ConfigDescription.SDK_HONEYCOMB_MR2);
   }
 
   @Test public void parse_multipleQualifiers_outOfOrder() {

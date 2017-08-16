@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.Util.isTruthy;
+
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
@@ -11,6 +13,30 @@ import java.util.regex.Pattern;
  * From android/frameworks/base/tools/aapt2/ConfigDescription.cpp
  */
 public class ConfigDescription {
+  public static int SDK_CUPCAKE = 3;
+  public static int SDK_DONUT = 4;
+  public static int SDK_ECLAIR = 5;
+  public static int SDK_ECLAIR_0_1 = 6;
+  public static int SDK_ECLAIR_MR1 = 7;
+  public static int SDK_FROYO = 8;
+  public static int SDK_GINGERBREAD = 9;
+  public static int SDK_GINGERBREAD_MR1 = 10;
+  public static int SDK_HONEYCOMB = 11;
+  public static int SDK_HONEYCOMB_MR1 = 12;
+  public static int SDK_HONEYCOMB_MR2 = 13;
+  public static int SDK_ICE_CREAM_SANDWICH = 14;
+  public static int SDK_ICE_CREAM_SANDWICH_MR1 = 15;
+  public static int SDK_JELLY_BEAN = 16;
+  public static int SDK_JELLY_BEAN_MR1 = 17;
+  public static int SDK_JELLY_BEAN_MR2 = 18;
+  public static int SDK_KITKAT = 19;
+  public static int SDK_KITKAT_WATCH = 20;
+  public static int SDK_LOLLIPOP = 21;
+  public static int SDK_LOLLIPOP_MR1 = 22;
+  public static int SDK_MNC = 23;
+  public static int SDK_NOUGAT = 24;
+  public static int SDK_NOUGAT_MR1 = 25;
+  public static int SDK_O = 26;
 
   /**
    * finalant used to to represent MNC (Mobile Network Code) zero.
@@ -234,6 +260,13 @@ public class ConfigDescription {
       }
     }
 
+    if (part_iter.hasNext() && parseScreenLayoutLong(part_iter.peek(), out)) {
+      part_iter.next();
+      if (!part_iter.hasNext()) {
+        success = !part_iter.hasNext();
+      }
+    }
+
     if (part_iter.hasNext() && parseScreenRound(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
@@ -324,7 +357,7 @@ public class ConfigDescription {
     }
 
     if (out != null) {
-      ApplyVersionForCompatibility(out);
+      applyVersionForCompatibility(out);
     }
     return true;
   }
@@ -442,6 +475,28 @@ public class ConfigDescription {
       return true;
     }
 
+    return false;
+  }
+
+  static boolean parseScreenLayoutLong(final String name, ResTableConfig out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null) {
+        out.screenLayout =
+            (out.screenLayout&~ResTableConfig.MASK_SCREENLONG)
+                | ResTableConfig.SCREENLONG_ANY;
+      }
+      return true;
+    } else if (Objects.equals(name, "long")) {
+      if (out != null) out.screenLayout =
+          (out.screenLayout&~ResTableConfig.MASK_SCREENLONG)
+              | ResTableConfig.SCREENLONG_YES;
+      return true;
+    } else if (Objects.equals(name, "notlong")) {
+      if (out != null) out.screenLayout =
+          (out.screenLayout&~ResTableConfig.MASK_SCREENLONG)
+              | ResTableConfig.SCREENLONG_NO;
+      return true;
+    }
     return false;
   }
 
@@ -852,8 +907,34 @@ public class ConfigDescription {
     return false;
   }
 
-  private void ApplyVersionForCompatibility(ResTableConfig out) {
-    // temp hack
-    out.sdkVersion = 4;
+  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/tools/aapt/AaptConfig.cpp
+  private void applyVersionForCompatibility(ResTableConfig config) {
+    if (config == null) {
+      return;
+    }
+    int minSdk = 0;
+    if (isTruthy(config.screenLayout2 & ResTableConfig.MASK_SCREENROUND)) {
+      minSdk = SDK_MNC;
+    } else if (config.density == ResTableConfig.DENSITY_ANY) {
+      minSdk = SDK_LOLLIPOP;
+    } else if (config.smallestScreenWidthDp != ResTableConfig.SCREENWIDTH_ANY
+        || config.screenWidthDp != ResTableConfig.SCREENWIDTH_ANY
+        || config.screenHeightDp != ResTableConfig.SCREENHEIGHT_ANY) {
+      minSdk = SDK_HONEYCOMB_MR2;
+    } else if ((config.uiMode & ResTableConfig.MASK_UI_MODE_TYPE)
+        != ResTableConfig.UI_MODE_TYPE_ANY
+        ||  (config.uiMode & ResTableConfig.MASK_UI_MODE_NIGHT)
+        != ResTableConfig.UI_MODE_NIGHT_ANY) {
+      minSdk = SDK_FROYO;
+    } else if ((config.screenLayout & ResTableConfig.MASK_SCREENSIZE)
+        != ResTableConfig.SCREENSIZE_ANY
+        ||  (config.screenLayout & ResTableConfig.MASK_SCREENLONG)
+        != ResTableConfig.SCREENLONG_ANY
+        || config.density != ResTableConfig.DENSITY_DEFAULT) {
+      minSdk = SDK_DONUT;
+    }
+    if (minSdk > config.sdkVersion) {
+      config.sdkVersion = minSdk;
+    }
   }
 }
