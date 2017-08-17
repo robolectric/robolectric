@@ -73,6 +73,23 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void deleteNotificationChannelGroup() {
+    final String channelId = "channelId";
+    final String channelGroupId = "channelGroupId";
+    notificationManager.createNotificationChannelGroup(
+        new NotificationChannelGroup(channelGroupId, "groupName"));
+    NotificationChannel channel = new NotificationChannel(channelId, "channelName", 1);
+    channel.setGroup(channelGroupId);
+    notificationManager.createNotificationChannel(channel);
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
+    notificationManager.deleteNotificationChannelGroup(channelGroupId);
+    assertThat(shadowOf(notificationManager).getNotificationChannelGroup(channelGroupId)).isNull();
+    // Per documentation, deleting a channel group also deletes all associated channels.
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.N)
   public void areNotificationsEnabled() {
     shadowOf(notificationManager).setNotificationsEnabled(true);

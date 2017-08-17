@@ -125,6 +125,28 @@ public class ShadowNotificationManager {
   }
 
   /**
+   * Delete a notification channel group and all notification channels associated with the group.
+   * This method will not notify any NotificationListenerService of resulting changes to
+   * notification channel groups nor to notification channels.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void deleteNotificationChannelGroup(String channelGroupId) {
+    if (getNotificationChannelGroup(channelGroupId) != null) {
+      // Deleting a channel group also deleted all associated channels. See
+      // https://developer.android.com/reference/android/app/NotificationManager.html#deleteNotificationChannelGroup%28java.lang.String%29
+      // for more info.
+      for (/* NotificationChannel */ Object channel : getNotificationChannels()) {
+        String groupId = ReflectionHelpers.callInstanceMethod(channel, "getGroup");
+        if (channelGroupId.equals(groupId)) {
+          String channelId = ReflectionHelpers.callInstanceMethod(channel, "getId");
+          deleteNotificationChannel(channelId);
+        }
+      }
+      notificationChannelGroups.remove(channelGroupId);
+    }
+  }
+
+  /**
    * Checks whether a channel is considered a "deleted" channel by Android. This is a channel that
    * was created but later deleted. If a channel is created that was deleted before, it recreates
    * the channel with the old settings.
