@@ -34,6 +34,7 @@ import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -50,7 +51,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 
-@Implements(AssetManager.class)
+@Implements(value = AssetManager.class, hackyTerribleIgnore = true)
 public final class ShadowAssetManager {
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
@@ -65,6 +66,10 @@ public final class ShadowAssetManager {
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
   private ResourceTable resourceTable;
+
+  public static ShadowAssetManager legacyShadowOf(AssetManager assetManager) {
+    return Shadow.extract(assetManager);
+  }
 
   class NativeTheme {
     private ThemeStyleSet themeStyleSet;
@@ -617,7 +622,7 @@ public final class ShadowAssetManager {
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
-    return new StyleResolver(resourceTable, shadowOf(AssetManager.getSystem()).getResourceTable(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
+    return new StyleResolver(resourceTable, legacyShadowOf(AssetManager.getSystem()).getResourceTable(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
   private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {

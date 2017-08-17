@@ -622,7 +622,7 @@ public class ShadowResourcesTest {
     assertThat(out.type).isBetween(TypedValue.TYPE_FIRST_COLOR_INT, TypedValue.TYPE_LAST_COLOR_INT);
 
     TypedValue expected = new TypedValue();
-    ShadowAssetManager shadow = Shadows.shadowOf(resources.getAssets());
+    ShadowAssetManager shadow = ShadowAssetManager.legacyShadowOf(resources.getAssets());
     shadow.getResourceValue(android.R.color.black, TypedValue.DENSITY_DEFAULT, expected, false);
     assertThat(out.type).isEqualTo(expected.type);
     assertThat(out.data).isEqualTo(expected.data);

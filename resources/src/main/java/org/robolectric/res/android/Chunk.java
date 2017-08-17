@@ -181,7 +181,7 @@ abstract public class Chunk {
           }
         }
 
-        List<ResTable.Type> typeList = packageGroup.types.get(typeSpec.id);
+        List<ResTable.Type> typeList = packageGroup.types.get((int) typeSpec.id);
         if (typeList == null) {
           typeList = new LinkedList<>();
           packageGroup.types.put((int)typeSpec.id, typeList);
@@ -265,7 +265,7 @@ abstract public class Chunk {
       return isUTF8() ? ResourceString.Type.UTF8 : ResourceString.Type.UTF16;
     }
 
-    public class StringPoolStyle {
+    public static class StringPoolStyle {
 
       // Styles are a list of integers with 0xFFFFFFFF serving as a sentinel value.
       static final int RES_STRING_POOL_SPAN_END = 0xFFFFFFFF;

@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowThemeTest {
@@ -332,7 +333,7 @@ public class ShadowThemeTest {
 
   @Test
   public void forStrict_whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_throwsException() throws Exception {
-    shadowOf(resources.getAssets()).strictErrors = true;
+    legacyShadowOf(resources.getAssets()).strictErrors = true;
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);

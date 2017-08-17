@@ -456,8 +456,14 @@ public class ShadowWrangler implements ClassHandler {
       try {
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("attempted to invoke " + shadowMethod
-            + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+        Method tryAgainMethod = roboData.getClass()
+            .getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes());
+        if (!tryAgainMethod.equals(shadowMethod)) {
+          return tryAgainMethod.invoke(shadow, params);
+        } else {
+          throw new IllegalArgumentException("attempted to invoke " + shadowMethod
+              + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+        }
       } catch (InvocationTargetException e) {
         throw e.getCause();
       }

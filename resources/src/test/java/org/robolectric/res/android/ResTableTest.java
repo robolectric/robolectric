@@ -28,11 +28,6 @@ public class ResTableTest {
 
     ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
     InputStream inputStream = zipFile.getInputStream(arscEntry);
-//
-//    byte[] buf = ByteStreams.toByteArray(inputStream);
-//
-//    ByteBuffer buffer = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
-//    chunk = Chunk.newInstance(buffer);
     resTable = new ResTable();
     resTable.add(inputStream);
   }

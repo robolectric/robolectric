@@ -1,5 +1,7 @@
 package org.robolectric.internal.bytecode;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -131,6 +133,10 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       ClassInfo classInfo = new ClassInfo(className, classNode);
       if (config.shouldInstrument(classInfo)) {
         bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
+        File file = new File("/tmp/" + className + ".class");
+        try (FileOutputStream os = new FileOutputStream(file)) {
+          os.write(bytes);
+        }
       } else {
         bytes = origClassBytes;
       }

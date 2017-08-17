@@ -70,4 +70,6 @@ public @interface Implements {
    * If specified, the shadow class will be applied only for this SDK or lesser.
    */
   int maxSdk() default -1;
+
+  boolean hackyTerribleIgnore() default false;
 }

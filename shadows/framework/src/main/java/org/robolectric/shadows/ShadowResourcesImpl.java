@@ -31,6 +31,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)
@@ -93,7 +94,7 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
+    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
 
     TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
     if (typedResource != null && typedResource instanceof PluralRules) {
@@ -114,7 +115,7 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ResourceTable resourceTable = shadowOf(realResourcesImpl.getAssets()).getResourceTable();
+    ResourceTable resourceTable = legacyShadowOf(realResourcesImpl.getAssets()).getResourceTable();
     InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
     if (inputStream == null) {
       throw newNotFoundException(id);
@@ -145,7 +146,7 @@ public class ShadowResourcesImpl {
   }
 
   private Resources.NotFoundException newNotFoundException(int id) {
-    ResourceTable resourceTable = shadowOf(realResourcesImpl.getAssets()).getResourceTable();
+    ResourceTable resourceTable = legacyShadowOf(realResourcesImpl.getAssets()).getResourceTable();
     ResName resName = resourceTable.getResName(id);
     if (resName == null) {
       return new Resources.NotFoundException("resource ID #0x" + Integer.toHexString(id));
@@ -189,7 +190,7 @@ public class ShadowResourcesImpl {
   @HiddenApi
   @Implementation
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
+    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
     return shadowAssetManager.loadXmlResourceParser(resId, type);
   }
 
@@ -205,7 +206,7 @@ public class ShadowResourcesImpl {
     @Implementation
     public TypedArray obtainStyledAttributes(Resources.Theme wrapper, AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
       Resources resources = wrapper.getResources();
-      return shadowOf(resources.getAssets()).attrsToTypedArray(resources, set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
+      return legacyShadowOf(resources.getAssets()).attrsToTypedArray(resources, set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
     }
 
     public long getNativePtr() {

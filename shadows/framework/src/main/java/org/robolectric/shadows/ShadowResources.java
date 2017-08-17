@@ -34,6 +34,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 
 @Implements(Resources.class)
 public class ShadowResources {
@@ -88,7 +89,7 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return shadowOf(realResources.getAssets())
+    return legacyShadowOf(realResources.getAssets())
         .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
   }
 
@@ -100,7 +101,7 @@ public class ShadowResources {
 
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
 
     TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
     if (typedResource != null && typedResource instanceof PluralRules) {
@@ -122,7 +123,7 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ResourceTable resourceTable = shadowOf(realResources.getAssets()).getResourceTable();
+    ResourceTable resourceTable = legacyShadowOf(realResources.getAssets()).getResourceTable();
     InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
     if (inputStream == null) {
       throw newNotFoundException(id);
@@ -153,7 +154,7 @@ public class ShadowResources {
   }
 
   private Resources.NotFoundException newNotFoundException(int id) {
-    ResourceTable resourceTable = shadowOf(realResources.getAssets()).getResourceTable();
+    ResourceTable resourceTable = legacyShadowOf(realResources.getAssets()).getResourceTable();
     ResName resName = resourceTable.getResName(id);
     if (resName == null) {
       return new Resources.NotFoundException("resource ID #0x" + Integer.toHexString(id));
@@ -164,7 +165,7 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
     TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
     if (typedArray != null) {
       return typedArray;
@@ -207,7 +208,7 @@ public class ShadowResources {
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
     return shadowAssetManager.loadXmlResourceParser(resId, type);
   }
 
@@ -245,7 +246,7 @@ public class ShadowResources {
     }
 
     private ShadowAssetManager getShadowAssetManager() {
-      return shadowOf(getResources().getAssets());
+      return legacyShadowOf(getResources().getAssets());
     }
 
     private Resources getResources() {
@@ -278,7 +279,7 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, shadowOf(resources.getAssets()).getResourceName(id));
+            shadowBitmap.setCreatedFromResId(id, legacyShadowOf(resources.getAssets()).getResourceName(id));
           }
         }
       }
