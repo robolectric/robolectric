@@ -30,7 +30,7 @@ public class ShadowAlarmManager {
 
   @Implementation(minSdk = KITKAT)
   public void setWindow(
-          int type, long windowStartMillis, long windowLengthMillis, PendingIntent operation) {
+      int type, long windowStartMillis, long windowLengthMillis, PendingIntent operation) {
     internalSet(type, windowStartMillis, 0L, operation);
   }
 
@@ -55,10 +55,14 @@ public class ShadowAlarmManager {
   }
 
   private void internalSet(int type, long triggerAtTime, long interval, PendingIntent operation) {
-    Intent intent = Shadows.shadowOf(operation).getSavedIntent();
+    ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(operation);
+    Intent intent = shadowPendingIntent.getSavedIntent();
+    int requestCode = shadowPendingIntent.getRequestCode();
     for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
-      Intent scheduledIntent = Shadows.shadowOf(scheduledAlarm.operation).getSavedIntent();
-      if (scheduledIntent.filterEquals(intent)) {
+      ShadowPendingIntent shadowScheduledPendingIntent = Shadows.shadowOf(scheduledAlarm.operation);
+      Intent scheduledIntent = shadowScheduledPendingIntent.getSavedIntent();
+      int scheduledRequestCode = shadowScheduledPendingIntent.getRequestCode();
+      if (scheduledIntent.filterEquals(intent) && requestCode == scheduledRequestCode) {
         scheduledAlarms.remove(scheduledAlarm);
         break;
       }
@@ -101,10 +105,14 @@ public class ShadowAlarmManager {
 
   @Implementation
   public void cancel(PendingIntent pendingIntent) {
-    final Intent intentTypeToRemove = Shadows.shadowOf(pendingIntent).getSavedIntent();
+    ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(pendingIntent);
+    final Intent intentTypeToRemove = shadowPendingIntent.getSavedIntent();
+    final int requestCode = shadowPendingIntent.getRequestCode();
     for (ScheduledAlarm scheduledAlarm : new ArrayList<ScheduledAlarm>(scheduledAlarms)) {
-      final Intent alarmIntent = Shadows.shadowOf(scheduledAlarm.operation).getSavedIntent();
-      if (intentTypeToRemove.filterEquals(alarmIntent)) {
+      ShadowPendingIntent scheduledShadowPendingIntent = Shadows.shadowOf(scheduledAlarm.operation);
+      final Intent alarmIntent = scheduledShadowPendingIntent.getSavedIntent();
+      final int alarmRequestCode = scheduledShadowPendingIntent.getRequestCode();
+      if (intentTypeToRemove.filterEquals(alarmIntent) && requestCode == alarmRequestCode) {
         scheduledAlarms.remove(scheduledAlarm);
       }
     }
