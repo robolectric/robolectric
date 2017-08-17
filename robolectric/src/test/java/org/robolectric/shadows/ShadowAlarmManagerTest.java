@@ -170,6 +170,38 @@ public class ShadowAlarmManagerTest {
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(0);
   }
 
+  @Test
+  public void schedule_useRequestCodeToMatchExistingPendingIntents() throws Exception {
+    Intent intent = new Intent("ACTION!");
+    PendingIntent pI = PendingIntent.getService(RuntimeEnvironment.application, 1, intent, 0);
+    AlarmManager alarmManager =
+        (AlarmManager) RuntimeEnvironment.application.getSystemService(Context.ALARM_SERVICE);
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
+
+    PendingIntent pI2 = PendingIntent.getService(RuntimeEnvironment.application, 2, intent, 0);
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI2);
+
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
+  }
+
+  @Test
+  public void cancel_useRequestCodeToMatchExistingPendingIntents() throws Exception {
+    Intent intent = new Intent("ACTION!");
+    PendingIntent pI = PendingIntent.getService(RuntimeEnvironment.application, 1, intent, 0);
+    AlarmManager alarmManager =
+        (AlarmManager) RuntimeEnvironment.application.getSystemService(Context.ALARM_SERVICE);
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
+
+    PendingIntent pI2 = PendingIntent.getService(RuntimeEnvironment.application, 2, intent, 0);
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI2);
+
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
+
+    alarmManager.cancel(pI);
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
+    assertThat(shadowAlarmManager.getNextScheduledAlarm().operation).isEqualTo(pI2);
+  }
+
   private void assertScheduledAlarm(long now, PendingIntent pendingIntent, ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
     assertRepeatingScheduledAlarm(now, 0L, pendingIntent, scheduledAlarm);
   }
