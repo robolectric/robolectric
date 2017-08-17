@@ -164,9 +164,7 @@ public class ShadowArscAssetManager {
   public final AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
     return directlyOn(realObject, AssetManager.class, "openNonAssetFd",
         ClassParameter.from(int.class, cookie),
-        ClassParameter.from(String.class, fileName)
-    );
-
+        ClassParameter.from(String.class, fileName));
   }
 
   @Implementation
@@ -174,52 +172,39 @@ public class ShadowArscAssetManager {
       throws IOException {
     return directlyOn(realObject, AssetManager.class, "openXmlResourceParser",
         ClassParameter.from(int.class, cookie),
-        ClassParameter.from(String.class, fileName)
-    );
-
+        ClassParameter.from(String.class, fileName));
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type)
       throws Resources.NotFoundException {
     return directlyOn(realObject, AssetManager.class, "loadXmlResourceParser",
         ClassParameter.from(int.class, resId),
-        ClassParameter.from(String.class, type)
-    );
-
+        ClassParameter.from(String.class, type));
   }
 
   @HiddenApi
   @Implementation
   public int addAssetPath(String path) {
     return directlyOn(realObject, AssetManager.class, "addAssetPath",
-        ClassParameter.from(String.class, path)
-    );
-
+        ClassParameter.from(String.class, path));
   }
 
   @HiddenApi
   @Implementation
   public boolean isUpToDate() {
-    return directlyOn(realObject, AssetManager.class, "isUpToDate"
-    );
-
+    return directlyOn(realObject, AssetManager.class, "isUpToDate");
   }
 
   @HiddenApi
   @Implementation
   public void setLocale(String locale) {
     directlyOn(realObject, AssetManager.class, "setLocale",
-
-        ClassParameter.from(String.class, locale)
-    );
-
+        ClassParameter.from(String.class, locale));
   }
 
   @Implementation
   public String[] getLocales() {
-    return directlyOn(realObject, AssetManager.class, "getLocales"
-    );
-
+    return directlyOn(realObject, AssetManager.class, "getLocales");
   }
 
   @HiddenApi
@@ -230,7 +215,6 @@ public class ShadowArscAssetManager {
       int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
       int screenLayout, int uiMode, int majorVersion) {
     directlyOn(realObject, AssetManager.class, "setConfiguration",
-
         ClassParameter.from(int.class, mcc),
         ClassParameter.from(int.class, mnc),
         ClassParameter.from(String.class, locale),
@@ -248,7 +232,6 @@ public class ShadowArscAssetManager {
         ClassParameter.from(int.class, screenLayout),
         ClassParameter.from(int.class, uiMode),
         ClassParameter.from(int.class, majorVersion));
-
   }
 
   @HiddenApi
@@ -256,7 +239,6 @@ public class ShadowArscAssetManager {
   public int[] getArrayIntResource(int resId) {
     return directlyOn(realObject, AssetManager.class, "getArrayIntResource",
         ClassParameter.from(int.class, resId));
-
   }
 
   @HiddenApi
