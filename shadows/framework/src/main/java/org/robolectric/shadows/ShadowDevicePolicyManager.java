@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -111,7 +112,7 @@ public class ShadowDevicePolicyManager {
   }
 
   private ShadowUserManager getShadowUserManager() {
-    return Shadows.shadowOf(
+    return shadowOf(
         (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
   }
 

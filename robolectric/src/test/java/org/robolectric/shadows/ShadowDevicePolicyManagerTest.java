@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
@@ -13,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
@@ -31,7 +31,7 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager =
         (DevicePolicyManager)
             RuntimeEnvironment.application.getSystemService(Context.DEVICE_POLICY_SERVICE);
-    shadowDevicePolicyManager = Shadows.shadowOf(devicePolicyManager);
+    shadowDevicePolicyManager = shadowOf(devicePolicyManager);
 
     userManager =
         (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE);
