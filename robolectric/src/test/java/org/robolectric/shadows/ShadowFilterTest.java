@@ -82,4 +82,26 @@ public class ShadowFilterTest {
     });
     assertThat(listenerCalled.get()).isTrue();
   }
+
+  @Test
+  public void testFilter_whenExceptionThrown_ShouldReturn() throws InterruptedException {
+    final AtomicBoolean listenerCalled = new AtomicBoolean(false);
+    Filter filter = new Filter() {
+      @Override
+      protected FilterResults performFiltering(CharSequence charSequence) {
+        throw new RuntimeException("unchecked exception during filtering");
+      }
+
+      @Override
+      protected void publishResults(CharSequence charSequence, FilterResults filterResults) {}
+    };
+    filter.filter("", new Filter.FilterListener() {
+      @Override
+      public void onFilterComplete(int resultCount) {
+        assertThat(resultCount).isEqualTo(0);
+        listenerCalled.set(true);
+      }
+    });
+    assertThat(listenerCalled.get()).isTrue();
+  }
 }
