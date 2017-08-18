@@ -15,6 +15,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.robolectric.res.android.CppAssetManager.FileType;
 
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
 
   enum FileType {
@@ -721,6 +722,10 @@ public class CppAssetManager {
 //  #endif
 //      fclose(fin);
 //  }
+
+  public final ResTable getResources() {
+    return getResources(true);
+  }
 
   final ResTable getResources(boolean required) {
       final ResTable rt = getResTable(required);

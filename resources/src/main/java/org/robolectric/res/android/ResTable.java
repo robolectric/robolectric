@@ -67,6 +67,11 @@ public class ResTable {
   byte                     mNextPackageId;
   private ResTableConfig parameters;
 
+   byte getResourcePackageIndex(int resID)
+  {
+    return ((ssize_t)mPackageMap[Res_GETPACKAGE(resID)+1])-1;
+  }
+
   public void add(InputStream is) throws IOException {
     byte[] buf = ByteStreams.toByteArray(is);
     ByteBuffer buffer = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
@@ -253,7 +258,7 @@ public class ResTable {
 //          (Object)(((final uint8_t*)chunk) - ((final uint8_t*)header.header)));
 //    }
 //        final int csize = dtohl(chunk.size);
-//        final uint16_t ctype = dtohs(chunk.type);
+//        final int ctype = dtohs(chunk.type);
 //    if (ctype == RES_STRING_POOL_TYPE) {
 //      if (header.values.getError() != NO_ERROR) {
 //        // Only use the first string chunk; ignore any others that
@@ -301,6 +306,87 @@ public class ResTable {
 //    }
 //    return mError;
 //  }
+
+  final Status getResource(int resID, Ref<ResValue> outValue, boolean mayBeBag, int density,
+      Ref<Integer> outSpecFlags, Ref<ResTableConfig> outConfig)
+  {
+    if (mError != NO_ERROR) {
+      return mError;
+    }
+    final long p = getResourcePackageIndex(resID);
+//    final int t = Res_GETTYPE(resID);
+//    final int e = Res_GETENTRY(resID);
+//    if (p < 0) {
+//      if (Res_GETPACKAGE(resID)+1 == 0) {
+//        ALOGW("No package identifier when getting value for resource number 0x%08x", resID);
+//      } else {
+//        ALOGW("No known package when getting value for resource number 0x%08x", resID);
+//      }
+//      return BAD_INDEX;
+//    }
+//    if (t < 0) {
+//      ALOGW("No type identifier when getting value for resource number 0x%08x", resID);
+//      return BAD_INDEX;
+//    }
+//    final PackageGroup* final grp = mPackageGroups[p];
+//    if (grp == NULL) {
+//      ALOGW("Bad identifier when getting value for resource number 0x%08x", resID);
+//      return BAD_INDEX;
+//    }
+//    // Allow overriding density
+//    ResTable_config desiredConfig = mParams;
+//    if (density > 0) {
+//      desiredConfig.density = density;
+//    }
+//    Entry entry;
+//    status_t err = getEntry(grp, t, e, &desiredConfig, &entry);
+//    if (err != NO_ERROR) {
+//      // Only log the failure when we're not running on the host as
+//      // part of a tool. The caller will do its own logging.
+//#ifndef STATIC_ANDROIDFW_FOR_TOOLS
+//      ALOGW("Failure getting entry for 0x%08x (t=%d e=%d) (error %d)\n",
+//          resID, t, e, err);
+//#endif
+//      return err;
+//    }
+//    if ((dtohs(entry.entry->flags) & ResTable_entry::FLAG_COMPLEX) != 0) {
+//    if (!mayBeBag) {
+//      ALOGW("Requesting resource 0x%08x failed because it is complex\n", resID);
+//    }
+//    return BAD_VALUE;
+//  }
+//    final Res_value* value = reinterpret_cast<final Res_value*>(
+//      reinterpret_cast<final uint8_t*>(entry.entry) + entry.entry->size);
+//    outValue->size = dtohs(value->size);
+//    outValue->res0 = value->res0;
+//    outValue->dataType = value->dataType;
+//    outValue->data = dtohl(value->data);
+//    // The reference may be pointing to a resource in a shared library. These
+//    // references have build-time generated package IDs. These ids may not match
+//    // the actual package IDs of the corresponding packages in this ResTable.
+//    // We need to fix the package ID based on a mapping.
+//    if (grp->dynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
+//      ALOGW("Failed to resolve referenced package: 0x%08x", outValue->data);
+//      return BAD_VALUE;
+//    }
+//    if (kDebugTableNoisy) {
+//      size_t len;
+//      printf("Found value: pkg=%zu, type=%d, str=%s, int=%d\n",
+//          entry.package->header->index,
+//          outValue->dataType,
+//          outValue->dataType == Res_value::TYPE_STRING ?
+//              String8(entry.package->header->values.stringAt(outValue->data, &len)).string() :
+//      "",
+//          outValue->data);
+//    }
+//    if (outSpecFlags != NULL) {
+//        *outSpecFlags = entry.specFlags;
+//    }
+//    if (outConfig != NULL) {
+//        *outConfig = entry.config;
+//    }
+//    return entry.package->header->index;
+  }
 
   Entry getEntry(int resId, String qualifiers) {
     return getEntry(ResourceIds.getPackageIdentifier(resId),
@@ -461,8 +547,8 @@ public class ResTable {
 //    bestOffset += dtohl(bestType.entriesStart);
 //
 ////    if (bestOffset > (dtohl(bestType.header.size)-sizeof(ResTable_entry))) {
-//    int sizeOfResTableEntry = 2 // uint16_t size
-//        + 2  // uint16_t flags
+//    int sizeOfResTableEntry = 2 // int size
+//        + 2  // int flags
 //        + 4; // struct ResStringPool_ref key: uint index
 //    if (bestOffset > (dtohl(bestType.header.size)- sizeOfResTableEntry)) {
 //      ALOGW("ResTable_entry at 0x%x is beyond type chunk data 0x%x",
