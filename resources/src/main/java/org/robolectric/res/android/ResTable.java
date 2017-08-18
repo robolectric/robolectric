@@ -67,9 +67,20 @@ public class ResTable {
   byte                     mNextPackageId;
   private ResTableConfig parameters;
 
-   byte getResourcePackageIndex(int resID)
+  static int Res_GETPACKAGE(int id) {
+    return ((id>>24)-1);
+  }
+  static int Res_GETTYPE(int id) {
+    return (((id>>16)&0xFF)-1);
+  }
+
+  static int Res_GETENTRY(int id) {
+    return (id&0xFFFF);
+  }
+
+  int getResourcePackageIndex(int resID)
   {
-    return ((ssize_t)mPackageMap[Res_GETPACKAGE(resID)+1])-1;
+    return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
   }
 
   public void add(InputStream is) throws IOException {
@@ -314,16 +325,16 @@ public class ResTable {
       return mError;
     }
     final long p = getResourcePackageIndex(resID);
-//    final int t = Res_GETTYPE(resID);
-//    final int e = Res_GETENTRY(resID);
-//    if (p < 0) {
-//      if (Res_GETPACKAGE(resID)+1 == 0) {
-//        ALOGW("No package identifier when getting value for resource number 0x%08x", resID);
-//      } else {
-//        ALOGW("No known package when getting value for resource number 0x%08x", resID);
-//      }
-//      return BAD_INDEX;
-//    }
+    final int t = Res_GETTYPE(resID);
+    final int e = Res_GETENTRY(resID);
+    if (p < 0) {
+      if (Res_GETPACKAGE(resID)+1 == 0) {
+        ALOGW("No package identifier when getting value for resource number 0x%08x", resID);
+      } else {
+        ALOGW("No known package when getting value for resource number 0x%08x", resID);
+      }
+      return BAD_INDEX;
+    }
 //    if (t < 0) {
 //      ALOGW("No type identifier when getting value for resource number 0x%08x", resID);
 //      return BAD_INDEX;
