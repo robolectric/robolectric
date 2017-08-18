@@ -65,8 +65,9 @@ public class ResTable {
   byte[]                     mPackageMap = new byte[256];
 
   byte                     mNextPackageId;
+  private ResTableConfig parameters;
 
-  void add(InputStream is) throws IOException {
+  public void add(InputStream is) throws IOException {
     byte[] buf = ByteStreams.toByteArray(is);
     ByteBuffer buffer = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
     Chunk.read(buffer, this);
@@ -496,6 +497,10 @@ public class ResTable {
       outEntryRef.set(outEntry);
     }
     return NO_ERROR;
+  }
+
+  public void setParameters(ResTableConfig parameters) {
+    this.parameters = parameters;
   }
 
   // A group of objects describing a particular resource package.

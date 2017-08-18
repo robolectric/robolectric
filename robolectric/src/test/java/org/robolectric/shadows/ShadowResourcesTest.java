@@ -40,6 +40,7 @@ import java.io.InputStream;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -179,7 +180,7 @@ public class ShadowResourcesTest {
     assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
   }
 
-  @Test
+  @Test @Config(sdk = N_MR1)
   public void getInt() throws Exception {
     assertThat(resources.getInteger(R.integer.meaning_of_life)).isEqualTo(42);
     assertThat(resources.getInteger(R.integer.test_integer1)).isEqualTo(2000);

@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -54,6 +56,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void assertGetAssetsNotNull() {
+    AssetManager.getSystem();
     assertNotNull(assetManager);
 
     assetManager = RuntimeEnvironment.application.getAssets();

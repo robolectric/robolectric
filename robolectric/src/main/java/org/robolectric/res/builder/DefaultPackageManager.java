@@ -749,6 +749,8 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
   private void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+
+    // todo: point at dir containing resources and assets maybe?
     applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
     applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
 

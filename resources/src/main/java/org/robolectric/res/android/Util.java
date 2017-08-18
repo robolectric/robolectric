@@ -51,4 +51,14 @@ class Util {
   static void ALOGI(String message, Object... args) {
     System.out.println(String.format(message, args));
   }
+
+  static void LOG_FATAL_IF(boolean assertion, String message) {
+    if (!assertion) {
+      System.out.println(message);
+    }
+    assert assertion;
+  }
+
+  static void ATRACE_CALL() {
+  }
 }
