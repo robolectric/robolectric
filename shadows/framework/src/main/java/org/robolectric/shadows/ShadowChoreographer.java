@@ -26,6 +26,7 @@ public class ShadowChoreographer {
   private static SoftThreadLocal<Choreographer> instance = makeThreadLocal();
   private Handler handler = new Handler(Looper.myLooper());
   private static volatile int postCallbackDelayMillis = 0;
+  private static volatile int postFrameCallbackDelayMillis = 0;
 
   private static SoftThreadLocal<Choreographer> makeThreadLocal() {
     return new SoftThreadLocal<Choreographer>() {
@@ -48,14 +49,24 @@ public class ShadowChoreographer {
   }
 
   /**
-   * Allows application to specify a fixed amount of delay when
-   * {@link #postFrameCallback(FrameCallback)} or {@link #postCallback(int, Runnable, Object)} is
-   * invoked. The default delay value is `0`. This can be used to avoid infinite animation tasks to
-   * be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in
+   * Allows application to specify a fixed amount of delay when {@link #postCallback(int, Runnable,
+   * Object)} is invoked. The default delay value is `0`. This can be used to avoid infinite
+   * animation tasks to be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in
    * {@link org.robolectric.util.Scheduler.IdleState#PAUSED} mode.
    */
   public static void setPostCallbackDelay(int delayMillis) {
     postCallbackDelayMillis = delayMillis;
+  }
+
+  /**
+   * Allows application to specify a fixed amount of delay when {@link
+   * #postFrameCallback(FrameCallback)} is invoked. The default delay value is `0`. This can be used
+   * to avoid infinite animation tasks to be spawned when the Robolectric {@link
+   * org.robolectric.util.Scheduler} is in {@link org.robolectric.util.Scheduler.IdleState#PAUSED}
+   * mode.
+   */
+  public static void setPostFrameCallbackDelay(int delayMillis) {
+    postFrameCallbackDelayMillis = delayMillis;
   }
 
   @Implementation
@@ -99,14 +110,14 @@ public class ShadowChoreographer {
    * AnimationHandler would result in endless looping (the execution of the task results in a new
    * animation task created and scheduled to the front of the event loop queue).
    *
-   * To prevent endless looping, a test may call {@link #setPostCallbackDelay(int)} to specify a
-   * small delay when animation is scheduled.
+   * <p>To prevent endless looping, a test may call {@link #setPostFrameCallbackDelay(int)} to
+   * specify a small delay when animation is scheduled.
    *
    * @see #setPostCallbackDelay(int)
    */
   @Implementation
   public void postFrameCallback(final FrameCallback callback) {
-    postFrameCallbackDelayed(callback, postCallbackDelayMillis);
+    postFrameCallbackDelayed(callback, postFrameCallbackDelayMillis);
   }
 
   @Implementation
