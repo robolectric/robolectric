@@ -112,6 +112,13 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannels(List<Object /*NotificationChannel*/> channelList) {
+    for (Object channel : channelList) {
+      createNotificationChannel(channel);
+    }
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
   public List<Object /*NotificationChannel*/> getNotificationChannels() {
     return ImmutableList.copyOf(notificationChannels.values());
   }
