@@ -12,6 +12,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +51,24 @@ public class ShadowNotificationManagerTest {
     NotificationChannelGroup group = (NotificationChannelGroup)shadowOf(notificationManager)
         .getNotificationChannelGroup("id");
     assertThat(group.getName()).isEqualTo("name");
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannels() {
+    NotificationChannel channel1 = new NotificationChannel("id", "name", 1);
+    NotificationChannel channel2 = new NotificationChannel("id2", "name2", 1);
+
+    notificationManager.createNotificationChannels(ImmutableList.of(channel1, channel2));
+
+    assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(2);
+    NotificationChannel channel =
+        (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
+    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getImportance()).isEqualTo(1);
+    channel = (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id2");
+    assertThat(channel.getName()).isEqualTo("name2");
+    assertThat(channel.getImportance()).isEqualTo(1);
   }
 
   @Test
