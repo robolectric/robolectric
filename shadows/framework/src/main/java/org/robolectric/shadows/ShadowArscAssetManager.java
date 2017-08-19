@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.res.android.Status.BAD_INDEX;
+import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
@@ -14,9 +14,6 @@ import android.util.SparseArray;
 import android.util.TypedValue;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -443,7 +440,7 @@ public class ShadowArscAssetManager {
     Ref<ResValue> value = new Ref<>(null);
     Ref<ResTableConfig> config = new Ref<>(null);
     Ref<Integer> typeSpecFlags = new Ref<>(null);
-    long block = res.getResource(ident, value, false, density, typeSpecFlags, config);
+    int block = res.getResource(ident, value, false, density, typeSpecFlags, config);
     if (kThrowOnBadId) {
         if (block == BAD_INDEX) {
             throw new IllegalStateException("Bad resource!");

@@ -1,8 +1,9 @@
 package org.robolectric.res.android;
 
-import static org.robolectric.res.android.Status.BAD_INDEX;
-import static org.robolectric.res.android.Status.BAD_TYPE;
-import static org.robolectric.res.android.Status.NO_ERROR;
+import static org.robolectric.res.android.Errors.BAD_INDEX;
+import static org.robolectric.res.android.Errors.BAD_TYPE;
+import static org.robolectric.res.android.Errors.BAD_VALUE;
+import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.isTruthy;
@@ -50,7 +51,8 @@ public class ResTable {
   // Mutex is not reentrant, so we must use a different lock than mLock.
   Object               mFilteredConfigLock;
 
-  Status                    mError;
+  // type defined in Errors
+  int mError;
 
   ResTableConfig             mParams;
 
@@ -89,16 +91,16 @@ public class ResTable {
     Chunk.read(buffer, this);
   }
 
-//  Status add(final Object data, int size, final int cookie, boolean copyData) {
+//  Errors add(final Object data, int size, final int cookie, boolean copyData) {
 //    return addInternal(data, size, NULL, 0, false, cookie, copyData);
 //  }
 //
-//  Status add(final Object data, int size, final Object idmapData, int idmapDataSize,
+//  Errors add(final Object data, int size, final Object idmapData, int idmapDataSize,
 //        final int cookie, boolean copyData, boolean appAsLib) {
 //    return addInternal(data, size, idmapData, idmapDataSize, appAsLib, cookie, copyData);
 //  }
 //
-//  Status add(Asset asset, final int cookie, boolean copyData) {
+//  Errors add(Asset asset, final int cookie, boolean copyData) {
 //    final Object data = asset.getBuffer(true);
 //    if (data == NULL) {
 //      ALOGW("Unable to get buffer of resource asset file");
@@ -109,7 +111,7 @@ public class ResTable {
 //        copyData);
 //  }
 //
-//  Status add(
+//  Errors add(
 //      Asset asset, Asset idmapAsset, final int cookie, boolean copyData,
 //      boolean appAsLib, boolean isSystemAsset) {
 //    final Object data = asset.getBuffer(true);
@@ -133,7 +135,7 @@ public class ResTable {
 //        idmapData, idmapSize, appAsLib, cookie, copyData, isSystemAsset);
 //  }
 //
-//  Status add(ResTable* src, boolean isSystemAsset)
+//  Errors add(ResTable* src, boolean isSystemAsset)
 //  {
 //    mError = src.mError;
 //
@@ -167,7 +169,7 @@ public class ResTable {
 //    return mError;
 //  }
 //
-//  Status addEmpty(final int cookie) {
+//  Errors addEmpty(final int cookie) {
 //    Header* header = new Header(this);
 //    header.index = mHeaders.size();
 //    header.cookie = cookie;
@@ -184,7 +186,7 @@ public class ResTable {
 //    return (mError=NO_ERROR);
 //  }
 //
-//  Status addInternal(final Object data, int dataSize, final Object idmapData, int idmapDataSize,
+//  Errors addInternal(final Object data, int dataSize, final Object idmapData, int idmapDataSize,
 //      boolean appAsLib, final int cookie, boolean copyData, boolean isSystemAsset)
 //  {
 //    if (!data) {
@@ -259,7 +261,7 @@ public class ResTable {
 //    + dtohs(header.header.header.headerSize));
 //    while (((final uint8_t*)chunk) <= (header.dataEnd-sizeof(ResChunk_header)) &&
 //      ((final uint8_t*)chunk) <= (header.dataEnd-dtohl(chunk.size))) {
-//    Status err = validate_chunk(chunk, sizeof(ResChunk_header), header.dataEnd, "ResTable");
+//    Errors err = validate_chunk(chunk, sizeof(ResChunk_header), header.dataEnd, "ResTable");
 //    if (err != NO_ERROR) {
 //      return (mError=err);
 //    }
@@ -274,7 +276,7 @@ public class ResTable {
 //      if (header.values.getError() != NO_ERROR) {
 //        // Only use the first string chunk; ignore any others that
 //        // may appear.
-//        Status err = header.values.setTo(chunk, csize);
+//        Errors err = header.values.setTo(chunk, csize);
 //        if (err != NO_ERROR) {
 //          return (mError=err);
 //        }
@@ -318,7 +320,7 @@ public class ResTable {
 //    return mError;
 //  }
 
-  final Status getResource(int resID, Ref<ResValue> outValue, boolean mayBeBag, int density,
+  public final int getResource(int resID, Ref<ResValue> outValue, boolean mayBeBag, int density,
       Ref<Integer> outSpecFlags, Ref<ResTableConfig> outConfig)
   {
     if (mError != NO_ERROR) {
@@ -335,51 +337,48 @@ public class ResTable {
       }
       return BAD_INDEX;
     }
-//    if (t < 0) {
-//      ALOGW("No type identifier when getting value for resource number 0x%08x", resID);
-//      return BAD_INDEX;
-//    }
-//    final PackageGroup* final grp = mPackageGroups[p];
-//    if (grp == NULL) {
-//      ALOGW("Bad identifier when getting value for resource number 0x%08x", resID);
-//      return BAD_INDEX;
-//    }
-//    // Allow overriding density
-//    ResTable_config desiredConfig = mParams;
-//    if (density > 0) {
-//      desiredConfig.density = density;
-//    }
-//    Entry entry;
-//    status_t err = getEntry(grp, t, e, &desiredConfig, &entry);
-//    if (err != NO_ERROR) {
-//      // Only log the failure when we're not running on the host as
-//      // part of a tool. The caller will do its own logging.
-//#ifndef STATIC_ANDROIDFW_FOR_TOOLS
-//      ALOGW("Failure getting entry for 0x%08x (t=%d e=%d) (error %d)\n",
-//          resID, t, e, err);
-//#endif
-//      return err;
-//    }
-//    if ((dtohs(entry.entry->flags) & ResTable_entry::FLAG_COMPLEX) != 0) {
-//    if (!mayBeBag) {
-//      ALOGW("Requesting resource 0x%08x failed because it is complex\n", resID);
-//    }
-//    return BAD_VALUE;
-//  }
-//    final Res_value* value = reinterpret_cast<final Res_value*>(
-//      reinterpret_cast<final uint8_t*>(entry.entry) + entry.entry->size);
-//    outValue->size = dtohs(value->size);
-//    outValue->res0 = value->res0;
-//    outValue->dataType = value->dataType;
-//    outValue->data = dtohl(value->data);
-//    // The reference may be pointing to a resource in a shared library. These
-//    // references have build-time generated package IDs. These ids may not match
-//    // the actual package IDs of the corresponding packages in this ResTable.
-//    // We need to fix the package ID based on a mapping.
-//    if (grp->dynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
-//      ALOGW("Failed to resolve referenced package: 0x%08x", outValue->data);
-//      return BAD_VALUE;
-//    }
+
+    if (t < 0) {
+      ALOGW("No type identifier when getting value for resource number 0x%08x", resID);
+      return BAD_INDEX;
+    }
+    final PackageGroup grp = mPackageGroups.get(p);
+    if (grp == NULL) {
+      ALOGW("Bad identifier when getting value for resource number 0x%08x", resID);
+      return BAD_INDEX;
+    }
+    // Allow overriding density
+    ResTableConfig desiredConfig = mParams;
+    if (density > 0) {
+      desiredConfig.density = density;
+    }
+    Ref<Entry> entry = new Ref<>(new Entry());
+    int err = getEntry(grp, t, e, desiredConfig, entry);
+    if (err != NO_ERROR) {
+      // Only log the failure when we're not running on the host as
+      // part of a tool. The caller will do its own logging.
+      return err;
+    }
+
+    if ((entry.get().specFlags & ResTableEntry.FLAG_COMPLEX) != 0) {
+      if (!mayBeBag) {
+        ALOGW("Requesting resource 0x%08x failed because it is complex\n", resID);
+      }
+      return BAD_VALUE;
+    }
+    ResValue value = entry.get().entry.value;
+    //outValue.get().size = dtohs(value->size);
+    //outValue.get().res0 = value->res0;
+    outValue.get().dataType = value.dataType;
+    outValue.get().data = value.data;
+    // The reference may be pointing to a resource in a shared library. These
+    // references have build-time generated package IDs. These ids may not match
+    // the actual package IDs of the corresponding packages in this ResTable.
+    // We need to fix the package ID based on a mapping.
+    if (grp.dynamicRefTable.lookupResourceValue(outValue.get()) != NO_ERROR) {
+      ALOGW("Failed to resolve referenced package: 0x%08x", outValue.get().data);
+      return BAD_VALUE;
+    }
 //    if (kDebugTableNoisy) {
 //      size_t len;
 //      printf("Found value: pkg=%zu, type=%d, str=%s, int=%d\n",
@@ -390,13 +389,13 @@ public class ResTable {
 //      "",
 //          outValue->data);
 //    }
-//    if (outSpecFlags != NULL) {
-//        *outSpecFlags = entry.specFlags;
-//    }
-//    if (outConfig != NULL) {
-//        *outConfig = entry.config;
-//    }
-//    return entry.package->header->index;
+    if (outSpecFlags != null) {
+        outSpecFlags.set(entry.get().specFlags);
+    }
+    if (outConfig != null) {
+        outConfig.set(entry.get().config);
+    }
+    return entry.get()._package_.header.index;
   }
 
   Entry getEntry(int resId, String qualifiers) {
@@ -417,7 +416,7 @@ public class ResTable {
     return outEntryRef.get();
   }
 
-  Status getEntry(
+  int getEntry(
       final PackageGroup packageGroup, int typeIndex, int entryIndex,
       final ResTableConfig config,
       Ref<Entry> outEntryRef)

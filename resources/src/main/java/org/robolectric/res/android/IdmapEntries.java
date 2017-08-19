@@ -1,8 +1,6 @@
 package org.robolectric.res.android;
 
-import static org.robolectric.res.android.Status.*;
-import static org.robolectric.res.android.Util.SIZEOF_INT;
-import static org.robolectric.res.android.Util.SIZEOF_SHORT;
+import static org.robolectric.res.android.Errors.*;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
 public class IdmapEntries {
@@ -37,7 +35,7 @@ public class IdmapEntries {
     return (byte) Util.dtohs(mData[1]);
   }
 
-//  Status setTo(final void* entryHeader, int size) {
+//  Errors setTo(final void* entryHeader, int size) {
 //    if (reinterpret_cast<uintptr_t>(entryHeader) & 0x03) {
 //      ALOGE("idmap: entry header is not word aligned");
 //      return UNKNOWN_ERROR;
@@ -66,7 +64,7 @@ public class IdmapEntries {
 //    return NO_ERROR;
 //  }
 
-  public Status lookup(int entryId, Ref<Short> outEntryId) {
+  public int lookup(int entryId, Ref<Short> outEntryId) {
     short entryCount = Util.dtohs(mData[2]);
     short offset = Util.dtohs(mData[3]);
 

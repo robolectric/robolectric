@@ -12,9 +12,9 @@ public class ResStringPool {
 //
 //
 //    void setToEmpty();
-//    Status setTo(final Object data, int size, boolean copyData=false);
+//    Errors setTo(final Object data, int size, boolean copyData=false);
 //
-//    Status getError() final;
+//    Errors getError() final;
 //
 //    void uninit();
 //
@@ -44,7 +44,7 @@ public class ResStringPool {
 //    boolean isSorted() final;
 //    boolean isUTF8() final;
 //
-//    private Status                    mError;
+//    private Errors                    mError;
 //    private Object                       mOwnedData;
 //    private final ResStringPool_header* mHeader;
 //    private int                      mSize;

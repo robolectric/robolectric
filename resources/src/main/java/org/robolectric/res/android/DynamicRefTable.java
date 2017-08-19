@@ -17,30 +17,32 @@ public class DynamicRefTable
   }
 
 //  // Loads an unmapped reference table from the package.
-//  Status load(final ResTable_lib_header header) {
+//  Errors load(final ResTable_lib_header header) {
 //    return null;
 //  }
 //
 //  // Adds mappings from the other DynamicRefTable
-//  Status addMappings(final DynamicRefTable& other) {
+//  Errors addMappings(final DynamicRefTable& other) {
 //
 //  }
 //
 //  // Creates a mapping from build-time package ID to run-time package ID for
 //  // the given package.
-//  Status addMapping(final String16& packageName, byte packageId) {
+//  Errors addMapping(final String16& packageName, byte packageId) {
 //
 //  }
 //
 //  // Performs the actual conversion of build-time resource ID to run-time
 //  // resource ID.
-//  Status lookupResourceId(uint32_t* resId) {
-//    return null;
-//  }
+  int lookupResourceId(int resId) {
+    // TODO: is this correct?
+    return Errors.NO_ERROR;
+  }
 //
-//  Status lookupResourceValue(Res_value value) {
-//    return null;
-//  }
+  int lookupResourceValue(ResValue value) {
+    // TODO: is this correct?
+    return Errors.NO_ERROR;
+ }
 //
 //  final KeyedVector<String16, uint8_t>& entries() final {
 //  return mEntries;
