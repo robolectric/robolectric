@@ -103,6 +103,11 @@ build_platform() {
         SOURCES=(core graphics media location opengl sax services telephony wifi)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
+    elif [[ "${ANDROID_VERSION}" == "8.0.0_r4" ]]; then
+        ARTIFACTS=("robolectric_android-all")
+        NATIVE_ARTIFACTS=()
+        SOURCES=(core graphics media location opengl sax services telephony wifi)
+        echo "SOURCES = ${SOURCES}"
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -203,6 +208,14 @@ build_android_all_jar() {
     rm ${OUT}/${ANDROID_RES} ${OUT}/${ANDROID_EXT} ${OUT}/${ANDROID_CLASSES}
 }
 
+cp_android_all_jar() {
+  # function to use for android versions that support building the android all
+  # jar directly
+  # This will just copy the android all jar to the final name
+  src=${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/robolectric_android-all_intermediates/classes.jar
+  cp $src ${OUT}/${ANDROID_ALL}
+}
+
 build_android_src_jar() {
     echo "Robolectric: Building android-all-source..."
     local src=${ANDROID_SOURCES_BASE}/frameworks/base
@@ -268,10 +281,15 @@ OUT=`mktemp --directory`
 mkdir -p ${OUT}
 
 build_platform
-build_android_res
-build_android_ext
-build_android_classes
-build_android_all_jar
+if [[ "${ANDROID_VERSION}" == "8.0.0_r4" ]]; then
+  cp_android_all_jar
+else
+  build_android_res
+  build_android_ext
+  build_android_classes
+  build_android_all_jar
+fi
+
 build_android_src_jar
 build_android_doc_jar
 build_signed_packages

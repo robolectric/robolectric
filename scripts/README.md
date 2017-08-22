@@ -51,8 +51,9 @@ To check out a branch other than `master`, specify it with `-b`. For a list of b
 *  `6.0.1_r3`    - Marshmallow
 *  `7.0.0_r1`    - Nougat
 *  `7.1.0_r7`    - Nougat MR1
+*  `8.0.0_r4`    - Oreo
 ```
-$ repo init -u https://android.googlesource.com/platform/manifest -b android-7.1.0_r7
+$ repo init -u https://android.googlesource.com/platform/manifest -b android-8.0.0_r4
 ```
 
 A successful initialization will end with a message stating that Repo is initialized in your working directory. Your client directory should now contain a `.repo` directory where files such as the manifest will be kept.
@@ -108,7 +109,11 @@ $ lunch aosp_x86-eng
 $ make -j8
 $ make -j8 out/target/common/obj/JAVA_LIBRARIES/services_intermediates/classes.jar out/host/linux-x86/framework/icu4j-icudata-host-jarjar.jar 
 ```
-
+For Oreo:
+Patch this change: https://android-review.googlesource.com/463722
+$ cd external/robolectric && git fetch https://android.googlesource.com/platform/external/robolectric refs/changes/22/463722/1 && git cherry-pick FETCH_HEAD && cd ../..
+$ lunch aosp_x86-eng
+$ make -j8 robolectric_android-all
 
 ## 7. Run build-android.sh
 Signing Artifacts:
