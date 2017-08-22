@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.10"
+    id "net.ltgt.errorprone" version "0.0.11"
 }
 
 new RoboJavaModulePlugin(
@@ -43,6 +43,9 @@ dependencies {
     testRuntime "com.android.support:support-core-ui:26.0.0-alpha1"
     testRuntime "com.android.support:support-core-utils:26.0.0-alpha1"
     testRuntime "com.android.support:support-fragment:26.0.0-alpha1"
+
+    // temporary workaround for https://github.com/google/error-prone/issues/711
+    errorprone 'com.google.errorprone:error_prone_core:2.0.21'
 }
 
 // change local artifact name to match dependencies

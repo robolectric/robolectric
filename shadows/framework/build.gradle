@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.10"
+    id "net.ltgt.errorprone" version "0.0.11"
 }
 
 new RoboJavaModulePlugin(
@@ -64,4 +64,7 @@ dependencies {
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+
+    // temporary workaround for https://github.com/google/error-prone/issues/711
+    errorprone 'com.google.errorprone:error_prone_core:2.0.21'
 }

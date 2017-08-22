@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.10"
+    id "net.ltgt.errorprone" version "0.0.11"
 }
 
 new RoboJavaModulePlugin(
@@ -11,4 +11,7 @@ dependencies {
     compile project(":shadowapi")
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
     compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    // temporary workaround for https://github.com/google/error-prone/issues/711
+    errorprone 'com.google.errorprone:error_prone_core:2.0.21'
 }
