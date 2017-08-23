@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.telephony.SmsManager;
 import com.google.android.collect.Lists;
 import org.junit.Test;
@@ -68,8 +69,11 @@ public class ShadowSmsManagerTest {
   public void sendDataMessage_shouldStoreLastParameters() {
     final short destPort = 24;
     final byte[] data = new byte[]{0, 1, 2, 3, 4};
-    final PendingIntent sentIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 10, null, 0);
-    final PendingIntent deliveryIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 10, null, 0);
+    Intent intent = new Intent();
+    final PendingIntent sentIntent =
+        PendingIntent.getActivity(RuntimeEnvironment.application, 10, intent, 0);
+    final PendingIntent deliveryIntent =
+        PendingIntent.getActivity(RuntimeEnvironment.application, 10, intent, 0);
 
     smsManager.sendDataMessage(destAddress, scAddress, destPort, data, sentIntent, deliveryIntent);
 
