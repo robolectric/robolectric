@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.telephony.SmsManager;
@@ -9,10 +13,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(minSdk = JELLY_BEAN_MR2)
@@ -70,8 +70,10 @@ public class ShadowSmsManagerTest {
     final short destPort = 24;
     final byte[] data = new byte[]{0, 1, 2, 3, 4};
     Intent intent = new Intent();
-    final PendingIntent sentIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 10, intent, 0);
-    final PendingIntent deliveryIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 10, intent, 0);
+    final PendingIntent sentIntent =
+        PendingIntent.getActivity(RuntimeEnvironment.application, 10, intent, 0);
+    final PendingIntent deliveryIntent =
+        PendingIntent.getActivity(RuntimeEnvironment.application, 10, intent, 0);
 
     smsManager.sendDataMessage(destAddress, scAddress, destPort, data, sentIntent, deliveryIntent);
 

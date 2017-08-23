@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.annotation.NonNull;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -7,7 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -17,14 +23,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.RoboIntentSender;
 import org.robolectric.util.ReflectionHelpers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-
-import static org.robolectric.Shadows.shadowOf;
-
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
@@ -32,8 +30,7 @@ public class ShadowPendingIntent {
   @RealObject
   PendingIntent realPendingIntent;
 
-  @NonNull
-  private Intent[] savedIntents;
+  @NonNull private Intent[] savedIntents;
   private Context savedContext;
   private boolean isActivityIntent;
   private boolean isBroadcastIntent;
@@ -43,44 +40,50 @@ public class ShadowPendingIntent {
   private String creatorPackage;
 
   @Implementation
-  public static PendingIntent getActivity(Context context, int requestCode, @NonNull Intent intent, int flags) {
+  public static PendingIntent getActivity(
+      Context context, int requestCode, @NonNull Intent intent, int flags) {
     Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getActivity(Context context, int requestCode, @NonNull Intent intent, int flags, Bundle options) {
+  public static PendingIntent getActivity(
+      Context context, int requestCode, @NonNull Intent intent, int flags, Bundle options) {
     Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getActivities(Context context, int requestCode, @NonNull Intent[] intents, int flags) {
+  public static PendingIntent getActivities(
+      Context context, int requestCode, @NonNull Intent[] intents, int flags) {
     Objects.requireNonNull(intents, "intents may not be null");
     return create(context, intents, true, false, false, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getActivities(Context context, int requestCode, @NonNull Intent[] intents, int flags, Bundle options) {
+  public static PendingIntent getActivities(
+      Context context, int requestCode, @NonNull Intent[] intents, int flags, Bundle options) {
     Objects.requireNonNull(intents, "intents may not be null");
     return create(context, intents, true, false, false, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getBroadcast(Context context, int requestCode, @NonNull Intent intent, int flags) {
+  public static PendingIntent getBroadcast(
+      Context context, int requestCode, @NonNull Intent intent, int flags) {
     Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, false, true, false, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getService(Context context, int requestCode, @NonNull Intent intent, int flags) {
+  public static PendingIntent getService(
+      Context context, int requestCode, @NonNull Intent intent, int flags) {
     Objects.requireNonNull(intent, "intent may not be null");
     return create(context, new Intent[] {intent}, false, false, true, requestCode, flags);
   }
 
   @Implementation
   public void cancel() {
-    for (Iterator i = createdIntents.iterator(); i.hasNext();) {
+    for (Iterator i = createdIntents.iterator(); i.hasNext(); ) {
       if (i.next() == realPendingIntent) {
         i.remove();
         break;

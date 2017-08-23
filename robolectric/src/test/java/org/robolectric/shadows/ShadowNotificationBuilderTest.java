@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

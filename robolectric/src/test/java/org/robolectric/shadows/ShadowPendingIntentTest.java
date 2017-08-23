@@ -1,23 +1,22 @@
 package org.robolectric.shadows;
 
+import static android.app.PendingIntent.FLAG_NO_CREATE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-
-import static android.app.PendingIntent.FLAG_NO_CREATE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowPendingIntentTest {
@@ -76,7 +75,8 @@ public class ShadowPendingIntentTest {
   @Test
   public void getActivities_withBundle_shouldCreateIntentForBroadcast() throws Exception {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, 100, Bundle.EMPTY);
+    PendingIntent pendingIntent =
+        PendingIntent.getActivities(context, 99, intents, 100, Bundle.EMPTY);
 
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
@@ -169,18 +169,19 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void getActivities_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
-    Intent[] intents = { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
+    Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, FLAG_NO_CREATE);
     assertThat(pendingIntent).isNull();
   }
 
   @Test
   public void getActivities_withFlagNoCreate_shouldReturnExistingIntent() {
-    Intent[] intents = { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
+    Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
 
-    Intent[] identicalIntents = { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
-    PendingIntent saved = PendingIntent.getActivities(context, 99, identicalIntents, FLAG_NO_CREATE);
+    Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
+    PendingIntent saved =
+        PendingIntent.getActivities(context, 99, identicalIntents, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
     assertThat(intents).isEqualTo(shadowOf(saved).getSavedIntents());
   }
@@ -263,7 +264,8 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void testEquals() {
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
 
     assertThat(pendingIntent)
         .isEqualTo(PendingIntent.getActivity(context, 99, new Intent("activity"), 100));
@@ -290,7 +292,8 @@ public class ShadowPendingIntentTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGetCreatorPackage_nothingSet() {
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
     assertThat(pendingIntent.getCreatorPackage()).isEqualTo(context.getPackageName());
     assertThat(pendingIntent.getTargetPackage()).isEqualTo(context.getPackageName());
   }
@@ -299,7 +302,8 @@ public class ShadowPendingIntentTest {
   @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGetCreatorPackage_explicitlySetPackage() {
     String fakePackage = "some.fake.package";
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
     shadowOf(pendingIntent).setCreatorPackage(fakePackage);
     assertThat(pendingIntent.getCreatorPackage()).isEqualTo(fakePackage);
     assertThat(pendingIntent.getTargetPackage()).isEqualTo(fakePackage);
