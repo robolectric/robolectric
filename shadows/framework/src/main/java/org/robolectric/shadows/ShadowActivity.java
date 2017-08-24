@@ -188,7 +188,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null),
           ReflectionHelpers.ClassParameter.from(Window.class, null) // ADDED
       );
-    } else if (apiLevel == Build.VERSION_CODES.O) {
+    } else if (apiLevel >= Build.VERSION_CODES.O) {
       ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
           ReflectionHelpers.ClassParameter.from(ActivityThread.class, RuntimeEnvironment.getActivityThread()),
