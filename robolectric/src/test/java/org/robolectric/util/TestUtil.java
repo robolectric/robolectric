@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
+import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -218,9 +219,21 @@ public abstract class TestUtil {
   }
 
   private static DependencyResolver getDependencyResolver() {
+
     if (Boolean.getBoolean("robolectric.offline")) {
-      String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-      return new LocalDependencyResolver(new File(dependencyDir));
+      String propPath = System.getProperty("robolectric-deps.properties");
+      if (propPath != null) {
+        try {
+          return new PropertiesDependencyResolver(
+              Fs.newFile(propPath),
+              null);
+        } catch (IOException e) {
+          throw new RuntimeException("couldn't read dependencies" , e);
+        }
+      } else {
+        String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
+        return new LocalDependencyResolver(new File(dependencyDir));
+      }
     } else {
       Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
               "org.robolectric.internal.dependency.MavenDependencyResolver");
