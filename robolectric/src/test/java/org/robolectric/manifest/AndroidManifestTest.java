@@ -76,6 +76,9 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(5).getClassName()).isEqualTo("com.foo.Receiver");
     assertThat(config.getBroadcastReceivers().get(5).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    assertThat(config.getBroadcastReceivers().get(5).getIntentFilters()).hasSize(1);
+    IntentFilterData filter = config.getBroadcastReceivers().get(5).getIntentFilters().get(0);
+    assertThat(filter.getActions()).containsExactly("org.robolectric.ACTION_DIFFERENT_PACKAGE");
 
     assertThat(config.getBroadcastReceivers().get(6).getClassName()).isEqualTo("com.bar.ReceiverWithoutIntentFilter");
     assertThat(config.getBroadcastReceivers().get(6).getActions()).isEmpty();
@@ -422,6 +425,50 @@ public class AndroidManifestTest {
     }
 
     assertThat(wrongFields).isEmpty();
+  }
+
+  @Test
+  public void activitiesWithoutIntentFiltersNotExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestForActivities.xml");
+    ActivityData activityData = config.getActivityData("org.robolectric.shadows.TestActivity");
+    assertThat(activityData.isExported()).isFalse();
+  }
+
+  @Test
+  public void activitiesWithIntentFiltersExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
+    ActivityData activityData = config.getActivityData("org.robolectric.shadows.TestActivity");
+    assertThat(activityData.isExported()).isTrue();
+  }
+
+  @Test
+  public void servicesWithoutIntentFiltersNotExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithServices.xml");
+    ServiceData serviceData = config.getServiceData("com.bar.ServiceWithoutIntentFilter");
+    assertThat(serviceData.isExported()).isFalse();
+  }
+
+  @Test
+  public void servicesWithIntentFiltersExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithServices.xml");
+    ServiceData serviceData = config.getServiceData("com.foo.Service");
+    assertThat(serviceData.isExported()).isTrue();
+  }
+
+  @Test
+  public void receiversWithoutIntentFiltersNotExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
+    BroadcastReceiverData receiverData = config.getBroadcastReceiver("com.bar.ReceiverWithoutIntentFilter");
+    assertThat(receiverData).isNotNull();
+    assertThat(receiverData.isExported()).isFalse();
+  }
+
+  @Test
+  public void receiversWithIntentFiltersExportedByDefault() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
+    BroadcastReceiverData receiverData = config.getBroadcastReceiver("com.foo.Receiver");
+    assertThat(receiverData).isNotNull();
+    assertThat(receiverData.isExported()).isTrue();
   }
 
   /////////////////////////////

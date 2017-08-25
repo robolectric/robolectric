@@ -86,7 +86,7 @@ public class ActivityData {
   }
 
   public boolean isExported() {
-    boolean defaultValue = false;
+    boolean defaultValue = !intentFilters.isEmpty();
     return getBooleanAttr(withXMLNS(EXPORTED), defaultValue);
   }
 

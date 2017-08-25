@@ -245,13 +245,28 @@ public class AndroidManifest {
 
   private void parseReceivers(Node applicationNode) {
     for (Node receiverNode : getChildrenTags(applicationNode, "receiver")) {
-      Node namedItem = receiverNode.getAttributes().getNamedItem("android:name");
-      if (namedItem == null) continue;
+      final NamedNodeMap attributes = receiverNode.getAttributes();
+      final int attrCount = attributes.getLength();
+      final HashMap<String, String> receiverAttrs = new HashMap<>(attributes.getLength());
+      for(int i = 0; i < attrCount; i++) {
+        Node attr = attributes.item(i);
+        String v = attr.getNodeValue();
+        if( v != null) {
+          receiverAttrs.put(attr.getNodeName(), v);
+        }
+      }
 
-      String receiverName = resolveClassRef(namedItem.getTextContent());
+      String receiverName = resolveClassRef(receiverAttrs.get("android:name"));
+      if (receiverName == null) {
+        continue;
+      }
+      receiverAttrs.put("android:name", receiverName);
+
       MetaData metaData = new MetaData(getChildrenTags(receiverNode, "meta-data"));
 
-      BroadcastReceiverData receiver = new BroadcastReceiverData(receiverName, metaData);
+      final List<IntentFilterData> intentFilterData = parseIntentFilters(receiverNode);
+      BroadcastReceiverData receiver = new BroadcastReceiverData(receiverAttrs, metaData,
+          intentFilterData);
       List<Node> intentFilters = getChildrenTags(receiverNode, "intent-filter");
       for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -261,26 +276,34 @@ public class AndroidManifest {
           }
         }
       }
-      
-      Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
-      if (permissionItem != null) {
-        receiver.setPermission(permissionItem.getTextContent());
-      }
-      
+
       receivers.add(receiver);
     }
   }
 
   private void parseServices(Node applicationNode) {
     for (Node serviceNode : getChildrenTags(applicationNode, "service")) {
-      Node namedItem = serviceNode.getAttributes().getNamedItem("android:name");
-      if (namedItem == null) continue;
+      final NamedNodeMap attributes = serviceNode.getAttributes();
+      final int attrCount = attributes.getLength();
+      final HashMap<String, String> serviceAttrs = new HashMap<>(attributes.getLength());
+      for(int i = 0; i < attrCount; i++) {
+        Node attr = attributes.item(i);
+        String v = attr.getNodeValue();
+        if( v != null) {
+          serviceAttrs.put(attr.getNodeName(), v);
+        }
+      }
 
-      String serviceName = resolveClassRef(namedItem.getTextContent());
+      String serviceName = resolveClassRef(serviceAttrs.get("android:name"));
+      if (serviceName == null) {
+        continue;
+      }
+      serviceAttrs.put("android:name", serviceName);
+
       MetaData metaData = new MetaData(getChildrenTags(serviceNode, "meta-data"));
 
       final List<IntentFilterData> intentFilterData = parseIntentFilters(serviceNode);
-      ServiceData service = new ServiceData(serviceName, metaData, intentFilterData);
+      ServiceData service = new ServiceData(serviceAttrs, metaData, intentFilterData);
       List<Node> intentFilters = getChildrenTags(serviceNode, "intent-filter");
       for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -291,10 +314,6 @@ public class AndroidManifest {
         }
       }
 
-      Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
-      if (permissionItem != null) {
-        service.setPermission(permissionItem.getTextContent());
-      }
       serviceDatas.put(serviceName, service);
     }
   }
@@ -596,6 +615,7 @@ public class AndroidManifest {
   }
 
   public ServiceData getServiceData(String serviceClassName) {
+    parseAndroidManifest();
     return serviceDatas.get(serviceClassName);
   }
 
@@ -658,5 +678,22 @@ public class AndroidManifest {
   public Map<String, PermissionItemData> getPermissions() {
     parseAndroidManifest();
     return permissions;
+  }
+
+  /**
+   * Returns data for the broadcast receiver with the provided name from this manifest. If no
+   * receiver with the class name can be found, returns null.
+   *
+   * @param className the fully resolved class name of the receiver
+   * @return data for the receiver or null if it cannot be found
+   */
+  public @Nullable BroadcastReceiverData getBroadcastReceiver(String className) {
+    parseAndroidManifest();
+    for (BroadcastReceiverData receiver : receivers) {
+      if (receiver.getClassName().equals(className)) {
+        return receiver;
+      }
+    }
+    return null;
   }
 }
