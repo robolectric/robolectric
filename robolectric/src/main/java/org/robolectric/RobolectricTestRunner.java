@@ -97,8 +97,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected DependencyResolver getJarResolver() {
     if (dependencyResolver == null) {
       if (Boolean.getBoolean("robolectric.offline")) {
-        String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-        dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
+        String propPath = System.getProperty("robolectric-deps.properties");
+        if (propPath != null) {
+          try {
+            dependencyResolver = new PropertiesDependencyResolver(
+                Fs.newFile(propPath),
+                null);
+          } catch (IOException e) {
+            throw new RuntimeException("couldn't read dependencies" , e);
+          }
+        } else {
+          String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
+          dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
+        }
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
 
