@@ -92,8 +92,11 @@ public class ShadowViewRootImpl {
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false));
-    } else if (apiLevel == Build.VERSION_CODES.O) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
+    } else if (apiLevel >= Build.VERSION_CODES.O) {
+      ReflectionHelpers.callInstanceMethod(
+          ViewRootImpl.class,
+          component,
+          "dispatchResized",
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(Rect.class, zeroSizedRect),
           ClassParameter.from(Rect.class, zeroSizedRect),
@@ -101,7 +104,7 @@ public class ShadowViewRootImpl {
           ClassParameter.from(Rect.class, zeroSizedRect),
           ClassParameter.from(Rect.class, zeroSizedRect),
           ClassParameter.from(boolean.class, true),
-          ClassParameter.from(MergedConfiguration.class, null),
+          ClassParameter.from(MergedConfiguration.class, new MergedConfiguration()),
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false),
