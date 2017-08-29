@@ -14,7 +14,4 @@ dependencies {
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
     compileOnly "junit:junit:4.12"
-
-    // temporary workaround for https://github.com/google/error-prone/issues/711
-    errorprone 'com.google.errorprone:error_prone_core:2.0.21'
 }
