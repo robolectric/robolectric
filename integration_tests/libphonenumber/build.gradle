@@ -13,7 +13,4 @@ dependencies {
     testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile 'com.googlecode.libphonenumber:libphonenumber:8.0.0'
-
-    // temporary workaround for https://github.com/google/error-prone/issues/711
-    errorprone 'com.google.errorprone:error_prone_core:2.0.21'
 }
