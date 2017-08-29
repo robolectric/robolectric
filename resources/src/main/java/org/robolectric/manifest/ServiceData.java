@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
 
 public class ServiceData {
 
@@ -63,7 +62,6 @@ public class ServiceData {
    *
    * @return A list of intent filters.
    */
-  @Nonnull
   public List<IntentFilterData> getIntentFilters() {
     return intentFilters;
   }
@@ -73,7 +71,6 @@ public class ServiceData {
    *
    * @return map of attributes names to values from the manifest.
    */
-  @Nonnull
   public Map<String, String> getAllAttributes() {
     return attributes;
   }
