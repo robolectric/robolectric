@@ -103,7 +103,8 @@ public class AndroidManifestTest {
 
     assertThat(config.getServiceData("com.foo.Service").getClassName()).isEqualTo("com.foo.Service");
     assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
-    assertThat(config.getServiceData("com.foo.Service").getPermission()).isEqualTo("com.foo.Permission");
+    assertThat(config.getServiceData("com.foo.Service").getPermission())
+        .isEqualTo("com.foo.Permission");
   }
 
   @Test
