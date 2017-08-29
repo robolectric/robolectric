@@ -2,19 +2,24 @@ plugins {
     id "net.ltgt.errorprone" version "0.0.11"
 }
 
-apply plugin: RoboJavaModulePlugin
+//apply plugin: RoboJavaModulePlugin
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion '26.0.1'
+}
 
 dependencies {
-    compile project(":robolectric")
-    compile "junit:junit:4.12"
+    implementation project(":robolectric")
+    implementation "junit:junit:4.12"
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compile "com.android.support:support-compat:26.0.1"
-    compile "com.android.support:support-fragment:26.0.1"
+    implementation "com.android.support:support-compat:26.0.1"
+    implementation "com.android.support:support-fragment:26.0.1"
 
     // Testing dependencies
-    testRuntime AndroidSdk.MAX_SDK.coordinates
-    testCompile "com.android.support:support-compat:26.0.1"
-    testCompile "com.android.support:support-fragment:26.0.1"
-    testCompile "org.assertj:assertj-core:3.8.0"
-    testCompile "org.mockito:mockito-core:2.5.4"
+    //testRuntime AndroidSdk.MAX_SDK.coordinates
+    testImplementation "com.android.support:support-compat:26.0.1"
+    testImplementation "com.android.support:support-fragment:26.0.1"
+    testImplementation "org.assertj:assertj-core:3.8.0"
+    testImplementation "org.mockito:mockito-core:2.5.4"
 }
