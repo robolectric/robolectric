@@ -30,7 +30,7 @@ dependencies {
     testRuntime "com.google.android.gms:play-services-base:8.4.0"
     testRuntime "com.google.android.gms:play-services-basement:8.4.0"
 
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
+    testRuntime AndroidSdk.MAX_SDK.coordinates
 }
 
 install {

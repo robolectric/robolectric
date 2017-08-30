@@ -10,7 +10,7 @@ dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     // Testing dependencies
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
+    testRuntime AndroidSdk.MAX_SDK.coordinates
     testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
     testCompile "org.assertj:assertj-core:3.8.0"
 
