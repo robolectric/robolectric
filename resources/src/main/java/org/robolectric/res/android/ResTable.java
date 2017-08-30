@@ -398,6 +398,42 @@ public class ResTable {
     return entry.get()._package_.header.index;
   }
 
+  public final int resolveReference(ResValue value, int blockIndex,
+      Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
+      Ref<ResTableConfig> outConfig)
+  {
+    int count=0;
+    while (blockIndex >= 0 && value.dataType == DataType.REFERENCE.code()
+        && value.data != 0 && count < 20) {
+      if (outLastRef.get() == null) {
+        outLastRef.set(value.data);
+      }
+      Ref<Integer> newFlags = new Ref<>(0);
+      final int newIndex = getResource(value.data, new Ref<>(value), true, 0,
+          newFlags, outConfig);
+      if (newIndex == BAD_INDEX) {
+        return BAD_INDEX;
+      }
+      if (kDebugTableTheme) {
+        Util.ALOGI("Resolving reference 0x%x: newIndex=%d, type=0x%x, data=0x%x\n",
+            value.data, (int)newIndex, (int)value.dataType, value.data);
+      }
+      //printf("Getting reference 0x%08x: newIndex=%d\n", value->data, newIndex);
+      if (inoutTypeSpecFlags != null) {
+        inoutTypeSpecFlags.set(inoutTypeSpecFlags.get() | newFlags.get());
+      }
+      if (newIndex < 0) {
+        // This can fail if the resource being referenced is a style...
+        // in this case, just return the reference, and expect the
+        // caller to deal with.
+        return blockIndex;
+      }
+      blockIndex = newIndex;
+      count++;
+    }
+    return blockIndex;
+  }
+
   Entry getEntry(int resId, String qualifiers) {
     return getEntry(ResourceIds.getPackageIdentifier(resId),
         ResourceIds.getTypeIdentifier(resId),
@@ -599,6 +635,10 @@ public class ResTable {
     this.parameters = parameters;
   }
 
+  public int getTableCookie(int index) {
+    return mHeaders.get(index).cookie;
+  }
+
   // A group of objects describing a particular resource package.
   // The first in 'package' is always the root object (from the resource
   // table that defined the package); the ones after are skins on top of it.
@@ -625,7 +665,7 @@ public class ResTable {
 //      clearBagCache();
 //      final int numTypes = types.size();
 //      for (int i = 0; i < numTypes; i++) {
-//        final List<Type> typeList = types.get(i);
+//        final List<DataType> typeList = types.get(i);
 //        final int numInnerTypes = typeList.size();
 //        for (int j = 0; j < numInnerTypes; j++) {
 //          if (typeList.get(j)._package_.owner == owner) {
@@ -652,7 +692,7 @@ public class ResTable {
 //        if (kDebugTableNoisy) {
 //          printf("type=%zu\n", i);
 //        }
-//        final List<Type> typeList = types.get(i);
+//        final List<DataType> typeList = types.get(i);
 //        if (!typeList.isEmpty()) {
 //          TypeCacheEntry cacheEntry = typeCacheEntries.editItemAt(i);
 //
@@ -773,7 +813,7 @@ public class ResTable {
     StringPoolRef keyStr;
   }
 
-  // struct ResTable::Type
+  // struct ResTable::DataType
   public static class Type {
 
     final Header header;

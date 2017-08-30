@@ -37,7 +37,7 @@ public class Converter<T> {
       case "fraction":
         return new FromFraction();
       default:
-        throw new UnsupportedOperationException("Type not supported: " + type);
+        throw new UnsupportedOperationException("DataType not supported: " + type);
     }
   }
 

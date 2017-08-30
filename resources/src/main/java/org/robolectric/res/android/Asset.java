@@ -1,102 +1,127 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.Util.ALOGI;
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * Class providing access to a read-only asset.  Asset objects are NOT thread-safe, and should not
+ * be shared across threads.
+ *
+ * transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/Asset.h
+ * and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/Asset.cpp
+ *
+ * Instances of this class provide read-only operations on a byte stream.
+ * Access may
+ * be optimized for streaming, random, or whole buffer modes.  All operations are supported
+ * regardless of how the file was opened, but some things will be less efficient.  [pass that
+ * in??]. "Asset" is the base class for all types of assets.  The classes below
+ * provide most of the implementation.  The AssetManager uses one of the static "create"
+ * functions defined here to create a new instance.
+ */
 public class Asset {
-//  static const bool kIsDebug = false;
+  //
+
+  //      public:
+//      virtual ~Asset(void) = default;
+//      static int32_t getGlobalCount();
+//      static String8 getAssetAllocations();
 //
-//  static Mutex gAssetLock;
-//  static int32_t gCount = 0;
-//  static Asset* gHead = NULL;
-//  static Asset* gTail = NULL;
-//
-//  void Asset::registerAsset(Asset* asset)
-//  {
-//    AutoMutex _l(gAssetLock);
-//    gCount++;
-//    asset->mNext = asset->mPrev = NULL;
-//    if (gTail == NULL) {
-//      gHead = gTail = asset;
-//    } else {
-//      asset->mPrev = gTail;
-//      gTail->mNext = asset;
-//      gTail = asset;
-//    }
-//
-//    if (kIsDebug) {
-//      ALOGI("Creating Asset %p #%d\n", asset, gCount);
-//    }
-//  }
-//
-//  void Asset::unregisterAsset(Asset* asset)
-//  {
-//    AutoMutex _l(gAssetLock);
-//    gCount--;
-//    if (gHead == asset) {
-//      gHead = asset->mNext;
-//    }
-//    if (gTail == asset) {
-//      gTail = asset->mPrev;
-//    }
-//    if (asset->mNext != NULL) {
-//      asset->mNext->mPrev = asset->mPrev;
-//    }
-//    if (asset->mPrev != NULL) {
-//      asset->mPrev->mNext = asset->mNext;
-//    }
-//    asset->mNext = asset->mPrev = NULL;
-//
-//    if (kIsDebug) {
-//      ALOGI("Destroying Asset in %p #%d\n", asset, gCount);
-//    }
-//  }
-//
-//  int32_t Asset::getGlobalCount()
-//  {
-//    AutoMutex _l(gAssetLock);
-//    return gCount;
-//  }
-//
-//  String8 Asset::getAssetAllocations()
-//  {
+//    /* used when opening an asset */
+  enum AccessMode {
+    ACCESS_UNKNOWN,
+    /* read chunks, and seek forward and backward */
+    ACCESS_RANDOM,
+    /* read sequentially, with an occasional forward seek */
+    ACCESS_STREAMING,
+    /* caller plans to ask for a read-only buffer with all data */
+    ACCESS_BUFFER,
+  }
+
+//using namespace android;
+//#ifndef O_BINARY
+//# define O_BINARY 0
+//#endif
+private static final boolean kIsDebug = false;
+private static final Object gAssetLock = new Object();
+private static List<Asset> gAssets = new LinkedList<>();
+
+  private String8    mAssetSource;       // debug string
+
+  /* set the asset source string */
+  void setAssetSource(String8 path) {
+    mAssetSource = path;
+  }
+
+protected void registerAsset(Asset asset)
+{
+  int gCount = 0;
+    synchronized (gAssetLock) {
+      gAssets.add(asset);
+      gCount = gAssets.size();
+    }
+  if (kIsDebug) {
+    ALOGI("Creating Asset %p #%d\n", asset, gCount);
+  }
+
+}
+
+protected void unregisterAsset(Asset asset) {
+  int gCount = 0;
+  synchronized (gAssetLock) {
+    gAssets.remove(asset);
+    gCount = gAssets.size();
+  }
+  if (kIsDebug) {
+        ALOGI("Destroying Asset in %p #%d\n", asset, gCount);
+    }
+}
+
+protected int getGlobalCount()
+{
+  synchronized (gAssetLock) {
+    return gAssets.size();
+  }
+}
+
+//String8 Asset::getAssetAllocations()
+//{
 //    AutoMutex _l(gAssetLock);
 //    String8 res;
 //    Asset* cur = gHead;
 //    while (cur != NULL) {
-//      if (cur->isAllocated()) {
-//        res.append("    ");
-//        res.append(cur->getAssetSource());
-//        off64_t size = (cur->getLength()+512)/1024;
-//        char buf[64];
-//        sprintf(buf, ": %dK\n", (int)size);
-//        res.append(buf);
-//      }
-//      cur = cur->mNext;
+//        if (cur->isAllocated()) {
+//            res.append("    ");
+//            res.append(cur->getAssetSource());
+//            off64_t size = (cur->getLength()+512)/1024;
+//            char buf[64];
+//            sprintf(buf, ": %dK\n", (int)size);
+//            res.append(buf);
+//        }
+//        cur = cur->mNext;
 //    }
-//
 //    return res;
-//  }
-//
-//  Asset::Asset(void)
+//}
+//Asset::Asset(void)
 //    : mAccessMode(ACCESS_UNKNOWN), mNext(NULL), mPrev(NULL)
-//  {
-//  }
-//
-///*
-// * Create a new Asset from a file on disk.  There is a fair chance that
-// * the file doesn't actually exist.
-// *
-// * We can use "mode" to decide how we want to go about it.
-// */
-///*static*/ Asset* Asset::createFromFile(const char* fileName, AccessMode mode)
-//  {
+//{
+//}
+/*
+ * Create a new Asset from a file on disk.  There is a fair chance that
+ * the file doesn't actually exist.
+ *
+ * We can use "mode" to decide how we want to go about it.
+ */
+static Asset createFromFile(String fileName, AccessMode mode)
+{
 //    _FileAsset* pAsset;
 //    status_t result;
 //    off64_t length;
 //    int fd;
-//
 //    fd = open(fileName, O_RDONLY | O_BINARY);
 //    if (fd < 0)
-//      return NULL;
-//
+//        return NULL;
 //    /*
 //     * Under Linux, the lseek fails if we actually opened a directory.  To
 //     * be correct we should test the file type explicitly, but since we
@@ -108,44 +133,43 @@ public class Asset {
 //    length = lseek64(fd, 0, SEEK_END);
 //    if (length < 0) {
 //        ::close(fd);
-//      return NULL;
+//        return NULL;
 //    }
 //    (void) lseek64(fd, 0, SEEK_SET);
 //#else
 //    struct stat st;
 //    if (fstat(fd, &st) < 0) {
 //        ::close(fd);
-//    return NULL;
-//  }
-//
+//        return NULL;
+//    }
 //    if (!S_ISREG(st.st_mode)) {
 //        ::close(fd);
-//      return NULL;
+//        return NULL;
 //    }
 //#endif
-//
-//      pAsset = new _FileAsset;
+//    pAsset = new _FileAsset;
 //    result = pAsset->openChunk(fileName, fd, 0, length);
 //    if (result != NO_ERROR) {
-//      delete pAsset;
-//      return NULL;
+//        delete pAsset;
+//        return NULL;
 //    }
-//
 //    pAsset->mAccessMode = mode;
 //    return pAsset;
-//  }
-//
-//
-///*
-// * Create a new Asset from a compressed file on disk.  There is a fair chance
-// * that the file doesn't actually exist.
-// *
-// * We currently support gzip files.  We might want to handle .bz2 someday.
-// */
-///*static*/ Asset* Asset::createFromCompressedFile(const char* fileName,
-//      AccessMode mode)
-//  {
-//    _CompressedAsset* pAsset;
+  return null;
+}
+
+/*
+ * Create a new Asset from a compressed file on disk.  There is a fair chance
+ * that the file doesn't actually exist.
+ *
+ * We currently support gzip files.  We might want to handle .bz2 someday.
+ */
+
+static Asset createFromCompressedFile(String fileName,
+    AccessMode mode)
+{
+  return null;
+//    _CompressedAsset pAsset;
 //    status_t result;
 //    off64_t fileLen;
 //    bool scanResult;
@@ -153,268 +177,225 @@ public class Asset {
 //    int method;
 //    long uncompressedLen, compressedLen;
 //    int fd;
-//
 //    fd = open(fileName, O_RDONLY | O_BINARY);
 //    if (fd < 0)
-//      return NULL;
-//
+//        return NULL;
 //    fileLen = lseek(fd, 0, SEEK_END);
 //    if (fileLen < 0) {
 //        ::close(fd);
-//      return NULL;
+//        return NULL;
 //    }
 //    (void) lseek(fd, 0, SEEK_SET);
-//
 //    /* want buffered I/O for the file scan; must dup so fclose() is safe */
 //    FILE* fp = fdopen(dup(fd), "rb");
 //    if (fp == NULL) {
 //        ::close(fd);
-//      return NULL;
+//        return NULL;
 //    }
-//
 //    unsigned long crc32;
 //    scanResult = ZipUtils::examineGzip(fp, &method, &uncompressedLen,
 //                    &compressedLen, &crc32);
 //    offset = ftell(fp);
 //    fclose(fp);
 //    if (!scanResult) {
-//      ALOGD("File '%s' is not in gzip format\n", fileName);
+//        ALOGD("File '%s' is not in gzip format\n", fileName);
 //        ::close(fd);
-//      return NULL;
+//        return NULL;
 //    }
-//
 //    pAsset = new _CompressedAsset;
 //    result = pAsset->openChunk(fd, offset, method, uncompressedLen,
-//        compressedLen);
+//                compressedLen);
 //    if (result != NO_ERROR) {
-//      delete pAsset;
-//      return NULL;
+//        delete pAsset;
+//        return NULL;
 //    }
-//
 //    pAsset->mAccessMode = mode;
 //    return pAsset;
-//  }
-//
-//
+}
 //#if 0
 ///*
 // * Create a new Asset from part of an open file.
 // */
 ///*static*/ Asset* Asset::createFromFileSegment(int fd, off64_t offset,
-//      size_t length, AccessMode mode)
-//  {
+//    size_t length, AccessMode mode)
+//{
 //    _FileAsset* pAsset;
 //    status_t result;
-//
 //    pAsset = new _FileAsset;
 //    result = pAsset->openChunk(NULL, fd, offset, length);
 //    if (result != NO_ERROR)
-//      return NULL;
-//
+//        return NULL;
 //    pAsset->mAccessMode = mode;
 //    return pAsset;
-//  }
-//
+//}
 ///*
 // * Create a new Asset from compressed data in an open file.
 // */
 ///*static*/ Asset* Asset::createFromCompressedData(int fd, off64_t offset,
-//      int compressionMethod, size_t uncompressedLen, size_t compressedLen,
-//      AccessMode mode)
-//  {
+//    int compressionMethod, size_t uncompressedLen, size_t compressedLen,
+//    AccessMode mode)
+//{
 //    _CompressedAsset* pAsset;
 //    status_t result;
-//
 //    pAsset = new _CompressedAsset;
 //    result = pAsset->openChunk(fd, offset, compressionMethod,
-//        uncompressedLen, compressedLen);
+//                uncompressedLen, compressedLen);
 //    if (result != NO_ERROR)
-//      return NULL;
-//
+//        return NULL;
 //    pAsset->mAccessMode = mode;
 //    return pAsset;
-//  }
+//}
 //#endif
-//
 ///*
 // * Create a new Asset from a memory mapping.
 // */
 ///*static*/ Asset* Asset::createFromUncompressedMap(FileMap* dataMap,
-//      AccessMode mode)
-//  {
+//    AccessMode mode)
+//{
 //    _FileAsset* pAsset;
 //    status_t result;
-//
 //    pAsset = new _FileAsset;
 //    result = pAsset->openChunk(dataMap);
 //    if (result != NO_ERROR)
-//      return NULL;
-//
+//        return NULL;
 //    pAsset->mAccessMode = mode;
 //    return pAsset;
-//  }
-//
+//}
 ///*
 // * Create a new Asset from compressed data in a memory mapping.
 // */
 ///*static*/ Asset* Asset::createFromCompressedMap(FileMap* dataMap,
-//      size_t uncompressedLen, AccessMode mode)
-//  {
+//    size_t uncompressedLen, AccessMode mode)
+//{
 //    _CompressedAsset* pAsset;
 //    status_t result;
-//
 //    pAsset = new _CompressedAsset;
 //    result = pAsset->openChunk(dataMap, uncompressedLen);
 //    if (result != NO_ERROR)
-//      return NULL;
-//
+//        return NULL;
 //    pAsset->mAccessMode = mode;
 //    return pAsset;
-//  }
-//
-//
-//  /*
-//   * Do generic seek() housekeeping.  Pass in the offset/whence values from
-//   * the seek request, along with the current chunk offset and the chunk
-//   * length.
-//   *
-//   * Returns the new chunk offset, or -1 if the seek is illegal.
-//   */
-//  off64_t Asset::handleSeek(off64_t offset, int whence, off64_t curPosn, off64_t maxPosn)
-//  {
+//}
+///*
+// * Do generic seek() housekeeping.  Pass in the offset/whence values from
+// * the seek request, along with the current chunk offset and the chunk
+// * length.
+// *
+// * Returns the new chunk offset, or -1 if the seek is illegal.
+// */
+//off64_t Asset::handleSeek(off64_t offset, int whence, off64_t curPosn, off64_t maxPosn)
+//{
 //    off64_t newOffset;
-//
 //    switch (whence) {
-//      case SEEK_SET:
+//    case SEEK_SET:
 //        newOffset = offset;
 //        break;
-//      case SEEK_CUR:
+//    case SEEK_CUR:
 //        newOffset = curPosn + offset;
 //        break;
-//      case SEEK_END:
+//    case SEEK_END:
 //        newOffset = maxPosn + offset;
 //        break;
-//      default:
+//    default:
 //        ALOGW("unexpected whence %d\n", whence);
 //        // this was happening due to an off64_t size mismatch
 //        assert(false);
 //        return (off64_t) -1;
 //    }
-//
 //    if (newOffset < 0 || newOffset > maxPosn) {
-//      ALOGW("seek out of range: want %ld, end=%ld\n",
-//          (long) newOffset, (long) maxPosn);
-//      return (off64_t) -1;
+//        ALOGW("seek out of range: want %ld, end=%ld\n",
+//            (long) newOffset, (long) maxPosn);
+//        return (off64_t) -1;
 //    }
-//
 //    return newOffset;
-//  }
-//
-//
+//}
 ///*
 // * ===========================================================================
 // *      _FileAsset
 // * ===========================================================================
 // */
-//
 ///*
 // * Constructor.
 // */
-//  _FileAsset::_FileAsset(void)
+//_FileAsset::_FileAsset(void)
 //    : mStart(0), mLength(0), mOffset(0), mFp(NULL), mFileName(NULL), mMap(NULL), mBuf(NULL)
-//  {
+//{
 //    // Register the Asset with the global list here after it is fully constructed and its
 //    // vtable pointer points to this concrete type. b/31113965
 //    registerAsset(this);
-//  }
-//
+//}
 ///*
 // * Destructor.  Release resources.
 // */
-//  _FileAsset::~_FileAsset(void)
-//  {
+//_FileAsset::~_FileAsset(void)
+//{
 //    close();
-//
 //    // Unregister the Asset from the global list here before it is destructed and while its vtable
 //    // pointer still points to this concrete type. b/31113965
 //    unregisterAsset(this);
-//  }
-//
-//  /*
-//   * Operate on a chunk of an uncompressed file.
-//   *
-//   * Zero-length chunks are allowed.
-//   */
-//  status_t _FileAsset::openChunk(const char* fileName, int fd, off64_t offset, size_t length)
-//  {
+//}
+///*
+// * Operate on a chunk of an uncompressed file.
+// *
+// * Zero-length chunks are allowed.
+// */
+//status_t _FileAsset::openChunk(const char* fileName, int fd, off64_t offset, size_t length)
+//{
 //    assert(mFp == NULL);    // no reopen
 //    assert(mMap == NULL);
 //    assert(fd >= 0);
 //    assert(offset >= 0);
-//
 //    /*
 //     * Seek to end to get file length.
 //     */
 //    off64_t fileLength;
 //    fileLength = lseek64(fd, 0, SEEK_END);
 //    if (fileLength == (off64_t) -1) {
-//      // probably a bad file descriptor
-//      ALOGD("failed lseek (errno=%d)\n", errno);
-//      return UNKNOWN_ERROR;
+//        // probably a bad file descriptor
+//        ALOGD("failed lseek (errno=%d)\n", errno);
+//        return UNKNOWN_ERROR;
 //    }
-//
 //    if ((off64_t) (offset + length) > fileLength) {
-//      ALOGD("start (%ld) + len (%ld) > end (%ld)\n",
-//          (long) offset, (long) length, (long) fileLength);
-//      return BAD_INDEX;
+//        ALOGD("start (%ld) + len (%ld) > end (%ld)\n",
+//            (long) offset, (long) length, (long) fileLength);
+//        return BAD_INDEX;
 //    }
-//
 //    /* after fdopen, the fd will be closed on fclose() */
 //    mFp = fdopen(fd, "rb");
 //    if (mFp == NULL)
-//      return UNKNOWN_ERROR;
-//
+//        return UNKNOWN_ERROR;
 //    mStart = offset;
 //    mLength = length;
 //    assert(mOffset == 0);
-//
 //    /* seek the FILE* to the start of chunk */
 //    if (fseek(mFp, mStart, SEEK_SET) != 0) {
-//      assert(false);
+//        assert(false);
 //    }
-//
 //    mFileName = fileName != NULL ? strdup(fileName) : NULL;
-//
 //    return NO_ERROR;
-//  }
-//
-//  /*
-//   * Create the chunk from the map.
-//   */
-//  status_t _FileAsset::openChunk(FileMap* dataMap)
-//  {
+//}
+///*
+// * Create the chunk from the map.
+// */
+//status_t _FileAsset::openChunk(FileMap* dataMap)
+//{
 //    assert(mFp == NULL);    // no reopen
 //    assert(mMap == NULL);
 //    assert(dataMap != NULL);
-//
 //    mMap = dataMap;
 //    mStart = -1;            // not used
 //    mLength = dataMap->getDataLength();
 //    assert(mOffset == 0);
-//
 //    return NO_ERROR;
-//  }
-//
-//  /*
-//   * Read a chunk of data.
-//   */
-//  ssize_t _FileAsset::read(void* buf, size_t count)
-//  {
+//}
+///*
+// * Read a chunk of data.
+// */
+//ssize_t _FileAsset::read(void* buf, size_t count)
+//{
 //    size_t maxLen;
 //    size_t actual;
-//
 //    assert(mOffset >= 0 && mOffset <= mLength);
-//
 //    if (getAccessMode() == ACCESS_BUFFER) {
 //        /*
 //         * On first access, read or map the entire file.  The caller has
@@ -422,37 +403,33 @@ public class Asset {
 //         * using the buffer or because what they're doing has appropriate
 //         * performance needs and access patterns.
 //         */
-//      if (mBuf == NULL)
-//        getBuffer(false);
+//        if (mBuf == NULL)
+//            getBuffer(false);
 //    }
-//
 //    /* adjust count if we're near EOF */
 //    maxLen = mLength - mOffset;
 //    if (count > maxLen)
-//      count = maxLen;
-//
+//        count = maxLen;
 //    if (!count)
-//      return 0;
-//
+//        return 0;
 //    if (mMap != NULL) {
 //        /* copy from mapped area */
-//      //printf("map read\n");
-//      memcpy(buf, (char*)mMap->getDataPtr() + mOffset, count);
-//      actual = count;
+//        //printf("map read\n");
+//        memcpy(buf, (char*)mMap->getDataPtr() + mOffset, count);
+//        actual = count;
 //    } else if (mBuf != NULL) {
 //        /* copy from buffer */
-//      //printf("buf read\n");
-//      memcpy(buf, (char*)mBuf + mOffset, count);
-//      actual = count;
+//        //printf("buf read\n");
+//        memcpy(buf, (char*)mBuf + mOffset, count);
+//        actual = count;
 //    } else {
 //        /* read from the file */
-//      //printf("file read\n");
-//      if (ftell(mFp) != mStart + mOffset) {
-//        ALOGE("Hosed: %ld != %ld+%ld\n",
-//            ftell(mFp), (long) mStart, (long) mOffset);
-//        assert(false);
-//      }
-//
+//        //printf("file read\n");
+//        if (ftell(mFp) != mStart + mOffset) {
+//            ALOGE("Hosed: %ld != %ld+%ld\n",
+//                ftell(mFp), (long) mStart, (long) mOffset);
+//            assert(false);
+//        }
 //        /*
 //         * This returns 0 on error or eof.  We need to use ferror() or feof()
 //         * to tell the difference, but we don't currently have those on the
@@ -460,68 +437,57 @@ public class Asset {
 //         * file, so if we don't read the full amount we know something is
 //         * hosed.
 //         */
-//      actual = fread(buf, 1, count, mFp);
-//      if (actual == 0)        // something failed -- I/O error?
-//        return -1;
-//
-//      assert(actual == count);
+//        actual = fread(buf, 1, count, mFp);
+//        if (actual == 0)        // something failed -- I/O error?
+//            return -1;
+//        assert(actual == count);
 //    }
-//
 //    mOffset += actual;
 //    return actual;
-//  }
-//
-//  /*
-//   * Seek to a new position.
-//   */
-//  off64_t _FileAsset::seek(off64_t offset, int whence)
-//  {
+//}
+///*
+// * Seek to a new position.
+// */
+//off64_t _FileAsset::seek(off64_t offset, int whence)
+//{
 //    off64_t newPosn;
 //    off64_t actualOffset;
-//
 //    // compute new position within chunk
 //    newPosn = handleSeek(offset, whence, mOffset, mLength);
 //    if (newPosn == (off64_t) -1)
-//      return newPosn;
-//
+//        return newPosn;
 //    actualOffset = mStart + newPosn;
-//
 //    if (mFp != NULL) {
-//      if (fseek(mFp, (long) actualOffset, SEEK_SET) != 0)
-//        return (off64_t) -1;
+//        if (fseek(mFp, (long) actualOffset, SEEK_SET) != 0)
+//            return (off64_t) -1;
 //    }
-//
 //    mOffset = actualOffset - mStart;
 //    return mOffset;
-//  }
-//
-//  /*
-//   * Close the asset.
-//   */
-//  void _FileAsset::close(void)
-//  {
+//}
+///*
+// * Close the asset.
+// */
+//void _FileAsset::close(void)
+//{
 //    if (mMap != NULL) {
-//      delete mMap;
-//      mMap = NULL;
+//        delete mMap;
+//        mMap = NULL;
 //    }
 //    if (mBuf != NULL) {
-//      delete[] mBuf;
-//      mBuf = NULL;
+//        delete[] mBuf;
+//        mBuf = NULL;
 //    }
-//
 //    if (mFileName != NULL) {
-//      free(mFileName);
-//      mFileName = NULL;
+//        free(mFileName);
+//        mFileName = NULL;
 //    }
-//
 //    if (mFp != NULL) {
-//      // can only be NULL when called from destructor
-//      // (otherwise we would never return this object)
-//      fclose(mFp);
-//      mFp = NULL;
+//        // can only be NULL when called from destructor
+//        // (otherwise we would never return this object)
+//        fclose(mFp);
+//        mFp = NULL;
 //    }
-//  }
-//
+//}
 ///*
 // * Return a read-only pointer to a buffer.
 // *
@@ -531,289 +497,268 @@ public class Asset {
 // * deal with it here.
 // */
 //const void* _FileAsset::getBuffer(bool wordAligned)
-//  Object getBuffer(boolean wordAligned)
-//  {
+//{
 //    /* subsequent requests just use what we did previously */
 //    if (mBuf != NULL)
-//      return mBuf;
+//        return mBuf;
 //    if (mMap != NULL) {
-//      if (!wordAligned) {
-//        return  mMap->getDataPtr();
-//      }
-//      return ensureAlignment(mMap);
+//        if (!wordAligned) {
+//            return  mMap->getDataPtr();
+//        }
+//        return ensureAlignment(mMap);
 //    }
-//
 //    assert(mFp != NULL);
-//
 //    if (mLength < kReadVsMapThreshold) {
-//      unsigned char* buf;
-//      long allocLen;
-//
+//        unsigned char* buf;
+//        long allocLen;
 //        /* zero-length files are allowed; not sure about zero-len allocs */
 //        /* (works fine with gcc + x86linux) */
-//      allocLen = mLength;
-//      if (mLength == 0)
-//        allocLen = 1;
-//
-//      buf = new unsigned char[allocLen];
-//      if (buf == NULL) {
-//        ALOGE("alloc of %ld bytes failed\n", (long) allocLen);
-//        return NULL;
-//      }
-//
-//      ALOGV("Asset %p allocating buffer size %d (smaller than threshold)", this, (int)allocLen);
-//      if (mLength > 0) {
-//        long oldPosn = ftell(mFp);
-//        fseek(mFp, mStart, SEEK_SET);
-//        if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
-//          ALOGE("failed reading %ld bytes\n", (long) mLength);
-//          delete[] buf;
-//          return NULL;
+//        allocLen = mLength;
+//        if (mLength == 0)
+//            allocLen = 1;
+//        buf = new unsigned char[allocLen];
+//        if (buf == NULL) {
+//            ALOGE("alloc of %ld bytes failed\n", (long) allocLen);
+//            return NULL;
 //        }
-//        fseek(mFp, oldPosn, SEEK_SET);
-//      }
-//
-//      ALOGV(" getBuffer: loaded into buffer\n");
-//
-//      mBuf = buf;
-//      return mBuf;
+//        ALOGV("Asset %p allocating buffer size %d (smaller than threshold)", this, (int)allocLen);
+//        if (mLength > 0) {
+//            long oldPosn = ftell(mFp);
+//            fseek(mFp, mStart, SEEK_SET);
+//            if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
+//                ALOGE("failed reading %ld bytes\n", (long) mLength);
+//                delete[] buf;
+//                return NULL;
+//            }
+//            fseek(mFp, oldPosn, SEEK_SET);
+//        }
+//        ALOGV(" getBuffer: loaded into buffer\n");
+//        mBuf = buf;
+//        return mBuf;
 //    } else {
-//      FileMap* map;
-//
-//      map = new FileMap;
-//      if (!map->create(NULL, fileno(mFp), mStart, mLength, true)) {
-//        delete map;
-//        return NULL;
-//      }
-//
-//      ALOGV(" getBuffer: mapped\n");
-//
-//      mMap = map;
-//      if (!wordAligned) {
-//        return  mMap->getDataPtr();
-//      }
-//      return ensureAlignment(mMap);
+//        FileMap* map;
+//        map = new FileMap;
+//        if (!map->create(NULL, fileno(mFp), mStart, mLength, true)) {
+//            delete map;
+//            return NULL;
+//        }
+//        ALOGV(" getBuffer: mapped\n");
+//        mMap = map;
+//        if (!wordAligned) {
+//            return  mMap->getDataPtr();
+//        }
+//        return ensureAlignment(mMap);
 //    }
-//  }
-
-//  int _FileAsset::openFileDescriptor(off64_t* outStart, off64_t* outLength) const
-//  {
+//}
+//int _FileAsset::openFileDescriptor(off64_t* outStart, off64_t* outLength) const
+//{
 //    if (mMap != NULL) {
 //        const char* fname = mMap->getFileName();
-//      if (fname == NULL) {
-//        fname = mFileName;
-//      }
-//      if (fname == NULL) {
-//        return -1;
-//      }
+//        if (fname == NULL) {
+//            fname = mFileName;
+//        }
+//        if (fname == NULL) {
+//            return -1;
+//        }
 //        *outStart = mMap->getDataOffset();
 //        *outLength = mMap->getDataLength();
-//      return open(fname, O_RDONLY | O_BINARY);
+//        return open(fname, O_RDONLY | O_BINARY);
 //    }
 //    if (mFileName == NULL) {
-//      return -1;
+//        return -1;
 //    }
 //    *outStart = mStart;
 //    *outLength = mLength;
 //    return open(mFileName, O_RDONLY | O_BINARY);
-//  }
-//
+//}
 //const void* _FileAsset::ensureAlignment(FileMap* map)
-//  {
+//{
 //    void* data = map->getDataPtr();
 //    if ((((size_t)data)&0x3) == 0) {
-//      // We can return this directly if it is aligned on a word
-//      // boundary.
-//      ALOGV("Returning aligned FileAsset %p (%s).", this,
-//          getAssetSource());
-//      return data;
+//        // We can return this directly if it is aligned on a word
+//        // boundary.
+//        ALOGV("Returning aligned FileAsset %p (%s).", this,
+//                getAssetSource());
+//        return data;
 //    }
 //    // If not aligned on a word boundary, then we need to copy it into
 //    // our own buffer.
 //    ALOGV("Copying FileAsset %p (%s) to buffer size %d to make it aligned.", this,
-//        getAssetSource(), (int)mLength);
+//            getAssetSource(), (int)mLength);
 //    unsigned char* buf = new unsigned char[mLength];
 //    if (buf == NULL) {
-//      ALOGE("alloc of %ld bytes failed\n", (long) mLength);
-//      return NULL;
+//        ALOGE("alloc of %ld bytes failed\n", (long) mLength);
+//        return NULL;
 //    }
 //    memcpy(buf, data, mLength);
 //    mBuf = buf;
 //    return buf;
-//  }
-//
+//}
+/*
+ * ===========================================================================
+ *      _CompressedAsset
+ * ===========================================================================
+ */
+private static class _CompressedAsset extends Asset {
+  private long     mStart;         // offset to start of compressed data
+  private long     mCompressedLen; // length of the compressed data
+  private long     mUncompressedLen; // length of the uncompressed data
+  private long     mOffset;        // current offset, 0 == start of uncomp data
+  //FileMap*    mMap;           // for memory-mapped input
+  private int         mFd;            // for file input
+  //StreamingZipInflater mZipInflater;  // for streaming large compressed assets
+  private byte[]  mBuf;       // for getBuffer()
+
+/*
+ * Constructor.
+ */
+_CompressedAsset() {
+    mStart = 0;
+    mCompressedLen = 0;
+    mUncompressedLen = 0;
+    mOffset = 0;
+    // mMap = null;
+    mFd = -1;
+    //mZipInflater = null;
+    mBuf = null;
+
+    // Register the Asset with the global list here after it is fully constructed and its
+    // vtable pointer points to this concrete type. b/31113965
+    registerAsset(this);
+
+
+}
+/*
+ * Destructor.  Release resources.
+ */
+@Override
+public void finalize()
+  {
+    // close();
+    // Unregister the Asset from the global list here before it is destructed and while its vtable
+    // pointer still points to this concrete type. b/31113965
+    unregisterAsset(this);
+}
 ///*
-// * ===========================================================================
-// *      _CompressedAsset
-// * ===========================================================================
+// * Open a chunk of compressed data inside a file.
+// *
+// * This currently just sets up some values and returns.  On the first
+// * read, we expand the entire file into a buffer and return data from it.
 // */
-//
-///*
-// * Constructor.
-// */
-//  _CompressedAsset::_CompressedAsset(void)
-//    : mStart(0), mCompressedLen(0), mUncompressedLen(0), mOffset(0),
-//  mMap(NULL), mFd(-1), mZipInflater(NULL), mBuf(NULL)
-//  {
-//    // Register the Asset with the global list here after it is fully constructed and its
-//    // vtable pointer points to this concrete type. b/31113965
-//    registerAsset(this);
-//  }
-//
-///*
-// * Destructor.  Release resources.
-// */
-//  _CompressedAsset::~_CompressedAsset(void)
-//  {
-//    close();
-//
-//    // Unregister the Asset from the global list here before it is destructed and while its vtable
-//    // pointer still points to this concrete type. b/31113965
-//    unregisterAsset(this);
-//  }
-//
-//  /*
-//   * Open a chunk of compressed data inside a file.
-//   *
-//   * This currently just sets up some values and returns.  On the first
-//   * read, we expand the entire file into a buffer and return data from it.
-//   */
-//  status_t _CompressedAsset::openChunk(int fd, off64_t offset,
-//      int compressionMethod, size_t uncompressedLen, size_t compressedLen)
-//  {
+//status_t _CompressedAsset::openChunk(int fd, off64_t offset,
+//    int compressionMethod, size_t uncompressedLen, size_t compressedLen)
+//{
 //    assert(mFd < 0);        // no re-open
 //    assert(mMap == NULL);
 //    assert(fd >= 0);
 //    assert(offset >= 0);
 //    assert(compressedLen > 0);
-//
 //    if (compressionMethod != ZipFileRO::kCompressDeflated) {
-//      assert(false);
-//      return UNKNOWN_ERROR;
+//        assert(false);
+//        return UNKNOWN_ERROR;
 //    }
-//
 //    mStart = offset;
 //    mCompressedLen = compressedLen;
 //    mUncompressedLen = uncompressedLen;
 //    assert(mOffset == 0);
 //    mFd = fd;
 //    assert(mBuf == NULL);
-//
 //    if (uncompressedLen > StreamingZipInflater::OUTPUT_CHUNK_SIZE) {
-//      mZipInflater = new StreamingZipInflater(mFd, offset, uncompressedLen, compressedLen);
+//        mZipInflater = new StreamingZipInflater(mFd, offset, uncompressedLen, compressedLen);
 //    }
-//
 //    return NO_ERROR;
-//  }
-//
-//  /*
-//   * Open a chunk of compressed data in a mapped region.
-//   *
-//   * Nothing is expanded until the first read call.
-//   */
-//  status_t _CompressedAsset::openChunk(FileMap* dataMap, size_t uncompressedLen)
-//  {
+//}
+///*
+// * Open a chunk of compressed data in a mapped region.
+// *
+// * Nothing is expanded until the first read call.
+// */
+//status_t _CompressedAsset::openChunk(FileMap* dataMap, size_t uncompressedLen)
+//{
 //    assert(mFd < 0);        // no re-open
 //    assert(mMap == NULL);
 //    assert(dataMap != NULL);
-//
 //    mMap = dataMap;
 //    mStart = -1;        // not used
 //    mCompressedLen = dataMap->getDataLength();
 //    mUncompressedLen = uncompressedLen;
 //    assert(mOffset == 0);
-//
 //    if (uncompressedLen > StreamingZipInflater::OUTPUT_CHUNK_SIZE) {
-//      mZipInflater = new StreamingZipInflater(dataMap, uncompressedLen);
+//        mZipInflater = new StreamingZipInflater(dataMap, uncompressedLen);
 //    }
 //    return NO_ERROR;
-//  }
-//
-//  /*
-//   * Read data from a chunk of compressed data.
-//   *
-//   * [For now, that's just copying data out of a buffer.]
-//   */
-//  ssize_t _CompressedAsset::read(void* buf, size_t count)
-//  {
+//}
+///*
+// * Read data from a chunk of compressed data.
+// *
+// * [For now, that's just copying data out of a buffer.]
+// */
+//ssize_t _CompressedAsset::read(void* buf, size_t count)
+//{
 //    size_t maxLen;
 //    size_t actual;
-//
 //    assert(mOffset >= 0 && mOffset <= mUncompressedLen);
-//
 //    /* If we're relying on a streaming inflater, go through that */
 //    if (mZipInflater) {
-//      actual = mZipInflater->read(buf, count);
+//        actual = mZipInflater->read(buf, count);
 //    } else {
-//      if (mBuf == NULL) {
-//        if (getBuffer(false) == NULL)
-//          return -1;
-//      }
-//      assert(mBuf != NULL);
-//
+//        if (mBuf == NULL) {
+//            if (getBuffer(false) == NULL)
+//                return -1;
+//        }
+//        assert(mBuf != NULL);
 //        /* adjust count if we're near EOF */
-//      maxLen = mUncompressedLen - mOffset;
-//      if (count > maxLen)
-//        count = maxLen;
-//
-//      if (!count)
-//        return 0;
-//
+//        maxLen = mUncompressedLen - mOffset;
+//        if (count > maxLen)
+//            count = maxLen;
+//        if (!count)
+//            return 0;
 //        /* copy from buffer */
-//      //printf("comp buf read\n");
-//      memcpy(buf, (char*)mBuf + mOffset, count);
-//      actual = count;
+//        //printf("comp buf read\n");
+//        memcpy(buf, (char*)mBuf + mOffset, count);
+//        actual = count;
 //    }
-//
 //    mOffset += actual;
 //    return actual;
-//  }
-//
-//  /*
-//   * Handle a seek request.
-//   *
-//   * If we're working in a streaming mode, this is going to be fairly
-//   * expensive, because it requires plowing through a bunch of compressed
-//   * data.
-//   */
-//  off64_t _CompressedAsset::seek(off64_t offset, int whence)
-//  {
+//}
+///*
+// * Handle a seek request.
+// *
+// * If we're working in a streaming mode, this is going to be fairly
+// * expensive, because it requires plowing through a bunch of compressed
+// * data.
+// */
+//off64_t _CompressedAsset::seek(off64_t offset, int whence)
+//{
 //    off64_t newPosn;
-//
 //    // compute new position within chunk
 //    newPosn = handleSeek(offset, whence, mOffset, mUncompressedLen);
 //    if (newPosn == (off64_t) -1)
-//      return newPosn;
-//
+//        return newPosn;
 //    if (mZipInflater) {
-//      mZipInflater->seekAbsolute(newPosn);
+//        mZipInflater->seekAbsolute(newPosn);
 //    }
 //    mOffset = newPosn;
 //    return mOffset;
-//  }
-//
-//  /*
-//   * Close the asset.
-//   */
-//  void _CompressedAsset::close(void)
-//  {
+//}
+///*
+// * Close the asset.
+// */
+//void _CompressedAsset::close(void)
+//{
 //    if (mMap != NULL) {
-//      delete mMap;
-//      mMap = NULL;
+//        delete mMap;
+//        mMap = NULL;
 //    }
-//
 //    delete[] mBuf;
 //    mBuf = NULL;
-//
 //    delete mZipInflater;
 //    mZipInflater = NULL;
-//
 //    if (mFd > 0) {
 //        ::close(mFd);
-//      mFd = -1;
+//        mFd = -1;
 //    }
-//  }
-//
+//}
 ///*
 // * Get a pointer to a read-only buffer of data.
 // *
@@ -821,56 +766,47 @@ public class Asset {
 // * buffer.
 // */
 //const void* _CompressedAsset::getBuffer(bool)
-//  {
+//{
 //    unsigned char* buf = NULL;
-//
 //    if (mBuf != NULL)
-//      return mBuf;
-//
+//        return mBuf;
 //    /*
 //     * Allocate a buffer and read the file into it.
 //     */
 //    buf = new unsigned char[mUncompressedLen];
 //    if (buf == NULL) {
-//      ALOGW("alloc %ld bytes failed\n", (long) mUncompressedLen);
+//        ALOGW("alloc %ld bytes failed\n", (long) mUncompressedLen);
 //        goto bail;
 //    }
-//
 //    if (mMap != NULL) {
-//      if (!ZipUtils::inflateToBuffer(mMap->getDataPtr(), buf,
-//          mUncompressedLen, mCompressedLen))
+//        if (!ZipUtils::inflateToBuffer(mMap->getDataPtr(), buf,
+//                mUncompressedLen, mCompressedLen))
 //            goto bail;
 //    } else {
-//      assert(mFd >= 0);
-//
+//        assert(mFd >= 0);
 //        /*
 //         * Seek to the start of the compressed data.
 //         */
-//      if (lseek(mFd, mStart, SEEK_SET) != mStart)
+//        if (lseek(mFd, mStart, SEEK_SET) != mStart)
 //            goto bail;
-//
 //        /*
 //         * Expand the data into it.
 //         */
-//      if (!ZipUtils::inflateToBuffer(mFd, buf, mUncompressedLen,
-//          mCompressedLen))
+//        if (!ZipUtils::inflateToBuffer(mFd, buf, mUncompressedLen,
+//                mCompressedLen))
 //            goto bail;
 //    }
-//
 //    /*
 //     * Success - now that we have the full asset in RAM we
 //     * no longer need the streaming inflater
 //     */
 //    delete mZipInflater;
 //    mZipInflater = NULL;
-//
 //    mBuf = buf;
 //    buf = NULL;
-//
-//    bail:
+//bail:
 //    delete[] buf;
 //    return mBuf;
-//  }
 //
-
+}
 }

@@ -26,7 +26,7 @@ import java.util.List;
  * It would be nice to have an additional ordered index of entries, so
  * we can do a binary search if trying to find a resource by string name.
  *
- * Type from androidfw/include/androidfw/ResourceTypes.h
+ * DataType from androidfw/include/androidfw/ResourceTypes.h
  */
 public class ResTableType {
     public static final int NO_ENTRY = 0xFFFFFFFF;
@@ -39,7 +39,7 @@ public class ResTableType {
 
     public ResChunkHeader header;
 
-    // The type identifier this chunk is holding.  Type IDs start
+    // The type identifier this chunk is holding.  DataType IDs start
     // at 1 (corresponding to the value of the type bits in a
     // resource identifier).  0 is invalid.
     public byte id;

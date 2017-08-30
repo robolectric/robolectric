@@ -7,7 +7,7 @@ import com.google.common.primitives.UnsignedBytes;
 import java.util.Map;
 
 /** Resource type codes. */
-public enum Type {
+public enum DataType {
   /** {@code data} is either 0 (undefined) or 1 (empty). */
   NULL(0x00),
   /** {@code data} holds a {@link ResourceTableChunk} entry reference. */
@@ -41,17 +41,17 @@ public enum Type {
 
   private final byte code;
 
-  private static final Map<Byte, Type> FROM_BYTE;
+  private static final Map<Byte, DataType> FROM_BYTE;
 
   static {
-    Builder<Byte, Type> builder = ImmutableMap.builder();
-    for (Type type : values()) {
+    Builder<Byte, DataType> builder = ImmutableMap.builder();
+    for (DataType type : values()) {
       builder.put(type.code(), type);
     }
     FROM_BYTE = builder.build();
   }
 
-  Type(int code) {
+  DataType(int code) {
     this.code = UnsignedBytes.checkedCast(code);
   }
 
@@ -59,7 +59,7 @@ public enum Type {
     return code;
   }
 
-  public static Type fromCode(byte code) {
+  public static DataType fromCode(byte code) {
     return Preconditions.checkNotNull(FROM_BYTE.get(code), "Unknown resource type: %s", code);
   }
 }

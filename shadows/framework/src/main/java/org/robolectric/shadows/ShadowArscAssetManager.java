@@ -47,7 +47,7 @@ public class ShadowArscAssetManager {
     } else {
       invokeConstructor(AssetManager.class, realObject);
       resTable = loadAppResTable();
-      cppAssetManager = new CppAssetManager(this);
+      cppAssetManager = new CppAssetManager();
     }
   }
 
@@ -61,7 +61,7 @@ public class ShadowArscAssetManager {
       invokeConstructor(AssetManager.class, realObject,
           ClassParameter.from(boolean.class, isSystem));
       resTable = isSystem ? loadSystemResTable() : loadAppResTable();
-      cppAssetManager = new CppAssetManager(this);
+      cppAssetManager = new CppAssetManager();
     }
   }
 
@@ -429,7 +429,7 @@ public class ShadowArscAssetManager {
   public int loadResourceValue(int ident, short density, TypedValue outValue, boolean resolve) {
     if (outValue == null) {
       throw new NullPointerException("outValue");
-      return 0;
+      //return 0;
     }
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -444,24 +444,42 @@ public class ShadowArscAssetManager {
     if (kThrowOnBadId) {
         if (block == BAD_INDEX) {
             throw new IllegalStateException("Bad resource!");
-            return 0;
+            //return 0;
         }
     }
     Ref<Integer> ref = new Ref<>(ident);
     if (resolve) {
-        block = res.resolveReference(value, block, ref, typeSpecFlags, config);
+        block = res.resolveReference(value.get(), block, ref, typeSpecFlags, config);
         if (kThrowOnBadId) {
             if (block == BAD_INDEX) {
               throw new IllegalStateException("Bad resource!");
-                return 0;
+                //return 0;
             }
         }
     }
     if (block >= 0) {
-        return copyValue(env, outValue, &res, value, ref, block, typeSpecFlags, &config);
+        //return copyValue(env, outValue, &res, value, ref, block, typeSpecFlags, &config);
+      return copyValue(outValue, res, value.get(), ref.get(), block, typeSpecFlags.get(),
+          config.get());
+
     }
-    return static_cast<jint>(block);
+    return block;
 }
+
+  int copyValue(TypedValue outValue, ResTable table,  ResValue value, int ref, int block,
+      int typeSpecFlags, ResTableConfig config) {
+    outValue.type = value.dataType;
+    outValue.assetCookie = table.getTableCookie(block);
+    outValue.data = value.data;
+    outValue.string = null;
+    outValue.resourceId = ref;
+    outValue.changingConfigurations = typeSpecFlags;
+
+    if (config != null) {
+      outValue.density = config.density;
+    }
+    return block;
+  }
 
 //  /** Returns true if the resource was found, filling in mRetStringBlock and
 //   *  mRetData. */

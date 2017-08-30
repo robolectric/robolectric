@@ -44,8 +44,8 @@ class Util {
     System.out.println(String.format(message, args));
   }
 
-  static void ALOGV(String message, int level) {
-    System.out.println(message);
+  static void ALOGV(String message, Object... args) {
+    System.out.println(String.format(message, args));
   }
 
   static void ALOGI(String message, Object... args) {
@@ -53,10 +53,7 @@ class Util {
   }
 
   static void LOG_FATAL_IF(boolean assertion, String message) {
-    if (!assertion) {
-      System.out.println(message);
-    }
-    assert assertion;
+    assert !assertion : message;
   }
 
   static void ATRACE_CALL() {

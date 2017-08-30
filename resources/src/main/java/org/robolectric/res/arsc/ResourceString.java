@@ -29,7 +29,7 @@ import java.nio.charset.Charset;
 /** Provides utilities to decode/encode a String packed in an arsc resource file. */
 public final class ResourceString {
 
-  /** Type of {@link ResourceString} to encode / decode. */
+  /** DataType of {@link ResourceString} to encode / decode. */
   public enum Type {
     UTF8(UTF_8),
     UTF16(UTF_16LE);

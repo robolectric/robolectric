@@ -9,6 +9,7 @@ import static org.robolectric.res.android.Formatter.toHex;
  * <p>frameworks/base/include/androidfw/ResourceTypes.h (struct Res_value)
  */
 public final class ResValue {
+  // must be one of DataType
   public int dataType;
   public int data;
 

@@ -1,5 +1,6 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.ATRACE_CALL;
 import static org.robolectric.res.android.Util.LOG_FATAL_IF;
@@ -9,17 +10,30 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.annotation.Nullable;
+import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.CppAssetManager.FileType;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
 
   enum FileType {
-    kFileTypeRegular
+    kFileTypeUnknown,
+    kFileTypeNonexistent,       // i.e. ENOENT
+    kFileTypeRegular,
+    kFileTypeDirectory,
+    kFileTypeCharDev,
+    kFileTypeBlockDev,
+    kFileTypeFifo,
+    kFileTypeSymlink,
+    kFileTypeSocket,
   }
 
 
@@ -31,10 +45,10 @@ public class CppAssetManager {
 
 
     public asset_path() {
-      this("", FileType.kFileTypeRegular, "", false, false);
+      this(new String8(), FileType.kFileTypeRegular, "", false, false);
     }
 
-    public asset_path(String path, FileType fileType, String idmap,
+    public asset_path(String8 path, FileType fileType, String idmap,
         boolean isSystemOverlay,
         boolean isSystemAsset) {
       this.path = path;
@@ -44,7 +58,7 @@ public class CppAssetManager {
       this.isSystemAsset = isSystemAsset;
     }
 
-    String path;
+    String8 path;
     FileType type;
     String idmap;
     boolean isSystemOverlay;
@@ -53,7 +67,8 @@ public class CppAssetManager {
 
   private final Object   mLock = new Object();
 
-//  ZipSet          mZipSet;
+  //ZipSet          mZipSet;
+  Object mZipSet;
 
   private final List<asset_path> mAssetPaths = new ArrayList<>();
   private String mLocale;
@@ -64,14 +79,17 @@ public class CppAssetManager {
 
 //  static final boolean kIsDebug = false;
 //  
-//  static final char* kAssetsRoot = "assets";
-//  static final char* kAppZipName = NULL; //"classes.jar";
+  static final String kAssetsRoot = "assets";
+  static final String kAppZipName = null; //"classes.jar";
 //  static final char* kSystemAssets = "framework/framework-res.apk";
 //  static final char* kResourceCache = "resource-cache";
 //  
 //  static final char* kExcludeExtension = ".EXCLUDE";
 //  
-//  static Asset* final kExcludedAsset = (Asset*) 0xd000000d;
+
+  // TODO: figure out how to translate this to Java
+  // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
+  static final Asset kExcludedAsset = null;
 //  
 //  static volatile int gCount = 0;
 //  
@@ -162,65 +180,68 @@ public class CppAssetManager {
 //      delete[] mLocale;
 //  }
 //  
-//  boolean addAssetPath(
-//          final String8& path, int* cookie, boolean appAsLib, boolean isSystemAsset) {
-//      AutoMutex _l(mLock);
-//  
-//      asset_path ap;
-//  
-//      String8 realPath(path);
-//      if (kAppZipName) {
-//          realPath.appendPath(kAppZipName);
-//      }
-//      ap.type = .getFileType(realPath.string());
-//      if (ap.type == kFileTypeRegular) {
-//          ap.path = realPath;
-//      } else {
-//          ap.path = path;
-//          ap.type = .getFileType(path.string());
-//          if (ap.type != kFileTypeDirectory && ap.type != kFileTypeRegular) {
-//              ALOGW("Asset path %s is neither a directory nor file (type=%d).",
-//                   path.string(), (int)ap.type);
-//              return false;
-//          }
-//      }
-//  
-//      // Skip if we have it already.
-//      for (int i=0; i<mAssetPaths.size(); i++) {
-//          if (mAssetPaths[i].path == ap.path) {
-//              if (cookie) {
-//                  *cookie = static_cast<int>(i+1);
-//              }
-//              return true;
-//          }
-//      }
-//  
-//      ALOGV("In %p Asset %s path: %s", this,
-//           ap.type == kFileTypeDirectory ? "dir" : "zip", ap.path.string());
-//  
-//      ap.isSystemAsset = isSystemAsset;
-//      mAssetPaths.add(ap);
-//  
-//      // new paths are always added at the end
-//      if (cookie) {
-//          *cookie = static_cast<int>(mAssetPaths.size());
-//      }
-//  
-//  #ifdef __ANDROID__
-//      // Load overlays, if any
-//      asset_path oap;
-//      for (int idx = 0; mZipSet.getOverlay(ap.path, idx, &oap); idx++) {
-//          oap.isSystemAsset = isSystemAsset;
-//          mAssetPaths.add(oap);
-//      }
-//  #endif
-//  
-//      if (mResources != NULL) {
-//          appendPathToResTable(ap, appAsLib);
-//      }
-//  
-//      return true;
-//  }
+  boolean addAssetPath(
+          final String8 path, @Nullable  Ref<Integer> cookie, boolean appAsLib, boolean isSystemAsset) {
+      synchronized (mLock) {
+
+        asset_path ap = new asset_path();
+
+        String8 realPath = path;
+        if (kAppZipName != null) {
+          realPath.appendPath(kAppZipName);
+        }
+        ap.type = getFileType(realPath.string());
+        if (ap.type == FileType.kFileTypeRegular) {
+          ap.path = realPath;
+        } else {
+          ap.path = path;
+          ap.type = getFileType(path.string());
+          if (ap.type != FileType.kFileTypeDirectory && ap.type != FileType.kFileTypeRegular) {
+            ALOGW("Asset path %s is neither a directory nor file (type=%s).",
+                path.toString(), ap.type.name());
+            return false;
+          }
+        }
+
+        // Skip if we have it already.
+        for (int i = 0; i < mAssetPaths.size(); i++) {
+          if (mAssetPaths.get(i).path.equals(ap.path)) {
+            if (cookie != null) {
+                  cookie.set(i + 1);
+            }
+            return true;
+          }
+        }
+
+        ALOGV("In %p Asset %s path: %s", this,
+            ap.type == FileType.kFileTypeDirectory ? "dir" : "zip", ap.path.toString());
+
+        ap.isSystemAsset = isSystemAsset;
+        mAssetPaths.add(ap);
+
+        // new paths are always added at the end
+        if (cookie != null) {
+          cookie.set(mAssetPaths.size());
+        }
+
+        // TODO: implement this?
+  //#ifdef __ANDROID__
+        // Load overlays, if any
+        //asset_path oap;
+        //for (int idx = 0; mZipSet.getOverlay(ap.path, idx, & oap)
+        //  ; idx++){
+        //  oap.isSystemAsset = isSystemAsset;
+        //  mAssetPaths.add(oap);
+       // }
+  //#endif
+
+        if (mResources != null) {
+          appendPathToResTable(ap, appAsLib);
+        }
+
+        return true;
+      }
+  }
 //  
 //  boolean addOverlayPath(final String8& packagePath, int* cookie)
 //  {
@@ -381,44 +402,44 @@ public class CppAssetManager {
 //      *outConfig = *mConfig;
 //  }
 //  
-//  /*
-//   * Open an asset.
-//   *
-//   * The data could be in any asset path. Each asset path could be:
-//   *  - A directory on disk.
-//   *  - A Zip archive, uncompressed or compressed.
-//   *
-//   * If the file is in a directory, it could have a .gz suffix, meaning it is compressed.
-//   *
-//   * We should probably reject requests for "illegal" filenames, e.g. those
-//   * with illegal characters or "../" backward relative paths.
-//   */
-//  Asset* open(final char* fileName, AccessMode mode)
-//  {
-//      AutoMutex _l(mLock);
-//  
-//      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
-//  
-//      String8 assetName(kAssetsRoot);
-//      assetName.appendPath(fileName);
-//  
-//      /*
-//       * For each top-level asset path, search for the asset.
-//       */
-//  
-//      int i = mAssetPaths.size();
-//      while (i > 0) {
-//          i--;
-//          ALOGV("Looking for asset '%s' in '%s'\n",
-//                  assetName.string(), mAssetPaths.itemAt(i).path.string());
-//          Asset* pAsset = openNonAssetInPathLocked(assetName.string(), mode, mAssetPaths.itemAt(i));
-//          if (pAsset != NULL) {
-//              return pAsset != kExcludedAsset ? pAsset : NULL;
-//          }
-//      }
-//  
-//      return NULL;
-//  }
+  /*
+   * Open an asset.
+   *
+   * The data could be in any asset path. Each asset path could be:
+   *  - A directory on disk.
+   *  - A Zip archive, uncompressed or compressed.
+   *
+   * If the file is in a directory, it could have a .gz suffix, meaning it is compressed.
+   *
+   * We should probably reject requests for "illegal" filenames, e.g. those
+   * with illegal characters or "../" backward relative paths.
+   */
+  Asset open(final String fileName, AccessMode mode)
+  {
+      synchronized (mLock) {
+
+        LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+
+        String8 assetName = new String8(kAssetsRoot);
+        assetName.appendPath(fileName);
+      /*
+       * For each top-level asset path, search for the asset.
+       */
+        int i = mAssetPaths.size();
+        while (i > 0) {
+          i--;
+          ALOGV("Looking for asset '%s' in '%s'\n",
+              assetName.string(), mAssetPaths.get(i).path.string());
+          Asset pAsset = openNonAssetInPathLocked(assetName.string(), mode,
+              mAssetPaths.get(i));
+          if (pAsset != null) {
+            return Objects.equals(pAsset, kExcludedAsset) ? null  : pAsset;
+          }
+        }
+
+        return null;
+      }
+  }
 //  
 //  /*
 //   * Open a non-asset file as if it were an asset.
@@ -471,30 +492,30 @@ public class CppAssetManager {
 //      return NULL;
 //  }
 //  
-//  /*
-//   * Get the type of a file in the asset namespace.
-//   *
-//   * This currently only works for regular files.  All others (including
-//   * directories) will return kFileTypeNonexistent.
-//   */
-//  FileType getFileType(final char* fileName)
-//  {
-//      Asset* pAsset = NULL;
-//  
-//      /*
-//       * Open the asset.  This is less efficient than simply finding the
-//       * file, but it's not too bad (we don't uncompress or mmap data until
-//       * the first read() call).
-//       */
-//      pAsset = open(fileName, Asset.ACCESS_STREAMING);
-//      delete pAsset;
-//  
-//      if (pAsset == NULL) {
-//          return kFileTypeNonexistent;
-//      } else {
-//          return kFileTypeRegular;
-//      }
-//  }
+  /*
+   * Get the type of a file in the asset namespace.
+   *
+   * This currently only works for regular files.  All others (including
+   * directories) will return kFileTypeNonexistent.
+   */
+  FileType getFileType(final String fileName)
+  {
+      Asset pAsset = null;
+
+      /*
+       * Open the asset.  This is less efficient than simply finding the
+       * file, but it's not too bad (we don't uncompress or mmap data until
+       * the first read() call).
+       */
+      pAsset = open(fileName, Asset.AccessMode.ACCESS_STREAMING);
+      // delete pAsset;
+
+      if (pAsset == null) {
+          return FileType.kFileTypeNonexistent;
+      } else {
+          return FileType.kFileTypeRegular;
+      }
+  }
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
     URL resource = getClass().getResource("/resources.ap_");
@@ -746,40 +767,40 @@ public class CppAssetManager {
 //      }
 //  }
 //  
-//  /*
-//   * Open a non-asset file as if it were an asset, searching for it in the
-//   * specified app.
-//   *
-//   * Pass in a NULL values for "appName" if the common app directory should
-//   * be used.
-//   */
-//  Asset* openNonAssetInPathLocked(final char* fileName, AccessMode mode,
-//      final asset_path& ap)
-//  {
-//      Asset* pAsset = NULL;
-//  
-//      /* look at the filesystem on disk */
-//      if (ap.type == kFileTypeDirectory) {
-//          String8 path(ap.path);
-//          path.appendPath(fileName);
-//  
-//          pAsset = openAssetFromFileLocked(path, mode);
-//  
-//          if (pAsset == NULL) {
-//              /* try again, this time with ".gz" */
-//              path.append(".gz");
-//              pAsset = openAssetFromFileLocked(path, mode);
-//          }
-//  
-//          if (pAsset != NULL) {
-//              //printf("FOUND NA '%s' on disk\n", fileName);
-//              pAsset.setAssetSource(path);
-//          }
-//  
-//      /* look inside the zip file */
-//      } else {
-//          String8 path(fileName);
-//  
+  /*
+   * Open a non-asset file as if it were an asset, searching for it in the
+   * specified app.
+   *
+   * Pass in a NULL values for "appName" if the common app directory should
+   * be used.
+   */
+  Asset openNonAssetInPathLocked(final String fileName, AccessMode mode,
+      final asset_path ap)
+  {
+      Asset pAsset = null;
+
+      /* look at the filesystem on disk */
+      if (ap.type == FileType.kFileTypeDirectory) {
+          String8 path = new String8(ap.path);
+          path.appendPath(fileName);
+
+          pAsset = openAssetFromFileLocked(path, mode);
+
+          if (pAsset == null) {
+              /* try again, this time with ".gz" */
+              path.append(".gz");
+              pAsset = openAssetFromFileLocked(path, mode);
+          }
+
+          if (pAsset != null) {
+              //printf("FOUND NA '%s' on disk\n", fileName);
+              pAsset.setAssetSource(path);
+          }
+
+      /* look inside the zip file */
+      } else {
+//          String8 path = new String8(fileName);
+//
 //          /* check the appropriate Zip file */
 //          ZipFileRO* pZip = getZipFileLocked(ap);
 //          if (pZip != NULL) {
@@ -791,17 +812,17 @@ public class CppAssetManager {
 //                  pZip.releaseEntry(entry);
 //              }
 //          }
-//  
+//
 //          if (pAsset != NULL) {
 //              /* create a "source" name, for debug/display */
 //              pAsset.setAssetSource(
 //                      createZipSourceNameLocked(ZipSet.getPathName(ap.path.string()), String8(""),
 //                                                  String8(fileName)));
 //          }
-//      }
-//  
-//      return pAsset;
-//  }
+      }
+
+      return pAsset;
+  }
 //  
 //  /*
 //   * Create a "source name" for a file from a Zip archive.
@@ -840,33 +861,33 @@ public class CppAssetManager {
 //      return mZipSet.getZip(ap.path);
 //  }
 //  
-//  /*
-//   * Try to open an asset from a file on disk.
-//   *
-//   * If the file is compressed with gzip, we seek to the start of the
-//   * deflated data and pass that in (just like we would for a Zip archive).
-//   *
-//   * For uncompressed data, we may already have an mmap()ed version sitting
-//   * around.  If so, we want to hand that to the Asset instead.
-//   *
-//   * This returns NULL if the file doesn't exist, couldn't be opened, or
-//   * claims to be a ".gz" but isn't.
-//   */
-//  Asset* openAssetFromFileLocked(final String8& pathName,
-//      AccessMode mode)
-//  {
-//      Asset* pAsset = NULL;
-//  
-//      if (strcasecmp(pathName.getPathExtension().string(), ".gz") == 0) {
-//          //printf("TRYING '%s'\n", (final char*) pathName);
-//          pAsset = Asset.createFromCompressedFile(pathName.string(), mode);
-//      } else {
-//          //printf("TRYING '%s'\n", (final char*) pathName);
-//          pAsset = Asset.createFromFile(pathName.string(), mode);
-//      }
-//  
-//      return pAsset;
-//  }
+  /*
+   * Try to open an asset from a file on disk.
+   *
+   * If the file is compressed with gzip, we seek to the start of the
+   * deflated data and pass that in (just like we would for a Zip archive).
+   *
+   * For uncompressed data, we may already have an mmap()ed version sitting
+   * around.  If so, we want to hand that to the Asset instead.
+   *
+   * This returns NULL if the file doesn't exist, couldn't be opened, or
+   * claims to be a ".gz" but isn't.
+   */
+  Asset openAssetFromFileLocked(final String8 pathName,
+      AccessMode mode)
+  {
+      Asset pAsset = null;
+
+      if (pathName.getPathExtension().toLowerCase().equals(".gz")) {
+          //printf("TRYING '%s'\n", (final char*) pathName);
+          pAsset = Asset.createFromCompressedFile(pathName.string(), mode);
+      } else {
+          //printf("TRYING '%s'\n", (final char*) pathName);
+          pAsset = Asset.createFromFile(pathName.string(), mode);
+      }
+
+      return pAsset;
+  }
 //  
 //  /*
 //   * Given an entry in a Zip archive, create a new Asset object.

@@ -35,25 +35,26 @@ public class ResTableTest {
   @Test
   public void testGetEntry_intType() {
     Entry entry = resTable.getEntry(R.integer.flock_size, null);
-    assertThat(entry.entry.value.dataType).isEqualTo(Type.INT_DEC.code());
+    assertThat(entry.entry.value.dataType).isEqualTo(DataType.INT_DEC.code());
     assertThat(entry.entry.value.data).isEqualTo(1234);
   }
 
   @Test
   public void testGetEntry_intType_large() {
     Entry entry = resTable.getEntry(R.integer.flock_size, "large");
-    assertThat(entry.entry.value.dataType).isEqualTo(Type.INT_DEC.code());
+    assertThat(entry.entry.value.dataType).isEqualTo(DataType.INT_DEC.code());
     assertThat(entry.entry.value.data).isEqualTo(1000000);
   }
 
   @Test
   public void testGetEntry_stringType() throws Exception {
-    assertThat(resTable.getEntry(R.string.first_string, null).entry.value.dataType).isEqualTo(Type.STRING.code());
+    assertThat(resTable.getEntry(R.string.first_string, null).entry.value.dataType).isEqualTo(
+        DataType.STRING.code());
   }
 
   @Test
   public void testGetEntry_boolType() throws Exception {
-    assertThat(resTable.getEntry(R.bool.is_verizon, null).entry.value.dataType).isEqualTo(Type.INT_BOOLEAN.code());
+    assertThat(resTable.getEntry(R.bool.is_verizon, null).entry.value.dataType).isEqualTo(DataType.INT_BOOLEAN.code());
     // Uncomment when we start selecting correct configuration
 //    assertThat(resTable.getEntry(R.bool.is_verizon, 0).value.dataType).isEqualTo(0);
   }

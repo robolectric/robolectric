@@ -341,7 +341,7 @@ public class ResTableConfig {
 
   public int orientation;
   int touchscreen;
-  int density;
+  public int density;
   int keyboard;
   int navigation;
   int inputFlags;

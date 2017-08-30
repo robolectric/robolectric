@@ -288,7 +288,7 @@ public class ShadowDefaultRequestDirectorTest {
 
   @Test
   public void shouldSupportBasicResponseHandlerHandleResponse() throws Exception {
-    FakeHttp.addPendingHttpResponse(200, "OK", new BasicHeader("Content-Type", "text/plain"));
+    FakeHttp.addPendingHttpResponse(200, "OK", new BasicHeader("Content-DataType", "text/plain"));
 
     DefaultHttpClient client = new DefaultHttpClient();
     HttpResponse response = client.execute(new HttpGet("http://www.nowhere.org"));
