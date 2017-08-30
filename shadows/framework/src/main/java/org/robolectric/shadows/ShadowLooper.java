@@ -59,6 +59,7 @@ public class ShadowLooper {
             // Reset the schedulers of all loopers. This prevents un-run tasks queued up in static
             // background handlers from leaking to subsequent tests.
             shadowOf(looper).getScheduler().reset();
+            shadowOf(looper.getQueue()).reset();
           }
         }
       }
@@ -125,6 +126,7 @@ public class ShadowLooper {
       quit = true;
       realObject.notifyAll();
       getScheduler().reset();
+      shadowOf(realObject.getQueue()).reset();
     }
   }
   

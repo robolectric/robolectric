@@ -334,6 +334,19 @@ public class ShadowLooperTest {
   }
 
   @Test
+  public void resetThreadLoopers_clears_messages() {
+    HandlerThread backgroundThread = new HandlerThread("resetTest");
+    backgroundThread.start();
+    Looper backgroundLooper = backgroundThread.getLooper();
+    Handler handler = new Handler(backgroundLooper);
+    for (int i = 0; i < 5; i++) {
+      handler.sendEmptyMessageDelayed(1, 100);
+      ShadowLooper.resetThreadLoopers();
+      assertThat(handler.hasMessages(1)).isFalse();
+    }
+  }
+
+  @Test
   public void myLooper_returnsMainLooper_ifMainThreadIsSwitched() throws InterruptedException {
     final AtomicReference<Looper> myLooper = new AtomicReference<>();
     Thread t = new Thread(testName.getMethodName()) {
