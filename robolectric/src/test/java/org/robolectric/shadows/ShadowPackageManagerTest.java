@@ -1048,6 +1048,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void getPackageUid() throws NameNotFoundException {
+    assertThat(packageManager.getPackageUid("a_name", 0)).isEqualTo(0);
+
+    shadowPackageManager.setPackagesForUid(10, new String[] {"a_name"});
+
+    assertThat(packageManager.getPackageUid("a_name", 0)).isEqualTo(10);
+  }
+
+  @Test
   public void getResourcesForApplication_currentApplication() throws Exception {
     assertThat(packageManager.getResourcesForApplication("org.robolectric").getString(R.string.app_name))
         .isEqualTo(RuntimeEnvironment.application.getString(R.string.app_name));
