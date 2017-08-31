@@ -533,6 +533,7 @@ public class CppAssetManager {
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
     URL resource = getClass().getResource("/resources.ap_");
+    LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
     try {
       ZipFile zipFile = new ZipFile(resource.getFile());
       ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
@@ -541,7 +542,7 @@ public class CppAssetManager {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return true;
+    return false;
 
     // todo: this   vvv
 
