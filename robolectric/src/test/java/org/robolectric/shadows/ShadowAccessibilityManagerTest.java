@@ -36,33 +36,33 @@ public class ShadowAccessibilityManagerTest {
   }
 
   @Test
-  public void shouldReturnTrueWhenEnabled() {
+  public void shouldReturnTrueWhenEnabled() throws Exception {
     shadowAccessibilityManager.setEnabled(true);
     assertThat(getAccessibilityManager().isEnabled()).isTrue();
   }
 
   @Test
-  public void shouldReturnTrueForTouchExplorationWhenEnabled() {
+  public void shouldReturnTrueForTouchExplorationWhenEnabled() throws Exception {
     shadowAccessibilityManager.setTouchExplorationEnabled(true);
     assertThat(getAccessibilityManager().isTouchExplorationEnabled()).isTrue();
   }
 
   @Test
-  public void shouldReturnExpectedEnabledServiceList() {
+  public void shouldReturnExpectedEnabledServiceList() throws Exception {
     List<AccessibilityServiceInfo> expected = new ArrayList<>(Arrays.asList(new AccessibilityServiceInfo()));
     shadowAccessibilityManager.setEnabledAccessibilityServiceList(expected);
     assertThat(getAccessibilityManager().getEnabledAccessibilityServiceList(0)).isEqualTo(expected);
   }
 
   @Test
-  public void shouldReturnExpectedInstalledServiceList() {
+  public void shouldReturnExpectedInstalledServiceList() throws Exception {
     List<AccessibilityServiceInfo> expected = new ArrayList<>(Arrays.asList(new AccessibilityServiceInfo()));
     shadowAccessibilityManager.setInstalledAccessibilityServiceList(expected);
     assertThat(getAccessibilityManager().getInstalledAccessibilityServiceList()).isEqualTo(expected);
   }
 
   @Test
-  public void shouldReturnExpectedAccessibilityServiceList() {
+  public void shouldReturnExpectedAccessibilityServiceList() throws Exception {
     List<ServiceInfo> expected = new ArrayList<>(Arrays.asList(new ServiceInfo()));
     shadowAccessibilityManager.setAccessibilityServiceList(expected);
     assertThat(getAccessibilityManager().getAccessibilityServiceList()).isEqualTo(expected);
