@@ -130,6 +130,7 @@ public class ShadowPackageManager {
   final Map<String, PackageStats> packageStatsMap = new HashMap<>();
   final Map<String, String> packageInstallerMap = new HashMap<>();
   final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  final Map<String, Integer> uidForPackage = new HashMap<>();
   final Map<Integer, String> namesForUid = new HashMap<>();
   final Map<Integer, Integer> verificationResults = new HashMap<>();
   final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
@@ -839,10 +840,16 @@ public class ShadowPackageManager {
 
   public void setPackagesForCallingUid(String... packagesForCallingUid) {
     packagesForUid.put(Binder.getCallingUid(), packagesForCallingUid);
+    for (String packageName : packagesForCallingUid) {
+      uidForPackage.put(packageName, Binder.getCallingUid());
+    }
   }
 
   public void setPackagesForUid(int uid, String... packagesForCallingUid) {
     packagesForUid.put(uid, packagesForCallingUid);
+    for (String packageName : packagesForCallingUid) {
+      uidForPackage.put(packageName, uid);
+    }
   }
 
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
@@ -1065,7 +1072,7 @@ public class ShadowPackageManager {
    * @deprecated Use {@link android.app.ApplicationPackageManager#getComponentEnabledSetting(ComponentName)} instead. This class will be made private in Robolectric 3.5.
    */
   @Deprecated
-  public class ComponentState {
+  public static class ComponentState {
     public int newState;
     public int flags;
 
