@@ -103,12 +103,14 @@ public class CppAssetManager {
 //  
 //  namespace {
 //  
-//  String8 idmapPathForPackagePath(final String8& pkgPath) {
+  String8 idmapPathForPackagePath(final String8 pkgPath) {
+        // TODO: implement this?
+    return pkgPath;
 //      final char* root = getenv("ANDROID_DATA");
 //      LOG_ALWAYS_FATAL_IF(root == NULL, "ANDROID_DATA not set");
 //      String8 path(root);
 //      path.appendPath(kResourceCache);
-//  
+//
 //      char buf[256]; // 256 chars should be enough for anyone...
 //      strncpy(buf, pkgPath.string(), 255);
 //      buf[255] = '\0';
@@ -125,9 +127,9 @@ public class CppAssetManager {
 //      }
 //      path.appendPath(filename);
 //      path.append("@idmap");
-//  
+//
 //      return path;
-//  }
+  }
 //  
 //  /*
 //   * Like strdup(), but uses C++ "new" operator instead of malloc.
@@ -179,8 +181,12 @@ public class CppAssetManager {
 //      // don't have a String class yet, so make sure we clean up
 //      delete[] mLocale;
 //  }
-//  
-  boolean addAssetPath(
+
+  public boolean addAssetPath(String8 path, Ref<Integer> cookie, boolean appAsLib) {
+    return addAssetPath(path, cookie, appAsLib, false);
+  }
+
+  public boolean addAssetPath(
           final String8 path, @Nullable  Ref<Integer> cookie, boolean appAsLib, boolean isSystemAsset) {
       synchronized (mLock) {
 
@@ -213,8 +219,8 @@ public class CppAssetManager {
           }
         }
 
-        ALOGV("In %p Asset %s path: %s", this,
-            ap.type == FileType.kFileTypeDirectory ? "dir" : "zip", ap.path.toString());
+        ALOGV("In %s Asset %s path: %s", this,
+            ap.type.name(), ap.path.toString());
 
         ap.isSystemAsset = isSystemAsset;
         mAssetPaths.add(ap);
@@ -243,69 +249,70 @@ public class CppAssetManager {
       }
   }
 //  
-//  boolean addOverlayPath(final String8& packagePath, int* cookie)
+//  boolean addOverlayPath(final String8 packagePath, Ref<Integer> cookie)
 //  {
 //      final String8 idmapPath = idmapPathForPackagePath(packagePath);
-//  
-//      AutoMutex _l(mLock);
-//  
-//      for (int i = 0; i < mAssetPaths.size(); ++i) {
-//          if (mAssetPaths[i].idmap == idmapPath) {
-//             *cookie = static_cast<int>(i + 1);
-//              return true;
-//           }
-//       }
-//  
-//      Asset* idmap = NULL;
-//      if ((idmap = openAssetFromFileLocked(idmapPath, Asset.ACCESS_BUFFER)) == NULL) {
+//
+//      synchronized (mLock) {
+//
+//        for (int i = 0; i < mAssetPaths.size(); ++i) {
+//          if (mAssetPaths.get(i).idmap.equals(idmapPath)) {
+//             cookie.set(i + 1);
+//            return true;
+//          }
+//        }
+//
+//        Asset idmap = null;
+//        if ((idmap = openAssetFromFileLocked(idmapPath, Asset.AccessMode.ACCESS_BUFFER)) == null) {
 //          ALOGW("failed to open idmap file %s\n", idmapPath.string());
 //          return false;
-//      }
-//  
-//      String8 targetPath;
-//      String8 overlayPath;
-//      if (!ResTable.getIdmapInfo(idmap.getBuffer(false), idmap.getLength(),
-//                  NULL, NULL, NULL, &targetPath, &overlayPath)) {
+//        }
+//
+//        String8 targetPath;
+//        String8 overlayPath;
+//        if (!ResTable.getIdmapInfo(idmap.getBuffer(false), idmap.getLength(),
+//            NULL, NULL, NULL, & targetPath, &overlayPath)){
 //          ALOGW("failed to read idmap file %s\n", idmapPath.string());
-//          delete idmap;
+//          // delete idmap;
 //          return false;
-//      }
-//      delete idmap;
-//  
-//      if (overlayPath != packagePath) {
+//        }
+//        // delete idmap;
+//
+//        if (overlayPath != packagePath) {
 //          ALOGW("idmap file %s inconcistent: expected path %s does not match actual path %s\n",
-//                  idmapPath.string(), packagePath.string(), overlayPath.string());
+//              idmapPath.string(), packagePath.string(), overlayPath.string());
 //          return false;
-//      }
-//      if (access(targetPath.string(), R_OK) != 0) {
+//        }
+//        if (access(targetPath.string(), R_OK) != 0) {
 //          ALOGW("failed to access file %s: %s\n", targetPath.string(), strerror(errno));
 //          return false;
-//      }
-//      if (access(idmapPath.string(), R_OK) != 0) {
+//        }
+//        if (access(idmapPath.string(), R_OK) != 0) {
 //          ALOGW("failed to access file %s: %s\n", idmapPath.string(), strerror(errno));
 //          return false;
-//      }
-//      if (access(overlayPath.string(), R_OK) != 0) {
+//        }
+//        if (access(overlayPath.string(), R_OK) != 0) {
 //          ALOGW("failed to access file %s: %s\n", overlayPath.string(), strerror(errno));
 //          return false;
-//      }
-//  
-//      asset_path oap;
-//      oap.path = overlayPath;
-//      oap.type = .getFileType(overlayPath.string());
-//      oap.idmap = idmapPath;
+//        }
+//
+//        asset_path oap;
+//        oap.path = overlayPath;
+//        oap.type = .getFileType(overlayPath.string());
+//        oap.idmap = idmapPath;
 //  #if 0
-//      ALOGD("Overlay added: targetPath=%s overlayPath=%s idmapPath=%s\n",
-//              targetPath.string(), overlayPath.string(), idmapPath.string());
+//        ALOGD("Overlay added: targetPath=%s overlayPath=%s idmapPath=%s\n",
+//            targetPath.string(), overlayPath.string(), idmapPath.string());
 //  #endif
-//      mAssetPaths.add(oap);
-//      *cookie = static_cast<int>(mAssetPaths.size());
-//  
-//      if (mResources != NULL) {
+//        mAssetPaths.add(oap);
+//      *cookie = static_cast <int>(mAssetPaths.size());
+//
+//        if (mResources != NULL) {
 //          appendPathToResTable(oap);
+//        }
+//
+//        return true;
 //      }
-//  
-//      return true;
 //   }
 //  
 //  boolean createIdmap(final char* targetApkPath, final char* overlayApkPath,
@@ -493,28 +500,35 @@ public class CppAssetManager {
 //  }
 //  
   /*
-   * Get the type of a file in the asset namespace.
-   *
-   * This currently only works for regular files.  All others (including
-   * directories) will return kFileTypeNonexistent.
+   * Get the type of a file
    */
-  FileType getFileType(final String fileName)
-  {
-      Asset pAsset = null;
-
-      /*
-       * Open the asset.  This is less efficient than simply finding the
-       * file, but it's not too bad (we don't uncompress or mmap data until
-       * the first read() call).
-       */
-      pAsset = open(fileName, Asset.AccessMode.ACCESS_STREAMING);
-      // delete pAsset;
-
-      if (pAsset == null) {
-          return FileType.kFileTypeNonexistent;
-      } else {
-          return FileType.kFileTypeRegular;
-      }
+  FileType getFileType(final String fileName) {
+    // deviate from Android CPP implementation here. Assume fileName is a complete path
+    // rather than limited to just asset namespace
+    File assetFile = new File(fileName);
+    if (!assetFile.exists()) {
+      return FileType.kFileTypeNonexistent;
+    } else if (assetFile.isFile()) {
+      return FileType.kFileTypeRegular;
+    } else if (assetFile.isDirectory()) {
+      return FileType.kFileTypeDirectory;
+    }
+    return FileType.kFileTypeNonexistent;
+//      Asset pAsset = null;
+//
+//      /*
+//       * Open the asset.  This is less efficient than simply finding the
+//       * file, but it's not too bad (we don't uncompress or mmap data until
+//       * the first read() call).
+//       */
+//      pAsset = open(fileName, Asset.AccessMode.ACCESS_STREAMING);
+//      // delete pAsset;
+//
+//      if (pAsset == null) {
+//          return FileType.kFileTypeNonexistent;
+//      } else {
+//          return FileType.kFileTypeRegular;
+//      }
   }
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {

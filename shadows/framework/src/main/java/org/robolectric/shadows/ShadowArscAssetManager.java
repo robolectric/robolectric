@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
 import org.robolectric.annotation.HiddenApi;
@@ -24,6 +25,7 @@ import org.robolectric.res.android.Ref;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.android.ResValue;
+import org.robolectric.res.android.String8;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -216,10 +218,7 @@ public class ShadowArscAssetManager {
   @HiddenApi
   @Implementation
   public int addAssetPath(String path) {
-    System.out.println("addAssetPath " + path);
-    return 1;
-//    return directlyOn(realObject, AssetManager.class, "addAssetPath",
-//        ClassParameter.from(String.class, path));
+    return directlyOn(realObject, AssetManager.class, "addAssetPath", ClassParameter.from(String.class, path));
   }
 
   @HiddenApi
@@ -554,6 +553,38 @@ public class ShadowArscAssetManager {
 //
 //  private native final void init(boolean isSystem);
 //  private native final void destroy();
+
+  @HiddenApi
+  @Implementation
+  public int addAssetPathNative(String path, boolean appAsLib) {
+    if (Strings.isNullOrEmpty(path)) {
+      return 0;
+    }
+
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+    Ref<Integer> cookie = new Ref<>(null);
+    boolean res = am.addAssetPath(new String8(path), cookie, appAsLib);
+    return (res) ? cookie.get() : 0;
+  }
+
+//  @HiddenApi
+//  @Implementation
+//  public int addOverlayPathNative(String idmapPath) {
+//    if (Strings.isNullOrEmpty(idmapPath)) {
+//      return 0;
+//    }
+//
+//    CppAssetManager am = assetManagerForJavaObject();
+//    if (am == null) {
+//      return 0;
+//    }
+//    Ref<Integer> cookie = new Ref<>(null);
+//    boolean res = am.addOverlayPath(new String8(idmapPath), cookie);
+//    return (res) ? cookie.get() : 0;
+//  }
 
 
 
