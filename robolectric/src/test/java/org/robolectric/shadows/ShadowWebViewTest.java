@@ -271,7 +271,7 @@ public class ShadowWebViewTest {
   @Test
   public void shouldRecordOnRestoreState() {
     assertThat(shadowWebView.wasRestoreStateCalled()).isFalse();
-    webView.saveState(new Bundle());
+    webView.restoreState(new Bundle());
     assertThat(shadowWebView.wasRestoreStateCalled()).isTrue();
   }
 }
