@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
 import java.util.ArrayList;
