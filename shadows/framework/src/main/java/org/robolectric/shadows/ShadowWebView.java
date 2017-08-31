@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.Build;
+import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -54,6 +55,8 @@ public class ShadowWebView extends ShadowViewGroup {
   // TODO: Delete this when setCanGoBack is deleted. This is only used to determine which "path" we
   // use when canGoBack or goBack is called.
   private boolean canGoBackIsSet;
+  private boolean saveStateCalled = false;
+  private boolean restoreStateCalled = false;
 
   @HiddenApi @Implementation
   public void ensureProviderCreated() {
@@ -324,6 +327,25 @@ public class ShadowWebView extends ShadowViewGroup {
   public String getLastEvaluatedJavascript() {
     return lastEvaluatedJavascript;
   }
+
+  @Implementation
+  public void saveState(Bundle bundle) {
+    saveStateCalled = true;
+  }
+
+  @Implementation
+  public void restoreState(Bundle bundle) {
+    restoreStateCalled = true;
+  }
+
+  public boolean wasSaveStateCalled() {
+    return saveStateCalled;
+  }
+
+  public boolean wasRestoreStateCalled() {
+    return restoreStateCalled;
+  }
+
 
   /**
    * Sets the value to return from {@code android.webkit.WebView#canGoBack()}
