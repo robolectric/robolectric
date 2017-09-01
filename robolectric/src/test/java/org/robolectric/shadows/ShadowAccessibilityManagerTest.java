@@ -21,50 +21,53 @@ import org.robolectric.util.ReflectionHelpers;
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccessibilityManagerTest {
 
+  private AccessibilityManager accessibilityManager;
   private ShadowAccessibilityManager shadowAccessibilityManager;
 
   @Before
   public void setUp() throws Exception {
-    shadowAccessibilityManager = shadowOf(getAccessibilityManager());
+    accessibilityManager = (AccessibilityManager) RuntimeEnvironment.application.getSystemService(ACCESSIBILITY_SERVICE);
+    shadowAccessibilityManager = shadowOf(accessibilityManager);
+  }
+
+  @Test
+  public void shouldReturnTrueWhenEnabled() {
+    shadowAccessibilityManager.setEnabled(true);
+    assertThat(accessibilityManager.isEnabled()).isTrue();
+    assertThat(getAccessibilityManagerInstance.isEnabled()).isTrue();
   }
 
   // Emulates Android framework behavior, e.g.,
   // AccessibilityManager.getInstance(context).isEnabled().
-  private AccessibilityManager getAccessibilityManager() throws Exception {
+  private AccessibilityManager getAccessibilityManagerInstance() throws Exception {
     return ReflectionHelpers.callStaticMethod(AccessibilityManager.class, "getInstance",
             ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application));
   }
 
   @Test
-  public void shouldReturnTrueWhenEnabled() throws Exception {
-    shadowAccessibilityManager.setEnabled(true);
-    assertThat(getAccessibilityManager().isEnabled()).isTrue();
-  }
-
-  @Test
-  public void shouldReturnTrueForTouchExplorationWhenEnabled() throws Exception {
+  public void shouldReturnTrueForTouchExplorationWhenEnabled() {
     shadowAccessibilityManager.setTouchExplorationEnabled(true);
-    assertThat(getAccessibilityManager().isTouchExplorationEnabled()).isTrue();
+    assertThat(accessibilityManager.isTouchExplorationEnabled()).isTrue();
   }
 
   @Test
-  public void shouldReturnExpectedEnabledServiceList() throws Exception {
+  public void shouldReturnExpectedEnabledServiceList() {
     List<AccessibilityServiceInfo> expected = new ArrayList<>(Arrays.asList(new AccessibilityServiceInfo()));
     shadowAccessibilityManager.setEnabledAccessibilityServiceList(expected);
-    assertThat(getAccessibilityManager().getEnabledAccessibilityServiceList(0)).isEqualTo(expected);
+    assertThat(accessibilityManager.getEnabledAccessibilityServiceList(0)).isEqualTo(expected);
   }
 
   @Test
-  public void shouldReturnExpectedInstalledServiceList() throws Exception {
+  public void shouldReturnExpectedInstalledServiceList() {
     List<AccessibilityServiceInfo> expected = new ArrayList<>(Arrays.asList(new AccessibilityServiceInfo()));
     shadowAccessibilityManager.setInstalledAccessibilityServiceList(expected);
-    assertThat(getAccessibilityManager().getInstalledAccessibilityServiceList()).isEqualTo(expected);
+    assertThat(accessibilityManager.getInstalledAccessibilityServiceList()).isEqualTo(expected);
   }
 
   @Test
-  public void shouldReturnExpectedAccessibilityServiceList() throws Exception {
+  public void shouldReturnExpectedAccessibilityServiceList() {
     List<ServiceInfo> expected = new ArrayList<>(Arrays.asList(new ServiceInfo()));
     shadowAccessibilityManager.setAccessibilityServiceList(expected);
-    assertThat(getAccessibilityManager().getAccessibilityServiceList()).isEqualTo(expected);
+    assertThat(accessibilityManager.getAccessibilityServiceList()).isEqualTo(expected);
   }
 }
