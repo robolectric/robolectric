@@ -104,14 +104,14 @@ public class ShadowArscAssetManager {
         ClassParameter.from(int.class, id));
   }
 
-  @HiddenApi
-  @Implementation
-  public int getResourceIdentifier(String name, String defType, String defPackage) {
-    return directlyOn(realObject, AssetManager.class, "getResourceIdentifier",
-        ClassParameter.from(String.class, name),
-        ClassParameter.from(String.class, defType),
-        ClassParameter.from(String.class, defPackage));
-  }
+//  @HiddenApi
+//  @Implementation
+//  public int getResourceIdentifier(String name, String defType, String defPackage) {
+//    return directlyOn(realObject, AssetManager.class, "getResourceIdentifier",
+//        ClassParameter.from(String.class, name),
+//        ClassParameter.from(String.class, defType),
+//        ClassParameter.from(String.class, defPackage));
+//  }
 
   @HiddenApi
   @Implementation
@@ -400,9 +400,23 @@ public class ShadowArscAssetManager {
 //      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
 //      int screenLayout, int uiMode, int majorVersion);
 //
-//  /*package*/ native final int getResourceIdentifier(String type,
-//      String name,
-//      String defPackage);
+
+  @HiddenApi
+  @Implementation
+  public int getResourceIdentifier(String name, String defType, String defPackage) {
+    if (Strings.isNullOrEmpty(name)) {
+      return 0;
+    }
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+
+    int ident = am.getResources().identifierForName(name, defType, defPackage);
+
+    return ident;
+  }
+
 //
 //  /*package*/ native final String getResourceName(int resid);
 //  /*package*/ native final String getResourcePackageName(int resid);

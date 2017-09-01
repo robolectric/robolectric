@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.robolectric.res.ResourceIds;
+import org.robolectric.util.Strings;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
 //   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
@@ -69,16 +70,17 @@ public class ResTable {
   byte                     mNextPackageId;
   private ResTableConfig parameters;
 
+  static boolean Res_CHECKID(int resid) { return ((resid&0xFFFF0000) != 0);}
   static int Res_GETPACKAGE(int id) {
     return ((id>>24)-1);
   }
   static int Res_GETTYPE(int id) {
     return (((id>>16)&0xFF)-1);
   }
-
   static int Res_GETENTRY(int id) {
     return (id&0xFFFF);
   }
+  static int Res_MAKEARRAY(int entry) { return (0x02000000 | (entry&0xFFFF)); }
 
   int getResourcePackageIndex(int resID)
   {
@@ -637,6 +639,180 @@ public class ResTable {
 
   public int getTableCookie(int index) {
     return mHeaders.get(index).cookie;
+  }
+
+  private static final Map<String, Integer> sInternalNameToIdMap = new HashMap<>();
+  static {
+    sInternalNameToIdMap.put("^type", ResTableMap.ATTR_TYPE);
+    sInternalNameToIdMap.put("^l10n", ResTableMap.ATTR_L10N);
+    sInternalNameToIdMap.put("^min" , ResTableMap.ATTR_MIN);
+    sInternalNameToIdMap.put("^max", ResTableMap.ATTR_MAX);
+    sInternalNameToIdMap.put("^other", ResTableMap.ATTR_OTHER);
+    sInternalNameToIdMap.put("^zero", ResTableMap.ATTR_ZERO);
+    sInternalNameToIdMap.put("^one", ResTableMap.ATTR_ONE);
+    sInternalNameToIdMap.put("^two", ResTableMap.ATTR_TWO);
+    sInternalNameToIdMap.put("^few", ResTableMap.ATTR_FEW);
+    sInternalNameToIdMap.put("^many", ResTableMap.ATTR_MANY);
+  }
+
+  public int identifierForName(String name, String type, String packageName) {
+    return identifierForName(name, type, packageName, null);
+  }
+
+  public int identifierForName(String nameString, String type, String packageName, Ref<Integer> outTypeSpecFlags) {
+//    if (kDebugTableSuperNoisy) {
+//      printf("Identifier for name: error=%d\n", mError);
+//    }
+//    // Check for internal resource identifier as the very first thing, so
+//    // that we will always find them even when there are no resources.
+    if (nameString.charAt(0) == '^') {
+      if (sInternalNameToIdMap.containsKey(nameString)) {
+        if (outTypeSpecFlags != null) {
+          outTypeSpecFlags.set(ResTableTypeSpec.SPEC_PUBLIC);
+        }
+        return sInternalNameToIdMap.get(nameString);
+      }
+      if (nameString.length() > 7)
+        if (nameString.substring(1, 6).equals("index_")) {
+          int index = Integer.getInteger(nameString.substring(7));
+          if (Res_CHECKID(index)) {
+            ALOGW("Array resource index: %d is too large.",
+                index);
+            return 0;
+          }
+          if (outTypeSpecFlags != null) {
+            outTypeSpecFlags.set(ResTableTypeSpec.SPEC_PUBLIC);
+          }
+          return  Res_MAKEARRAY(index);
+        }
+
+      return 0;
+    }
+
+    if (mError != NO_ERROR) {
+      return 0;
+    }
+    boolean fakePublic = false;
+
+    // Figure out the package and type we are looking in...
+
+    char[] name = nameString.toCharArray();
+    int packageEnd = -1;
+    int typeEnd = -1;
+    int nameEnd = name.length;
+    int nameIndex = 0;
+    while (nameIndex < nameEnd) {
+      char p = name[nameIndex];
+      if (p == ':') packageEnd = nameIndex;
+      else if (p == '/') typeEnd = nameIndex;
+      nameIndex++;
+    }
+    if (name[nameIndex] == '@') {
+      nameIndex++;
+      if (name[nameIndex] == '*') {
+        fakePublic = true;
+        nameIndex++;
+    }
+  }
+    if (nameIndex >= nameEnd) {
+      return 0;
+    }
+    if (packageEnd != -1) {
+        packageName = nameString.substring(nameIndex, packageEnd);
+        nameIndex = packageEnd+1;
+    } else if (packageName == null) {
+      return 0;
+    }
+    if (typeEnd != -1) {
+      type = nameString.substring(nameIndex, typeEnd);
+      nameIndex = typeEnd+1;
+    } else if (type == null) {
+      return 0;
+    }
+    if (nameIndex >= nameEnd) {
+      return 0;
+    }
+
+//    nameLen = nameEnd-name;
+//    if (kDebugTableNoisy) {
+//      printf("Looking for identifier: type=%s, name=%s, package=%s\n",
+//          String8(type, typeLen).string(),
+//          String8(name, nameLen).string(),
+//          String8(package, packageLen).string());
+//    }
+    final String attr = "attr";
+    final String attrPrivate = "^attr-private";
+    int NG = mPackageGroups.size();
+    for (int ig=0; ig<NG; ig++) {
+      PackageGroup group = mPackageGroups.get(ig);
+      if (Strings.equals(packageName, group.name)) {
+        if (kDebugTableNoisy) {
+           System.out.println(String.format("Skipping package group: %s\n", group.name));
+        }
+        continue;
+      }
+      int packageCount = group.packages.size();
+      for (int pi = 0; pi < packageCount; pi++) {
+        String targetType = type;
+
+        do {
+          int ti = group.packages.get(pi).typeStrings.indexOfString(
+              targetType);
+          if (ti < 0) {
+            continue;
+          }
+          ti += group.packages.get(pi).typeIdOffset;
+          int identifier = findEntry(group, ti, nameString,
+              outTypeSpecFlags);
+          if (identifier != 0) {
+            if (fakePublic && outTypeSpecFlags != null) {
+                        outTypeSpecFlags.set(outTypeSpecFlags.get() | ResTableTypeSpec.SPEC_PUBLIC);
+            }
+            return identifier;
+          }
+        } while (attr.compareTo(targetType) == 0
+            && ((targetType = attrPrivate) != null)
+            );
+      }
+      break;
+    }
+    return 0;
+  }
+
+  int findEntry(PackageGroup group, int typeIndex, String name,
+     Ref<Integer> outTypeSpecFlags) {
+    List<Type> typeList = group.types.get(typeIndex);
+    int typeCount = typeList.size();
+    for (int i = 0; i < typeCount; i++) {
+        Type t = typeList.get(i);
+        int ei = t._package_.keyStrings.indexOfString(name);
+        if (ei < 0) {
+          continue;
+        }
+        int configCount = t.configs.size();
+      for (int j = 0; j < configCount; j++) {
+        List<ResTableEntry> entries = t.configs.get(j).entries;
+        for (int entryIndex = 0; entryIndex < entries.size(); entryIndex++ ) {
+          ResTableEntry entry = entries.get(entryIndex);
+          if (entry == NULL) {
+            continue;
+          }
+          if (entry.key.index == ei) {
+            int resId = Res_MAKEID(group.id - 1, typeIndex, entryIndex);
+            if (outTypeSpecFlags != null) {
+              Ref<Entry> result = new Ref<>(null);
+              if (getEntry(group, typeIndex, entryIndex, null, result) != NO_ERROR) {
+                ALOGW("Failed to find spec flags for 0x%08x", resId);
+                return 0;
+              }
+              outTypeSpecFlags.set(result.get().specFlags);
+            }
+            return resId;
+          }
+        }
+      }
+    }
+    return 0;
   }
 
   // A group of objects describing a particular resource package.

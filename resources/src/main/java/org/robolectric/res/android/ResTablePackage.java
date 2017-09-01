@@ -19,7 +19,9 @@ public class ResTablePackage {
     // Offset to a ResStringPool_header defining the resource
     // type symbol table.  If zero, this package is inheriting from
     // another base package (overriding specific values in it).
-    public int typeStrings;
+    //public int typeStrings;
+    // TODO(BC): reconcile this description with this type
+    public ResStringPool typeStrings;
 
     // Last index into typeStrings that is for public use by others.
     public int lastPublicType;

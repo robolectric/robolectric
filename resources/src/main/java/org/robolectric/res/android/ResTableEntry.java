@@ -18,11 +18,11 @@ public class ResTableEntry {
   public static final int FLAG_WEAK = 0x0004;
 
   public final short size;
-  public final int key;
+  public final ResStringPoolRef key;
   public final int flags;
   public final ResValue value;
 
-  public ResTableEntry(short size, int flags, int key, ResValue value) {
+  public ResTableEntry(short size, int flags, ResStringPoolRef key, ResValue value) {
     this.size = size;
     this.key = key;
     this.flags = flags;

@@ -27,5 +27,5 @@ public class ResTableTypeSpec {
     public int entryCount;
 
     // Additional flag indicating an entry is public.
-    int SPEC_PUBLIC = 0x40000000;
+    final static int SPEC_PUBLIC = 0x40000000;
 }
