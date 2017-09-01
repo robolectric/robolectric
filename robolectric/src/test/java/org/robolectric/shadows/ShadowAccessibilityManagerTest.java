@@ -31,7 +31,7 @@ public class ShadowAccessibilityManagerTest {
   }
 
   @Test
-  public void shouldReturnTrueWhenEnabled() {
+  public void shouldReturnTrueWhenEnabled() throws Exception {
     shadowAccessibilityManager.setEnabled(true);
     assertThat(accessibilityManager.isEnabled()).isTrue();
     assertThat(getAccessibilityManagerInstance().isEnabled()).isTrue();
