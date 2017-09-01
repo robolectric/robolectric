@@ -34,7 +34,7 @@ public class ShadowAccessibilityManagerTest {
   public void shouldReturnTrueWhenEnabled() {
     shadowAccessibilityManager.setEnabled(true);
     assertThat(accessibilityManager.isEnabled()).isTrue();
-    assertThat(getAccessibilityManagerInstance.isEnabled()).isTrue();
+    assertThat(getAccessibilityManagerInstance().isEnabled()).isTrue();
   }
 
   // Emulates Android framework behavior, e.g.,
