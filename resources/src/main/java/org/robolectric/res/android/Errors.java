@@ -17,4 +17,5 @@ public class Errors {
   public static final int BAD_VALUE = UNKNOWN_ERROR + 3;
   public static final int NO_MEMORY = UNKNOWN_ERROR + 4;
   public static final int NAME_NOT_FOUND = UNKNOWN_ERROR + 5;
+  public static final int NO_INIT = UNKNOWN_ERROR + 6;
 }

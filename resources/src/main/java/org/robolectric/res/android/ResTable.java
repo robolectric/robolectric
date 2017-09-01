@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -627,7 +628,7 @@ public class ResTable {
       outEntry.specFlags = specFlags;
       outEntry._package_ = bestPackage;
       outEntry.typeStr = new StringPoolRef(bestPackage.typeStrings, actualTypeIndex - bestPackage.typeIdOffset);
-      outEntry.keyStr = new StringPoolRef(bestPackage.keyStrings, dtohl(entry.key));
+      outEntry.keyStr = new StringPoolRef(bestPackage.keyStrings, entry.key.index);
       outEntryRef.set(outEntry);
     }
     return NO_ERROR;
@@ -665,7 +666,7 @@ public class ResTable {
 //    }
 //    // Check for internal resource identifier as the very first thing, so
 //    // that we will always find them even when there are no resources.
-    if (nameString.charAt(0) == '^') {
+    if (nameString.startsWith("^")) {
       if (sInternalNameToIdMap.containsKey(nameString)) {
         if (outTypeSpecFlags != null) {
           outTypeSpecFlags.set(ResTableTypeSpec.SPEC_PUBLIC);
@@ -700,13 +701,14 @@ public class ResTable {
     int packageEnd = -1;
     int typeEnd = -1;
     int nameEnd = name.length;
-    int nameIndex = 0;
-    while (nameIndex < nameEnd) {
-      char p = name[nameIndex];
-      if (p == ':') packageEnd = nameIndex;
-      else if (p == '/') typeEnd = nameIndex;
-      nameIndex++;
+    int pIndex = 0;
+    while (pIndex < nameEnd) {
+      char p = name[pIndex];
+      if (p == ':') packageEnd = pIndex;
+      else if (p == '/') typeEnd = pIndex;
+      pIndex++;
     }
+    int nameIndex = 0;
     if (name[nameIndex] == '@') {
       nameIndex++;
       if (name[nameIndex] == '*') {
@@ -743,25 +745,22 @@ public class ResTable {
     final String attr = "attr";
     final String attrPrivate = "^attr-private";
     int NG = mPackageGroups.size();
-    for (int ig=0; ig<NG; ig++) {
-      PackageGroup group = mPackageGroups.get(ig);
+    for (PackageGroup group : mPackageGroups.values()) {
       if (Strings.equals(packageName, group.name)) {
         if (kDebugTableNoisy) {
            System.out.println(String.format("Skipping package group: %s\n", group.name));
         }
         continue;
       }
-      int packageCount = group.packages.size();
-      for (int pi = 0; pi < packageCount; pi++) {
+      for (ResTablePackage pkg : group.packages) {
         String targetType = type;
 
         do {
-          int ti = group.packages.get(pi).typeStrings.indexOfString(
-              targetType);
+          int ti = pkg.typeStrings.indexOfString(targetType);
           if (ti < 0) {
             continue;
           }
-          ti += group.packages.get(pi).typeIdOffset;
+          ti += pkg.typeIdOffset;
           int identifier = findEntry(group, ti, nameString,
               outTypeSpecFlags);
           if (identifier != 0) {
@@ -919,7 +918,7 @@ public class ResTable {
     // This is mainly used to keep track of the loaded packages
     // and to clean them up properly. Accessing resources happens from
     // the 'types' array.
-    List<ResTablePackage>                packages;
+    List<ResTablePackage>                packages = new LinkedList<>();
 
     public final Map<Integer, List<Type>>       types = new HashMap<>();
 

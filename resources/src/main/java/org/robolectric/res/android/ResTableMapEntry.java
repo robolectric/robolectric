@@ -15,7 +15,7 @@ public final class ResTableMapEntry extends ResTableEntry {
 
   public final List<ResTableMap> array;
 
-  public ResTableMapEntry(short size, short flags, int key, List<ResTableMap> array, int parent) {
+  public ResTableMapEntry(short size, short flags, ResStringPoolRef key, List<ResTableMap> array, int parent) {
     super(size, flags, key, null);
     this.array = array;
     count = array.size();

@@ -65,10 +65,10 @@ public class ResTableTest {
 //    assertThat(resTable.getPackageName(R.string.second_string)).isEqualTo("org.robolectric.resources");
 //  }
 //
-//  @Test
-//  public void shouldResolveResIdToType() throws Exception {
-//    assertThat(resTable.getTypeName(R.string.first_string)).isEqualTo("string");
-//
-// assertThat(resTable.getTypeName(R.string.second_string)).isEqualTo("string");
-//  }
+  @Test
+  public void shouldResolveResIdToType() throws Exception {
+    assertThat(resTable.getTypeName(R.string.first_string)).isEqualTo("string");
+
+ assertThat(resTable.getTypeName(R.string.second_string)).isEqualTo("string");
+  }
 }

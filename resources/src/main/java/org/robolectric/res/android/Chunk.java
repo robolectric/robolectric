@@ -169,6 +169,8 @@ abstract public class Chunk {
           resTablePackage.id,
           false, false);
 
+      packageGroup.packages.add(resTablePackage);
+
       for (TypeSpecChunk typeSpecChunk : packageChunk.getTypeSpecs()) {
         ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
         ResTable.Type type = new ResTable.Type(new Header(resTable), new Package(resTable, new Header(resTable), resTablePackage), typeSpec.entryCount);
@@ -350,7 +352,7 @@ abstract public class Chunk {
         tablePackage.name[i] = buffer.getChar();
       }
       tablePackage.header = header;
-      tablePackage.typeStrings = buffer.getInt();
+      tablePackage.typeStrings = new ResStringPool();
       tablePackage.lastPublicType = buffer.getInt();
       tablePackage.keyStrings = buffer.getInt();
       tablePackage.lastPublicKey = buffer.getInt();
@@ -507,7 +509,7 @@ abstract public class Chunk {
           System.out.println("SimpleEntry at " + Integer.toHexString(entryOffset));
           ResValue value = createValue(buffer);
 
-          entry = new ResTableEntry(size, flags, key, value);
+          entry = new ResTableEntry(size, flags, new ResStringPoolRef(key), value);
         } else {
           ArrayList<ResTableMap> mapEntries = new ArrayList<>();
 
@@ -520,7 +522,7 @@ abstract public class Chunk {
             mapEntries.add(new ResTableMap(name, value));
           }
 
-          entry = new ResTableMapEntry(size, flags, key, mapEntries, parent);
+          entry = new ResTableMapEntry(size, flags, new ResStringPoolRef(key), mapEntries, parent);
         }
 
         int oldPosition = buffer.position();
