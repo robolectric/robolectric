@@ -34,9 +34,9 @@ public class ShadowAccessibilityManager {
 
   @Resetter
   public static void reset() {
-      synchronized (sInstanceSync) {
-          sInstance = null;
-      }
+    synchronized (sInstanceSync) {
+      sInstance = null;
+    }
   }
 
   @HiddenApi

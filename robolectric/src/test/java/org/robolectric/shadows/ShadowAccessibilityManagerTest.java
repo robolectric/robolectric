@@ -39,7 +39,7 @@ public class ShadowAccessibilityManagerTest {
 
   // Emulates Android framework behavior, e.g.,
   // AccessibilityManager.getInstance(context).isEnabled().
-  private AccessibilityManager getAccessibilityManagerInstance() throws Exception {
+  private static AccessibilityManager getAccessibilityManagerInstance() throws Exception {
     return ReflectionHelpers.callStaticMethod(AccessibilityManager.class, "getInstance",
             ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application));
   }
