@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowAccessibilityManagerTest {
@@ -29,9 +31,17 @@ public class ShadowAccessibilityManagerTest {
   }
 
   @Test
-  public void shouldReturnTrueWhenEnabled() {
+  public void shouldReturnTrueWhenEnabled() throws Exception {
     shadowAccessibilityManager.setEnabled(true);
     assertThat(accessibilityManager.isEnabled()).isTrue();
+    assertThat(getAccessibilityManagerInstance().isEnabled()).isTrue();
+  }
+
+  // Emulates Android framework behavior, e.g.,
+  // AccessibilityManager.getInstance(context).isEnabled().
+  private static AccessibilityManager getAccessibilityManagerInstance() throws Exception {
+    return ReflectionHelpers.callStaticMethod(AccessibilityManager.class, "getInstance",
+            ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application));
   }
 
   @Test
