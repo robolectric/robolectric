@@ -4,6 +4,9 @@ package org.robolectric.res.android;
  * A collection of resource data types within a package.  Followed by
  * one or more Type and ResTable_typeSpec structures containing the
  * entry values for each resource type.
+ *
+ * Transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
+ * struct ResTable_package
  */
 public class ResTablePackage {
     public ResChunkHeader header;

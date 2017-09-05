@@ -48,8 +48,10 @@ public class ResTableTest {
 
   @Test
   public void testGetEntry_stringType() throws Exception {
-    assertThat(resTable.getEntry(R.string.first_string, null).entry.value.dataType).isEqualTo(
+    Entry entry = resTable.getEntry(R.string.first_string, null);
+    assertThat(entry.entry.value.dataType).isEqualTo(
         DataType.STRING.code());
+    //assertThat(entry.entry.value.data).isEqualTo("sheep");
   }
 
   @Test
@@ -65,10 +67,10 @@ public class ResTableTest {
 //    assertThat(resTable.getPackageName(R.string.second_string)).isEqualTo("org.robolectric.resources");
 //  }
 //
-  @Test
-  public void shouldResolveResIdToType() throws Exception {
-    assertThat(resTable.getTypeName(R.string.first_string)).isEqualTo("string");
-
- assertThat(resTable.getTypeName(R.string.second_string)).isEqualTo("string");
-  }
+//  @Test
+//  public void shouldResolveResIdToType() throws Exception {
+//    assertThat(resTable.getTypeName(R.string.first_string)).isEqualTo("string");
+//
+// assertThat(resTable.getTypeName(R.string.second_string)).isEqualTo("string");
+//  }
 }

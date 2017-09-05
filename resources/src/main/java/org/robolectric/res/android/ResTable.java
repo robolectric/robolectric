@@ -660,7 +660,8 @@ public class ResTable {
     return identifierForName(name, type, packageName, null);
   }
 
-  public int identifierForName(String nameString, String type, String packageName, Ref<Integer> outTypeSpecFlags) {
+  public int identifierForName(String nameString, String type, String packageName,
+      Ref<Integer> outTypeSpecFlags) {
 //    if (kDebugTableSuperNoisy) {
 //      printf("Identifier for name: error=%d\n", mError);
 //    }
@@ -693,10 +694,13 @@ public class ResTable {
     if (mError != NO_ERROR) {
       return 0;
     }
-    boolean fakePublic = false;
+
 
     // Figure out the package and type we are looking in...
+    // TODO(BC): The following code block was a best effort attempt to directly transliterate
+    // C++ code which uses pointer artihmetic. Consider replacing with simpler logic
 
+    boolean fakePublic = false;
     char[] name = nameString.toCharArray();
     int packageEnd = -1;
     int typeEnd = -1;
@@ -734,6 +738,7 @@ public class ResTable {
     if (nameIndex >= nameEnd) {
       return 0;
     }
+    nameString = nameString.substring(nameIndex, nameEnd);
 
 //    nameLen = nameEnd-name;
 //    if (kDebugTableNoisy) {
@@ -752,7 +757,7 @@ public class ResTable {
         }
         continue;
       }
-      for (ResTablePackage pkg : group.packages) {
+      for (Package pkg : group.packages) {
         String targetType = type;
 
         do {
@@ -761,8 +766,7 @@ public class ResTable {
             continue;
           }
           ti += pkg.typeIdOffset;
-          int identifier = findEntry(group, ti, nameString,
-              outTypeSpecFlags);
+          int identifier = findEntry(group, ti, nameString, outTypeSpecFlags);
           if (identifier != 0) {
             if (fakePublic && outTypeSpecFlags != null) {
                         outTypeSpecFlags.set(outTypeSpecFlags.get() | ResTableTypeSpec.SPEC_PUBLIC);
@@ -778,25 +782,21 @@ public class ResTable {
     return 0;
   }
 
-  int findEntry(PackageGroup group, int typeIndex, String name,
-     Ref<Integer> outTypeSpecFlags) {
+  int findEntry(PackageGroup group, int typeIndex, String name, Ref<Integer> outTypeSpecFlags) {
     List<Type> typeList = group.types.get(typeIndex);
-    int typeCount = typeList.size();
-    for (int i = 0; i < typeCount; i++) {
-        Type t = typeList.get(i);
-        int ei = t._package_.keyStrings.indexOfString(name);
-        if (ei < 0) {
-          continue;
-        }
-        int configCount = t.configs.size();
-      for (int j = 0; j < configCount; j++) {
-        List<ResTableEntry> entries = t.configs.get(j).entries;
+    for (Type type : typeList) {
+      int ei = type._package_.keyStrings.indexOfString(name);
+      if (ei < 0) {
+        continue;
+      }
+      for (ResTableType resTableType : type.configs) {
+        List<ResTableEntry> entries = resTableType.entries;
         for (int entryIndex = 0; entryIndex < entries.size(); entryIndex++ ) {
           ResTableEntry entry = entries.get(entryIndex);
-          if (entry == NULL) {
+          if (entry == null) {
             continue;
           }
-          if (entry.key.index == ei) {
+          if (dtohl(entry.key.index) == ei) {
             int resId = Res_MAKEID(group.id - 1, typeIndex, entryIndex);
             if (outTypeSpecFlags != null) {
               Ref<Entry> result = new Ref<>(null);
@@ -817,6 +817,7 @@ public class ResTable {
   // A group of objects describing a particular resource package.
   // The first in 'package' is always the root object (from the resource
   // table that defined the package); the ones after are skins on top of it.
+  // from ResourceTypes.cpp struct ResTable::PackageGroup
   public static class PackageGroup
   {
     public PackageGroup(
@@ -911,18 +912,18 @@ public class ResTable {
 //      return -1;
 //    }
 
-    final ResTable           owner;
-    final String                   name;
-    final int                  id;
+    final ResTable owner;
+    final String name;
+    final int id;
 
     // This is mainly used to keep track of the loaded packages
     // and to clean them up properly. Accessing resources happens from
     // the 'types' array.
-    List<ResTablePackage>                packages = new LinkedList<>();
+    List<Package> packages = new LinkedList<>();
 
-    public final Map<Integer, List<Type>>       types = new HashMap<>();
+    public final Map<Integer, List<Type>> types = new HashMap<>();
 
-    byte                         largestTypeId;
+    byte largestTypeId;
 
     // Cached objects dependent on the parameters/configuration of this ResTable.
     // Gets cleared whenever the parameters/configuration changes.
@@ -939,7 +940,7 @@ public class ResTable {
 
     // If the package group comes from a system asset. Used in
     // determining non-system locales.
-    final boolean                      isSystemAsset;
+    final boolean isSystemAsset;
   }
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp:3151
@@ -1032,10 +1033,10 @@ public class ResTable {
     final Header header;
     final ResTablePackage _package_;
 
-    ResStringPool                   typeStrings;
-    ResStringPool                   keyStrings;
+    ResStringPool typeStrings;
+    ResStringPool keyStrings;
 
-    int                          typeIdOffset;
+    int typeIdOffset;
   };
 
   static class bag_set {

@@ -165,16 +165,19 @@ abstract public class Chunk {
 
     for (PackageChunk packageChunk : packageChunks.values()) {
       ResTablePackage resTablePackage = packageChunk.getTablePackage();
+
+      Package _package = new Package(resTable, new Header(resTable), resTablePackage);
+      _package.typeStrings = packageChunk.getTypeStringPool().createResStringPool();
+      _package.keyStrings = packageChunk.getKeyStringPool().createResStringPool();
+
       PackageGroup packageGroup = new PackageGroup(resTable, new String(resTablePackage.name),
           resTablePackage.id,
           false, false);
-
-      packageGroup.packages.add(resTablePackage);
+      packageGroup.packages.add(_package);
 
       for (TypeSpecChunk typeSpecChunk : packageChunk.getTypeSpecs()) {
         ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
-        ResTable.Type type = new ResTable.Type(new Header(resTable), new Package(resTable,
-            new Header(resTable), resTablePackage), typeSpec.entryCount);
+        ResTable.Type type = new ResTable.Type(new Header(resTable), _package, typeSpec.entryCount);
         type.typeSpec = typeSpec;
 
         List<TypeChunk> types = packageChunk.getTypes(typeSpec.id);
@@ -268,6 +271,24 @@ abstract public class Chunk {
       return isUTF8() ? ResourceString.Type.UTF8 : ResourceString.Type.UTF16;
     }
 
+    public ResStringPool createResStringPool() {
+      List<String> stringEntries = new ArrayList<>(getStringCount());
+      for (int i=0; i < getStringCount(); i++) {
+        stringEntries.add(getString(i));
+      }
+      return new ResStringPool(createHeader(), stringEntries);
+    }
+
+    private ResStringPoolHeader createHeader() {
+      ResStringPoolHeader header = new ResStringPoolHeader();
+      header.flags = getFlags();
+      header.stringCount = getStringCount();
+      header.stringsStart = getStringsStart();
+      header.styleCount = getStringCount();
+      //header.stylesStart =
+      return header;
+    }
+
     public static class StringPoolStyle {
 
       // Styles are a list of integers with 0xFFFFFFFF serving as a sentinel value.
@@ -353,7 +374,7 @@ abstract public class Chunk {
         tablePackage.name[i] = buffer.getChar();
       }
       tablePackage.header = header;
-      tablePackage.typeStrings = new ResStringPool();
+      tablePackage.typeStrings = buffer.getInt();
       tablePackage.lastPublicType = buffer.getInt();
       tablePackage.keyStrings = buffer.getInt();
       tablePackage.lastPublicKey = buffer.getInt();
