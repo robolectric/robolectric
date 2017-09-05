@@ -4,6 +4,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -329,13 +330,15 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  public void saveState(Bundle bundle) {
+  public WebBackForwardList saveState(Bundle bundle) {
     saveStateCalled = true;
+    return realWebView.saveState(bundle);
   }
 
   @Implementation
-  public void restoreState(Bundle bundle) {
+  public WebBackForwardList restoreState(Bundle bundle) {
     restoreStateCalled = true;
+    return realWebView.restoreState(bundle);
   }
 
   public boolean wasSaveStateCalled() {
@@ -345,7 +348,6 @@ public class ShadowWebView extends ShadowViewGroup {
   public boolean wasRestoreStateCalled() {
     return restoreStateCalled;
   }
-
 
   /**
    * Sets the value to return from {@code android.webkit.WebView#canGoBack()}
