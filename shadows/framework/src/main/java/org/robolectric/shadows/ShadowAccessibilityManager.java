@@ -16,6 +16,7 @@ import java.util.List;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -26,6 +27,7 @@ public class ShadowAccessibilityManager {
   private static AccessibilityManager sInstance;
   private static final Object sInstanceSync = new Object();
 
+  @RealObject AccessibilityManager realAccessibilityManager;
   private boolean enabled;
   private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
@@ -108,6 +110,7 @@ public class ShadowAccessibilityManager {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+    ReflectionHelpers.setField(realAccessibilityManager, "mIsEnabled", enabled);
   }
 
   @Implementation
