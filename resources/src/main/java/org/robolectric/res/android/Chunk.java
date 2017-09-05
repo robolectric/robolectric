@@ -173,7 +173,8 @@ abstract public class Chunk {
 
       for (TypeSpecChunk typeSpecChunk : packageChunk.getTypeSpecs()) {
         ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
-        ResTable.Type type = new ResTable.Type(new Header(resTable), new Package(resTable, new Header(resTable), resTablePackage), typeSpec.entryCount);
+        ResTable.Type type = new ResTable.Type(new Header(resTable), new Package(resTable,
+            new Header(resTable), resTablePackage), typeSpec.entryCount);
         type.typeSpec = typeSpec;
 
         List<TypeChunk> types = packageChunk.getTypes(typeSpec.id);
