@@ -669,7 +669,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public int getPackageUid(String packageName, int flags) throws NameNotFoundException {
     Integer uid = uidForPackage.get(packageName);
-    return uid != null ? uid : 0;
+    if (uid == null) {
+      throw new NameNotFoundException(packageName);
+    }
+    return uid;
   }
 
   @Implementation
