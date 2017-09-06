@@ -14,13 +14,10 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import org.robolectric.res.ResourceIds;
 import org.robolectric.util.Strings;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
@@ -52,7 +49,7 @@ public class ResTable {
   // When iterating over a bag, the mLock mutex is locked. While mLock is locked,
   // we do resource lookups.
   // Mutex is not reentrant, so we must use a different lock than mLock.
-  Object               mFilteredConfigLock;
+  final Object               mFilteredConfigLock = new Object();
 
   // type defined in Errors
   int mError;
@@ -365,7 +362,7 @@ public class ResTable {
       return err;
     }
 
-    if ((entry.get().specFlags & ResTableEntry.FLAG_COMPLEX) != 0) {
+    if ((entry.get().entry.flags & ResTableEntry.FLAG_COMPLEX) != 0) {
       if (!mayBeBag) {
         ALOGW("Requesting resource 0x%08x failed because it is complex\n", resID);
       }
@@ -439,25 +436,7 @@ public class ResTable {
     return blockIndex;
   }
 
-  Entry getEntry(int resId, String qualifiers) {
-    return getEntry(ResourceIds.getPackageIdentifier(resId),
-        ResourceIds.getTypeIdentifier(resId)-1,
-        ResourceIds.getEntryIdentifier(resId), qualifiers);
-  }
-
-  Entry getEntry(int packageId, int typeIndex, int entryIndex, String qualifiers) {
-    ResTableConfig config = new ResTableConfig();
-    if (qualifiers != null) {
-      new ConfigDescription().parse(qualifiers, config);
-    }
-
-    PackageGroup packageGroup = mPackageGroups.get(packageId);
-    Ref<Entry> outEntryRef = new Ref<>(null);
-    getEntry(packageGroup, typeIndex, entryIndex, config, outEntryRef);
-    return outEntryRef.get();
-  }
-
-  int getEntry(
+  private int getEntry(
       final PackageGroup packageGroup, int typeIndex, int entryIndex,
       final ResTableConfig config,
       Ref<Entry> outEntryRef)
@@ -518,25 +497,25 @@ public class ResTable {
       List<ResTableType> candidateConfigs = typeSpec.configs;
 
       List<ResTableType> filteredConfigs;
-      if (isTruthy(config) && Objects.equals(mParams, config)) {
-        // Grab the lock first so we can safely get the current filtered list.
-        synchronized (mFilteredConfigLock) {
-          // This configuration is equal to the one we have previously cached for,
-          // so use the filtered configs.
-
-          final TypeCacheEntry cacheEntry = packageGroup.typeCacheEntries.get(typeIndex);
-          if (i < cacheEntry.filteredConfigs.size()) {
-            if (isTruthy(cacheEntry.filteredConfigs.get(i))) {
-              // Grab a reference to the shared_ptr so it doesn't get destroyed while
-              // going through this list.
-              filteredConfigs = cacheEntry.filteredConfigs.get(i);
-
-              // Use this filtered list.
-              candidateConfigs = filteredConfigs;
-            }
-          }
-        }
-      }
+//      if (isTruthy(config) && Objects.equals(mParams, config)) {
+//        // Grab the lock first so we can safely get the current filtered list.
+//        synchronized (mFilteredConfigLock) {
+//          // This configuration is equal to the one we have previously cached for,
+//          // so use the filtered configs.
+//
+//          final TypeCacheEntry cacheEntry = packageGroup.typeCacheEntries.get(typeIndex);
+//          if (i < cacheEntry.filteredConfigs.size()) {
+//            if (isTruthy(cacheEntry.filteredConfigs.get(i))) {
+//              // Grab a reference to the shared_ptr so it doesn't get destroyed while
+//              // going through this list.
+//              filteredConfigs = cacheEntry.filteredConfigs.get(i);
+//
+//              // Use this filtered list.
+//              candidateConfigs = filteredConfigs;
+//            }
+//          }
+//        }
+//      }
 
       final int numConfigs = candidateConfigs.size();
       for (int c = 0; c < numConfigs; c++) {

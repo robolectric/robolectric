@@ -12,7 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.res.ResourceIds;
 import org.robolectric.res.android.ResTable.Entry;
+import org.robolectric.res.android.ResTable.PackageGroup;
 import org.robolectric.resources.R;
 
 @RunWith(JUnit4.class)
@@ -34,31 +36,50 @@ public class ResTableTest {
 
   @Test
   public void testGetEntry_intType() {
-    Entry entry = resTable.getEntry(R.integer.flock_size, null);
-    assertThat(entry.entry.value.dataType).isEqualTo(DataType.INT_DEC.code());
-    assertThat(entry.entry.value.data).isEqualTo(1234);
+    Ref<ResValue> outValue = new Ref<>(null);
+    assertThat(resTable.getResource(R.integer.flock_size, outValue, true, 0, new Ref<Integer>(null), null)).isGreaterThan(-1);
+
+    assertThat(outValue.get().dataType).isEqualTo(DataType.INT_DEC.code());
+    assertThat(outValue.get().data).isEqualTo(1234);
   }
 
   @Test
   public void testGetEntry_intType_large() {
-    Entry entry = resTable.getEntry(R.integer.flock_size, "large");
-    assertThat(entry.entry.value.dataType).isEqualTo(DataType.INT_DEC.code());
-    assertThat(entry.entry.value.data).isEqualTo(1000000);
+    Ref<ResValue> outValue = new Ref<>(null);
+    resTable.mParams = newConfig("large");
+    assertThat(resTable.getResource(R.integer.flock_size, outValue, true, 0, new Ref<Integer>(null), null)).isGreaterThan(-1);
+
+    assertThat(outValue.get().dataType).isEqualTo(DataType.INT_DEC.code());
+    assertThat(outValue.get().data).isEqualTo(1000000);
   }
 
   @Test
   public void testGetEntry_stringType() throws Exception {
-    Entry entry = resTable.getEntry(R.string.first_string, null);
-    assertThat(entry.entry.value.dataType).isEqualTo(
+    Ref<ResValue> outValue = new Ref<>(null);
+
+    assertThat(resTable.getResource(R.string.first_string, outValue, true, 0, new Ref<Integer>(null), null)).isGreaterThan(-1);
+
+    assertThat(outValue.get().dataType).isEqualTo(
         DataType.STRING.code());
     //assertThat(entry.entry.value.data).isEqualTo("sheep");
   }
 
   @Test
-  public void testGetEntry_boolType() throws Exception {
-    assertThat(resTable.getEntry(R.bool.is_verizon, null).entry.value.dataType).isEqualTo(DataType.INT_BOOLEAN.code());
-    // Uncomment when we start selecting correct configuration
-    assertThat(resTable.getEntry(R.bool.is_verizon, "").entry.value.data).isEqualTo(0);
+  public void testGetResource_boolType() throws Exception {
+    Ref<ResValue> outValue = new Ref<>(null);
+    assertThat(resTable.getResource(R.bool.is_verizon, outValue, true, 0, new Ref<Integer>(null), null)).isGreaterThan(-1);
+
+    assertThat(outValue.get().dataType).isEqualTo(DataType.INT_BOOLEAN.code());
+    assertThat(outValue.get().data).isEqualTo(0);
+  }
+
+
+  private static ResTableConfig newConfig(String qualifiers) {
+    ResTableConfig config = new ResTableConfig();
+    if (qualifiers != null) {
+      new ConfigDescription().parse(qualifiers, config);
+    }
+    return config;
   }
 
 //  @Test
