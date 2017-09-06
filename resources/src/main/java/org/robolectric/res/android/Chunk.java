@@ -179,6 +179,7 @@ abstract public class Chunk {
         ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
         ResTable.Type type = new ResTable.Type(new Header(resTable), _package, typeSpec.entryCount);
         type.typeSpec = typeSpec;
+        type.typeSpecFlags
 
         List<TypeChunk> types = packageChunk.getTypes(typeSpec.id);
         if (types != null) {

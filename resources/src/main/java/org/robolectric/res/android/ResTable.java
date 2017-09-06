@@ -76,7 +76,7 @@ public class ResTable {
     return ((id>>24)-1);
   }
   static int Res_GETTYPE(int id) {
-    return (((id>>16)&0xFF)-1);
+    return (((id>>16)&0xFF));
   }
   static int Res_GETENTRY(int id) {
     return (id&0xFFFF);
@@ -85,7 +85,8 @@ public class ResTable {
 
   int getResourcePackageIndex(int resID)
   {
-    return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
+    return Res_GETPACKAGE(resID) + 1;
+    //return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
   }
 
   public void add(InputStream is) throws IOException {
@@ -329,7 +330,7 @@ public class ResTable {
     if (mError != NO_ERROR) {
       return mError;
     }
-    final long p = getResourcePackageIndex(resID);
+    final int p = getResourcePackageIndex(resID);
     final int t = Res_GETTYPE(resID);
     final int e = Res_GETENTRY(resID);
     if (p < 0) {
