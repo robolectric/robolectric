@@ -1065,6 +1065,7 @@ public class ShadowPackageManagerTest {
       assertThat(e.getMessage()).contains("a_name");
       throw e;
     }
+    
   }
 
   @Test
