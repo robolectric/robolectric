@@ -58,7 +58,7 @@ public class ResTableTest {
   public void testGetEntry_boolType() throws Exception {
     assertThat(resTable.getEntry(R.bool.is_verizon, null).entry.value.dataType).isEqualTo(DataType.INT_BOOLEAN.code());
     // Uncomment when we start selecting correct configuration
-//    assertThat(resTable.getEntry(R.bool.is_verizon, 0).value.dataType).isEqualTo(0);
+    assertThat(resTable.getEntry(R.bool.is_verizon, "").entry.value.data).isEqualTo(0);
   }
 
 //  @Test

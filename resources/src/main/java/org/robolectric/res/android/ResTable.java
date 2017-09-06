@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class ResTable {
   ResTableConfig             mParams;
 
   // Array of all resource tables.
-  List<Header>             mHeaders;
+  List<Header>             mHeaders = new ArrayList<>();
 
   // Array of packages in all resource tables.
   Map<Integer, PackageGroup> mPackageGroups = new HashMap<>();
@@ -76,7 +77,7 @@ public class ResTable {
     return ((id>>24)-1);
   }
   static int Res_GETTYPE(int id) {
-    return (((id>>16)&0xFF));
+    return (((id>>16)&0xFF)-1);
   }
   static int Res_GETENTRY(int id) {
     return (id&0xFFFF);
@@ -373,8 +374,8 @@ public class ResTable {
     ResValue value = entry.get().entry.value;
     //outValue.get().size = dtohs(value->size);
     //outValue.get().res0 = value->res0;
-    outValue.get().dataType = value.dataType;
-    outValue.get().data = value.data;
+    outValue.set(new ResValue(value));
+    //outValue.get().data = value.data;
     // The reference may be pointing to a resource in a shared library. These
     // references have build-time generated package IDs. These ids may not match
     // the actual package IDs of the corresponding packages in this ResTable.
@@ -440,7 +441,7 @@ public class ResTable {
 
   Entry getEntry(int resId, String qualifiers) {
     return getEntry(ResourceIds.getPackageIdentifier(resId),
-        ResourceIds.getTypeIdentifier(resId),
+        ResourceIds.getTypeIdentifier(resId)-1,
         ResourceIds.getEntryIdentifier(resId), qualifiers);
   }
 
@@ -997,8 +998,8 @@ public class ResTable {
     final Package _package_;
     public final int entryCount;
     public ResTableTypeSpec typeSpec;
-    public final int[] typeSpecFlags;
-    public IdmapEntries                    idmapEntries = new IdmapEntries();
+    public int[] typeSpecFlags;
+    public IdmapEntries idmapEntries = new IdmapEntries();
     public List<ResTableType> configs;
 
     public Type(final Header _header, final Package _package, int count)
