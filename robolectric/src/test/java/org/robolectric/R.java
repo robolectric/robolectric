@@ -268,12 +268,16 @@ containing a value of this type.
         public static final int black=0x7f0a0003;
         public static final int blue=0x7f0a0004;
         public static final int clear=0x7f0a0001;
-        public static final int color_state_list=0x7f0a000c;
+        public static final int color_state_list=0x7f0a0010;
         public static final int color_with_alpha=0x7f0a0006;
-        public static final int custom_state_view_text_color=0x7f0a000d;
+        public static final int custom_state_view_text_color=0x7f0a0011;
         public static final int foreground=0x7f0a0000;
         public static final int grey42=0x7f0a0005;
         public static final int list_separator=0x7f0a000a;
+        public static final int test_ARGB4=0x7f0a000c;
+        public static final int test_ARGB8=0x7f0a000d;
+        public static final int test_RGB4=0x7f0a000e;
+        public static final int test_RGB8=0x7f0a000f;
         public static final int typed_array_orange=0x7f0a000b;
         public static final int white=0x7f0a0002;
     }

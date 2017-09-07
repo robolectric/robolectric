@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -310,13 +312,48 @@ public class ShadowAssetManagerTest {
   @Test
   public void getResourceValue_int() {
     TypedValue outValue = new TypedValue();
-    assertThat(shadowAssetManager.getResourceValue(R.bool.false_bool_value, 0, outValue, false)).isTrue();
-    assertThat(outValue.type).isEqualTo(DataType.INT_BOOLEAN.code());
-    assertThat(outValue.data).isEqualTo(0);
+    assertThat(shadowAssetManager.getResourceValue(R.integer.test_integer1, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.INT_DEC.code());
+    assertThat(outValue.data).isEqualTo(2000);
+  }
 
-    outValue = new TypedValue();
-    assertThat(shadowAssetManager.getResourceValue(R.bool.true_as_item, 0, outValue, false)).isTrue();
-    assertThat(outValue.type).isEqualTo(DataType.INT_BOOLEAN.code());
-    assertThat(outValue.data).isNotEqualTo(0);
+  @Test
+  public void getResourceValue_intHex() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.integer.hex_int, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.INT_HEX.code());
+    assertThat(outValue.data).isEqualTo(0xFFFF0000);
+  }
+
+  @Test
+  public void getResourceValue_fraction() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.fraction.half, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.FRACTION.code());
+    assertThat(outValue.getFraction(1, 1)).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void getResourceValue_dimension() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.dimen.test_px_dimen, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.DIMENSION.code());
+    assertThat(outValue.getDimension(new DisplayMetrics())).isEqualTo(15);
+  }
+
+  @Test
+  public void getResourceValue_colorARGB8() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.color.test_ARGB8, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.INT_COLOR_ARGB8.code());
+    assertThat(Color.blue(outValue.data)).isEqualTo(2);
+  }
+
+  @Test
+  public void getResourceValue_colorRGB8() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.color.test_RGB8, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.INT_COLOR_RGB8.code());
+    assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
 }
