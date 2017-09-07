@@ -796,6 +796,14 @@ public class ResTable {
     return 0;
   }
 
+  public int getTableCount() {
+    return mHeaders.size();
+  }
+
+  public ResStringPool getTableStringBlock(int index) {
+    return mHeaders.get(index).values;
+  }
+
   // A group of objects describing a particular resource package.
   // The first in 'package' is always the root object (from the resource
   // table that defined the package); the ones after are skins on top of it.

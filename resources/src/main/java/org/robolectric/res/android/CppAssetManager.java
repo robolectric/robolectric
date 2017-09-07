@@ -350,16 +350,19 @@ public class CppAssetManager {
 //      return ret;
 //  }
 //  
-//  boolean addDefaultAssets()
-//  {
-//      final char* root = getenv("ANDROID_ROOT");
-//      LOG_ALWAYS_FATAL_IF(root == NULL, "ANDROID_ROOT not set");
-//  
-//      String8 path(root);
+  public boolean addDefaultAssets()
+  {
+      //final char* root = getenv("ANDROID_ROOT");
+      //LOG_ALWAYS_FATAL_IF(root == NULL, "ANDROID_ROOT not set");
+
+//      String8 path = new String8("");
 //      path.appendPath(kSystemAssets);
-//  
+//
 //      return addAssetPath(path, NULL, false /* appAsLib */, true /* isSystemAsset */);
-//  }
+
+    mAssetPaths.add(new asset_path());
+    return true;
+  }
 //  
 //  int nextAssetPath(final int cookie) final
 //  {

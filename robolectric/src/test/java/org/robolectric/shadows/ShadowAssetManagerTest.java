@@ -356,4 +356,12 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.type).isEqualTo(DataType.INT_COLOR_RGB8.code());
     assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
+
+  @Test
+  public void getResourceValue_string() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.string.hello, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.STRING.code());
+    assertThat(outValue.string).isEqualTo("Hello");
+  }
 }

@@ -148,13 +148,12 @@ abstract public class Chunk {
     assert chunkType == Type.TABLE;
 
     final ResTableHeader tableHeader;
-    final StringPoolChunk valuesStringPool;
     final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
     tableHeader = new ResTableHeader();
     tableHeader.header = resChunkHeader;
     tableHeader.packageCount = buffer.getInt();
-    valuesStringPool = readStringPool(buffer, resChunkHeader.headerSize);
+    final StringPoolChunk valuesStringPool = readStringPool(buffer, resChunkHeader.headerSize);
 
     int packageChunkOffset = resChunkHeader.headerSize + valuesStringPool.header.size;
     for (int i = 0; i < tableHeader.packageCount; i++) {
@@ -164,6 +163,8 @@ abstract public class Chunk {
     }
 
     Header header = new Header(resTable);
+    header.values = valuesStringPool.createResStringPool();
+
     resTable.mHeaders.add(header);
     for (PackageChunk packageChunk : packageChunks.values()) {
       ResTablePackage resTablePackage = packageChunk.getTablePackage();

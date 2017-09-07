@@ -49,7 +49,7 @@ public class ShadowArscAssetManager {
     } else {
       invokeConstructor(AssetManager.class, realObject);
       resTable = loadAppResTable();
-      cppAssetManager = new CppAssetManager();
+//      cppAssetManager = new CppAssetManager();
     }
   }
 
@@ -63,7 +63,7 @@ public class ShadowArscAssetManager {
       invokeConstructor(AssetManager.class, realObject,
           ClassParameter.from(boolean.class, isSystem));
       resTable = isSystem ? loadSystemResTable() : loadAppResTable();
-      cppAssetManager = new CppAssetManager();
+//      cppAssetManager = new CppAssetManager();
     }
   }
 
@@ -519,7 +519,17 @@ public class ShadowArscAssetManager {
 //  /*package*/ native final int getArraySize(int resource);
 //  /*package*/ native final int retrieveArray(int resource, int[] outValues);
 //  private native final int getStringBlockCount();
-//  private native final long getNativeStringBlock(int block);
+
+  @HiddenApi
+  @Implementation
+  public long getNativeStringBlock(int block) {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+
+    return ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block));
+  }
 //
 //  /**
 //   * {@hide}
@@ -565,7 +575,18 @@ public class ShadowArscAssetManager {
 //  /*package*/ native final int[] getArrayIntResource(int arrayRes);
 //  /*package*/ native final int[] getStyleAttributes(int themeRes);
 //
-//  private native final void init(boolean isSystem);
+@HiddenApi
+@Implementation
+ public void init(boolean isSystem) {
+//  if (isSystem) {
+//    verifySystemIdmaps();
+//  }
+  CppAssetManager am = assetManagerForJavaObject();
+
+  am.addDefaultAssets();
+
+}
+
 //  private native final void destroy();
 
   @HiddenApi
@@ -600,9 +621,22 @@ public class ShadowArscAssetManager {
 //    return (res) ? cookie.get() : 0;
 //  }
 
+  @HiddenApi
+  @Implementation
+  public int getStringBlockCount()
+  {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+    return am.getResources().getTableCount();
+  }
 
 
   private CppAssetManager assetManagerForJavaObject() {
+    if (cppAssetManager == null) {
+      cppAssetManager = new CppAssetManager();
+    }
     return cppAssetManager;
   }
 

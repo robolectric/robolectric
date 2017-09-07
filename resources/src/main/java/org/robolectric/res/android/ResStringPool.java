@@ -136,7 +136,10 @@ public class ResStringPool {
     return NAME_NOT_FOUND;
   }
 //
-//    int size() final;
+    public int size() {
+      return mStrings.size();
+    }
+
 //    int styleCount() final;
 //    int bytes() final;
 //
