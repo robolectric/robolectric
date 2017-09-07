@@ -35,7 +35,7 @@ public class ResourceTableFactoryTest {
 
   @Test
   public void shouldHandleStyleable() throws Exception {
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/textStyle"))).isEqualTo(R.id.textStyle);
+    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/burritos"))).isEqualTo(R.id.burritos);
     assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:styleable/TitleBar_textStyle"))).isEqualTo(0);
   }
 

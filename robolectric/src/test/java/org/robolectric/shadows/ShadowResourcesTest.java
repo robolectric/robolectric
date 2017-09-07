@@ -336,7 +336,7 @@ public class ShadowResourcesTest {
 
   @Test(expected = Resources.NotFoundException.class)
   public void testGetColor_Missing() {
-    resources.getColor(R.color.test_color_1);
+    resources.getColor(1293405);
   }
 
   @Test

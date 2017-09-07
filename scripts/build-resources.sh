@@ -15,9 +15,24 @@ mkdir -p $outDir
 mkdir -p $javaSrc
 
 $aapt p -v -f -m --auto-add-overlay -I $ANDROID_HOME/platforms/android-25/android.jar \
-  -S $inDir/res -M $inDir/AndroidManifest.xml \
+  -S $inDir/lib1/res -M $inDir/lib1/AndroidManifest.xml \
+  -J $javaSrc \
+  --non-constant-id
+
+$aapt p -v -f -m --auto-add-overlay -I $ANDROID_HOME/platforms/android-25/android.jar \
+  -S $inDir/lib2/res -M $inDir/lib2/AndroidManifest.xml \
+  -J $javaSrc \
+  --non-constant-id
+
+$aapt p -v -f -m --auto-add-overlay -I $ANDROID_HOME/platforms/android-25/android.jar \
+  -S $inDir/lib3/res -M $inDir/lib3/AndroidManifest.xml \
+  -J $javaSrc \
+  --non-constant-id
+
+$aapt p -v -f -m --auto-add-overlay -I $ANDROID_HOME/platforms/android-25/android.jar \
   -S $inDir/lib1/res -M $inDir/lib1/AndroidManifest.xml \
   -S $inDir/lib2/res -M $inDir/lib2/AndroidManifest.xml \
   -S $inDir/lib3/res -M $inDir/lib3/AndroidManifest.xml \
+  -S $inDir/res -M $inDir/AndroidManifest.xml \
   -F $outDir/resources.ap_ \
   -J $javaSrc

@@ -40,6 +40,7 @@ import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.TestUtil.joinPath;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
+@Config(sdk = VERSION_CODES.O)
 public class ShadowAssetManagerTest {
 
   @Rule
@@ -293,7 +294,8 @@ public class ShadowAssetManagerTest {
         .isEqualTo(R.raw.raw_resource);
   }
 
-  @Test public void booleanVal() {
+  @Test
+  public void getResourceValue_boolean() {
     TypedValue outValue = new TypedValue();
     assertThat(shadowAssetManager.getResourceValue(R.bool.false_bool_value, 0, outValue, false)).isTrue();
     assertThat(outValue.type).isEqualTo(DataType.INT_BOOLEAN.code());
@@ -302,6 +304,19 @@ public class ShadowAssetManagerTest {
     outValue = new TypedValue();
     assertThat(shadowAssetManager.getResourceValue(R.bool.true_as_item, 0, outValue, false)).isTrue();
     assertThat(outValue.type).isEqualTo(DataType.INT_BOOLEAN.code());
-    assertThat(outValue.data).isEqualTo(1);
+    assertThat(outValue.data).isNotEqualTo(0);
+  }
+
+  @Test
+  public void getResourceValue_int() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.bool.false_bool_value, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.INT_BOOLEAN.code());
+    assertThat(outValue.data).isEqualTo(0);
+
+    outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(R.bool.true_as_item, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.INT_BOOLEAN.code());
+    assertThat(outValue.data).isNotEqualTo(0);
   }
 }

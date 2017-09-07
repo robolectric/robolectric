@@ -368,6 +368,7 @@ public class ResTable {
       }
       return BAD_VALUE;
     }
+
     ResValue value = entry.get().entry.value;
     //outValue.get().size = dtohs(value->size);
     //outValue.get().res0 = value->res0;

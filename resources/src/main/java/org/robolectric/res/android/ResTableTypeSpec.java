@@ -28,4 +28,10 @@ public class ResTableTypeSpec {
 
     // Additional flag indicating an entry is public.
     final static int SPEC_PUBLIC = 0x40000000;
+
+    /**
+     * The payload contains an array of integers. Each integer represents a mask of configurations for
+     * which a resource entry has values for. The high bit is set if the entry is public.
+     */
+    public int[] configMasks;
 }

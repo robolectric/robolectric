@@ -723,9 +723,9 @@ public class ShadowActivityTest {
 
   @Test public void shouldGetAttributeFromThemeSetOnActivity() throws Exception {
     ShadowThemeTest.TestActivity activity = setupActivity(ShadowThemeTest.TestActivityWithAnotherTheme.class);
-    TypedArray a = activity.obtainStyledAttributes(R.styleable.AnotherTheme);
+    TypedArray a = activity.obtainStyledAttributes(R.styleable.CustomView);
 
-    assertThat(a.hasValue(R.styleable.AnotherTheme_animalStyle)).isTrue();
+    assertThat(a.hasValue(R.styleable.CustomView_animalStyle)).isTrue();
   }
 
   @Test

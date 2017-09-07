@@ -143,8 +143,8 @@ abstract public class Chunk {
   }
 
   public static void readTableChunk(ByteBuffer buffer, ResTable resTable) {
-    ResChunkHeader header = getResChunkHeader(buffer, 0);
-    Type chunkType = Type.fromCode(header.type);
+    ResChunkHeader resChunkHeader = getResChunkHeader(buffer, 0);
+    Type chunkType = Type.fromCode(resChunkHeader.type);
     assert chunkType == Type.TABLE;
 
     final ResTableHeader tableHeader;
@@ -152,21 +152,23 @@ abstract public class Chunk {
     final Map<Integer, PackageChunk> packageChunks = new HashMap<>();
 
     tableHeader = new ResTableHeader();
-    tableHeader.header = header;
+    tableHeader.header = resChunkHeader;
     tableHeader.packageCount = buffer.getInt();
-    valuesStringPool = readStringPool(buffer, header.headerSize);
+    valuesStringPool = readStringPool(buffer, resChunkHeader.headerSize);
 
-    int packageChunkOffset = header.headerSize + valuesStringPool.header.size;
+    int packageChunkOffset = resChunkHeader.headerSize + valuesStringPool.header.size;
     for (int i = 0; i < tableHeader.packageCount; i++) {
       PackageChunk packageChunk = readPackageChunk(buffer, packageChunkOffset);
       packageChunks.put(packageChunk.tablePackage.id, packageChunk);
       packageChunkOffset = packageChunk.header.size;
     }
 
+    Header header = new Header(resTable);
+    resTable.mHeaders.add(header);
     for (PackageChunk packageChunk : packageChunks.values()) {
       ResTablePackage resTablePackage = packageChunk.getTablePackage();
 
-      Package _package = new Package(resTable, new Header(resTable), resTablePackage);
+      Package _package = new Package(resTable, header, resTablePackage);
       _package.typeStrings = packageChunk.getTypeStringPool().createResStringPool();
       _package.keyStrings = packageChunk.getKeyStringPool().createResStringPool();
 
@@ -177,9 +179,11 @@ abstract public class Chunk {
 
       for (TypeSpecChunk typeSpecChunk : packageChunk.getTypeSpecs()) {
         ResTableTypeSpec typeSpec = typeSpecChunk.typeSpec;
-        ResTable.Type type = new ResTable.Type(new Header(resTable), _package, typeSpec.entryCount);
+        ResTable.Type type = new ResTable.Type(header, _package, typeSpec.entryCount);
         type.typeSpec = typeSpec;
-        type.typeSpecFlags
+
+        type.typeSpecFlags = new int[typeSpec.entryCount];
+        System.arraycopy(typeSpecChunk.typeSpec.configMasks, 0, type.typeSpecFlags, 0, type.typeSpecFlags.length);
 
         List<TypeChunk> types = packageChunk.getTypes(typeSpec.id);
         if (types != null) {
@@ -188,10 +192,11 @@ abstract public class Chunk {
           }
         }
 
-        List<ResTable.Type> typeList = packageGroup.types.get((int) typeSpec.id);
+        int typeIndex = typeSpec.id - 1;
+        List<ResTable.Type> typeList = packageGroup.types.get(typeIndex);
         if (typeList == null) {
           typeList = new LinkedList<>();
-          packageGroup.types.put((int)typeSpec.id, typeList);
+          packageGroup.types.put(typeIndex, typeList);
         }
         typeList.add(type);
       }
@@ -443,10 +448,6 @@ abstract public class Chunk {
       return typesByTypeId.get(typeId);
     }
 
-    public Map<Integer, List<TypeChunk>> getTypesByTypeId() {
-      return typesByTypeId;
-    }
-
     public List<TypeSpecChunk> getTypeSpecs() {
       return typeSpecs;
     }
@@ -463,6 +464,11 @@ abstract public class Chunk {
         typeSpec.res0 = buffer.get();
         typeSpec.res1 = buffer.getShort();
         typeSpec.entryCount = buffer.getInt();
+
+        typeSpec.configMasks = new int[typeSpec.entryCount];
+        for (int i = 0; i < typeSpec.entryCount; i++) {
+          typeSpec.configMasks[i] = buffer.getInt();
+        }
       }
     }
 

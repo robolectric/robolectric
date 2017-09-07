@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="CustomView">
+    <declare-styleable name="Lib1Styleable">
         <attr name="attrFromLib1" format="string"/>
+        <attr name="attr2FromLib1" format="string"/>
     </declare-styleable>
 </resources>

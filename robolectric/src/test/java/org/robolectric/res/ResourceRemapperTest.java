@@ -7,6 +7,7 @@ import org.junit.runners.JUnit4;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.robolectric.lib1.R;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,14 +33,12 @@ public class ResourceRemapperTest {
     assertThat(org.robolectric.R.string.in_all_libs).isEqualTo(org.robolectric.lib3.R.string.in_all_libs);
 
     // Resource identifiers that clash across two libraries should be remapped to different values.
-    assertThat(org.robolectric.lib1.R.id.lib1_button)
-        .isNotEqualTo(org.robolectric.lib2.R.id.lib2_button);
+    assertThat(org.robolectric.lib1.R.attr.attrFromLib1)
+        .isNotEqualTo(org.robolectric.lib2.R.attr.attrFromLib2);
 
     // Styleable arrays of values should be updated to match the remapped values.
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.lib1.R.styleable.SomeStyleable);
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.lib2.R.styleable.SomeStyleable);
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.lib3.R.styleable.SomeStyleable);
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.R.attr.offsetX, org.robolectric.R.attr.offsetY);
+    assertThat(org.robolectric.R.styleable.Lib1Styleable).containsExactly(org.robolectric.lib1.R.styleable.Lib1Styleable);
+    assertThat(org.robolectric.R.styleable.Lib1Styleable).containsExactly(org.robolectric.R.attr.attrFromLib1, org.robolectric.R.attr.attr2FromLib1);
   }
 
   @Test
