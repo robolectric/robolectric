@@ -22,6 +22,7 @@ import android.util.Xml;
 import android.view.Display;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -879,11 +880,16 @@ public class ShadowResourcesTest {
     }
   }
 
-  @Test
-  public void stringWithSpaces() throws Exception {
-    // this differs from actual Android behavior, which collapses whitespace as "Up to 25 USD"
+  @Test @Ignore("for non-ARSC resources")
+  public void stringWithSpacesWithOldResourceLoader() throws Exception {
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25   USD");
+  }
+
+  @Test
+  public void stringWithSpaces() throws Exception {
+    assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
+        .isEqualTo("Up to 25 USD");
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

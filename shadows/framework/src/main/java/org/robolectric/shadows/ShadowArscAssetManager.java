@@ -10,11 +10,13 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.os.Build.VERSION_CODES;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -218,7 +220,12 @@ public class ShadowArscAssetManager {
   @HiddenApi
   @Implementation
   public int addAssetPath(String path) {
-    return directlyOn(realObject, AssetManager.class, "addAssetPath", ClassParameter.from(String.class, path));
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
+      return addAssetPathNative(path);
+    } else {
+      return directlyOn(realObject, AssetManager.class, "addAssetPath",
+          ClassParameter.from(String.class, path));
+    }
   }
 
   @HiddenApi
@@ -574,23 +581,38 @@ public class ShadowArscAssetManager {
 //  private native final int[] getArrayStringInfo(int arrayRes);
 //  /*package*/ native final int[] getArrayIntResource(int arrayRes);
 //  /*package*/ native final int[] getStyleAttributes(int themeRes);
-//
-@HiddenApi
-@Implementation
- public void init(boolean isSystem) {
-//  if (isSystem) {
-//    verifySystemIdmaps();
-//  }
-  CppAssetManager am = assetManagerForJavaObject();
 
-  am.addDefaultAssets();
+  @HiddenApi
+  @Implementation(maxSdk = VERSION_CODES.KITKAT)
+  public void init() {
+  //  if (isSystem) {
+  //    verifySystemIdmaps();
+  //  }
+    init(false);
+  }
 
-}
+    @HiddenApi
+    @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
+    public void init(boolean isSystem) {
+  //  if (isSystem) {
+  //    verifySystemIdmaps();
+  //  }
+      CppAssetManager am = assetManagerForJavaObject();
+
+      am.addDefaultAssets();
+
+    }
 
 //  private native final void destroy();
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.M)
+  public int addAssetPathNative(String path) {
+    return addAssetPathNative(path, false);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = VERSION_CODES.N)
   public int addAssetPathNative(String path, boolean appAsLib) {
     if (Strings.isNullOrEmpty(path)) {
       return 0;
