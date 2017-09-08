@@ -18,6 +18,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.res.*;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -101,23 +102,31 @@ public class ShadowResources {
 
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+    if (isLegacyAssetManager()) {
+      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
 
-    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
-    if (typedResource != null && typedResource instanceof PluralRules) {
-      PluralRules pluralRules = (PluralRules) typedResource;
-      Plural plural = pluralRules.find(quantity);
+      TypedResource typedResource = shadowAssetManager.getResourceTable()
+          .getValue(resId, RuntimeEnvironment.getQualifiers());
+      if (typedResource != null && typedResource instanceof PluralRules) {
+        PluralRules pluralRules = (PluralRules) typedResource;
+        Plural plural = pluralRules.find(quantity);
 
-      if (plural == null) {
+        if (plural == null) {
+          return null;
+        }
+
+        TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
+            new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE,
+                pluralRules.getXmlContext()),
+            RuntimeEnvironment.getQualifiers(), resId);
+        return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
+      } else {
         return null;
       }
-
-      TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
-          RuntimeEnvironment.getQualifiers(), resId);
-      return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
-    } else {
-      return null;
+    }
+    else {
+        return directlyOn(realResources, Resources.class, "getQuantityString",
+            ClassParameter.from(int.class, resId), ClassParameter.from(int.class, quantity));
     }
   }
 
@@ -165,13 +174,22 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-    TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
-    if (typedArray != null) {
-      return typedArray;
+    if (isLegacyAssetManager()) {
+      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+      TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
+      if (typedArray != null) {
+        return typedArray;
+      } else {
+        throw newNotFoundException(id);
+      }
     } else {
-      throw newNotFoundException(id);
+      return directlyOn(realResources, Resources.class, "obtainTypedArray",
+          new ClassParameter(int.class, id));
     }
+  }
+
+  boolean isLegacyAssetManager() {
+    return Shadow.extract(realResources.getAssets()) instanceof ShadowAssetManager;
   }
 
   public void setDensity(float density) {

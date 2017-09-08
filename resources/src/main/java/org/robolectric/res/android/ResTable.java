@@ -4,8 +4,14 @@ import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.BAD_VALUE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.res.android.Errors.NO_MEMORY;
+import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
+import static org.robolectric.res.android.Util.ALOGE;
+import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.dtohl;
+import static org.robolectric.res.android.Util.dtohs;
+import static org.robolectric.res.android.Util.htodl;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import com.google.common.io.ByteStreams;
@@ -18,16 +24,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import org.robolectric.util.Strings;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
 //   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
 public class ResTable {
+
   private static final int IDMAP_MAGIC             = 0x504D4449;
   private static final int IDMAP_CURRENT_VERSION   = 0x00000001;
 
-  private static final int APP_PACKAGE_ID      = 0x7f;
-  private static final int SYS_PACKAGE_ID      = 0x01;
+  static final int APP_PACKAGE_ID      = 0x7f;
+  static final int SYS_PACKAGE_ID      = 0x01;
 
   private static final boolean kDebugStringPoolNoisy = false;
   private static final boolean kDebugXMLNoisy = false;
@@ -41,8 +49,9 @@ public class ResTable {
   private static final boolean kDebugLibNoisy = false;
 
   private static final Object NULL = null;
+  public static final bag_set SENTINEL_BAG_SET = new bag_set(1);
 
-  Object               mLock;
+  final Semaphore mLock = new Semaphore(1);
 
   // Mutex that controls access to the list of pre-filtered configurations
   // to check when looking up entries.
@@ -80,6 +89,7 @@ public class ResTable {
     return (id&0xFFFF);
   }
   static int Res_MAKEARRAY(int entry) { return (0x02000000 | (entry&0xFFFF)); }
+  static boolean Res_INTERNALID(int resid) { return ((resid&0xFFFF0000) != 0 && (resid&0xFF0000) == 0); }
 
   int getResourcePackageIndex(int resID)
   {
@@ -87,10 +97,10 @@ public class ResTable {
     //return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
   }
 
-  public void add(InputStream is) throws IOException {
+  public void add(InputStream is, int cookie) throws IOException {
     byte[] buf = ByteStreams.toByteArray(is);
     ByteBuffer buffer = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
-    Chunk.read(buffer, this);
+    Chunk.read(buffer, this, cookie);
   }
 
 //  Errors add(final Object data, int size, final int cookie, boolean copyData) {
@@ -370,8 +380,8 @@ public class ResTable {
     }
 
     ResValue value = entry.get().entry.value;
-    //outValue.get().size = dtohs(value->size);
-    //outValue.get().res0 = value->res0;
+    //outValue.get().size = dtohs(value.size);
+    //outValue.get().res0 = value.res0;
     outValue.set(new ResValue(value));
     //outValue.get().data = value.data;
     // The reference may be pointing to a resource in a shared library. These
@@ -385,12 +395,12 @@ public class ResTable {
 //    if (kDebugTableNoisy) {
 //      size_t len;
 //      printf("Found value: pkg=%zu, type=%d, str=%s, int=%d\n",
-//          entry.package->header->index,
-//          outValue->dataType,
-//          outValue->dataType == Res_value::TYPE_STRING ?
-//              String8(entry.package->header->values.stringAt(outValue->data, &len)).string() :
+//          entry.package.header.index,
+//          outValue.dataType,
+//          outValue.dataType == Res_value::TYPE_STRING ?
+//              String8(entry.package.header.values.stringAt(outValue.data, &len)).string() :
 //      "",
-//          outValue->data);
+//          outValue.data);
 //    }
     if (outSpecFlags != null) {
         outSpecFlags.set(entry.get().specFlags);
@@ -401,27 +411,37 @@ public class ResTable {
     return entry.get()._package_.header.index;
   }
 
-  public final int resolveReference(ResValue value, int blockIndex,
+  public final int resolveReference(Ref<ResValue> value, int blockIndex,
+      Ref<Integer> outLastRef) {
+    return resolveReference(value, blockIndex, outLastRef, null, null);
+  }
+
+  public final int resolveReference(Ref<ResValue> value, int blockIndex,
+      Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags) {
+    return resolveReference(value, blockIndex, outLastRef, inoutTypeSpecFlags, null);
+  }
+
+  public final int resolveReference(Ref<ResValue> value, int blockIndex,
       Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
       Ref<ResTableConfig> outConfig)
   {
     int count=0;
-    while (blockIndex >= 0 && value.dataType == DataType.REFERENCE.code()
-        && value.data != 0 && count < 20) {
-      if (outLastRef.get() == null) {
-        outLastRef.set(value.data);
+    while (blockIndex >= 0 && value.get().dataType == DataType.REFERENCE.code()
+        && value.get().data != 0 && count < 20) {
+      if (outLastRef != null) {
+        outLastRef.set(value.get().data);
       }
       Ref<Integer> newFlags = new Ref<>(0);
-      final int newIndex = getResource(value.data, new Ref<>(value), true, 0,
+      final int newIndex = getResource(value.get().data, value, true, 0,
           newFlags, outConfig);
       if (newIndex == BAD_INDEX) {
         return BAD_INDEX;
       }
       if (kDebugTableTheme) {
-        Util.ALOGI("Resolving reference 0x%x: newIndex=%d, type=0x%x, data=0x%x\n",
-            value.data, (int)newIndex, (int)value.dataType, value.data);
+        ALOGI("Resolving reference 0x%x: newIndex=%d, type=0x%x, data=0x%x\n",
+            value.get().data, (int)newIndex, (int)value.get().dataType, value.get().data);
       }
-      //printf("Getting reference 0x%08x: newIndex=%d\n", value->data, newIndex);
+      //printf("Getting reference 0x%08x: newIndex=%d\n", value.data, newIndex);
       if (inoutTypeSpecFlags != null) {
         inoutTypeSpecFlags.set(inoutTypeSpecFlags.get() | newFlags.get());
       }
@@ -535,6 +555,10 @@ public class ResTable {
         }
 
         bestEntry = thisType.entries.get(realEntryIndex);
+        if (bestEntry == null) {
+          // There is no entry for this index and configuration.
+          continue;
+        }
 
         // Check if there is the desired entry in this type.
 //        final uint* final eindex = reinterpret_cast<final uint*>(
@@ -575,6 +599,10 @@ public class ResTable {
       return BAD_INDEX;
     }
 
+    if (bestEntry == null) {
+      return BAD_INDEX;
+    }
+
 //    bestOffset += dtohl(bestType.entriesStart);
 //
 ////    if (bestOffset > (dtohl(bestType.header.size)-sizeof(ResTable_entry))) {
@@ -603,15 +631,8 @@ public class ResTable {
 
     ResTableEntry entry = bestEntry;
     if (outEntryRef != null) {
-      Entry outEntry = new Entry();
-      outEntry.entry = entry;
-      outEntry.config = bestConfig;
-      outEntry.type = bestType;
-      outEntry.specFlags = specFlags;
-      outEntry._package_ = bestPackage;
-      outEntry.typeStr = new StringPoolRef(bestPackage.typeStrings, actualTypeIndex - bestPackage.typeIdOffset);
-      outEntry.keyStr = new StringPoolRef(bestPackage.keyStrings, entry.key.index);
-      outEntryRef.set(outEntry);
+      outEntryRef.set(
+          entry.createEntry(bestType, bestPackage, specFlags, actualTypeIndex, bestConfig));
     }
     return NO_ERROR;
   }
@@ -919,7 +940,12 @@ public class ResTable {
     // Gets cleared whenever the parameters/configuration changes.
     // These are stored here in a parallel structure because the data in `types` may
     // be shared by other ResTable's (framework resources are shared this way).
-    ByteBucketArray<TypeCacheEntry> typeCacheEntries;
+    ByteBucketArray<TypeCacheEntry> typeCacheEntries = new ByteBucketArray<TypeCacheEntry>() {
+      @Override
+      TypeCacheEntry newInstance() {
+        return new TypeCacheEntry();
+      }
+    };
 
     // The table mapping dynamic references to resolved references for
     // this package group.
@@ -979,6 +1005,14 @@ public class ResTable {
     StringPoolRef keyStr;
   }
 
+  public static class MapEntry extends Entry {
+    ResTable parent;
+    // Number of name/value pairs that follow for FLAG_COMPLEX.
+    int count;
+
+    ResTableMap[] nameValuePairs;
+  }
+
   // struct ResTable::DataType
   public static class Type {
 
@@ -1029,11 +1063,347 @@ public class ResTable {
     int typeIdOffset;
   };
 
+  public static class bag_entry {
+    public int stringBlock;
+    public ResTableMap map = new ResTableMap(0, new ResValue(0, 0));
+  }
+
+  public void lock() {
+    try {
+      mLock.acquire();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void unlock() {
+    mLock.release();
+  }
+
+  public int lockBag(int resID, Ref<bag_entry[]> outBag) {
+    lock();
+
+    int err = getBagLocked(resID, outBag, null);
+    if (err < NO_ERROR) {
+      //printf("*** get failed!  unlocking\n");
+      mLock.release();
+    }
+    return err;
+  }
+
+  public int getBagLocked(int resID, Ref<bag_entry[]> outBag, Ref<Integer> outTypeSpecFlags) {
+    if (mError != NO_ERROR) {
+      return mError;
+    }
+
+    final int p = getResourcePackageIndex(resID);
+    final int t = Res_GETTYPE(resID);
+    final int e = Res_GETENTRY(resID);
+
+    if (p < 0) {
+      ALOGW("Invalid package identifier when getting bag for resource number 0x%08x", resID);
+      return BAD_INDEX;
+    }
+    if (t < 0) {
+      ALOGW("No type identifier when getting bag for resource number 0x%08x", resID);
+      return BAD_INDEX;
+    }
+
+    //printf("Get bag: id=0x%08x, p=%d, t=%d\n", resID, p, t);
+    PackageGroup grp = mPackageGroups.get(p);
+    if (grp == NULL) {
+      ALOGW("Bad identifier when getting bag for resource number 0x%08x", resID);
+      return BAD_INDEX;
+    }
+
+    final List<Type> typeConfigs = grp.types.get(t);
+    if (typeConfigs.isEmpty()) {
+      ALOGW("Type identifier 0x%x does not exist.", t+1);
+      return BAD_INDEX;
+    }
+
+    final int NENTRY = typeConfigs.get(0).entryCount;
+    if (e >= (int)NENTRY) {
+      ALOGW("Entry identifier 0x%x is larger than entry count 0x%x",
+          e, (int)typeConfigs.get(0).entryCount);
+      return BAD_INDEX;
+    }
+
+    // First see if we've already computed this bag...
+    TypeCacheEntry cacheEntry = grp.typeCacheEntries.editItemAt(t);
+    bag_set[] typeSet = cacheEntry.cachedBags;
+//    if (isTruthy(typeSet)) {
+//      bag_set set = typeSet[e];
+//      if (isTruthy(set)) {
+//        if (set != (bag_set) 0xFFFFFFFF){
+//        if (set != SENTINEL_BAG_SET){
+//          if (outTypeSpecFlags != NULL) {
+//                    outTypeSpecFlags.set(set.typeSpecFlags);
+//          }
+//          outBag.set((bag_entry *) (set + 1);
+//          if (kDebugTableSuperNoisy) {
+//            ALOGI("Found existing bag for: 0x%x\n", resID);
+//          }
+//          return set.numAttrs;
+//        }
+//        ALOGW("Attempt to retrieve bag 0x%08x which is invalid or in a cycle.",
+//            resID);
+//        return BAD_INDEX;
+//      }
+//    }
+//
+    // Bag not found, we need to compute it!
+    if (!isTruthy(typeSet)) {
+      typeSet = new bag_set[NENTRY]; // (bag_set**)calloc(NENTRY, sizeof(bag_set*));
+      //if (!typeSet) return NO_MEMORY;
+      //cacheEntry.cachedBags = typeSet;
+    }
+//
+//    // Mark that we are currently working on this one.
+////    typeSet[e] = (bag_set*)0xFFFFFFFF;
+//    typeSet[e] = SENTINEL_BAG_SET;
+
+    if (kDebugTableNoisy) {
+      ALOGI("Building bag: %x\n", resID);
+    }
+
+    // Now collect all bag attributes
+    Ref<Entry> entryRef = new Ref<>(null);
+    int err = getEntry(grp, t, e, mParams, entryRef);
+    if (err != NO_ERROR) {
+      return err;
+    }
+    Entry entry = entryRef.get();
+    final short entrySize = dtohs(entry.entry.size);
+    final int parent = entrySize >= 8 /*sizeof(ResTable_map_entry)*/
+        ? dtohl(((ResTableMapEntry) entry.entry).parentIdent) : 0;
+    final int count = entrySize >= 8 /*sizeof(ResTable_map_entry)*/
+        ? dtohl(((ResTableMapEntry) entry.entry).count) : 0;
+
+    int N = count;
+
+    if (kDebugTableNoisy) {
+      ALOGI("Found map: size=%x parent=%x count=%d\n", entrySize, parent, count);
+
+      // If this map inherits from another, we need to start
+      // with its parent's values.  Otherwise start out empty.
+      ALOGI("Creating new bag, entrySize=0x%08x, parent=0x%08x\n", entrySize, parent);
+    }
+
+    // This is what we are building.
+    Ref<bag_set> setRef = new Ref<>(null);
+
+    if (isTruthy(parent)) {
+      Ref<Integer> resolvedParent = new Ref<>(parent);
+
+      // Bags encode a parent reference without using the standard
+      // Res_value structure. That means we must always try to
+      // resolve a parent reference in case it is actually a
+      // TYPE_DYNAMIC_REFERENCE.
+      err = grp.dynamicRefTable.lookupResourceId(resolvedParent);
+      if (err != NO_ERROR) {
+        ALOGE("Failed resolving bag parent id 0x%08x", parent);
+        return UNKNOWN_ERROR;
+      }
+
+      final Ref<bag_entry[]> parentBag = new Ref<>(null);
+      final Ref<Integer> parentTypeSpecFlags = new Ref<>(0);
+      final int NP = getBagLocked(resolvedParent.get(), parentBag, parentTypeSpecFlags);
+      final int NT = ((NP >= 0) ? NP : 0) + N;
+//      set = (bag_set *) malloc(sizeof(bag_set) + sizeof(bag_entry) * NT);
+      bag_set set = new bag_set(NT);
+      setRef.set(set);
+//      if (setRef.get() == NULL) {
+//        return NO_MEMORY;
+//      }
+      if (NP > 0) {
+//        memcpy(set + 1, parentBag, NP * sizeof(bag_entry));
+        set.copyFrom(parentBag.get(), NP);
+        set.numAttrs = NP;
+        if (kDebugTableNoisy) {
+          ALOGI("Initialized new bag with %zd inherited attributes.\n", NP);
+        }
+      } else {
+        if (kDebugTableNoisy) {
+          ALOGI("Initialized new bag with no inherited attributes.\n");
+        }
+        set.numAttrs = 0;
+      }
+      set.availAttrs = NT;
+      set.typeSpecFlags = parentTypeSpecFlags.get();
+    } else {
+//      set = (bag_set *) malloc(sizeof(bag_set) + sizeof(bag_entry) * N);
+      bag_set set = new bag_set(N);
+      setRef.set(set);
+//      if (set == NULL) {
+//        return NO_MEMORY;
+//      }
+      set.numAttrs = 0;
+      set.availAttrs = N;
+      set.typeSpecFlags = 0;
+    }
+
+    bag_set set = setRef.get();
+    set.typeSpecFlags |= entry.specFlags;
+
+    // Now merge in the new attributes...
+//    int curOff = (reinterpret_cast<uintptr_t>(entry.entry) - reinterpret_cast<uintptr_t>(entry.type))
+//        + dtohs(entry.entry.size);
+    ResTableMap map;
+//    bag_entry* entries = (bag_entry*)(set+1);
+    bag_entry[] entries = set.bag_entries;
+    int curEntry = 0;
+    int pos = 0;
+    if (kDebugTableNoisy) {
+      ALOGI("Starting with set %p, entries=%p, avail=%zu\n", set, entries, set.availAttrs);
+    }
+    while (pos < count) {
+      if (kDebugTableNoisy) {
+//        ALOGI("Now at %p\n", curOff);
+        ALOGI("Now at %p\n", curEntry);
+      }
+
+//      if (curOff > (dtohl(entry.type.header.size)-sizeof(ResTable_map))) {
+//        ALOGW("ResTable_map at %d is beyond type chunk data %d",
+//            (int)curOff, dtohl(entry.type.header.size));
+//        return BAD_TYPE;
+//      }
+//      map = (final ResTable_map*)(((final uint8_t*)entry.type) + curOff);
+      map = ((MapEntry) entry).nameValuePairs[curEntry];
+      N++;
+
+      Ref<Integer> newName = new Ref<>(htodl(map.nameIdent));
+      if (!Res_INTERNALID(newName.get())) {
+        // Attributes don't have a resource id as the name. They specify
+        // other data, which would be wrong to change via a lookup.
+        if (grp.dynamicRefTable.lookupResourceId(newName) != NO_ERROR) {
+          ALOGE("Failed resolving ResTable_map name at %d with ident 0x%08x",
+              (int) curEntry, (int) newName.get());
+          return UNKNOWN_ERROR;
+        }
+      }
+
+      boolean isInside;
+      int oldName = 0;
+      while ((isInside=(curEntry < set.numAttrs))
+          && (oldName=entries[curEntry].map.nameIdent) < newName.get()) {
+        if (kDebugTableNoisy) {
+          ALOGI("#%zu: Keeping existing attribute: 0x%08x\n",
+              curEntry, entries[curEntry].map.nameIdent);
+        }
+        curEntry++;
+      }
+
+      if ((!isInside) || oldName != newName.get()) {
+        // This is a new attribute...  figure out what to do with it.
+        if (set.numAttrs >= set.availAttrs) {
+          // Need to alloc more memory...
+                final int newAvail = set.availAttrs+N;
+//          set = (bag_set[])realloc(set,
+//              sizeof(bag_set)
+//                  + sizeof(bag_entry)*newAvail);
+          set.resizeBagEntries(newAvail);
+          if (set == NULL) {
+            return NO_MEMORY;
+          }
+          set.availAttrs = newAvail;
+//          entries = (bag_entry*)(set+1);
+          entries = set.bag_entries;
+          if (kDebugTableNoisy) {
+            ALOGI("Reallocated set %p, entries=%p, avail=%zu\n",
+                set, entries, set.availAttrs);
+          }
+        }
+        if (isInside) {
+          // Going in the middle, need to make space.
+//          memmove(entries+curEntry+1, entries+curEntry,
+//              sizeof(bag_entry)*(set.numAttrs-curEntry));
+          System.arraycopy(entries, curEntry, entries, curEntry + 1, set.numAttrs - curEntry);
+          set.numAttrs++;
+        }
+        if (kDebugTableNoisy) {
+          ALOGI("#%zu: Inserting new attribute: 0x%08x\n", curEntry, newName);
+        }
+      } else {
+        if (kDebugTableNoisy) {
+          ALOGI("#%zu: Replacing existing attribute: 0x%08x\n", curEntry, oldName);
+        }
+      }
+
+      bag_entry cur = entries[curEntry];
+      if (cur == null) {
+        cur = entries[curEntry] = new bag_entry();
+      }
+
+      cur.stringBlock = entry._package_.header.index;
+      cur.map.nameIdent = newName.get();
+//      cur.map.value.copyFrom_dtoh(map.value);
+      cur.map.value = new ResValue(map.value);
+      err = grp.dynamicRefTable.lookupResourceValue(cur.map.value);
+      if (err != NO_ERROR) {
+        ALOGE("Reference item(0x%08x) in bag could not be resolved.", cur.map.value.data);
+        return UNKNOWN_ERROR;
+      }
+
+      if (kDebugTableNoisy) {
+        ALOGI("Setting entry #%zu %p: block=%zd, name=0x%08d, type=%d, data=0x%08x\n",
+            curEntry, cur, cur.stringBlock, cur.map.nameIdent,
+            cur.map.value.dataType, cur.map.value.data);
+      }
+
+      // On to the next!
+      curEntry++;
+      pos++;
+//        final int size = dtohs(map.value.size);
+//      curOff += size + sizeof(*map)-sizeof(map.value);
+    };
+
+    if (curEntry > set.numAttrs) {
+      set.numAttrs = curEntry;
+    }
+
+    // And this is it...
+    typeSet[e] = set;
+    if (isTruthy(set)) {
+      if (outTypeSpecFlags != NULL) {
+        outTypeSpecFlags.set(set.typeSpecFlags);
+      }
+      outBag.set(set.bag_entries);
+      if (kDebugTableNoisy) {
+        ALOGI("Returning %zu attrs\n", set.numAttrs);
+      }
+      return set.numAttrs;
+    }
+    return BAD_INDEX;
+  }
+
+  public void unlockBag(Ref<bag_entry[]> bag) {
+    unlock();
+  }
+
   static class bag_set {
     int numAttrs;    // number in array
     int availAttrs;  // total space in array
     int typeSpecFlags;
     // Followed by 'numAttr' bag_entry structures.
+
+    bag_entry[] bag_entries;
+
+    public bag_set(int entryCount) {
+      bag_entries = new bag_entry[entryCount];
+    }
+
+    public void copyFrom(bag_entry[] parentBag, int count) {
+      for (int i = 0; i < count; i++) {
+        bag_entries[i] = parentBag[i];
+      }
+    }
+
+    public void resizeBagEntries(int newEntryCount) {
+      bag_entry[] newEntries = new bag_entry[newEntryCount];
+      System.arraycopy(bag_entries, 0, newEntries, 0, Math.min(bag_entries.length, newEntryCount));
+      bag_entries = newEntries;
+    }
   };
 
   /**
@@ -1045,7 +1415,7 @@ public class ResTable {
 
     // Computed attribute bags for this type.
 //    bag_set** cachedBags;
-    bag_set[][] cachedBags;
+    bag_set[] cachedBags;
 
     // Pre-filtered list of configurations (per asset path) that match the parameters set on this
     // ResTable.

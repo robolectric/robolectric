@@ -15,6 +15,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -263,6 +264,7 @@ public class ShadowResourcesTest {
     resources.getIntArray(-1);
   }
 
+  // todo: PluralRules.forLocale() returns fewer rules than expected, why? seems to successfully load icudt56b/plurals.res
   @Test
   public void getQuantityString() throws Exception {
     assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("Howdy");

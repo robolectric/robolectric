@@ -97,8 +97,8 @@ abstract public class Chunk {
     }
   }
 
-  public static void read(ByteBuffer buffer, ResTable resTable) {
-    readTableChunk(buffer, resTable);
+  public static void read(ByteBuffer buffer, ResTable resTable, int cookie) {
+    readTableChunk(buffer, resTable, cookie);
   }
 
   protected static StringPoolChunk readStringPool(ByteBuffer buffer, int chunkStartPosition) {
@@ -142,7 +142,7 @@ abstract public class Chunk {
     return header;
   }
 
-  public static void readTableChunk(ByteBuffer buffer, ResTable resTable) {
+  public static void readTableChunk(ByteBuffer buffer, ResTable resTable, int cookie) {
     ResChunkHeader resChunkHeader = getResChunkHeader(buffer, 0);
     Type chunkType = Type.fromCode(resChunkHeader.type);
     assert chunkType == Type.TABLE;
@@ -163,6 +163,8 @@ abstract public class Chunk {
     }
 
     Header header = new Header(resTable);
+    header.index = resTable.mHeaders.size();
+    header.cookie = cookie;
     header.values = valuesStringPool.createResStringPool();
 
     resTable.mHeaders.add(header);
@@ -528,15 +530,12 @@ abstract public class Chunk {
       }
 
       public static ResTableEntry createEntry(ByteBuffer buffer, int entryOffset) {
-        System.out.println("entryOffset = " + entryOffset);
         buffer.position(entryOffset);
         short size = buffer.getShort();
         short flags = buffer.getShort();
-        System.out.println("flags = " + flags);
         ResTableEntry entry;
         int key = buffer.getInt();
         if ((flags & ResTableEntry.FLAG_COMPLEX) == 0) {
-          System.out.println("SimpleEntry at " + Integer.toHexString(entryOffset));
           ResValue value = createValue(buffer);
 
           entry = new ResTableEntry(size, flags, new ResStringPoolRef(key), value);
@@ -559,7 +558,6 @@ abstract public class Chunk {
         byte[] chunk = new byte[buffer.position() - entryOffset];
         buffer.position(entryOffset);
         buffer.get(chunk);
-        System.out.println(BaseEncoding.base16().lowerCase().withSeparator(" ", 8).encode(chunk));
         buffer.position(oldPosition);
 
         return entry;

@@ -12,9 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.res.ResourceIds;
-import org.robolectric.res.android.ResTable.Entry;
-import org.robolectric.res.android.ResTable.PackageGroup;
 import org.robolectric.resources.R;
 
 @RunWith(JUnit4.class)
@@ -31,7 +28,7 @@ public class ResTableTest {
     ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
     InputStream inputStream = zipFile.getInputStream(arscEntry);
     resTable = new ResTable();
-    resTable.add(inputStream);
+    resTable.add(inputStream, mResources.getTableCount());
   }
 
   @Test

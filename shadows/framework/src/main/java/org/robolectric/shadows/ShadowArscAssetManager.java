@@ -8,9 +8,11 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Build.VERSION_CODES;
+import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import com.google.common.base.Strings;
@@ -23,11 +25,15 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.CppAssetManager;
+import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.Ref;
+import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
+import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.String8;
+import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -275,13 +281,6 @@ public class ShadowArscAssetManager {
 
   @HiddenApi
   @Implementation
-  public int[] getArrayIntResource(int resId) {
-    return directlyOn(realObject, AssetManager.class, "getArrayIntResource",
-        ClassParameter.from(int.class, resId));
-  }
-
-  @HiddenApi
-  @Implementation
   public Number createTheme() {
     return directlyOn(realObject, AssetManager.class, "createTheme");
   }
@@ -302,56 +301,6 @@ public class ShadowArscAssetManager {
 
   private static boolean shouldDelegateToLegacyShadow(long themePtr) {
     return true;
-  }
-
-  @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  public static void applyThemeStyle(int themePtr, int styleRes, boolean force) {
-    if (shouldDelegateToLegacyShadow(themePtr)) {
-      ShadowAssetManager.applyThemeStyle(themePtr, styleRes, force);
-    } else {
-      directlyOn(AssetManager.class, "applyThemeStyle",
-          ClassParameter.from(int.class, themePtr),
-          ClassParameter.from(int.class, styleRes),
-          ClassParameter.from(boolean.class, force));
-    }
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
-  public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
-    if (shouldDelegateToLegacyShadow(themePtr)) {
-      ShadowAssetManager.applyThemeStyle(themePtr, styleRes, force);
-    } else {
-      directlyOn(AssetManager.class, "applyThemeStyle",
-          ClassParameter.from(long.class, themePtr),
-          ClassParameter.from(int.class, styleRes),
-          ClassParameter.from(boolean.class, force));
-    }
-  }
-
-  @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  public static void copyTheme(int destPtr, int sourcePtr) {
-    if (shouldDelegateToLegacyShadow(destPtr)) {
-      ShadowAssetManager.copyTheme(destPtr, sourcePtr);
-    } else {
-      directlyOn(AssetManager.class, "copyTheme",
-          ClassParameter.from(int.class, destPtr),
-          ClassParameter.from(int.class, sourcePtr));
-    }
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
-  public static void copyTheme(long destPtr, long sourcePtr) {
-    if (shouldDelegateToLegacyShadow(destPtr)) {
-      ShadowAssetManager.copyTheme(destPtr, sourcePtr);
-    } else {
-      directlyOn(AssetManager.class, "copyTheme",
-          ClassParameter.from(long.class, destPtr),
-          ClassParameter.from(long.class, sourcePtr));
-    }
   }
 
   @Implementation
@@ -378,11 +327,6 @@ public class ShadowArscAssetManager {
         ClassParameter.from(int.class, resid));
   }
 
-  @Implementation
-  public final SparseArray<String> getAssignedPackageIdentifiers() {
-    return directlyOn(realObject, AssetManager.class, "getAssignedPackageIdentifiers");
-  }
-
   private void replaceShadow(ShadowAssetManager shadowAssetManager) {
     shadowAssetManager.realObject = realObject;
     ReflectionHelpers.setField(realObject, "__robo_data__", shadowAssetManager);
@@ -395,18 +339,39 @@ public class ShadowArscAssetManager {
 
 //  public native final String[] list(String path)
 //      throws IOException;
-//private native final int addAssetPathNative(String path, boolean appAsLib);
-//  public native final int addOverlayPathNative(String idmapPath);
-//  public native final boolean isUpToDate();
-//  public native final String[] getLocales();
-//  public native final String[] getNonSystemLocales();
-//  public native final Configuration[] getSizeConfigurations();
-//  public native final void setConfiguration(int mcc, int mnc, String locale,
-//      int orientation, int touchscreen, int density, int keyboard,
-//      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
-//      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-//      int screenLayout, int uiMode, int majorVersion);
-//
+
+  @HiddenApi
+  @Implementation(maxSdk = VERSION_CODES.M)
+  public int addAssetPathNative(String path) {
+  return addAssetPathNative(path, false);
+}
+
+  @HiddenApi
+  @Implementation(minSdk = VERSION_CODES.N)
+  public int addAssetPathNative(String path, boolean appAsLib) {
+    if (Strings.isNullOrEmpty(path)) {
+      return 0;
+    }
+
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+    Ref<Integer> cookie = new Ref<>(null);
+    boolean res = am.addAssetPath(new String8(path), cookie, appAsLib);
+    return (res) ? cookie.get() : 0;
+  }
+  
+  @HiddenApi @Implementation public final int addOverlayPathNative(String idmapPath) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation public final String[] getNonSystemLocales() {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+  @HiddenApi @Implementation public final Configuration[] getSizeConfigurations() {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 
   @HiddenApi
   @Implementation
@@ -424,25 +389,68 @@ public class ShadowArscAssetManager {
     return ident;
   }
 
-//
-//  /*package*/ native final String getResourceName(int resid);
-//  /*package*/ native final String getResourcePackageName(int resid);
-//  /*package*/ native final String getResourceTypeName(int resid);
-//  /*package*/ native final String getResourceEntryName(int resid);
-//
-//  private native final long openAsset(String fileName, int accessMode);
-//  private final native ParcelFileDescriptor openAssetFd(String fileName,
-//      long[] outOffsets) throws IOException;
-//  private native final long openNonAssetNative(int cookie, String fileName,
-//      int accessMode);
-//  private native ParcelFileDescriptor openNonAssetFdNative(int cookie,
-//      String fileName, long[] outOffsets) throws IOException;
-//  private native final void destroyAsset(long asset);
-//  private native final int readAssetChar(long asset);
-//  private native final int readAsset(long asset, byte[] b, int off, int len);
-//  private native final long seekAsset(long asset, long offset, int whence);
-//  private native final long getAssetLength(long asset);
-//  private native final long getAssetRemainingLength(long asset);
+  @HiddenApi
+  @Implementation
+  public final long openAsset(String fileName, int accessMode) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public ParcelFileDescriptor openAssetFd(String fileName,
+      long[] outOffsets) throws IOException {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public final long openNonAssetNative(int cookie, String fileName,
+      int accessMode) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public ParcelFileDescriptor openNonAssetFdNative(int cookie,
+      String fileName, long[] outOffsets) throws IOException {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public final void destroyAsset(long asset) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public final int readAssetChar(long asset) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public final int readAsset(long asset, byte[] b, int off, int len) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public final long seekAsset(long asset, long offset, int whence) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public final long getAssetLength(long asset) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public final long getAssetRemainingLength(long asset) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 
   @HiddenApi
   @Implementation
@@ -469,7 +477,7 @@ public class ShadowArscAssetManager {
     }
     Ref<Integer> ref = new Ref<>(ident);
     if (resolve) {
-        block = res.resolveReference(value.get(), block, ref, typeSpecFlags, config);
+        block = res.resolveReference(value, block, ref, typeSpecFlags, config);
         if (kThrowOnBadId) {
             if (block == BAD_INDEX) {
               throw new IllegalStateException("Bad resource!");
@@ -501,31 +509,201 @@ public class ShadowArscAssetManager {
     return block;
   }
 
-//  /** Returns true if the resource was found, filling in mRetStringBlock and
-//   *  mRetData. */
-//  private native final int loadResourceBagValue(int ident, int bagEntryId, TypedValue outValue,
-//      boolean resolve);
-//  /*package*/ static final int STYLE_NUM_ENTRIES = 6;
-//  /*package*/ static final int STYLE_TYPE = 0;
-//  /*package*/ static final int STYLE_DATA = 1;
-//  /*package*/ static final int STYLE_ASSET_COOKIE = 2;
-//  /*package*/ static final int STYLE_RESOURCE_ID = 3;
-//
-//  /* Offset within typed data array for native changingConfigurations. */
-//  static final int STYLE_CHANGING_CONFIGURATIONS = 4;
-//
-//  /*package*/ static final int STYLE_DENSITY = 5;
-//  /*package*/ native static final boolean applyStyle(long theme,
-//      int defStyleAttr, int defStyleRes, long xmlParser,
-//      int[] inAttrs, int[] outValues, int[] outIndices);
-//  /*package*/ native static final boolean resolveAttrs(long theme,
-//      int defStyleAttr, int defStyleRes, int[] inValues,
-//      int[] inAttrs, int[] outValues, int[] outIndices);
-//  /*package*/ native final boolean retrieveAttributes(
-//      long xmlParser, int[] inAttrs, int[] outValues, int[] outIndices);
-//  /*package*/ native final int getArraySize(int resource);
-//  /*package*/ native final int retrieveArray(int resource, int[] outValues);
-//  private native final int getStringBlockCount();
+  /**
+   * Returns true if the resource was found, filling in mRetStringBlock and
+   * mRetData.
+   */
+  @Implementation
+  @HiddenApi
+  public final int loadResourceBagValue(int ident, int bagEntryId, TypedValue outValue,
+      boolean resolve) {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+    final ResTable res = am.getResources();
+
+    // Now lock down the resource object and start pulling stuff from it.
+    res.lock();
+
+    int block = -1;
+    Ref<ResValue> valueRef = new Ref<>(null);
+    Ref<bag_entry[]> entryRef = new Ref<>(null);
+    Ref<Integer> typeSpecFlags = new Ref<>(0);
+    int entryCount = res.getBagLocked(ident, entryRef, typeSpecFlags);
+
+    for (int i=0; i < entryCount; i++) {
+      bag_entry entry = entryRef.get()[i];
+      if (bagEntryId == entry.map.nameIdent) {
+        block = entry.stringBlock;
+        valueRef.set(entry.map.value);
+      }
+    }
+
+    res.unlock();
+
+    if (block < 0) {
+      return block;
+    }
+
+    Ref<Integer> ref = new Ref<Integer>(ident);
+    if (resolve) {
+      block = res.resolveReference(valueRef, block, ref, typeSpecFlags);
+      if (kThrowOnBadId) {
+        if (block == BAD_INDEX) {
+          throw new IllegalStateException("Bad resource!");
+        }
+      }
+    }
+    if (block >= 0) {
+      return copyValue(outValue, res, valueRef.get(), ref.get(), block, typeSpecFlags.get(), null);
+    }
+
+    return block;
+  }
+
+  /*package*/ static final int STYLE_NUM_ENTRIES = 6;
+  /*package*/ static final int STYLE_TYPE = 0;
+  /*package*/ static final int STYLE_DATA = 1;
+  /*package*/ static final int STYLE_ASSET_COOKIE = 2;
+  /*package*/ static final int STYLE_RESOURCE_ID = 3;
+
+  /* Offset within typed data array for native changingConfigurations. */
+  static final int STYLE_CHANGING_CONFIGURATIONS = 4;
+
+  /*package*/ static final int STYLE_DENSITY = 5;
+
+  @Implementation
+  @HiddenApi
+  public static final boolean applyStyle(long theme,
+      int defStyleAttr, int defStyleRes, long xmlParser,
+      int[] inAttrs, int[] outValues, int[] outIndices) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @Implementation
+  @HiddenApi
+  public static final boolean resolveAttrs(long theme,
+      int defStyleAttr, int defStyleRes, int[] inValues,
+      int[] inAttrs, int[] outValues, int[] outIndices) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @Implementation
+  @HiddenApi
+  public final boolean retrieveAttributes(
+      long xmlParser, int[] inAttrs, int[] outValues, int[] outIndices) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @Implementation
+  @HiddenApi
+  public int getArraySize(int id) {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+    final ResTable res = am.getResources();
+
+    res.lock();
+    final Ref<bag_entry[]> defStyleEnt = new Ref<>(null);
+    int bagOff = res.getBagLocked(id, defStyleEnt, null);
+    res.unlock();
+
+    return bagOff;
+
+  }
+
+  @Implementation
+  @HiddenApi
+  public int retrieveArray(int id, int[] outValues) {
+    if (outValues == null) {
+      throw new NullPointerException("out values");
+    }
+
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0 /*JNI_FALSE */;
+    }
+    ResTable res = am.getResources();
+    Ref<ResTableConfig> config = new Ref<>(new ResTableConfig());
+    ResValue value;
+    int block;
+
+    int NV = outValues.length;
+
+//    jint* baseDest = (jint*)env->GetPrimitiveArrayCritical(outValues, 0);
+    int[] baseDest = outValues;
+    int[] dest = baseDest;
+//    if (dest == null) {
+//      jniThrowException(env, "java/lang/OutOfMemoryError", "");
+//      return JNI_FALSE;
+//    }
+
+    // Now lock down the resource object and start pulling stuff from it.
+    res.lock();
+
+    Ref<bag_entry[]> arrayEnt = new Ref<>(null);
+    Ref<Integer> arrayTypeSetFlags = new Ref<>(0);
+    int bagOff = res.getBagLocked(id, arrayEnt, arrayTypeSetFlags);
+//    const ResTable::bag_entry* endArrayEnt = arrayEnt +
+//        (bagOff >= 0 ? bagOff : 0);
+
+    int i = 0;
+    final Ref<Integer> typeSetFlags = new Ref<>(0);
+    while (i < NV /*&& arrayEnt < endArrayEnt*/) {
+      bag_entry curArrayEnt = arrayEnt.get()[i / STYLE_NUM_ENTRIES];
+
+      block = curArrayEnt.stringBlock;
+      typeSetFlags.set(arrayTypeSetFlags.get());
+      config.get().density = 0;
+      value = curArrayEnt.map.value;
+
+      final Ref<Integer> resid = new Ref<>(0);
+      if (value.dataType != DataType.NULL.code()) {
+        // Take care of resolving the found resource to its final value.
+        //printf("Resolving attribute reference\n");
+        Ref<ResValue> resValueRef = new Ref<>(value);
+        int newBlock = res.resolveReference(resValueRef, block, resid,
+                    typeSetFlags, config);
+        value = resValueRef.get();
+        if (kThrowOnBadId) {
+          if (newBlock == BAD_INDEX) {
+            throw new IllegalStateException("Bad resource!");
+          }
+        }
+        if (newBlock >= 0) block = newBlock;
+      }
+
+      // Deal with the special @null value -- it turns back to TYPE_NULL.
+      if (value.dataType == DataType.REFERENCE.code() && value.data == 0) {
+        value.dataType = DataType.NULL.code();
+        value.data = TypedValue.DATA_NULL_UNDEFINED;
+      }
+
+      //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
+
+      // Write the final value back to Java.
+      dest[i + STYLE_TYPE] = value.dataType;
+      dest[i + STYLE_DATA] = value.data;
+      dest[i + STYLE_ASSET_COOKIE] = res.getTableCookie(block);
+      dest[i + STYLE_RESOURCE_ID] = resid.get();
+      dest[i + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
+      dest[i + STYLE_DENSITY] = config.get().density;
+//      dest += STYLE_NUM_ENTRIES;
+      i+= STYLE_NUM_ENTRIES;
+//      arrayEnt++;
+    }
+
+    i /= STYLE_NUM_ENTRIES;
+
+    res.unlock();
+
+//    env->ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
+
+    return i;
+
+  }
 
   @HiddenApi
   @Implementation
@@ -537,50 +715,227 @@ public class ShadowArscAssetManager {
 
     return ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block));
   }
-//
-//  /**
-//   * {@hide}
-//   */
-//  public native final String getCookieName(int cookie);
-//
-//  /**
-//   * {@hide}
-//   */
-//  public native final SparseArray<String> getAssignedPackageIdentifiers();
-//
-//  /**
-//   * {@hide}
-//   */
-//  public native static final int getGlobalAssetCount();
-//
-//  /**
-//   * {@hide}
-//   */
-//  public native static final String getAssetAllocations();
-//
-//  /**
-//   * {@hide}
-//   */
-//  public native static final int getGlobalAssetManagerCount();
-//
-//  private native final long newTheme();
-//  private native final void deleteTheme(long theme);
-//  /*package*/ native static final void applyThemeStyle(long theme, int styleRes, boolean force);
-//  /*package*/ native static final void copyTheme(long dest, long source);
-//  /*package*/ native static final void clearTheme(long theme);
-//  /*package*/ native static final int loadThemeAttributeValue(long theme, int ident,
-//      TypedValue outValue,
-//      boolean resolve);
-//  /*package*/ native static final void dumpTheme(long theme, int priority, String tag, String prefix);
-//  /*package*/ native static final @NativeConfig
+
+  @HiddenApi @Implementation public final String getCookieName(int cookie) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @Implementation
+  public final SparseArray<String> getAssignedPackageIdentifiers() {
+    return directlyOn(realObject, AssetManager.class, "getAssignedPackageIdentifiers");
+  }
+
+  @HiddenApi @Implementation public static final int getGlobalAssetCount(){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation public static final String getAssetAllocations(){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation public static final int getGlobalAssetManagerCount(){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation public final long newTheme(){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation public final void deleteTheme(long theme){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static void applyThemeStyle(int themePtr, int styleRes, boolean force) {
+    if (shouldDelegateToLegacyShadow(themePtr)) {
+      ShadowAssetManager.applyThemeStyle(themePtr, styleRes, force);
+    } else {
+      directlyOn(AssetManager.class, "applyThemeStyle",
+          ClassParameter.from(int.class, themePtr),
+          ClassParameter.from(int.class, styleRes),
+          ClassParameter.from(boolean.class, force));
+    }
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
+  public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
+    if (shouldDelegateToLegacyShadow(themePtr)) {
+      ShadowAssetManager.applyThemeStyle(themePtr, styleRes, force);
+    } else {
+      directlyOn(AssetManager.class, "applyThemeStyle",
+          ClassParameter.from(long.class, themePtr),
+          ClassParameter.from(int.class, styleRes),
+          ClassParameter.from(boolean.class, force));
+    }
+  }
+
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static void copyTheme(int destPtr, int sourcePtr) {
+    if (shouldDelegateToLegacyShadow(destPtr)) {
+      ShadowAssetManager.copyTheme(destPtr, sourcePtr);
+    } else {
+      directlyOn(AssetManager.class, "copyTheme",
+          ClassParameter.from(int.class, destPtr),
+          ClassParameter.from(int.class, sourcePtr));
+    }
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
+  public static void copyTheme(long destPtr, long sourcePtr) {
+    if (shouldDelegateToLegacyShadow(destPtr)) {
+      ShadowAssetManager.copyTheme(destPtr, sourcePtr);
+    } else {
+      directlyOn(AssetManager.class, "copyTheme",
+          ClassParameter.from(long.class, destPtr),
+          ClassParameter.from(long.class, sourcePtr));
+    }
+  }
+
+  /*package*/@HiddenApi @Implementation public static final void clearTheme(long theme){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+  /*package*/@HiddenApi @Implementation public static final int loadThemeAttributeValue(long theme, int ident,
+      TypedValue outValue,
+      boolean resolve){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+  /*package*/@HiddenApi @Implementation public static final void dumpTheme(long theme, int priority, String tag, String prefix){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+//  /*package*/@HiddenApi @Implementation public static final @NativeConfig
 //  int getThemeChangingConfigurations(long theme);
+
+  @HiddenApi @Implementation public final long openXmlAssetNative(int cookie, String fileName){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation public final String[] getArrayStringResource(int arrayResId){
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return null;
+    }
+    final ResTable res = am.getResources();
+
+    final Ref<bag_entry[]> startOfBag = new Ref<>(null);
+    final int N = res.lockBag(arrayResId, startOfBag);
+    if (N < 0) {
+      return null;
+    }
+
+    String[] array = new String[N];
+
+    Ref<ResValue> valueRef = new Ref<>(null);
+    final bag_entry[] bag = startOfBag.get();
+    int strLen = 0;
+    for (int i=0; ((int)i)<N; i++) {
+      valueRef.set(bag[i].map.value);
+      String str = null;
+
+      // Take care of resolving the found resource to its final value.
+      int block = res.resolveReference(valueRef, bag[i].stringBlock, null);
+      if (kThrowOnBadId) {
+        if (block == BAD_INDEX) {
+          throw new IllegalStateException("Bad resource!");
+        }
+      }
+      if (valueRef.get().dataType == DataType.STRING.code()) {
+            final ResStringPool pool = res.getTableStringBlock(block);
+            str = pool.stringAt(valueRef.get().data);
+
+            // assume we can skip utf8 vs utf 16 handling
+
+//            final char* str8 = pool.string8At(value.data, &strLen);
+//        if (str8 != NULL) {
+//          str = env.NewStringUTF(str8);
+//        } else {
+//                final char16_t* str16 = pool.stringAt(value.data, &strLen);
+//          str = env.NewString(reinterpret_cast<final jchar*>(str16),
+//              strLen);
+//        }
 //
-//  private native final long openXmlAssetNative(int cookie, String fileName);
-//
-//  private native final String[] getArrayStringResource(int arrayRes);
-//  private native final int[] getArrayStringInfo(int arrayRes);
-//  /*package*/ native final int[] getArrayIntResource(int arrayRes);
-//  /*package*/ native final int[] getStyleAttributes(int themeRes);
+//        // If one of our NewString{UTF} calls failed due to memory, an
+//        // exception will be pending.
+//        if (env.ExceptionCheck()) {
+//          res.unlockBag(startOfBag);
+//          return NULL;
+//        }
+        if (str == null) {
+          res.unlockBag(startOfBag);
+          return null;
+        }
+
+        array[i] = str;
+
+        // str is not NULL at that point, otherwise ExceptionCheck would have been true.
+        // If we have a large amount of strings in our array, we might
+        // overflow the local reference table of the VM.
+        // env.DeleteLocalRef(str);
+      }
+    }
+    res.unlockBag(startOfBag);
+    return array;
+  }
+
+  @HiddenApi @Implementation public final int[] getArrayStringInfo(int arrayRes){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi
+  @Implementation
+  public int[] getArrayIntResource(int arrayResId) {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return null;
+    }
+    final ResTable res = am.getResources();
+
+//    const ResTable::bag_entry* startOfBag;
+    final Ref<bag_entry[]> startOfBag = new Ref<>(null);
+    final int N = res.lockBag(arrayResId, startOfBag);
+    if (N < 0) {
+      return null;
+    }
+
+    int[] array = new int[N];
+    if (array == null) {
+      res.unlockBag(startOfBag);
+      return null;
+    }
+
+    Ref<ResValue> valueRef = new Ref<>(null);
+    bag_entry[] bag = startOfBag.get();
+    for (int i=0; i<N; i++) {
+      valueRef.set(bag[i].map.value);
+
+      // Take care of resolving the found resource to its final value.
+      int block = res.resolveReference(valueRef, bag[i].stringBlock, null, null, null);
+      if (kThrowOnBadId) {
+        if (block == BAD_INDEX) {
+          res.unlockBag(startOfBag); // seems like this is missing from android_util_AssetManager.cpp?
+          throw new IllegalStateException("Bad resource!");
+//          return array;
+        }
+      }
+      ResValue value = valueRef.get();
+      if (value.dataType >= DataType.TYPE_FIRST_INT
+          && value.dataType <= DataType.TYPE_LAST_INT) {
+        int intVal = value.data;
+//        env->SetIntArrayRegion(array, i, 1, &intVal);
+        array[i] = intVal;
+      }
+    }
+    res.unlockBag(startOfBag);
+    return array;
+  }
+
+  /*package*/@HiddenApi @Implementation public final int[] getStyleAttributes(int themeRes){
+    throw new UnsupportedOperationException("not yet implemented");
+  }
 
   @HiddenApi
   @Implementation(maxSdk = VERSION_CODES.KITKAT)
@@ -604,28 +959,6 @@ public class ShadowArscAssetManager {
     }
 
 //  private native final void destroy();
-
-  @HiddenApi
-  @Implementation(maxSdk = VERSION_CODES.M)
-  public int addAssetPathNative(String path) {
-    return addAssetPathNative(path, false);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = VERSION_CODES.N)
-  public int addAssetPathNative(String path, boolean appAsLib) {
-    if (Strings.isNullOrEmpty(path)) {
-      return 0;
-    }
-
-    CppAssetManager am = assetManagerForJavaObject();
-    if (am == null) {
-      return 0;
-    }
-    Ref<Integer> cookie = new Ref<>(null);
-    boolean res = am.addAssetPath(new String8(path), cookie, appAsLib);
-    return (res) ? cookie.get() : 0;
-  }
 
 //  @HiddenApi
 //  @Implementation

@@ -18,6 +18,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import java.util.Map;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TypedArray.class)
@@ -48,7 +49,12 @@ public class ShadowTypedArray {
 
   @HiddenApi @Implementation
   public CharSequence loadStringValueAt(int index) {
-    return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
+    if (shadowOf(realTypedArray.getResources()).isLegacyAssetManager()) {
+      return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
+    } else {
+      return directlyOn(realTypedArray, TypedArray.class, "loadStringValueAt",
+          new ClassParameter(int.class, index));
+    }
   }
 
   @Implementation

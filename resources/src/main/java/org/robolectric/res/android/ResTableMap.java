@@ -84,8 +84,8 @@ public final class ResTableMap {
   // resources, 'name' can be one of the following special resource types
   // to supply meta-data about the attribute; for all other resource types
   // it must be an attribute resource.
-  int nameIdent; // name->ident
-  ResValue value;
+  public int nameIdent; // name->ident
+  public ResValue value;
 
   public ResTableMap(int ident, ResValue value) {
     nameIdent = ident;

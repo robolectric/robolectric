@@ -24,6 +24,10 @@ public enum DataType {
   FRACTION(0x06),
   /** {@code data} holds a dynamic {@link ResourceTableChunk} entry reference. */
   DYNAMIC_REFERENCE(0x07),
+  /** {@code data} holds an attribute resource identifier, which needs to be resolved
+    * before it can be used like a TYPE_ATTRIBUTE.
+    */
+  DYNAMIC_ATTRIBUTE(0x08),
   /** {@code data} is a raw integer value of the form n..n. */
   INT_DEC(0x10),
   /** {@code data} is a raw integer value of the form 0xn..n. */
@@ -38,6 +42,9 @@ public enum DataType {
   INT_COLOR_ARGB4(0x1e),
   /** {@code data} is a raw integer value of the form #rgb. */
   INT_COLOR_RGB4(0x1f);
+
+  public static final int TYPE_FIRST_INT = INT_DEC.code();
+  public static final int TYPE_LAST_INT = INT_COLOR_RGB4.code();
 
   private final byte code;
 
@@ -57,6 +64,10 @@ public enum DataType {
 
   public byte code() {
     return code;
+  }
+
+  public static DataType fromCode(int code) {
+    return fromCode((byte) code);
   }
 
   public static DataType fromCode(byte code) {

@@ -2,6 +2,13 @@ package org.robolectric.res.android;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
 
+import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
+import static org.robolectric.res.android.ResTable.APP_PACKAGE_ID;
+import static org.robolectric.res.android.ResTable.Res_GETPACKAGE;
+import static org.robolectric.res.android.ResTable.SYS_PACKAGE_ID;
+import static org.robolectric.res.android.Util.ALOGV;
+
 /**
  * Holds the shared library ID table. Shared libraries are assigned package IDs at
  * build time, but they may be loaded in a different order, so we need to maintain
@@ -13,7 +20,11 @@ package org.robolectric.res.android;
 public class DynamicRefTable
 {
   DynamicRefTable(byte packageId, boolean appAsLib) {
-    
+    this.mAssignedPackageId = packageId;
+    this.mAppAsLib = appAsLib;
+
+    mLookupTable[APP_PACKAGE_ID] = APP_PACKAGE_ID;
+    mLookupTable[SYS_PACKAGE_ID] = SYS_PACKAGE_ID;
   }
 
 //  // Loads an unmapped reference table from the package.
@@ -34,14 +45,74 @@ public class DynamicRefTable
 //
 //  // Performs the actual conversion of build-time resource ID to run-time
 //  // resource ID.
-  int lookupResourceId(int resId) {
-    // TODO: is this correct?
-    return Errors.NO_ERROR;
+  int lookupResourceId(Ref<Integer> resId) {
+    int res = resId.get();
+    int packageId = Res_GETPACKAGE(res) + 1;
+
+    if (packageId == APP_PACKAGE_ID && !mAppAsLib) {
+      // No lookup needs to be done, app package IDs are absolute.
+      return NO_ERROR;
+    }
+
+    if (packageId == 0 || (packageId == APP_PACKAGE_ID && mAppAsLib)) {
+      // The package ID is 0x00. That means that a shared library is accessing
+      // its own local resource.
+      // Or if app resource is loaded as shared library, the resource which has
+      // app package Id is local resources.
+      // so we fix up those resources with the calling package ID.
+      resId.set((0xFFFFFF & (resId.get())) | (((int) mAssignedPackageId) << 24));
+      return NO_ERROR;
+    }
+
+    // Do a proper lookup.
+    int translatedId = mLookupTable[packageId];
+    if (translatedId == 0) {
+      ALOGV("DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",
+          mAssignedPackageId, packageId);
+      for (int i = 0; i < 256; i++) {
+        if (mLookupTable[i] != 0) {
+          ALOGV("e[0x%02x] . 0x%02x", i, mLookupTable[i]);
+        }
+      }
+      return UNKNOWN_ERROR;
+    }
+
+    resId.set((res & 0x00ffffff) | (((int) translatedId) << 24));
+    return NO_ERROR;
   }
 //
   int lookupResourceValue(ResValue value) {
-    // TODO: is this correct?
-    return Errors.NO_ERROR;
+    byte resolvedType = DataType.REFERENCE.code();
+    switch (DataType.fromCode(value.dataType)) {
+      case ATTRIBUTE:
+        resolvedType = DataType.ATTRIBUTE.code();
+        // fallthrough
+      case REFERENCE:
+        if (!mAppAsLib) {
+          return NO_ERROR;
+        }
+
+        // If the package is loaded as shared library, the resource reference
+        // also need to be fixed.
+        break;
+      case DYNAMIC_ATTRIBUTE:
+        resolvedType = DataType.ATTRIBUTE.code();
+        // fallthrough
+      case DYNAMIC_REFERENCE:
+        break;
+      default:
+        return NO_ERROR;
+    }
+
+    Ref<Integer> resIdRef = new Ref<>(value.data);
+    int err = lookupResourceId(resIdRef);
+    value.data = resIdRef.get();
+    if (err != NO_ERROR) {
+      return err;
+    }
+
+    value.dataType = resolvedType;
+    return NO_ERROR;
  }
 //
 //  final KeyedVector<String16, uint8_t>& entries() final {
@@ -49,8 +120,8 @@ public class DynamicRefTable
 //}
 //
 //  private:
-//    final uint8_t                   mAssignedPackageId;
-//  uint8_t                         mLookupTable[256];
+    final byte                   mAssignedPackageId;
+  final byte[]                         mLookupTable = new byte[256];
 //  KeyedVector<String16, uint8_t>  mEntries;
-//  bool                            mAppAsLib;
+  boolean                            mAppAsLib;
 };

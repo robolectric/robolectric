@@ -41,15 +41,19 @@ class Util {
   }
 
   static void ALOGW(String message, Object... args) {
-    System.out.println(String.format(message, args));
+    System.out.println("WARN: " + String.format(message, args));
   }
 
   static void ALOGV(String message, Object... args) {
-    System.out.println(String.format(message, args));
+    System.out.println("VERBOSE: " + String.format(message, args));
   }
 
   static void ALOGI(String message, Object... args) {
-    System.out.println(String.format(message, args));
+    System.out.println("INFO: " + String.format(message, args));
+  }
+
+  static void ALOGE(String message, Object... args) {
+    System.out.println("ERROR: " + String.format(message, args));
   }
 
   static void LOG_FATAL_IF(boolean assertion, String message) {

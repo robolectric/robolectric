@@ -5,7 +5,7 @@ package org.robolectric.res.android;
  * Stores a sparsely populated array. Has a fixed size of 256
  * (number of entries that a byte can represent).
  */
-public class ByteBucketArray<T> {
+public abstract class ByteBucketArray<T> {
   final int size() {
     return NUM_BUCKETS * BUCKET_SIZE;
   }
@@ -39,8 +39,15 @@ public class ByteBucketArray<T> {
       bucket = mBuckets[bucketIndex] = new Object[BUCKET_SIZE];
     }
 //    return bucket[0x0f & static_cast<uint8_t>(index)];
-    return (T) bucket[0x0f & ((byte) index)];
+    T t = (T) bucket[0x0f & ((byte) index)];
+    if (t == null) {
+      t = newInstance();
+      bucket[0x0f & ((byte) index)] = t;
+    }
+    return t;
   }
+
+  abstract T newInstance();
 
   boolean set(int index, final T value) {
     if (index >= size()) {
