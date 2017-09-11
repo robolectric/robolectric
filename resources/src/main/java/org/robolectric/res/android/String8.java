@@ -374,8 +374,8 @@ public String getPathExtension()
       // nothing to do
       return this;
     }
-    if (name.charAt(0) != File.pathSeparatorChar) {
-      mString.append(File.pathSeparatorChar);
+    if (name.charAt(0) != File.separatorChar) {
+      mString.append(File.separatorChar);
     }
     mString.append(name);
     return this;
@@ -399,6 +399,11 @@ public String getPathExtension()
 //}; // namespace android
 
   public final String string() {
+    return mString.toString();
+  }
+
+  @Override
+  public String toString() {
     return mString.toString();
   }
 }

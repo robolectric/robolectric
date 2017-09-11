@@ -32,11 +32,11 @@ public class Util {
         : (v << 24) | ((v << 8) & 0x00FF0000) | ((v >> 8) & 0x0000FF00) | (v >> 24);
   }
 
-  static boolean isTruthy(int i) {
+  public static boolean isTruthy(int i) {
     return i != 0;
   }
 
-  static boolean isTruthy(Object o) {
+  public static boolean isTruthy(Object o) {
     return o != null;
   }
 
@@ -44,7 +44,7 @@ public class Util {
     System.out.println("WARN: " + String.format(message, args));
   }
 
-  static void ALOGV(String message, Object... args) {
+  public static void ALOGV(String message, Object... args) {
     System.out.println("VERBOSE: " + String.format(message, args));
   }
 

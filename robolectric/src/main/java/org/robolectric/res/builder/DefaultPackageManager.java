@@ -740,18 +740,21 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
-    setUpPackageStorage(applicationInfo);
+    setUpPackageStorage(applicationInfo, null);
 
     packageInfo.applicationInfo = applicationInfo;
 
     addPackage(packageInfo);
   }
 
-  private void setUpPackageStorage(ApplicationInfo applicationInfo) {
+  private void setUpPackageStorage(ApplicationInfo applicationInfo, AndroidManifest androidManifest) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
-    // todo: point at dir containing resources and assets maybe?
-    applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    if (androidManifest != null) {
+      applicationInfo.sourceDir = androidManifest.getResDirectory().getParent().toString();
+    } else {
+      applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    }
     applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
@@ -834,8 +837,7 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
-    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
-    setUpPackageStorage(applicationInfo);
+    setUpPackageStorage(applicationInfo, androidManifest);
 
     applicationInfo.labelRes = labelRes;
     String labelRef = androidManifest.getLabelRef();

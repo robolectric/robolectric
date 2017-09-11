@@ -2,6 +2,9 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Util.ALOGI;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,6 +24,48 @@ import java.util.List;
  * functions defined here to create a new instance.
  */
 public class Asset {
+
+  private final RandomAccessFile f;
+
+  public Asset(RandomAccessFile f) {
+    this.f = f;
+  }
+
+  public long size() {
+    try {
+      return f.length();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public int read() {
+    try {
+      return f.read();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public int read(byte[] b, int off, int len) {
+    try {
+      return f.read(b, off, len);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public long seek(long offset, int whence) {
+    throw new UnsupportedOperationException("not yet implemented");
+//    if (whence > 0) {
+//      SEEK_END
+//    } else if (whence < 0) {
+//      SEEK_SET
+//    } else {
+//      SEEK_CUR
+//    }
+//    return f.seek();
+  }
   //
 
   //      public:
@@ -29,7 +74,7 @@ public class Asset {
 //      static String8 getAssetAllocations();
 //
 //    /* used when opening an asset */
-  enum AccessMode {
+  public enum AccessMode {
     ACCESS_UNKNOWN,
     /* read chunks, and seek forward and backward */
     ACCESS_RANDOM,
@@ -155,7 +200,12 @@ static Asset createFromFile(String fileName, AccessMode mode)
 //    }
 //    pAsset->mAccessMode = mode;
 //    return pAsset;
-  return null;
+  try {
+    RandomAccessFile f = new RandomAccessFile(fileName, "r");
+    return new Asset(f);
+  } catch (FileNotFoundException e) {
+    throw new RuntimeException(e);
+  }
 }
 
 /*
@@ -283,9 +333,9 @@ static Asset createFromCompressedFile(String fileName,
 // *
 // * Returns the new chunk offset, or -1 if the seek is illegal.
 // */
-//off64_t Asset::handleSeek(off64_t offset, int whence, off64_t curPosn, off64_t maxPosn)
+//long handleSeek(long offset, int whence, long curPosn, long maxPosn)
 //{
-//    off64_t newOffset;
+//    long newOffset;
 //    switch (whence) {
 //    case SEEK_SET:
 //        newOffset = offset;
@@ -612,7 +662,8 @@ private static class _CompressedAsset extends Asset {
 /*
  * Constructor.
  */
-_CompressedAsset() {
+_CompressedAsset(RandomAccessFile f) {
+  super(f);
     mStart = 0;
     mCompressedLen = 0;
     mUncompressedLen = 0;
