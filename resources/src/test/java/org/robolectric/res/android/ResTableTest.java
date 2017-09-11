@@ -28,7 +28,7 @@ public class ResTableTest {
     ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
     InputStream inputStream = zipFile.getInputStream(arscEntry);
     resTable = new ResTable();
-    resTable.add(inputStream, mResources.getTableCount());
+    resTable.add(inputStream, 0);
   }
 
   @Test

@@ -16,6 +16,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import com.google.common.base.Strings;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import org.robolectric.RuntimeEnvironment;
@@ -24,6 +25,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.res.android.Asset;
+import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.Ref;
@@ -33,7 +36,6 @@ import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.String8;
-import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -402,11 +404,40 @@ public class ShadowArscAssetManager {
     throw new UnsupportedOperationException("not yet implemented");
   }
 
+  private final SparseArray<Asset> assets = new SparseArray<>();
+  private int nextAssetId = 1;
+
   @HiddenApi
   @Implementation
   public final long openNonAssetNative(int cookie, String fileName,
-      int accessMode) {
-    throw new UnsupportedOperationException("not yet implemented");
+      int accessMode) throws FileNotFoundException {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+    ALOGV("openNonAssetNative in %s (Java object %s)\n", am, AssetManager.class);
+    String fileName8 = fileName;
+    if (fileName8 == null) {
+      return -1;
+    }
+    AccessMode mode = AccessMode.values()[accessMode];
+    if (mode != Asset.AccessMode.ACCESS_UNKNOWN && mode != Asset.AccessMode.ACCESS_RANDOM
+        && mode != Asset.AccessMode.ACCESS_STREAMING && mode != Asset.AccessMode.ACCESS_BUFFER) {
+      throw new IllegalArgumentException("Bad access mode");
+    }
+    Asset a = isTruthy(cookie)
+        ? am.openNonAsset(cookie, fileName8, mode)
+        : am.openNonAsset(fileName8, mode, null);
+    if (a == null) {
+      throw new FileNotFoundException(fileName8);
+    }
+    int assetId;
+    synchronized (assets) {
+      assetId = nextAssetId++;
+      assets.put(assetId, a);
+    }
+    //printf("Created Asset Stream: %p\n", a);
+    return assetId;
   }
 
   @HiddenApi
@@ -417,39 +448,87 @@ public class ShadowArscAssetManager {
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public final void destroyAsset(int asset) {
+    destroyAsset((long) asset);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public final void destroyAsset(long asset) {
-    throw new UnsupportedOperationException("not yet implemented");
+    synchronized (assets) {
+      assets.remove((int) asset);
+    }
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public final int readAssetChar(int asset) {
+    return readAssetChar((long) asset);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public final int readAssetChar(long asset) {
-    throw new UnsupportedOperationException("not yet implemented");
+    Asset a = getAsset(asset);
+    return a.read();
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public final int readAsset(int asset, byte[] b, int off, int len) {
+    return readAsset((long) asset, b, off, len);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public final int readAsset(long asset, byte[] b, int off, int len) {
-    throw new UnsupportedOperationException("not yet implemented");
+    Asset a = getAsset(asset);
+    return a.read(b, off, len);
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public final long seekAsset(int asset, long offset, int whence) {
+    return seekAsset((long) asset, offset, whence);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public final long seekAsset(long asset, long offset, int whence) {
-    throw new UnsupportedOperationException("not yet implemented");
+    Asset a = getAsset(asset);
+    return a.seek(offset, whence);
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public final long getAssetLength(int asset) {
+    return getAssetLength((long) asset);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public final long getAssetLength(long asset) {
-    throw new UnsupportedOperationException("not yet implemented");
+    Asset a = getAsset(asset);
+    return a.size();
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public final long getAssetRemainingLength(int asset) {
+    return getAssetRemainingLength((long) asset);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public final long getAssetRemainingLength(long asset) {
     throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  private Asset getAsset(long asset) {
+    synchronized (assets) {
+      return assets.get((int) asset);
+    }
   }
 
   @HiddenApi
@@ -993,6 +1072,30 @@ public class ShadowArscAssetManager {
       cppAssetManager = new CppAssetManager();
     }
     return cppAssetManager;
+  }
+
+  public static boolean isTruthy(int i) {
+    return i != 0;
+  }
+
+  public static boolean isTruthy(Object o) {
+    return o != null;
+  }
+
+  static void ALOGW(String message, Object... args) {
+    System.out.println("WARN: " + String.format(message, args));
+  }
+
+  public static void ALOGV(String message, Object... args) {
+    System.out.println("VERBOSE: " + String.format(message, args));
+  }
+
+  static void ALOGI(String message, Object... args) {
+    System.out.println("INFO: " + String.format(message, args));
+  }
+
+  static void ALOGE(String message, Object... args) {
+    System.out.println("ERROR: " + String.format(message, args));
   }
 
 }

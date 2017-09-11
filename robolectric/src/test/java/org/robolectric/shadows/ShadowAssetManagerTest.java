@@ -1,35 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
-import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.res.android.DataType;
-import org.robolectric.util.Strings;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,9 +7,34 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.TestUtil.joinPath;
+
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.os.Build.VERSION_CODES;
+import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.res.android.DataType;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Strings;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(sdk = VERSION_CODES.O)
@@ -56,7 +51,7 @@ public class ShadowAssetManagerTest {
   public void setUp() throws Exception {
     resources = RuntimeEnvironment.application.getResources();
     assetManager = resources.getAssets();
-    shadowAssetManager = shadowOf(assetManager);
+    shadowAssetManager = Shadow.extract(assetManager);
   }
 
   @Test
