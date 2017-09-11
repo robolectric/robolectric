@@ -10,7 +10,7 @@ import static org.robolectric.res.android.Formatter.toHex;
  */
 public final class ResValue {
   // must be one of DataType
-  public int dataType;
+  public int dataType = DataType.NULL.code();
   public int data;
 
   public ResValue(int dataType, int data) {
@@ -21,6 +21,9 @@ public final class ResValue {
   // Copy constructor.
   ResValue(ResValue that) {
     this(that.dataType, that.data);
+  }
+
+  public ResValue() {
   }
 
   public void update(ResValue other) {

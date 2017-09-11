@@ -26,6 +26,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -206,7 +207,18 @@ public class ShadowResourcesImpl {
     @Implementation
     public TypedArray obtainStyledAttributes(Resources.Theme wrapper, AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
       Resources resources = wrapper.getResources();
-      return legacyShadowOf(resources.getAssets()).attrsToTypedArray(resources, set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
+      AssetManager assets = resources.getAssets();
+      if (ShadowArscAssetManager.isLegacyAssetManager(assets)) {
+        return legacyShadowOf(assets)
+            .attrsToTypedArray(resources, set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
+      } else {
+        return directlyOn(realThemeImpl, ResourcesImpl.ThemeImpl.class, "obtainStyledAttributes",
+            ClassParameter.from(Resources.Theme.class, wrapper),
+            ClassParameter.from(AttributeSet.class, set),
+            ClassParameter.from(int[].class, attrs),
+            ClassParameter.from(int.class, defStyleAttr),
+            ClassParameter.from(int.class, defStyleRes));
+      }
     }
 
     public long getNativePtr() {

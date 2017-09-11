@@ -61,7 +61,7 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  boolean strictErrors = false;
+  static boolean strictErrors = false;
 
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();

@@ -5,6 +5,8 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -18,6 +20,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -35,7 +38,8 @@ public class ShadowThemeTest {
     resources = RuntimeEnvironment.application.getResources();
   }
 
-  @Test public void withEmptyTheme_returnsEmptyAttributes() throws Exception {
+  @Test
+  public void withEmptyTheme_returnsEmptyAttributes() throws Exception {
     assertThat(resources.newTheme().obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
@@ -333,7 +337,7 @@ public class ShadowThemeTest {
 
   @Test
   public void forStrict_whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_throwsException() throws Exception {
-    legacyShadowOf(resources.getAssets()).strictErrors = true;
+    ShadowAssetManager.strictErrors = true;
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);

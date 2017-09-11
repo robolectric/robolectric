@@ -49,7 +49,8 @@ public class ShadowTypedArray {
 
   @HiddenApi @Implementation
   public CharSequence loadStringValueAt(int index) {
-    if (shadowOf(realTypedArray.getResources()).isLegacyAssetManager()) {
+    if (ShadowArscAssetManager.isLegacyAssetManager(
+        shadowOf(realTypedArray.getResources()).realResources.getAssets())) {
       return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
     } else {
       return directlyOn(realTypedArray, TypedArray.class, "loadStringValueAt",

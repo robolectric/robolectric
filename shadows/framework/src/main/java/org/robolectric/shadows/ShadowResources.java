@@ -18,7 +18,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.res.*;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -102,7 +101,7 @@ public class ShadowResources {
 
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
+    if (ShadowArscAssetManager.isLegacyAssetManager(realResources.getAssets())) {
       ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
 
       TypedResource typedResource = shadowAssetManager.getResourceTable()
@@ -174,7 +173,7 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
+    if (ShadowArscAssetManager.isLegacyAssetManager(realResources.getAssets())) {
       ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
       if (typedArray != null) {
@@ -186,10 +185,6 @@ public class ShadowResources {
       return directlyOn(realResources, Resources.class, "obtainTypedArray",
           new ClassParameter(int.class, id));
     }
-  }
-
-  boolean isLegacyAssetManager() {
-    return Shadow.extract(realResources.getAssets()) instanceof ShadowAssetManager;
   }
 
   public void setDensity(float density) {
@@ -260,7 +255,14 @@ public class ShadowResources {
 
     @Implementation(maxSdk = M)
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
+      if (ShadowArscAssetManager.isLegacyAssetManager(realTheme.getResources().getAssets())) {
+        return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
+      } else {
+        return directlyOn(realTheme, Resources.Theme.class, "obtainStyledAttributes",
+            ClassParameter.from(AttributeSet.class, set), ClassParameter.from(int[].class, attrs),
+            ClassParameter.from(int.class, defStyleAttr),
+            ClassParameter.from(int.class, defStyleRes));
+      }
     }
 
     private ShadowAssetManager getShadowAssetManager() {

@@ -4,16 +4,11 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.sun.org.glassfish.external.statistics.annotations.Reset;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.ResStringPool;
-import org.robolectric.util.ReflectionHelpers;
 
 @Implements(className = "android.content.res.StringBlock", isInAndroidSdk = false)
 public class ShadowStringBlock {
@@ -21,26 +16,14 @@ public class ShadowStringBlock {
   @RealObject
   Object realObject;
 
-  private static long ids = 0;
-  private static BiMap<ResStringPool, Long> nativeObjToIdMap = HashBiMap.create();
+  private static NativeObjRegistry<ResStringPool> nativeStringPoolRegistry = new NativeObjRegistry();
 
-  public long getNativePointer() {
-    return ReflectionHelpers.getField(realObject, "mNative");
-  }
-
-  public static long getNativePointer(ResStringPool tableStringBlock) {
-    Preconditions.checkNotNull(tableStringBlock);
-    Long nativeId  = nativeObjToIdMap.get(tableStringBlock);
-    if (nativeId == null) {
-      nativeId = ids;
-      nativeObjToIdMap.put(tableStringBlock, nativeId);
-      ids++;
-    }
-    return nativeId;
+  static long getNativePointer(ResStringPool tableStringBlock) {
+    return nativeStringPoolRegistry.getNativeObjectId(tableStringBlock);
   }
 
   public static void removeNativePointer(ResStringPool removed) {
-    nativeObjToIdMap.remove(removed);
+    nativeStringPoolRegistry.unregister(removed);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -50,9 +33,7 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeGetSize(long nativeId) {
-    ResStringPool resStringPool = nativeObjToIdMap.inverse().get(nativeId);
-    Preconditions.checkNotNull(resStringPool);
-    return resStringPool.size();
+    return nativeStringPoolRegistry.getNativeObject(nativeId).size();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -62,9 +43,7 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   public static String nativeGetString(long nativeId, int index) {
-    ResStringPool resStringPool = nativeObjToIdMap.inverse().get(nativeId);
-    Preconditions.checkNotNull(resStringPool);
-    return resStringPool.stringAt(index);
+    return nativeStringPoolRegistry.getNativeObject(nativeId).stringAt(index);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -77,5 +56,10 @@ public class ShadowStringBlock {
     // TODO: implement me properly
     // throw new UnsupportedOperationException("Implement me");
     return null;
+  }
+
+  @Reset
+  public void reset() {
+    nativeStringPoolRegistry.clear();
   }
 }

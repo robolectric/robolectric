@@ -2,7 +2,7 @@ package org.robolectric.res.android;
 
 import java.nio.ByteOrder;
 
-class Util {
+public class Util {
 
   static final int SIZEOF_SHORT = 2;
   static final int SIZEOF_INT = 4;
@@ -48,7 +48,7 @@ class Util {
     System.out.println("VERBOSE: " + String.format(message, args));
   }
 
-  static void ALOGI(String message, Object... args) {
+  public static void ALOGI(String message, Object... args) {
     System.out.println("INFO: " + String.format(message, args));
   }
 
