@@ -23,7 +23,7 @@ public class DefaultManifestFactory implements ManifestFactory {
     FsFile manifestFile = Fs.fileFromPath(properties.getProperty("android_merged_manifest"));
     FsFile resourcesDir = Fs.fileFromPath(properties.getProperty("android_merged_resources"));
     FsFile assetsDir = Fs.fileFromPath(properties.getProperty("android_merged_assets"));
-    String packageName = null;
+    String packageName = properties.getProperty("android_custom_package");
     List<FsFile> libraryDirs = emptyList();
 
 
