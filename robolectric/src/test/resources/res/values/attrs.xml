@@ -56,6 +56,9 @@
   <attr name="parentStyleReference" format="reference"/>
   <attr name="styleNotSpecifiedInAnyTheme" format="reference"/>
   <attr name="stringReference" format="reference"/>
+  <attr name="anAttribute" format="reference"/>
+  <attr name="attributeReferencingAnAttribute" format="reference"/>
+  <attr name="circularReference" format="reference"/>
 
   <declare-styleable name="CustomStateView">
     <attr name="stateFoo" format="boolean" />

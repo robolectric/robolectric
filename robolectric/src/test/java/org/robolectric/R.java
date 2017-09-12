@@ -34,6 +34,10 @@ public final class R {
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
+        public static final int anAttribute=0x7f010017;
+        /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+         */
         public static final int animalStyle=0x7f010008;
         /** <p>Must be a floating point value, such as "<code>1.2</code>".
 <p>This may also be a reference to a resource (in the form
@@ -58,7 +62,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attr2FromLib1=0x7f010021;
+        public static final int attr2FromLib1=0x7f010024;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -66,7 +70,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attrFromLib1=0x7f010020;
+        public static final int attrFromLib1=0x7f010023;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -74,13 +78,17 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attrFromLib2=0x7f01001f;
+        public static final int attrFromLib2=0x7f010022;
+        /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+         */
+        public static final int attributeReferencingAnAttribute=0x7f010018;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
 <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int averageSheepWidth=0x7f010018;
+        public static final int averageSheepWidth=0x7f01001b;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -89,6 +97,10 @@ theme attribute (in the form
 containing a value of this type.
          */
         public static final int child_string=0x7f010013;
+        /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+         */
+        public static final int circularReference=0x7f010019;
         /** <p>Must be one or more (separated by '|') of the following constant values.</p>
 <table>
 <colgroup align="left" />
@@ -103,7 +115,7 @@ containing a value of this type.
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int isSugary=0x7f010019;
+        public static final int isSugary=0x7f01001c;
         /** <p>Must be one of the following constant values.</p>
 <table>
 <colgroup align="left" />
@@ -129,11 +141,11 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int logoHeight=0x7f01001a;
+        public static final int logoHeight=0x7f01001d;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int logoWidth=0x7f01001b;
+        public static final int logoWidth=0x7f01001e;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -197,7 +209,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int snail=0x7f01001e;
+        public static final int snail=0x7f010021;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
@@ -213,7 +225,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int stateFoo=0x7f010017;
+        public static final int stateFoo=0x7f01001a;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -249,11 +261,11 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int styleReference=0x7f01001c;
+        public static final int styleReference=0x7f01001f;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int styleReferenceWithoutExplicitType=0x7f01001d;
+        public static final int styleReferenceWithoutExplicitType=0x7f010020;
         /** <p>Must be an integer value, such as "<code>100</code>".
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -533,34 +545,37 @@ containing a value of this type.
         public static final int typed_array_b=0x7f0f0020;
     }
     public static final class style {
-        public static final int Gastropod=0x7f12000f;
-        public static final int IndirectButtonStyle=0x7f120013;
-        public static final int MyBlackTheme=0x7f120010;
-        public static final int MyBlueTheme=0x7f120011;
-        public static final int MyCustomView=0x7f12000d;
+        public static final int Gastropod=0x7f12000e;
+        public static final int IndirectButtonStyle=0x7f120012;
+        public static final int MyBlackTheme=0x7f12000f;
+        public static final int MyBlueTheme=0x7f120010;
+        public static final int MyCustomView=0x7f12000c;
         public static final int SimpleChildWithAdditionalAttributes=0x7f120016;
-        public static final int SimpleChildWithOverride=0x7f120015;
+        public static final int SimpleChildWithOverride=0x7f120014;
         /**  Styles for testing inheritance 
          */
-        public static final int SimpleParent=0x7f120014;
-        public static final int Sized=0x7f12000e;
+        public static final int SimpleParent=0x7f120013;
+        public static final int SimpleParent_ImplicitChild=0x7f120015;
+        public static final int Sized=0x7f12000d;
         public static final int StyleA=0x7f120017;
         public static final int StyleB=0x7f120018;
-        public static final int StyleReferredToByParentAttrReference=0x7f120008;
+        public static final int StyleReferredToByParentAttrReference=0x7f120007;
+        public static final int StyleWithAttributeReference=0x7f12001b;
+        public static final int StyleWithCircularReference=0x7f12001c;
         public static final int StyleWithReference=0x7f120019;
-        public static final int Theme=0x7f120005;
-        public static final int Theme_AnotherTheme=0x7f120003;
+        public static final int StyleWithReferenceInLib1=0x7f12001a;
+        public static final int Theme=0x7f120004;
+        public static final int Theme_AnotherTheme=0x7f120002;
         public static final int Theme_Robolectric=0x7f120000;
-        public static final int Theme_Robolectric_EmptyParent=0x7f120002;
-        public static final int Theme_Robolectric_ImplicitChild=0x7f120001;
-        public static final int Theme_ThemeContainingStyleReferences=0x7f120007;
-        public static final int Theme_ThemeReferredToByParentAttrReference=0x7f120006;
-        public static final int Theme_ThemeWithAttrReferenceAsParent=0x7f120009;
-        public static final int Theme_ThirdTheme=0x7f120004;
-        public static final int ThemeWithSelfReferencingTextAttr=0x7f120012;
-        public static final int Widget_AnotherTheme_Button=0x7f12000b;
-        public static final int Widget_AnotherTheme_Button_Blarf=0x7f12000c;
-        public static final int Widget_Robolectric_Button=0x7f12000a;
+        public static final int Theme_Robolectric_EmptyParent=0x7f120001;
+        public static final int Theme_ThemeContainingStyleReferences=0x7f120006;
+        public static final int Theme_ThemeReferredToByParentAttrReference=0x7f120005;
+        public static final int Theme_ThemeWithAttrReferenceAsParent=0x7f120008;
+        public static final int Theme_ThirdTheme=0x7f120003;
+        public static final int ThemeWithSelfReferencingTextAttr=0x7f120011;
+        public static final int Widget_AnotherTheme_Button=0x7f12000a;
+        public static final int Widget_AnotherTheme_Button_Blarf=0x7f12000b;
+        public static final int Widget_Robolectric_Button=0x7f120009;
     }
     public static final class xml {
         public static final int dialog_preferences=0x7f070000;
@@ -578,7 +593,7 @@ containing a value of this type.
            @see #CustomStateView_stateFoo
          */
         public static final int[] CustomStateView = {
-            0x7f010017
+            0x7f01001a
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#stateFoo}
@@ -636,7 +651,7 @@ containing a value of this type.
             0x7f010000, 0x7f010001, 0x7f010002, 0x7f010003,
             0x7f010004, 0x7f010005, 0x7f010006, 0x7f010007,
             0x7f010008, 0x7f010009, 0x7f01000a, 0x7f01000b,
-            0x7f01000c, 0x7f01000d, 0x7f01001f
+            0x7f01000c, 0x7f01000d, 0x7f010022
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#animalStyle}
@@ -872,7 +887,7 @@ containing a value of this type.
            @see #Lib1Styleable_attrFromLib1
          */
         public static final int[] Lib1Styleable = {
-            0x7f010020, 0x7f010021
+            0x7f010023, 0x7f010024
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#attr2FromLib1}
@@ -925,8 +940,8 @@ containing a value of this type.
            @see #Theme_AnotherTheme_Attributes_styleReferenceWithoutExplicitType
          */
         public static final int[] Theme_AnotherTheme_Attributes = {
-            0x7f010018, 0x7f010019, 0x7f01001a, 0x7f01001b,
-            0x7f01001c, 0x7f01001d, 0x7f01001e
+            0x7f01001b, 0x7f01001c, 0x7f01001d, 0x7f01001e,
+            0x7f01001f, 0x7f010020, 0x7f010021
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#averageSheepWidth}

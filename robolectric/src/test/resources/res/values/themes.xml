@@ -7,11 +7,6 @@
     <item name="string3">string 3 from Theme.Robolectric</item>
   </style>
 
-  <style name="Theme.Robolectric.ImplicitChild">
-    <item name="string2">string 2 from Theme.Robolectric.ImplicitChild</item>
-    <item name="string3">string 3 from Theme.Robolectric.ImplicitChild</item>
-  </style>
-
   <style name="Theme.Robolectric.EmptyParent" parent=""/>
 
   <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
@@ -105,6 +100,10 @@
   <style name="SimpleChildWithOverride" parent="@style/SimpleParent">
     <item name="parent_string">parent string overridden by child</item>
   </style>
+  <style name="SimpleParent.ImplicitChild">
+    <item name="parent_string">parent string overridden by child</item>
+  </style>
+
   <style name="SimpleChildWithAdditionalAttributes" parent="@style/SimpleParent">
     <item name="child_string">child string</item>
   </style>
@@ -120,4 +119,16 @@
     <item name="stringReference">@string/hello</item>
   </style>
 
+  <style name="StyleWithReferenceInLib1">
+    <item name="attrFromLib1">value for attribute defined in lib1</item>
+  </style>
+
+  <style name="StyleWithAttributeReference">
+    <item name="anAttribute">@string/hello</item>
+    <item name="attributeReferencingAnAttribute">?anAttribute</item>
+  </style>
+
+  <style name="StyleWithCircularReference">
+    <item name="circularReference">?circularReference</item>
+  </style>
 </resources>

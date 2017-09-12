@@ -16,6 +16,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
+import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
@@ -722,10 +724,42 @@ public class ShadowActivityTest {
   }
 
   @Test public void shouldGetAttributeFromThemeSetOnActivity() throws Exception {
-    ShadowThemeTest.TestActivity activity = setupActivity(ShadowThemeTest.TestActivityWithAnotherTheme.class);
+    ShadowThemeTest.TestActivity activity = setupActivity(TestActivityWithAnotherTheme.class);
     TypedArray a = activity.obtainStyledAttributes(R.styleable.CustomView);
 
     assertThat(a.hasValue(R.styleable.CustomView_animalStyle)).isTrue();
+  }
+
+  @Test public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() throws Exception {
+    ShadowThemeTest.TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    activity.setTheme(R.style.Theme_Robolectric);
+    Button theButton = activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xffff0000);
+  }
+
+  @Test public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme() throws Exception {
+    ActivityController<TestActivityWithAnotherTheme> activityController = buildActivity(TestActivityWithAnotherTheme.class);
+    ShadowThemeTest.TestActivity activity = activityController.get();
+    activity.setTheme(R.style.Theme_Robolectric);
+    activityController.create();
+    Button theButton = activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xff00ff00);
+  }
+
+  @Test public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() throws Exception {
+    ShadowThemeTest.TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    Button theButton = (Button) activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xffff0000);
+  }
+
+  @Test public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() throws Exception {
+    ShadowThemeTest.TestActivity activity = buildActivity(ShadowThemeTest.TestActivity.class).create().get();
+    Button theButton = (Button) activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xff00ff00);
   }
 
   @Test
@@ -1036,5 +1070,8 @@ public class ShadowActivityTest {
     public void onActivityDestroyed(Activity activity) {
       transcript.add("onActivityDestroyed");
     }
+  }
+
+  public static class TestActivityWithAnotherTheme extends ShadowThemeTest.TestActivity {
   }
 }

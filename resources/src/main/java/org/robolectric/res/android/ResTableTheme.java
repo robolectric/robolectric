@@ -170,9 +170,15 @@ public class ResTableTheme {
         bagIndex++;
         continue;
       }
-      theme_entry curEntry = new theme_entry();
-      curEntry.value = new ResValue();
-      curEntries[e] = curEntry;
+
+      if (curEntries[e] == null) {
+        curEntries[e] = new theme_entry();
+      }
+      theme_entry curEntry = curEntries[e];
+
+      //new theme_entry();
+
+      //curEntries[e] = curEntry;
 //      if (kDebugTableNoisy) {
 //        ALOGV("Attr 0x%08x: type=0x%x, data=0x%08x; curType=0x%x",
 //            attrRes, bag.get()[bagIndex].map.value.dataType, bag.get()[bagIndex].map.value.data,
@@ -271,7 +277,7 @@ public class ResTableTheme {
   class theme_entry {
     int stringBlock;
     int typeSpecFlags;
-    ResValue value;
+    ResValue value = new ResValue();
   };
 
   class type_info {
