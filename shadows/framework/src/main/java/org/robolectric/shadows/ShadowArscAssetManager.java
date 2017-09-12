@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
-import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
@@ -16,6 +15,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,7 +46,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 // native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/core/jni/android_util_AssetManager.cpp
-@Implements(AssetManager.class)
+@Implements(value = AssetManager.class, looseSignatures = true)
 public class ShadowArscAssetManager {
 
   private static final boolean USE_LEGACY = false;
@@ -176,8 +176,8 @@ public class ShadowArscAssetManager {
 
   @HiddenApi
   @Implementation
-  public void ensureStringBlocks() {
-    directlyOn(realObject, AssetManager.class, "ensureStringBlocks");
+  public Object ensureStringBlocks() {
+    return directlyOn(realObject, AssetManager.class, "ensureStringBlocks");
   }
 
   @Implementation
@@ -588,7 +588,12 @@ public class ShadowArscAssetManager {
     return block;
 }
 
-  int copyValue(TypedValue outValue, ResTable table,  ResValue value, int ref, int block,
+  private static int copyValue(TypedValue outValue, ResTable table,  ResValue value, int ref, int block,
+      int typeSpecFlags) {
+    return copyValue(outValue, table, value, ref, block, typeSpecFlags, null);
+  }
+
+  private static int copyValue(TypedValue outValue, ResTable table,  ResValue value, int ref, int block,
       int typeSpecFlags, ResTableConfig config) {
     outValue.type = value.dataType;
     outValue.assetCookie = table.getTableCookie(block);
@@ -650,7 +655,7 @@ public class ShadowArscAssetManager {
       }
     }
     if (block >= 0) {
-      return copyValue(outValue, res, valueRef.get(), ref.get(), block, typeSpecFlags.get(), null);
+      return copyValue(outValue, res, valueRef.get(), ref.get(), block, typeSpecFlags.get());
     }
 
     return block;
@@ -1150,10 +1155,27 @@ public class ShadowArscAssetManager {
   /*package*/@HiddenApi @Implementation public static final void clearTheme(long theme){
     throw new UnsupportedOperationException("not yet implemented");
   }
-  /*package*/@HiddenApi @Implementation public static final int loadThemeAttributeValue(long theme, int ident,
+  /*package*/@HiddenApi @Implementation public static final int loadThemeAttributeValue(long themeHandle, int ident,
       TypedValue outValue,
       boolean resolve){
-    throw new UnsupportedOperationException("not yet implemented");
+
+    ResTableTheme theme = Preconditions.checkNotNull(nativeThemeRegistry.getNativeObject(themeHandle));
+    ResTable res = theme.getResTable();
+
+    Ref<ResValue> value = new Ref<>(null);
+    // XXX value could be different in different configs!
+    Ref<Integer> typeSpecFlags = new Ref<>(0);
+    int block = theme.getAttribute(ident, value, typeSpecFlags);
+    Ref<Integer> ref = new Ref<>(0);
+    if (resolve) {
+      block = res.resolveReference(value, block, ref, typeSpecFlags);
+      if (kThrowOnBadId) {
+        if (block == BAD_INDEX) {
+          throw new IllegalStateException("Bad resource!");
+        }
+      }
+    }
+    return block >= 0 ? copyValue(outValue, res, value.get(), ref.get(), block, typeSpecFlags.get(), null) : block;
   }
   /*package*/@HiddenApi @Implementation public static final void dumpTheme(long theme, int priority, String tag, String prefix){
     throw new UnsupportedOperationException("not yet implemented");

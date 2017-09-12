@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <style name="Theme.Robolectric" parent="@android:style/Theme">
-    <item name="android:buttonStyle">@style/Widget.Robolectric.Button</item>
+    <!-- <item name="android:buttonStyle">@style/Widget.Robolectric.Button</item> -->
     <item name="attrFromLib1">value from theme</item>
     <item name="string1">string 1 from Theme.Robolectric</item>
     <item name="string3">string 3 from Theme.Robolectric</item>
@@ -15,7 +15,7 @@
   <style name="Theme.Robolectric.EmptyParent" parent=""/>
 
   <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
-    <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
+    <!--<item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>-->
     <item name="logoWidth">?attr/averageSheepWidth</item>
     <item name="logoHeight">@dimen/test_dp_dimen</item>
     <item name="averageSheepWidth">@dimen/test_dp_dimen</item>
@@ -97,4 +97,27 @@
   <style name="IndirectButtonStyle" parent="@android:attr/buttonStyle">
     <item name="android:minHeight">12dp</item>
   </style>
+
+  <!-- Styles for testing inheritance -->
+  <style name="SimpleParent">
+    <item name="parent_string">parent string</item>
+  </style>
+  <style name="SimpleChildWithOverride" parent="@style/SimpleParent">
+    <item name="parent_string">parent string overridden by child</item>
+  </style>
+  <style name="SimpleChildWithAdditionalAttributes" parent="@style/SimpleParent">
+    <item name="child_string">child string</item>
+  </style>
+
+  <style name="StyleA">
+    <item name="string1">string 1 from style A</item>
+  </style>
+  <style name="StyleB">
+    <item name="string1">string 1 from style B</item>
+  </style>
+
+  <style name="StyleWithReference">
+    <item name="stringReference">@string/hello</item>
+  </style>
+
 </resources>

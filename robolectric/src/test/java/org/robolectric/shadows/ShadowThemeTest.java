@@ -29,6 +29,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
+@Config(sdk = VERSION_CODES.N_MR1) // TODO: unpin sdk
 public class ShadowThemeTest {
 
   private Resources resources;
@@ -139,26 +140,28 @@ public class ShadowThemeTest {
   }
 
   @Test public void withResolveRefsFalse_shouldNotResolveResource() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.StyleWithReference, true);
 
     TypedValue value = new TypedValue();
-    boolean resolved = activity.getTheme().resolveAttribute(R.attr.logoHeight, value, false);
+    boolean resolved = theme.resolveAttribute(R.attr.stringReference, value, false);
 
     assertThat(resolved).isTrue();
     assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(value.data).isEqualTo(R.dimen.test_dp_dimen);
+    assertThat(value.data).isEqualTo(R.string.hello);
   }
 
   @Test public void withResolveRefsTrue_shouldResolveResource() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.StyleWithReference, true);
 
     TypedValue value = new TypedValue();
-    boolean resolved = activity.getTheme().resolveAttribute(R.attr.logoHeight, value, true);
+    boolean resolved = theme.resolveAttribute(R.attr.stringReference, value, true);
 
     assertThat(resolved).isTrue();
-    assertThat(value.type).isEqualTo(TypedValue.TYPE_DIMENSION);
-    assertThat(value.resourceId).isEqualTo(R.dimen.test_dp_dimen);
-    assertThat(value.coerceToString()).isEqualTo("8.0dip");
+    assertThat(value.type).isEqualTo(TypedValue.TYPE_STRING);
+    assertThat(value.resourceId).isEqualTo(R.string.hello);
+    assertThat(value.string).isEqualTo("Hello");
   }
 
   @Test public void failToResolveCircularReference() throws Exception {
@@ -196,13 +199,20 @@ public class ShadowThemeTest {
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
-  @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
+  @Test public void applyStyle_shouldOverrideParentAttrs() throws Exception {
     Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_AnotherTheme, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from Theme.AnotherTheme");
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string3}).getString(0))
-        .isEqualTo("string 3 from Theme.Robolectric");
+    theme.applyStyle(R.style.SimpleChildWithOverride, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
+        .isEqualTo("parent string overridden by child");
+  }
+
+  @Test public void applyStyle_shouldInheritParentAttrs() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.SimpleChildWithAdditionalAttributes, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.child_string}).getString(0))
+        .isEqualTo("child string");
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
+        .isEqualTo("parent string");
   }
 
   @Test
@@ -222,31 +232,27 @@ public class ShadowThemeTest {
   @Test
   public void setTo_whenDestThemeIsModified_sourceThemeShouldNotMutate() throws Exception {
     Resources.Theme sourceTheme = resources.newTheme();
-    sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
-    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from Theme.Robolectric");
+    sourceTheme.applyStyle(R.style.StyleA, false);
 
     Resources.Theme destTheme = resources.newTheme();
     destTheme.setTo(sourceTheme);
-    destTheme.applyStyle(R.style.Theme_AnotherTheme, true);
+    destTheme.applyStyle(R.style.StyleB, true);
 
     assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from Theme.Robolectric");
+        .isEqualTo("string 1 from style A");
   }
 
   @Test
   public void setTo_whenSourceThemeIsModified_destThemeShouldNotMutate() throws Exception {
     Resources.Theme sourceTheme = resources.newTheme();
-    sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
-    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from Theme.Robolectric");
+    sourceTheme.applyStyle(R.style.StyleA, false);
 
     Resources.Theme destTheme = resources.newTheme();
     destTheme.setTo(sourceTheme);
-    sourceTheme.applyStyle(R.style.Theme_AnotherTheme, true);
+    sourceTheme.applyStyle(R.style.StyleB, true);
 
     assertThat(destTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from Theme.Robolectric");
+        .isEqualTo("string 1 from style A");
   }
 
   @Test
