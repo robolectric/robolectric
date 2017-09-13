@@ -40,6 +40,10 @@ public class Util {
     return o != null;
   }
 
+  static void ALOGD(String message, Object... args) {
+    System.out.println("DEBUG: " + String.format(message, args));
+  }
+
   static void ALOGW(String message, Object... args) {
     System.out.println("WARN: " + String.format(message, args));
   }

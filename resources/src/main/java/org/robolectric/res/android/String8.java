@@ -20,7 +20,11 @@ public class String8 {
     this(path.string());
   }
 
-//size_t String8::length() const
+  public String8(String value, int len) {
+    this(value.substring(0, len));
+  }
+
+  //size_t String8::length() const
 //{
 //    return SharedBuffer::sizeFromData(mString)-1;
 //}

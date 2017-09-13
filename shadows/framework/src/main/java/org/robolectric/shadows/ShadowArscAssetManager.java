@@ -3,13 +3,13 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
+import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
@@ -26,11 +26,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.android.BagAttributeFinder;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
+import org.robolectric.res.android.BagAttributeFinder;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.DataType;
+import org.robolectric.res.android.DynamicRefTable;
+import org.robolectric.res.android.FileAsset;
 import org.robolectric.res.android.Ref;
 import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
@@ -39,6 +41,7 @@ import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.android.ResTableTheme;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResXMLParser;
+import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.String8;
 import org.robolectric.res.android.XmlAttributeFinder;
 import org.robolectric.shadow.api.Shadow;
@@ -229,13 +232,6 @@ public class ShadowArscAssetManager {
     return directlyOn(realObject, AssetManager.class, "openXmlResourceParser",
         ClassParameter.from(int.class, cookie),
         ClassParameter.from(String.class, fileName));
-  }
-
-  public XmlResourceParser loadXmlResourceParser(int resId, String type)
-      throws Resources.NotFoundException {
-    return directlyOn(realObject, AssetManager.class, "loadXmlResourceParser",
-        ClassParameter.from(int.class, resId),
-        ClassParameter.from(String.class, type));
   }
 
   @HiddenApi
@@ -436,8 +432,8 @@ public class ShadowArscAssetManager {
       return -1;
     }
     AccessMode mode = AccessMode.values()[accessMode];
-    if (mode != Asset.AccessMode.ACCESS_UNKNOWN && mode != Asset.AccessMode.ACCESS_RANDOM
-        && mode != Asset.AccessMode.ACCESS_STREAMING && mode != Asset.AccessMode.ACCESS_BUFFER) {
+    if (mode != FileAsset.AccessMode.ACCESS_UNKNOWN && mode != FileAsset.AccessMode.ACCESS_RANDOM
+        && mode != FileAsset.AccessMode.ACCESS_STREAMING && mode != FileAsset.AccessMode.ACCESS_BUFFER) {
       throw new IllegalArgumentException("Bad access mode");
     }
     Asset a = isTruthy(cookie)
@@ -450,6 +446,8 @@ public class ShadowArscAssetManager {
     synchronized (assets) {
       assetId = nextAssetId++;
       assets.put(assetId, a);
+      // todo: something better than this
+      a.onClose = () -> destroyAsset(assetId);
     }
     //printf("Created Asset Stream: %p\n", a);
     return assetId;
@@ -749,7 +747,7 @@ public class ShadowArscAssetManager {
     Ref<Integer> styleBagTypeSetFlags = new Ref(0);
     if (xmlParser != null) {
       int idx = xmlParser.indexOfStyle();
-      if (idx >= 0 && xmlParser.getAttributeValue(idx, value) >= 0) {
+      if (idx >= 0 && xmlParser.getAttributeValue(idx, value.get()) >= 0) {
         if (value.get().dataType == DataType.ATTRIBUTE.code()) {
           if (theme.getAttribute(value.get().data, value, styleBagTypeSetFlags) < 0) {
             value.get().dataType = DataType.NULL.code();
@@ -818,7 +816,7 @@ public class ShadowArscAssetManager {
       if (xmlAttrIdx != xmlAttrEnd) {
         // We found the attribute we were looking for.
         block = kXmlBlock;
-        xmlParser.getAttributeValue(xmlAttrIdx, value);
+        xmlParser.getAttributeValue(xmlAttrIdx, value.get());
         if (kDebugStyles) {
           ALOGI(". From XML: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
         }
@@ -937,7 +935,7 @@ public class ShadowArscAssetManager {
 
   @Implementation
   @HiddenApi
-  public static final boolean resolveAttrs(long theme,
+  public static boolean resolveAttrs(long theme,
       int defStyleAttr, int defStyleRes, int[] inValues,
       int[] inAttrs, int[] outValues, int[] outIndices) {
     throw new UnsupportedOperationException("not yet implemented");
@@ -1183,8 +1181,46 @@ public class ShadowArscAssetManager {
 //  /*package*/@HiddenApi @Implementation public static final @NativeConfig
 //  int getThemeChangingConfigurations(long theme);
 
-  @HiddenApi @Implementation public final long openXmlAssetNative(int cookie, String fileName){
-    throw new UnsupportedOperationException("not yet implemented");
+  @HiddenApi @Implementation public final long openXmlAssetNative(int cookie, String fileName)
+      throws FileNotFoundException {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return 0;
+    }
+
+    ALOGV("openXmlAsset in %s (Java object %s)\n", am, ShadowArscAssetManager.class);
+
+    String fileName8 = fileName;
+    if (fileName8 == null) {
+      return 0;
+    }
+
+    int assetCookie = cookie;
+    Asset a;
+    if (isTruthy(assetCookie)) {
+      a = am.openNonAsset(assetCookie, fileName8, AccessMode.ACCESS_BUFFER);
+    } else {
+      Ref<Integer> assetCookieRef = new Ref<>(assetCookie);
+      a = am.openNonAsset(fileName8, AccessMode.ACCESS_BUFFER, assetCookieRef);
+      assetCookie = assetCookieRef.get();
+    }
+
+    if (a == null) {
+      throw new FileNotFoundException(fileName8);
+    }
+
+    final DynamicRefTable dynamicRefTable =
+        am.getResources().getDynamicRefTableForCookie(assetCookie);
+    ResXMLTree block = new ResXMLTree(dynamicRefTable);
+    int err = block.setTo(a.getBuffer(true), a.getLength(), true);
+    a.close();
+//    delete a;
+
+    if (err != NO_ERROR) {
+      throw new FileNotFoundException("Corrupt XML binary file");
+    }
+
+    return ShadowXmlBlock.RES_XML_TREES.getNativeObjectId(block);
   }
 
   @HiddenApi @Implementation public final String[] getArrayStringResource(int arrayResId){
