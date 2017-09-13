@@ -679,7 +679,32 @@ public class ShadowArscAssetManager {
 //      # define PRIx32		"x"
       private static final String PRIx64 =  "x";
 
-  @Implementation
+  @Implementation(minSdk=VERSION_CODES.O)
+  @HiddenApi
+  public static final boolean applyStyle(long themeToken,
+      int defStyleAttr,
+      int defStyleRes,
+      long xmlParserToken,
+      int[] inAttrs,
+      int length,
+      long outValuesAddress,
+      long outIndicesAddress) {
+    throw new UnsupportedOperationException("implement me");
+  }
+
+  @Implementation(maxSdk = VERSION_CODES.LOLLIPOP)
+  @HiddenApi
+  public static final boolean applyStyle(int themeToken,
+      int defStyleAttr,
+      int defStyleRes,
+      int xmlParserToken,
+      int[] attrs,
+      int[] outValues,
+      int[] outIndices) {
+    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs, outValues, outIndices);
+  }
+
+  @Implementation(maxSdk = VERSION_CODES.N_MR1)
   @HiddenApi
   public static final boolean applyStyle(long themeToken,
       int defStyleAttr,
@@ -1128,9 +1153,9 @@ public class ShadowArscAssetManager {
     if (shouldDelegateToLegacyShadow(destPtr)) {
       ShadowAssetManager.copyTheme(destPtr, sourcePtr);
     } else {
-      directlyOn(AssetManager.class, "copyTheme",
-          ClassParameter.from(int.class, destPtr),
-          ClassParameter.from(int.class, sourcePtr));
+      ResTableTheme dest = nativeThemeRegistry.getNativeObject(destPtr);
+      ResTableTheme src = nativeThemeRegistry.getNativeObject(sourcePtr);
+      dest.setTo(src);
     }
   }
 

@@ -244,7 +244,7 @@ public class ShadowResources {
 
     @Implementation(maxSdk = M)
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      if (ShadowArscAssetManager.isLegacyAssetManager(realTheme.getResources().getAssets())) {
+      if (ShadowArscAssetManager.isLegacyAssetManager(getResources().getAssets())) {
         return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
       } else {
         return directlyOn(realTheme, Resources.Theme.class, "obtainStyledAttributes",

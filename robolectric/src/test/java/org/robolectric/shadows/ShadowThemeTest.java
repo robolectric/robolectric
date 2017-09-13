@@ -1,11 +1,15 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -16,18 +20,10 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivityTest.TestActivityWithAnotherTheme;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Shadows.shadowOf;
-
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.O) // TODO: unpin sdk
 public class ShadowThemeTest {
-
   private Resources resources;
 
   @Before
@@ -162,6 +158,8 @@ public class ShadowThemeTest {
     destTheme.setTo(sourceTheme);
     destTheme.applyStyle(R.style.StyleB, true);
 
+    assertThat(destTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from style B");
     assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
         .isEqualTo("string 1 from style A");
   }
@@ -177,6 +175,8 @@ public class ShadowThemeTest {
 
     assertThat(destTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
         .isEqualTo("string 1 from style A");
+    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from style B");
   }
 
   @Test

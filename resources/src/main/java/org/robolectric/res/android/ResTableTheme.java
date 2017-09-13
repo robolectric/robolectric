@@ -47,7 +47,7 @@ public class ResTableTheme {
       }
 
       if (p >= 0) {
-            final package_info pi = mPackages[p];
+        final package_info pi = mPackages[p];
         if (kDebugTableTheme) {
           ALOGI("Found package: %s", pi);
         }
@@ -56,20 +56,20 @@ public class ResTableTheme {
             ALOGI("Desired type index is %d in avail %d", t, Res_MAXTYPE + 1);
           }
           if (t <= Res_MAXTYPE) {
-                    final type_info ti = pi.types[t];
+            final type_info ti = pi.types[t];
             if (kDebugTableTheme) {
               ALOGI("Desired entry index is %d in avail %d", e, ti.numEntries);
             }
             if (e < ti.numEntries) {
               final theme_entry te = ti.entries[e];
               if (outTypeSpecFlags != null) {
-                            outTypeSpecFlags.set(outTypeSpecFlags.get() | te.typeSpecFlags);
+                outTypeSpecFlags.set(outTypeSpecFlags.get() | te.typeSpecFlags);
               }
               if (kDebugTableTheme) {
                 ALOGI("Theme value: type=0x%x, data=0x%08x",
                     te.value.dataType, te.value.data);
               }
-                        final int type = te.value.dataType;
+              final int type = te.value.dataType;
               if (type == DataType.ATTRIBUTE.code()) {
                 if (cnt > 0) {
                   cnt--;
@@ -79,7 +79,7 @@ public class ResTableTheme {
                 ALOGW("Too many attribute references, stopped at: 0x%08x\n", resID);
                 return BAD_INDEX;
               } else if (type != DataType.NULL.code()) {
-                            valueRef.set(te.value);
+                valueRef.set(te.value);
                 return te.stringBlock;
               }
               return BAD_INDEX;
@@ -253,40 +253,78 @@ public class ResTableTheme {
   }
 
   private package_info copy_package(package_info pi) {
-    package_info newpi = new package_info();
-    for (int j = 0; j <= Res_MAXTYPE; j++) {
-      if (pi.types[j] == null) {
-        newpi.types[j] = null;
-        continue;
-      }
-      int cnt = pi.types[j].numEntries;
-      newpi.types[j] = new type_info();
-      newpi.types[j].numEntries = cnt;
-      theme_entry[] te = pi.types[j].entries;
-      if (te != null) {
-        theme_entry[] newte = new theme_entry[cnt];
-        newpi.types[j].entries = newte;
-        System.arraycopy(te, 0, newte, 0, te.length);
-      } else {
-        newpi.types[j].entries = null;
-      }
-    }
-    return newpi;
+    return new package_info(pi);
+//    package_info newpi = new package_info();
+//    for (int j = 0; j <= Res_MAXTYPE; j++) {
+//      if (pi.types[j] == null) {
+//        newpi.types[j] = null;
+//        continue;
+//      }
+//      int cnt = pi.types[j].numEntries;
+//      newpi.types[j] = new type_info();
+//      newpi.types[j].numEntries = cnt;
+//      theme_entry[] te = pi.types[j].entries;
+//      if (te != null) {
+//        theme_entry[] newte = new theme_entry[cnt];
+//        newpi.types[j].entries = newte;
+//        System.arraycopy(te, 0, newte, 0, te.length);
+//      } else {
+//        newpi.types[j].entries = null;
+//      }
+//    }
+//    return newpi;
   }
 
   class theme_entry {
     int stringBlock;
     int typeSpecFlags;
     ResValue value = new ResValue();
+
+    theme_entry() {}
+
+    /** copy constructor. Performs a deep copy */
+    public theme_entry(theme_entry src) {
+      stringBlock = src.stringBlock;
+      typeSpecFlags = src.typeSpecFlags;
+      value = new ResValue(src.value);
+    }
   };
 
   class type_info {
     int numEntries;
     theme_entry[] entries;
+
+    type_info() {}
+
+    /** copy constructor. Performs a deep copy */
+    type_info(type_info src) {
+      numEntries = src.numEntries;
+      entries = new theme_entry[src.entries.length];
+      for (int i=0; i < src.entries.length; i++) {
+        if (src.entries[i] == null) {
+          entries[i] = null;
+        } else {
+          entries[i] = new theme_entry(src.entries[i]);
+        }
+      }
+    }
   };
 
   class package_info {
     type_info[] types = new type_info[Res_MAXTYPE + 1];
+
+    package_info() {}
+
+    /** copy constructor. Performs a deep copy */
+    package_info(package_info src) {
+      for (int i=0; i < src.types.length; i++) {
+        if (src.types[i] == null) {
+          types[i] = null;
+        } else {
+          types[i] = new type_info(src.types[i]);
+        }
+      }
+    }
   };
 
   static final int Res_MAXPACKAGE = 255;
