@@ -37,16 +37,16 @@ public class ResTable {
   static final int APP_PACKAGE_ID      = 0x7f;
   static final int SYS_PACKAGE_ID      = 0x01;
 
-  private static final boolean kDebugStringPoolNoisy = false;
-  private static final boolean kDebugXMLNoisy = false;
-  private static final boolean kDebugTableNoisy = false;
-  private static final boolean kDebugTableGetEntry = false;
+  static final boolean kDebugStringPoolNoisy = false;
+  static final boolean kDebugXMLNoisy = false;
+  static final boolean kDebugTableNoisy = false;
+  static final boolean kDebugTableGetEntry = false;
   static final boolean kDebugTableSuperNoisy = false;
-  private static final boolean kDebugLoadTableNoisy = false;
-  private static final boolean kDebugLoadTableSuperNoisy = false;
-  private static final boolean kDebugTableTheme = false;
-  private static final boolean kDebugResXMLTree = false;
-  private static final boolean kDebugLibNoisy = false;
+  static final boolean kDebugLoadTableNoisy = false;
+  static final boolean kDebugLoadTableSuperNoisy = false;
+  static final boolean kDebugTableTheme = false;
+  static final boolean kDebugResXMLTree = false;
+  static final boolean kDebugLibNoisy = false;
 
   private static final Object NULL = null;
   public static final bag_set SENTINEL_BAG_SET = new bag_set(1);
@@ -101,6 +101,8 @@ public class ResTable {
     byte[] buf = ByteStreams.toByteArray(is);
     ByteBuffer buffer = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
     Chunk.read(buffer, this, cookie);
+//    int id = mPackageGroups.values().iterator().next().id; // huh?
+//    mPackageMap[id] = (byte) (id + 1); // huh?
   }
 
 //  Errors add(final Object data, int size, final int cookie, boolean copyData) {
@@ -823,6 +825,18 @@ public class ResTable {
 
   public ResStringPool getTableStringBlock(int index) {
     return mHeaders.get(index).values;
+  }
+
+  public DynamicRefTable getDynamicRefTableForCookie(int cookie) {
+    for (PackageGroup pg : mPackageGroups.values()) {
+      int M = pg.packages.size();
+      for (int j = 0; j < M; j++) {
+        if (pg.packages.get(j).header.cookie == cookie) {
+          return pg.dynamicRefTable;
+        }
+      }
+    }
+    return null;
   }
 
   // A group of objects describing a particular resource package.

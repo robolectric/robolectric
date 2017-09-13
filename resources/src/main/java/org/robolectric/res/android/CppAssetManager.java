@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.Util.ALOGD;
+import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.ATRACE_CALL;
@@ -9,20 +11,24 @@ import static org.robolectric.res.android.Util.isTruthy;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.nio.file.Path;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.annotation.Nullable;
 import org.robolectric.res.android.Asset.AccessMode;
-import org.robolectric.res.android.CppAssetManager.FileType;
+import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
+  private static final boolean kIsDebug = false;
 
   enum FileType {
     kFileTypeUnknown,
@@ -67,8 +73,7 @@ public class CppAssetManager {
 
   private final Object mLock = new Object();
 
-  //ZipSet          mZipSet;
-  Object mZipSet;
+  ZipSet          mZipSet = new ZipSet();
 
   private final List<asset_path> mAssetPaths = new ArrayList<>();
   private String mLocale;
@@ -88,7 +93,7 @@ public class CppAssetManager {
 //  
 
   // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
-  static final Asset kExcludedAsset = new Asset(null);
+  static final Asset kExcludedAsset = new FileAsset(null);
 //  
 //  static volatile int gCount = 0;
 //  
@@ -537,7 +542,7 @@ public class CppAssetManager {
   }
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
-    URL resource = getClass().getResource("/resources.ap_");
+    URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
     System.out.println("Reading ARSC file  from " + resource);
     LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
     try {
@@ -820,48 +825,46 @@ public class CppAssetManager {
 
       /* look inside the zip file */
       } else {
-        throw new UnsupportedOperationException("not implemented yet");
-//          String8 path = new String8(fileName);
-//
-//          /* check the appropriate Zip file */
-//          ZipFileRO* pZip = getZipFileLocked(ap);
-//          if (pZip != null) {
-//              //printf("GOT zip, checking NA '%s'\n", (final char*) path);
-//              ZipEntryRO entry = pZip.findEntryByName(path.string());
-//              if (entry != null) {
-//                  //printf("FOUND NA in Zip file for %s\n", appName ? appName : kAppCommon);
-//                  pAsset = openAssetFromZipLocked(pZip, entry, mode, path);
-//                  pZip.releaseEntry(entry);
-//              }
-//          }
-//
-//          if (pAsset != null) {
-//              /* create a "source" name, for debug/display */
-//              pAsset.setAssetSource(
-//                      createZipSourceNameLocked(ZipSet.getPathName(ap.path.string()), String8(""),
-//                                                  String8(fileName)));
-//          }
+          String8 path = new String8(fileName);
+
+          /* check the appropriate Zip file */
+          ZipFileRO pZip = getZipFileLocked(ap);
+          if (pZip != null) {
+              //printf("GOT zip, checking NA '%s'\n", (final char*) path);
+              ZipEntryRO entry = pZip.findEntryByName(path.string());
+              if (entry != null) {
+                  //printf("FOUND NA in Zip file for %s\n", appName ? appName : kAppCommon);
+                pAsset = openAssetFromZipLocked(pZip, entry, mode, path);
+                  pZip.releaseEntry(entry);
+              }
+          }
+
+          if (pAsset != null) {
+              /* create a "source" name, for debug/display */
+              pAsset.setAssetSource(
+                      createZipSourceNameLocked(ap.path.string(), "", fileName));
+          }
       }
 
-      return pAsset;
+    return pAsset;
   }
-//  
-//  /*
-//   * Create a "source name" for a file from a Zip archive.
-//   */
-//  String8 createZipSourceNameLocked(final String8& zipFileName,
-//      final String8& dirName, final String8& fileName)
-//  {
-//      String8 sourceName("zip:");
-//      sourceName.append(zipFileName);
-//      sourceName.append(":");
-//      if (dirName.length() > 0) {
-//          sourceName.appendPath(dirName);
-//      }
-//      sourceName.appendPath(fileName);
-//      return sourceName;
-//  }
-//  
+
+  /*
+   * Create a "source name" for a file from a Zip archive.
+   */
+  String8 createZipSourceNameLocked(final String zipFileName,
+      final String dirName, final String fileName)
+  {
+      String8 sourceName = new String8("zip:");
+      sourceName.append(zipFileName);
+      sourceName.append(":");
+      if (dirName.length() > 0) {
+          sourceName.appendPath(dirName);
+      }
+      sourceName.appendPath(fileName);
+      return sourceName;
+  }
+
 //  /*
 //   * Create a path to a loose asset (asset-base/app/rootDir).
 //   */
@@ -872,17 +875,17 @@ public class CppAssetManager {
 //      return path;
 //  }
 //  
-//  /*
-//   * Return a pointer to one of our open Zip archives.  Returns null if no
-//   * matching Zip file exists.
-//   */
-//  ZipFileRO* getZipFileLocked(final asset_path& ap)
-//  {
-//      ALOGV("getZipFileLocked() in %p\n", this);
-//  
-//      return mZipSet.getZip(ap.path);
-//  }
-//  
+  /*
+   * Return a pointer to one of our open Zip archives.  Returns null if no
+   * matching Zip file exists.
+   */
+  ZipFileRO getZipFileLocked(final asset_path ap)
+  {
+      ALOGV("getZipFileLocked() in %s\n", this);
+
+      return mZipSet.getZip(ap.path.string());
+  }
+
   /*
    * Try to open an asset from a file on disk.
    *
@@ -910,37 +913,38 @@ public class CppAssetManager {
 
       return pAsset;
   }
-//  
-//  /*
-//   * Given an entry in a Zip archive, create a new Asset object.
-//   *
-//   * If the entry is uncompressed, we may want to create or share a
-//   * slice of shared memory.
-//   */
-//  Asset* openAssetFromZipLocked(final ZipFileRO* pZipFile,
-//      final ZipEntryRO entry, AccessMode mode, final String8& entryName)
-//  {
-//      Asset* pAsset = null;
-//  
-//      // TODO: look for previously-created shared memory slice?
-//      uint16_t method;
-//      uint32_t uncompressedLen;
-//  
-//      //printf("USING Zip '%s'\n", pEntry.getFileName());
-//  
-//      if (!pZipFile.getEntryInfo(entry, &method, &uncompressedLen, null, null,
-//              null, null))
-//      {
-//          ALOGW("getEntryInfo failed\n");
-//          return null;
-//      }
-//  
-//      FileMap* dataMap = pZipFile.createEntryFileMap(entry);
+
+  /*
+   * Given an entry in a Zip archive, create a new Asset object.
+   *
+   * If the entry is uncompressed, we may want to create or share a
+   * slice of shared memory.
+   */
+  Asset openAssetFromZipLocked(final ZipFileRO pZipFile,
+      final ZipEntryRO entry, AccessMode mode, final String8 entryName)
+  {
+      Asset pAsset = null;
+
+      // TODO: look for previously-created shared memory slice?
+      Ref<Short> method = new Ref<>((short) 0);
+      Ref<Long> uncompressedLen = new Ref<>(0L);
+
+      //printf("USING Zip '%s'\n", pEntry.getFileName());
+
+      if (!pZipFile.getEntryInfo(entry, method, uncompressedLen, null, null,
+              null, null))
+      {
+          ALOGW("getEntryInfo failed\n");
+          return null;
+      }
+
+      return Asset.createFromZipEntry(pZipFile, entry, entryName);
+//      FileMap dataMap = pZipFile.createEntryFileMap(entry);
 //      if (dataMap == null) {
 //          ALOGW("create map from entry failed\n");
 //          return null;
 //      }
-//  
+//
 //      if (method == ZipFileRO.kCompressStored) {
 //          pAsset = Asset.createFromUncompressedMap(dataMap, mode);
 //          ALOGV("Opened uncompressed entry %s in zip %s mode %d: %p", entryName.string(),
@@ -955,10 +959,10 @@ public class CppAssetManager {
 //          /* unexpected */
 //          ALOGW("create from segment failed\n");
 //      }
-//  
+
 //      return pAsset;
-//  }
-//  
+  }
+
 //  /*
 //   * Open a directory in the asset namespace.
 //   *
@@ -1412,61 +1416,78 @@ public class CppAssetManager {
 //      }
 //  #endif
 //  }
-//  
-//  /*
-//   * ===========================================================================
-//   *      SharedZip
-//   * ===========================================================================
-//   */
-//  
-//  
-//  Mutex SharedZip.gLock;
-//  DefaultKeyedVector<String8, wp<SharedZip> > SharedZip.gOpen;
-//  
-//  SharedZip.SharedZip(final String8& path, time_t modWhen)
-//      : mPath(path), mZipFile(null), mModWhen(modWhen),
-//        mResourceTableAsset(null), mResourceTable(null)
-//  {
-//      if (kIsDebug) {
-//          ALOGI("Creating SharedZip %p %s\n", this, (final char*)mPath);
-//      }
-//      ALOGV("+++ opening zip '%s'\n", mPath.string());
-//      mZipFile = ZipFileRO.open(mPath.string());
-//      if (mZipFile == null) {
-//          ALOGD("failed to open Zip archive '%s'\n", mPath.string());
-//      }
-//  }
-//  
-//  sp<SharedZip> SharedZip.get(final String8& path,
-//          boolean createIfNotPresent)
-//  {
-//      AutoMutex _l(gLock);
-//      time_t modWhen = getFileModDate(path);
-//      sp<SharedZip> zip = gOpen.valueFor(path).promote();
-//      if (zip != null && zip.mModWhen == modWhen) {
-//          return zip;
-//      }
-//      if (zip == null && !createIfNotPresent) {
-//          return null;
-//      }
-//      zip = new SharedZip(path, modWhen);
-//      gOpen.add(path, zip);
-//      return zip;
-//  
-//  }
-//  
-//  ZipFileRO* SharedZip.getZip()
-//  {
-//      return mZipFile;
-//  }
-//  
+
+  /*
+   * ===========================================================================
+   *      SharedZip
+   * ===========================================================================
+   */
+
+  static class SharedZip /*: public RefBase */{
+    String mPath;
+    ZipFileRO mZipFile;
+    long mModWhen;
+
+    Asset mResourceTableAsset;
+    ResTable mResourceTable;
+
+    List<asset_path> mOverlays;
+
+    final static Object gLock = new Object();
+    final static Map<String8, WeakReference<SharedZip>> gOpen = new HashMap<>();
+
+    public SharedZip(String path, long modWhen) {
+      this.mPath = path;
+      this.mZipFile = null;
+      this.mModWhen = modWhen;
+      this.mResourceTableAsset = null;
+      this.mResourceTable = null;
+
+      if (kIsDebug) {
+          ALOGI("Creating SharedZip %s %s\n", this, mPath);
+      }
+      ALOGV("+++ opening zip '%s'\n", mPath);
+      mZipFile = ZipFileRO.open(mPath);
+      if (mZipFile == null) {
+          ALOGD("failed to open Zip archive '%s'\n", mPath);
+      }
+  }
+
+    static SharedZip get(final String8 path) {
+      return get(path, true);
+    }
+
+    static SharedZip get(final String8 path, boolean createIfNotPresent) {
+      synchronized (gLock) {
+        long modWhen = getFileModDate(path.string());
+        WeakReference<SharedZip> ref = gOpen.get(path);
+        SharedZip zip = ref == null ? null : ref.get();
+        if (zip != null && zip.mModWhen == modWhen) {
+          return zip;
+        }
+        if (zip == null && !createIfNotPresent) {
+          return null;
+        }
+        zip = new SharedZip(path.string(), modWhen);
+        gOpen.put(path, new WeakReference<>(zip));
+        return zip;
+
+      }
+
+  }
+
+    ZipFileRO getZip()
+  {
+    return mZipFile;
+  }
+
 //  Asset* SharedZip.getResourceTableAsset()
 //  {
 //      AutoMutex _l(gLock);
 //      ALOGV("Getting from SharedZip %p resource asset %p\n", this, mResourceTableAsset);
 //      return mResourceTableAsset;
 //  }
-//  
+//
 //  Asset* SharedZip.setResourceTableAsset(Asset* asset)
 //  {
 //      {
@@ -1482,13 +1503,13 @@ public class CppAssetManager {
 //      delete asset;
 //      return mResourceTableAsset;
 //  }
-//  
+//
 //  ResTable* SharedZip.getResourceTable()
 //  {
 //      ALOGV("Getting from SharedZip %p resource table %p\n", this, mResourceTable);
 //      return mResourceTable;
 //  }
-//  
+//
 //  ResTable* SharedZip.setResourceTable(ResTable* res)
 //  {
 //      {
@@ -1501,18 +1522,18 @@ public class CppAssetManager {
 //      delete res;
 //      return mResourceTable;
 //  }
-//  
+//
 //  boolean SharedZip.isUpToDate()
 //  {
 //      time_t modWhen = getFileModDate(mPath.string());
 //      return mModWhen == modWhen;
 //  }
-//  
+//
 //  void SharedZip.addOverlay(final asset_path& ap)
 //  {
 //      mOverlays.add(ap);
 //  }
-//  
+//
 //  boolean SharedZip.getOverlay(int idx, asset_path* out) final
 //  {
 //      if (idx >= mOverlays.size()) {
@@ -1521,7 +1542,7 @@ public class CppAssetManager {
 //      *out = mOverlays[idx];
 //      return true;
 //  }
-//  
+//
 //  SharedZip.~SharedZip()
 //  {
 //      if (kIsDebug) {
@@ -1538,46 +1559,62 @@ public class CppAssetManager {
 //          ALOGV("Closed '%s'\n", mPath.string());
 //      }
 //  }
-//  
-//  /*
-//   * ===========================================================================
-//   *      ZipSet
-//   * ===========================================================================
-//   */
-//  
-//  /*
-//   * Destructor.  Close any open archives.
-//   */
+//
+};
+
+
+  /*
+ * Manage a set of Zip files.  For each file we need a pointer to the
+ * ZipFile and a time_t with the file's modification date.
+ *
+ * We currently only have two zip files (current app, "common" app).
+ * (This was originally written for 8, based on app/locale/vendor.)
+ */
+  static class ZipSet {
+
+    List<String> mZipPath = new ArrayList<>();
+    List<SharedZip> mZipFile = new ArrayList<>();
+
+  /*
+   * ===========================================================================
+   *      ZipSet
+   * ===========================================================================
+   */
+
+  /*
+   * Destructor.  Close any open archives.
+   */
 //  ZipSet.~ZipSet(void)
-//  {
-//      int N = mZipFile.size();
-//      for (int i = 0; i < N; i++)
-//          closeZip(i);
-//  }
-//  
-//  /*
-//   * Close a Zip file and reset the entry.
-//   */
-//  void ZipSet.closeZip(int idx)
-//  {
-//      mZipFile.editItemAt(idx) = null;
-//  }
-//  
-//  
-//  /*
-//   * Retrieve the appropriate Zip file from the set.
-//   */
-//  ZipFileRO* ZipSet.getZip(final String8& path)
-//  {
-//      int idx = getIndex(path);
-//      sp<SharedZip> zip = mZipFile[idx];
-//      if (zip == null) {
-//          zip = SharedZip.get(path);
-//          mZipFile.editItemAt(idx) = zip;
-//      }
-//      return zip.getZip();
-//  }
-//  
+    protected void finalize()
+  {
+      int N = mZipFile.size();
+      for (int i = 0; i < N; i++)
+          closeZip(i);
+  }
+
+  /*
+   * Close a Zip file and reset the entry.
+   */
+  void closeZip(int idx)
+  {
+      mZipFile.set(idx, null);
+  }
+
+
+  /*
+   * Retrieve the appropriate Zip file from the set.
+   */
+  ZipFileRO getZip(final String path)
+  {
+      int idx = getIndex(path);
+      SharedZip zip = mZipFile.get(idx);
+      if (zip == null) {
+          zip = SharedZip.get(new String8(path));
+          mZipFile.set(idx, zip);
+      }
+      return zip.getZip();
+  }
+
 //  Asset* ZipSet.getZipResourceTableAsset(final String8& path)
 //  {
 //      int idx = getIndex(path);
@@ -1588,7 +1625,7 @@ public class CppAssetManager {
 //      }
 //      return zip.getResourceTableAsset();
 //  }
-//  
+//
 //  Asset* ZipSet.setZipResourceTableAsset(final String8& path,
 //                                                   Asset* asset)
 //  {
@@ -1597,7 +1634,7 @@ public class CppAssetManager {
 //      // doesn't make sense to call before previously accessing.
 //      return zip.setResourceTableAsset(asset);
 //  }
-//  
+//
 //  ResTable* ZipSet.getZipResourceTable(final String8& path)
 //  {
 //      int idx = getIndex(path);
@@ -1608,7 +1645,7 @@ public class CppAssetManager {
 //      }
 //      return zip.getResourceTable();
 //  }
-//  
+//
 //  ResTable* ZipSet.setZipResourceTable(final String8& path,
 //                                                      ResTable* res)
 //  {
@@ -1617,7 +1654,7 @@ public class CppAssetManager {
 //      // doesn't make sense to call before previously accessing.
 //      return zip.setResourceTable(res);
 //  }
-//  
+//
 //  /*
 //   * Generate the partial pathname for the specified archive.  The caller
 //   * gets to prepend the asset root directory.
@@ -1628,7 +1665,7 @@ public class CppAssetManager {
 //  {
 //      return String8(zipPath);
 //  }
-//  
+//
 //  boolean ZipSet.isUpToDate()
 //  {
 //      final int N = mZipFile.size();
@@ -1639,14 +1676,14 @@ public class CppAssetManager {
 //      }
 //      return true;
 //  }
-//  
+//
 //  void ZipSet.addOverlay(final String8& path, final asset_path& overlay)
 //  {
 //      int idx = getIndex(path);
 //      sp<SharedZip> zip = mZipFile[idx];
 //      zip.addOverlay(overlay);
 //  }
-//  
+//
 //  boolean ZipSet.getOverlay(final String8& path, int idx, asset_path* out) final
 //  {
 //      sp<SharedZip> zip = SharedZip.get(path, false);
@@ -1655,26 +1692,34 @@ public class CppAssetManager {
 //      }
 //      return zip.getOverlay(idx, out);
 //  }
-//  
-//  /*
-//   * Compute the zip file's index.
-//   *
-//   * "appName", "locale", and "vendor" should be set to null to indicate the
-//   * default directory.
-//   */
-//  int ZipSet.getIndex(final String8& zip) final
-//  {
-//      final int N = mZipPath.size();
-//      for (int i=0; i<N; i++) {
-//          if (mZipPath[i] == zip) {
-//              return i;
-//          }
-//      }
-//  
-//      mZipPath.add(zip);
-//      mZipFile.add(null);
-//  
-//      return mZipPath.size()-1;
-//  }
-                                                                                  
+//
+  /*
+   * Compute the zip file's index.
+   *
+   * "appName", "locale", and "vendor" should be set to null to indicate the
+   * default directory.
+   */
+  int getIndex(final String zip)
+  {
+      final int N = mZipPath.size();
+      for (int i=0; i<N; i++) {
+          if (Objects.equals(mZipPath.get(i), zip)) {
+              return i;
+          }
+      }
+
+      mZipPath.add(zip);
+      mZipFile.add(null);
+
+      return mZipPath.size()-1;
+  }
+  }
+
+  private static long getFileModDate(String path) {
+    try {
+      return Files.getLastModifiedTime(Paths.get(path)).toMillis();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

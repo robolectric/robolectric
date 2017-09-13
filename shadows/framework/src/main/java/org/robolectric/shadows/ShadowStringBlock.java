@@ -3,11 +3,10 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-import com.google.common.base.Preconditions;
-import com.sun.org.glassfish.external.statistics.annotations.Reset;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.ResStringPool;
 
 @Implements(className = "android.content.res.StringBlock", isInAndroidSdk = false)
@@ -16,7 +15,7 @@ public class ShadowStringBlock {
   @RealObject
   Object realObject;
 
-  private static NativeObjRegistry<ResStringPool> nativeStringPoolRegistry = new NativeObjRegistry();
+  private static NativeObjRegistry<ResStringPool> nativeStringPoolRegistry = new NativeObjRegistry<>();
 
   static long getNativePointer(ResStringPool tableStringBlock) {
     return nativeStringPoolRegistry.getNativeObjectId(tableStringBlock);
@@ -58,8 +57,8 @@ public class ShadowStringBlock {
     return null;
   }
 
-  @Reset
-  public void reset() {
+  @Resetter
+  public static void reset() {
     nativeStringPoolRegistry.clear();
   }
 }

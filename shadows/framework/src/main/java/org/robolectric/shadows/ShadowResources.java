@@ -208,16 +208,16 @@ public class ShadowResources {
     return displayMetrics;
   }
 
-  @HiddenApi @Implementation
-  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-    return shadowAssetManager.loadXmlResourceParser(resId, type);
-  }
-
-  @HiddenApi @Implementation
-  public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-    return loadXmlResourceParser(id, type);
-  }
+//  @HiddenApi @Implementation
+//  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
+//    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+//    return shadowAssetManager.loadXmlResourceParser(resId, type);
+//  }
+//
+//  @HiddenApi @Implementation
+//  public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
+//    return loadXmlResourceParser(id, type);
+//  }
 
   @Implements(value = Resources.Theme.class)
   public static class ShadowTheme {

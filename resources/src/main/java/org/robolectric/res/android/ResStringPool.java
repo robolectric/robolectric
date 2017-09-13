@@ -8,9 +8,11 @@ import static org.robolectric.res.android.Errors.NAME_NOT_FOUND;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Errors.NO_INIT;
 import static org.robolectric.res.android.Util.ALOGI;
-import static org.robolectric.res.android.Util.ALOGW;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import org.robolectric.res.android.ResXMLTree.XmlBuffer.XmlResStringPool;
 import org.robolectric.util.Strings;
 
 /**
@@ -46,7 +48,7 @@ public class ResStringPool {
     setTo(header, strings);
   }
 
-  private int setTo(ResStringPoolHeader header, List<String> strings) {
+  public int setTo(ResStringPoolHeader header, List<String> strings) {
     if (header == null || strings == null || strings.isEmpty()) {
       return setError(BAD_TYPE);
     }
@@ -54,6 +56,12 @@ public class ResStringPool {
     this.mStrings = strings;
     return setError(NO_ERROR);
   }
+
+//  public void setTo(XmlResStringPool xmlStringPool) {
+//    this.mHeader = new ResStringPoolHeader();
+//    this.mStrings = new ArrayList<>();
+//    Collections.addAll(mStrings, xmlStringPool.strings());
+//  }
 
   private int setError(int error) {
     mError = error;
@@ -75,7 +83,18 @@ public class ResStringPool {
       return mStrings.get(idx);
     }
     return null;
+  }
 
+  String stringAt(int idx, Ref<Integer> outLen) {
+    String s = stringAt(idx);
+    if (s != null && outLen != null) {
+      outLen.set(s.length());
+    }
+    return s;
+  }
+
+  public String string8At(int id, Ref<Integer> outLen) {
+    return stringAt(id, outLen);
   }
 
 //    final ResStringPool_span* styleAt(final ResStringPool_ref& ref) final;
@@ -139,6 +158,14 @@ public class ResStringPool {
     public int size() {
       return mStrings.size();
     }
+
+  public boolean isUTF8() {
+    return true;
+  }
+
+  public int getError() {
+    return mError;
+  }
 
 //    int styleCount() final;
 //    int bytes() final;

@@ -751,7 +751,8 @@ public class DefaultPackageManager extends PackageManager implements Robolectric
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
     if (androidManifest != null) {
-      applicationInfo.sourceDir = androidManifest.getResDirectory().getParent().toString();
+//      applicationInfo.sourceDir = androidManifest.getResDirectory().getParent().toString();
+      applicationInfo.sourceDir = "build/resources/test/resources.ap_"; // todo get this from AndroidManifest
     } else {
       applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
     }

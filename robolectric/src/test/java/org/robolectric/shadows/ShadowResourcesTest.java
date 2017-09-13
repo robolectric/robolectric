@@ -461,7 +461,7 @@ public class ShadowResourcesTest {
     assertThat(Resources.getSystem().getIdentifier("copy", "string", TestUtil.TEST_PACKAGE)).isEqualTo(0);
   }
 
-  @Test
+  @Test @Config(sdk = 25) // todo: unpin sdk
   public void testGetXml() throws Exception {
     XmlResourceParser parser = resources.getXml(R.xml.preferences);
     assertThat(parser).isNotNull();

@@ -41,4 +41,9 @@ public final class ResValue {
         .append("}");
     return sb.toString();
   }
+
+  public void copyFrom_dtoh(ResValue resValue) {
+    this.dataType = resValue.dataType;
+    this.data = resValue.data;
+  }
 }
