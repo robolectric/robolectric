@@ -1169,12 +1169,11 @@ public class ResTable {
     // Bag not found, we need to compute it!
     if (!isTruthy(typeSet)) {
       typeSet = new bag_set[NENTRY]; // (bag_set**)calloc(NENTRY, sizeof(bag_set*));
-      //if (!typeSet) return NO_MEMORY;
       //cacheEntry.cachedBags = typeSet;
     }
 //
 //    // Mark that we are currently working on this one.
-////    typeSet[e] = (bag_set*)0xFFFFFFFF;
+//    typeSet[e] = (bag_set*)0xFFFFFFFF;
 //    typeSet[e] = SENTINEL_BAG_SET;
 
     if (kDebugTableNoisy) {
@@ -1205,7 +1204,7 @@ public class ResTable {
     }
 
     // This is what we are building.
-    Ref<bag_set> setRef = new Ref<>(null);
+    bag_set set;
 
     if (isTruthy(parent)) {
       Ref<Integer> resolvedParent = new Ref<>(parent);
@@ -1224,14 +1223,8 @@ public class ResTable {
       final Ref<Integer> parentTypeSpecFlags = new Ref<>(0);
       final int NP = getBagLocked(resolvedParent.get(), parentBag, parentTypeSpecFlags);
       final int NT = ((NP >= 0) ? NP : 0) + N;
-//      set = (bag_set *) malloc(sizeof(bag_set) + sizeof(bag_entry) * NT);
-      bag_set set = new bag_set(NT);
-      setRef.set(set);
-//      if (setRef.get() == NULL) {
-//        return NO_MEMORY;
-//      }
+      set = new bag_set(NT);
       if (NP > 0) {
-//        memcpy(set + 1, parentBag, NP * sizeof(bag_entry));
         set.copyFrom(parentBag.get(), NP);
         set.numAttrs = NP;
         if (kDebugTableNoisy) {
@@ -1246,23 +1239,19 @@ public class ResTable {
       set.availAttrs = NT;
       set.typeSpecFlags = parentTypeSpecFlags.get();
     } else {
-//      set = (bag_set *) malloc(sizeof(bag_set) + sizeof(bag_entry) * N);
-      bag_set set = new bag_set(N);
-      setRef.set(set);
-//      if (set == NULL) {
-//        return NO_MEMORY;
-//      }
+      set = new bag_set(N);
       set.numAttrs = 0;
       set.availAttrs = N;
       set.typeSpecFlags = 0;
     }
 
-    bag_set set = setRef.get();
     set.typeSpecFlags |= entry.specFlags;
 
     // Now merge in the new attributes...
 //    int curOff = (reinterpret_cast<uintptr_t>(entry.entry) - reinterpret_cast<uintptr_t>(entry.type))
 //        + dtohs(entry.entry.size);
+    // use curOff as an index instead of as a pointer offset
+    int curOff = 0;
     ResTableMap map;
 //    bag_entry* entries = (bag_entry*)(set+1);
     bag_entry[] entries = set.bag_entries;
@@ -1283,7 +1272,10 @@ public class ResTable {
 //        return BAD_TYPE;
 //      }
 //      map = (final ResTable_map*)(((final uint8_t*)entry.type) + curOff);
-      map = ((MapEntry) entry).nameValuePairs[curEntry];
+      if (curOff >= ((MapEntry) entry).nameValuePairs.length) {
+        return BAD_TYPE;
+      }
+      map = ((MapEntry) entry).nameValuePairs[curOff];
       N++;
 
       Ref<Integer> newName = new Ref<>(htodl(map.nameIdent));
@@ -1317,9 +1309,6 @@ public class ResTable {
 //              sizeof(bag_set)
 //                  + sizeof(bag_entry)*newAvail);
           set.resizeBagEntries(newAvail);
-          if (set == NULL) {
-            return NO_MEMORY;
-          }
           set.availAttrs = newAvail;
 //          entries = (bag_entry*)(set+1);
           entries = set.bag_entries;
@@ -1370,6 +1359,7 @@ public class ResTable {
       pos++;
 //        final int size = dtohs(map.value.size);
 //      curOff += size + sizeof(*map)-sizeof(map.value);
+      curOff++;
     };
 
     if (curEntry > set.numAttrs) {

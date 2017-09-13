@@ -4,6 +4,9 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.res.android.Util.ALOGI;
+import static org.robolectric.res.android.Util.ALOGV;
+import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
@@ -1105,14 +1108,7 @@ public class ShadowArscAssetManager {
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static void applyThemeStyle(int themePtr, int styleRes, boolean force) {
-    if (shouldDelegateToLegacyShadow(themePtr)) {
-      ShadowAssetManager.applyThemeStyle(themePtr, styleRes, force);
-    } else {
-      directlyOn(AssetManager.class, "applyThemeStyle",
-          ClassParameter.from(int.class, themePtr),
-          ClassParameter.from(int.class, styleRes),
-          ClassParameter.from(boolean.class, force));
-    }
+    applyThemeStyle((long)themePtr, styleRes, force);
   }
 
   @HiddenApi
@@ -1387,8 +1383,7 @@ public class ShadowArscAssetManager {
 
   @HiddenApi
   @Implementation
-  public int getStringBlockCount()
-  {
+  public int getStringBlockCount() {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
       return 0;
@@ -1396,36 +1391,10 @@ public class ShadowArscAssetManager {
     return am.getResources().getTableCount();
   }
 
-
   private CppAssetManager assetManagerForJavaObject() {
     if (cppAssetManager == null) {
       cppAssetManager = new CppAssetManager();
     }
     return cppAssetManager;
-  }
-
-
-  public static boolean isTruthy(int i) {
-    return i != 0;
-  }
-
-  public static boolean isTruthy(Object o) {
-    return o != null;
-  }
-
-  static void ALOGW(String message, Object... args) {
-    System.out.println("WARN: " + String.format(message, args));
-  }
-
-  public static void ALOGV(String message, Object... args) {
-    System.out.println("VERBOSE: " + String.format(message, args));
-  }
-
-  static void ALOGI(String message, Object... args) {
-    System.out.println("INFO: " + String.format(message, args));
-  }
-
-  static void ALOGE(String message, Object... args) {
-    System.out.println("ERROR: " + String.format(message, args));
   }
 }

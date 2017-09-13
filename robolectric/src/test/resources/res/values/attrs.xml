@@ -53,6 +53,7 @@
   <attr name="string3" format="string"/>
   <attr name="parent_string" format="string"/>
   <attr name="child_string" format="string"/>
+  <attr name="child_string2" format="string"/>
   <attr name="parentStyleReference" format="reference"/>
   <attr name="styleNotSpecifiedInAnyTheme" format="reference"/>
   <attr name="stringReference" format="reference"/>

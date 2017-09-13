@@ -542,16 +542,21 @@ public class CppAssetManager {
   }
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
-    URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
-    System.out.println("Reading ARSC file  from " + resource);
-    LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
-    try {
-      ZipFile zipFile = new ZipFile(resource.getFile());
-      ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
-      InputStream inputStream = zipFile.getInputStream(arscEntry);
-      mResources.add(inputStream, mResources.getTableCount() + 1);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    // TODO: properly handle reading system resources
+    if (ap.path.string().endsWith("resources.ap_")) {
+      URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
+      // System.out.println("Reading ARSC file  from " + resource);
+      LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
+      try {
+        ZipFile zipFile = new ZipFile(resource.getFile());
+        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
+        InputStream inputStream = zipFile.getInputStream(arscEntry);
+        mResources.add(inputStream, mResources.getTableCount() + 1);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+
     }
     return false;
 

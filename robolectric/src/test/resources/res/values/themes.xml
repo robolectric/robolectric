@@ -106,6 +106,7 @@
 
   <style name="SimpleChildWithAdditionalAttributes" parent="@style/SimpleParent">
     <item name="child_string">child string</item>
+    <item name="child_string2">child string2</item>
   </style>
 
   <style name="StyleA">

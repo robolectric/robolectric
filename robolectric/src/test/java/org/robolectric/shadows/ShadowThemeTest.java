@@ -25,7 +25,7 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.N_MR1) // TODO: unpin sdk
+@Config(sdk = VERSION_CODES.O) // TODO: unpin sdk
 public class ShadowThemeTest {
 
   private Resources resources;
