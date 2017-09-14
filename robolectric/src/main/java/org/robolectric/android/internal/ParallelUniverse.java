@@ -169,7 +169,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     File sdkDir = new File(androidHome,
         "platforms/android-" + sdkConfig.getApiLevel());
     if (!new File(sdkDir, "android.jar").exists()) {
-      throw new RuntimeException(new File(sdkDir, "android.jar") + "not found, install it!");
+      throw new RuntimeException(new File(sdkDir, "android.jar ") + "not found, install it!");
     }
     CppAssetManager.setSystemResourcesPathHackHackHack(
         sdkDir);

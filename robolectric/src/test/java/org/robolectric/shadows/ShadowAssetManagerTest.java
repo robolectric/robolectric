@@ -39,7 +39,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Strings;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.O)
 public class ShadowAssetManagerTest {
 
   @Rule

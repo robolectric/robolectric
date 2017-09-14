@@ -18,8 +18,8 @@ import org.robolectric.res.android.ResTable.bag_entry;
 public class ResTableTheme {
 
   private ResTable mTable;
-  private boolean kDebugTableTheme = true;
-  private boolean kDebugTableNoisy = true;
+  private boolean kDebugTableTheme = false;
+  private boolean kDebugTableNoisy = false;
   private package_info[] mPackages = new package_info[Res_MAXPACKAGE];
   private Ref<Integer> mTypeSpecFlags = new Ref<>(0);
 
@@ -38,9 +38,9 @@ public class ResTableTheme {
     if (outTypeSpecFlags != null) outTypeSpecFlags.set(0);
 
     do {
-        final int p = mTable.getResourcePackageIndex(resID);
-        final int t = Res_GETTYPE(resID);
-        final int e = Res_GETENTRY(resID);
+      final int p = mTable.getResourcePackageIndex(resID);
+      final int t = Res_GETTYPE(resID);
+      final int e = Res_GETENTRY(resID);
 
       if (kDebugTableTheme) {
         ALOGI("Looking up attr 0x%08x in theme %s", resID, this);
@@ -125,10 +125,10 @@ public class ResTableTheme {
     final int end = N;
     int bagIndex = 0;
     while (bagIndex < end) {
-        final int attrRes = bag.get()[bagIndex].map.nameIdent;
-        final int p = Res_GETPACKAGE(attrRes);
-        final int t = Res_GETTYPE(attrRes);
-        final int e = Res_GETENTRY(attrRes);
+      final int attrRes = bag.get()[bagIndex].map.nameIdent;
+      final int p = Res_GETPACKAGE(attrRes);
+      final int t = Res_GETTYPE(attrRes);
+      final int e = Res_GETENTRY(attrRes);
 
       if (curPackage != p) {
         final int pidx = mTable.getResourcePackageIndex(attrRes);

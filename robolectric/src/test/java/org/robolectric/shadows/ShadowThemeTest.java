@@ -26,7 +26,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivityTest.TestActivityWithAnotherTheme;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.N_MR1) // todo unpin
 public class ShadowThemeTest {
   private Resources resources;
 
@@ -114,6 +113,13 @@ public class ShadowThemeTest {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric_EmptyParent, true);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
+  }
+
+  @Test public void applyStyle() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.SimpleParent, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
+        .isEqualTo("parent string");
   }
 
   @Test public void applyStyle_shouldOverrideParentAttrs() throws Exception {

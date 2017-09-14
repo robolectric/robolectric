@@ -8,6 +8,8 @@ public class Util {
   static final int SIZEOF_INT = 4;
   private static boolean littleEndian = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN;
 
+  private static final boolean DEBUG = false;
+
   static short dtohs(short v) {
     return littleEndian
         ? v
@@ -41,7 +43,9 @@ public class Util {
   }
 
   static void ALOGD(String message, Object... args) {
-    System.out.println("DEBUG: " + String.format(message, args));
+    if (DEBUG) {
+      System.out.println("DEBUG: " + String.format(message, args));
+    }
   }
 
   static void ALOGW(String message, Object... args) {
@@ -49,11 +53,15 @@ public class Util {
   }
 
   public static void ALOGV(String message, Object... args) {
-    System.out.println("VERBOSE: " + String.format(message, args));
+    if (DEBUG) {
+      System.out.println("VERBOSE: " + String.format(message, args));
+    }
   }
 
   public static void ALOGI(String message, Object... args) {
-    System.out.println("INFO: " + String.format(message, args));
+    if (DEBUG) {
+      System.out.println("INFO: " + String.format(message, args));
+    }
   }
 
   static void ALOGE(String message, Object... args) {

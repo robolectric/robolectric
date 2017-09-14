@@ -885,7 +885,8 @@ public class ShadowArscAssetManager {
           if (kDebugStyles) {
             ALOGI(". From theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
           }
-          newBlock = res.resolveReference(value, block, resid,
+          // TODO: platform code passes in 'block' here, which seems incorrect as it can be not set yet
+          newBlock = res.resolveReference(value, newBlock, resid,
                         typeSetFlags, config);
           if (kThrowOnBadId) {
             if (newBlock == BAD_INDEX) {
