@@ -120,15 +120,6 @@ public class ShadowArscAssetManager {
         ClassParameter.from(int.class, id));
   }
 
-//  @HiddenApi
-//  @Implementation
-//  public int getResourceIdentifier(String name, String defType, String defPackage) {
-//    return directlyOn(realObject, AssetManager.class, "getResourceIdentifier",
-//        ClassParameter.from(String.class, name),
-//        ClassParameter.from(String.class, defType),
-//        ClassParameter.from(String.class, defPackage));
-//  }
-
   @HiddenApi
   @Implementation
   public boolean getResourceValue(int ident, int density, TypedValue outValue,
