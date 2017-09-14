@@ -131,7 +131,7 @@ public class ResTableTheme {
         final int e = Res_GETENTRY(attrRes);
 
       if (curPackage != p) {
-            final int pidx = mTable.getResourcePackageIndex(attrRes);
+        final int pidx = mTable.getResourcePackageIndex(attrRes);
         if (pidx < 0) {
           ALOGE("Style contains key with bad package: 0x%08x\n", attrRes);
           bagIndex++;
@@ -234,7 +234,9 @@ public class ResTableTheme {
         if (mPackages[i] != null) {
           mPackages[i] = null;
         }
-        if (i == 0 && other.mPackages[i] != null) {
+        // todo: C++ code presumably assumes index 0 is system, and only system
+        //if (i == 0 && other.mPackages[i] != null) {
+        if (other.mPackages[i] != null) {
           mPackages[i] = copy_package(other.mPackages[i]);
         } else {
           mPackages[i] = null;

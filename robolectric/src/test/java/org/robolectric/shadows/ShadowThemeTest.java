@@ -10,6 +10,8 @@ import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -20,9 +22,11 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivityTest.TestActivityWithAnotherTheme;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
+@Config(sdk = VERSION_CODES.N_MR1) // todo unpin
 public class ShadowThemeTest {
   private Resources resources;
 
@@ -302,7 +306,7 @@ public class ShadowThemeTest {
   }
 
   @Test
-  public void themesShouldBeApplyableAcrossResources() throws Exception {
+  public void setTo_stylesShouldBeApplyableAcrossResources() throws Exception {
     Resources.Theme themeFromSystem = Resources.getSystem().newTheme();
     themeFromSystem.applyStyle(android.R.style.Theme_Light, true);
 
@@ -310,17 +314,17 @@ public class ShadowThemeTest {
     themeFromApp.applyStyle(android.R.style.Theme, true);
 
     // themeFromSystem is Theme_Light, which has a white background...
-    assertThat(shadowOf(themeFromSystem).obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
+    assertThat(themeFromSystem.obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
         .isEqualTo(Color.WHITE);
 
     // themeFromApp is Theme, which has a black background...
-    assertThat(shadowOf(themeFromApp).obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
+    assertThat(themeFromApp.obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
         .isEqualTo(Color.BLACK);
 
     themeFromApp.setTo(themeFromSystem);
 
     // themeFromApp now has style values from themeFromSystem, so now it has a black background...
-    assertThat(shadowOf(themeFromApp).obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
+    assertThat(themeFromApp.obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
         .isEqualTo(Color.WHITE);
   }
 

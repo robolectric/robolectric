@@ -11,6 +11,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemProperties;
+import java.io.File;
 import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
@@ -30,6 +32,7 @@ import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.ConfigDescription;
+import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.shadows.ShadowLooper;
@@ -72,6 +75,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
+
+    hackySetSystemResources(); // todo: remove this before merge to master
 
     initializeAppManifest(appManifest, appResourceTable, packageManager);
     packageManager.setDependencies(appManifest, appResourceTable);
@@ -155,6 +160,19 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
+  }
+
+  private void hackySetSystemResources() {
+    File defaultAndroidHome = new File(System.getProperty("user.home"), "Android/Sdk");
+    String androidHomeString = System.getenv("ANDROID_HOME");
+    File androidHome = androidHomeString == null ? defaultAndroidHome : new File(androidHomeString);
+    File sdkDir = new File(androidHome,
+        "platforms/android-" + sdkConfig.getApiLevel());
+    if (!new File(sdkDir, "android.jar").exists()) {
+      throw new RuntimeException(new File(sdkDir, "android.jar") + "not found, install it!");
+    }
+    CppAssetManager.setSystemResourcesPathHackHackHack(
+        sdkDir);
   }
 
   /**

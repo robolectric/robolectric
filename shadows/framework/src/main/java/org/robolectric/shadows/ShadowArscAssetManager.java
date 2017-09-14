@@ -59,7 +59,6 @@ public class ShadowArscAssetManager {
 
   @RealObject
   private AssetManager realObject;
-  private ResTable resTable;
   private CppAssetManager cppAssetManager;
 
   private static NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
@@ -77,7 +76,6 @@ public class ShadowArscAssetManager {
       shadowAssetManager.__constructor__();
     } else {
       invokeConstructor(AssetManager.class, realObject);
-      resTable = loadAppResTable();
     }
   }
 
@@ -90,18 +88,7 @@ public class ShadowArscAssetManager {
     } else {
       invokeConstructor(AssetManager.class, realObject,
           ClassParameter.from(boolean.class, isSystem));
-      resTable = isSystem ? loadSystemResTable() : loadAppResTable();
     }
-  }
-
-  private ResTable loadAppResTable() {
-    ResTable resTable = new ResTable();
-    return resTable;
-  }
-
-  private ResTable loadSystemResTable() {
-    ResTable resTable = new ResTable();
-    return resTable;
   }
 
   @Resetter

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -7,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.joinPath;
 
 import android.content.res.AssetFileDescriptor;
@@ -358,5 +360,22 @@ public class ShadowAssetManagerTest {
     assertThat(shadowAssetManager.getResourceValue(R.string.hello, 0, outValue, false)).isTrue();
     assertThat(outValue.type).isEqualTo(DataType.STRING.code());
     assertThat(outValue.string).isEqualTo("Hello");
+  }
+
+  @Test
+  public void getResourceValue_frameworkString() {
+    TypedValue outValue = new TypedValue();
+    assertThat(shadowAssetManager.getResourceValue(android.R.string.ok, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.STRING.code());
+    assertThat(outValue.string).isEqualTo("OK");
+  }
+
+  @Test @Config(sdk = N_MR1) // todo unpin
+  public void getResourceValue_fromSystem() {
+    TypedValue outValue = new TypedValue();
+    ShadowArscAssetManager systemShadowAssetManager = shadowOf(AssetManager.getSystem());
+    assertThat(systemShadowAssetManager.getResourceValue(android.R.string.ok, 0, outValue, false)).isTrue();
+    assertThat(outValue.type).isEqualTo(DataType.STRING.code());
+    assertThat(outValue.string).isEqualTo("OK");
   }
 }

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,6 +30,12 @@ import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
   private static final boolean kIsDebug = false;
+  private static File systemResourcesPathHackHackHack;
+
+  // todo: not this!
+  public static void setSystemResourcesPathHackHackHack(File systemResourcesPathHackHackHack) {
+    CppAssetManager.systemResourcesPathHackHackHack = systemResourcesPathHackHackHack;
+  }
 
   enum FileType {
     kFileTypeUnknown,
@@ -86,7 +93,7 @@ public class CppAssetManager {
 //  
   static final String kAssetsRoot = "assets";
   static final String kAppZipName = null; //"classes.jar";
-//  static final char* kSystemAssets = "framework/framework-res.apk";
+  static final String kSystemAssets = "android.jar";
 //  static final char* kResourceCache = "resource-cache";
 //  
 //  static final char* kExcludeExtension = ".EXCLUDE";
@@ -356,16 +363,14 @@ public class CppAssetManager {
 //  
   public boolean addDefaultAssets()
   {
-      //final char* root = getenv("ANDROID_ROOT");
-      //LOG_ALWAYS_FATAL_IF(root == null, "ANDROID_ROOT not set");
+//      final char* root = getenv("ANDROID_ROOT");
+      final String root = CppAssetManager.systemResourcesPathHackHackHack.toString();
+      Util.LOG_FATAL_IF(root == null, "systemResourcesPathHackHackHack not set");
 
-//      String8 path = new String8("");
-//      path.appendPath(kSystemAssets);
+      String8 path = new String8(root);
+      path.appendPath(kSystemAssets);
 //
-//      return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
-
-    mAssetPaths.add(new asset_path());
-    return true;
+      return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
   }
 //  
 //  int nextAssetPath(final int cookie) final
@@ -543,7 +548,7 @@ public class CppAssetManager {
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
     // TODO: properly handle reading system resources
-    if (ap.path.string().endsWith("resources.ap_")) {
+    if (!ap.isSystemAsset) {
       URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
       // System.out.println("Reading ARSC file  from " + resource);
       LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
@@ -556,7 +561,15 @@ public class CppAssetManager {
         throw new RuntimeException(e);
       }
     } else {
-
+      ZipFile zipFile = null;
+      try {
+        zipFile = new ZipFile(ap.path.string());
+        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
+        InputStream inputStream = zipFile.getInputStream(arscEntry);
+        mResources.add(inputStream, mResources.getTableCount() + 1);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
     return false;
 
