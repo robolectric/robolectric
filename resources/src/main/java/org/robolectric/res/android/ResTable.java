@@ -756,7 +756,7 @@ public class ResTable {
     final String attrPrivate = "^attr-private";
     int NG = mPackageGroups.size();
     for (PackageGroup group : mPackageGroups.values()) {
-      if (Strings.equals(packageName, group.name)) {
+      if (!Strings.equals(packageName.trim(), group.name.trim())) {
         if (kDebugTableNoisy) {
            System.out.println(String.format("Skipping package group: %s\n", group.name));
         }
