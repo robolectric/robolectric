@@ -2,9 +2,12 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.res.android.ResXMLParser.SIZEOF_RESXMLTREE_ATTR_EXT;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
+
+import java.nio.ByteBuffer;
 
 public class ResourceTypes {
   static int validate_chunk(ResChunk_header chunk,
@@ -12,8 +15,8 @@ public class ResourceTypes {
       int dataLen,
       String name)
   {
-    final short headerSize = dtohs(chunk.headerSize());
-    final int size = dtohl(chunk.size());
+    final short headerSize = dtohs(chunk.headerSize);
+    final int size = dtohl(chunk.size);
 
     if (headerSize >= minSize) {
       if (headerSize <= size) {
@@ -38,8 +41,16 @@ public class ResourceTypes {
     return BAD_TYPE;
   }
 
-  interface WithOffset {
-    int myOffset();
+  static class WithOffset {
+    private int offset;
+
+    WithOffset(int offset) {
+      this.offset = offset;
+    }
+
+    public int myOffset() {
+      return offset;
+    }
   }
 
   /** ********************************************************************
@@ -53,25 +64,32 @@ public class ResourceTypes {
   /**
    * Header that appears at the front of every data chunk in a resource.
    */
-  interface ResChunk_header extends WithOffset
+  static class ResChunk_header extends WithOffset
   {
-    int SIZEOF = 8;
+    static int SIZEOF = 8;
 
     // Type identifier for this chunk.  The meaning of this value depends
     // on the containing chunk.
-    short type();
+    final short type;
 
     // Size of the chunk header (in bytes).  Adding this value to
     // the address of the chunk allows you to find its associated data
     // (if any).
-    short headerSize();
+    final short headerSize;
 
     // Total size of this chunk (in bytes).  This is the chunkSize plus
     // the size of any data associated with the chunk.  Adding this value
     // to the chunk allows you to completely skip its contents (including
     // any child chunks).  If this value is the same as chunkSize, there is
     // no data associated with the chunk.
-    int size();
+    final int size;
+
+    public ResChunk_header(ByteBuffer buf, int offset) {
+      super(offset);
+      this.type = buf.getShort(offset);
+      this.headerSize = buf.getShort(offset + 2);
+      this.size = buf.getInt(offset + 4);
+    }
   };
 
   public static final int RES_NULL_TYPE               = 0x0000;
@@ -90,7 +108,7 @@ public class ResourceTypes {
   // This contains a uint32_t array mapping strings in the string
   // pool back to resource identifiers.  It is optional.
   public static final int RES_XML_RESOURCE_MAP_TYPE   = 0x0180;
- 
+
   // Chunk types in RES_TABLE_TYPE
   public static final int RES_TABLE_PACKAGE_TYPE      = 0x0200;
   public static final int RES_TABLE_TYPE_TYPE         = 0x0201;
@@ -112,17 +130,17 @@ public class ResourceTypes {
    * into a style table starting at stylesStart.  Each entry in the
    * style table is an array of ResStringPool_span structures.
    */
-  interface ResStringPool_header
+  static class ResStringPool_header
   {
-    ResChunk_header header();
+    final ResChunk_header header;
 
     // Number of strings in this pool (number of uint32_t indices that follow
     // in the data).
-    int stringCount();
+    final int stringCount;
 
     // Number of style span arrays in the pool (number of uint32_t indices
     // follow the string indices).
-    int styleCount();
+    final int styleCount;
 
     // Flags.
 //    enum {
@@ -133,13 +151,22 @@ public class ResourceTypes {
         // String pool is encoded in UTF-8
         public static final int UTF8_FLAG = 1<<8;
 //  };
-    int flags();
+    final int flags;
 
     // Index from header of the string data.
-    int stringsStart();
+    final int stringsStart;
 
     // Index from header of the style data.
-    int stylesStart();
+    final int stylesStart;
+
+    public ResStringPool_header(ByteBuffer buf, int offset) {
+      this.header = new ResChunk_header(buf, offset);
+      this.stringCount = buf.getInt(offset + ResChunk_header.SIZEOF);
+      this.styleCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+      this.flags = buf.getInt(offset + ResChunk_header.SIZEOF + 8);
+      this.stringsStart = buf.getInt(offset + ResChunk_header.SIZEOF + 12);
+      this.stylesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 16);
+    }
   };
 
   /**
@@ -179,64 +206,96 @@ public class ResourceTypes {
    * is described by the occurrance of RES_XML_START_ELEMENT_TYPE
    * and corresponding RES_XML_END_ELEMENT_TYPE nodes in the array.
    */
-  interface ResXMLTree_header extends WithOffset
+  static class ResXMLTree_header extends WithOffset
   {
-    ResChunk_header header();
+    final ResChunk_header header;
+
+    ResXMLTree_header(ByteBuffer buf, int offset) {
+      super(offset);
+      header = new ResChunk_header(buf, offset);
+    }
   };
 
   /**
    * Basic XML tree node.  A single item in the XML document.  Extended info
    * about the node can be found after header.headerSize.
    */
-  interface ResXMLTree_node extends WithOffset
+  static class ResXMLTree_node extends WithOffset
   {
-    ResChunk_header header();
+    final ResChunk_header header;
 
     // Line number in original source file at which this element appeared.
-    int lineNumber();
+    final int lineNumber;
 
     // Optional XML comment that was associated with this element; -1 if none.
-    ResStringPool_ref comment();
+    final ResStringPool_ref comment;
+
+    ResXMLTree_node(ByteBuffer buf, int offset) {
+      super(offset);
+
+      this.header = new ResChunk_header(buf, offset);
+      this.lineNumber = buf.getInt(offset + ResChunk_header.SIZEOF);
+      this.comment = new ResStringPool_ref(buf, offset + 12);
+    }
   };
 
   /**
    * Extended XML tree node for CDATA tags -- includes the CDATA string.
    * Appears header.headerSize bytes after a ResXMLTree_node.
    */
-  interface ResXMLTree_cdataExt
+  static class ResXMLTree_cdataExt
   {
     // The raw CDATA character data.
-    ResStringPool_ref data();
+    final ResStringPool_ref data;
 
     // The typed value of the character data if this is a CDATA node.
-    ResValue typedData();
+    final ResValue typedData;
+
+    public ResXMLTree_cdataExt(ByteBuffer buf, int offset) {
+      this.data = new ResStringPool_ref(buf, offset);
+
+      int dataType = buf.getInt(offset + 4);
+      int data = buf.getInt(offset + 8);
+      this.typedData = new ResValue(dataType, data);
+    }
   };
 
   /**
    * Extended XML tree node for namespace start/end nodes.
    * Appears header.headerSize bytes after a ResXMLTree_node.
    */
-  interface ResXMLTree_namespaceExt
+  static class ResXMLTree_namespaceExt
   {
     // The prefix of the namespace.
-    ResStringPool_ref prefix();
+    final ResStringPool_ref prefix;
 
     // The URI of the namespace.
-    ResStringPool_ref uri();
+    final ResStringPool_ref uri;
+
+    public ResXMLTree_namespaceExt(ByteBuffer buf, int offset) {
+      this.prefix = new ResStringPool_ref(buf, offset);
+      this.uri = new ResStringPool_ref(buf, offset + 4);
+    }
   };
 
   /**
    * Extended XML tree node for element start/end nodes.
    * Appears header.headerSize bytes after a ResXMLTree_node.
    */
-  interface ResXMLTree_endElementExt
+  static class ResXMLTree_endElementExt
   {
     // String of the full namespace of this element.
-    ResStringPool_ref ns();
+    final ResStringPool_ref ns;
 
     // String name of this node if it is an ELEMENT; the raw
     // character data if this is a CDATA node.
-    ResStringPool_ref name();
+    final ResStringPool_ref name;
+
+    public ResXMLTree_endElementExt(ByteBuffer buf, int offset) {
+      throw new UnsupportedOperationException();
+//      this.ns = throw new UnsupportedOperationException();
+//      this.name = name;
+    }
   };
 
   /**
@@ -244,51 +303,80 @@ public class ResourceTypes {
    * information.
    * Appears header.headerSize bytes after a ResXMLTree_node.
    */
-  interface ResXMLTree_attrExt extends WithOffset
+  static class ResXMLTree_attrExt extends WithOffset
   {
+    private final ByteBuffer buf;
+
     // String of the full namespace of this element.
-    ResStringPool_ref ns();
+    final ResStringPool_ref ns;
 
     // String name of this node if it is an ELEMENT; the raw
     // character data if this is a CDATA node.
-    ResStringPool_ref name();
+    final ResStringPool_ref name;
 
     // Byte offset from the start of this structure where the attributes start.
-    short attributeStart();
+    final short attributeStart;
 
     // Size of the ResXMLTree_attribute structures that follow.
-    short attributeSize();
+    final short attributeSize;
 
     // Number of attributes associated with an ELEMENT.  These are
     // available as an array of ResXMLTree_attribute structures
     // immediately following this node.
-    short attributeCount();
+    final short attributeCount;
 
     // Index (1-based) of the "id" attribute. 0 if none.
-    short idIndex();
+    final short idIndex;
 
     // Index (1-based) of the "class" attribute. 0 if none.
-    short classIndex();
+    final short classIndex;
 
     // Index (1-based) of the "style" attribute. 0 if none.
-    short styleIndex();
+    final short styleIndex;
 
-    ResXMLTree_attribute attributeAt(int idx);
+    public ResXMLTree_attrExt(ByteBuffer buf, int offset) {
+      super(offset);
+      this.buf = buf;
+
+      this.ns = new ResStringPool_ref(buf, offset);
+      this.name = new ResStringPool_ref(buf, offset + 4);
+      this.attributeStart = buf.getShort(offset + 8);
+      this.attributeSize = buf.getShort(offset + 10);
+      this.attributeCount = buf.getShort(offset + 12);
+      this.idIndex = buf.getShort(offset + 14);
+      this.classIndex = buf.getShort(offset + 16);
+      this.styleIndex = buf.getShort(offset + 18);
+    }
+
+    ResXMLTree_attribute attributeAt(int idx) {
+      return new ResXMLTree_attribute(buf,
+          myOffset() + SIZEOF_RESXMLTREE_ATTR_EXT + SIZEOF_RESXMLTREE_ATTR_EXT * idx);
+    }
   };
 
-  interface ResXMLTree_attribute
+  static class ResXMLTree_attribute
   {
     // Namespace of this attribute.
-    ResStringPool_ref ns();
+    final ResStringPool_ref ns;
 
     // Name of this attribute.
-    ResStringPool_ref name();
+    final ResStringPool_ref name;
 
     // The original raw string value of this attribute.
-    ResStringPool_ref rawValue();
+    final ResStringPool_ref rawValue;
 
     // Processesd typed value of this attribute.
-    ResValue typedValue();
+    final ResValue typedValue;
+
+    public ResXMLTree_attribute(ByteBuffer buf, int offset) {
+      this.ns = new ResStringPool_ref(buf, offset);
+      this.name = new ResStringPool_ref(buf, offset + 4);
+      this.rawValue = new ResStringPool_ref(buf, offset + 4);
+
+      int dataType = buf.getInt(offset + 12);
+      int data = buf.getInt(offset + 16);
+      this.typedValue = new ResValue(dataType, data);
+    }
   };
 
   /**
@@ -307,12 +395,16 @@ public class ResourceTypes {
   /**
    * Reference to a string in a string pool.
    */
-  interface ResStringPool_ref
+  static class ResStringPool_ref
   {
     // Index into the string pool table (uint32_t-offset from the indices
     // immediately after ResStringPool_header) at which to find the location
     // of the string data in the pool.
-    int index();
+    final int index;
+    
+    public ResStringPool_ref(ByteBuffer buf, int offset) {
+      this.index = buf.getInt(offset);
+    }
   };
 
 }

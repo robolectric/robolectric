@@ -28,16 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.res.android.Chunk.StringPoolChunk;
-import org.robolectric.res.android.ResXMLTree.XmlBuffer.XmlTreeHeader;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
-import org.robolectric.res.android.ResourceTypes.ResStringPool_ref;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_attribute;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_cdataExt;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_namespaceExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 
 public class ResXMLTree {
@@ -48,7 +42,7 @@ public class ResXMLTree {
   int                    mError;
   byte[]                       mOwnedData;
   XmlBuffer mBuffer;
-    XmlTreeHeader mHeader;
+    ResXMLTree_header mHeader;
   int                      mSize;
   //    final uint8_t*              mDataEnd;
   int mDataLen;
@@ -107,12 +101,12 @@ public class ResXMLTree {
     }
 
     mBuffer = new XmlBuffer(data);
-    mHeader = mBuffer.new XmlTreeHeader(0);
-    mSize = dtohl(mHeader.header().size());
-    if (dtohs(mHeader.header().headerSize()) > mSize || mSize > size) {
+    mHeader = new ResXMLTree_header(mBuffer.buf, 0);
+    mSize = dtohl(mHeader.header.size);
+    if (dtohs(mHeader.header.headerSize) > mSize || mSize > size) {
       ALOGW("Bad XML block: header size %d or total size %d is larger than data size %d\n",
-          (int)dtohs(mHeader.header().headerSize()),
-          (int)dtohl(mHeader.header().size()), (int)size);
+          (int)dtohs(mHeader.header.headerSize),
+          (int)dtohl(mHeader.header.size), (int)size);
       mError = BAD_TYPE;
       mParser.restart();
       return mError;
@@ -129,11 +123,11 @@ public class ResXMLTree {
     // and first XML node.
     ResChunk_header chunk =
 //      (final ResChunk_header*)(((final uint8_t*)mHeader) + dtohs(mHeader.header.headerSize));
-        mBuffer.new ChunkHeader(mHeader.header().headerSize());
+        new ResChunk_header(mBuffer.buf, mHeader.header.headerSize);
 
     ResChunk_header lastChunk = chunk;
     while (chunk.myOffset() /*((final uint8_t*)chunk)*/ < (mDataLen- ResChunk_header.SIZEOF /*sizeof(ResChunk_header)*/) &&
-        chunk.myOffset() /*((final uint8_t*)chunk)*/ < (mDataLen-dtohl(chunk.size()))) {
+        chunk.myOffset() /*((final uint8_t*)chunk)*/ < (mDataLen-dtohl(chunk.size))) {
       int err = validate_chunk(chunk, ResChunk_header.SIZEOF /*sizeof(ResChunk_header)*/, mDataLen, "XML");
       if (err != NO_ERROR) {
         mError = err;
@@ -141,8 +135,8 @@ public class ResXMLTree {
         mParser.restart();
         return mError;
       }
-      final short type = dtohs(chunk.type());
-      final int size1 = dtohl(chunk.size());
+      final short type = dtohs(chunk.type);
+      final int size1 = dtohl(chunk.size);
       if (kDebugXMLNoisy) {
 //        System.out.println(String.format("Scanning @ %p: type=0x%x, size=0x%zx\n",
 //            (void*)(((uintptr_t)chunk)-((uintptr_t)mHeader)), type, size1);
@@ -150,10 +144,10 @@ public class ResXMLTree {
       if (type == RES_STRING_POOL_TYPE) {
         // todo: merge Chunk/interface buffer reading strategies
         ResChunkHeader resChunkHeader = new ResChunkHeader();
-        resChunkHeader.type = chunk.type();
-        resChunkHeader.headerSize = chunk.headerSize();
-        resChunkHeader.size = chunk.size();
-        StringPoolChunk stringPoolChunk = new StringPoolChunk(mBuffer.byteBuffer, chunk.myOffset(),
+        resChunkHeader.type = chunk.type;
+        resChunkHeader.headerSize = chunk.headerSize;
+        resChunkHeader.size = chunk.size;
+        StringPoolChunk stringPoolChunk = new StringPoolChunk(mBuffer.buf, chunk.myOffset(),
             resChunkHeader);
 //        mStrings.setTo(mBuffer.new XmlResStringPool(chunk.myOffset()));
         int stringCount = stringPoolChunk.getStringCount();
@@ -169,20 +163,20 @@ public class ResXMLTree {
       } else if (type == RES_XML_RESOURCE_MAP_TYPE) {
 //        mResIds = (final int*)
 //        (((final uint8_t*)chunk)+dtohs(chunk.headerSize()));
-        mNumResIds = (dtohl(chunk.size())-dtohs(chunk.headerSize()))/SIZEOF_INT /*sizeof(int)*/;
+        mNumResIds = (dtohl(chunk.size)-dtohs(chunk.headerSize))/SIZEOF_INT /*sizeof(int)*/;
         mResIds = new int[mNumResIds];
         for (int i = 0; i < mNumResIds; i++) {
-          mResIds[i] = mBuffer.byteBuffer.getInt(chunk.myOffset() + chunk.headerSize() + i * SIZEOF_INT);
+          mResIds[i] = mBuffer.buf.getInt(chunk.myOffset() + chunk.headerSize + i * SIZEOF_INT);
         }
       } else if (type >= RES_XML_FIRST_CHUNK_TYPE
           && type <= RES_XML_LAST_CHUNK_TYPE) {
-        if (validateNode(mBuffer.new XmlTreeNode(chunk.myOffset())) != NO_ERROR) {
+        if (validateNode(new ResXMLTree_node(mBuffer.buf, chunk.myOffset())) != NO_ERROR) {
           mError = BAD_TYPE;
 //          goto done;
           mParser.restart();
           return mError;
         }
-        mParser.mCurNode = mBuffer.new XmlTreeNode(lastChunk.myOffset());
+        mParser.mCurNode = new ResXMLTree_node(mBuffer.buf, lastChunk.myOffset());
         if (mParser.nextNode() == BAD_DOCUMENT) {
           mError = BAD_TYPE;
 //          goto done;
@@ -201,7 +195,7 @@ public class ResXMLTree {
       lastChunk = chunk;
 //      chunk = (final ResChunk_header*)
 //      (((final uint8_t*)chunk) + size1);
-      chunk = mBuffer.new ChunkHeader(chunk.myOffset() + size1);
+      chunk = new ResChunk_header(mBuffer.buf, chunk.myOffset() + size1);
   }
 
     if (mRootNode == null) {
@@ -237,10 +231,10 @@ public class ResXMLTree {
 
   int validateNode(final ResXMLTree_node node)
   {
-    final short eventCode = dtohs(node.header().type());
+    final short eventCode = dtohs(node.header.type);
 
     int err = validate_chunk(
-        node.header(), SIZEOF_RESXMLTREE_NODE /*sizeof(ResXMLTree_node)*/,
+        node.header, SIZEOF_RESXMLTREE_NODE /*sizeof(ResXMLTree_node)*/,
       mDataLen, "ResXMLTree_node");
 
     if (err >= NO_ERROR) {
@@ -249,21 +243,21 @@ public class ResXMLTree {
         return NO_ERROR;
       }
 
-        final short headerSize = dtohs(node.header().headerSize());
-        final int size = dtohl(node.header().size());
+        final short headerSize = dtohs(node.header.headerSize);
+        final int size = dtohl(node.header.size);
 //        final ResXMLTree_attrExt attrExt = (final ResXMLTree_attrExt*)
 //      (((final uint8_t*)node) + headerSize);
-      ResXMLTree_attrExt attrExt = mBuffer.new XmlTreeAttrExt(node.myOffset() + headerSize);
+      ResXMLTree_attrExt attrExt = new ResXMLTree_attrExt(mBuffer.buf, node.myOffset() + headerSize);
       // check for sensical values pulled out of the stream so far...
       if ((size >= headerSize + SIZEOF_RESXMLTREE_ATTR_EXT /*sizeof(ResXMLTree_attrExt)*/)
           && (attrExt.myOffset() > node.myOffset())) {
-            final int attrSize = ((int)dtohs(attrExt.attributeSize()))
-            * dtohs(attrExt.attributeCount());
-        if ((dtohs(attrExt.attributeStart())+attrSize) <= (size-headerSize)) {
+            final int attrSize = ((int)dtohs(attrExt.attributeSize))
+            * dtohs(attrExt.attributeCount);
+        if ((dtohs(attrExt.attributeStart)+attrSize) <= (size-headerSize)) {
           return NO_ERROR;
         }
         ALOGW("Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
-            (int)(dtohs(attrExt.attributeStart())+attrSize),
+            (int)(dtohs(attrExt.attributeStart)+attrSize),
             (int)(size-headerSize));
       }
         else {
@@ -321,38 +315,10 @@ public class ResXMLTree {
   }
 
   static class XmlBuffer {
-    private final ByteBuffer byteBuffer;
+    final ByteBuffer buf;
 
     public XmlBuffer(byte[] data) {
-      this.byteBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    private class ChunkHeader implements ResChunk_header {
-      private final int offset;
-
-      public ChunkHeader(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public short type() {
-        return byteBuffer.getShort(offset);
-      }
-
-      @Override
-      public short headerSize() {
-        return byteBuffer.getShort(offset + 2);
-      }
-
-      @Override
-      public int size() {
-        return byteBuffer.getInt(offset + 4);
-      }
-
-      @Override
-      public int myOffset() {
-        return offset;
-      }
+      this.buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
     }
 
     class XmlResStringPool {
@@ -361,255 +327,16 @@ public class ResXMLTree {
 
       XmlResStringPool(int offset) {
         this.offset = offset;
-        header = new XmlResStringPoolHeader(offset);
+        header = new ResStringPool_header(buf, offset);
       }
 
       public List<String> strings() {
-        int stringCount = header.stringCount();
+        int stringCount = header.stringCount;
         ArrayList<String> list = new ArrayList<>(stringCount);
         for (int i = 0; i < stringCount; i++) {
 //          list.add(header.string(i));
         }
         return list;
-      }
-    }
-
-    private class XmlResStringPoolHeader implements ResStringPool_header {
-      private int offset;
-
-      public XmlResStringPoolHeader(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResChunk_header header() {
-        return new ChunkHeader(offset);
-      }
-
-      @Override
-      public int stringCount() {
-        return byteBuffer.getInt(offset + ResChunk_header.SIZEOF);
-      }
-
-      @Override
-      public int styleCount() {
-        return byteBuffer.getInt(offset + ResChunk_header.SIZEOF + 4);
-      }
-
-      @Override
-      public int flags() {
-        return byteBuffer.getInt(offset + ResChunk_header.SIZEOF + 8);
-      }
-
-      @Override
-      public int stringsStart() {
-        return byteBuffer.getInt(offset + ResChunk_header.SIZEOF + 12);
-      }
-
-      @Override
-      public int stylesStart() {
-        return byteBuffer.getInt(offset + ResChunk_header.SIZEOF + 16);
-      }
-    }
-
-    class XmlTreeHeader implements ResXMLTree_header {
-      private final int offset;
-
-      public XmlTreeHeader(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResChunk_header header() {
-        return new ChunkHeader(offset);
-      }
-
-      @Override
-      public int myOffset() {
-        return offset;
-      }
-    }
-
-    class XmlTreeAttrExt implements ResXMLTree_attrExt {
-      private final int offset;
-
-      public XmlTreeAttrExt(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResStringPool_ref ns() {
-        return new MyResStringPoolRef(offset);
-      }
-
-      @Override
-      public ResStringPool_ref name() {
-        return new MyResStringPoolRef(offset + 4);
-      }
-
-      @Override
-      public short attributeStart() {
-        return byteBuffer.getShort(offset + 8);
-      }
-
-      @Override
-      public short attributeSize() {
-        return byteBuffer.getShort(offset + 10);
-      }
-
-      @Override
-      public short attributeCount() {
-        return byteBuffer.getShort(offset + 12);
-      }
-
-      @Override
-      public short idIndex() {
-        return byteBuffer.getShort(offset + 14);
-      }
-
-      @Override
-      public short classIndex() {
-        return byteBuffer.getShort(offset + 16);
-      }
-
-      @Override
-      public short styleIndex() {
-        return byteBuffer.getShort(offset + 18);
-      }
-
-      @Override
-      public ResXMLTree_attribute attributeAt(int idx) {
-        return new ResXmlTreeAttribute(offset + SIZEOF_RESXMLTREE_ATTR_EXT + SIZEOF_RESXMLTREE_ATTR_EXT * idx);
-      }
-
-      @Override
-      public int myOffset() {
-        return offset;
-      }
-    }
-
-    class ResXmlTreeAttribute implements ResXMLTree_attribute {
-      private final int offset;
-
-      public ResXmlTreeAttribute(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResStringPool_ref ns() {
-        return new MyResStringPoolRef(offset);
-      }
-
-      @Override
-      public ResStringPool_ref name() {
-        return new MyResStringPoolRef(offset + 4);
-      }
-
-      @Override
-      public ResStringPool_ref rawValue() {
-        return new MyResStringPoolRef(offset + 8);
-      }
-
-      @Override
-      public ResValue typedValue() {
-        int dataType = byteBuffer.getInt(offset + 12);
-        int data = byteBuffer.getInt(offset + 16);
-        return new ResValue(dataType, data);
-      }
-    }
-
-    class XmlTreeNode implements ResXMLTree_node {
-      private final int offset;
-
-      public XmlTreeNode(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResChunk_header header() {
-        return new ChunkHeader(offset);
-      }
-
-      @Override
-      public int lineNumber() {
-        return byteBuffer.getInt(offset + 8);
-      }
-
-      @Override
-      public ResStringPool_ref comment() {
-        return new MyResStringPoolRef(offset + 12);
-      }
-
-      @Override
-      public int myOffset() {
-        return offset;
-      }
-    }
-
-    class XmlTreeCdataExt implements ResXMLTree_cdataExt {
-      private final int offset;
-
-      public XmlTreeCdataExt(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResStringPool_ref data() {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public ResValue typedData() {
-        throw new UnsupportedOperationException();
-      }
-    }
-
-    class XmlTreeNamespaceExt implements ResXMLTree_namespaceExt {
-      private final int offset;
-
-      public XmlTreeNamespaceExt(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResStringPool_ref prefix() {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public ResStringPool_ref uri() {
-        throw new UnsupportedOperationException();
-      }
-    }
-
-    class XmlTreeEndElementExt implements ResXMLTree_endElementExt {
-      private final int offset;
-
-      public XmlTreeEndElementExt(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public ResStringPool_ref ns() {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public ResStringPool_ref name() {
-        throw new UnsupportedOperationException();
-      }
-    }
-
-    private class MyResStringPoolRef implements ResStringPool_ref {
-      private int offset;
-
-      private MyResStringPoolRef(int offset) {
-        this.offset = offset;
-      }
-
-      @Override
-      public int index() {
-        return byteBuffer.getInt(offset);
       }
     }
   }
