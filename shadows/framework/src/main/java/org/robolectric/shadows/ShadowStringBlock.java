@@ -15,14 +15,14 @@ public class ShadowStringBlock {
   @RealObject
   Object realObject;
 
-  private static NativeObjRegistry<ResStringPool> nativeStringPoolRegistry = new NativeObjRegistry<>();
+  private static final NativeObjRegistry<ResStringPool> NATIVE_STRING_BLOCKS = new NativeObjRegistry<>();
 
   static long getNativePointer(ResStringPool tableStringBlock) {
-    return nativeStringPoolRegistry.getNativeObjectId(tableStringBlock);
+    return NATIVE_STRING_BLOCKS.getNativeObjectId(tableStringBlock);
   }
 
   public static void removeNativePointer(ResStringPool removed) {
-    nativeStringPoolRegistry.unregister(removed);
+    NATIVE_STRING_BLOCKS.unregister(removed);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -32,7 +32,7 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeGetSize(long nativeId) {
-    return nativeStringPoolRegistry.getNativeObject(nativeId).size();
+    return NATIVE_STRING_BLOCKS.getNativeObject(nativeId).size();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -42,7 +42,7 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   public static String nativeGetString(long nativeId, int index) {
-    return nativeStringPoolRegistry.getNativeObject(nativeId).stringAt(index);
+    return NATIVE_STRING_BLOCKS.getNativeObject(nativeId).stringAt(index);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -59,6 +59,6 @@ public class ShadowStringBlock {
 
   @Resetter
   public static void reset() {
-    nativeStringPoolRegistry.clear();
+    NATIVE_STRING_BLOCKS.clear();
   }
 }

@@ -34,7 +34,10 @@ import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_ref;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attribute;
+import org.robolectric.res.android.ResourceTypes.ResXMLTree_cdataExt;
+import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
+import org.robolectric.res.android.ResourceTypes.ResXMLTree_namespaceExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 
 public class ResXMLTree {
@@ -53,7 +56,7 @@ public class ResXMLTree {
     int[]             mResIds;
   int                      mNumResIds;
     ResXMLTree_node mRootNode;
-    Object                 mRootExt;
+    int                 mRootExt;
   int                mRootCode;
 
   static volatile AtomicInteger gCount = new AtomicInteger(0);
@@ -427,7 +430,7 @@ public class ResXMLTree {
       }
     }
 
-    private class XmlTreeAttrExt implements ResXMLTree_attrExt {
+    class XmlTreeAttrExt implements ResXMLTree_attrExt {
       private final int offset;
 
       public XmlTreeAttrExt(int offset) {
@@ -485,7 +488,7 @@ public class ResXMLTree {
       }
     }
 
-    private class ResXmlTreeAttribute implements ResXMLTree_attribute {
+    class ResXmlTreeAttribute implements ResXMLTree_attribute {
       private final int offset;
 
       public ResXmlTreeAttribute(int offset) {
@@ -540,6 +543,60 @@ public class ResXMLTree {
       @Override
       public int myOffset() {
         return offset;
+      }
+    }
+
+    class XmlTreeCdataExt implements ResXMLTree_cdataExt {
+      private final int offset;
+
+      public XmlTreeCdataExt(int offset) {
+        this.offset = offset;
+      }
+
+      @Override
+      public ResStringPool_ref data() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public ResValue typedData() {
+        throw new UnsupportedOperationException();
+      }
+    }
+
+    class XmlTreeNamespaceExt implements ResXMLTree_namespaceExt {
+      private final int offset;
+
+      public XmlTreeNamespaceExt(int offset) {
+        this.offset = offset;
+      }
+
+      @Override
+      public ResStringPool_ref prefix() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public ResStringPool_ref uri() {
+        throw new UnsupportedOperationException();
+      }
+    }
+
+    class XmlTreeEndElementExt implements ResXMLTree_endElementExt {
+      private final int offset;
+
+      public XmlTreeEndElementExt(int offset) {
+        this.offset = offset;
+      }
+
+      @Override
+      public ResStringPool_ref ns() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public ResStringPool_ref name() {
+        throw new UnsupportedOperationException();
       }
     }
 

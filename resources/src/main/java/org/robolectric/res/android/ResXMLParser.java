@@ -29,7 +29,6 @@ import static org.robolectric.res.android.Util.isTruthy;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attribute;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_cdataExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_namespaceExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
@@ -62,7 +61,7 @@ public class ResXMLParser {
   ResXMLTree           mTree;
   int                mEventCode;
     ResXMLTree_node      mCurNode;
-    Object                 mCurExt;
+    int                 mCurExt;
 
   public ResXMLParser(ResXMLTree tree) {
     this.mTree = tree;
@@ -114,7 +113,7 @@ final String getComment(Ref<Integer> outLen)
   public int getTextID()
   {
     if (mEventCode == TEXT) {
-      return dtohl(((ResXMLTree_cdataExt)mCurExt).data().index());
+      return dtohl((mTree.mBuffer.new XmlTreeCdataExt(mCurExt)).data().index());
     }
     return -1;
   }
@@ -128,7 +127,7 @@ final String getText(Ref<Integer> outLen)
   int getTextValue(ResValue outValue)
   {
     if (mEventCode == TEXT) {
-      outValue.copyFrom_dtoh(((ResXMLTree_cdataExt)mCurExt).typedData());
+      outValue.copyFrom_dtoh(mTree.mBuffer.new XmlTreeCdataExt(mCurExt).typedData());
       return SIZEOF_RESVALUE /* sizeof(Res_value) */;
     }
     return BAD_TYPE;
@@ -137,7 +136,7 @@ final String getText(Ref<Integer> outLen)
   int getNamespacePrefixID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      return dtohl(((ResXMLTree_namespaceExt)mCurExt).prefix().index());
+      return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).prefix().index());
     }
     return -1;
   }
@@ -152,7 +151,7 @@ final String getNamespacePrefix(Ref<Integer> outLen)
   int getNamespaceUriID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      return dtohl(((ResXMLTree_namespaceExt)mCurExt).uri().index());
+      return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).uri().index());
     }
     return -1;
   }
@@ -167,10 +166,10 @@ final String getNamespaceUri(Ref<Integer> outLen)
   int getElementNamespaceID()
   {
     if (mEventCode == START_TAG) {
-      return dtohl(((ResXMLTree_attrExt)mCurExt).ns().index());
+      return dtohl(mTree.mBuffer.new XmlTreeAttrExt(mCurExt).ns().index());
     }
     if (mEventCode == END_TAG) {
-      return dtohl(((ResXMLTree_endElementExt)mCurExt).ns().index());
+      return dtohl(mTree.mBuffer.new XmlTreeEndElementExt(mCurExt).ns().index());
     }
     return -1;
   }
@@ -184,10 +183,10 @@ final String getElementNamespace(Ref<Integer> outLen)
   public int getElementNameID()
   {
     if (mEventCode == START_TAG) {
-      return dtohl(((ResXMLTree_attrExt)mCurExt).name().index());
+      return dtohl(mTree.mBuffer.new XmlTreeAttrExt(mCurExt).name().index());
     }
     if (mEventCode == END_TAG) {
-      return dtohl(((ResXMLTree_endElementExt)mCurExt).name().index());
+      return dtohl(mTree.mBuffer.new XmlTreeEndElementExt(mCurExt).name().index());
     }
     return -1;
   }
@@ -201,7 +200,7 @@ final String getElementName(Ref<Integer> outLen)
   public int getAttributeCount()
   {
     if (mEventCode == START_TAG) {
-      return dtohs(((ResXMLTree_attrExt)mCurExt).attributeCount());
+      return dtohs((mTree.mBuffer.new XmlTreeAttrExt(mCurExt)).attributeCount());
     }
     return 0;
   }
@@ -209,7 +208,7 @@ final String getElementName(Ref<Integer> outLen)
   public int getAttributeNamespaceID(int idx)
   {
     if (mEventCode == START_TAG) {
-        ResXMLTree_attrExt tag = (ResXMLTree_attrExt)mCurExt;
+        ResXMLTree_attrExt tag = mTree.mBuffer.new XmlTreeAttrExt(mCurExt);
       if (idx < dtohs(tag.attributeCount())) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
@@ -245,7 +244,7 @@ final String getAttributeNamespace8(int idx, Ref<Integer> outLen)
   public int getAttributeNameID(int idx)
   {
     if (mEventCode == START_TAG) {
-        ResXMLTree_attrExt tag = (ResXMLTree_attrExt)mCurExt;
+        ResXMLTree_attrExt tag = mTree.mBuffer.new XmlTreeAttrExt(mCurExt);
       if (idx < dtohs(tag.attributeCount())) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
@@ -296,7 +295,7 @@ final String getAttributeName8(int idx, Ref<Integer> outLen)
   int getAttributeValueStringID(int idx)
   {
     if (mEventCode == START_TAG) {
-        ResXMLTree_attrExt tag = (ResXMLTree_attrExt)mCurExt;
+        ResXMLTree_attrExt tag = mTree.mBuffer.new XmlTreeAttrExt(mCurExt);
       if (idx < dtohs(tag.attributeCount())) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
@@ -321,7 +320,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   int getAttributeDataType(int idx)
   {
     if (mEventCode == START_TAG) {
-        final ResXMLTree_attrExt tag = (ResXMLTree_attrExt)mCurExt;
+        final ResXMLTree_attrExt tag = mTree.mBuffer.new XmlTreeAttrExt(mCurExt);
       if (idx < dtohs(tag.attributeCount())) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
@@ -344,7 +343,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   int getAttributeData(int idx)
   {
     if (mEventCode == START_TAG) {
-        ResXMLTree_attrExt tag = (ResXMLTree_attrExt)mCurExt;
+        ResXMLTree_attrExt tag = mTree.mBuffer.new XmlTreeAttrExt(mCurExt);
       if (idx < dtohs(tag.attributeCount())) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
@@ -368,7 +367,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   public int getAttributeValue(int idx, ResValue outValue)
   {
     if (mEventCode == START_TAG) {
-        ResXMLTree_attrExt tag = (ResXMLTree_attrExt)mCurExt;
+        ResXMLTree_attrExt tag = mTree.mBuffer.new XmlTreeAttrExt(mCurExt);
       if (idx < dtohs(tag.attributeCount())) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
@@ -495,7 +494,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   int indexOfID()
   {
     if (mEventCode == START_TAG) {
-        final int idx = dtohs(((ResXMLTree_attrExt)mCurExt).idIndex());
+        final int idx = dtohs((mTree.mBuffer.new XmlTreeAttrExt(mCurExt)).idIndex());
       if (idx > 0) return (idx-1);
     }
     return NAME_NOT_FOUND;
@@ -504,7 +503,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   int indexOfClass()
   {
     if (mEventCode == START_TAG) {
-        final int idx = dtohs(((ResXMLTree_attrExt)mCurExt).classIndex());
+        final int idx = dtohs((mTree.mBuffer.new XmlTreeAttrExt(mCurExt)).classIndex());
       if (idx > 0) return (idx-1);
     }
     return NAME_NOT_FOUND;
@@ -513,7 +512,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   public int indexOfStyle()
   {
     if (mEventCode == START_TAG) {
-        final int idx = dtohs(((ResXMLTree_attrExt)mCurExt).styleIndex());
+        final int idx = dtohs((mTree.mBuffer.new XmlTreeAttrExt(mCurExt)).styleIndex());
       if (idx > 0) return (idx-1);
     }
     return NAME_NOT_FOUND;
@@ -603,6 +602,6 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   {
     int                eventCode;
         ResXMLTree_node curNode;
-        Object                 curExt;
+        int                 curExt;
   };
 }

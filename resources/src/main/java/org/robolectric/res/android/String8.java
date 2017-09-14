@@ -410,6 +410,25 @@ public String getPathExtension()
   public String toString() {
     return mString.toString();
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    String8 string8 = (String8) o;
+
+    return mString != null ? mString.equals(string8.mString) : string8.mString == null;
+  }
+
+  @Override
+  public int hashCode() {
+    return mString != null ? mString.hashCode() : 0;
+  }
 }
 
 

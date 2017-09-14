@@ -5,16 +5,14 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import android.os.Build.VERSION_CODES;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.xmlpull.v1.XmlPullParserException;
 
 @Implements(className = "android.content.res.XmlBlock", isInAndroidSdk = false)
 public class ShadowXmlBlock {
-  static final NativeObjRegistry<ResXMLTree> RES_XML_TREES = new NativeObjRegistry<>();
-  private static final NativeObjRegistry<ResXMLParser> RES_XML_PARSERS = new NativeObjRegistry<>();
-  private static final NativeObjRegistry<ResStringPool> RES_STRING_POOLS = new NativeObjRegistry<>();
+  static final NativeObjRegistry<ResXMLTree> NATIVE_RES_XML_TREES = new NativeObjRegistry<>();
+  private static final NativeObjRegistry<ResXMLParser> NATIVE_RES_XML_PARSERS = new NativeObjRegistry<>();
 
   @Implementation
   public static long nativeCreate(byte[] bArray, int off, int len) {
@@ -39,25 +37,25 @@ public class ShadowXmlBlock {
       throw new IllegalArgumentException();
     }
 
-    return RES_XML_TREES.getNativeObjectId(osb);
+    return NATIVE_RES_XML_TREES.getNativeObjectId(osb);
   }
 
   // todo: implement pre-Lollipop
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static long nativeGetStringBlock(long obj) {
-    ResXMLTree osb = RES_XML_TREES.getNativeObject(obj);
+    ResXMLTree osb = NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);
 //      return 0;
 //    }
 
-    return RES_STRING_POOLS.getNativeObjectId(osb.getStrings());
+    return ShadowStringBlock.getNativePointer(osb.getStrings());
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static long nativeCreateParseState(long obj) {
-    ResXMLTree osb = RES_XML_TREES.getNativeObject(obj);
+    ResXMLTree osb = NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);
 //      return 0;
@@ -72,12 +70,12 @@ public class ShadowXmlBlock {
 
     st.restart();
 
-    return RES_XML_PARSERS.getNativeObjectId(st);
+    return NATIVE_RES_XML_PARSERS.getNativeObjectId(st);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeNext(long state) throws XmlPullParserException {
-    ResXMLTree st = RES_XML_TREES.getNativeObject(state);
+    ResXMLTree st = NATIVE_RES_XML_TREES.getNativeObject(state);
     if (st == null) {
       return ResXMLParser.event_code_t.END_DOCUMENT;
     }
@@ -197,6 +195,6 @@ public class ShadowXmlBlock {
   }
 
   private static ResXMLParser getResXMLParser(long state) {
-    return RES_XML_PARSERS.getNativeObject(state);
+    return NATIVE_RES_XML_PARSERS.getNativeObject(state);
   }
 }

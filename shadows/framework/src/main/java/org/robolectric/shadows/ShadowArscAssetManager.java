@@ -1228,7 +1228,7 @@ public class ShadowArscAssetManager {
       throw new FileNotFoundException("Corrupt XML binary file");
     }
 
-    return ShadowXmlBlock.RES_XML_TREES.getNativeObjectId(block);
+    return ShadowXmlBlock.NATIVE_RES_XML_TREES.getNativeObjectId(block);
   }
 
   @HiddenApi @Implementation public final String[] getArrayStringResource(int arrayResId){
@@ -1369,10 +1369,12 @@ public class ShadowArscAssetManager {
   //  if (isSystem) {
   //    verifySystemIdmaps();
   //  }
-      CppAssetManager am = assetManagerForJavaObject();
+      this.cppAssetManager = new CppAssetManager();
 
-      am.addDefaultAssets();
+      cppAssetManager.addDefaultAssets();
 
+      ALOGV("Created AssetManager %s for Java object %s\n", cppAssetManager,
+          ShadowArscAssetManager.class);
     }
 
 //  private native final void destroy();
@@ -1403,9 +1405,9 @@ public class ShadowArscAssetManager {
     return am.getResources().getTableCount();
   }
 
-  private CppAssetManager assetManagerForJavaObject() {
+  synchronized private CppAssetManager assetManagerForJavaObject() {
     if (cppAssetManager == null) {
-      cppAssetManager = new CppAssetManager();
+      throw new NullPointerException();
     }
     return cppAssetManager;
   }
