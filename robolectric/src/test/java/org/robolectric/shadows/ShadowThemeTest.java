@@ -23,7 +23,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowActivityTest.TestActivityWithAnotherTheme;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowThemeTest {
@@ -99,10 +98,11 @@ public class ShadowThemeTest {
   }
 
   @Test public void canResolveAttrReferenceToDifferentPackage() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_AnotherTheme, true);
 
     TypedValue value = new TypedValue();
-    boolean resolved = activity.getTheme().resolveAttribute(R.attr.styleReference, value, false);
+    boolean resolved = theme.resolveAttribute(R.attr.styleReference, value, false);
 
     assertThat(resolved).isTrue();
     assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);

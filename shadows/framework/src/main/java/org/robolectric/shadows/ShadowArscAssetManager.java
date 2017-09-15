@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGI;
@@ -20,6 +21,7 @@ import android.util.SparseArray;
 import android.util.TypedValue;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import dalvik.system.VMRuntime;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -667,7 +669,11 @@ public class ShadowArscAssetManager {
       int length,
       long outValuesAddress,
       long outIndicesAddress) {
-    throw new UnsupportedOperationException("implement me");
+    ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
+    int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
+    int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
+    return applyStyle(themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, inAttrs,
+        outValues, outIndices);
   }
 
   @Implementation(maxSdk = VERSION_CODES.LOLLIPOP)
@@ -679,7 +685,8 @@ public class ShadowArscAssetManager {
       int[] attrs,
       int[] outValues,
       int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs, outValues, outIndices);
+    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+        outValues, outIndices);
   }
 
   @Implementation(maxSdk = VERSION_CODES.N_MR1)
