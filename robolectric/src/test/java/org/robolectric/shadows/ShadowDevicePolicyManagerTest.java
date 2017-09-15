@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.FROYO;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -111,7 +110,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = FROYO)
   public void isAdminActiveShouldReturnFalseForNonAdminDevice() {
     // GIVEN a test component which is not an active admin of the device
     // WHEN DevicePolicyManager#isAdminActive is called with it
@@ -120,7 +118,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = FROYO)
   public void isAdminActiveShouldReturnTrueForAnyDeviceAdminDevice() {
     // GIVEN a test component which is an active admin of the device
     shadowDevicePolicyManager.setActiveAdmin(testComponent);
