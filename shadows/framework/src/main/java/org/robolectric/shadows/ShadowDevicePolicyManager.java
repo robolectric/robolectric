@@ -44,6 +44,11 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
+  public boolean isAdminActive(ComponentName who) {
+    return who != null && deviceAdmins.contains(who);
+  }
+
+  @Implementation
   public List<ComponentName> getActiveAdmins() {
     return deviceAdmins;
   }
