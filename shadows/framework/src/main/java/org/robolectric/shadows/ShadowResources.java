@@ -89,8 +89,13 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return legacyShadowOf(realResources.getAssets())
-        .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
+    if (ShadowArscAssetManager.isLegacyAssetManager(realResources.getAssets())) {
+      return legacyShadowOf(realResources.getAssets())
+          .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
+    } else {
+      return directlyOn(realResources, Resources.class, "obtainAttributes",
+          ClassParameter.from(AttributeSet.class, set), ClassParameter.from(int[].class, attrs));
+    }
   }
 
   @Implementation
