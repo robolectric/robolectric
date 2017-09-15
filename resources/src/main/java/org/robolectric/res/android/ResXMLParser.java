@@ -113,7 +113,7 @@ final String getComment(Ref<Integer> outLen)
   public int getTextID()
   {
     if (mEventCode == TEXT) {
-      return dtohl((mTree.mBuffer.new XmlTreeCdataExt(mCurExt)).data().index);
+      //return dtohl((mTree.mBuffer.new XmlTreeCdataExt(mCurExt)).data().index);
     }
     return -1;
   }
@@ -127,7 +127,7 @@ final String getText(Ref<Integer> outLen)
   int getTextValue(ResValue outValue)
   {
     if (mEventCode == TEXT) {
-      outValue.copyFrom_dtoh(mTree.mBuffer.new XmlTreeCdataExt(mCurExt).typedData());
+      //outValue.copyFrom_dtoh(mTree.mBuffer.new XmlTreeCdataExt(mCurExt).typedData());
       return SIZEOF_RESVALUE /* sizeof(Res_value) */;
     }
     return BAD_TYPE;
@@ -136,7 +136,7 @@ final String getText(Ref<Integer> outLen)
   int getNamespacePrefixID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).prefix().index);
+      //return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).prefix().index);
     }
     return -1;
   }
@@ -151,7 +151,7 @@ final String getNamespacePrefix(Ref<Integer> outLen)
   int getNamespaceUriID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).uri().index);
+      //return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).uri().index);
     }
     return -1;
   }

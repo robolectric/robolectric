@@ -109,6 +109,19 @@ public final class ResourceString {
     return output.toByteArray();
   }
 
+  /**
+   * Builds a string from a null-terminated char data.
+   */
+  public static String buildString(char[] data) {
+    int count = 0;
+    for (count=0; count < data.length; count++) {
+      if (data[count] == 0) {
+        break;
+      }
+    }
+    return new String(data, 0, count);
+  }
+
   private static void encodeLength(ByteArrayDataOutput output, int length, Type type) {
     if (length < 0) {
       output.write(0);

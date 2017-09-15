@@ -43,6 +43,7 @@ import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResTableConfig;
+import org.robolectric.res.android.ResTableResourceName;
 import org.robolectric.res.android.ResTableTheme;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResXMLParser;
@@ -301,8 +302,32 @@ public class ShadowArscAssetManager {
 
   @Implementation
   public String getResourceName(int resid) {
-    return directlyOn(realObject, AssetManager.class, "getResourceName",
-        ClassParameter.from(int.class, resid));
+    CppAssetManager am = assetManagerForJavaObject();
+
+    ResTableResourceName name = new ResTableResourceName();
+    if (!am.getResources().getResourceName(resid, true, name)) {
+      return null;
+    }
+
+    StringBuilder str = new StringBuilder();
+    if (name.packageName != null) {
+      str.append(name.packageName);
+    }
+    if (name.type != null) {
+      if (str.length() > 0) {
+        char div = ':';
+        str.append(div);
+      }
+      str.append(name.type);
+    }
+    if (name.name != null) {
+      if (str.length() > 0) {
+        char div = '/';
+        str.append(div);
+      }
+      str.append(name.name);
+    }
+    return str.toString();
   }
 
   @Implementation

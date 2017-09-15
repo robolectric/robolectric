@@ -839,6 +839,51 @@ public class ResTable {
     return null;
   }
 
+  public boolean getResourceName(int resID, boolean allowUtf8, ResTableResourceName outName) {
+    if (mError != NO_ERROR) {
+      return false;
+    }
+
+    final int p = getResourcePackageIndex(resID);
+    final int t = Res_GETTYPE(resID);
+    final int e = Res_GETENTRY(resID);
+
+    if (p < 0) {
+      if (Res_GETPACKAGE(resID)+1 == 0) {
+        ALOGW("No package identifier when getting name for resource number 0x%08x", resID);
+      }
+      return false;
+    }
+    if (t < 0) {
+      ALOGW("No type identifier when getting name for resource number 0x%08x", resID);
+      return false;
+    }
+
+    final PackageGroup grp = mPackageGroups.get(p);
+    if (grp == NULL) {
+      ALOGW("Bad identifier when getting name for resource number 0x%08x", resID);
+      return false;
+    }
+
+    Ref<Entry> entry = new Ref<>(null);
+    int err = getEntry(grp, t, e, null, entry);
+    if (err != NO_ERROR) {
+      return false;
+    }
+
+    outName.packageName = grp.name;
+    outName.type = entry.get().typeStr.string();
+    if (outName.type == null) {
+      return false;
+    }
+    outName.name = entry.get().keyStr.string();
+    if (outName.name == null) {
+      return false;
+    }
+
+    return true;
+  }
+
   // A group of objects describing a particular resource package.
   // The first in 'package' is always the root object (from the resource
   // table that defined the package); the ones after are skins on top of it.

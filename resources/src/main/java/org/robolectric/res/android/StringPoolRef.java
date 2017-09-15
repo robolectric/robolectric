@@ -15,11 +15,15 @@ class StringPoolRef {
     this.mIndex = index;
   }
 
-    final byte[] string8(Ref<Integer> outLen) {
-      return null; //----------------------------------------------------------------------------------------
-    }
+  final String string() {
+    return mPool.stringAt(mIndex);
+  }
 
-    final char[] string16(Ref<Integer> outLen) {
-      return null; //----------------------------------------------------------------------------------------
-    }
+//  final byte[] string8(Ref<Integer> outLen) {
+//    return null; //----------------------------------------------------------------------------------------
+//  }
+//
+//  final char[] string16(Ref<Integer> outLen) {
+//    return null; //----------------------------------------------------------------------------------------
+//  }
 };

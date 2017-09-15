@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
-import com.sun.org.glassfish.external.statistics.annotations.Reset;
 import dalvik.system.VMRuntime;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import java.lang.reflect.Array;
+import org.robolectric.annotation.Resetter;
 
 @Implements(value = VMRuntime.class, isInAndroidSdk = false)
 public class ShadowVMRuntime {
@@ -39,10 +39,5 @@ public class ShadowVMRuntime {
    */
   public @Nullable Object getObjectForAddress(long address) {
     return nativeObjRegistry.getNativeObject(address);
-  }
-
-  @Reset
-  public void reset() {
-    nativeObjRegistry.clear();
   }
 }

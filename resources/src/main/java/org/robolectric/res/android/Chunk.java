@@ -175,7 +175,8 @@ abstract public class Chunk {
       _package.typeStrings = packageChunk.getTypeStringPool().createResStringPool();
       _package.keyStrings = packageChunk.getKeyStringPool().createResStringPool();
 
-      PackageGroup packageGroup = new PackageGroup(resTable, new String(resTablePackage.name),
+      PackageGroup packageGroup = new PackageGroup(resTable,
+          ResourceString.buildString(resTablePackage.name),
           resTablePackage.id,
           false, false);
       packageGroup.packages.add(_package);

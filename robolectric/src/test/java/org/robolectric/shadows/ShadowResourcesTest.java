@@ -424,9 +424,6 @@ public class ShadowResourcesTest {
 
     shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
     assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
-
-    Activity activity = Robolectric.setupActivity(Activity.class);
-    assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
   }
 
   @Test
@@ -825,6 +822,16 @@ public class ShadowResourcesTest {
   public void stringWithSpaces() throws Exception {
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25 USD");
+  }
+
+  @Test
+  public void getResourceName() {
+    assertThat(resources.getResourceName(R.string.hello)).isEqualTo("org.robolectric:string/hello");
+  }
+
+  @Test
+  public void getResourceName_system() {
+    assertThat(resources.getResourceName(android.R.string.ok)).isEqualTo("android:string/ok");
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {
