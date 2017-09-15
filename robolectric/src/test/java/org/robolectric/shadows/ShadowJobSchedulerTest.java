@@ -2,13 +2,16 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
+import android.app.job.JobWorkItem;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -136,5 +139,34 @@ public class ShadowJobSchedulerTest {
     JobInfo retrievedJobInfo = jobScheduler.getPendingJob(invalidJobId);
 
     assertThat(retrievedJobInfo).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void enqueue_success() {
+    int result =
+        jobScheduler.enqueue(
+            new JobInfo.Builder(
+                    99, new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+                .setPeriodic(1000)
+                .build(),
+            new JobWorkItem(new Intent()));
+    assertThat(result).isEqualTo(JobScheduler.RESULT_SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void enqueue_fail() {
+    shadowOf(jobScheduler).failOnJob(99);
+
+    int result =
+        jobScheduler.enqueue(
+            new JobInfo.Builder(
+                    99, new ComponentName(RuntimeEnvironment.application, "component_class_name"))
+                .setPeriodic(1000)
+                .build(),
+            new JobWorkItem(new Intent()));
+
+    assertThat(result).isEqualTo(JobScheduler.RESULT_FAILURE);
   }
 }
