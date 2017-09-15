@@ -1,12 +1,18 @@
 package org.robolectric.shadows;
 
+import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
+import static android.app.PendingIntent.FLAG_ONE_SHOT;
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -102,46 +108,35 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.getFlags()).isEqualTo(100);
   }
 
-  @Test(expected = NullPointerException.class)
-  public void getBroadcast_nullIntent() {
-    PendingIntent.getBroadcast(context, 99, null, 100);
+  @Test
+  public void getActivities_nullIntent() {
+    try {
+      PendingIntent.getActivities(context, 99, null, 100);
+      fail("Expected NullPointerException when creating PendingIntent with null Intent[]");
+    } catch (NullPointerException ignore) {
+      // expected
+    }
   }
 
-  @Test(expected = NullPointerException.class)
-  public void getActivity_nullIntent() {
-    PendingIntent.getActivity(context, 99, null, 100);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void getActivity_withBundle_nullIntent() {
-    PendingIntent.getActivity(context, 99, null, 100, Bundle.EMPTY);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void getActivities_nullIntent() throws Exception {
-    PendingIntent.getActivities(context, 99, null, 100);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void getActivities_withBundle_nullIntent() throws Exception {
-    PendingIntent.getActivities(context, 99, null, 100, Bundle.EMPTY);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void getService_nullIntent() {
-    PendingIntent.getService(context, 99, null, 100);
+  @Test
+  public void getActivities_withBundle_nullIntent() {
+    try {
+      PendingIntent.getActivities(context, 99, null, 100, Bundle.EMPTY);
+      fail("Expected NullPointerException when creating PendingIntent with null Intent[]");
+    } catch (NullPointerException ignore) {
+      // expected
+    }
   }
 
   @Test
   public void send_shouldFillInIntentData() throws Exception {
     Intent intent = new Intent();
     Context context = new Activity();
-    PendingIntent forActivity = PendingIntent.getActivity(context, 99, intent, 100);
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, 100);
 
     Activity otherContext = new Activity();
-    Intent fillIntent = new Intent();
-    fillIntent.putExtra("TEST", 23);
-    forActivity.send(otherContext, 0, fillIntent);
+    Intent fillIntent = new Intent().putExtra("TEST", 23);
+    pendingIntent.send(otherContext, 0, fillIntent);
 
     Intent i = shadowOf(otherContext).getNextStartedActivity();
     assertThat(i).isNotNull();
@@ -150,10 +145,71 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  public void send_shouldFillInLastIntentData() throws Exception {
+    Intent[] intents = {new Intent("first"), new Intent("second")};
+    Context context = new Activity();
+    PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, 100);
+
+    Activity otherContext = new Activity();
+    Intent fillIntent = new Intent();
+    fillIntent.putExtra("TEST", 23);
+    pendingIntent.send(otherContext, 0, fillIntent);
+
+    ShadowActivity shadowActivity = shadowOf(otherContext);
+    Intent first = shadowActivity.getNextStartedActivity();
+    assertThat(first).isNotNull();
+    assertThat(first).isSameAs(intents[0]);
+    assertThat(first.hasExtra("TEST")).isFalse();
+
+    Intent second = shadowActivity.getNextStartedActivity();
+    assertThat(second).isNotNull();
+    assertThat(second).isSameAs(intents[1]);
+    assertThat(second.getIntExtra("TEST", -1)).isEqualTo(23);
+  }
+
+  @Test
+  public void send_shouldNotFillIn_whenPendingIntentIsImmutable() throws Exception {
+    Intent intent = new Intent();
+    Context context = new Activity();
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, FLAG_IMMUTABLE);
+
+    Activity otherContext = new Activity();
+    Intent fillIntent = new Intent().putExtra("TEST", 23);
+    pendingIntent.send(otherContext, 0, fillIntent);
+
+    Intent i = shadowOf(otherContext).getNextStartedActivity();
+    assertThat(i).isNotNull();
+    assertThat(i).isSameAs(intent);
+    assertThat(i.hasExtra("TEST")).isFalse();
+  }
+
+  @Test
+  public void updatePendingIntent() {
+    Intent intent = new Intent().putExtra("whatever", 5);
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+    ShadowPendingIntent shadowPendingIntent = shadowOf(pendingIntent);
+
+    // Absent FLAG_UPDATE_CURRENT, this should fail to update the Intent extra.
+    intent = new Intent().putExtra("whatever", 77);
+    PendingIntent.getBroadcast(context, 0, intent, 0);
+    assertThat(shadowPendingIntent.getSavedIntent().getIntExtra("whatever", -1)).isEqualTo(5);
+
+    // With FLAG_UPDATE_CURRENT, this should succeed in updating the Intent extra.
+    PendingIntent.getBroadcast(context, 0, intent, FLAG_UPDATE_CURRENT);
+    assertThat(shadowPendingIntent.getSavedIntent().getIntExtra("whatever", -1)).isEqualTo(77);
+  }
+
+  @Test
   public void getActivity_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
     Intent intent = new Intent();
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, FLAG_NO_CREATE);
-    assertThat(pendingIntent).isNull();
+    assertThat(PendingIntent.getActivity(context, 99, intent, FLAG_NO_CREATE)).isNull();
+  }
+
+  @Test
+  public void getActivity_withFlagNoCreate_shouldReturnNullIfRequestCodeIsUnmatched() {
+    Intent intent = new Intent();
+    PendingIntent.getActivity(context, 99, intent, 0);
+    assertThat(PendingIntent.getActivity(context, 98, intent, FLAG_NO_CREATE)).isNull();
   }
 
   @Test
@@ -164,7 +220,18 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getActivity(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void getActivity_withNoFlags_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+    PendingIntent.getActivity(context, 99, intent, 100);
+
+    Intent updated = new Intent();
+    PendingIntent saved = PendingIntent.getActivity(context, 99, updated, 0);
+    assertThat(saved).isNotNull();
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -172,6 +239,13 @@ public class ShadowPendingIntentTest {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, FLAG_NO_CREATE);
     assertThat(pendingIntent).isNull();
+  }
+
+  @Test
+  public void getActivities_withFlagNoCreate_shouldReturnNullIfRequestCodeIsUnmatched() {
+    Intent[] intents = {new Intent()};
+    PendingIntent.getActivities(context, 99, intents, 0);
+    assertThat(PendingIntent.getActivities(context, 98, intents, FLAG_NO_CREATE)).isNull();
   }
 
   @Test
@@ -183,7 +257,18 @@ public class ShadowPendingIntentTest {
     PendingIntent saved =
         PendingIntent.getActivities(context, 99, identicalIntents, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intents).isEqualTo(shadowOf(saved).getSavedIntents());
+    assertThat(intents).isSameAs(shadowOf(saved).getSavedIntents());
+  }
+
+  @Test
+  public void getActivities_withNoFlags_shouldReturnExistingIntent() {
+    Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
+    PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
+
+    Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
+    PendingIntent saved = PendingIntent.getActivities(context, 99, identicalIntents, 0);
+    assertThat(saved).isNotNull();
+    assertThat(intents).isSameAs(shadowOf(saved).getSavedIntents());
   }
 
   @Test
@@ -194,6 +279,13 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  public void getBroadcast_withFlagNoCreate_shouldReturnNullIfRequestCodeIsUnmatched() {
+    Intent intent = new Intent();
+    PendingIntent.getBroadcast(context, 99, intent, 0);
+    assertThat(PendingIntent.getBroadcast(context, 98, intent, FLAG_NO_CREATE)).isNull();
+  }
+
+  @Test
   public void getBroadcast_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent intent = new Intent();
     PendingIntent.getBroadcast(context, 99, intent, 100);
@@ -201,7 +293,18 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getBroadcast(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void getBroadcast_withNoFlags_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+    PendingIntent.getBroadcast(context, 99, intent, 100);
+
+    Intent identical = new Intent();
+    PendingIntent saved = PendingIntent.getBroadcast(context, 99, identical, 0);
+    assertThat(saved).isNotNull();
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -212,6 +315,13 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  public void getService_withFlagNoCreate_shouldReturnNullIfRequestCodeIsUnmatched() {
+    Intent intent = new Intent();
+    PendingIntent.getService(context, 99, intent, 0);
+    assertThat(PendingIntent.getService(context, 98, intent, FLAG_NO_CREATE)).isNull();
+  }
+
+  @Test
   public void getService_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent intent = new Intent();
     PendingIntent.getService(context, 99, intent, 100);
@@ -219,7 +329,18 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getService(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void getService_withNoFlags_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+    PendingIntent.getService(context, 99, intent, 100);
+
+    Intent identical = new Intent();
+    PendingIntent saved = PendingIntent.getService(context, 99, identical, 0);
+    assertThat(saved).isNotNull();
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -263,18 +384,80 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  public void send_canceledPendingIntent_throwsCanceledException() throws CanceledException {
+    Intent intent = new Intent();
+    PendingIntent canceled = PendingIntent.getService(context, 99, intent, 100);
+    assertNotNull(canceled);
+
+    // Cancel the existing PendingIntent and create a new one in its place.
+    PendingIntent current = PendingIntent.getService(context, 99, intent, FLAG_CANCEL_CURRENT);
+    assertNotNull(current);
+
+    assertThat(shadowOf(canceled).isCanceled()).isTrue();
+    assertThat(shadowOf(current).isCanceled()).isFalse();
+
+    // Sending the new PendingIntent should work as expected.
+    current.send();
+
+    // Sending the canceled PendingIntent should produce a CanceledException.
+    try {
+      canceled.send();
+      fail("CanceledException expected when sending a canceled PendingIntent");
+    } catch (CanceledException ignore) {
+      // expected
+    }
+  }
+
+  @Test
+  public void send_oneShotPendingIntent_shouldCancel() throws CanceledException {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT);
+    assertThat(shadowOf(pendingIntent).isCanceled()).isFalse();
+
+    pendingIntent.send();
+    assertThat(shadowOf(pendingIntent).isCanceled()).isTrue();
+    assertThat(PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT | FLAG_NO_CREATE))
+        .isNull();
+  }
+
+  @Test
+  public void oneShotFlag_differentiatesPendingIntents() {
+    Intent intent = new Intent();
+    PendingIntent oneShot = PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT);
+    PendingIntent notOneShot = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
+    assertThat(oneShot).isNotSameAs(notOneShot);
+  }
+
+  @Test
+  public void immutableFlag_differentiatesPendingIntents() {
+    Intent intent = new Intent();
+    PendingIntent immutable = PendingIntent.getService(context, 0, intent, FLAG_IMMUTABLE);
+    PendingIntent notImmutable = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
+    assertThat(immutable).isNotSameAs(notImmutable);
+  }
+
+  @Test
   public void testEquals() {
     PendingIntent pendingIntent =
         PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
 
-    assertThat(pendingIntent)
-        .isEqualTo(PendingIntent.getActivity(context, 99, new Intent("activity"), 100));
+    // Same type, requestCode and Intent action implies equality.
+    assertThat(PendingIntent.getActivity(context, 99, new Intent("activity"), FLAG_NO_CREATE))
+        .isSameAs(pendingIntent);
 
-    assertThat(pendingIntent)
-        .isNotEqualTo(PendingIntent.getActivity(context, 99, new Intent("activity2"), 100));
+    // Mismatched Intent action implies inequality.
+    assertThat(PendingIntent.getActivity(context, 99, new Intent("activity2"), FLAG_NO_CREATE))
+        .isNull();
 
-    assertThat(pendingIntent)
-        .isNotEqualTo(PendingIntent.getActivity(context, 999, new Intent("activity"), 100));
+    // Mismatched requestCode implies inequality.
+    assertThat(PendingIntent.getActivity(context, 999, new Intent("activity"), FLAG_NO_CREATE))
+        .isNull();
+
+    // Mismatched types imply inequality.
+    assertThat(PendingIntent.getBroadcast(context, 99, new Intent("activity"), FLAG_NO_CREATE))
+        .isNull();
+    assertThat(PendingIntent.getService(context, 99, new Intent("activity"), FLAG_NO_CREATE))
+        .isNull();
   }
 
   @Test
@@ -283,10 +466,19 @@ public class ShadowPendingIntentTest {
     PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, 100);
 
     Intent[] forward = {new Intent("activity"), new Intent("activity2")};
-    assertThat(pendingIntent).isEqualTo(PendingIntent.getActivities(context, 99, forward, 100));
+    assertThat(PendingIntent.getActivities(context, 99, forward, FLAG_NO_CREATE))
+        .isSameAs(pendingIntent);
+
+    Intent[] irrelevant = {new Intent("irrelevant"), new Intent("activity2")};
+    assertThat(PendingIntent.getActivities(context, 99, irrelevant, FLAG_NO_CREATE))
+        .isSameAs(pendingIntent);
+
+    Intent single = new Intent("activity2");
+    assertThat(PendingIntent.getActivity(context, 99, single, FLAG_NO_CREATE))
+        .isSameAs(pendingIntent);
 
     Intent[] backward = {new Intent("activity2"), new Intent("activity")};
-    assertThat(pendingIntent).isNotEqualTo(PendingIntent.getActivities(context, 99, backward, 100));
+    assertThat(PendingIntent.getActivities(context, 99, backward, FLAG_NO_CREATE)).isNull();
   }
 
   @Test
