@@ -624,18 +624,21 @@ public class ShadowPackageManager {
     return state != null ? state.flags : 0;
   }
 
+
+  public void addPackage(String packageName) {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = packageName;
+
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = packageName;
+    setUpPackageStorage(applicationInfo);
+    packageInfo.applicationInfo = applicationInfo;
+    addPackage(packageInfo);
+  }
+
   public void addPackage(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
-    Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
-
-    packageInfos.put(packageInfo.packageName, packageInfo);
-    packageStatsMap.put(packageInfo.packageName, packageStats);
-    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
-    if (packageInfo.applicationInfo != null) {
-      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
-    }
+    addPackage(packageInfo, packageStats);
   }
 
   public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
@@ -644,8 +647,6 @@ public class ShadowPackageManager {
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
@@ -655,28 +656,6 @@ public class ShadowPackageManager {
     extraPermissions.put(permissionInfo.name, permissionInfo);
   }
 
-  public void addPackage(String packageName) {
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = packageName;
-
-    ApplicationInfo applicationInfo = new ApplicationInfo();
-    applicationInfo.packageName = packageName;
-    setUpPackageStorage(applicationInfo);
-
-    packageInfo.applicationInfo = applicationInfo;
-
-    PackageStats packageStats = new PackageStats(packageInfo.packageName);
-    Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
-
-    packageInfos.put(packageInfo.packageName, packageInfo);
-    packageStatsMap.put(packageInfo.packageName, packageStats);
-    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
-    if (packageInfo.applicationInfo != null) {
-      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
-    }
-  }
 
   public void addManifest(AndroidManifest androidManifest) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
@@ -781,17 +760,7 @@ public class ShadowPackageManager {
     }
 
     packageInfo.applicationInfo = applicationInfo;
-    PackageStats packageStats = new PackageStats(packageInfo.packageName);
-    Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
-
-    packageInfos.put(packageInfo.packageName, packageInfo);
-    packageStatsMap.put(packageInfo.packageName, packageStats);
-    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
-    if (packageInfo.applicationInfo != null) {
-      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
-    }
+    addPackage(packageInfo);
   }
 
   public void removePackage(String packageName) {
