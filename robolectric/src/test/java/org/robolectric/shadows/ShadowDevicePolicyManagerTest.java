@@ -110,6 +110,24 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  public void isAdminActiveShouldReturnFalseForNonAdminDevice() {
+    // GIVEN a test component which is not an active admin of the device
+    // WHEN DevicePolicyManager#isAdminActive is called with it
+    // THEN the method should return false
+    assertThat(devicePolicyManager.isAdminActive(testComponent)).isFalse();
+  }
+
+  @Test
+  public void isAdminActiveShouldReturnTrueForAnyDeviceAdminDevice() {
+    // GIVEN a test component which is an active admin of the device
+    shadowDevicePolicyManager.setActiveAdmin(testComponent);
+
+    // WHEN DevicePolicyManager#isAdminActive is called with it
+    // THEN the method should return true
+    assertThat(devicePolicyManager.isAdminActive(testComponent)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void getActiveAdminsShouldReturnDeviceOwner() {
     // GIVEN an test package which is the device owner app of the device
