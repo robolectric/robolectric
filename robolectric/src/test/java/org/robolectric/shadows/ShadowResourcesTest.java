@@ -48,6 +48,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
+@Config(sdk = VERSION_CODES.O)
 public class ShadowResourcesTest {
   private Resources resources;
 
@@ -832,6 +833,11 @@ public class ShadowResourcesTest {
   @Test
   public void getResourceName_system() {
     assertThat(resources.getResourceName(android.R.string.ok)).isEqualTo("android:string/ok");
+  }
+
+  @Test
+  public void getTextArray() {
+    assertThat(resources.getTextArray(R.array.more_items)).containsExactly("baz", "bang");
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

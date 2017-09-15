@@ -1322,8 +1322,48 @@ public class ShadowArscAssetManager {
     return array;
   }
 
-  @HiddenApi @Implementation public final int[] getArrayStringInfo(int arrayRes){
-    throw new UnsupportedOperationException("not yet implemented");
+  @HiddenApi @Implementation public final int[] getArrayStringInfo(int arrayResId){
+    CppAssetManager am = assetManagerForJavaObject();
+    ResTable res = am.getResources();
+
+    Ref<bag_entry[]> startOfBag = new Ref<>(null);
+    final int N = res.lockBag(arrayResId, startOfBag);
+    if (N < 0) {
+      return null;
+    }
+
+    int[] array = new int[N * 2];
+
+    Ref<ResValue> value = new Ref<>(null);
+    bag_entry[] bag = startOfBag.get();
+    for (int i = 0, j = 0; i<N; i++) {
+      int stringIndex = -1;
+      int stringBlock = 0;
+      value.set(bag[i].map.value);
+
+      // Take care of resolving the found resource to its final value.
+      stringBlock = res.resolveReference(value, bag[i].stringBlock, null);
+      if (value.get().dataType == DataType.STRING.code()) {
+        stringIndex = value.get().data;
+      }
+
+      if (kThrowOnBadId) {
+        if (stringBlock == BAD_INDEX) {
+          throw new IllegalStateException("Bad resource!");
+        }
+      }
+
+      //todo: It might be faster to allocate a C array to contain
+      //      the blocknums and indices, put them in there and then
+      //      do just one SetIntArrayRegion()
+      //env->SetIntArrayRegion(array, j, 1, &stringBlock);
+      array[j] = stringBlock;
+      //env->SetIntArrayRegion(array, j + 1, 1, &stringIndex);
+      array[j+1] = stringIndex;
+      j += 2;
+    }
+    res.unlockBag(startOfBag);
+    return array;
   }
 
   @HiddenApi
