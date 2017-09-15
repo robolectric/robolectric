@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.shadows.ShadowCursorAdapter;
+import org.robolectric.shadows.ShadowActivity;
 
 @RunWith(JUnit4.class)
 public class ShadowMapTest {
@@ -14,9 +14,11 @@ public class ShadowMapTest {
     assertThat(map.get(CursorAdapter.class)).isNull();
   }
 
-  @Test public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
+  @Test
+  public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
     ShadowMap map = new ShadowMap.Builder().build();
-    assertThat(map.get(android.widget.CursorAdapter.class).shadowClassName).isEqualTo(ShadowCursorAdapter.class.getName());
+    assertThat(map.get(android.widget.CursorAdapter.class).shadowClassName)
+        .isEqualTo(ShadowActivity.class.getName());
   }
 
   @Test public void getInvalidatedClasses_disjoin() {

@@ -83,20 +83,6 @@ public class ShadowCursorAdapterTest {
     }
   }
 
-  @Test
-  public void testGetView() {
-    List<View> views = new ArrayList<>();
-    for (int i = 0; i < 5; i++) {
-      views.add(new View(RuntimeEnvironment.application));
-    }
-
-    Shadows.shadowOf(adapter).setViews(views);
-
-    for (int i = 0; i < 5; i++) {
-      assertThat(adapter.getView(i, null, null)).isSameAs(views.get(i));
-    }
-  }
-
   @Test public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {
     adapter = new TestAdapterWithFlags(curs, 0);
     adapter.changeCursor(database.rawQuery("SELECT * FROM table_name;", null));
