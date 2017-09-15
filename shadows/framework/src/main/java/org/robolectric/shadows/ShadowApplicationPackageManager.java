@@ -40,6 +40,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.VerifierDeviceIdentity;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -403,12 +404,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo) throws PackageManager.NameNotFoundException {
-    if (RuntimeEnvironment.application.getPackageName().equals(applicationInfo.packageName)) {
-      return RuntimeEnvironment.application.getResources();
-    } else if (resources.containsKey(applicationInfo.packageName)) {
-      return resources.get(applicationInfo.packageName);
-    }
-    throw new NameNotFoundException(applicationInfo.packageName);
+    return getResourcesForApplication(applicationInfo.packageName);
   }
 
   @Implementation
@@ -922,8 +918,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public Resources getResourcesForApplication(String appPackageName) throws NameNotFoundException {
     if (RuntimeEnvironment.application.getPackageName().equals(appPackageName)) {
       return RuntimeEnvironment.application.getResources();
-    } else if (resources.containsKey(appPackageName)) {
-      return resources.get(appPackageName);
+    } else if (packageInfos.containsKey(appPackageName)) {
+      Resources appResources = resources.get(appPackageName);
+      if (appResources == null) {
+        appResources = new Resources(new AssetManager(), null, null);
+        resources.put(appPackageName, appResources);
+      }
+      return appResources;
     }
     throw new NameNotFoundException(appPackageName);
   }
