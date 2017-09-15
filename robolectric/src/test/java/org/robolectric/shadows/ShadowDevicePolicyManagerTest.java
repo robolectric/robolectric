@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.FROYO;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,6 +108,26 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN DevicePolicyManager#isProfileOwnerApp is called with it
     // THEN the method should return true
     assertThat(devicePolicyManager.isProfileOwnerApp(testPackage)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = FROYO)
+  public void isAdminActiveShouldReturnFalseForNonAdminDevice() {
+    // GIVEN a test component which is not an active admin of the device
+    // WHEN DevicePolicyManager#isAdminActive is called with it
+    // THEN the method should return false
+    assertThat(devicePolicyManager.isAdminActive(testComponent)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = FROYO)
+  public void isAdminActiveShouldReturnTrueForAnyDeviceAdminDevice() {
+    // GIVEN a test component which is an active admin of the device
+    shadowDevicePolicyManager.setActiveAdmin(testComponent);
+
+    // WHEN DevicePolicyManager#isAdminActive is called with it
+    // THEN the method should return true
+    assertThat(devicePolicyManager.isAdminActive(testComponent)).isTrue();
   }
 
   @Test
