@@ -290,7 +290,7 @@ final String getAttributeName8(int idx, Ref<Integer> outLen)
     return 0;
   }
 
-  int getAttributeValueStringID(int idx)
+  public int getAttributeValueStringID(int idx)
   {
     if (mEventCode == START_TAG) {
         ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
@@ -315,7 +315,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
 
-  int getAttributeDataType(int idx)
+  public int getAttributeDataType(int idx)
   {
     if (mEventCode == START_TAG) {
         final ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
@@ -365,7 +365,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   public int getAttributeValue(int idx, ResValue outValue)
   {
     if (mEventCode == START_TAG) {
-        ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
+      ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
       if (idx < dtohs(tag.attributeCount)) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
@@ -516,8 +516,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     return NAME_NOT_FOUND;
   }
 
-  int nextNode()
-  {
+  int nextNode() {
     if (mEventCode < 0) {
       return mEventCode;
     }
@@ -541,8 +540,8 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
       }
 
       mCurNode = next;
-        final int headerSize = dtohs(next.header.headerSize);
-        final int totalSize = dtohl(next.header.size);
+      final int headerSize = dtohs(next.header.headerSize);
+      final int totalSize = dtohl(next.header.size);
       mCurExt = next.myOffset() + headerSize;
       int minExtSize = 0;
       int eventCode = dtohs(next.header.type);

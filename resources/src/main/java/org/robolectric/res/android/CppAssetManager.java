@@ -1,6 +1,7 @@
 package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Util.ALOGD;
+import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
@@ -17,6 +18,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.annotation.Nullable;
 import org.robolectric.res.android.Asset.AccessMode;
+import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
@@ -96,7 +99,7 @@ public class CppAssetManager {
   static final String kSystemAssets = "android.jar";
 //  static final char* kResourceCache = "resource-cache";
 //  
-//  static final char* kExcludeExtension = ".EXCLUDE";
+  static final String kExcludeExtension = ".EXCLUDE";
 //  
 
   // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
@@ -860,7 +863,7 @@ public class CppAssetManager {
           if (pAsset != null) {
               /* create a "source" name, for debug/display */
               pAsset.setAssetSource(
-                      createZipSourceNameLocked(ap.path.string(), "", fileName));
+                      createZipSourceNameLocked(ap.path, new String8(), new String8(fileName)));
           }
       }
 
@@ -870,29 +873,29 @@ public class CppAssetManager {
   /*
    * Create a "source name" for a file from a Zip archive.
    */
-  String8 createZipSourceNameLocked(final String zipFileName,
-      final String dirName, final String fileName)
+  String8 createZipSourceNameLocked(final String8 zipFileName,
+      final String8 dirName, final String8 fileName)
   {
       String8 sourceName = new String8("zip:");
-      sourceName.append(zipFileName);
+      sourceName.append(zipFileName.string());
       sourceName.append(":");
       if (dirName.length() > 0) {
-          sourceName.appendPath(dirName);
+          sourceName.appendPath(dirName.string());
       }
-      sourceName.appendPath(fileName);
+      sourceName.appendPath(fileName.string());
       return sourceName;
   }
 
-//  /*
-//   * Create a path to a loose asset (asset-base/app/rootDir).
-//   */
-//  String8 createPathNameLocked(final asset_path& ap, final char* rootDir)
-//  {
-//      String8 path(ap.path);
-//      if (rootDir != null) path.appendPath(rootDir);
-//      return path;
-//  }
-//  
+  /*
+   * Create a path to a loose asset (asset-base/app/rootDir).
+   */
+  String8 createPathNameLocked(final asset_path ap, final String rootDir)
+  {
+      String8 path = new String8(ap.path);
+      if (rootDir != null) path.appendPath(rootDir);
+      return path;
+  }
+
   /*
    * Return a pointer to one of our open Zip archives.  Returns null if no
    * matching Zip file exists.
@@ -981,63 +984,65 @@ public class CppAssetManager {
 //      return pAsset;
   }
 
-//  /*
-//   * Open a directory in the asset namespace.
-//   *
-//   * An "asset directory" is simply the combination of all asset paths' "assets/" directories.
-//   *
-//   * Pass in "" for the root dir.
-//   */
-//  AssetDir* openDir(final char* dirName)
-//  {
-//      AutoMutex _l(mLock);
-//  
-//      AssetDir* pDir = null;
-//      SortedVector<AssetDir.FileInfo>* pMergedInfo = null;
-//  
-//      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
-//      assert(dirName != null);
-//  
-//      //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
-//  
-//      pDir = new AssetDir;
-//  
-//      /*
-//       * Scan the various directories, merging what we find into a single
-//       * vector.  We want to scan them in reverse priority order so that
-//       * the ".EXCLUDE" processing works correctly.  Also, if we decide we
-//       * want to remember where the file is coming from, we'll get the right
-//       * version.
-//       *
-//       * We start with Zip archives, then do loose files.
-//       */
-//      pMergedInfo = new SortedVector<AssetDir.FileInfo>;
-//  
-//      int i = mAssetPaths.size();
-//      while (i > 0) {
-//          i--;
-//          final asset_path& ap = mAssetPaths.itemAt(i);
-//          if (ap.type == kFileTypeRegular) {
-//              ALOGV("Adding directory %s from zip %s", dirName, ap.path.string());
-//              scanAndMergeZipLocked(pMergedInfo, ap, kAssetsRoot, dirName);
-//          } else {
-//              ALOGV("Adding directory %s from dir %s", dirName, ap.path.string());
-//              scanAndMergeDirLocked(pMergedInfo, ap, kAssetsRoot, dirName);
-//          }
-//      }
-//  
+  /*
+   * Open a directory in the asset namespace.
+   *
+   * An "asset directory" is simply the combination of all asset paths' "assets/" directories.
+   *
+   * Pass in "" for the root dir.
+   */
+  public AssetDir openDir(final String dirName)
+  {
+      synchronized (mLock) {
+
+        AssetDir pDir = null;
+        SortedVector<AssetDir.FileInfo> pMergedInfo = null;
+
+        LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+        assert (dirName != null);
+
+        //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
+
+        pDir = new AssetDir();
+
+      /*
+       * Scan the various directories, merging what we find into a single
+       * vector.  We want to scan them in reverse priority order so that
+       * the ".EXCLUDE" processing works correctly.  Also, if we decide we
+       * want to remember where the file is coming from, we'll get the right
+       * version.
+       *
+       * We start with Zip archives, then do loose files.
+       */
+        pMergedInfo = new SortedVector<AssetDir.FileInfo>();
+
+        int i = mAssetPaths.size();
+        while (i > 0) {
+          i--;
+          final asset_path ap = mAssetPaths.get(i);
+          if (ap.type == FileType.kFileTypeRegular) {
+            ALOGV("Adding directory %s from zip %s", dirName, ap.path.string());
+            scanAndMergeZipLocked(pMergedInfo, ap, kAssetsRoot, dirName);
+          } else {
+            ALOGV("Adding directory %s from dir %s", dirName, ap.path.string());
+            scanAndMergeDirLocked(pMergedInfo, ap, kAssetsRoot, dirName);
+          }
+        }
+
 //  #if 0
-//      printf("FILE LIST:\n");
-//      for (i = 0; i < (int) pMergedInfo.size(); i++) {
+//        printf("FILE LIST:\n");
+//        for (i = 0; i < (int) pMergedInfo.size(); i++) {
 //          printf(" %d: (%d) '%s'\n", i,
 //              pMergedInfo.itemAt(i).getFileType(),
-//              (final char*) pMergedInfo.itemAt(i).getFileName());
-//      }
+//              ( final char*)pMergedInfo.itemAt(i).getFileName());
+//        }
 //  #endif
-//  
-//      pDir.setFileList(pMergedInfo);
-//      return pDir;
-//  }
+
+        pDir.setFileList(pMergedInfo);
+        return pDir;
+      }
+  }
+
 //  
 //  /*
 //   * Open a directory in the non-asset namespace.
@@ -1088,110 +1093,108 @@ public class CppAssetManager {
 //      return pDir;
 //  }
 //  
-//  /*
-//   * Scan the contents of the specified directory and merge them into the
-//   * "pMergedInfo" vector, removing previous entries if we find "exclude"
-//   * directives.
-//   *
-//   * Returns "false" if we found nothing to contribute.
-//   */
-//  boolean scanAndMergeDirLocked(SortedVector<AssetDir.FileInfo>* pMergedInfo,
-//      final asset_path& ap, final char* rootDir, final char* dirName)
-//  {
-//      assert(pMergedInfo != null);
-//  
-//      //printf("scanAndMergeDir: %s %s %s\n", ap.path.string(), rootDir, dirName);
-//  
-//      String8 path = createPathNameLocked(ap, rootDir);
-//      if (dirName[0] != '\0')
-//          path.appendPath(dirName);
-//  
-//      SortedVector<AssetDir.FileInfo>* pContents = scanDirLocked(path);
-//      if (pContents == null)
-//          return false;
-//  
-//      // if we wanted to do an incremental cache fill, we would do it here
-//  
-//      /*
-//       * Process "exclude" directives.  If we find a filename that ends with
-//       * ".EXCLUDE", we look for a matching entry in the "merged" set, and
-//       * remove it if we find it.  We also delete the "exclude" entry.
-//       */
-//      int i, count, exclExtLen;
-//  
-//      count = pContents.size();
-//      exclExtLen = strlen(kExcludeExtension);
-//      for (i = 0; i < count; i++) {
-//          final char* name;
-//          int nameLen;
-//  
-//          name = pContents.itemAt(i).getFileName().string();
-//          nameLen = strlen(name);
-//          if (nameLen > exclExtLen &&
-//              strcmp(name + (nameLen - exclExtLen), kExcludeExtension) == 0)
-//          {
-//              String8 match(name, nameLen - exclExtLen);
-//              int matchIdx;
-//  
-//              matchIdx = AssetDir.FileInfo.findEntry(pMergedInfo, match);
-//              if (matchIdx > 0) {
-//                  ALOGV("Excluding '%s' [%s]\n",
-//                      pMergedInfo.itemAt(matchIdx).getFileName().string(),
-//                      pMergedInfo.itemAt(matchIdx).getSourceName().string());
-//                  pMergedInfo.removeAt(matchIdx);
-//              } else {
-//                  //printf("+++ no match on '%s'\n", (final char*) match);
-//              }
-//  
-//              ALOGD("HEY: size=%d removing %d\n", (int)pContents.size(), i);
-//              pContents.removeAt(i);
-//              i--;        // adjust "for" loop
-//              count--;    //  and loop limit
-//          }
-//      }
-//  
-//      mergeInfoLocked(pMergedInfo, pContents);
-//  
-//      delete pContents;
-//  
-//      return true;
-//  }
-//  
-//  /*
-//   * Scan the contents of the specified directory, and stuff what we find
-//   * into a newly-allocated vector.
-//   *
-//   * Files ending in ".gz" will have their extensions removed.
-//   *
-//   * We should probably think about skipping files with "illegal" names,
-//   * e.g. illegal characters (/\:) or excessive length.
-//   *
-//   * Returns null if the specified directory doesn't exist.
-//   */
-//  SortedVector<AssetDir.FileInfo>* scanDirLocked(final String8& path)
-//  {
-//      SortedVector<AssetDir.FileInfo>* pContents = null;
-//      DIR* dir;
-//      struct dirent* entry;
-//      FileType fileType;
-//  
-//      ALOGV("Scanning dir '%s'\n", path.string());
-//  
-//      dir = opendir(path.string());
-//      if (dir == null)
-//          return null;
-//  
-//      pContents = new SortedVector<AssetDir.FileInfo>;
-//  
-//      while (1) {
-//          entry = readdir(dir);
-//          if (entry == null)
-//              break;
-//  
+  /*
+   * Scan the contents of the specified directory and merge them into the
+   * "pMergedInfo" vector, removing previous entries if we find "exclude"
+   * directives.
+   *
+   * Returns "false" if we found nothing to contribute.
+   */
+  boolean scanAndMergeDirLocked(SortedVector<AssetDir.FileInfo> pMergedInfo,
+      final asset_path ap, final String rootDir, final String dirName)
+  {
+      assert(pMergedInfo != null);
+
+      //printf("scanAndMergeDir: %s %s %s\n", ap.path.string(), rootDir, dirName);
+
+      String8 path = createPathNameLocked(ap, rootDir);
+      if (dirName.charAt(0) != '\0')
+          path.appendPath(dirName);
+
+      SortedVector<AssetDir.FileInfo> pContents = scanDirLocked(path);
+      if (pContents == null)
+          return false;
+
+      // if we wanted to do an incremental cache fill, we would do it here
+
+      /*
+       * Process "exclude" directives.  If we find a filename that ends with
+       * ".EXCLUDE", we look for a matching entry in the "merged" set, and
+       * remove it if we find it.  We also delete the "exclude" entry.
+       */
+      int i, count, exclExtLen;
+
+      count = pContents.size();
+      exclExtLen = kExcludeExtension.length();
+      for (i = 0; i < count; i++) {
+          final String name;
+          int nameLen;
+
+          name = pContents.itemAt(i).getFileName().string();
+          nameLen = name.length();
+          if (name.endsWith(kExcludeExtension))
+          {
+              String8 match = new String8(name, nameLen - exclExtLen);
+              int matchIdx;
+
+              matchIdx = AssetDir.FileInfo.findEntry(pMergedInfo, match);
+              if (matchIdx > 0) {
+                  ALOGV("Excluding '%s' [%s]\n",
+                      pMergedInfo.itemAt(matchIdx).getFileName().string(),
+                      pMergedInfo.itemAt(matchIdx).getSourceName().string());
+                  pMergedInfo.removeAt(matchIdx);
+              } else {
+                  //printf("+++ no match on '%s'\n", (final char*) match);
+              }
+
+              ALOGD("HEY: size=%d removing %d\n", (int)pContents.size(), i);
+              pContents.removeAt(i);
+              i--;        // adjust "for" loop
+              count--;    //  and loop limit
+          }
+      }
+
+      mergeInfoLocked(pMergedInfo, pContents);
+
+      return true;
+  }
+
+  /*
+   * Scan the contents of the specified directory, and stuff what we find
+   * into a newly-allocated vector.
+   *
+   * Files ending in ".gz" will have their extensions removed.
+   *
+   * We should probably think about skipping files with "illegal" names,
+   * e.g. illegal characters (/\:) or excessive length.
+   *
+   * Returns null if the specified directory doesn't exist.
+   */
+  SortedVector<AssetDir.FileInfo> scanDirLocked(final String8 path)
+  {
+
+      String8 pathCopy = new String8(path);
+      SortedVector<AssetDir.FileInfo> pContents = null;
+      //DIR* dir;
+    File dir;
+      FileType fileType;
+
+      ALOGV("Scanning dir '%s'\n", path.string());
+
+      dir = new File(path.string());
+      if (!dir.exists())
+          return null;
+
+      pContents = new SortedVector<AssetDir.FileInfo>();
+
+      for (File entry : dir.listFiles()) {
+          if (entry == null)
+              break;
+
 //          if (strcmp(entry.d_name, ".") == 0 ||
 //              strcmp(entry.d_name, "..") == 0)
 //              continue;
-//  
+
 //  #ifdef _DIRENT_HAVE_D_TYPE
 //          if (entry.d_type == DT_REG)
 //              fileType = kFileTypeRegular;
@@ -1200,224 +1203,229 @@ public class CppAssetManager {
 //          else
 //              fileType = kFileTypeUnknown;
 //  #else
-//          // stat the file
-//          fileType = .getFileType(path.appendPathCopy(entry.d_name).string());
+          // stat the file
+          fileType = getFileType(pathCopy.appendPath(entry.getName()).string());
 //  #endif
-//  
-//          if (fileType != kFileTypeRegular && fileType != kFileTypeDirectory)
-//              continue;
-//  
-//          AssetDir.FileInfo info;
-//          info.set(String8(entry.d_name), fileType);
-//          if (strcasecmp(info.getFileName().getPathExtension().string(), ".gz") == 0)
-//              info.setFileName(info.getFileName().getBasePath());
-//          info.setSourceName(path.appendPathCopy(info.getFileName()));
-//          pContents.add(info);
-//      }
-//  
-//      closedir(dir);
-//      return pContents;
-//  }
-//  
-//  /*
-//   * Scan the contents out of the specified Zip archive, and merge what we
-//   * find into "pMergedInfo".  If the Zip archive in question doesn't exist,
-//   * we return immediately.
-//   *
-//   * Returns "false" if we found nothing to contribute.
-//   */
-//  boolean scanAndMergeZipLocked(SortedVector<AssetDir.FileInfo>* pMergedInfo,
-//      final asset_path& ap, final char* rootDir, final char* baseDirName)
-//  {
-//      ZipFileRO* pZip;
-//      Vector<String8> dirs;
-//      AssetDir.FileInfo info;
-//      SortedVector<AssetDir.FileInfo> contents;
-//      String8 sourceName, zipName, dirName;
-//  
-//      pZip = mZipSet.getZip(ap.path);
-//      if (pZip == null) {
-//          ALOGW("Failure opening zip %s\n", ap.path.string());
-//          return false;
-//      }
-//  
-//      zipName = ZipSet.getPathName(ap.path.string());
-//  
-//      /* convert "sounds" to "rootDir/sounds" */
-//      if (rootDir != null) dirName = rootDir;
-//      dirName.appendPath(baseDirName);
-//  
-//      /*
-//       * Scan through the list of files, looking for a match.  The files in
-//       * the Zip table of contents are not in sorted order, so we have to
-//       * process the entire list.  We're looking for a string that begins
-//       * with the characters in "dirName", is followed by a '/', and has no
-//       * subsequent '/' in the stuff that follows.
-//       *
-//       * What makes this especially fun is that directories are not stored
-//       * explicitly in Zip archives, so we have to infer them from context.
-//       * When we see "sounds/foo.wav" we have to leave a note to ourselves
-//       * to insert a directory called "sounds" into the list.  We store
-//       * these in temporary vector so that we only return each one once.
-//       *
-//       * Name comparisons are case-sensitive to match UNIX filesystem
-//       * semantics.
-//       */
-//      int dirNameLen = dirName.length();
-//      void *iterationCookie;
-//      if (!pZip.startIteration(&iterationCookie, dirName.string(), null)) {
-//          ALOGW("ZipFileRO.startIteration returned false");
-//          return false;
-//      }
-//  
-//      ZipEntryRO entry;
-//      while ((entry = pZip.nextEntry(iterationCookie)) != null) {
-//          char nameBuf[256];
-//  
-//          if (pZip.getEntryFileName(entry, nameBuf, sizeof(nameBuf)) != 0) {
-//              // TODO: fix this if we expect to have long names
-//              ALOGE("ARGH: name too long?\n");
-//              continue;
-//          }
-//          //printf("Comparing %s in %s?\n", nameBuf, dirName.string());
-//          if (dirNameLen == 0 || nameBuf[dirNameLen] == '/')
-//          {
-//              final char* cp;
-//              final char* nextSlash;
-//  
-//              cp = nameBuf + dirNameLen;
-//              if (dirNameLen != 0)
-//                  cp++;       // advance past the '/'
-//  
-//              nextSlash = strchr(cp, '/');
-//  //xxx this may break if there are bare directory entries
-//              if (nextSlash == null) {
-//                  /* this is a file in the requested directory */
-//  
-//                  info.set(String8(nameBuf).getPathLeaf(), kFileTypeRegular);
-//  
-//                  info.setSourceName(
-//                      createZipSourceNameLocked(zipName, dirName, info.getFileName()));
-//  
-//                  contents.add(info);
-//                  //printf("FOUND: file '%s'\n", info.getFileName().string());
-//              } else {
-//                  /* this is a subdir; add it if we don't already have it*/
-//                  String8 subdirName(cp, nextSlash - cp);
-//                  int j;
-//                  int N = dirs.size();
-//  
-//                  for (j = 0; j < N; j++) {
-//                      if (subdirName == dirs[j]) {
-//                          break;
-//                      }
-//                  }
-//                  if (j == N) {
-//                      dirs.add(subdirName);
-//                  }
-//  
-//                  //printf("FOUND: dir '%s'\n", subdirName.string());
-//              }
-//          }
-//      }
-//  
-//      pZip.endIteration(iterationCookie);
-//  
-//      /*
-//       * Add the set of unique directories.
-//       */
-//      for (int i = 0; i < (int) dirs.size(); i++) {
-//          info.set(dirs[i], kFileTypeDirectory);
-//          info.setSourceName(
-//              createZipSourceNameLocked(zipName, dirName, info.getFileName()));
-//          contents.add(info);
-//      }
-//  
-//      mergeInfoLocked(pMergedInfo, &contents);
-//  
-//      return true;
-//  }
-//  
-//  
-//  /*
-//   * Merge two vectors of FileInfo.
-//   *
-//   * The merged contents will be stuffed into *pMergedInfo.
-//   *
-//   * If an entry for a file exists in both "pMergedInfo" and "pContents",
-//   * we use the newer "pContents" entry.
-//   */
-//  void mergeInfoLocked(SortedVector<AssetDir.FileInfo>* pMergedInfo,
-//      final SortedVector<AssetDir.FileInfo>* pContents)
-//  {
-//      /*
-//       * Merge what we found in this directory with what we found in
-//       * other places.
-//       *
-//       * Two basic approaches:
-//       * (1) Create a new array that holds the unique values of the two
-//       *     arrays.
-//       * (2) Take the elements from pContents and shove them into pMergedInfo.
-//       *
-//       * Because these are vectors of complex objects, moving elements around
-//       * inside the vector requires finalructing new objects and allocating
-//       * storage for members.  With approach #1, we're always adding to the
-//       * end, whereas with #2 we could be inserting multiple elements at the
-//       * front of the vector.  Approach #1 requires a full copy of the
-//       * contents of pMergedInfo, but approach #2 requires the same copy for
-//       * every insertion at the front of pMergedInfo.
-//       *
-//       * (We should probably use a SortedVector interface that allows us to
-//       * just stuff items in, trusting us to maintain the sort order.)
-//       */
-//      SortedVector<AssetDir.FileInfo>* pNewSorted;
-//      int mergeMax, contMax;
-//      int mergeIdx, contIdx;
-//  
-//      pNewSorted = new SortedVector<AssetDir.FileInfo>;
-//      mergeMax = pMergedInfo.size();
-//      contMax = pContents.size();
-//      mergeIdx = contIdx = 0;
-//  
-//      while (mergeIdx < mergeMax || contIdx < contMax) {
-//          if (mergeIdx == mergeMax) {
-//              /* hit end of "merge" list, copy rest of "contents" */
-//              pNewSorted.add(pContents.itemAt(contIdx));
-//              contIdx++;
-//          } else if (contIdx == contMax) {
-//              /* hit end of "cont" list, copy rest of "merge" */
-//              pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
-//              mergeIdx++;
-//          } else if (pMergedInfo.itemAt(mergeIdx) == pContents.itemAt(contIdx))
-//          {
-//              /* items are identical, add newer and advance both indices */
-//              pNewSorted.add(pContents.itemAt(contIdx));
-//              mergeIdx++;
-//              contIdx++;
-//          } else if (pMergedInfo.itemAt(mergeIdx) < pContents.itemAt(contIdx))
-//          {
-//              /* "merge" is lower, add that one */
-//              pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
-//              mergeIdx++;
-//          } else {
-//              /* "cont" is lower, add that one */
-//              assert(pContents.itemAt(contIdx) < pMergedInfo.itemAt(mergeIdx));
-//              pNewSorted.add(pContents.itemAt(contIdx));
-//              contIdx++;
-//          }
-//      }
-//  
-//      /*
-//       * Overwrite the "merged" list with the new stuff.
-//       */
-//      *pMergedInfo = *pNewSorted;
-//      delete pNewSorted;
-//  
+
+          if (fileType != FileType.kFileTypeRegular && fileType != FileType.kFileTypeDirectory)
+              continue;
+
+          AssetDir.FileInfo info = new AssetDir.FileInfo();
+          info.set(new String8(entry.getName()), fileType);
+          if (info.getFileName().getPathExtension().equalsIgnoreCase(".gz"))
+              info.setFileName(info.getFileName().getBasePath());
+          info.setSourceName(pathCopy.appendPath(info.getFileName().string()));
+          pContents.add(info);
+      }
+
+
+      return pContents;
+  }
+
+  /*
+   * Scan the contents out of the specified Zip archive, and merge what we
+   * find into "pMergedInfo".  If the Zip archive in question doesn't exist,
+   * we return immediately.
+   *
+   * Returns "false" if we found nothing to contribute.
+   */
+  boolean scanAndMergeZipLocked(SortedVector<AssetDir.FileInfo> pMergedInfo,
+      final asset_path ap, final String rootDir, final String baseDirName) {
+    ZipFileRO pZip;
+    List<String8> dirs = new ArrayList<>();
+    AssetDir.FileInfo info = new FileInfo();
+    SortedVector<AssetDir.FileInfo> contents = new SortedVector<>();
+    String8 sourceName;
+    String8 zipName;
+    String8 dirName = new String8();
+
+    pZip = mZipSet.getZip(ap.path.string());
+    if (pZip == null) {
+      ALOGW("Failure opening zip %s\n", ap.path.string());
+      return false;
+    }
+
+    zipName = ZipSet.getPathName(ap.path.string());
+
+      /* convert "sounds" to "rootDir/sounds" */
+    if (rootDir != null) {
+      dirName = new String8(rootDir);
+    }
+    ;
+    dirName.appendPath(baseDirName);
+
+    /*
+     * Scan through the list of files, looking for a match.  The files in
+     * the Zip table of contents are not in sorted order, so we have to
+     * process the entire list.  We're looking for a string that begins
+     * with the characters in "dirName", is followed by a '/', and has no
+     * subsequent '/' in the stuff that follows.
+     *
+     * What makes this especially fun is that directories are not stored
+     * explicitly in Zip archives, so we have to infer them from context.
+     * When we see "sounds/foo.wav" we have to leave a note to ourselves
+     * to insert a directory called "sounds" into the list.  We store
+     * these in temporary vector so that we only return each one once.
+     *
+     * Name comparisons are case-sensitive to match UNIX filesystem
+     * semantics.
+     */
+    int dirNameLen = dirName.length();
+    Ref<Enumeration<? extends ZipEntry>> iterationCookie = new Ref<>(null);
+    if (!pZip.startIteration(iterationCookie, dirName.string(), null)) {
+      ALOGW("ZipFileRO.startIteration returned false");
+      return false;
+    }
+
+    ZipEntryRO entry;
+    while ((entry = pZip.nextEntry(iterationCookie.get())) != null) {
+      Ref<String> nameBuf = new Ref<>(null);
+
+      if (pZip.getEntryFileName(entry, nameBuf) != 0) {
+        // TODO: fix this if we expect to have long names
+        ALOGE("ARGH: name too long?\n");
+        continue;
+      }
+      //printf("Comparing %s in %s?\n", nameBuf, dirName.string());
+      if (dirNameLen == 0 || nameBuf.get().charAt(dirNameLen) == '/') {
+        int cp = 0;
+        int nextSlashIndex;
+
+        //cp = nameBuf + dirNameLen;
+        cp += dirNameLen;
+        if (dirNameLen != 0) {
+          cp++;       // advance past the '/'
+        }
+
+        nextSlashIndex = nameBuf.get().indexOf(cp, '/');
+        //xxx this may break if there are bare directory entries
+        if (nextSlashIndex == -1) {
+                  /* this is a file in the requested directory */
+
+          info.set(new String8(nameBuf.get()).getPathLeaf(), FileType.kFileTypeRegular);
+
+          info.setSourceName(
+              createZipSourceNameLocked(zipName, dirName, info.getFileName()));
+
+          contents.add(info);
+          //printf("FOUND: file '%s'\n", info.getFileName().string());
+        } else {
+                  /* this is a subdir; add it if we don't already have it*/
+          String8 subdirName = new String8(nameBuf.get().substring(cp, nextSlashIndex));
+          int j;
+          int N = dirs.size();
+
+          for (j = 0; j < N; j++) {
+            if (subdirName == dirs.get(j)) {
+              break;
+            }
+          }
+          if (j == N) {
+            dirs.add(subdirName);
+          }
+
+          //printf("FOUND: dir '%s'\n", subdirName.string());
+        }
+      }
+    }
+
+    pZip.endIteration(iterationCookie);
+
+      /*
+       * Add the set of unique directories.
+       */
+    for (int i = 0; i < (int) dirs.size(); i++) {
+      info.set(dirs.get(i), FileType.kFileTypeDirectory);
+      info.setSourceName(
+          createZipSourceNameLocked(zipName, dirName, info.getFileName()));
+      contents.add(info);
+    }
+
+    mergeInfoLocked(pMergedInfo, contents);
+
+    return true;
+
+  }
+
+
+  /*
+   * Merge two vectors of FileInfo.
+   *
+   * The merged contents will be stuffed into *pMergedInfo.
+   *
+   * If an entry for a file exists in both "pMergedInfo" and "pContents",
+   * we use the newer "pContents" entry.
+   */
+  void mergeInfoLocked(SortedVector<AssetDir.FileInfo> pMergedInfo,
+      final SortedVector<AssetDir.FileInfo> pContents)
+  {
+      /*
+       * Merge what we found in this directory with what we found in
+       * other places.
+       *
+       * Two basic approaches:
+       * (1) Create a new array that holds the unique values of the two
+       *     arrays.
+       * (2) Take the elements from pContents and shove them into pMergedInfo.
+       *
+       * Because these are vectors of complex objects, moving elements around
+       * inside the vector requires finalructing new objects and allocating
+       * storage for members.  With approach #1, we're always adding to the
+       * end, whereas with #2 we could be inserting multiple elements at the
+       * front of the vector.  Approach #1 requires a full copy of the
+       * contents of pMergedInfo, but approach #2 requires the same copy for
+       * every insertion at the front of pMergedInfo.
+       *
+       * (We should probably use a SortedVector interface that allows us to
+       * just stuff items in, trusting us to maintain the sort order.)
+       */
+      SortedVector<AssetDir.FileInfo> pNewSorted;
+      int mergeMax, contMax;
+      int mergeIdx, contIdx;
+
+      pNewSorted = new SortedVector<AssetDir.FileInfo>();
+      mergeMax = pMergedInfo.size();
+      contMax = pContents.size();
+      mergeIdx = contIdx = 0;
+
+      while (mergeIdx < mergeMax || contIdx < contMax) {
+          if (mergeIdx == mergeMax) {
+              /* hit end of "merge" list, copy rest of "contents" */
+              pNewSorted.add(pContents.itemAt(contIdx));
+              contIdx++;
+          } else if (contIdx == contMax) {
+              /* hit end of "cont" list, copy rest of "merge" */
+              pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
+              mergeIdx++;
+          } else if (pMergedInfo.itemAt(mergeIdx) == pContents.itemAt(contIdx))
+          {
+              /* items are identical, add newer and advance both indices */
+              pNewSorted.add(pContents.itemAt(contIdx));
+              mergeIdx++;
+              contIdx++;
+          } else if (pMergedInfo.itemAt(mergeIdx).isLessThan(pContents.itemAt(contIdx)))
+          {
+              /* "merge" is lower, add that one */
+              pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
+              mergeIdx++;
+          } else {
+              /* "cont" is lower, add that one */
+              assert(pContents.itemAt(contIdx).isLessThan(pMergedInfo.itemAt(mergeIdx)));
+              pNewSorted.add(pContents.itemAt(contIdx));
+              contIdx++;
+          }
+      }
+
+      /*
+       * Overwrite the "merged" list with the new stuff.
+       */
+      pMergedInfo = pNewSorted;
+
 //  #if 0       // for Vector, rather than SortedVector
 //      int i, j;
 //      for (i = pContents.size() -1; i >= 0; i--) {
 //          boolean add = true;
-//  
+//
 //          for (j = pMergedInfo.size() -1; j >= 0; j--) {
 //              /* case-sensitive comparisons, to behave like UNIX fs */
 //              if (strcmp(pContents.itemAt(i).mFileName,
@@ -1428,12 +1436,12 @@ public class CppAssetManager {
 //                  break;
 //              }
 //          }
-//  
+//
 //          if (add)
 //              pMergedInfo.add(pContents.itemAt(i));
 //      }
 //  #endif
-//  }
+  }
 
   /*
    * ===========================================================================
@@ -1673,16 +1681,16 @@ public class CppAssetManager {
 //      return zip.setResourceTable(res);
 //  }
 //
-//  /*
-//   * Generate the partial pathname for the specified archive.  The caller
-//   * gets to prepend the asset root directory.
-//   *
-//   * Returns something like "common/en-US-noogle.jar".
-//   */
-//  /*static*/ String8 ZipSet.getPathName(final char* zipPath)
-//  {
-//      return String8(zipPath);
-//  }
+  /*
+   * Generate the partial pathname for the specified archive.  The caller
+   * gets to prepend the asset root directory.
+   *
+   * Returns something like "common/en-US-noogle.jar".
+   */
+  static String8 getPathName(final String zipPath)
+  {
+      return new String8(zipPath);
+  }
 //
 //  boolean ZipSet.isUpToDate()
 //  {
@@ -1731,6 +1739,7 @@ public class CppAssetManager {
 
       return mZipPath.size()-1;
   }
+
   }
 
   private static long getFileModDate(String path) {

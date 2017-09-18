@@ -6,6 +6,7 @@ import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -142,13 +143,13 @@ public class ZipFileRO {
     return true;
   }
 
-  boolean startIteration(Object cookie) {
+  boolean startIteration(Ref<Enumeration<? extends ZipEntry>> cookie) {
     return startIteration(cookie, null, null);
   }
 
-  boolean startIteration(/* void** */ Object cookie, final String prefix, final String suffix)
+  boolean startIteration(/* void** */ Ref<Enumeration<? extends ZipEntry>> cookie, final String prefix, final String suffix)
   {
-    throw new UnsupportedOperationException("Implememnt me");
+    cookie.set(this.mHandle.zipFile.entries());
 //    ZipEntryRO* ze = new ZipEntryRO;
 //    String pe(prefix ? prefix : "");
 //    String se(suffix ? suffix : "");
@@ -162,12 +163,17 @@ public class ZipFileRO {
 //    }
 //
 //    *cookie = ze;
-//    return true;
+    return true;
   }
 
-  org.robolectric.res.android.ZipFileRO.ZipEntryRO nextEntry(/*void* */ Object cookie)
+  org.robolectric.res.android.ZipFileRO.ZipEntryRO nextEntry(/*void* */ Enumeration<? extends ZipEntry> cookie)
   {
-    throw new UnsupportedOperationException("Implememnt me");
+    ZipEntryRO zipEntryRO = new ZipEntryRO();
+    zipEntryRO.entry = cookie.nextElement();
+    if (zipEntryRO.entry == null) {
+      return null;
+    }
+    return zipEntryRO;
 //    ZipEntryRO ze = /*reinterpret_cast<ZipEntryRO*>*/(ZipEntryRO) cookie;
 //    int error = Next(ze.cookie, &(ze.entry), &(ze.name));
 //    if (error) {
@@ -193,9 +199,9 @@ public class ZipFileRO {
   /*
    * Copy the entry's filename to the buffer.
    */
-  int getEntryFileName(org.robolectric.res.android.ZipFileRO.ZipEntryRO entry, String buffer, int bufLen)
+  int getEntryFileName(org.robolectric.res.android.ZipFileRO.ZipEntryRO entry, Ref<String> buffer)
   {
-    throw new UnsupportedOperationException("Implememnt me");
+    buffer.set(entry.entry.getName());
 
 //    final ZipEntryRO* zipEntry = reinterpret_cast<ZipEntryRO*>(entry);
 //    final uint16_t requiredSize = zipEntry.name.name_length + 1;
@@ -208,7 +214,7 @@ public class ZipFileRO {
 //    memcpy(buffer, zipEntry.name.name, requiredSize - 1);
 //    buffer[requiredSize - 1] = '\0';
 //
-//    return 0;
+    return 0;
   }
 
 /*

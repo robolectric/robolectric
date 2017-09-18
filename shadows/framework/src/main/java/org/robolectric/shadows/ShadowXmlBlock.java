@@ -151,7 +151,8 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetAttributeDataType(long state, int idx) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    return resXMLParser.getAttributeDataType(idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -161,7 +162,8 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetAttributeStringValue(long state, int idx) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    return resXMLParser.getAttributeValueStringID(idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)

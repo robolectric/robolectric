@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <whatever xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="Some string"
-    android:scrollbarFadeDuration="0xdeadbeef"
+    android:scrollbarFadeDuration="1111"
 />

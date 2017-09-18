@@ -24,10 +24,9 @@ public class String8 {
     this(value.substring(0, len));
   }
 
-  //size_t String8::length() const
-//{
-//    return SharedBuffer::sizeFromData(mString)-1;
-//}
+  int length() {
+    return mString.length();
+  }
 //String8 String8::format(const char* fmt, ...)
 //{
 //    va_list args;
@@ -289,16 +288,16 @@ public String8 append(final String other) {
 //    buf[len] = '\0';
 //    unlockBuffer(len);
 //}
-//String8 String8::getPathLeaf(void) const
-//{
-//    const char* cp;
-//    const char*const buf = mString;
-//    cp = strrchr(buf, OS_PATH_SEPARATOR);
-//    if (cp == NULL)
-//        return String8(*this);
-//    else
-//        return String8(cp+1);
-//}
+String8 getPathLeaf() {
+  final int cp;
+  final String buf = mString.toString();
+  cp = buf.lastIndexOf(File.pathSeparatorChar);
+  if (cp == -1) {
+    return new String8(this);
+  } else {
+    return new String8(buf.substring(cp + 1));
+  }
+}
 //String8 String8::getPathDir(void) const
 //{
 //    const char* cp;
@@ -362,16 +361,16 @@ public String getPathExtension()
       return "";
     }
 }
-//String8 String8::getBasePath(void) const
-//{
-//    char* ext;
-//    const char* const str = mString;
-//    ext = find_extension();
-//    if (ext == NULL)
-//        return String8(*this);
-//    else
-//        return String8(str, ext - str);
-//}
+
+  String8 getBasePath() {
+    int extIndex;
+    extIndex = find_extension();
+    if (extIndex == -1) {
+      return new String8(this);
+    } else {
+      return new String8(mString.substring(extIndex));
+    }
+  }
 
   public String8 appendPath(String name) {
     if (name.length() == 0) {
@@ -429,6 +428,7 @@ public String getPathExtension()
   public int hashCode() {
     return mString != null ? mString.hashCode() : 0;
   }
+
 }
 
 

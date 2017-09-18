@@ -33,6 +33,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
+import org.robolectric.res.android.AssetDir;
 import org.robolectric.res.android.BagAttributeFinder;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.DataType;
@@ -189,9 +190,32 @@ public class ShadowArscAssetManager {
 
   @Implementation
   public final String[] list(String path) throws IOException {
-    return directlyOn(realObject, AssetManager.class, "list",
-        ClassParameter.from(String.class, path));
+    CppAssetManager am = assetManagerForJavaObject();
+
+    String fileName8 = path;
+    if (fileName8 == null) {
+      return null;
+    }
+
+    AssetDir dir = am.openDir(fileName8);
+
+    if (dir == null) {
+      throw new FileNotFoundException(fileName8);
+    }
+
+
+    int N = dir.getFileCount();
+
+    String[] array = new String[dir.getFileCount()];
+
+    for (int i=0; i<N; i++) {
+        String8 name = dir.getFileName(i);
+        array[i] = name.string();
+    }
+
+    return array;
   }
+
 
   @HiddenApi
   @Implementation
@@ -1058,7 +1082,7 @@ public class ShadowArscAssetManager {
     int block = 0;
     Ref<Integer> typeSetFlags = new Ref<>(0);
     for (int ii=0; ii<NI; ii++) {
-        final int curIdent = (int)src[ii];
+      final int curIdent = (int)src[ii];
 
       // Try to find a value for this attribute...
       value.get().dataType = Res_value.TYPE_NULL;
