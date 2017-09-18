@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import org.robolectric.res.android.ResourceTypes.ResChunk_header;
+
 /**
  * A specification of the resources defined by a particular type.
  * <p>
@@ -11,7 +13,7 @@ package org.robolectric.res.android;
  * resource has been made public.
  */
 public class ResTableTypeSpec {
-    public ResChunkHeader header;
+    public ResChunk_header header;
 
     // The type identifier this chunk is holding.  Type IDs start
     // at 1 (corresponding to the value of the type bits in a

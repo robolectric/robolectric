@@ -243,7 +243,7 @@ public class ShadowThemeTest {
         .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
   }
 
-  @Test
+  @Test @Config(sdk = 25) // todo: unpin
   public void whenAttrSetAttrSpecifiesAttr_obtainStyledAttribute_returnsItsValue() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);

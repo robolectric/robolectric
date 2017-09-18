@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import org.robolectric.res.android.ResourceTypes.ResChunk_header;
+
 /**
  * Definition for a pool of strings.  The data of this chunk is an
  * array of uint32_t providing indices into the pool, relative to
@@ -16,8 +18,10 @@ package org.robolectric.res.android;
  * style table is an array of ResStringPool_span structures.
  */
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h#434
-class ResStringPoolHeader {
-  ResChunkHeader header;
+public class ResStringPoolHeader {
+  public static final int SIZEOF = ResChunk_header.SIZEOF + 20;
+
+  ResChunk_header header;
   // Number of strings in this pool (number of uint32_t indices that follow
   // in the data).
   int stringCount;

@@ -1,6 +1,7 @@
 package org.robolectric.res.android;
 
 import java.util.List;
+import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 
 /**
  * A collection of resource entries for a particular resource data
@@ -37,7 +38,7 @@ public class ResTableType {
     // platforms.
     static final int FLAG_SPARSE = 0x01;
 
-    public ResChunkHeader header;
+    public ResChunk_header header;
 
     // The type identifier this chunk is holding.  DataType IDs start
     // at 1 (corresponding to the value of the type bits in a

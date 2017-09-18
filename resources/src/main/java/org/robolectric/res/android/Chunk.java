@@ -19,7 +19,6 @@ package org.robolectric.res.android;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Shorts;
 
 import com.google.common.primitives.UnsignedBytes;
@@ -35,6 +34,7 @@ import org.robolectric.res.android.ResTable.Package;
 import org.robolectric.res.android.ResTable.PackageGroup;
 import org.robolectric.res.android.Chunk.PackageChunk.TypeChunk;
 import org.robolectric.res.android.Chunk.PackageChunk.TypeSpecChunk;
+import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.arsc.ResourceString;
 
 /** Represents a generic chunk. */
@@ -44,11 +44,11 @@ abstract public class Chunk {
 
   private final ByteBuffer buffer;
   private final int offset;
-  final ResChunkHeader header;
+  final ResChunk_header header;
 
   private static final int OFFSET_FIRST_HEADER = 8;
 
-  public Chunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+  public Chunk(ByteBuffer buffer, int offset, ResChunk_header header) {
     this.buffer = buffer;
     this.offset = offset;
 
@@ -102,7 +102,7 @@ abstract public class Chunk {
   }
 
   protected static StringPoolChunk readStringPool(ByteBuffer buffer, int chunkStartPosition) {
-    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
+    ResChunk_header header = getResChunkHeader(buffer, chunkStartPosition);
     if (header == null) return null;
     Type type = Type.fromCode(header.type);
     assert type == Type.STRING_POOL;
@@ -110,7 +110,7 @@ abstract public class Chunk {
   }
 
   protected static PackageChunk readPackageChunk(ByteBuffer buffer, int chunkStartPosition) {
-    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
+    ResChunk_header header = getResChunkHeader(buffer, chunkStartPosition);
     if (header == null) return null;
     Type type = Type.fromCode(header.type);
     assert type == Type.TABLE_PACKAGE;
@@ -118,7 +118,7 @@ abstract public class Chunk {
   }
 
   protected static <T extends Chunk> T readChunk(ByteBuffer buffer, int chunkStartPosition) {
-    ResChunkHeader header = getResChunkHeader(buffer, chunkStartPosition);
+    ResChunk_header header = getResChunkHeader(buffer, chunkStartPosition);
     if (header == null) return null;
     Type type = Type.fromCode(header.type);
     if (Type.TABLE_TYPE.equals(type)) {
@@ -130,20 +130,21 @@ abstract public class Chunk {
     }
   }
 
-  private static ResChunkHeader getResChunkHeader(ByteBuffer buffer, int chunkStartPosition) {
+  private static ResChunk_header getResChunkHeader(ByteBuffer buffer, int chunkStartPosition) {
+    // todo: don't reposition
     buffer.position(chunkStartPosition);
-    ResChunkHeader header = new ResChunkHeader();
-    header.type = buffer.getShort();
-    if (header.type == -1) {
+    if (buffer.getShort(chunkStartPosition) == -1) {
+      buffer.getShort(); // advance
       return null;
     }
-    header.headerSize = buffer.getShort();
-    header.size = buffer.getInt();
+
+    ResChunk_header header = new ResChunk_header(buffer, chunkStartPosition);
+    buffer.position(buffer.position() + ResChunk_header.SIZEOF);
     return header;
   }
 
   public static void readTableChunk(ByteBuffer buffer, ResTable resTable, int cookie) {
-    ResChunkHeader resChunkHeader = getResChunkHeader(buffer, 0);
+    ResChunk_header resChunkHeader = getResChunkHeader(buffer, 0);
     Type chunkType = Type.fromCode(resChunkHeader.type);
     assert chunkType == Type.TABLE;
 
@@ -216,12 +217,12 @@ abstract public class Chunk {
 
     private static final int OFFSET_STYLE_COUNT = OFFSET_FIRST_HEADER + 4;
     private static final int OFFSET_FLAGS = OFFSET_STYLE_COUNT + 4;
-    private static final int OFFSET_STRING_START = OFFSET_FLAGS + 4;
+    public static final int OFFSET_STRING_START = OFFSET_FLAGS + 4;
     private static final int OFFSET_STYLE_START = OFFSET_STRING_START + 4;
     private static final int OFFSET_STRING_INDICIES = OFFSET_STYLE_START + 4;
     private final int stringsStart;
 
-    public StringPoolChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+    public StringPoolChunk(ByteBuffer buffer, int offset, ResChunk_header header) {
       super(buffer, offset, header);
       stringsStart = super.buffer.getInt(offset + OFFSET_STRING_START);
     }
@@ -376,7 +377,7 @@ abstract public class Chunk {
 
     private ResTablePackage tablePackage;
 
-    public PackageChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+    public PackageChunk(ByteBuffer buffer, int offset, ResChunk_header header) {
       super(buffer, offset, header);
       tablePackage = new ResTablePackage();
       tablePackage.id = buffer.getInt();
@@ -460,7 +461,7 @@ abstract public class Chunk {
 
       public final ResTableTypeSpec typeSpec;
 
-      public TypeSpecChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+      public TypeSpecChunk(ByteBuffer buffer, int offset, ResChunk_header header) {
         super(buffer, offset, header);
         typeSpec = new ResTableTypeSpec();
         typeSpec.header = header;
@@ -493,7 +494,7 @@ abstract public class Chunk {
       public final ResTableType type;
       private List<ResTableEntry> entries = new LinkedList<>();
 
-      public TypeChunk(ByteBuffer buffer, int offset, ResChunkHeader header) {
+      public TypeChunk(ByteBuffer buffer, int offset, ResChunk_header header) {
         super(buffer, offset, header);
         type = new ResTableType();
         type.header = header;

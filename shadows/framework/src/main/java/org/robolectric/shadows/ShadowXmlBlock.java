@@ -12,7 +12,7 @@ import org.xmlpull.v1.XmlPullParserException;
 @Implements(className = "android.content.res.XmlBlock", isInAndroidSdk = false)
 public class ShadowXmlBlock {
   static final NativeObjRegistry<ResXMLTree> NATIVE_RES_XML_TREES = new NativeObjRegistry<>();
-  private static final NativeObjRegistry<ResXMLParser> NATIVE_RES_XML_PARSERS = new NativeObjRegistry<>();
+  static final NativeObjRegistry<ResXMLParser> NATIVE_RES_XML_PARSERS = new NativeObjRegistry<>();
 
   @Implementation
   public static long nativeCreate(byte[] bArray, int off, int len) {

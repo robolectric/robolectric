@@ -61,7 +61,10 @@ public class ResTableTheme {
               ALOGI("Desired entry index is %d in avail %d", e, ti.numEntries);
             }
             if (e < ti.numEntries) {
-              final theme_entry te = ti.entries[e];
+              theme_entry te = ti.entries[e];
+              if (te == null) {
+                te = ti.entries[e] = new theme_entry();
+              }
               if (outTypeSpecFlags != null) {
                 outTypeSpecFlags.set(outTypeSpecFlags.get() | te.typeSpecFlags);
               }

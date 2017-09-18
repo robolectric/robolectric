@@ -143,12 +143,7 @@ public class ResXMLTree {
       }
       if (type == RES_STRING_POOL_TYPE) {
         // todo: merge Chunk/interface buffer reading strategies
-        ResChunkHeader resChunkHeader = new ResChunkHeader();
-        resChunkHeader.type = chunk.type;
-        resChunkHeader.headerSize = chunk.headerSize;
-        resChunkHeader.size = chunk.size;
-        StringPoolChunk stringPoolChunk = new StringPoolChunk(mBuffer.buf, chunk.myOffset(),
-            resChunkHeader);
+        StringPoolChunk stringPoolChunk = new StringPoolChunk(mBuffer.buf, chunk.myOffset(), chunk);
 //        mStrings.setTo(mBuffer.new XmlResStringPool(chunk.myOffset()));
         int stringCount = stringPoolChunk.getStringCount();
         List<String> stringEntries = new ArrayList<>(stringCount);
@@ -170,7 +165,7 @@ public class ResXMLTree {
         }
       } else if (type >= RES_XML_FIRST_CHUNK_TYPE
           && type <= RES_XML_LAST_CHUNK_TYPE) {
-        if (validateNode(new ResXMLTree_node(mBuffer.buf, chunk.myOffset())) != NO_ERROR) {
+        if (validateNode(new ResXMLTree_node(mBuffer.buf, chunk)) != NO_ERROR) {
           mError = BAD_TYPE;
 //          goto done;
           mParser.restart();
@@ -208,7 +203,7 @@ public class ResXMLTree {
 
     mError = mStrings.getError();
 
-    done:
+  done:
     mParser.restart();
     return mError;
   }

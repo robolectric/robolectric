@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import org.robolectric.res.android.ResourceTypes.ResChunk_header;
+
 /**
  * A collection of resource data types within a package.  Followed by
  * one or more Type and ResTable_typeSpec structures containing the
@@ -9,7 +11,7 @@ package org.robolectric.res.android;
  * struct ResTable_package
  */
 public class ResTablePackage {
-    public ResChunkHeader header;
+    public ResChunk_header header;
 
     // If this is a base package, its ID.  Package IDs start
     // at 1 (corresponding to the value of the package bits in a

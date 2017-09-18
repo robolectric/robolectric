@@ -30,7 +30,6 @@ import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attribute;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_namespaceExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 
 public class ResXMLParser {
@@ -39,8 +38,6 @@ public class ResXMLParser {
   static final int SIZEOF_RESXMLTREE_NAMESPACE_EXT = 4;
   static final int SIZEOF_RESXMLTREE_NODE = ResChunk_header.SIZEOF + 8;
   static final int SIZEOF_RESXMLTREE_ATTR_EXT = 20;
-  static final int SIZEOF_RESXMLTREE_ATTRIBUTE = 12 + SIZEOF_RESVALUE;
-  static final int SIZEOF_RESXMLTREE_END_ELEMENT_EXT = 8;
   static final int SIZEOF_RESXMLTREE_CDATA_EXT = 4 + SIZEOF_RESVALUE;
   static final int SIZEOF_CHAR = 2;
 
@@ -64,6 +61,7 @@ public class ResXMLParser {
     int                 mCurExt;
 
   public ResXMLParser(ResXMLTree tree) {
+    System.out.println("new ResXMLParser for " + tree + ": " + System.identityHashCode(this));
     this.mTree = tree;
     this.mEventCode = BAD_DOCUMENT;
   }
@@ -113,7 +111,7 @@ final String getComment(Ref<Integer> outLen)
   public int getTextID()
   {
     if (mEventCode == TEXT) {
-      //return dtohl((mTree.mBuffer.new XmlTreeCdataExt(mCurExt)).data().index);
+      //return dtohl(new ResourceTypes.ResXMLTree_cdataExt(mTree.mBuffer.buf, mCurExt).data.index);
     }
     return -1;
   }
@@ -127,7 +125,7 @@ final String getText(Ref<Integer> outLen)
   int getTextValue(ResValue outValue)
   {
     if (mEventCode == TEXT) {
-      //outValue.copyFrom_dtoh(mTree.mBuffer.new XmlTreeCdataExt(mCurExt).typedData());
+      //outValue.copyFrom_dtoh(new ResourceTypes.ResXMLTree_cdataExt(mTree.mBuffer.buf, mCurExt).typedData);
       return SIZEOF_RESVALUE /* sizeof(Res_value) */;
     }
     return BAD_TYPE;
@@ -136,7 +134,7 @@ final String getText(Ref<Integer> outLen)
   int getNamespacePrefixID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      //return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).prefix().index);
+      //return dtohl(new ResourceTypes.ResXMLTree_namespaceExt(mTree.mBuffer.buf, mCurExt).prefix.index);
     }
     return -1;
   }
@@ -151,7 +149,7 @@ final String getNamespacePrefix(Ref<Integer> outLen)
   int getNamespaceUriID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      //return dtohl(mTree.mBuffer.new XmlTreeNamespaceExt(mCurExt).uri().index);
+      //return dtohl(new ResourceTypes.ResXMLTree_namespaceExt(mTree.mBuffer.buf, mCurExt).uri.index);
     }
     return -1;
   }
@@ -277,7 +275,7 @@ final String getAttributeName8(int idx, Ref<Integer> outLen)
     return id >= 0 ? mTree.mStrings.string8At(id, outLen) : null;
   }
 
-  int getAttributeNameResID(int idx)
+  public int getAttributeNameResID(int idx)
   {
     int id = getAttributeNameID(idx);
     if (id >= 0 && (int)id < mTree.mNumResIds) {
@@ -347,8 +345,8 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
       if (idx < dtohs(tag.attributeCount)) {
 //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
 //        (((final int8_t*)tag)
-//        + dtohs(tag.attributeStart())
-//            + (dtohs(tag.attributeSize())*idx));
+//        + dtohs(tag.attributeStart)
+//            + (dtohs(tag.attributeSize)*idx));
         ResXMLTree_attribute attr = tag.attributeAt(idx);
         if (attr.typedValue.dataType != DataType.DYNAMIC_REFERENCE.code() ||
             mTree.mDynamicRefTable == null) {
@@ -557,7 +555,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
           minExtSize = SIZEOF_RESXMLTREE_ATTR_EXT /*sizeof(ResXMLTree_attrExt)*/;
           break;
         case RES_XML_END_ELEMENT_TYPE:
-          minExtSize = SIZEOF_RESXMLTREE_END_ELEMENT_EXT /*sizeof(ResXMLTree_endElementExt)*/;
+          minExtSize = ResXMLTree_endElementExt.SIZEOF /*sizeof(ResXMLTree_endElementExt)*/;
           break;
         case RES_XML_CDATA_TYPE:
           minExtSize = SIZEOF_RESXMLTREE_CDATA_EXT /*sizeof(ResXMLTree_cdataExt)*/;

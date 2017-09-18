@@ -460,7 +460,7 @@ public class ShadowResourcesTest {
     assertThat(Resources.getSystem().getIdentifier("copy", "string", TestUtil.TEST_PACKAGE)).isEqualTo(0);
   }
 
-  @Test
+  @Test @Config(sdk = 25)
   public void testGetXml() throws Exception {
     XmlResourceParser parser = resources.getXml(R.xml.preferences);
     assertThat(parser).isNotNull();
@@ -643,7 +643,7 @@ public class ShadowResourcesTest {
     assertThat(out.data).isEqualTo(android.R.color.black);
   }
 
-  @Test
+  @Test @Config(sdk = 25) // todo: unpin
   public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() throws Exception {
     // android:id/mask was introduced in API 21, but it's still possible for apps built against API 21 to refer to it
     // in older runtimes because referenced resource ids are compiled (by aapt) into the binary XML format.
@@ -653,7 +653,7 @@ public class ShadowResourcesTest {
     assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
   }
 
-  @Test
+  @Test @Config(sdk = 25) // todo: unpin
   public void obtainStyledAttributesShouldDereferenceValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
@@ -665,7 +665,36 @@ public class ShadowResourcesTest {
     assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT).isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
   }
 
-  @Test
+  @Test @Config(sdk = 25) // todo: unpin
+  public void obtainAttributes_shouldReturnValuesFromAttributeSet() throws Exception {
+    AttributeSet attributes = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.width, "12")
+        .addAttribute(android.R.attr.height, "24")
+        .build();
+    TypedArray typedArray = resources
+        .obtainAttributes(attributes, new int[]{android.R.attr.width, android.R.attr.height});
+
+    assertThat(typedArray.getInt(0, 0)).isEqualTo(12);
+    assertThat(typedArray.getInt(1, 0)).isEqualTo(24);
+    typedArray.recycle();
+  }
+
+  @Test @Config(sdk = 25) // todo: unpin
+  public void obtainAttributes_shouldReturnValuesFromResources() throws Exception {
+    XmlPullParser parser = resources.getXml(R.xml.xml_attrs);
+    parser.next();
+    parser.next();
+    AttributeSet attributes = Xml.asAttributeSet(parser);
+
+    TypedArray typedArray = resources
+        .obtainAttributes(attributes, new int[]{android.R.attr.title, android.R.attr.scrollbarFadeDuration});
+
+    assertThat(typedArray.getString(0)).isEqualTo("Some string");
+    assertThat(typedArray.getInt(1, 0)).isEqualTo(10);
+    typedArray.recycle();
+  }
+
+  @Test @Config(sdk = 25) // todo: unpin
   public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() throws Exception {
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
@@ -784,7 +813,7 @@ public class ShadowResourcesTest {
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
   }
 
-  @Test
+  @Test @Config(sdk = 25)
   public void getXml() throws Exception {
     XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
     assertThat(xmlResourceParser).isNotNull();

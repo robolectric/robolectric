@@ -1,5 +1,8 @@
 package org.robolectric;
 
+import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE;
+import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
@@ -10,6 +13,11 @@ import android.content.Intent;
 
 import android.util.AttributeSet;
 import android.view.View;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -19,9 +27,18 @@ import org.robolectric.android.controller.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.android.XmlResourceParserImpl;
+import org.robolectric.res.android.DataType;
+import org.robolectric.res.android.ResStringPool;
+import org.robolectric.res.android.ResValue;
+import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
+import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
+import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
+import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
+import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
+import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.*;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -145,44 +162,89 @@ public class Robolectric {
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
     }
-    return new AttributeSetBuilder(document, RuntimeEnvironment.getCompileTimeResourceTable());
+    return new AttributeSetBuilder(RuntimeEnvironment.getCompileTimeResourceTable());
   }
 
   public static class AttributeSetBuilder {
-
-    private Document doc;
+    private static final ResName STYLE = ResName.qualifyResName("style", "", "");
     private ResourceTable appResourceTable;
+    private Map<ResName, String> attributeNameToValue = new HashMap<>();
 
-    AttributeSetBuilder(Document doc, ResourceTable resourceTable) {
-      this.doc = doc;
+    AttributeSetBuilder(ResourceTable resourceTable) {
       this.appResourceTable = resourceTable;
     }
 
     public AttributeSetBuilder addAttribute(int resId, String value) {
       ResName resName = appResourceTable.getResName(resId);
-      if ("style".equals(resName.name)) {
-        ((Element)doc.getFirstChild()).setAttribute(resName.name, value);
-      } else {
-        ((Element)doc.getFirstChild()).setAttributeNS(resName.getNamespaceUri(), resName.packageName + ":" + resName.name, value);
-      }
+      attributeNameToValue.put(resName, value);
       return this;
     }
 
     public AttributeSetBuilder setStyleAttribute(String value) {
-      ((Element)doc.getFirstChild()).setAttribute("style", value);
+      attributeNameToValue.put(STYLE, value);
       return this;
     }
 
     public AttributeSet build() {
-      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceTable);
-      try {
-        parser.next(); // Root document element
-        parser.next(); // "dummy" element
-      } catch (Exception e) {
-        throw new IllegalStateException("Expected single dummy element in the document to contain the attributes.", e);
-      }
+//      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceTable);
+//      try {
+//        parser.next(); // Root document element
+//        parser.next(); // "dummy" element
+//      } catch (Exception e) {
+//        throw new IllegalStateException("Expected single dummy element in the document to contain the attributes.", e);
+//      }
 
-      return parser;
+      Class<?> xmlBlockClass = ReflectionHelpers
+          .loadClass(this.getClass().getClassLoader(), "android.content.res.XmlBlock");
+
+      ByteBuffer buf = ByteBuffer.allocate(16 * 1024).order(ByteOrder.LITTLE_ENDIAN);
+      Writer resStringPoolWriter = new ResStringPool_header.Writer();
+
+      ResXMLTree_header.write(buf, resStringPoolWriter, () -> {
+        ResXMLTree_node.write(buf, RES_XML_START_ELEMENT_TYPE, () -> {
+          new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter, null, "dummy") {{
+            for (Entry<ResName, String> entry : attributeNameToValue.entrySet()) {
+              ResName resName = entry.getKey();
+              String value = entry.getValue();
+              DataType type;
+              if (value == null) {
+                type = DataType.NULL;
+              } else if (value.startsWith("@")) {
+                type = DataType.REFERENCE;
+              } else {
+                type = DataType.STRING;
+              }
+
+              ResValue resValue = new ResValue(type.code(), resStringPoolWriter.string(value));
+              if (resName.equals(STYLE)) {
+                attr(null, "style", value, resValue);
+              } else {
+                attr(resName.packageName, resName.name, value, resValue);
+              }
+            }
+          }}.write();
+        });
+        ResXMLTree_node.write(buf, RES_XML_END_ELEMENT_TYPE, () -> {
+          ResXMLTree_endElementExt.write(buf, resStringPoolWriter, null, "dummy");
+        });
+      });
+
+      int size = buf.position();
+      byte[] bytes = new byte[size];
+      buf.position(0);
+      buf.get(bytes, 0, size);
+
+//      final int xmlChunkStart = xmlBytes.position();
+//
+//       begin RES_XML_FIRST_CHUNK_TYPE
+//      xmlBytes.putShort((short) RES_XML_FIRST_CHUNK_TYPE) // type
+//          .putShort((short) 8) // headerSize
+//          .putInt(0); // size
+
+      Object xmlBlockInstance = ReflectionHelpers
+          .callConstructor(xmlBlockClass, ClassParameter.from(byte[].class, bytes));
+
+      return ReflectionHelpers.callInstanceMethod(xmlBlockClass, xmlBlockInstance, "newParser");
     }
   }
 

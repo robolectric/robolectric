@@ -588,6 +588,7 @@ containing a value of this type.
     public static final class xml {
         public static final int dialog_preferences=0x7f070000;
         public static final int preferences=0x7f070001;
+        public static final int xml_attrs=0x7f070002;
     }
     public static final class styleable {
         /** Attributes that can be used with a CustomStateView.

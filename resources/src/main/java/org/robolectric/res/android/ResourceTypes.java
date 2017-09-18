@@ -1,13 +1,20 @@
 package org.robolectric.res.android;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
-import static org.robolectric.res.android.ResXMLParser.SIZEOF_RESXMLTREE_ATTR_EXT;
+import static org.robolectric.res.android.ResXMLParser.SIZEOF_RESVALUE;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.robolectric.res.android.Chunk.StringPoolChunk;
+import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 
 public class ResourceTypes {
   static int validate_chunk(ResChunk_header chunk,
@@ -64,7 +71,7 @@ public class ResourceTypes {
   /**
    * Header that appears at the front of every data chunk in a resource.
    */
-  static class ResChunk_header extends WithOffset
+  public static class ResChunk_header extends WithOffset
   {
     static int SIZEOF = 8;
 
@@ -89,6 +96,33 @@ public class ResourceTypes {
       this.type = buf.getShort(offset);
       this.headerSize = buf.getShort(offset + 2);
       this.size = buf.getInt(offset + 4);
+    }
+
+    public ResChunk_header(short type, short headerSize, int size) {
+      super(-1);
+      this.type = type;
+      this.headerSize = headerSize;
+      this.size = size;
+    }
+
+    public static void write(ByteBuffer buf, short type, Runnable header, Runnable contents) {
+      int startPos = buf.position();
+      buf.putShort(type);
+      ShortWriter headerSize = new ShortWriter(buf);
+      IntWriter size = new IntWriter(buf);
+
+      header.run();
+      headerSize.write((short) (buf.position() - startPos));
+
+      contents.run();
+
+      // pad to next int boundary
+      int len = buf.position() - startPos;
+      while ((len & 0x3) != 0) {
+        buf.put((byte) 0);
+        len++;
+      }
+      size.write(len);
     }
   };
 
@@ -116,6 +150,196 @@ public class ResourceTypes {
   public static final int RES_TABLE_LIBRARY_TYPE      = 0x0203;
 
   /**
+   * Macros for building/splitting resource identifiers.
+   */
+//#define Res_VALIDID(resid) (resid != 0)
+//#define Res_CHECKID(resid) ((resid&0xFFFF0000) != 0)
+//#define Res_MAKEID(package, type, entry) \
+//(((package+1)<<24) | (((type+1)&0xFF)<<16) | (entry&0xFFFF))
+//#define Res_GETPACKAGE(id) ((id>>24)-1)
+//#define Res_GETTYPE(id) (((id>>16)&0xFF)-1)
+//#define Res_GETENTRY(id) (id&0xFFFF)
+
+//#define Res_INTERNALID(resid) ((resid&0xFFFF0000) != 0 && (resid&0xFF0000) == 0)
+//#define Res_MAKEINTERNAL(entry) (0x01000000 | (entry&0xFFFF))
+//#define Res_MAKEARRAY(entry) (0x02000000 | (entry&0xFFFF))
+
+//  static const size_t Res_MAXPACKAGE = 255;
+//  static const size_t Res_MAXTYPE = 255;
+
+  /**
+   * Representation of a value in a resource, supplying type
+   * information.
+   */
+  public static class Res_value
+  {
+    // Number of bytes in this structure.
+    short size;
+
+    // Always set to 0.
+    byte res0;
+
+    // Type of the data value.
+//    enum {
+    // The 'data' is either 0 or 1, specifying this resource is either
+    // undefined or empty, respectively.
+    public static final int TYPE_NULL = 0x00;
+    // The 'data' holds a ResTable_ref, a reference to another resource
+    // table entry.
+    public static final int TYPE_REFERENCE = 0x01;
+    // The 'data' holds an attribute resource identifier.
+    public static final int TYPE_ATTRIBUTE = 0x02;
+    // The 'data' holds an index into the containing resource table's
+    // global value string pool.
+    public static final int TYPE_STRING = 0x03;
+    // The 'data' holds a single-precision floating point number.
+    public static final int TYPE_FLOAT = 0x04;
+    // The 'data' holds a complex number encoding a dimension value,
+    // such as "100in".
+    public static final int TYPE_DIMENSION = 0x05;
+    // The 'data' holds a complex number encoding a fraction of a
+    // container.
+    public static final int TYPE_FRACTION = 0x06;
+    // The 'data' holds a dynamic ResTable_ref, which needs to be
+    // resolved before it can be used like a TYPE_REFERENCE.
+    public static final int TYPE_DYNAMIC_REFERENCE = 0x07;
+    // The 'data' holds an attribute resource identifier, which needs to be resolved
+    // before it can be used like a TYPE_ATTRIBUTE.
+    public static final int TYPE_DYNAMIC_ATTRIBUTE = 0x08;
+
+    // Beginning of integer flavors...
+    public static final int TYPE_FIRST_INT = 0x10;
+
+    // The 'data' is a raw integer value of the form n..n.
+    public static final int TYPE_INT_DEC = 0x10;
+    // The 'data' is a raw integer value of the form 0xn..n.
+    public static final int TYPE_INT_HEX = 0x11;
+    // The 'data' is either 0 or 1, for input "false" or "true" respectively.
+    public static final int TYPE_INT_BOOLEAN = 0x12;
+
+    // Beginning of color integer flavors...
+    public static final int TYPE_FIRST_COLOR_INT = 0x1c;
+
+    // The 'data' is a raw integer value of the form #aarrggbb.
+    public static final int TYPE_INT_COLOR_ARGB8 = 0x1c;
+    // The 'data' is a raw integer value of the form #rrggbb.
+    public static final int TYPE_INT_COLOR_RGB8 = 0x1d;
+    // The 'data' is a raw integer value of the form #argb.
+    public static final int TYPE_INT_COLOR_ARGB4 = 0x1e;
+    // The 'data' is a raw integer value of the form #rgb.
+    public static final int TYPE_INT_COLOR_RGB4 = 0x1f;
+
+    // ...end of integer flavors.
+    public static final int TYPE_LAST_COLOR_INT = 0x1f;
+
+    // ...end of integer flavors.
+    public static final int TYPE_LAST_INT = 0x1f;
+//  };
+    byte dataType;
+
+    // Structure of complex data values (TYPE_UNIT and TYPE_FRACTION)
+//    enum {
+    // Where the unit type information is.  This gives us 16 possible
+    // types, as defined below.
+    public static final int COMPLEX_UNIT_SHIFT = 0;
+    public static final int COMPLEX_UNIT_MASK = 0xf;
+
+    // TYPE_DIMENSION: Value is raw pixels.
+    public static final int COMPLEX_UNIT_PX = 0;
+    // TYPE_DIMENSION: Value is Device Independent Pixels.
+    public static final int COMPLEX_UNIT_DIP = 1;
+    // TYPE_DIMENSION: Value is a Scaled device independent Pixels.
+    public static final int COMPLEX_UNIT_SP = 2;
+    // TYPE_DIMENSION: Value is in points.
+    public static final int COMPLEX_UNIT_PT = 3;
+    // TYPE_DIMENSION: Value is in inches.
+    public static final int COMPLEX_UNIT_IN = 4;
+    // TYPE_DIMENSION: Value is in millimeters.
+    public static final int COMPLEX_UNIT_MM = 5;
+
+    // TYPE_FRACTION: A basic fraction of the overall size.
+    public static final int COMPLEX_UNIT_FRACTION = 0;
+    // TYPE_FRACTION: A fraction of the parent size.
+    public static final int COMPLEX_UNIT_FRACTION_PARENT = 1;
+
+    // Where the radix information is, telling where the decimal place
+    // appears in the mantissa.  This give us 4 possible fixed point
+    // representations as defined below.
+    public static final int COMPLEX_RADIX_SHIFT = 4;
+    public static final int COMPLEX_RADIX_MASK = 0x3;
+
+    // The mantissa is an integral number -- i.e., 0xnnnnnn.0
+    public static final int COMPLEX_RADIX_23p0 = 0;
+    // The mantissa magnitude is 16 bits -- i.e, 0xnnnn.nn
+    public static final int COMPLEX_RADIX_16p7 = 1;
+    // The mantissa magnitude is 8 bits -- i.e, 0xnn.nnnn
+    public static final int COMPLEX_RADIX_8p15 = 2;
+    // The mantissa magnitude is 0 bits -- i.e, 0x0.nnnnnn
+    public static final int COMPLEX_RADIX_0p23 = 3;
+
+    // Where the actual value is.  This gives us 23 bits of
+    // precision.  The top bit is the sign.
+    public static final int COMPLEX_MANTISSA_SHIFT = 8;
+    public static final int COMPLEX_MANTISSA_MASK = 0xffffff;
+//  };
+
+    // Possible data values for TYPE_NULL.
+//    enum {
+    // The value is not defined.
+    public static final int DATA_NULL_UNDEFINED = 0;
+        // The value is explicitly defined as empty.
+    public static final int DATA_NULL_EMPTY = 1;
+//  };
+
+    // The data for this item, as interpreted according to dataType.
+//    typedef uint32_t data_type;
+    int data;
+
+//  void copyFrom_dtoh(const Res_value& src);
+}
+
+/**
+ *  This is a reference to a unique entry (a ResTable_entry structure)
+ *  in a resource table.  The value is structured as: 0xpptteeee,
+ *  where pp is the package index, tt is the type index in that
+ *  package, and eeee is the entry index in that type.  The package
+ *  and type values start at 1 for the first item, to help catch cases
+ *  where they have not been supplied.
+ */
+public static class ResTable_ref
+    {
+    int ident;
+    };
+
+  /**
+   * Reference to a string in a string pool.
+   */
+  static class ResStringPool_ref
+  {
+    // Index into the string pool table (uint32_t-offset from the indices
+    // immediately after ResStringPool_header) at which to find the location
+    // of the string data in the pool.
+    final int index;
+
+    public ResStringPool_ref(ByteBuffer buf, int offset) {
+      this.index = buf.getInt(offset);
+    }
+
+    public static void write(ByteBuffer buf, int value) {
+      buf.putInt(value);
+    }
+  }
+
+/** ********************************************************************
+ *  String Pool
+ *
+ *  A set of strings that can be references by others through a
+ *  ResStringPool_ref.
+ *
+ *********************************************************************** */
+
+
+/**
    * Definition for a pool of strings.  The data of this chunk is an
    * array of uint32_t providing indices into the pool, relative to
    * stringsStart.  At stringsStart are all of the UTF-16 strings
@@ -130,7 +354,7 @@ public class ResourceTypes {
    * into a style table starting at stylesStart.  Each entry in the
    * style table is an array of ResStringPool_span structures.
    */
-  static class ResStringPool_header
+  public static class ResStringPool_header
   {
     final ResChunk_header header;
 
@@ -167,7 +391,85 @@ public class ResourceTypes {
       this.stringsStart = buf.getInt(offset + ResChunk_header.SIZEOF + 12);
       this.stylesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 16);
     }
-  };
+
+    public static class Writer {
+
+      private final List<String> strings = new ArrayList<>();
+      private final List<byte[]> stringsAsBytes = new ArrayList<>();
+      private final Map<String, Integer> stringIds = new HashMap<>();
+
+      private int totalBytes = ResStringPoolHeader.SIZEOF;
+      private int totalStringBytes = 0;
+      private int totalStyleBytes = 0;
+
+      public int string(String s) {
+        if (s == null) {
+          return -1;
+        }
+
+        Integer id = stringIds.get(s);
+        if (id == null) {
+          id = stringIds.size();
+          strings.add(s);
+          stringsAsBytes.add(s.getBytes(UTF_8));
+          stringIds.put(s, id);
+        }
+        return id;
+      }
+
+      public void write(ByteBuffer buf) {
+        ResChunk_header.write(buf, (short) RES_STRING_POOL_TYPE, () -> {
+          // header
+          int startPos = buf.position();
+          int stringCount = stringIds.size();
+
+          // begin string pool...
+          buf.putInt(stringCount); // stringCount
+          buf.putInt(0); // styleCount
+          buf.putInt(UTF8_FLAG); // flags
+          IntWriter stringStart = new IntWriter(buf);
+          buf.putInt(0); // stylesStart
+
+          stringStart.write(buf.position() - startPos);
+        }, () -> {
+          // contents
+          int stringOffset = /*buf.position() + */8 + 4 * stringsAsBytes.size();
+          for (int i = 0; i < stringsAsBytes.size(); i++) {
+            String string = strings.get(i);
+            byte[] bytes = stringsAsBytes.get(i);
+            buf.putInt(stringOffset);
+            stringOffset += lenLen(string.length()) + lenLen(bytes.length) + bytes.length;
+          }
+
+          buf.putInt(StringPoolChunk.OFFSET_STRING_START, buf.position());
+
+          for (int i = 0; i < stringsAsBytes.size(); i++) {
+            // number of chars
+            writeLen(buf, strings.get(i).length());
+
+            // number of bytes
+            writeLen(buf, stringsAsBytes.get(i).length);
+
+            // bytes
+            buf.put(stringsAsBytes.get(i));
+          }
+        });
+      }
+
+      private int lenLen(int length) {
+        return length > 0x7f ? 2 : 1;
+      }
+
+      private void writeLen(ByteBuffer buf, int length) {
+        if (length <= 0x7f) {
+          buf.put((byte) length);
+        } else {
+          buf.put((byte) ((length >> 8) | 0x80));
+          buf.put((byte) (length & 0x7f));
+        }
+      }
+    }
+  }
 
   /**
    * This structure defines a span of style information associated with
@@ -206,21 +508,33 @@ public class ResourceTypes {
    * is described by the occurrance of RES_XML_START_ELEMENT_TYPE
    * and corresponding RES_XML_END_ELEMENT_TYPE nodes in the array.
    */
-  static class ResXMLTree_header extends WithOffset
+  public static class ResXMLTree_header extends WithOffset
   {
-    final ResChunk_header header;
+    public final ResChunk_header header;
 
     ResXMLTree_header(ByteBuffer buf, int offset) {
       super(offset);
       header = new ResChunk_header(buf, offset);
     }
-  };
+
+    public static void write(ByteBuffer buf, Writer resStringPoolWriter, Runnable contents) {
+      ResChunk_header.write(buf, (short) RES_XML_TYPE, ()-> {}, () -> {
+        // todo: this is stupid, but string pool has to come before xml...
+        int startPos = buf.position();
+        contents.run();
+
+        buf.position(startPos);
+        resStringPoolWriter.write(buf);
+        contents.run();
+      });
+    }
+  }
 
   /**
    * Basic XML tree node.  A single item in the XML document.  Extended info
    * about the node can be found after header.headerSize.
    */
-  static class ResXMLTree_node extends WithOffset
+  public static class ResXMLTree_node extends WithOffset
   {
     final ResChunk_header header;
 
@@ -236,6 +550,21 @@ public class ResourceTypes {
       this.header = new ResChunk_header(buf, offset);
       this.lineNumber = buf.getInt(offset + ResChunk_header.SIZEOF);
       this.comment = new ResStringPool_ref(buf, offset + 12);
+    }
+
+    ResXMLTree_node(ByteBuffer buf, ResChunk_header header) {
+      super(header.myOffset());
+
+      this.header = header;
+      this.lineNumber = buf.getInt(myOffset() + ResChunk_header.SIZEOF);
+      this.comment = new ResStringPool_ref(buf, myOffset() + ResChunk_header.SIZEOF + 4);
+    }
+
+    public static void write(ByteBuffer buf, int type, Runnable contents) {
+      ResChunk_header.write(buf, (short) type, () -> {
+        buf.putInt(-1); // lineNumber
+        ResStringPool_ref.write(buf, -1); // comment
+      }, contents);
     }
   };
 
@@ -282,8 +611,10 @@ public class ResourceTypes {
    * Extended XML tree node for element start/end nodes.
    * Appears header.headerSize bytes after a ResXMLTree_node.
    */
-  static class ResXMLTree_endElementExt
+  public static class ResXMLTree_endElementExt
   {
+    static final int SIZEOF = 8;
+
     // String of the full namespace of this element.
     final ResStringPool_ref ns;
 
@@ -296,6 +627,12 @@ public class ResourceTypes {
 //      this.ns = throw new UnsupportedOperationException();
 //      this.name = name;
     }
+
+    public static void write(ByteBuffer buf, Writer resStringPoolWriter,
+        String ns, String name) {
+      ResStringPool_ref.write(buf, resStringPoolWriter.string(ns));
+      ResStringPool_ref.write(buf, resStringPoolWriter.string(name));
+    }
   };
 
   /**
@@ -303,7 +640,7 @@ public class ResourceTypes {
    * information.
    * Appears header.headerSize bytes after a ResXMLTree_node.
    */
-  static class ResXMLTree_attrExt extends WithOffset
+  public static class ResXMLTree_attrExt extends WithOffset
   {
     private final ByteBuffer buf;
 
@@ -350,12 +687,92 @@ public class ResourceTypes {
 
     ResXMLTree_attribute attributeAt(int idx) {
       return new ResXMLTree_attribute(buf,
-          myOffset() + SIZEOF_RESXMLTREE_ATTR_EXT + SIZEOF_RESXMLTREE_ATTR_EXT * idx);
+          myOffset() + dtohs(attributeStart) + dtohs(attributeSize) * idx);
+    }
+
+    public static class Writer {
+      private final ByteBuffer buf;
+      private final ResStringPool_header.Writer resStringPoolWriter;
+      private final String ns;
+      private final String name;
+
+      private short idIndex;
+      private short classIndex;
+      private short styleIndex;
+
+      private final List<Attr> attrs = new ArrayList<>();
+
+      public Writer(ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter,
+          String ns, String name) {
+        this.buf = buf;
+        this.resStringPoolWriter = resStringPoolWriter;
+        this.ns = ns;
+        this.name = name;
+      }
+
+      public void attr(String ns, String name, String value, ResValue resValue) {
+        attrs.add(new Attr(resStringPoolWriter.string(ns), resStringPoolWriter.string(name),
+            resStringPoolWriter.string(value), resValue));
+      }
+
+      public void write() {
+        int startPos = buf.position();
+
+        ResStringPool_ref.write(buf, resStringPoolWriter.string(ns));
+        ResStringPool_ref.write(buf, resStringPoolWriter.string(name));
+        ShortWriter attributeStartWriter = new ShortWriter(buf);
+        buf.putShort((short) ResXMLTree_attribute.SIZEOF); // attributeSize
+        buf.putShort((short) attrs.size()); // attributeCount
+        ShortWriter idIndexWriter = new ShortWriter(buf);
+        ShortWriter classIndexWriter = new ShortWriter(buf);
+        ShortWriter styleIndexWriter = new ShortWriter(buf);
+
+        attributeStartWriter.write((short) (buf.position() - startPos));
+        for (Attr attr : attrs) {
+          attr.write(buf);
+        }
+
+        // todo: 1-based index into attributes
+        idIndexWriter.write((short) (buf.position() - startPos));
+        // none
+
+        classIndexWriter.write((short) (buf.position() - startPos));
+        // none
+
+        styleIndexWriter.write((short) (buf.position() - startPos));
+        // none
+      }
+
+      private static class Attr {
+        final int ns;
+        final int name;
+        final int value;
+        final int resValueDataType;
+        final int resValueData;
+
+        public Attr(int ns, int name, int value, ResValue resValue) {
+          this.ns = ns;
+          this.name = name;
+          this.value = value;
+          this.resValueDataType = resValue.dataType;
+          this.resValueData = resValue.data;
+        }
+
+        public void write(ByteBuffer buf) {
+          ResStringPool_ref.write(buf, ns);
+          ResStringPool_ref.write(buf, name);
+          ResStringPool_ref.write(buf, value);
+          buf.putInt(resValueDataType);
+          buf.putInt(resValueData);
+        }
+      }
     }
   };
 
   static class ResXMLTree_attribute
   {
+    public static final int SIZEOF = 12+ SIZEOF_RESVALUE;
+
     // Namespace of this attribute.
     final ResStringPool_ref ns;
 
@@ -379,32 +796,44 @@ public class ResourceTypes {
     }
   };
 
-  /**
-   *  This is a reference to a unique entry (a ResTable_entry structure)
-   *  in a resource table.  The value is structured as: 0xpptteeee,
-   *  where pp is the package index, tt is the type index in that
-   *  package, and eeee is the entry index in that type.  The package
-   *  and type values start at 1 for the first item, to help catch cases
-   *  where they have not been supplied.
-   */
-  interface ResTable_ref
-  {
-    int ident();
-  };
+  abstract private static class FutureWriter<T> {
+    protected final ByteBuffer buf;
+    private final int position;
 
-  /**
-   * Reference to a string in a string pool.
-   */
-  static class ResStringPool_ref
-  {
-    // Index into the string pool table (uint32_t-offset from the indices
-    // immediately after ResStringPool_header) at which to find the location
-    // of the string data in the pool.
-    final int index;
-    
-    public ResStringPool_ref(ByteBuffer buf, int offset) {
-      this.index = buf.getInt(offset);
+    public FutureWriter(ByteBuffer buf, int size) {
+      this.buf = buf;
+      this.position = buf.position();
+      buf.position(position + size);
     }
-  };
 
+    abstract protected void put(int position, T value);
+
+    public void write(T value) {
+      put(position, value);
+    }
+  }
+
+  private static class IntWriter extends FutureWriter<Integer> {
+    public IntWriter(ByteBuffer buf) {
+      super(buf, 4);
+    }
+
+    @Override
+    protected void put(int position, Integer value) {
+      buf.putInt(position, value);
+    }
+  }
+
+  private static class ShortWriter extends FutureWriter<Short> {
+    public ShortWriter(ByteBuffer buf) {
+      super(buf, 2);
+    }
+
+    @Override
+    protected void put(int position, Short value) {
+      buf.putShort(position, value);
+    }
+  }
+
+  private static final Runnable NO_OP = () -> {};
 }

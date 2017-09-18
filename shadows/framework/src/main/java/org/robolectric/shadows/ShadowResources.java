@@ -34,6 +34,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.newInstance;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 
 @Implements(Resources.class)
@@ -89,13 +90,19 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    if (ShadowArscAssetManager.isLegacyAssetManager(realResources.getAssets())) {
+    if (isLegacyAssetManager()) {
       return legacyShadowOf(realResources.getAssets())
           .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
     } else {
       return directlyOn(realResources, Resources.class, "obtainAttributes",
-          ClassParameter.from(AttributeSet.class, set), ClassParameter.from(int[].class, attrs));
+          ClassParameter.from(AttributeSet.class, set),
+          ClassParameter.from(int[].class, attrs)
+      );
     }
+  }
+
+  private boolean isLegacyAssetManager() {
+    return ShadowArscAssetManager.isLegacyAssetManager(realResources.getAssets());
   }
 
   @Implementation
@@ -106,7 +113,7 @@ public class ShadowResources {
 
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    if (ShadowArscAssetManager.isLegacyAssetManager(realResources.getAssets())) {
+    if (isLegacyAssetManager()) {
       ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
 
       TypedResource typedResource = shadowAssetManager.getResourceTable()
@@ -167,7 +174,7 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
-    if (ShadowArscAssetManager.isLegacyAssetManager(realResources.getAssets())) {
+    if (isLegacyAssetManager()) {
       ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
       if (typedArray != null) {

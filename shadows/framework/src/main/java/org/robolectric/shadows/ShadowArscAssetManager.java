@@ -48,6 +48,7 @@ import org.robolectric.res.android.ResTableTheme;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
+import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.res.android.String8;
 import org.robolectric.res.android.XmlAttributeFinder;
 import org.robolectric.shadow.api.Shadow;
@@ -98,7 +99,7 @@ public class ShadowArscAssetManager {
   public static void reset() {
     ShadowAssetManager.reset();
     nativeThemeRegistry.clear();
-    nativeXMLParserRegistry.clear();
+    nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly?
   }
 
   @HiddenApi
@@ -741,7 +742,7 @@ public class ShadowArscAssetManager {
 
     ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
     final ResTable res = theme.getResTable();
-    ResXMLParser xmlParser = nativeXMLParserRegistry.getNativeObject(xmlParserToken);
+    ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
     Ref<ResTableConfig> config = new Ref(new ResTableConfig());
     Ref<ResValue> value = new Ref<>(new ResValue());
 
@@ -983,8 +984,154 @@ public class ShadowArscAssetManager {
   @Implementation
   @HiddenApi
   public final boolean retrieveAttributes(
-      long xmlParser, int[] inAttrs, int[] outValues, int[] outIndices) {
-    throw new UnsupportedOperationException("not yet implemented");
+      long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+    if (xmlParserToken == 0) {
+      throw new NullPointerException("xmlParserToken");
+//      return JNI_FALSE;
+    }
+    if (attrs == null) {
+      throw new NullPointerException("attrs");
+//      return JNI_FALSE;
+    }
+    if (outValues == null) {
+      throw new NullPointerException("out values");
+//      return JNI_FALSE;
+    }
+
+    CppAssetManager am = assetManagerForJavaObject();
+//    if (am == null) {
+//      return JNI_FALSE;
+//    }
+    ResTable res = am.getResources();
+//    ResXMLParser xmlParser = (ResXMLParser*)xmlParserToken;
+    ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
+
+    Ref<ResTableConfig> config = new Ref<>(new ResTableConfig());
+    Ref<ResValue> value = new Ref<>(new ResValue());
+
+//    const jsize NI = env.GetArrayLength(attrs);
+//    const jsize NV = env.GetArrayLength(outValues);
+    final int NI = attrs.length;
+    final int NV = outValues.length;
+    if (NV < (NI*STYLE_NUM_ENTRIES)) {
+      throw new IndexOutOfBoundsException("out values too small");
+//      return JNI_FALSE;
+    }
+
+//    jint* src = (jint*)env.GetPrimitiveArrayCritical(attrs, 0);
+//    if (src == null) {
+//      return JNI_FALSE;
+//    }
+    int[] src = attrs;
+
+//    jint* baseDest = (jint*)env.GetPrimitiveArrayCritical(outValues, 0);
+    int[] baseDest = outValues;
+    int[] dest = baseDest;
+    int destOffset = 0;
+    if (dest == null) {
+//      env.ReleasePrimitiveArrayCritical(attrs, src, 0);
+//      return JNI_FALSE;
+      return false;
+    }
+
+    int[] indices = null;
+    int indicesIdx = 0;
+    if (outIndices != null) {
+      if (outIndices.length > NI) {
+//        indices = (jint*)env.GetPrimitiveArrayCritical(outIndices, 0);
+        indices = outIndices;
+      }
+    }
+
+    // Now lock down the resource object and start pulling stuff from it.
+    res.lock();
+
+    // Retrieve the XML attributes, if requested.
+    final int NX = xmlParser.getAttributeCount();
+    int ix=0;
+    int curXmlAttr = xmlParser.getAttributeNameResID(ix);
+
+    final int kXmlBlock = 0x10000000;
+
+    // Now iterate through all of the attributes that the client has requested,
+    // filling in each with whatever data we can find.
+    int block = 0;
+    Ref<Integer> typeSetFlags = new Ref<>(0);
+    for (int ii=0; ii<NI; ii++) {
+        final int curIdent = (int)src[ii];
+
+      // Try to find a value for this attribute...
+      value.get().dataType = Res_value.TYPE_NULL;
+      value.get().data = Res_value.DATA_NULL_UNDEFINED;
+      typeSetFlags.set(0);
+      config.get().density = 0;
+
+      // Skip through XML attributes until the end or the next possible match.
+      while (ix < NX && curIdent > curXmlAttr) {
+        ix++;
+        curXmlAttr = xmlParser.getAttributeNameResID(ix);
+      }
+      // Retrieve the current XML attribute if it matches, and step to next.
+      if (ix < NX && curIdent == curXmlAttr) {
+        block = kXmlBlock;
+        xmlParser.getAttributeValue(ix, value.get());
+        ix++;
+        curXmlAttr = xmlParser.getAttributeNameResID(ix);
+      }
+
+      //printf("Attribute 0x%08x: type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
+      Ref<Integer> resid = new Ref<>(0);
+      if (value.get().dataType != Res_value.TYPE_NULL) {
+        // Take care of resolving the found resource to its final value.
+        //printf("Resolving attribute reference\n");
+        int newBlock = res.resolveReference(value, block, resid,
+                    typeSetFlags, config);
+        if (kThrowOnBadId) {
+          if (newBlock == BAD_INDEX) {
+            throw new IllegalStateException("Bad resource!");
+//            return false;
+          }
+        }
+        if (newBlock >= 0) block = newBlock;
+      }
+
+      // Deal with the special @null value -- it turns back to TYPE_NULL.
+      if (value.get().dataType == Res_value.TYPE_REFERENCE && value.get().data == 0) {
+        value.get().dataType = Res_value.TYPE_NULL;
+        value.get().data = Res_value.DATA_NULL_UNDEFINED;
+      }
+
+      //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
+
+      // Write the final value back to Java.
+      dest[destOffset + STYLE_TYPE] = value.get().dataType;
+      dest[destOffset + STYLE_DATA] = value.get().data;
+      dest[destOffset + STYLE_ASSET_COOKIE] =
+          block != kXmlBlock ? res.getTableCookie(block) : -1;
+      dest[destOffset + STYLE_RESOURCE_ID] = resid.get();
+      dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
+      dest[destOffset + STYLE_DENSITY] = config.get().density;
+
+      if (indices != null && value.get().dataType != Res_value.TYPE_NULL) {
+        indicesIdx++;
+        indices[indicesIdx] = ii;
+      }
+
+//      dest += STYLE_NUM_ENTRIES;
+      destOffset += STYLE_NUM_ENTRIES;
+    }
+
+    res.unlock();
+
+    if (indices != null) {
+      indices[0] = indicesIdx;
+//      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
+    }
+
+//    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
+//    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
+
+    return true;
   }
 
   @Implementation
@@ -1040,10 +1187,10 @@ public class ShadowArscAssetManager {
 //    final ResTable::bag_entry* endArrayEnt = arrayEnt +
 //        (bagOff >= 0 ? bagOff : 0);
 
-    int i = 0;
+    int destOffset = 0;
     final Ref<Integer> typeSetFlags = new Ref<>(0);
-    while (i < NV /*&& arrayEnt < endArrayEnt*/) {
-      bag_entry curArrayEnt = arrayEnt.get()[i / STYLE_NUM_ENTRIES];
+    while (destOffset < NV /*&& arrayEnt < endArrayEnt*/) {
+      bag_entry curArrayEnt = arrayEnt.get()[destOffset / STYLE_NUM_ENTRIES];
 
       block = curArrayEnt.stringBlock;
       typeSetFlags.set(arrayTypeSetFlags.get());
@@ -1075,24 +1222,24 @@ public class ShadowArscAssetManager {
       //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
 
       // Write the final value back to Java.
-      dest[i + STYLE_TYPE] = value.dataType;
-      dest[i + STYLE_DATA] = value.data;
-      dest[i + STYLE_ASSET_COOKIE] = res.getTableCookie(block);
-      dest[i + STYLE_RESOURCE_ID] = resid.get();
-      dest[i + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
-      dest[i + STYLE_DENSITY] = config.get().density;
+      dest[destOffset + STYLE_TYPE] = value.dataType;
+      dest[destOffset + STYLE_DATA] = value.data;
+      dest[destOffset + STYLE_ASSET_COOKIE] = res.getTableCookie(block);
+      dest[destOffset + STYLE_RESOURCE_ID] = resid.get();
+      dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
+      dest[destOffset + STYLE_DENSITY] = config.get().density;
 //      dest += STYLE_NUM_ENTRIES;
-      i+= STYLE_NUM_ENTRIES;
+      destOffset+= STYLE_NUM_ENTRIES;
 //      arrayEnt++;
     }
 
-    i /= STYLE_NUM_ENTRIES;
+    destOffset /= STYLE_NUM_ENTRIES;
 
     res.unlock();
 
 //    env->ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
 
-    return i;
+    return destOffset;
 
   }
 
