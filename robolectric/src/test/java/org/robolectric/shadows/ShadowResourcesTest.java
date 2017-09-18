@@ -265,13 +265,14 @@ public class ShadowResourcesTest {
     resources.getIntArray(-1);
   }
 
-  // todo: PluralRules.forLocale() returns fewer rules than expected, why? seems to successfully load icudt56b/plurals.res
   @Test
   public void getQuantityString() throws Exception {
-    assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("Howdy");
-    assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("One beer");
-    assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("Two beers");
-    assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("%d beers, yay!");
+    // 0 and 2 should resolve to the 'other' plural in us-en locale aka the 0 and 2 quanitities
+    // specified in the xml should be unused
+    assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("beers");
+    assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("beer");
+    assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("beers");
+    assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("beers");
   }
 
   @Test
