@@ -91,12 +91,7 @@ public class ShadowPowerManager {
   @Implementation(minSdk = M)
   public boolean isIgnoringBatteryOptimizations(String packageName) {
     Boolean result = ignoringBatteryOptimizations.get(packageName);
-
-    if (result == null) {
-      return false;
-    }
-
-    return result;
+    return result == null ? false : result;
   }
 
   public void setIgnoringBatteryOptimizations(String packageName, boolean value) {
