@@ -291,7 +291,7 @@ public String8 append(final String other) {
 String8 getPathLeaf() {
   final int cp;
   final String buf = mString.toString();
-  cp = buf.lastIndexOf(File.pathSeparatorChar);
+  cp = buf.lastIndexOf(File.separatorChar);
   if (cp == -1) {
     return new String8(this);
   } else {
@@ -421,7 +421,7 @@ public String getPathExtension()
 
     String8 string8 = (String8) o;
 
-    return mString != null ? mString.equals(string8.mString) : string8.mString == null;
+    return mString != null ? mString.toString().equals(string8.mString.toString()) : string8.mString == null;
   }
 
   @Override

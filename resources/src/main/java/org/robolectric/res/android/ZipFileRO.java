@@ -168,11 +168,11 @@ public class ZipFileRO {
 
   org.robolectric.res.android.ZipFileRO.ZipEntryRO nextEntry(/*void* */ Enumeration<? extends ZipEntry> cookie)
   {
-    ZipEntryRO zipEntryRO = new ZipEntryRO();
-    zipEntryRO.entry = cookie.nextElement();
-    if (zipEntryRO.entry == null) {
+    if (!cookie.hasMoreElements()) {
       return null;
     }
+    ZipEntryRO zipEntryRO = new ZipEntryRO();
+    zipEntryRO.entry = cookie.nextElement();
     return zipEntryRO;
 //    ZipEntryRO ze = /*reinterpret_cast<ZipEntryRO*>*/(ZipEntryRO) cookie;
 //    int error = Next(ze.cookie, &(ze.entry), &(ze.name));

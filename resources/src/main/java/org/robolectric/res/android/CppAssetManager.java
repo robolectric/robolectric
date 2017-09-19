@@ -26,6 +26,8 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.annotation.Nullable;
+
+import com.google.common.base.Preconditions;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
@@ -996,10 +998,10 @@ public class CppAssetManager {
       synchronized (mLock) {
 
         AssetDir pDir = null;
-        SortedVector<AssetDir.FileInfo> pMergedInfo = null;
+          Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
 
         LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
-        assert (dirName != null);
+        Preconditions.checkNotNull(dirName);
 
         //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
 
@@ -1014,7 +1016,7 @@ public class CppAssetManager {
        *
        * We start with Zip archives, then do loose files.
        */
-        pMergedInfo = new SortedVector<AssetDir.FileInfo>();
+        pMergedInfo = new Ref<>(new SortedVector<AssetDir.FileInfo>());
 
         int i = mAssetPaths.size();
         while (i > 0) {
@@ -1038,7 +1040,7 @@ public class CppAssetManager {
 //        }
 //  #endif
 
-        pDir.setFileList(pMergedInfo);
+        pDir.setFileList(pMergedInfo.get());
         return pDir;
       }
   }
@@ -1100,9 +1102,10 @@ public class CppAssetManager {
    *
    * Returns "false" if we found nothing to contribute.
    */
-  boolean scanAndMergeDirLocked(SortedVector<AssetDir.FileInfo> pMergedInfo,
+  boolean scanAndMergeDirLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
       final asset_path ap, final String rootDir, final String dirName)
   {
+      SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
       assert(pMergedInfo != null);
 
       //printf("scanAndMergeDir: %s %s %s\n", ap.path.string(), rootDir, dirName);
@@ -1154,7 +1157,7 @@ public class CppAssetManager {
           }
       }
 
-      mergeInfoLocked(pMergedInfo, pContents);
+      mergeInfoLocked(pMergedInfoRef, pContents);
 
       return true;
   }
@@ -1229,11 +1232,11 @@ public class CppAssetManager {
    *
    * Returns "false" if we found nothing to contribute.
    */
-  boolean scanAndMergeZipLocked(SortedVector<AssetDir.FileInfo> pMergedInfo,
+  boolean scanAndMergeZipLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo,
       final asset_path ap, final String rootDir, final String baseDirName) {
     ZipFileRO pZip;
     List<String8> dirs = new ArrayList<>();
-    AssetDir.FileInfo info = new FileInfo();
+    //AssetDir.FileInfo info = new FileInfo();
     SortedVector<AssetDir.FileInfo> contents = new SortedVector<>();
     String8 sourceName;
     String8 zipName;
@@ -1279,6 +1282,7 @@ public class CppAssetManager {
 
     ZipEntryRO entry;
     while ((entry = pZip.nextEntry(iterationCookie.get())) != null) {
+
       Ref<String> nameBuf = new Ref<>(null);
 
       if (pZip.getEntryFileName(entry, nameBuf) != 0) {
@@ -1286,7 +1290,12 @@ public class CppAssetManager {
         ALOGE("ARGH: name too long?\n");
         continue;
       }
-      //printf("Comparing %s in %s?\n", nameBuf, dirName.string());
+
+//      System.out.printf("Comparing %s in %s?\n", nameBuf.get(), dirName.string());
+      if (!nameBuf.get().startsWith(dirName.string() + '/')) {
+          // not matching
+          continue;
+      }
       if (dirNameLen == 0 || nameBuf.get().charAt(dirNameLen) == '/') {
         int cp = 0;
         int nextSlashIndex;
@@ -1297,12 +1306,17 @@ public class CppAssetManager {
           cp++;       // advance past the '/'
         }
 
-        nextSlashIndex = nameBuf.get().indexOf(cp, '/');
+        nextSlashIndex = nameBuf.get().indexOf('/', cp);
         //xxx this may break if there are bare directory entries
         if (nextSlashIndex == -1) {
-                  /* this is a file in the requested directory */
-
-          info.set(new String8(nameBuf.get()).getPathLeaf(), FileType.kFileTypeRegular);
+          /* this is a file in the requested directory */
+          String8 fileName = new String8(nameBuf.get()).getPathLeaf();
+          if (fileName.string().isEmpty()) {
+              // ignore
+              continue;
+          }
+          AssetDir.FileInfo info = new FileInfo();
+          info.set(fileName, FileType.kFileTypeRegular);
 
           info.setSourceName(
               createZipSourceNameLocked(zipName, dirName, info.getFileName()));
@@ -1310,13 +1324,13 @@ public class CppAssetManager {
           contents.add(info);
           //printf("FOUND: file '%s'\n", info.getFileName().string());
         } else {
-                  /* this is a subdir; add it if we don't already have it*/
+          /* this is a subdir; add it if we don't already have it*/
           String8 subdirName = new String8(nameBuf.get().substring(cp, nextSlashIndex));
           int j;
           int N = dirs.size();
 
           for (j = 0; j < N; j++) {
-            if (subdirName == dirs.get(j)) {
+            if (subdirName.equals(dirs.get(j))) {
               break;
             }
           }
@@ -1335,6 +1349,7 @@ public class CppAssetManager {
        * Add the set of unique directories.
        */
     for (int i = 0; i < (int) dirs.size(); i++) {
+      AssetDir.FileInfo info = new FileInfo();
       info.set(dirs.get(i), FileType.kFileTypeDirectory);
       info.setSourceName(
           createZipSourceNameLocked(zipName, dirName, info.getFileName()));
@@ -1356,9 +1371,8 @@ public class CppAssetManager {
    * If an entry for a file exists in both "pMergedInfo" and "pContents",
    * we use the newer "pContents" entry.
    */
-  void mergeInfoLocked(SortedVector<AssetDir.FileInfo> pMergedInfo,
-      final SortedVector<AssetDir.FileInfo> pContents)
-  {
+  void mergeInfoLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
+      final SortedVector<AssetDir.FileInfo> pContents) {
       /*
        * Merge what we found in this directory with what we found in
        * other places.
@@ -1383,6 +1397,7 @@ public class CppAssetManager {
       int mergeMax, contMax;
       int mergeIdx, contIdx;
 
+      SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
       pNewSorted = new SortedVector<AssetDir.FileInfo>();
       mergeMax = pMergedInfo.size();
       contMax = pContents.size();
@@ -1419,7 +1434,7 @@ public class CppAssetManager {
       /*
        * Overwrite the "merged" list with the new stuff.
        */
-      pMergedInfo = pNewSorted;
+      pMergedInfoRef.set(pNewSorted);
 
 //  #if 0       // for Vector, rather than SortedVector
 //      int i, j;

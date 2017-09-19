@@ -1,16 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.joinPath;
-
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -19,11 +8,6 @@ import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -37,6 +21,17 @@ import org.robolectric.annotation.Config;
 import org.robolectric.res.android.DataType;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Strings;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(sdk = VERSION_CODES.N_MR1)
@@ -70,33 +65,17 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void assetsPathListing() throws IOException {
-    List<String> files;
-    String testPath;
+    assertThat(assetManager.list("")).containsExactlyInAnyOrder("assetsHome.txt", "docs", "myFont.ttf", "images", "sounds", "webkit");
 
-    testPath = "";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("docs"));
-    assertTrue(files.contains("assetsHome.txt"));
+    assertThat(assetManager.list("docs")).containsExactlyInAnyOrder("extra");
 
-    testPath = "docs";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("extra"));
+    assertThat(assetManager.list("docs/extra")).containsExactlyInAnyOrder("testing");
 
-    testPath = joinPath("docs", "extra");
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("testing"));
+    assertThat(assetManager.list("docs/extra/testing")).containsExactlyInAnyOrder("hello.txt");
 
-    testPath = joinPath("docs", "extra", "testing");
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("hello.txt"));
+    assertThat(assetManager.list("assetsHome.txt")).isEmpty();
 
-    testPath = "assetsHome.txt";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertFalse(files.contains(testPath));
-
-    testPath = "bogus.file";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertEquals(0, files.size());
+    assertThat(assetManager.list("bogus.file")).isEmpty();
   }
 
   @Test
