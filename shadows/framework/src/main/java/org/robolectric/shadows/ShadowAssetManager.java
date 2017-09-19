@@ -139,6 +139,8 @@ public final class ShadowAssetManager {
           return;
         } else if (resName.type.equals("raw")) {
           return;
+        } else if (resName.type.equals("font")) {
+          return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           TypedResource drawableResource = resourceTable.getValue(resName, qualifiers);
