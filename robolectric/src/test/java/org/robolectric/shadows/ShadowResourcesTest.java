@@ -668,14 +668,17 @@ public class ShadowResourcesTest {
   @Test @Config(sdk = 25) // todo: unpin
   public void obtainAttributes_shouldReturnValuesFromAttributeSet() throws Exception {
     AttributeSet attributes = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.title, "A title!")
         .addAttribute(android.R.attr.width, "12")
         .addAttribute(android.R.attr.height, "24")
         .build();
     TypedArray typedArray = resources
-        .obtainAttributes(attributes, new int[]{android.R.attr.width, android.R.attr.height});
+        .obtainAttributes(attributes, new int[]{android.R.attr.title,
+            android.R.attr.width, android.R.attr.height});
 
-    assertThat(typedArray.getInt(0, 0)).isEqualTo(12);
-    assertThat(typedArray.getInt(1, 0)).isEqualTo(24);
+    assertThat(typedArray.getString(0)).isEqualTo("A title!");
+    assertThat(typedArray.getInt(1, 0)).isEqualTo(12);
+    assertThat(typedArray.getInt(2, 0)).isEqualTo(24);
     typedArray.recycle();
   }
 

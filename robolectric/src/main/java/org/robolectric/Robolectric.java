@@ -28,7 +28,6 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.DataType;
-import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
@@ -234,17 +233,15 @@ public class Robolectric {
       buf.position(0);
       buf.get(bytes, 0, size);
 
-//      final int xmlChunkStart = xmlBytes.position();
-//
-//       begin RES_XML_FIRST_CHUNK_TYPE
-//      xmlBytes.putShort((short) RES_XML_FIRST_CHUNK_TYPE) // type
-//          .putShort((short) 8) // headerSize
-//          .putInt(0); // size
-
       Object xmlBlockInstance = ReflectionHelpers
           .callConstructor(xmlBlockClass, ClassParameter.from(byte[].class, bytes));
 
-      return ReflectionHelpers.callInstanceMethod(xmlBlockClass, xmlBlockInstance, "newParser");
+      AttributeSet parser = ReflectionHelpers.callInstanceMethod(xmlBlockClass, xmlBlockInstance,
+          "newParser");
+      ReflectionHelpers.callInstanceMethod(parser, "next");
+      ReflectionHelpers.callInstanceMethod(parser, "next");
+
+      return parser;
     }
   }
 
