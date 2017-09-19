@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
+import android.annotation.NonNull;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -10,8 +12,10 @@ import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.IContentProvider;
+import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
@@ -27,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -40,6 +46,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.NamedStream;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
@@ -56,13 +64,13 @@ public class ShadowContentResolver {
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
-  private final Map<String, List<android.content.ContentProviderOperation>> contentProviderOperations = new HashMap<>();
+  private final Map<String, List<ContentProviderOperation>> contentProviderOperations = new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
+  private final List<UriPermission> uriPermissions = new ArrayList<>();
 
   private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<>();
 
-  private static final Map<String, Map<Account, Status>>  syncableAccounts =
-      new HashMap<>();
+  private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
   private static final Map<String, ContentProvider> providers = new HashMap<>();
   private static boolean masterSyncAutomatically;
 
@@ -343,12 +351,6 @@ public class ShadowContentResolver {
     }
   }
 
-  /**
-   *
-   * @param uri
-   * @param observer
-   * @param syncToNetwork
-   */
   @Implementation
   public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
@@ -359,13 +361,13 @@ public class ShadowContentResolver {
     }
     if (observers != null) {
       for (ContentObserver obs : observers) {
-        if ( obs != null && obs != observer  ) {
-          obs.dispatchChange( false, uri );
+        if (obs != null && obs != observer) {
+          obs.dispatchChange(false, uri);
         }
       }
     }
-    if ( observer != null && observer.deliverSelfNotifications() ) {
-      observer.dispatchChange( true, uri );
+    if (observer != null && observer.deliverSelfNotifications()) {
+      observer.dispatchChange(true, uri);
     }
   }
 
@@ -392,7 +394,7 @@ public class ShadowContentResolver {
     status.syncRequests++;
     status.syncExtras = extras;
   }
-  
+
   @Implementation
   public static void cancelSync(Account account, String authority) {
     Status status = getStatus(account, authority);
@@ -473,20 +475,92 @@ public class ShadowContentResolver {
       if (value instanceof Double) continue;
       if (value instanceof String) continue;
       if (value instanceof Account) continue;
-      throw new IllegalArgumentException("unexpected value type: "
-          + value.getClass().getName());
+      throw new IllegalArgumentException("unexpected value type: " + value.getClass().getName());
     }
   }
 
   @Implementation
   public static void setMasterSyncAutomatically(boolean sync) {
     masterSyncAutomatically = sync;
-
   }
 
   @Implementation
   public static boolean getMasterSyncAutomatically() {
     return masterSyncAutomatically;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public void takePersistableUriPermission(@NonNull Uri uri, int modeFlags) {
+    Objects.requireNonNull(uri, "uri may not be null");
+    modeFlags &= (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+    // If neither read nor write permission is specified there is nothing to do.
+    if (modeFlags == 0) {
+      return;
+    }
+
+    // Attempt to locate an existing record for the uri.
+    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext();) {
+      UriPermission perm = i.next();
+      if (uri.equals(perm.getUri())) {
+        if (perm.isReadPermission()) {
+          modeFlags |= Intent.FLAG_GRANT_READ_URI_PERMISSION;
+        }
+        if (perm.isWritePermission()) {
+          modeFlags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+        }
+        i.remove();
+        break;
+      }
+    }
+
+    addUriPermission(uri, modeFlags);
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public void releasePersistableUriPermission(@NonNull Uri uri, int modeFlags) {
+    Objects.requireNonNull(uri, "uri may not be null");
+    modeFlags &= (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+    // If neither read nor write permission is specified there is nothing to do.
+    if (modeFlags == 0) {
+      return;
+    }
+
+    // Attempt to locate an existing record for the uri.
+    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext();) {
+      UriPermission perm = i.next();
+      if (uri.equals(perm.getUri())) {
+        // Reconstruct the current mode flags.
+        int oldModeFlags = (perm.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0)
+            | (perm.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0);
+
+        // Apply the requested permission change.
+        int newModeFlags = oldModeFlags & ~modeFlags;
+
+        // Update the permission record if a change occurred.
+        if (newModeFlags != oldModeFlags) {
+          i.remove();
+          if (newModeFlags != 0) {
+            addUriPermission(uri, newModeFlags);
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public @NonNull List<UriPermission> getPersistedUriPermissions() {
+    return uriPermissions;
+  }
+
+  private void addUriPermission(@NonNull Uri uri, int modeFlags) {
+    ClassParameter<Uri> p1 = new ClassParameter<>(Uri.class, uri);
+    ClassParameter<Integer> p2 = new ClassParameter<>(int.class, modeFlags);
+    ClassParameter<Long> p3 = new ClassParameter<>(long.class, System.currentTimeMillis());
+    UriPermission perm = ReflectionHelpers.callConstructor(UriPermission.class, p1, p2, p3);
+    uriPermissions.add(perm);
   }
 
   public static ContentProvider getProvider(Uri uri) {
