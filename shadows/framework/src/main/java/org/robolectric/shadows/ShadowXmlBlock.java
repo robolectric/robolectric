@@ -5,8 +5,10 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import android.os.Build.VERSION_CODES;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
+import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.xmlpull.v1.XmlPullParserException;
 
 @Implements(className = "android.content.res.XmlBlock", isInAndroidSdk = false)
@@ -157,7 +159,8 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetAttributeData(long state, int idx) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    return resXMLParser.getAttributeDataType(idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -168,17 +171,34 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetIdAttribute(long state) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    int idx = resXMLParser.indexOfID();
+    return idx >= 0 ? resXMLParser.getAttributeValueStringID(idx) : -1;
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetClassAttribute(long state) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    int idx = resXMLParser.indexOfClass();
+    return idx >= 0 ? resXMLParser.getAttributeValueStringID(idx) : -1;
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetStyleAttribute(long state) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    int idx = resXMLParser.indexOfStyle();
+    if (idx < 0) {
+      return 0;
+    }
+
+    ResValue value = new ResValue();
+    if (resXMLParser.getAttributeValue(idx, value) < 0) {
+      return 0;
+    }
+
+    return value.dataType == Res_value.TYPE_REFERENCE
+        || value.dataType == Res_value.TYPE_ATTRIBUTE
+        ? value.data : 0;
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)

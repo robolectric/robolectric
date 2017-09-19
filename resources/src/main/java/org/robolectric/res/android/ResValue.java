@@ -2,6 +2,8 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Formatter.toHex;
 
+import org.robolectric.res.android.ResourceTypes.Res_value;
+
 
 /**
  * Representation of a value in a resource, supplying type information.
@@ -43,6 +45,11 @@ public final class ResValue {
   }
 
   public void copyFrom_dtoh(ResValue resValue) {
+    this.dataType = resValue.dataType;
+    this.data = resValue.data;
+  }
+
+  public void copyFrom_dtoh(Res_value resValue) {
     this.dataType = resValue.dataType;
     this.data = resValue.data;
   }

@@ -32,7 +32,15 @@ public class XmlPullParserTest {
         assertThat(parser.next()).isEqualTo(XmlPullParser.START_TAG);
 
         assertThat(parser.getName()).isEqualTo("whatever");
-        assertThat(parser.getAttributeCount()).isEqualTo(1);
+        int attributeCount = parser.getAttributeCount();
+        for (int i = 0; i < attributeCount; i++) {
+            System.out.println(parser.getAttributeName(i)
+                + ": value=" + parser.getAttributeValue(i)
+                + " type=" + parser.getAttributeType(i)
+                + " ns=" + parser.getAttributeNamespace(i)
+            );
+        }
+        assertThat(parser.getAttributeCount()).isEqualTo(4);
         assertThat(parser.getAttributeValue(0)).isEqualTo("1111");
         //parser.next();
         //parser.next();

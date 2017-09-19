@@ -687,11 +687,11 @@ public class ShadowResourcesTest {
     AttributeSet attributes = Xml.asAttributeSet(parser);
 
     TypedArray typedArray = resources
-        .obtainAttributes(attributes, new int[]{android.R.attr.scrollbarFadeDuration});
-        //.obtainAttributes(attributes, new int[]{android.R.attr.title, android.R.attr.scrollbarFadeDuration});
+//        .obtainAttributes(attributes, new int[]{android.R.attr.scrollbarFadeDuration});
+        .obtainAttributes(attributes, new int[]{android.R.attr.title, android.R.attr.scrollbarFadeDuration});
 
-    //assertThat(typedArray.getString(0)).isEqualTo("Some string");
-    assertThat(typedArray.getInt(0, 0)).isEqualTo(0xFFFF);
+    assertThat(typedArray.getString(0)).isEqualTo("Some string");
+    assertThat(typedArray.getInt(1, 0)).isEqualTo(0xFFFF);
     typedArray.recycle();
   }
 

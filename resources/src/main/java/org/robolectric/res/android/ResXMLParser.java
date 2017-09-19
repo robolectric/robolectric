@@ -489,7 +489,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     return 0;
   }
 
-  int indexOfID()
+  public int indexOfID()
   {
     if (mEventCode == START_TAG) {
         final int idx = dtohs((new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt)).idIndex);
@@ -498,7 +498,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     return NAME_NOT_FOUND;
   }
 
-  int indexOfClass()
+  public int indexOfClass()
   {
     if (mEventCode == START_TAG) {
         final int idx = dtohs((new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt)).classIndex);
@@ -523,7 +523,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
 
     do {
 //        final ResXMLTree_node next = (ResXMLTree_node)
-//      (((final int8_t*)mCurNode) + dtohl(mCurNode.header().size()));
+//      (((final int8_t*)mCurNode) + dtohl(mCurNode.header.size));
         ResXMLTree_node next = new ResXMLTree_node(mTree.mBuffer.buf, mCurNode.myOffset() + dtohl(mCurNode.header.size));
       if (kDebugXMLNoisy) {
         ALOGI("Next node: prev=%p, next=%p\n", mCurNode, next);

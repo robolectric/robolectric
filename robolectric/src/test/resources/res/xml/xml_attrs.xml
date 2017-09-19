@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <whatever xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="1234px"
+    android:height="1234px"
     android:scrollbarFadeDuration="1111"
+    android:title="Some string"
 />

@@ -295,6 +295,23 @@ public class ResourceTypes {
 //    typedef uint32_t data_type;
     int data;
 
+    public Res_value(ByteBuffer buf, int offset) {
+      this.size = buf.getShort(offset);
+      this.res0 = buf.get(offset + 2);
+      this.dataType = buf.get(offset + 3);
+      this.data = buf.getInt(offset + 4);
+
+      System.out.println("Res_value at " + offset + ":");
+      System.out.println("size = " + size);
+      System.out.println("res0 = " + res0);
+      System.out.println("dataType = " + dataType);
+      System.out.println("data = " + data);
+
+      if (this.res0 != 0) {
+        throw new IllegalStateException("res0 != 0 (" + this.res0 + ")");
+      }
+    }
+
 //  void copyFrom_dtoh(const Res_value& src);
 }
 
@@ -783,16 +800,13 @@ public static class ResTable_ref
     final ResStringPool_ref rawValue;
 
     // Processesd typed value of this attribute.
-    final ResValue typedValue;
+    final Res_value typedValue;
 
     public ResXMLTree_attribute(ByteBuffer buf, int offset) {
       this.ns = new ResStringPool_ref(buf, offset);
       this.name = new ResStringPool_ref(buf, offset + 4);
-      this.rawValue = new ResStringPool_ref(buf, offset + 4);
-
-      int dataType = buf.getInt(offset + 12);
-      int data = buf.getInt(offset + 16);
-      this.typedValue = new ResValue(dataType, data);
+      this.rawValue = new ResStringPool_ref(buf, offset + 8);
+      this.typedValue = new Res_value(buf, offset + 12);
     }
   };
 
