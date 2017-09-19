@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -148,5 +149,16 @@ public class ShadowPowerManagerTest {
     assertThat(shadowLock.getWorkSource()).isNull();
     lock.setWorkSource(workSource);
     assertThat(shadowLock.getWorkSource()).isEqualTo(workSource);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void isIgnoringBatteryOptimizations_shouldGetAndSet() {
+    String packageName = "somepackage";
+    assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isFalse();
+    shadowPowerManager.setIgnoringBatteryOptimizations(packageName, true);
+    assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isTrue();
+    shadowPowerManager.setIgnoringBatteryOptimizations(packageName, false);
+    assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isFalse();
   }
 }
