@@ -8,7 +8,6 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
@@ -156,8 +155,7 @@ public class ShadowNotificationBuilderTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void build_addsActionToNotification() throws Exception {
-    Intent intent = new Intent();
-    PendingIntent action = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, intent, 0);
+    PendingIntent action = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, null, 0);
     Notification notification = builder.addAction(0, "Action", action).build();
 
     assertThat(notification.actions[0].actionIntent).isEqualToComparingFieldByField(action);
