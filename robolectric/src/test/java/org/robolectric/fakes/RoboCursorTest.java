@@ -7,6 +7,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -225,6 +226,15 @@ public class RoboCursorTest {
 
     cursor.moveToPosition(1);
     assertThat(cursor.isLast()).isTrue();
+  }
+
+  @Test
+  public void getExtras_shouldReturnExtras() {
+    Bundle extras = new Bundle();
+    extras.putString("Foo", "Bar");
+    cursor.setExtras(extras);
+    assertThat(cursor.getExtras()).isEqualTo(extras);
+    assertThat(cursor.getExtras().getString("Foo")).isEqualTo("Bar");
   }
 
   private int indexOf(String stringColumn) {
