@@ -111,9 +111,11 @@ $ make -j8 out/target/common/obj/JAVA_LIBRARIES/services_intermediates/classes.j
 ```
 For Oreo:
 Patch this change: https://android-review.googlesource.com/463722
+```
 $ cd external/robolectric && git fetch https://android.googlesource.com/platform/external/robolectric refs/changes/22/463722/1 && git cherry-pick FETCH_HEAD && cd ../..
 $ lunch aosp_x86-eng
 $ make -j8 robolectric_android-all
+```
 
 ## 7. Run build-android.sh
 Signing Artifacts:
