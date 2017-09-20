@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -109,14 +108,12 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldStartPostRun() {
-    Runnable testRun =
-        new Runnable() {
-          @Override
-          public void run() {
-            // Do something...
-            return;
-          }
-        };
+    Runnable testRun = new Runnable() {
+      public void run() {
+        //Do something...
+        return;
+      }
+    };
     assertThat(shadowWebView.getRunFlag()).isFalse();
     shadowWebView.post(testRun);
     assertThat(shadowWebView.getRunFlag()).isTrue();
@@ -260,18 +257,5 @@ public class ShadowWebViewTest {
     webView.setLayoutParams(params);
     assertThat(webView.getLayoutParams()).isSameAs(params);
   }
-
-  @Test
-  public void shouldRecordOnSaveState() {
-    assertThat(shadowWebView.wasSaveStateCalled()).isFalse();
-    webView.saveState(new Bundle());
-    assertThat(shadowWebView.wasSaveStateCalled()).isTrue();
-  }
-
-  @Test
-  public void shouldRecordOnRestoreState() {
-    assertThat(shadowWebView.wasRestoreStateCalled()).isFalse();
-    webView.restoreState(new Bundle());
-    assertThat(shadowWebView.wasRestoreStateCalled()).isTrue();
-  }
+  
 }
