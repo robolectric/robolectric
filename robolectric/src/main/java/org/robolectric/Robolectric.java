@@ -1,6 +1,9 @@
 package org.robolectric;
 
+import static org.robolectric.res.android.ResourceTypes.ANDROID_NS;
+import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE;
+import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
 
 import android.app.Activity;
@@ -12,12 +15,14 @@ import android.content.ContentProvider;
 import android.content.Intent;
 
 import android.util.AttributeSet;
+import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.View;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -25,16 +30,19 @@ import org.robolectric.android.controller.FragmentController;
 import org.robolectric.android.controller.IntentServiceController;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.ResValue;
+import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
+import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.*;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -165,22 +173,46 @@ public class Robolectric {
   }
 
   public static class AttributeSetBuilder {
-    private static final ResName STYLE = ResName.qualifyResName("style", "", "");
+    private static final int STYLE_RES_ID = Integer.MAX_VALUE - 2;
+    private static final int CLASS_RES_ID = Integer.MAX_VALUE - 1;
+    private static final int ID_RES_ID = Integer.MAX_VALUE;
+
     private ResourceTable appResourceTable;
-    private Map<ResName, String> attributeNameToValue = new HashMap<>();
+    private Map<Integer, AttrInfo> attrToValue = new TreeMap<>();
+
+    static class AttrInfo {
+      private final String value;
+
+      public AttrInfo(String value) {
+        this.value = value;
+      }
+
+      public AttrInfo(int value) {
+        this.value = "@" + value;
+      }
+    }
 
     AttributeSetBuilder(ResourceTable resourceTable) {
       this.appResourceTable = resourceTable;
     }
 
     public AttributeSetBuilder addAttribute(int resId, String value) {
-      ResName resName = appResourceTable.getResName(resId);
-      attributeNameToValue.put(resName, value);
+      attrToValue.put(resId, new AttrInfo(value));
       return this;
     }
 
     public AttributeSetBuilder setStyleAttribute(String value) {
-      attributeNameToValue.put(STYLE, value);
+      attrToValue.put(STYLE_RES_ID, new AttrInfo(value));
+      return this;
+    }
+
+    public AttributeSetBuilder setClassAttribute(String value) {
+      attrToValue.put(CLASS_RES_ID, new AttrInfo(value));
+      return this;
+    }
+
+    public AttributeSetBuilder setIdAttribute(String value) {
+      attrToValue.put(ID_RES_ID, new AttrInfo(value));
       return this;
     }
 
@@ -199,33 +231,100 @@ public class Robolectric {
       ByteBuffer buf = ByteBuffer.allocate(16 * 1024).order(ByteOrder.LITTLE_ENDIAN);
       Writer resStringPoolWriter = new ResStringPool_header.Writer();
 
-      ResXMLTree_header.write(buf, resStringPoolWriter, () -> {
-        ResXMLTree_node.write(buf, RES_XML_START_ELEMENT_TYPE, () -> {
-          new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter, null, "dummy") {{
-            for (Entry<ResName, String> entry : attributeNameToValue.entrySet()) {
-              ResName resName = entry.getKey();
-              String value = entry.getValue();
-              DataType type;
-              if (value == null) {
+      final SparseArray<Integer> resIds = new SparseArray<>();
+      final int[] maxAttrNameIndex = new int[] { 0 };
+
+      ResXMLTree_attrExt.Writer dummyStart = new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter,
+          null, "dummy") {
+        {
+          for (Entry<Integer, AttrInfo> entry : attrToValue.entrySet()) {
+            Integer attrId = entry.getKey();
+            String attrNs = "";
+            String attrName;
+            ResName attrResName = null;
+            switch (attrId) {
+              case STYLE_RES_ID:
+                attrId = null;
+                attrName = "style";
+                break;
+
+              case CLASS_RES_ID:
+                attrId = null;
+                attrName = "class";
+                break;
+
+              case ID_RES_ID:
+                attrId = null;
+                attrName = "id";
+                break;
+
+              default:
+                attrResName = appResourceTable.getResName(attrId);
+                attrNs = (attrResName.packageName.equals("android")) ? ANDROID_NS : AUTO_NS;
+                attrName = attrResName.name;
+            }
+
+            String value = entry.getValue().value;
+            DataType type;
+            int valueInt = 0;
+
+            if (attrResName != null) {
+              ResourceTable resourceTable = RuntimeEnvironment.getAppResourceTable();
+              TypedValue outValue = new TypedValue();
+              AttributeResource attributeResource = new AttributeResource(attrResName, value,
+                  RuntimeEnvironment.application.getPackageName());
+              Converter.convert(resourceTable, attributeResource, outValue,
+                  RuntimeEnvironment.getQualifiers(), true);
+
+              type = DataType.fromCode(outValue.type);
+              value = (String) outValue.string;
+              valueInt = outValue.data;
+            } else {
+              if (value == null || AttributeResource.isNull(value)) {
                 type = DataType.NULL;
-              } else if (value.startsWith("@")) {
+              } else if (AttributeResource.isResourceReference(value)) {
+                ResName resourceReference = AttributeResource
+                    .getResourceReference(value, "unknown", "unknown");
+                Integer valueResId = appResourceTable.getResourceId(resourceReference);
                 type = DataType.REFERENCE;
+                valueInt = valueResId;
               } else {
                 type = DataType.STRING;
-              }
-
-              ResValue resValue = new ResValue(type.code(), resStringPoolWriter.string(value));
-              if (resName.equals(STYLE)) {
-                attr(null, "style", value, resValue);
-              } else {
-                attr(resName.packageName, resName.name, value, resValue);
+                valueInt = resStringPoolWriter.string(value);
               }
             }
-          }}.write();
-        });
-        ResXMLTree_node.write(buf, RES_XML_END_ELEMENT_TYPE, () -> {
-          ResXMLTree_endElementExt.write(buf, resStringPoolWriter, null, "dummy");
-        });
+
+            System.out.println(attrName + " type " + type + " value " + valueInt);
+            ResValue resValue = new ResValue(type.code(), valueInt);
+
+            int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
+            attr(resStringPoolWriter.string(attrNs), attrNameIndex,
+                resStringPoolWriter.string(value), resValue, attrNs + ":" + attrName);
+            if (attrId != null) {
+              resIds.put(attrNameIndex, attrId);
+            }
+            maxAttrNameIndex[0] = Math.max(maxAttrNameIndex[0], attrNameIndex);
+          }
+        }
+      };
+
+      ResXMLTree_endElementExt.Writer dummyEnd =
+          new ResXMLTree_endElementExt.Writer(buf, resStringPoolWriter, null, "dummy");
+
+      int finalMaxAttrNameIndex = maxAttrNameIndex[0];
+      ResXMLTree_header.write(buf, resStringPoolWriter, () -> {
+        if (finalMaxAttrNameIndex > 0) {
+          ResChunk_header.write(buf, (short) RES_XML_RESOURCE_MAP_TYPE, () -> {}, () -> {
+            // not particularly compact, but no big deal for our purposes...
+            for (int i = 0; i < finalMaxAttrNameIndex; i++) {
+              Integer value = resIds.get(i);
+              buf.putInt(value == null ? 0 : value);
+            }
+          });
+        }
+
+        ResXMLTree_node.write(buf, RES_XML_START_ELEMENT_TYPE, dummyStart::write);
+        ResXMLTree_node.write(buf, RES_XML_END_ELEMENT_TYPE, dummyEnd::write);
       });
 
       int size = buf.position();

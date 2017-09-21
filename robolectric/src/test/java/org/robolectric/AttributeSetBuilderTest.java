@@ -1,16 +1,15 @@
 package org.robolectric;
 
-import android.os.Build;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
+
 import android.util.AttributeSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.res.AttributeResource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}
@@ -258,5 +257,26 @@ public class AttributeSetBuilderTest {
         .build();
 
     assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(R.attr.aspectRatio);
+  }
+
+  @Test
+  public void shouldReturnAttributesInOrderOfNameResId() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.height, "1px")
+        .addAttribute(R.attr.animalStyle, "meow")
+        .addAttribute(android.R.attr.width, "1px")
+        .build();
+
+    assertThat(asList(
+        roboAttributeSet.getAttributeName(0),
+        roboAttributeSet.getAttributeName(1),
+        roboAttributeSet.getAttributeName(2)
+    )).containsExactly("height", "width", "animalStyle");
+
+    assertThat(asList(
+        roboAttributeSet.getAttributeNameResource(0),
+        roboAttributeSet.getAttributeNameResource(1),
+        roboAttributeSet.getAttributeNameResource(2)
+    )).containsExactly(android.R.attr.height, android.R.attr.width, R.attr.animalStyle);
   }
 }

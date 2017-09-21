@@ -819,6 +819,1054 @@ public class ResTable {
     return 0;
   }
 
+//bool ResTable::expandResourceRef(const char16_t* refStr, size_t refLen,
+//                                 String16* outPackage,
+//                                 String16* outType,
+//                                 String16* outName,
+//                                 const String16* defType,
+//                                 const String16* defPackage,
+//                                 const char** outErrorMsg,
+//                                 bool* outPublicOnly)
+//{
+//    const char16_t* packageEnd = NULL;
+//    const char16_t* typeEnd = NULL;
+//    const char16_t* p = refStr;
+//    const char16_t* const end = p + refLen;
+//    while (p < end) {
+//        if (*p == ':') packageEnd = p;
+//        else if (*p == '/') {
+//            typeEnd = p;
+//            break;
+//        }
+//        p++;
+//    }
+//    p = refStr;
+//    if (*p == '@') p++;
+//
+//    if (outPublicOnly != NULL) {
+//        *outPublicOnly = true;
+//    }
+//    if (*p == '*') {
+//        p++;
+//        if (outPublicOnly != NULL) {
+//            *outPublicOnly = false;
+//        }
+//    }
+//
+//    if (packageEnd) {
+//        *outPackage = String16(p, packageEnd-p);
+//        p = packageEnd+1;
+//    } else {
+//        if (!defPackage) {
+//            if (outErrorMsg) {
+//                *outErrorMsg = "No resource package specified";
+//            }
+//            return false;
+//        }
+//        *outPackage = *defPackage;
+//    }
+//    if (typeEnd) {
+//        *outType = String16(p, typeEnd-p);
+//        p = typeEnd+1;
+//    } else {
+//        if (!defType) {
+//            if (outErrorMsg) {
+//                *outErrorMsg = "No resource type specified";
+//            }
+//            return false;
+//        }
+//        *outType = *defType;
+//    }
+//    *outName = String16(p, end-p);
+//    if(**outPackage == 0) {
+//        if(outErrorMsg) {
+//            *outErrorMsg = "Resource package cannot be an empty string";
+//        }
+//        return false;
+//    }
+//    if(**outType == 0) {
+//        if(outErrorMsg) {
+//            *outErrorMsg = "Resource type cannot be an empty string";
+//        }
+//        return false;
+//    }
+//    if(**outName == 0) {
+//        if(outErrorMsg) {
+//            *outErrorMsg = "Resource id cannot be an empty string";
+//        }
+//        return false;
+//    }
+//    return true;
+//}
+//
+//static uint32_t get_hex(char c, bool* outError)
+//{
+//    if (c >= '0' && c <= '9') {
+//        return c - '0';
+//    } else if (c >= 'a' && c <= 'f') {
+//        return c - 'a' + 0xa;
+//    } else if (c >= 'A' && c <= 'F') {
+//        return c - 'A' + 0xa;
+//    }
+//    *outError = true;
+//    return 0;
+//}
+//
+//struct unit_entry
+//{
+//    const char* name;
+//    size_t len;
+//    uint8_t type;
+//    uint32_t unit;
+//    float scale;
+//};
+//
+//static const unit_entry unitNames[] = {
+//    { "px", strlen("px"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_PX, 1.0f },
+//    { "dip", strlen("dip"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_DIP, 1.0f },
+//    { "dp", strlen("dp"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_DIP, 1.0f },
+//    { "sp", strlen("sp"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_SP, 1.0f },
+//    { "pt", strlen("pt"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_PT, 1.0f },
+//    { "in", strlen("in"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_IN, 1.0f },
+//    { "mm", strlen("mm"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_MM, 1.0f },
+//    { "%", strlen("%"), Res_value::TYPE_FRACTION, Res_value::COMPLEX_UNIT_FRACTION, 1.0f/100 },
+//    { "%p", strlen("%p"), Res_value::TYPE_FRACTION, Res_value::COMPLEX_UNIT_FRACTION_PARENT, 1.0f/100 },
+//    { NULL, 0, 0, 0, 0 }
+//};
+//
+//static bool parse_unit(const char* str, Res_value* outValue,
+//                       float* outScale, const char** outEnd)
+//{
+//    const char* end = str;
+//    while (*end != 0 && !isspace((unsigned char)*end)) {
+//        end++;
+//    }
+//    const size_t len = end-str;
+//
+//    const char* realEnd = end;
+//    while (*realEnd != 0 && isspace((unsigned char)*realEnd)) {
+//        realEnd++;
+//    }
+//    if (*realEnd != 0) {
+//        return false;
+//    }
+//
+//    const unit_entry* cur = unitNames;
+//    while (cur->name) {
+//        if (len == cur->len && strncmp(cur->name, str, len) == 0) {
+//            outValue->dataType = cur->type;
+//            outValue->data = cur->unit << Res_value::COMPLEX_UNIT_SHIFT;
+//            *outScale = cur->scale;
+//            *outEnd = end;
+//            //printf("Found unit %s for %s\n", cur->name, str);
+//            return true;
+//        }
+//        cur++;
+//    }
+//
+//    return false;
+//}
+//
+//bool U16StringToInt(const char16_t* s, size_t len, Res_value* outValue)
+//{
+//    while (len > 0 && isspace16(*s)) {
+//        s++;
+//        len--;
+//    }
+//
+//    if (len <= 0) {
+//        return false;
+//    }
+//
+//    size_t i = 0;
+//    int64_t val = 0;
+//    bool neg = false;
+//
+//    if (*s == '-') {
+//        neg = true;
+//        i++;
+//    }
+//
+//    if (s[i] < '0' || s[i] > '9') {
+//        return false;
+//    }
+//
+//    static_assert(std::is_same<uint32_t, Res_value::data_type>::value,
+//                  "Res_value::data_type has changed. The range checks in this "
+//                  "function are no longer correct.");
+//
+//    // Decimal or hex?
+//    bool isHex;
+//    if (len > 1 && s[i] == '0' && s[i+1] == 'x') {
+//        isHex = true;
+//        i += 2;
+//
+//        if (neg) {
+//            return false;
+//        }
+//
+//        if (i == len) {
+//            // Just u"0x"
+//            return false;
+//        }
+//
+//        bool error = false;
+//        while (i < len && !error) {
+//            val = (val*16) + get_hex(s[i], &error);
+//            i++;
+//
+//            if (val > std::numeric_limits<uint32_t>::max()) {
+//                return false;
+//            }
+//        }
+//        if (error) {
+//            return false;
+//        }
+//    } else {
+//        isHex = false;
+//        while (i < len) {
+//            if (s[i] < '0' || s[i] > '9') {
+//                return false;
+//            }
+//            val = (val*10) + s[i]-'0';
+//            i++;
+//
+//            if ((neg && -val < std::numeric_limits<int32_t>::min()) ||
+//                (!neg && val > std::numeric_limits<int32_t>::max())) {
+//                return false;
+//            }
+//        }
+//    }
+//
+//    if (neg) val = -val;
+//
+//    while (i < len && isspace16(s[i])) {
+//        i++;
+//    }
+//
+//    if (i != len) {
+//        return false;
+//    }
+//
+//    if (outValue) {
+//        outValue->dataType =
+//            isHex ? outValue->TYPE_INT_HEX : outValue->TYPE_INT_DEC;
+//        outValue->data = static_cast<Res_value::data_type>(val);
+//    }
+//    return true;
+//}
+//
+//bool ResTable::stringToInt(const char16_t* s, size_t len, Res_value* outValue)
+//{
+//    return U16StringToInt(s, len, outValue);
+//}
+//
+//bool ResTable::stringToFloat(const char16_t* s, size_t len, Res_value* outValue)
+//{
+//    while (len > 0 && isspace16(*s)) {
+//        s++;
+//        len--;
+//    }
+//
+//    if (len <= 0) {
+//        return false;
+//    }
+//
+//    char buf[128];
+//    int i=0;
+//    while (len > 0 && *s != 0 && i < 126) {
+//        if (*s > 255) {
+//            return false;
+//        }
+//        buf[i++] = *s++;
+//        len--;
+//    }
+//
+//    if (len > 0) {
+//        return false;
+//    }
+//    if ((buf[0] < '0' || buf[0] > '9') && buf[0] != '.' && buf[0] != '-' && buf[0] != '+') {
+//        return false;
+//    }
+//
+//    buf[i] = 0;
+//    const char* end;
+//    float f = strtof(buf, (char**)&end);
+//
+//    if (*end != 0 && !isspace((unsigned char)*end)) {
+//        // Might be a unit...
+//        float scale;
+//        if (parse_unit(end, outValue, &scale, &end)) {
+//            f *= scale;
+//            const bool neg = f < 0;
+//            if (neg) f = -f;
+//            uint64_t bits = (uint64_t)(f*(1<<23)+.5f);
+//            uint32_t radix;
+//            uint32_t shift;
+//            if ((bits&0x7fffff) == 0) {
+//                // Always use 23p0 if there is no fraction, just to make
+//                // things easier to read.
+//                radix = Res_value::COMPLEX_RADIX_23p0;
+//                shift = 23;
+//            } else if ((bits&0xffffffffff800000LL) == 0) {
+//                // Magnitude is zero -- can fit in 0 bits of precision.
+//                radix = Res_value::COMPLEX_RADIX_0p23;
+//                shift = 0;
+//            } else if ((bits&0xffffffff80000000LL) == 0) {
+//                // Magnitude can fit in 8 bits of precision.
+//                radix = Res_value::COMPLEX_RADIX_8p15;
+//                shift = 8;
+//            } else if ((bits&0xffffff8000000000LL) == 0) {
+//                // Magnitude can fit in 16 bits of precision.
+//                radix = Res_value::COMPLEX_RADIX_16p7;
+//                shift = 16;
+//            } else {
+//                // Magnitude needs entire range, so no fractional part.
+//                radix = Res_value::COMPLEX_RADIX_23p0;
+//                shift = 23;
+//            }
+//            int32_t mantissa = (int32_t)(
+//                (bits>>shift) & Res_value::COMPLEX_MANTISSA_MASK);
+//            if (neg) {
+//                mantissa = (-mantissa) & Res_value::COMPLEX_MANTISSA_MASK;
+//            }
+//            outValue->data |=
+//                (radix<<Res_value::COMPLEX_RADIX_SHIFT)
+//                | (mantissa<<Res_value::COMPLEX_MANTISSA_SHIFT);
+//            //printf("Input value: %f 0x%016Lx, mult: %f, radix: %d, shift: %d, final: 0x%08x\n",
+//            //       f * (neg ? -1 : 1), bits, f*(1<<23),
+//            //       radix, shift, outValue->data);
+//            return true;
+//        }
+//        return false;
+//    }
+//
+//    while (*end != 0 && isspace((unsigned char)*end)) {
+//        end++;
+//    }
+//
+//    if (*end == 0) {
+//        if (outValue) {
+//            outValue->dataType = outValue->TYPE_FLOAT;
+//            *(float*)(&outValue->data) = f;
+//            return true;
+//        }
+//    }
+//
+//    return false;
+//}
+//
+//bool ResTable::stringToValue(Res_value* outValue, String16* outString,
+//                             const char16_t* s, size_t len,
+//                             bool preserveSpaces, bool coerceType,
+//                             uint32_t attrID,
+//                             const String16* defType,
+//                             const String16* defPackage,
+//                             Accessor* accessor,
+//                             void* accessorCookie,
+//                             uint32_t attrType,
+//                             bool enforcePrivate) const
+//{
+//    bool localizationSetting = accessor != NULL && accessor->getLocalizationSetting();
+//    const char* errorMsg = NULL;
+//
+//    outValue->size = sizeof(Res_value);
+//    outValue->res0 = 0;
+//
+//    // First strip leading/trailing whitespace.  Do this before handling
+//    // escapes, so they can be used to force whitespace into the string.
+//    if (!preserveSpaces) {
+//        while (len > 0 && isspace16(*s)) {
+//            s++;
+//            len--;
+//        }
+//        while (len > 0 && isspace16(s[len-1])) {
+//            len--;
+//        }
+//        // If the string ends with '\', then we keep the space after it.
+//        if (len > 0 && s[len-1] == '\\' && s[len] != 0) {
+//            len++;
+//        }
+//    }
+//
+//    //printf("Value for: %s\n", String8(s, len).string());
+//
+//    uint32_t l10nReq = ResTable_map::L10N_NOT_REQUIRED;
+//    uint32_t attrMin = 0x80000000, attrMax = 0x7fffffff;
+//    bool fromAccessor = false;
+//    if (attrID != 0 && !Res_INTERNALID(attrID)) {
+//        const ssize_t p = getResourcePackageIndex(attrID);
+//        const bag_entry* bag;
+//        ssize_t cnt = p >= 0 ? lockBag(attrID, &bag) : -1;
+//        //printf("For attr 0x%08x got bag of %d\n", attrID, cnt);
+//        if (cnt >= 0) {
+//            while (cnt > 0) {
+//                //printf("Entry 0x%08x = 0x%08x\n", bag->map.name.ident, bag->map.value.data);
+//                switch (bag->map.name.ident) {
+//                case ResTable_map::ATTR_TYPE:
+//                    attrType = bag->map.value.data;
+//                    break;
+//                case ResTable_map::ATTR_MIN:
+//                    attrMin = bag->map.value.data;
+//                    break;
+//                case ResTable_map::ATTR_MAX:
+//                    attrMax = bag->map.value.data;
+//                    break;
+//                case ResTable_map::ATTR_L10N:
+//                    l10nReq = bag->map.value.data;
+//                    break;
+//                }
+//                bag++;
+//                cnt--;
+//            }
+//            unlockBag(bag);
+//        } else if (accessor && accessor->getAttributeType(attrID, &attrType)) {
+//            fromAccessor = true;
+//            if (attrType == ResTable_map::TYPE_ENUM
+//                    || attrType == ResTable_map::TYPE_FLAGS
+//                    || attrType == ResTable_map::TYPE_INTEGER) {
+//                accessor->getAttributeMin(attrID, &attrMin);
+//                accessor->getAttributeMax(attrID, &attrMax);
+//            }
+//            if (localizationSetting) {
+//                l10nReq = accessor->getAttributeL10N(attrID);
+//            }
+//        }
+//    }
+//
+//    const bool canStringCoerce =
+//        coerceType && (attrType&ResTable_map::TYPE_STRING) != 0;
+//
+//    if (*s == '@') {
+//        outValue->dataType = outValue->TYPE_REFERENCE;
+//
+//        // Note: we don't check attrType here because the reference can
+//        // be to any other type; we just need to count on the client making
+//        // sure the referenced type is correct.
+//
+//        //printf("Looking up ref: %s\n", String8(s, len).string());
+//
+//        // It's a reference!
+//        if (len == 5 && s[1]=='n' && s[2]=='u' && s[3]=='l' && s[4]=='l') {
+//            // Special case @null as undefined. This will be converted by
+//            // AssetManager to TYPE_NULL with data DATA_NULL_UNDEFINED.
+//            outValue->data = 0;
+//            return true;
+//        } else if (len == 6 && s[1]=='e' && s[2]=='m' && s[3]=='p' && s[4]=='t' && s[5]=='y') {
+//            // Special case @empty as explicitly defined empty value.
+//            outValue->dataType = Res_value::TYPE_NULL;
+//            outValue->data = Res_value::DATA_NULL_EMPTY;
+//            return true;
+//        } else {
+//            bool createIfNotFound = false;
+//            const char16_t* resourceRefName;
+//            int resourceNameLen;
+//            if (len > 2 && s[1] == '+') {
+//                createIfNotFound = true;
+//                resourceRefName = s + 2;
+//                resourceNameLen = len - 2;
+//            } else if (len > 2 && s[1] == '*') {
+//                enforcePrivate = false;
+//                resourceRefName = s + 2;
+//                resourceNameLen = len - 2;
+//            } else {
+//                createIfNotFound = false;
+//                resourceRefName = s + 1;
+//                resourceNameLen = len - 1;
+//            }
+//            String16 package, type, name;
+//            if (!expandResourceRef(resourceRefName,resourceNameLen, &package, &type, &name,
+//                                   defType, defPackage, &errorMsg)) {
+//                if (accessor != NULL) {
+//                    accessor->reportError(accessorCookie, errorMsg);
+//                }
+//                return false;
+//            }
+//
+//            uint32_t specFlags = 0;
+//            uint32_t rid = identifierForName(name.string(), name.size(), type.string(),
+//                    type.size(), package.string(), package.size(), &specFlags);
+//            if (rid != 0) {
+//                if (enforcePrivate) {
+//                    if (accessor == NULL || accessor->getAssetsPackage() != package) {
+//                        if ((specFlags&ResTable_typeSpec::SPEC_PUBLIC) == 0) {
+//                            if (accessor != NULL) {
+//                                accessor->reportError(accessorCookie, "Resource is not public.");
+//                            }
+//                            return false;
+//                        }
+//                    }
+//                }
+//
+//                if (accessor) {
+//                    rid = Res_MAKEID(
+//                        accessor->getRemappedPackage(Res_GETPACKAGE(rid)),
+//                        Res_GETTYPE(rid), Res_GETENTRY(rid));
+//                    if (kDebugTableNoisy) {
+//                        ALOGI("Incl %s:%s/%s: 0x%08x\n",
+//                                String8(package).string(), String8(type).string(),
+//                                String8(name).string(), rid);
+//                    }
+//                }
+//
+//                uint32_t packageId = Res_GETPACKAGE(rid) + 1;
+//                if (packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
+//                    outValue->dataType = Res_value::TYPE_DYNAMIC_REFERENCE;
+//                }
+//                outValue->data = rid;
+//                return true;
+//            }
+//
+//            if (accessor) {
+//                uint32_t rid = accessor->getCustomResourceWithCreation(package, type, name,
+//                                                                       createIfNotFound);
+//                if (rid != 0) {
+//                    if (kDebugTableNoisy) {
+//                        ALOGI("Pckg %s:%s/%s: 0x%08x\n",
+//                                String8(package).string(), String8(type).string(),
+//                                String8(name).string(), rid);
+//                    }
+//                    uint32_t packageId = Res_GETPACKAGE(rid) + 1;
+//                    if (packageId == 0x00) {
+//                        outValue->data = rid;
+//                        outValue->dataType = Res_value::TYPE_DYNAMIC_REFERENCE;
+//                        return true;
+//                    } else if (packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
+//                        // We accept packageId's generated as 0x01 in order to support
+//                        // building the android system resources
+//                        outValue->data = rid;
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (accessor != NULL) {
+//            accessor->reportError(accessorCookie, "No resource found that matches the given name");
+//        }
+//        return false;
+//    }
+//
+//    // if we got to here, and localization is required and it's not a reference,
+//    // complain and bail.
+//    if (l10nReq == ResTable_map::L10N_SUGGESTED) {
+//        if (localizationSetting) {
+//            if (accessor != NULL) {
+//                accessor->reportError(accessorCookie, "This attribute must be localized.");
+//            }
+//        }
+//    }
+//
+//    if (*s == '#') {
+//        // It's a color!  Convert to an integer of the form 0xaarrggbb.
+//        uint32_t color = 0;
+//        bool error = false;
+//        if (len == 4) {
+//            outValue->dataType = outValue->TYPE_INT_COLOR_RGB4;
+//            color |= 0xFF000000;
+//            color |= get_hex(s[1], &error) << 20;
+//            color |= get_hex(s[1], &error) << 16;
+//            color |= get_hex(s[2], &error) << 12;
+//            color |= get_hex(s[2], &error) << 8;
+//            color |= get_hex(s[3], &error) << 4;
+//            color |= get_hex(s[3], &error);
+//        } else if (len == 5) {
+//            outValue->dataType = outValue->TYPE_INT_COLOR_ARGB4;
+//            color |= get_hex(s[1], &error) << 28;
+//            color |= get_hex(s[1], &error) << 24;
+//            color |= get_hex(s[2], &error) << 20;
+//            color |= get_hex(s[2], &error) << 16;
+//            color |= get_hex(s[3], &error) << 12;
+//            color |= get_hex(s[3], &error) << 8;
+//            color |= get_hex(s[4], &error) << 4;
+//            color |= get_hex(s[4], &error);
+//        } else if (len == 7) {
+//            outValue->dataType = outValue->TYPE_INT_COLOR_RGB8;
+//            color |= 0xFF000000;
+//            color |= get_hex(s[1], &error) << 20;
+//            color |= get_hex(s[2], &error) << 16;
+//            color |= get_hex(s[3], &error) << 12;
+//            color |= get_hex(s[4], &error) << 8;
+//            color |= get_hex(s[5], &error) << 4;
+//            color |= get_hex(s[6], &error);
+//        } else if (len == 9) {
+//            outValue->dataType = outValue->TYPE_INT_COLOR_ARGB8;
+//            color |= get_hex(s[1], &error) << 28;
+//            color |= get_hex(s[2], &error) << 24;
+//            color |= get_hex(s[3], &error) << 20;
+//            color |= get_hex(s[4], &error) << 16;
+//            color |= get_hex(s[5], &error) << 12;
+//            color |= get_hex(s[6], &error) << 8;
+//            color |= get_hex(s[7], &error) << 4;
+//            color |= get_hex(s[8], &error);
+//        } else {
+//            error = true;
+//        }
+//        if (!error) {
+//            if ((attrType&ResTable_map::TYPE_COLOR) == 0) {
+//                if (!canStringCoerce) {
+//                    if (accessor != NULL) {
+//                        accessor->reportError(accessorCookie,
+//                                "Color types not allowed");
+//                    }
+//                    return false;
+//                }
+//            } else {
+//                outValue->data = color;
+//                //printf("Color input=%s, output=0x%x\n", String8(s, len).string(), color);
+//                return true;
+//            }
+//        } else {
+//            if ((attrType&ResTable_map::TYPE_COLOR) != 0) {
+//                if (accessor != NULL) {
+//                    accessor->reportError(accessorCookie, "Color value not valid --"
+//                            " must be #rgb, #argb, #rrggbb, or #aarrggbb");
+//                }
+//                #if 0
+//                fprintf(stderr, "%s: Color ID %s value %s is not valid\n",
+//                        "Resource File", //(const char*)in->getPrintableSource(),
+//                        String8(*curTag).string(),
+//                        String8(s, len).string());
+//                #endif
+//                return false;
+//            }
+//        }
+//    }
+//
+//    if (*s == '?') {
+//        outValue->dataType = outValue->TYPE_ATTRIBUTE;
+//
+//        // Note: we don't check attrType here because the reference can
+//        // be to any other type; we just need to count on the client making
+//        // sure the referenced type is correct.
+//
+//        //printf("Looking up attr: %s\n", String8(s, len).string());
+//
+//        static const String16 attr16("attr");
+//        String16 package, type, name;
+//        if (!expandResourceRef(s+1, len-1, &package, &type, &name,
+//                               &attr16, defPackage, &errorMsg)) {
+//            if (accessor != NULL) {
+//                accessor->reportError(accessorCookie, errorMsg);
+//            }
+//            return false;
+//        }
+//
+//        //printf("Pkg: %s, Type: %s, Name: %s\n",
+//        //       String8(package).string(), String8(type).string(),
+//        //       String8(name).string());
+//        uint32_t specFlags = 0;
+//        uint32_t rid =
+//            identifierForName(name.string(), name.size(),
+//                              type.string(), type.size(),
+//                              package.string(), package.size(), &specFlags);
+//        if (rid != 0) {
+//            if (enforcePrivate) {
+//                if ((specFlags&ResTable_typeSpec::SPEC_PUBLIC) == 0) {
+//                    if (accessor != NULL) {
+//                        accessor->reportError(accessorCookie, "Attribute is not public.");
+//                    }
+//                    return false;
+//                }
+//            }
+//
+//            if (accessor) {
+//                rid = Res_MAKEID(
+//                    accessor->getRemappedPackage(Res_GETPACKAGE(rid)),
+//                    Res_GETTYPE(rid), Res_GETENTRY(rid));
+//            }
+//
+//            uint32_t packageId = Res_GETPACKAGE(rid) + 1;
+//            if (packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
+//                outValue->dataType = Res_value::TYPE_DYNAMIC_ATTRIBUTE;
+//            }
+//            outValue->data = rid;
+//            return true;
+//        }
+//
+//        if (accessor) {
+//            uint32_t rid = accessor->getCustomResource(package, type, name);
+//            if (rid != 0) {
+//                uint32_t packageId = Res_GETPACKAGE(rid) + 1;
+//                if (packageId == 0x00) {
+//                    outValue->data = rid;
+//                    outValue->dataType = Res_value::TYPE_DYNAMIC_ATTRIBUTE;
+//                    return true;
+//                } else if (packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
+//                    // We accept packageId's generated as 0x01 in order to support
+//                    // building the android system resources
+//                    outValue->data = rid;
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        if (accessor != NULL) {
+//            accessor->reportError(accessorCookie, "No resource found that matches the given name");
+//        }
+//        return false;
+//    }
+//
+//    if (stringToInt(s, len, outValue)) {
+//        if ((attrType&ResTable_map::TYPE_INTEGER) == 0) {
+//            // If this type does not allow integers, but does allow floats,
+//            // fall through on this error case because the float type should
+//            // be able to accept any integer value.
+//            if (!canStringCoerce && (attrType&ResTable_map::TYPE_FLOAT) == 0) {
+//                if (accessor != NULL) {
+//                    accessor->reportError(accessorCookie, "Integer types not allowed");
+//                }
+//                return false;
+//            }
+//        } else {
+//            if (((int32_t)outValue->data) < ((int32_t)attrMin)
+//                    || ((int32_t)outValue->data) > ((int32_t)attrMax)) {
+//                if (accessor != NULL) {
+//                    accessor->reportError(accessorCookie, "Integer value out of range");
+//                }
+//                return false;
+//            }
+//            return true;
+//        }
+//    }
+//
+//    if (stringToFloat(s, len, outValue)) {
+//        if (outValue->dataType == Res_value::TYPE_DIMENSION) {
+//            if ((attrType&ResTable_map::TYPE_DIMENSION) != 0) {
+//                return true;
+//            }
+//            if (!canStringCoerce) {
+//                if (accessor != NULL) {
+//                    accessor->reportError(accessorCookie, "Dimension types not allowed");
+//                }
+//                return false;
+//            }
+//        } else if (outValue->dataType == Res_value::TYPE_FRACTION) {
+//            if ((attrType&ResTable_map::TYPE_FRACTION) != 0) {
+//                return true;
+//            }
+//            if (!canStringCoerce) {
+//                if (accessor != NULL) {
+//                    accessor->reportError(accessorCookie, "Fraction types not allowed");
+//                }
+//                return false;
+//            }
+//        } else if ((attrType&ResTable_map::TYPE_FLOAT) == 0) {
+//            if (!canStringCoerce) {
+//                if (accessor != NULL) {
+//                    accessor->reportError(accessorCookie, "Float types not allowed");
+//                }
+//                return false;
+//            }
+//        } else {
+//            return true;
+//        }
+//    }
+//
+//    if (len == 4) {
+//        if ((s[0] == 't' || s[0] == 'T') &&
+//            (s[1] == 'r' || s[1] == 'R') &&
+//            (s[2] == 'u' || s[2] == 'U') &&
+//            (s[3] == 'e' || s[3] == 'E')) {
+//            if ((attrType&ResTable_map::TYPE_BOOLEAN) == 0) {
+//                if (!canStringCoerce) {
+//                    if (accessor != NULL) {
+//                        accessor->reportError(accessorCookie, "Boolean types not allowed");
+//                    }
+//                    return false;
+//                }
+//            } else {
+//                outValue->dataType = outValue->TYPE_INT_BOOLEAN;
+//                outValue->data = (uint32_t)-1;
+//                return true;
+//            }
+//        }
+//    }
+//
+//    if (len == 5) {
+//        if ((s[0] == 'f' || s[0] == 'F') &&
+//            (s[1] == 'a' || s[1] == 'A') &&
+//            (s[2] == 'l' || s[2] == 'L') &&
+//            (s[3] == 's' || s[3] == 'S') &&
+//            (s[4] == 'e' || s[4] == 'E')) {
+//            if ((attrType&ResTable_map::TYPE_BOOLEAN) == 0) {
+//                if (!canStringCoerce) {
+//                    if (accessor != NULL) {
+//                        accessor->reportError(accessorCookie, "Boolean types not allowed");
+//                    }
+//                    return false;
+//                }
+//            } else {
+//                outValue->dataType = outValue->TYPE_INT_BOOLEAN;
+//                outValue->data = 0;
+//                return true;
+//            }
+//        }
+//    }
+//
+//    if ((attrType&ResTable_map::TYPE_ENUM) != 0) {
+//        const ssize_t p = getResourcePackageIndex(attrID);
+//        const bag_entry* bag;
+//        ssize_t cnt = p >= 0 ? lockBag(attrID, &bag) : -1;
+//        //printf("Got %d for enum\n", cnt);
+//        if (cnt >= 0) {
+//            resource_name rname;
+//            while (cnt > 0) {
+//                if (!Res_INTERNALID(bag->map.name.ident)) {
+//                    //printf("Trying attr #%08x\n", bag->map.name.ident);
+//                    if (getResourceName(bag->map.name.ident, false, &rname)) {
+//                        #if 0
+//                        printf("Matching %s against %s (0x%08x)\n",
+//                               String8(s, len).string(),
+//                               String8(rname.name, rname.nameLen).string(),
+//                               bag->map.name.ident);
+//                        #endif
+//                        if (strzcmp16(s, len, rname.name, rname.nameLen) == 0) {
+//                            outValue->dataType = bag->map.value.dataType;
+//                            outValue->data = bag->map.value.data;
+//                            unlockBag(bag);
+//                            return true;
+//                        }
+//                    }
+//
+//                }
+//                bag++;
+//                cnt--;
+//            }
+//            unlockBag(bag);
+//        }
+//
+//        if (fromAccessor) {
+//            if (accessor->getAttributeEnum(attrID, s, len, outValue)) {
+//                return true;
+//            }
+//        }
+//    }
+//
+//    if ((attrType&ResTable_map::TYPE_FLAGS) != 0) {
+//        const ssize_t p = getResourcePackageIndex(attrID);
+//        const bag_entry* bag;
+//        ssize_t cnt = p >= 0 ? lockBag(attrID, &bag) : -1;
+//        //printf("Got %d for flags\n", cnt);
+//        if (cnt >= 0) {
+//            bool failed = false;
+//            resource_name rname;
+//            outValue->dataType = Res_value::TYPE_INT_HEX;
+//            outValue->data = 0;
+//            const char16_t* end = s + len;
+//            const char16_t* pos = s;
+//            while (pos < end && !failed) {
+//                const char16_t* start = pos;
+//                pos++;
+//                while (pos < end && *pos != '|') {
+//                    pos++;
+//                }
+//                //printf("Looking for: %s\n", String8(start, pos-start).string());
+//                const bag_entry* bagi = bag;
+//                ssize_t i;
+//                for (i=0; i<cnt; i++, bagi++) {
+//                    if (!Res_INTERNALID(bagi->map.name.ident)) {
+//                        //printf("Trying attr #%08x\n", bagi->map.name.ident);
+//                        if (getResourceName(bagi->map.name.ident, false, &rname)) {
+//                            #if 0
+//                            printf("Matching %s against %s (0x%08x)\n",
+//                                   String8(start,pos-start).string(),
+//                                   String8(rname.name, rname.nameLen).string(),
+//                                   bagi->map.name.ident);
+//                            #endif
+//                            if (strzcmp16(start, pos-start, rname.name, rname.nameLen) == 0) {
+//                                outValue->data |= bagi->map.value.data;
+//                                break;
+//                            }
+//                        }
+//                    }
+//                }
+//                if (i >= cnt) {
+//                    // Didn't find this flag identifier.
+//                    failed = true;
+//                }
+//                if (pos < end) {
+//                    pos++;
+//                }
+//            }
+//            unlockBag(bag);
+//            if (!failed) {
+//                //printf("Final flag value: 0x%lx\n", outValue->data);
+//                return true;
+//            }
+//        }
+//
+//
+//        if (fromAccessor) {
+//            if (accessor->getAttributeFlags(attrID, s, len, outValue)) {
+//                //printf("Final flag value: 0x%lx\n", outValue->data);
+//                return true;
+//            }
+//        }
+//    }
+//
+//    if ((attrType&ResTable_map::TYPE_STRING) == 0) {
+//        if (accessor != NULL) {
+//            accessor->reportError(accessorCookie, "String types not allowed");
+//        }
+//        return false;
+//    }
+//
+//    // Generic string handling...
+//    outValue->dataType = outValue->TYPE_STRING;
+//    if (outString) {
+//        bool failed = collectString(outString, s, len, preserveSpaces, &errorMsg);
+//        if (accessor != NULL) {
+//            accessor->reportError(accessorCookie, errorMsg);
+//        }
+//        return failed;
+//    }
+//
+//    return true;
+//}
+//
+//bool ResTable::collectString(String16* outString,
+//                             const char16_t* s, size_t len,
+//                             bool preserveSpaces,
+//                             const char** outErrorMsg,
+//                             bool append)
+//{
+//    String16 tmp;
+//
+//    char quoted = 0;
+//    const char16_t* p = s;
+//    while (p < (s+len)) {
+//        while (p < (s+len)) {
+//            const char16_t c = *p;
+//            if (c == '\\') {
+//                break;
+//            }
+//            if (!preserveSpaces) {
+//                if (quoted == 0 && isspace16(c)
+//                    && (c != ' ' || isspace16(*(p+1)))) {
+//                    break;
+//                }
+//                if (c == '"' && (quoted == 0 || quoted == '"')) {
+//                    break;
+//                }
+//                if (c == '\'' && (quoted == 0 || quoted == '\'')) {
+//                    /*
+//                     * In practice, when people write ' instead of \'
+//                     * in a string, they are doing it by accident
+//                     * instead of really meaning to use ' as a quoting
+//                     * character.  Warn them so they don't lose it.
+//                     */
+//                    if (outErrorMsg) {
+//                        *outErrorMsg = "Apostrophe not preceded by \\";
+//                    }
+//                    return false;
+//                }
+//            }
+//            p++;
+//        }
+//        if (p < (s+len)) {
+//            if (p > s) {
+//                tmp.append(String16(s, p-s));
+//            }
+//            if (!preserveSpaces && (*p == '"' || *p == '\'')) {
+//                if (quoted == 0) {
+//                    quoted = *p;
+//                } else {
+//                    quoted = 0;
+//                }
+//                p++;
+//            } else if (!preserveSpaces && isspace16(*p)) {
+//                // Space outside of a quote -- consume all spaces and
+//                // leave a single plain space char.
+//                tmp.append(String16(" "));
+//                p++;
+//                while (p < (s+len) && isspace16(*p)) {
+//                    p++;
+//                }
+//            } else if (*p == '\\') {
+//                p++;
+//                if (p < (s+len)) {
+//                    switch (*p) {
+//                    case 't':
+//                        tmp.append(String16("\t"));
+//                        break;
+//                    case 'n':
+//                        tmp.append(String16("\n"));
+//                        break;
+//                    case '#':
+//                        tmp.append(String16("#"));
+//                        break;
+//                    case '@':
+//                        tmp.append(String16("@"));
+//                        break;
+//                    case '?':
+//                        tmp.append(String16("?"));
+//                        break;
+//                    case '"':
+//                        tmp.append(String16("\""));
+//                        break;
+//                    case '\'':
+//                        tmp.append(String16("'"));
+//                        break;
+//                    case '\\':
+//                        tmp.append(String16("\\"));
+//                        break;
+//                    case 'u':
+//                    {
+//                        char16_t chr = 0;
+//                        int i = 0;
+//                        while (i < 4 && p[1] != 0) {
+//                            p++;
+//                            i++;
+//                            int c;
+//                            if (*p >= '0' && *p <= '9') {
+//                                c = *p - '0';
+//                            } else if (*p >= 'a' && *p <= 'f') {
+//                                c = *p - 'a' + 10;
+//                            } else if (*p >= 'A' && *p <= 'F') {
+//                                c = *p - 'A' + 10;
+//                            } else {
+//                                if (outErrorMsg) {
+//                                    *outErrorMsg = "Bad character in \\u unicode escape sequence";
+//                                }
+//                                return false;
+//                            }
+//                            chr = (chr<<4) | c;
+//                        }
+//                        tmp.append(String16(&chr, 1));
+//                    } break;
+//                    default:
+//                        // ignore unknown escape chars.
+//                        break;
+//                    }
+//                    p++;
+//                }
+//            }
+//            len -= (p-s);
+//            s = p;
+//        }
+//    }
+//
+//    if (tmp.size() != 0) {
+//        if (len > 0) {
+//            tmp.append(String16(s, len));
+//        }
+//        if (append) {
+//            outString->append(tmp);
+//        } else {
+//            outString->setTo(tmp);
+//        }
+//    } else {
+//        if (append) {
+//            outString->append(String16(s, len));
+//        } else {
+//            outString->setTo(s, len);
+//        }
+//    }
+//
+//    return true;
+//}
+
   public int getTableCount() {
     return mHeaders.size();
   }

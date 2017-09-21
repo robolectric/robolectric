@@ -107,7 +107,8 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetNamespace(long state) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    return resXMLParser.getElementNamespaceID();
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -148,7 +149,8 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetAttributeResource(long state, int idx) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    return resXMLParser.getAttributeNameResID(idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -160,7 +162,7 @@ public class ShadowXmlBlock {
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetAttributeData(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
-    return resXMLParser.getAttributeDataType(idx);
+    return resXMLParser.getAttributeData(idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -202,18 +204,28 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  public static int nativeGetAttributeIndex(long state, String namespace, String name) {
-    throw new UnsupportedOperationException("implement me");
+  public static int nativeGetAttributeIndex(long token, String ns, String name) {
+    ResXMLParser st = getResXMLParser(token);
+    if (st == null || name == null) {
+      throw new NullPointerException();
+    }
+
+    int nsLen = 0;
+    if (ns != null) {
+      nsLen = ns.length();
+    }
+
+    return st.indexOfAttribute(ns, nsLen, name, name.length());
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static void nativeDestroyParseState(long state) {
-    throw new UnsupportedOperationException("implement me");
+    NATIVE_RES_XML_PARSERS.unregister(state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static void nativeDestroy(long obj) {
-    throw new UnsupportedOperationException("implement me");
+    NATIVE_RES_XML_TREES.unregister(obj);
   }
 
   private static ResXMLParser getResXMLParser(long state) {
