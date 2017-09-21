@@ -438,32 +438,31 @@ public class CppAssetManager {
    * We should probably reject requests for "illegal" filenames, e.g. those
    * with illegal characters or "../" backward relative paths.
    */
-  Asset open(final String fileName, AccessMode mode)
-  {
-      synchronized (mLock) {
+public Asset open(final String fileName, AccessMode mode) {
+  synchronized (mLock) {
 
-        LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+    LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
 
-        String8 assetName = new String8(kAssetsRoot);
-        assetName.appendPath(fileName);
+    String8 assetName = new String8(kAssetsRoot);
+    assetName.appendPath(fileName);
       /*
        * For each top-level asset path, search for the asset.
        */
-        int i = mAssetPaths.size();
-        while (i > 0) {
-          i--;
-          ALOGV("Looking for asset '%s' in '%s'\n",
-              assetName.string(), mAssetPaths.get(i).path.string());
-          Asset pAsset = openNonAssetInPathLocked(assetName.string(), mode,
-              mAssetPaths.get(i));
-          if (pAsset != null) {
-            return Objects.equals(pAsset, kExcludedAsset) ? null  : pAsset;
-          }
-        }
-
-        return null;
+    int i = mAssetPaths.size();
+    while (i > 0) {
+      i--;
+      ALOGV("Looking for asset '%s' in '%s'\n",
+          assetName.string(), mAssetPaths.get(i).path.string());
+      Asset pAsset = openNonAssetInPathLocked(assetName.string(), mode,
+          mAssetPaths.get(i));
+      if (pAsset != null) {
+        return Objects.equals(pAsset, kExcludedAsset) ? null : pAsset;
       }
+    }
+
+    return null;
   }
+}
 
   /*
    * Open a non-asset file as if it were an asset.
@@ -858,7 +857,7 @@ public class CppAssetManager {
               if (entry != null) {
                   //printf("FOUND NA in Zip file for %s\n", appName ? appName : kAppCommon);
                 pAsset = openAssetFromZipLocked(pZip, entry, mode, path);
-                  pZip.releaseEntry(entry);
+                pZip.releaseEntry(entry);
               }
           }
 

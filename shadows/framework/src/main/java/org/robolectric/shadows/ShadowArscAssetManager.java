@@ -68,6 +68,7 @@ public class ShadowArscAssetManager {
 
   private static NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
   private static NativeObjRegistry<ResXMLParser> nativeXMLParserRegistry = new NativeObjRegistry<>();
+  private static NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
 
   static boolean isLegacyAssetManager(AssetManager assets) {
     return Shadow.extract(assets) instanceof ShadowAssetManager;
@@ -101,6 +102,7 @@ public class ShadowArscAssetManager {
     ShadowAssetManager.reset();
     nativeThemeRegistry.clear();
     nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly?
+    nativeAssetRegistry.clear();
   }
 
   @HiddenApi
@@ -437,8 +439,30 @@ public class ShadowArscAssetManager {
 
   @HiddenApi
   @Implementation
-  public final long openAsset(String fileName, int accessMode) {
-    throw new UnsupportedOperationException("not yet implemented");
+  public final long openAsset(String fileName, int mode) throws FileNotFoundException {
+    CppAssetManager am = assetManagerForJavaObject();
+
+    ALOGV("openAsset in %p (Java object %p)\n", am);
+
+    String fileName8 = fileName;
+    if (fileName8 == null) {
+      throw new IllegalArgumentException("Empty file name");
+    }
+
+    if (mode != AccessMode.ACCESS_UNKNOWN.mode() && mode != AccessMode.ACCESS_RANDOM.mode()
+        && mode != AccessMode.ACCESS_STREAMING.mode() && mode != AccessMode.ACCESS_BUFFER.mode()) {
+      throw new IllegalArgumentException("Bad access mode");
+    }
+
+    Asset a = am.open(fileName8, AccessMode.fromInt(mode));
+
+    if (a == null) {
+      throw new FileNotFoundException(fileName8);
+    }
+
+    //printf("Created Asset Stream: %p\n", a);
+
+    return nativeAssetRegistry.getNativeObjectId(a);
   }
 
   @HiddenApi
@@ -448,8 +472,6 @@ public class ShadowArscAssetManager {
     throw new UnsupportedOperationException("not yet implemented");
   }
 
-  private final SparseArray<Asset> assets = new SparseArray<>();
-  private int nextAssetId = 1;
 
   @HiddenApi
   @Implementation
@@ -475,13 +497,9 @@ public class ShadowArscAssetManager {
     if (a == null) {
       throw new FileNotFoundException(fileName8);
     }
-    int assetId;
-    synchronized (assets) {
-      assetId = nextAssetId++;
-      assets.put(assetId, a);
-      // todo: something better than this
-      a.onClose = () -> destroyAsset(assetId);
-    }
+    long assetId = nativeAssetRegistry.getNativeObjectId(a);
+    // todo: something better than this
+    a.onClose = () -> destroyAsset(assetId);
     //printf("Created Asset Stream: %p\n", a);
     return assetId;
   }
@@ -502,9 +520,7 @@ public class ShadowArscAssetManager {
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
   public final void destroyAsset(long asset) {
-    synchronized (assets) {
-      assets.remove((int) asset);
-    }
+    nativeAssetRegistry.unregister(asset);
   }
 
   @HiddenApi
@@ -572,9 +588,7 @@ public class ShadowArscAssetManager {
   }
 
   private Asset getAsset(long asset) {
-    synchronized (assets) {
-      return assets.get((int) asset);
-    }
+    return nativeAssetRegistry.getNativeObject(asset);
   }
 
   @HiddenApi

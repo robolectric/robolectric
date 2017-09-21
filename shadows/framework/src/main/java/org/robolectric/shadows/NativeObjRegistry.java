@@ -14,9 +14,9 @@ public class NativeObjRegistry<T> {
   private long ids = INITIAL_ID;
   private BiMap<Long, T> nativeObjToIdMap = HashBiMap.create();
 
-  public long getNativeObjectId(T o) {
+  public synchronized long getNativeObjectId(T o) {
     Preconditions.checkNotNull(o);
-        Long nativeId  = nativeObjToIdMap.inverse().get(o);
+    Long nativeId  = nativeObjToIdMap.inverse().get(o);
     if (nativeId == null) {
       nativeId = ids;
       nativeObjToIdMap.put(nativeId, o);
@@ -25,20 +25,20 @@ public class NativeObjRegistry<T> {
     return nativeId;
   }
 
-  public void unregister(T removed) {
+  public synchronized void unregister(T removed) {
     nativeObjToIdMap.inverse().remove(removed);
   }
 
-  public T getNativeObject(long nativeId) {
+  public synchronized T getNativeObject(long nativeId) {
     return nativeObjToIdMap.get(nativeId);
   }
 
-  public void clear() {
+  public synchronized void clear() {
     ids = INITIAL_ID;
     nativeObjToIdMap.clear();
   }
 
-  public void unregister(long theme) {
+  public synchronized void unregister(long theme) {
     nativeObjToIdMap.remove(theme);
   }
 }

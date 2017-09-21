@@ -227,13 +227,32 @@ static Asset createFromFile(String fileName, AccessMode mode)
 //
 //    /* used when opening an asset */
   public enum AccessMode {
-    ACCESS_UNKNOWN,
+    ACCESS_UNKNOWN(0),
     /* read chunks, and seek forward and backward */
-    ACCESS_RANDOM,
+    ACCESS_RANDOM(1),
     /* read sequentially, with an occasional forward seek */
-    ACCESS_STREAMING,
+    ACCESS_STREAMING(2),
     /* caller plans to ask for a read-only buffer with all data */
-    ACCESS_BUFFER,
+    ACCESS_BUFFER(3);
+
+    private final int mode;
+
+    AccessMode(int mode) {
+      this.mode = mode;
+    }
+
+    public int mode() {
+      return mode;
+    }
+
+    public static AccessMode fromInt(int mode) {
+      for (AccessMode enumMode : values()) {
+        if (mode == enumMode.mode()) {
+          return enumMode;
+        }
+      }
+      throw new IllegalArgumentException("invalid mode " + Integer.toString(mode));
+    }
   }
 
   //const void* _FileAsset::getBuffer(bool wordAligned)
