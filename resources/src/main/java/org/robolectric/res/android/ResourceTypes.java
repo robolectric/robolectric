@@ -3,7 +3,6 @@ package org.robolectric.res.android;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
-import static org.robolectric.res.android.ResXMLParser.SIZEOF_RESVALUE;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
@@ -17,6 +16,9 @@ import org.robolectric.res.android.Chunk.StringPoolChunk;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 
 public class ResourceTypes {
+  public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+  public static final String AUTO_NS = "http://schemas.android.com/apk/res-auto";
+
   static int validate_chunk(ResChunk_header chunk,
       int minSize,
       int dataLen,
@@ -173,6 +175,8 @@ public class ResourceTypes {
    */
   public static class Res_value
   {
+    static final int SIZEOF = 8;
+
     // Number of bytes in this structure.
     short size;
 
@@ -301,15 +305,16 @@ public class ResourceTypes {
       this.dataType = buf.get(offset + 3);
       this.data = buf.getInt(offset + 4);
 
-      System.out.println("Res_value at " + offset + ":");
-      System.out.println("size = " + size);
-      System.out.println("res0 = " + res0);
-      System.out.println("dataType = " + dataType);
-      System.out.println("data = " + data);
-
       if (this.res0 != 0) {
         throw new IllegalStateException("res0 != 0 (" + this.res0 + ")");
       }
+    }
+
+    public static void write(ByteBuffer buf, int dataType, int data) {
+      buf.putShort((short) SIZEOF); // size
+      buf.put((byte) 0); // res0
+      buf.put((byte) dataType); // dataType
+      buf.putInt(data); // data
     }
 
 //  void copyFrom_dtoh(const Res_value& src);
@@ -344,6 +349,13 @@ public static class ResTable_ref
 
     public static void write(ByteBuffer buf, int value) {
       buf.putInt(value);
+    }
+
+    @Override
+    public String toString() {
+      return "ResStringPool_ref{" +
+          "index=" + index +
+          '}';
     }
   }
 
@@ -418,15 +430,20 @@ public static class ResTable_ref
       private int totalBytes = ResStringPoolHeader.SIZEOF;
       private int totalStringBytes = 0;
       private int totalStyleBytes = 0;
+      private boolean frozen;
 
       public int string(String s) {
+        if (frozen) {
+          throw new IllegalStateException("string pool is frozen!");
+        }
+
         if (s == null) {
           return -1;
         }
 
         Integer id = stringIds.get(s);
         if (id == null) {
-          id = stringIds.size();
+          id = strings.size();
           strings.add(s);
           stringsAsBytes.add(s.getBytes(UTF_8));
           stringIds.put(s, id);
@@ -434,11 +451,28 @@ public static class ResTable_ref
         return id;
       }
 
+      public int uniqueString(String s) {
+        if (frozen) {
+          throw new IllegalStateException("string pool is frozen!");
+        }
+
+        if (s == null) {
+          return -1;
+        }
+
+        int id = strings.size();
+        strings.add(s);
+        stringsAsBytes.add(s.getBytes(UTF_8));
+        return id;
+      }
+
       public void write(ByteBuffer buf) {
+        freeze();
+
         ResChunk_header.write(buf, (short) RES_STRING_POOL_TYPE, () -> {
           // header
           int startPos = buf.position();
-          int stringCount = stringIds.size();
+          int stringCount = strings.size();
 
           // begin string pool...
           buf.putInt(stringCount); // stringCount
@@ -484,6 +518,10 @@ public static class ResTable_ref
           buf.put((byte) ((length >> 8) | 0x80));
           buf.put((byte) (length & 0x7f));
         }
+      }
+
+      public void freeze() {
+        frozen = true;
       }
     }
   }
@@ -536,11 +574,6 @@ public static class ResTable_ref
 
     public static void write(ByteBuffer buf, Writer resStringPoolWriter, Runnable contents) {
       ResChunk_header.write(buf, (short) RES_XML_TYPE, ()-> {}, () -> {
-        // todo: this is stupid, but string pool has to come before xml...
-        int startPos = buf.position();
-        contents.run();
-
-        buf.position(startPos);
         resStringPoolWriter.write(buf);
         contents.run();
       });
@@ -645,10 +678,24 @@ public static class ResTable_ref
 //      this.name = name;
     }
 
-    public static void write(ByteBuffer buf, Writer resStringPoolWriter,
-        String ns, String name) {
-      ResStringPool_ref.write(buf, resStringPoolWriter.string(ns));
-      ResStringPool_ref.write(buf, resStringPoolWriter.string(name));
+    public static class Writer {
+      private final ByteBuffer buf;
+      private final ResStringPool_header.Writer resStringPoolWriter;
+      private final int ns;
+      private final int name;
+
+      public Writer(ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter,
+          String ns, String name) {
+        this.buf = buf;
+        this.resStringPoolWriter = resStringPoolWriter;
+        this.ns = resStringPoolWriter.string(ns);
+        this.name = resStringPoolWriter.string(name);
+      }
+
+      public void write() {
+        ResStringPool_ref.write(buf, ns);
+        ResStringPool_ref.write(buf, name);
+      }
     }
   };
 
@@ -710,8 +757,8 @@ public static class ResTable_ref
     public static class Writer {
       private final ByteBuffer buf;
       private final ResStringPool_header.Writer resStringPoolWriter;
-      private final String ns;
-      private final String name;
+      private final int ns;
+      private final int name;
 
       private short idIndex;
       private short classIndex;
@@ -723,41 +770,50 @@ public static class ResTable_ref
           String ns, String name) {
         this.buf = buf;
         this.resStringPoolWriter = resStringPoolWriter;
-        this.ns = ns;
-        this.name = name;
+        this.ns = resStringPoolWriter.string(ns);
+        this.name = resStringPoolWriter.string(name);
       }
 
-      public void attr(String ns, String name, String value, ResValue resValue) {
-        attrs.add(new Attr(resStringPoolWriter.string(ns), resStringPoolWriter.string(name),
-            resStringPoolWriter.string(value), resValue));
+      public void attr(int ns, int name, int value, ResValue resValue, String fullName) {
+        attrs.add(new Attr(ns, name, value, resValue, fullName));
       }
 
       public void write() {
         int startPos = buf.position();
+        int attributeCount = attrs.size();
 
-        ResStringPool_ref.write(buf, resStringPoolWriter.string(ns));
-        ResStringPool_ref.write(buf, resStringPoolWriter.string(name));
+        ResStringPool_ref.write(buf, ns);
+        ResStringPool_ref.write(buf, name);
         ShortWriter attributeStartWriter = new ShortWriter(buf);
         buf.putShort((short) ResXMLTree_attribute.SIZEOF); // attributeSize
-        buf.putShort((short) attrs.size()); // attributeCount
+        buf.putShort((short) attributeCount); // attributeCount
         ShortWriter idIndexWriter = new ShortWriter(buf);
         ShortWriter classIndexWriter = new ShortWriter(buf);
         ShortWriter styleIndexWriter = new ShortWriter(buf);
 
         attributeStartWriter.write((short) (buf.position() - startPos));
-        for (Attr attr : attrs) {
+        for (int i = 0; i < attributeCount; i++) {
+          Attr attr = attrs.get(i);
+
+          switch (attr.fullName) {
+            case ":id":
+              idIndex = (short) i;
+              break;
+            case ":style":
+              styleIndex = (short) i;
+              break;
+            case ":class":
+              classIndex = (short) i;
+              break;
+          }
+
           attr.write(buf);
         }
 
         // todo: 1-based index into attributes
-        idIndexWriter.write((short) (buf.position() - startPos));
-        // none
-
-        classIndexWriter.write((short) (buf.position() - startPos));
-        // none
-
-        styleIndexWriter.write((short) (buf.position() - startPos));
-        // none
+        idIndexWriter.write((short) (idIndex + 1));
+        classIndexWriter.write((short) (classIndex + 1));
+        styleIndexWriter.write((short) (styleIndex + 1));
       }
 
       private static class Attr {
@@ -766,21 +822,19 @@ public static class ResTable_ref
         final int value;
         final int resValueDataType;
         final int resValueData;
+        final String fullName;
 
-        public Attr(int ns, int name, int value, ResValue resValue) {
+        public Attr(int ns, int name, int value, ResValue resValue, String fullName) {
           this.ns = ns;
           this.name = name;
           this.value = value;
           this.resValueDataType = resValue.dataType;
           this.resValueData = resValue.data;
+          this.fullName = fullName;
         }
 
         public void write(ByteBuffer buf) {
-          ResStringPool_ref.write(buf, ns);
-          ResStringPool_ref.write(buf, name);
-          ResStringPool_ref.write(buf, value);
-          buf.putInt(resValueDataType);
-          buf.putInt(resValueData);
+          ResXMLTree_attribute.write(buf, ns, name, value, resValueDataType, resValueData);
         }
       }
     }
@@ -788,7 +842,7 @@ public static class ResTable_ref
 
   static class ResXMLTree_attribute
   {
-    public static final int SIZEOF = 12+ SIZEOF_RESVALUE;
+    public static final int SIZEOF = 12+ Res_value.SIZEOF;
 
     // Namespace of this attribute.
     final ResStringPool_ref ns;
@@ -807,6 +861,14 @@ public static class ResTable_ref
       this.name = new ResStringPool_ref(buf, offset + 4);
       this.rawValue = new ResStringPool_ref(buf, offset + 8);
       this.typedValue = new Res_value(buf, offset + 12);
+    }
+
+    public static void write(ByteBuffer buf, int ns, int name, int value, int resValueDataType,
+        int resValueData) {
+      ResStringPool_ref.write(buf, ns);
+      ResStringPool_ref.write(buf, name);
+      ResStringPool_ref.write(buf, value);
+      Res_value.write(buf, resValueDataType, resValueData);
     }
   };
 

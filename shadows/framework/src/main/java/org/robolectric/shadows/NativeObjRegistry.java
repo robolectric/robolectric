@@ -38,7 +38,11 @@ public class NativeObjRegistry<T> {
     nativeObjToIdMap.clear();
   }
 
-  public synchronized void unregister(long theme) {
-    nativeObjToIdMap.remove(theme);
+  public synchronized void unregister(long nativeId) {
+    T o = nativeObjToIdMap.remove(nativeId);
+    if (o == null) {
+      throw new IllegalStateException(
+          nativeId + " has already been removed (or was never registered)");
+    }
   }
 }

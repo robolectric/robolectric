@@ -584,7 +584,8 @@ public class ShadowArscAssetManager {
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
   public final long getAssetRemainingLength(long asset) {
-    throw new UnsupportedOperationException("not yet implemented");
+    Asset a = getAsset(asset);
+    return a.getRemainingLength();
   }
 
   private Asset getAsset(long asset) {

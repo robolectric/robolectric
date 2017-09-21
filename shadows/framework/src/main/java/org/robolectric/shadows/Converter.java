@@ -1,10 +1,15 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
+import java.util.Arrays;
 import org.robolectric.res.AttrData;
+import org.robolectric.res.AttributeResource;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.android.DataType;
 import org.robolectric.util.Util;
 
 import java.util.List;
@@ -74,6 +79,46 @@ public class Converter<T> {
         return new Converter();
       default:
         throw new UnsupportedOperationException("can't convert from " + resType.name());
+    }
+  }
+
+  public static void convert(ResourceTable resourceTable, AttributeResource attribute,
+      TypedValue outValue, String qualifiers, boolean handleReferences) {
+    TypedResource attrTypeData = resourceTable.getValue(attribute.resName, qualifiers);
+    if (attrTypeData != null) {
+      AttrData attrData = (AttrData) attrTypeData.getData();
+      String format = attrData.getFormat();
+      System.out.println(attribute + " format is " + format);
+      List<String> types = Arrays.asList(format.split("\\|"));
+
+      if (handleReferences && attribute.isResourceReference()) {
+        ResName resourceReference = attribute.getResourceReference();
+        outValue.type = DataType.REFERENCE.code();
+        outValue.data = resourceTable.getResourceId(resourceReference);
+        outValue.string = "@" + outValue.data;
+        return;
+      }
+
+      for (String type : types) {
+        if ("reference".equals(type)) {
+          continue; // references have already been handled
+        }
+
+        Converter converter = getConverterFor(attrData, type);
+        if (converter.fillTypedValue(attribute.value, outValue)) {
+          return;
+        }
+      }
+    } else {
+      /*
+       * In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
+       * KitKat runtine, then infer the attribute type from the value.
+       *
+       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
+       * and replace the NullResourceLoader with simple ResourceProvider that only parses attribute type information.
+       */
+      ResType resType = ResType.inferFromValue(attribute.value);
+      getConverter(resType).fillTypedValue(attribute.value, outValue);
     }
   }
 
@@ -175,7 +220,7 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        typedValue.type = TypedValue.TYPE_INT_HEX;
+        typedValue.type = data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;

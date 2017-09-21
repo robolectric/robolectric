@@ -31,6 +31,15 @@ public class FileAsset extends Asset {
   }
 
   @Override
+  public long getRemainingLength() {
+    try {
+      return f.length() - f.getFilePointer();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public long size() {
     try {
       return f.length();

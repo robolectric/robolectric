@@ -185,7 +185,7 @@ public final class ResourceHelper {
       if (end.length() > 0 && end.charAt(0) != ' ') {
         // Might be a unit...
         if (parseUnit(end, outValue, sFloatOut)) {
-          computeTypedValue(outValue, f, sFloatOut[0]);
+          computeTypedValue(outValue, f, sFloatOut[0], end);
           return true;
         }
         return false;
@@ -205,7 +205,7 @@ public final class ResourceHelper {
           } else {
             // no unit when required? Use dp and out an error.
             applyUnit(sUnitNames[1], outValue, sFloatOut);
-            computeTypedValue(outValue, f, sFloatOut[0]);
+            computeTypedValue(outValue, f, sFloatOut[0], "dp");
 
             System.out.println(String.format(
                 "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
@@ -219,7 +219,7 @@ public final class ResourceHelper {
     return false;
   }
 
-  private static void computeTypedValue(TypedValue outValue, float value, float scale) {
+  private static void computeTypedValue(TypedValue outValue, float value, float scale, String unit) {
     value *= scale;
     boolean neg = value < 0;
     if (neg) {
@@ -258,6 +258,7 @@ public final class ResourceHelper {
     outValue.data |=
       (radix<<TypedValue.COMPLEX_RADIX_SHIFT)
       | (mantissa<<TypedValue.COMPLEX_MANTISSA_SHIFT);
+    outValue.string = value + unit;
   }
 
   private static boolean parseUnit(String str, TypedValue outValue, float[] outScale) {

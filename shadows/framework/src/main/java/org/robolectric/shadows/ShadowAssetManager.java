@@ -17,7 +17,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.EmptyStyle;
@@ -186,32 +185,7 @@ public final class ShadowAssetManager {
       return;
     }
 
-    TypedResource attrTypeData = resourceTable.getValue(attribute.resName, qualifiers);
-    if (attrTypeData != null) {
-      AttrData attrData = (AttrData) attrTypeData.getData();
-      String format = attrData.getFormat();
-      String[] types = format.split("\\|");
-      for (String type : types) {
-        if ("reference".equals(type)) continue; // already handled above
-        Converter converter = Converter.getConverterFor(attrData, type);
-
-        if (converter != null) {
-          if (converter.fillTypedValue(attribute.value, outValue)) {
-            return;
-          }
-        }
-      }
-    } else {
-      /**
-       * In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
-       * KitKat runtine, then infer the attribute type from the value.
-       *
-       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
-       * and replace the NullResourceLoader with simple ResourceProvider that only parses attribute type information.
-       */
-      ResType resType = ResType.inferFromValue(attribute.value);
-      Converter.getConverter(resType).fillTypedValue(attribute.value, outValue);
-    }
+    Converter.convert(resourceTable, attribute, outValue, qualifiers, false);
   }
 
   public void __constructor__() {

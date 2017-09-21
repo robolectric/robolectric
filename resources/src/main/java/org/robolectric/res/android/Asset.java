@@ -157,6 +157,8 @@ static Asset createFromFile(String fileName, AccessMode mode)
 
   public abstract int getLength();
 
+  public abstract long getRemainingLength();
+
   public abstract long size();
 
   public abstract int read();
@@ -403,6 +405,11 @@ static Asset createFromFile(String fileName, AccessMode mode)
     @Override
     public int getLength() {
       return (int) entry.entry.getSize();
+    }
+
+    @Override
+    public long getRemainingLength() {
+      return mUncompressedLen-mOffset;
     }
 
     @Override

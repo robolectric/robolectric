@@ -31,14 +31,14 @@ import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attribute;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
+import org.robolectric.res.android.ResourceTypes.Res_value;
 
 public class ResXMLParser {
 
-  static final int SIZEOF_RESVALUE = 8;
   static final int SIZEOF_RESXMLTREE_NAMESPACE_EXT = 4;
   static final int SIZEOF_RESXMLTREE_NODE = ResChunk_header.SIZEOF + 8;
   static final int SIZEOF_RESXMLTREE_ATTR_EXT = 20;
-  static final int SIZEOF_RESXMLTREE_CDATA_EXT = 4 + SIZEOF_RESVALUE;
+  static final int SIZEOF_RESXMLTREE_CDATA_EXT = 4 + Res_value.SIZEOF;
   static final int SIZEOF_CHAR = 2;
 
   public static class event_code_t {
@@ -126,7 +126,7 @@ final String getText(Ref<Integer> outLen)
   {
     if (mEventCode == TEXT) {
       //outValue.copyFrom_dtoh(new ResourceTypes.ResXMLTree_cdataExt(mTree.mBuffer.buf, mCurExt).typedData);
-      return SIZEOF_RESVALUE /* sizeof(Res_value) */;
+      return Res_value.SIZEOF /* sizeof(Res_value) */;
     }
     return BAD_TYPE;
   }
@@ -224,7 +224,7 @@ final String getAttributeNamespace(int idx, Ref<Integer> outLen)
     int id = getAttributeNamespaceID(idx);
     //printf("attribute namespace=%d  idx=%d  event=%p\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeNamespace 0x%zx=0x%x\n", idx, id));
+      System.out.println(String.format("getAttributeNamespace 0x%x=0x%x\n", idx, id));
     }
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
@@ -234,7 +234,7 @@ final String getAttributeNamespace8(int idx, Ref<Integer> outLen)
     int id = getAttributeNamespaceID(idx);
     //printf("attribute namespace=%d  idx=%d  event=%p\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeNamespace 0x%zx=0x%x\n", idx, id));
+      System.out.println(String.format("getAttributeNamespace 0x%x=0x%x\n", idx, id));
     }
     return id >= 0 ? mTree.mStrings.string8At(id, outLen) : null;
   }
@@ -260,7 +260,7 @@ final String getAttributeName(int idx, Ref<Integer> outLen)
     int id = getAttributeNameID(idx);
     //printf("attribute name=%d  idx=%d  event=%p\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeName 0x%zx=0x%x\n", idx, id));
+      System.out.println(String.format("getAttributeName 0x%x=0x%x\n", idx, id));
     }
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
@@ -270,7 +270,7 @@ final String getAttributeName8(int idx, Ref<Integer> outLen)
     int id = getAttributeNameID(idx);
     //printf("attribute name=%d  idx=%d  event=%p\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeName 0x%zx=0x%x\n", idx, id));
+      System.out.println(String.format("getAttributeName 0x%x=0x%x\n", idx, id));
     }
     return id >= 0 ? mTree.mStrings.string8At(id, outLen) : null;
   }
@@ -310,7 +310,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   {
     int id = getAttributeValueStringID(idx);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeValue 0x%zx=0x%x\n", idx, id));
+      System.out.println(String.format("getAttributeValue 0x%x=0x%x\n", idx, id));
     }
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
@@ -338,7 +338,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     return DataType.NULL.code();
   }
 
-  int getAttributeData(int idx)
+  public int getAttributeData(int idx)
   {
     if (mEventCode == START_TAG) {
         ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
@@ -377,7 +377,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
             mTree.mDynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
           return BAD_TYPE;
         }
-        return SIZEOF_RESVALUE /* sizeof(ResValue) */;
+        return Res_value.SIZEOF /* sizeof(ResValue) */;
       }
     }
     return BAD_TYPE;

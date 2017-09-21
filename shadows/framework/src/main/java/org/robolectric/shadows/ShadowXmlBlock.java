@@ -148,7 +148,8 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetAttributeResource(long state, int idx) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    return resXMLParser.getAttributeNameResID(idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -160,7 +161,7 @@ public class ShadowXmlBlock {
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetAttributeData(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
-    return resXMLParser.getAttributeDataType(idx);
+    return resXMLParser.getAttributeData(idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -208,12 +209,12 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static void nativeDestroyParseState(long state) {
-    throw new UnsupportedOperationException("implement me");
+    NATIVE_RES_XML_PARSERS.unregister(state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static void nativeDestroy(long obj) {
-    throw new UnsupportedOperationException("implement me");
+    NATIVE_RES_XML_TREES.unregister(obj);
   }
 
   private static ResXMLParser getResXMLParser(long state) {
