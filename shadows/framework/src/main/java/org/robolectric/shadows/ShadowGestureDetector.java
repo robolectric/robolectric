@@ -26,7 +26,8 @@ public class ShadowGestureDetector {
   private OnDoubleTapListener onDoubleTapListener;
 
   @Implementation
-  public void __constructor__(Context context, GestureDetector.OnGestureListener listener, Handler handler) {
+  public void __constructor__(
+      Context context, GestureDetector.OnGestureListener listener, Handler handler) {
     Shadow.invokeConstructor(GestureDetector.class, realObject,
         from(Context.class, context),
         from(GestureDetector.OnGestureListener.class, listener),

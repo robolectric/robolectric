@@ -47,7 +47,6 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -655,7 +654,6 @@ public class ShadowPackageManager {
   public void addPermissionInfo(PermissionInfo permissionInfo) {
     extraPermissions.put(permissionInfo.name, permissionInfo);
   }
-
 
   public void addManifest(AndroidManifest androidManifest) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
