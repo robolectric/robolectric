@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.admin.DevicePolicyManager;
@@ -516,9 +516,11 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN setting an organization name
     // THEN the method should throw SecurityException
     String organizationName = "TestOrg";
-    assertThrows(
-        SecurityException.class,
-        () -> devicePolicyManager.setOrganizationName(testComponent, organizationName));
+    try {
+      devicePolicyManager.setOrganizationName(testComponent, organizationName);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
   }
 
   @Test
@@ -569,8 +571,10 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN setting an organization color
     // THEN the method should throw SecurityException
     int color = 0xFFFF00FF;
-    assertThrows(
-        SecurityException.class,
-        () -> devicePolicyManager.setOrganizationColor(testComponent, color));
+    try {
+      devicePolicyManager.setOrganizationColor(testComponent, color);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
   }
 }
