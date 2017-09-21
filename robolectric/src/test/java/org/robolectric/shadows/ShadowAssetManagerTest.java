@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.joinPath;
 
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
@@ -76,11 +75,11 @@ public class ShadowAssetManagerTest {
     files = Arrays.asList(assetManager.list(testPath));
     assertTrue(files.contains("extra"));
 
-    testPath = joinPath("docs", "extra");
+    testPath ="docs/extra";
     files = Arrays.asList(assetManager.list(testPath));
     assertTrue(files.contains("testing"));
 
-    testPath = joinPath("docs", "extra", "testing");
+    testPath = "docs/extra/testing";
     files = Arrays.asList(assetManager.list(testPath));
     assertTrue(files.contains("hello.txt"));
 
