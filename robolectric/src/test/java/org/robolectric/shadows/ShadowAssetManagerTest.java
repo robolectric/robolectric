@@ -8,6 +8,7 @@ import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import java.io.FileNotFoundException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -116,8 +117,8 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
-    expectedException.expect(IOException.class);
-    expectedException.expectMessage("Unable to find resource for ./res/drawable/does_not_exist.png");
+    expectedException.expect(FileNotFoundException.class);
+    expectedException.expectMessage("./res/drawable/does_not_exist.png");
 
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
   }

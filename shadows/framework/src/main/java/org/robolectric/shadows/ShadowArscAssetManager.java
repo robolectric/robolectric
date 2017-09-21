@@ -22,6 +22,7 @@ import android.util.TypedValue;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import dalvik.system.VMRuntime;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -469,7 +470,22 @@ public class ShadowArscAssetManager {
   @Implementation
   public ParcelFileDescriptor openAssetFd(String fileName,
       long[] outOffsets) throws IOException {
-    throw new UnsupportedOperationException("not yet implemented");
+    CppAssetManager am = assetManagerForJavaObject();
+
+    ALOGV("openAssetFd in %p (Java object %p)\n", am);
+
+    String fileName8 = fileName;
+    if (fileName8 == null) {
+      return null;
+    }
+
+    Asset a = am.open(fileName8, Asset.AccessMode.ACCESS_RANDOM);
+
+    if (a == null) {
+      throw new FileNotFoundException(fileName8);
+    }
+
+    return returnParcelFileDescriptor(a, outOffsets);
   }
 
 
@@ -583,8 +599,14 @@ public class ShadowArscAssetManager {
 
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
-  public final long getAssetRemainingLength(long asset) {
-    throw new UnsupportedOperationException("not yet implemented");
+  public final long getAssetRemainingLength(long assetHandle) {
+    Asset a = getAsset(assetHandle);
+
+    if (a == null) {
+      throw new NullPointerException("asset");
+    }
+
+    return a.getRemainingLength();
   }
 
   private Asset getAsset(long asset) {
@@ -1659,5 +1681,35 @@ public class ShadowArscAssetManager {
       throw new NullPointerException();
     }
     return cppAssetManager;
+  }
+
+  static ParcelFileDescriptor returnParcelFileDescriptor(Asset a, long[] outOffsets)
+      throws FileNotFoundException {
+    throw new UnsupportedOperationException("not yet implemented");
+//    Ref<Long> startOffset = new Ref<Long>(-1L);
+//    Ref<Long> length = new Ref<Long>(-1L);;
+//    int fd = a.openFileDescriptor(startOffset, length);
+//
+//    if (fd < 0) {
+//      throw new FileNotFoundException(
+//          "This file can not be opened as a file descriptor; it is probably compressed");
+//    }
+//
+//    long[] offsets = outOffsets;
+//    if (offsets == null) {
+//      close(fd);
+//      return null;
+//    }
+//
+//    offsets[0] = startOffset.get();
+//    offsets[1] = length.get();
+//
+//    FileDescriptor fileDesc = jniCreateFileDescriptor(fd);
+//    if (fileDesc == null) {
+//      close(fd);
+//      return null;
+//    }
+//
+//    return newParcelFileDescriptor(fileDesc);
   }
 }

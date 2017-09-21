@@ -48,7 +48,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.O)
+@Config(sdk = VERSION_CODES.N_MR1)
 public class ShadowResourcesTest {
   private Resources resources;
 

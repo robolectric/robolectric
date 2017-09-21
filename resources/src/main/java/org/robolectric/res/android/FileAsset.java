@@ -31,6 +31,12 @@ public class FileAsset extends Asset {
   }
 
   @Override
+  public long getRemainingLength()  {
+    throw new UnsupportedOperationException("not yet implemented");
+  //  return getLength()-mOffset;
+  }
+
+  @Override
   public long size() {
     try {
       return f.length();
