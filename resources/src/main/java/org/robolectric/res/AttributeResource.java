@@ -3,6 +3,7 @@ package org.robolectric.res;
 import javax.annotation.Nonnull;
 
 public class AttributeResource {
+  public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 

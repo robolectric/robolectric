@@ -316,7 +316,7 @@ public class Robolectric {
         if (finalMaxAttrNameIndex > 0) {
           ResChunk_header.write(buf, (short) RES_XML_RESOURCE_MAP_TYPE, () -> {}, () -> {
             // not particularly compact, but no big deal for our purposes...
-            for (int i = 0; i < finalMaxAttrNameIndex; i++) {
+            for (int i = 0; i <= finalMaxAttrNameIndex; i++) {
               Integer value = resIds.get(i);
               buf.putInt(value == null ? 0 : value);
             }

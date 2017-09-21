@@ -68,7 +68,7 @@
 
   <declare-styleable name="Theme.AnotherTheme.Attributes">
     <attr name="averageSheepWidth" format="reference"/>
-    <attr name="isSugary" format="reference"/>
+    <attr name="isSugary" format="string"/>
     <attr name="logoHeight" format="reference"/>
     <attr name="logoWidth" format="reference"/>
     <attr name="styleReference" format="reference"/>
