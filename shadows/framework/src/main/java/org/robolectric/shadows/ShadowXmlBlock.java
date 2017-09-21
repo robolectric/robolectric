@@ -107,7 +107,8 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeGetNamespace(long state) {
-    throw new UnsupportedOperationException("implement me");
+    ResXMLParser resXMLParser = getResXMLParser(state);
+    return resXMLParser.getElementNamespaceID();
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
@@ -203,8 +204,18 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  public static int nativeGetAttributeIndex(long state, String namespace, String name) {
-    throw new UnsupportedOperationException("implement me");
+  public static int nativeGetAttributeIndex(long token, String ns, String name) {
+    ResXMLParser st = getResXMLParser(token);
+    if (st == null || name == null) {
+      throw new NullPointerException();
+    }
+
+    int nsLen = 0;
+    if (ns != null) {
+      nsLen = ns.length();
+    }
+
+    return st.indexOfAttribute(ns, nsLen, name, name.length());
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)

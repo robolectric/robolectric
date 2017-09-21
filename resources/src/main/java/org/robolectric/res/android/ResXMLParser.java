@@ -161,7 +161,7 @@ final String getNamespaceUri(Ref<Integer> outLen)
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
 
-  int getElementNamespaceID()
+  public int getElementNamespaceID()
   {
     if (mEventCode == START_TAG) {
       return dtohl(new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt).ns.index);
@@ -391,7 +391,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
         attrStr, attrStr.length());
   }
 
-  int indexOfAttribute(final String ns, int nsLen,
+  public int indexOfAttribute(final String ns, int nsLen,
                                        final String attr, int attrLen)
   {
     if (mEventCode == START_TAG) {
