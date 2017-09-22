@@ -1,10 +1,9 @@
 package org.robolectric.res;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import com.google.common.base.Strings;
 
 public class StyleResolver implements Style {
   private final List<StyleData> styles = new ArrayList<>();
@@ -154,9 +153,9 @@ public class StyleResolver implements Style {
     }
     StyleResolver other = (StyleResolver) obj;
 
-      return ((theme == null && other.theme == null) || (theme != null && theme.equals(other.theme)))
+    return ((theme == null && other.theme == null) || (theme != null && theme.equals(other.theme)))
         && ((myResName == null && other.myResName == null)
-        || (myResName != null && myResName.equals(other.myResName)))
+            || (myResName != null && myResName.equals(other.myResName)))
         && Objects.equals(qualifiers, other.qualifiers);
   }
 

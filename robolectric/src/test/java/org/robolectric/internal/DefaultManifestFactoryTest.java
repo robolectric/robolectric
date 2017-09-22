@@ -38,6 +38,7 @@ public class DefaultManifestFactoryTest {
     properties.put("android_merged_manifest", "gradle/AndroidManifest.xml");
     properties.put("android_merged_resources", "gradle/res");
     properties.put("android_merged_assets", "gradle/assets");
+    properties.put("android_custom_package", "com.example.app");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier = factory.identify(Builder.defaults().setManifest(Config.NONE).build());
     AndroidManifest manifest = factory.create(identifier);
@@ -48,6 +49,7 @@ public class DefaultManifestFactoryTest {
         .isEqualTo(FileFsFile.from("gradle/res"));
     assertThat(manifest.getAssetsDirectory())
         .isEqualTo(FileFsFile.from("gradle/assets"));
+    assertThat(manifest.getRClassName()).isEqualTo("com.example.app.R");
   }
 
   @Test

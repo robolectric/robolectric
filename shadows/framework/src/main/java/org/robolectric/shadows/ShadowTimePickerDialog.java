@@ -17,8 +17,13 @@ public class ShadowTimePickerDialog extends ShadowAlertDialog {
   private int minute;
 
   @Implementation
-  public void __constructor__(Context context, int theme, TimePickerDialog.OnTimeSetListener callBack,
-                              int hourOfDay, int minute, boolean is24HourView) {
+  public void __constructor__(
+      Context context,
+      int theme,
+      TimePickerDialog.OnTimeSetListener callBack,
+      int hourOfDay,
+      int minute,
+      boolean is24HourView) {
     this.hourOfDay = hourOfDay;
     this.minute = minute;
 

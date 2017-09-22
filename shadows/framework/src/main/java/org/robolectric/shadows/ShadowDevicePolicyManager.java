@@ -1,13 +1,17 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.annotation.Nullable;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.UserManager;
+import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,17 +25,29 @@ import org.robolectric.annotation.Implements;
 /** Shadow for {@link DevicePolicyManager} */
 @Implements(DevicePolicyManager.class)
 public class ShadowDevicePolicyManager {
+  /**
+   * @see
+   *     https://developer.android.com/reference/android/app/admin/DevicePolicyManager.html#setOrganizationColor(android.content.ComponentName,
+   *     int)
+   */
+  private static final int DEFAULT_ORGANIZATION_COLOR = 0xFF008080; // teal
 
   private ComponentName deviceOwner;
   private ComponentName profileOwner;
   private List<ComponentName> deviceAdmins = new ArrayList<>();
   private Map<String, Bundle> applicationRestrictionsMap = new HashMap<>();
+  private CharSequence organizationName;
+  private int organizationColor;
 
   private final Set<String> hiddenPackages = new HashSet<>();
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
   private final Set<String> uninstallBlockedPackages = new HashSet<>();
+
+  public ShadowDevicePolicyManager() {
+    organizationColor = DEFAULT_ORGANIZATION_COLOR;
+  }
 
   @Implementation
   public boolean isDeviceOwnerApp(String packageName) {
@@ -41,6 +57,11 @@ public class ShadowDevicePolicyManager {
   @Implementation
   public boolean isProfileOwnerApp(String packageName) {
     return profileOwner != null && profileOwner.getPackageName().equals(packageName);
+  }
+
+  @Implementation
+  public boolean isAdminActive(ComponentName who) {
+    return who != null && deviceAdmins.contains(who);
   }
 
   @Implementation
@@ -162,6 +183,18 @@ public class ShadowDevicePolicyManager {
     applicationRestrictionsMap.put(packageName, applicationRestrictions);
   }
 
+  private void enforceProfileOwner(ComponentName admin) {
+    if (!admin.equals(profileOwner)) {
+      throw new SecurityException("[" + admin + "] is not a profile owner");
+    }
+  }
+
+  private void enforceDeviceOwner(ComponentName admin) {
+    if (!admin.equals(deviceOwner)) {
+      throw new SecurityException("[" + admin + "] is not a device owner");
+    }
+  }
+
   private void enforceDeviceOwnerOrProfileOwner(ComponentName admin) {
     if (!admin.equals(deviceOwner) && !admin.equals(profileOwner)) {
       throw new SecurityException("[" + admin + "] is neither a device owner nor a profile owner.");
@@ -188,5 +221,56 @@ public class ShadowDevicePolicyManager {
   @Implementation
   public String[] getAccountTypesWithManagementDisabled() {
     return accountTypesWithManagementDisabled.toArray(new String[0]);
+  }
+
+  /**
+   * Sets organization name.
+   *
+   * <p>The API can only be called by profile owner since Android N and can be called by both of
+   * profile owner and device owner since Android O.
+   */
+  @Implementation(minSdk = N)
+  public void setOrganizationName(ComponentName admin, @Nullable CharSequence name) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    } else {
+      enforceProfileOwner(admin);
+    }
+
+    if (TextUtils.isEmpty(name)) {
+      organizationName = null;
+    } else {
+      organizationName = name;
+    }
+  }
+
+  @Implementation(minSdk = N)
+  public void setOrganizationColor(ComponentName admin, int color) {
+    enforceProfileOwner(admin);
+    organizationColor = color;
+  }
+
+  /**
+   * Returns organization name.
+   *
+   * <p>The API can only be called by profile owner since Android N and can be called by both of
+   * profile owner and device owner since Android O.
+   */
+  @Implementation(minSdk = N)
+  @Nullable
+  public CharSequence getOrganizationName(ComponentName admin) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    } else {
+      enforceProfileOwner(admin);
+    }
+
+    return organizationName;
+  }
+
+  @Implementation(minSdk = N)
+  public int getOrganizationColor(ComponentName admin) {
+    enforceProfileOwner(admin);
+    return organizationColor;
   }
 }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
@@ -27,7 +28,8 @@ public class ShadowUserManagerTest {
 
   @Before
   public void setUp() {
-    userManager = (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE);
+    userManager = (UserManager)
+        RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE);
   }
 
   @Test
@@ -40,7 +42,7 @@ public class ShadowUserManagerTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void shouldGetApplicationRestrictions() {
-    Bundle userProfiles = userManager.getApplicationRestrictions("somepackage");
+    userManager.getApplicationRestrictions("somepackage");
     // Should not NPE
   }
 
@@ -57,7 +59,8 @@ public class ShadowUserManagerTest {
   public void hasUserRestriction() {
     assertThat(userManager.hasUserRestriction(UserManager.ENSURE_VERIFY_APPS)).isFalse();
 
-    shadowOf(userManager).setUserRestriction(Process.myUserHandle(), UserManager.ENSURE_VERIFY_APPS, true);
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(userManager).setUserRestriction(userHandle, UserManager.ENSURE_VERIFY_APPS, true);
 
     assertThat(userManager.hasUserRestriction(UserManager.ENSURE_VERIFY_APPS)).isTrue();
   }
@@ -67,10 +70,12 @@ public class ShadowUserManagerTest {
   public void getUserRestrictions() {
     assertThat(userManager.getUserRestrictions().size()).isEqualTo(0);
 
-    shadowOf(userManager).setUserRestriction(Process.myUserHandle(), UserManager.ENSURE_VERIFY_APPS, true);
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(userManager).setUserRestriction(userHandle, UserManager.ENSURE_VERIFY_APPS, true);
 
-    assertThat(userManager.getUserRestrictions().size()).isEqualTo(1);
-    assertThat(userManager.getUserRestrictions().getBoolean(UserManager.ENSURE_VERIFY_APPS)).isTrue();
+    Bundle restrictions = userManager.getUserRestrictions();
+    assertThat(restrictions.size()).isEqualTo(1);
+    assertThat(restrictions.getBoolean(UserManager.ENSURE_VERIFY_APPS)).isTrue();
 
     shadowOf(userManager).setUserRestriction(newUserHandle(10), UserManager.DISALLOW_CAMERA, true);
 
@@ -95,6 +100,17 @@ public class ShadowUserManagerTest {
     assertThat(userManager.isManagedProfile()).isFalse();
     shadowOf(userManager).setManagedProfile(true);
     assertThat(userManager.isManagedProfile()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void shouldGetSerialNumberForUser() {
+    long serialNumberInvalid = -1L;
+    long serialNumber = 123L;
+    UserHandle userHandle = newUserHandle(10);
+    assertThat(userManager.getSerialNumberForUser(userHandle)).isEqualTo(serialNumberInvalid);
+    shadowOf(userManager).setSerialNumberForUser(userHandle, serialNumber);
+    assertThat(userManager.getSerialNumberForUser(userHandle)).isEqualTo(serialNumber);
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
