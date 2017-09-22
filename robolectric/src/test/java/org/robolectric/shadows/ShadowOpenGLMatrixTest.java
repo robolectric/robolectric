@@ -8,10 +8,10 @@ import static org.assertj.core.api.Assertions.offset;
 import android.opengl.Matrix;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowOpenGLMatrixTest {
   @Test(expected = IllegalArgumentException.class)
   public void multiplyMM_failIfResIsNull() throws Exception {

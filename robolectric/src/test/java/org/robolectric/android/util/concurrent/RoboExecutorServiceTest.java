@@ -11,11 +11,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Scheduler;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class RoboExecutorServiceTest {
   private final List<String> transcript = new ArrayList<>();
   private final RoboExecutorService executorService = new RoboExecutorService();

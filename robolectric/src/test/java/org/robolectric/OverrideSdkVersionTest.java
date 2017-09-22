@@ -9,7 +9,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.shadows.ShadowApplication;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class OverrideSdkVersionTest {
   @Test
   public void whenNotOverridden_shouldUseTargetSdkVersionFromAppManifest() {

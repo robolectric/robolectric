@@ -18,11 +18,11 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowLooperTest {
 
   // testName is used when creating background threads. Makes it

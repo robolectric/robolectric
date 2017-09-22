@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMediaPlayer.InvalidStateBehavior;
 import org.robolectric.shadows.ShadowMediaPlayer.MediaEvent;
@@ -44,7 +44,7 @@ import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowMediaPlayerTest {
 
   private static final String DUMMY_SOURCE = "dummy-source";

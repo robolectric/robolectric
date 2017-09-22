@@ -8,9 +8,9 @@ import android.text.style.UnderlineSpan;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSpannableStringTest {
   private static final String TEST_STRING = "Visit us at http://www.foobar.com for more selections";
 

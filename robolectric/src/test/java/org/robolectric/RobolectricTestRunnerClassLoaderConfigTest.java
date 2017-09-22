@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.test.DummyClass;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class RobolectricTestRunnerClassLoaderConfigTest {
 
   @Test

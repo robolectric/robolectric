@@ -16,9 +16,9 @@ import android.widget.TextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class FragmentControllerTest {
 
   private static final int VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY = 123;

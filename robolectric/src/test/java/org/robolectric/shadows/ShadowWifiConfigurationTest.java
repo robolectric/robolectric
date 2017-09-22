@@ -7,9 +7,9 @@ import static org.robolectric.Shadows.shadowOf;
 import android.net.wifi.WifiConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowWifiConfigurationTest {
   @Test
   public void shouldSetTheBitSetsAndWepKeyArrays() throws Exception {

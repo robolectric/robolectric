@@ -62,7 +62,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
@@ -70,7 +70,7 @@ import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowActivityTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Activity activity;
