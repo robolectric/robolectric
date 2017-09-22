@@ -15,7 +15,7 @@ import java.io.*;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
-  public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
+  private static ResourcePath TEST_RESOURCE_PATH;
   public static final String TEST_PACKAGE = R.class.getPackage().getName();
   private static File testDirLocation;
 
@@ -59,6 +59,9 @@ public abstract class TestUtil {
   }
 
   public static ResourcePath testResources() {
+    if (TEST_RESOURCE_PATH == null) {
+      TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
+    }
     return TEST_RESOURCE_PATH;
   }
 

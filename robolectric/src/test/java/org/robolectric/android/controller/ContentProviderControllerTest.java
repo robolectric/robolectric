@@ -21,7 +21,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 @RunWith(TestRunners.SelfTest.class)
-@Config(manifest = Config.NONE, sdk = 23)
+@Config(sdk = 23)
 public class ContentProviderControllerTest {
   private final ContentProviderController<MyContentProvider> controller = Robolectric.buildContentProvider(MyContentProvider.class);
   private ContentResolver contentResolver;
@@ -38,7 +38,6 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void shouldInitializeFromManifestProviderInfo() throws Exception {
     MyContentProvider myContentProvider = controller.create().get();
     assertThat(myContentProvider.getReadPermission()).isEqualTo("READ_PERMISSION");
@@ -53,7 +52,6 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  @Config(manifest = "TestAndroidManifestWithContentProviders.xml")
   public void shouldRegisterWithContentResolver() throws Exception {
     controller.create().get();
 
@@ -64,7 +62,7 @@ public class ContentProviderControllerTest {
 
   @Test
   public void whenNoProviderManifestEntryFound_shouldStillInitialize() throws Exception {
-    MyContentProvider myContentProvider = controller.create().get();
+    MyContentProvider myContentProvider =Robolectric.buildContentProvider(NotInManifestContentProvider.class).create().get();
     assertThat(myContentProvider.getReadPermission()).isNull();
     assertThat(myContentProvider.getWritePermission()).isNull();
     assertThat(myContentProvider.getPathPermissions()).isNull();
@@ -112,6 +110,8 @@ public class ContentProviderControllerTest {
       return false;
     }
   }
+
+  static class NotInManifestContentProvider extends MyContentProvider {}
 
   public static class MyContentProvider extends ContentProvider {
     final List<String> transcript = new ArrayList<>();

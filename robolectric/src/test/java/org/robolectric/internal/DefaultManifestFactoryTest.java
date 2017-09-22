@@ -49,8 +49,7 @@ public class DefaultManifestFactoryTest {
         .isEqualTo(FileFsFile.from("gradle/res"));
     assertThat(manifest.getAssetsDirectory())
         .isEqualTo(FileFsFile.from("gradle/assets"));
-    assertThat(manifest.getRClassName())
-        .isEqualTo("com.example.app.R");
+    assertThat(manifest.getRClassName()).isEqualTo("com.example.app.R");
   }
 
   @Test
