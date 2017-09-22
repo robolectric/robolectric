@@ -23,6 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
 import org.robolectric.android.XmlResourceParserImpl;
@@ -34,7 +35,7 @@ import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(JUnit4.class)
 public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";

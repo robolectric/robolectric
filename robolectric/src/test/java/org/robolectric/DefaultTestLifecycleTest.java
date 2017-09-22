@@ -47,12 +47,11 @@ public class DefaultTestLifecycleTest {
         .isExactlyInstanceOf(TestApplication.class);
   }
 
-  @Config(manifest = "TestAndroidManifestWithReceiversCustomPackage.xml")
   @Test public void shouldAssignThePackageNameFromTheManifest() throws Exception {
     Application application = RuntimeEnvironment.application;
 
-    assertThat(application.getPackageName()).isEqualTo("org.robolectric.mypackage");
-    assertThat(application).isExactlyInstanceOf(Application.class);
+    assertThat(application.getPackageName()).isEqualTo("org.robolectric");
+    assertThat(application).isExactlyInstanceOf(TestApplication.class);
   }
 
   @Test
@@ -64,15 +63,6 @@ public class DefaultTestLifecycleTest {
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers.size()).isEqualTo(5);
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
-  }
-
-  @Config(manifest = "TestAndroidManifestForActivities.xml")
-  @Test public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
-    Application application = RuntimeEnvironment.application;
-
-    PackageManager packageManager = application.getPackageManager();
-    assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity"), -1)).isNotNull();
-    assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity2"), -1)).isNotNull();
   }
 
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {

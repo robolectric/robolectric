@@ -31,9 +31,9 @@ import org.robolectric.res.ResourcePath;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
-  public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
+  private static ResourcePath TEST_RESOURCE_PATH;
   public static final String TEST_PACKAGE = R.class.getPackage().getName();
-  public static File testDirLocation;
+  private static File testDirLocation;
 
   public static void assertEquals(Collection<?> expected, Collection<?> actual) {
     org.junit.Assert.assertEquals(stringify(expected), stringify(actual));
@@ -94,6 +94,9 @@ public abstract class TestUtil {
   }
 
   public static ResourcePath testResources() {
+    if (TEST_RESOURCE_PATH == null) {
+      TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
+    }
     return TEST_RESOURCE_PATH;
   }
 
