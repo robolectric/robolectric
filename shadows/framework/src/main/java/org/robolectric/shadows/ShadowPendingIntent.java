@@ -285,7 +285,7 @@ public class ShadowPendingIntent {
       if (extras != null) {
         extras.clear();
       }
-      intent.putExtras(intents[intents.length-1]);
+      intent.putExtras(intents[intents.length - 1]);
       return pendingIntent;
     }
 
