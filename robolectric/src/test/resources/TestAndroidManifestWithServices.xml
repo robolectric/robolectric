@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.robolectric">
+  <uses-sdk android:targetSdkVersion="18"/>
+  <application>
+    <service android:name="com.foo.Service" android:permission="com.foo.Permission">
+      <intent-filter>
+        <action android:name="org.robolectric.ACTION_DIFFERENT_PACKAGE"/>
+        <data android:mimeType="image/jpeg"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </service>
+
+    <service android:name="com.bar.ServiceWithoutIntentFilter"/>
+  </application>
+</manifest>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:aCustomNamespace="http://schemas.android.com/apk/res-auto">
+  <item android:color="#ffff0000" aCustomNamespace:stateFoo="true"/>
+  <item android:color="#ff000000"/>
+</selector>

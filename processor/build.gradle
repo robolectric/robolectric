@@ -1,0 +1,26 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.11"
+}
+
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+
+dependencies {
+    // Project dependencies
+    compile project(":annotations")
+
+    // Compile dependencies
+    compile "com.google.guava:guava:20.0"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
+    compile "com.google.code.gson:gson:2.8.0"
+    compile 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+
+    compile files(org.gradle.internal.jvm.Jvm.current().getToolsJar())
+
+    // Testing dependencies
+    testCompile "junit:junit:4.12"
+    testCompile "org.mockito:mockito-core:2.5.4"
+    testCompile "com.google.testing.compile:compile-testing:0.8"
+}

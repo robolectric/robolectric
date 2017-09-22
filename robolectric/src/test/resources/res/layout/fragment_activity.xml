@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_container"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    >
+
+  <fragment
+      android:id="@+id/fragment"
+      android:tag="fragment_tag"
+      android:name="org.robolectric.shadows.TestFragment"
+      />
+
+  <LinearLayout
+      android:id="@+id/dynamic_fragment_container"
+      />
+
+
+</LinearLayout>

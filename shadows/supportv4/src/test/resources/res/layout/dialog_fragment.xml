@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    >
+
+  <TextView
+      android:id="@+id/title"
+      android:layout_width="138dip"
+      android:layout_height="wrap_content"
+      android:maxHeight="46dip"
+      android:singleLine="false"
+      android:gravity="center_horizontal"
+      android:text="Main Layout"
+      android:textSize="18dip"
+      android:textStyle="bold"
+      android:textColor="#fff"
+      />
+
+</LinearLayout>

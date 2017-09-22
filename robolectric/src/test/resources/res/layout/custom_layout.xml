@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<org.robolectric.android.CustomView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:robolectric="http://schemas.android.com/apk/res-auto"
+    android:gravity="center"
+    robolectric:message="@string/hello"
+    robolectric:itemType="marsupial"
+    />

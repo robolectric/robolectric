@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.robolectric">
+    <uses-sdk android:targetSdkVersion="16"/>
+
+    <application>
+        <activity android:name="org.robolectric.shadows.TestActivity"/>
+
+        <activity android:name=".shadows.TestActivity2"/>
+    </application>
+</manifest>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    >
+
+  <include layout="@layout/snippet"/>
+
+  <View
+      android:layout_width="fill_parent"
+      android:layout_height="10dip"
+      />
+
+  <TextView
+      android:id="@+id/time"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="14dip"
+      android:textColor="#fff"
+      android:enabled="false"
+      android:contentDescription="@string/howdy"
+      android:alpha="0.3"
+      />
+
+  <TextView
+      android:id="@+id/title"
+      android:layout_width="138dip"
+      android:layout_height="wrap_content"
+      android:maxHeight="46dip"
+      android:singleLine="false"
+      android:gravity="center_horizontal"
+      android:text="Main Layout"
+      android:textSize="18dip"
+      android:textStyle="bold"
+      android:textColor="#fff"
+      android:drawableTop="@drawable/an_image"
+      android:drawableRight="@drawable/an_other_image"
+      android:drawableBottom="@drawable/third_image"
+      android:drawableLeft="@drawable/fourth_image"
+      />
+
+  <TextView
+      android:id="@+id/subtitle"
+      android:layout_width="138dip"
+      android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
+      android:text="@string/hello"
+      android:maxHeight="36dip"
+      android:textSize="14dip"
+      android:textColor="#fff"
+      />
+
+  <CheckBox
+      android:id="@+id/true_checkbox"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:checked="true"
+      />
+  <CheckBox
+      android:id="@+id/false_checkbox"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:checked="false"
+      />
+  <CheckBox
+      android:id="@+id/default_checkbox"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <ImageView
+      android:id="@+id/image"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="@drawable/an_image"
+      android:background="@drawable/image_background"
+      />
+
+    <ImageView
+            android:id="@+id/mipmapImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/robolectric"
+            />
+
+  <Button
+      android:id="@+id/button"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:onClick="onButtonClick"
+      />
+
+  <!-- see https://github.com/robolectric/robolectric/issues/521 -->
+  <HorizontalScrollView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+</LinearLayout>

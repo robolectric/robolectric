@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.robolectric"
+          name="ImplicitIntentTestApp">
+    <uses-sdk android:targetSdkVersion="16"/>
+
+    <application>
+        <activity android:name="org.robolectric.shadows.TestActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="content"
+                      android:host="testhost1.com"
+                      android:port="1"
+                      android:path="/testPath/test.jpeg"
+                      android:mimeType="video/mpeg" />
+                <data android:scheme="http"
+                      android:host="testhost2.com"
+                      android:port="2"
+                      android:pathPrefix="/testPrefix"
+                      android:mimeType="image/jpeg" />
+                <data android:scheme="https"
+                      android:host="testhost3.com"
+                      android:port="3"
+                      android:pathPattern="/.*testPattern"
+                      android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

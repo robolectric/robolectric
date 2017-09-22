@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="only_in_lib1">from lib1</string>
+  <string name="in_all_libs">from lib1</string>
+  <string name="in_main_and_lib1">from lib1</string>
+  <string name="in_lib1_and_lib3">from lib1</string>
+</resources>

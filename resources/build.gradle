@@ -1,0 +1,23 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.11"
+}
+
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+dependencies {
+    // Project dependencies
+    compile project(":utils")
+    compile project(":annotations")
+
+    // Compile dependencies
+    compile "com.google.guava:guava:20.0"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
+
+    // Testing dependencies
+    testCompile "junit:junit:4.12"
+    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "com.google.testing.compile:compile-testing:0.6"
+    testCompile "org.mockito:mockito-core:2.5.4"
+}

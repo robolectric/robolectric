@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="org.robolectric">
+  <uses-sdk android:targetSdkVersion="23"/>
+
+  <application android:name="org.robolectric.TestApplication"
+         android:theme="@style/Theme.Robolectric"
+         android:label="@string/app_name">
+
+    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivity"/>
+
+    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAnotherTheme"
+          android:theme="@style/Theme.AnotherTheme"/>
+
+    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAThirdTheme"
+          android:theme="@style/Theme.ThirdTheme"/>
+
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$ChildActivity"
+        android:parentActivityName="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
+
+    <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithMetadata">
+      <meta-data android:name="someName" android:value="someValue"/>
+    </activity>
+
+    <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithConfigChanges"
+              android:configChanges="mcc|screenLayout|orientation"/>
+
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity1" />
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity2"
+              android:label="@string/activity_name"/>
+    <activity android:name=".shadows.ShadowActivityTest$LabelTestActivity3"
+              android:label="@string/activity_name"/>
+    
+    <activity android:name=".android.controller.ActivityControllerTest$ConfigAwareActivity"
+              android:configChanges="fontScale" />
+  </application>
+</manifest>

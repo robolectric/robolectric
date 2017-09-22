@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <declare-styleable name="CustomView">
+    <attr name="itemType" format="enum">
+      <enum name="marsupial" value="0"/>
+      <enum name="ungulate" value="1"/>
+    </attr>
+    <attr name="message" format="string"/>
+
+    <attr name="scrollBars">
+      <flag name="horizontal" value="0x00000100" />
+      <flag name="vertical" value="0x00000200" />
+      <flag name="sideways" value="0x00000400" />
+    </attr>
+
+    <attr name="quitKeyCombo" format="string"/>
+
+    <attr name="numColumns" format="integer" min="0">
+      <!-- Display as many columns as possible to fill the available space. -->
+      <enum name="auto_fit" value="-1" />
+    </attr>
+
+    <attr name="sugarinessPercent" format="integer" min="0"/>
+
+    <attr name="gravity"/>
+
+    <attr name="keycode"/>
+
+    <attr name="aspectRatio" format="float" />
+    <attr name="aspectRatioEnabled" format="boolean" />
+    <attr name="animalStyle" format="reference" />
+
+    <!-- Test the same attr name as android namespace with different format -->
+    <attr name="typeface" format="string" />
+
+    <attr name="someLayoutOne" format="reference" />
+    <attr name="someLayoutTwo" format="reference" />
+  </declare-styleable>
+
+  <attr name="gravity">
+    <flag name="center" value="0x11" />
+    <flag name="fill_vertical" value="0x70" />
+  </attr>
+
+  <attr name="keycode">
+    <enum name="KEYCODE_SOFT_RIGHT" value="2" />
+    <enum name="KEYCODE_HOME" value="3" />
+  </attr>
+
+  <attr name="responses" format="reference"/>
+  <attr name="string1" format="string"/>
+  <attr name="string2" format="string"/>
+  <attr name="string3" format="string"/>
+  <attr name="parentStyleReference" format="reference"/>
+  <attr name="styleNotSpecifiedInAnyTheme" format="reference"/>
+
+  <declare-styleable name="CustomStateView">
+    <attr name="stateFoo" format="boolean" />
+  </declare-styleable>
+
+  <declare-styleable name="Theme.AnotherTheme.Attributes">
+    <attr name="averageSheepWidth" format="reference"/>
+    <attr name="isSugary" format="reference"/>
+    <attr name="logoHeight" format="reference"/>
+    <attr name="logoWidth" format="reference"/>
+    <attr name="styleReference" format="reference"/>
+    <attr name="styleReferenceWithoutExplicitType" format="reference"/>
+    <attr name="snail" format="reference"/>
+    <attr name="averageSheepWidth" format="reference"/>
+  </declare-styleable>
+</resources>

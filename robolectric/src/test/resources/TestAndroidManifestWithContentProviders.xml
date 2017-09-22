@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.robolectric">
+  <uses-sdk android:targetSdkVersion="18"/>
+  <application>
+    <provider
+      android:name="org.robolectric.tester.FullyQualifiedClassName"
+      android:authorities="org.robolectric.authority1"/>
+
+    <provider
+      android:name=".tester.PartiallyQualifiedClassName"
+      android:authorities="org.robolectric.authority2"/>
+
+    <provider
+      android:name="org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"
+      android:authorities="org.robolectric.authority2"
+      android:permission="PERMISSION"
+      android:readPermission="READ_PERMISSION"
+      android:writePermission="WRITE_PERMISSION"
+    >
+      <path-permission
+              android:pathPattern="/path/*"
+              android:readPermission="PATH_READ_PERMISSION"
+              android:writePermission="PATH_WRITE_PERMISSION"
+      />
+      <meta-data android:name="greeting" android:value="@string/hello"/>
+    </provider>
+  </application>
+</manifest>

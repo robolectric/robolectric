@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <PreferenceCategory
+      android:key="category"
+      android:title="Category Test">
+
+    <Preference
+        android:key="inside_category"
+        android:title="Inside Category Test"
+        android:summary=""/>
+
+  </PreferenceCategory>
+
+  <PreferenceScreen
+      android:key="screen"
+      android:title="Screen Test"
+      android:summary="Screen summary">
+
+    <Preference
+        android:key="inside_screen"
+        android:title="Inside Screen Test"
+        android:summary=""/>
+
+    <Preference
+        android:key="inside_screen_dependent"
+        android:title="Inside Screen Dependent Test"
+        android:dependency="inside_screen"
+        android:summary=""/>
+
+  </PreferenceScreen>
+
+  <CheckBoxPreference
+      android:key="checkbox"
+      android:title="Checkbox Test"
+      android:summary=""
+      android:defaultValue="true"/>
+
+  <EditTextPreference
+      android:key="edit_text"
+      android:title="EditText Test"
+      android:summary=""/>
+
+  <ListPreference
+      android:key="list"
+      android:title="List Test"
+      android:summary=""/>
+
+  <Preference
+      android:key="preference"
+      android:title="Preference Title"
+      android:summary=""/>
+
+  <RingtonePreference
+      android:key="ringtone"
+      android:title="Ringtone Test"
+      android:summary=""/>
+
+  <Preference
+      android:key="@string/preference_resource_key"
+      android:title="@string/preference_resource_title"
+      android:summary="@string/preference_resource_summary"/>
+
+  <Preference
+      android:key="dependant"
+      android:title="This preference is dependant on something else"
+      android:summary="Still depending on the preference above"
+      android:dependency="preference"/>
+
+  <Preference
+      android:key="intent"
+      android:title="Intent test"
+      android:summary="">
+
+    <intent
+        android:targetPackage="org.robolectric"
+        android:targetClass="org.robolectric.test.Intent"
+        android:mimeType="application/text"
+        android:action="action"
+        android:data="tel://1235"/>
+  </Preference>
+
+</PreferenceScreen>

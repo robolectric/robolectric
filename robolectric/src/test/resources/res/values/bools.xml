@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <bool name="false_bool_value">false</bool>
+  <bool name="true_bool_value">true</bool>
+  <bool name="reference_to_true">@bool/true_bool_value</bool>
+  <item name="true_as_item" type="bool">true</item>
+  <bool name="different_resource_boolean">false</bool>
+  <bool name="typed_array_true">true</bool>
+</resources>

@@ -1,0 +1,11 @@
+<resources>
+
+  <!--
+    Path to these resources contains words 'layout' and 'menu'
+    in order to test that they do not mislead resources loader.
+  -->
+
+  <string name="from_gradle_output">string example taken from gradle output directory</string>
+  <item name="item_from_gradle_output" format="float" type="string">3.14</item>
+
+</resources>

@@ -1,0 +1,46 @@
+# Eclipse
+.classpath
+.project
+.settings
+eclipsebin
+
+# m2e-apt
+.factorypath
+
+# Ant
+bin/
+out/
+
+# Maven
+dist
+target
+pom.xml.*
+release.properties
+
+# Gradle
+.gradle/
+build
+
+# IntelliJ
+.idea
+*.iml
+*.iws
+*.ipr
+classes
+
+# Other editors
+*.orig
+*.swp
+*~
+\#*\#
+
+# Mac
+.DS_Store
+
+tmp
+local.properties
+
+
+# CTS stuff
+cts/
+cts-libs/

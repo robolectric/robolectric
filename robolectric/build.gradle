@@ -1,0 +1,89 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.11"
+}
+
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+processResources {
+    filesMatching("**/robolectric-version.properties") {
+        filter { String line ->
+            return line.replaceAll(/\$\{project.version\}/, project.version)
+        }
+    }
+}
+
+configurations {
+    shadow
+}
+
+project.sourceSets.test.compileClasspath += configurations.shadow
+
+dependencies {
+    // Project dependencies
+    compile project(":annotations")
+    compile project(":junit")
+    compile project(":resources")
+    compile project(":sandbox")
+    compile project(":utils")
+
+    // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
+    //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
+    compile project(":shadows:framework")
+
+    // Compile dependencies
+    compile "org.bouncycastle:bcprov-jdk16:1.46"
+    compile "com.thoughtworks.xstream:xstream:1.4.8"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
+
+    compile "org.apache.ant:ant:1.8.0"
+    compile("org.apache.maven:maven-ant-tasks:2.1.3") {
+        exclude group: "junit", module: "junit"
+    }
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+    compileOnly "junit:junit:4.12"
+
+    // Testing dependencies
+    testCompile "junit:junit:4.12"
+    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "org.mockito:mockito-core:2.5.4"
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
+    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates // run against whatever this JDK supports
+}
+
+project.apply plugin: CheckApiChangesPlugin
+
+checkApiChanges {
+    from = [
+            "org.robolectric:robolectric:${apiCompatVersion}@jar",
+            "org.robolectric:annotations:${apiCompatVersion}@jar",
+            "org.robolectric:junit:${apiCompatVersion}@jar",
+            "org.robolectric:resources:${apiCompatVersion}@jar",
+            "org.robolectric:sandbox:${apiCompatVersion}@jar",
+            "org.robolectric:utils:${apiCompatVersion}@jar",
+            "org.robolectric:shadowapi:${apiCompatVersion}@jar",
+            "org.robolectric:shadows-core:${apiCompatVersion}@jar",
+    ]
+
+    to = [
+            project(":robolectric"),
+            project(":annotations"),
+            project(":junit"),
+            project(":resources"),
+            project(":sandbox"),
+            project(":shadows:framework"),
+            project(":utils"),
+            project(":shadowapi"),
+    ]
+
+    entryPoints += "org.robolectric.RobolectricTestRunner"
+    expectedChanges = [
+            "^org.robolectric.util.ActivityController#",
+            "^org.robolectric.util.ComponentController#",
+            "^org.robolectric.util.ContentProviderController#",
+            "^org.robolectric.util.FragmentController#",
+            "^org.robolectric.util.IntentServiceController#",
+            "^org.robolectric.util.ServiceController#",
+    ]
+}

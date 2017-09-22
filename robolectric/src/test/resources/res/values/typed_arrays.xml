@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="typed_array_values">
+        <item>abcdefg</item>
+        <item>3875</item>
+        <item>2.0</item>
+        <item>#ffff00ff</item>
+        <item>#00ffff</item>
+        <item>8px</item>
+        <item>12dp</item>
+        <item>6dip</item>
+        <item>3mm</item>
+        <item>4in</item>
+        <item>36sp</item>
+        <item>18pt</item>
+    </array>
+
+    <array name="typed_array_references">
+        <item>@string/typed_array_a</item>
+        <item>@string/typed_array_b</item>
+        <item>@integer/typed_array_5</item>
+        <item>@bool/typed_array_true</item>
+        <item>@null</item>
+        <item>@drawable/an_image</item>
+        <item>@color/typed_array_orange</item>
+        <item>?attr/animalStyle</item>
+        <item>@array/typed_array_values</item>
+        <item>@style/Theme.Robolectric</item>
+    </array>
+
+    <array name="typed_array_with_resource_id">
+        <item>@id/id_declared_in_item_tag</item>
+        <item>@id/id_declared_in_layout</item>
+    </array>
+</resources>

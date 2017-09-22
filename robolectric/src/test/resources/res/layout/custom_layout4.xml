@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:robolectric="http://schemas.android.com/apk/res-auto"
+    xmlns:fakens="http://example.com/fakens"
+    >
+  <org.robolectric.android.CustomView
+      android:id="@+id/custom_view"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      robolectric:message="@string/hello"
+      robolectric:itemType="marsupial"
+      fakens:message="@layout/text_views"
+      >
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+  </org.robolectric.android.CustomView>
+</LinearLayout>
