@@ -7,7 +7,6 @@ import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.annotation.NonNull;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
@@ -16,9 +15,7 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -37,7 +34,7 @@ public class ShadowPendingIntent {
   @RealObject
   private PendingIntent realPendingIntent;
 
-  @NonNull private Intent[] savedIntents;
+  private Intent[] savedIntents;
   private Context savedContext;
   private Type type;
   private int requestCode;
@@ -233,23 +230,27 @@ public class ShadowPendingIntent {
     if (this == o) return true;
     if (o == null || realPendingIntent.getClass() != o.getClass()) return false;
     ShadowPendingIntent that = shadowOf((PendingIntent) o);
-
-    String packageName = savedContext == null ? null : savedContext.getPackageName();
-    String thatPackageName = that.savedContext == null ? null : that.savedContext.getPackageName();
-    if (!Objects.equals(packageName, thatPackageName)) {
+    if (savedContext != null) {
+      String packageName = savedContext.getPackageName();
+      String thatPackageName = that.savedContext.getPackageName();
+      if (packageName != null ? !packageName.equals(thatPackageName) : thatPackageName != null) return false;
+    } else {
+      if (that.savedContext != null) return false;
+    }
+    if (this.savedIntents == null) {
+      return that.savedIntents == null;
+    }
+    if (that.savedIntents == null) {
       return false;
     }
-
     if (this.savedIntents.length != that.savedIntents.length) {
       return false;
     }
-
     for (int i = 0; i < this.savedIntents.length; i++) {
       if (!this.savedIntents[i].filterEquals(that.savedIntents[i])) {
         return false;
       }
     }
-
     if (this.requestCode != that.requestCode) {
       return false;
     }

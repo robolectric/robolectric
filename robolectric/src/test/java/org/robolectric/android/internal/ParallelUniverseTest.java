@@ -63,8 +63,11 @@ public class ParallelUniverseTest {
     ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     Method method = getDummyMethodForTest();
-    pu.setUpApplicationState(method, new DefaultTestLifecycle(),
-            appManifest, defaultConfig,
+    pu.setUpApplicationState(
+        method,
+        new DefaultTestLifecycle(),
+        appManifest,
+        defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
         RuntimeEnvironment.getSystemResourceTable());
@@ -123,13 +126,14 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
-    Thread t = new Thread() {
-      @Override
-      public void run() {
-        setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
-        res.set(RuntimeEnvironment.isMainThread());
-      }
-    };
+    Thread t =
+        new Thread() {
+          @Override
+          public void run() {
+            setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
+            res.set(RuntimeEnvironment.isMainThread());
+          }
+        };
     t.start();
     t.join(1000);
     assertThat(res.get()).isTrue();
@@ -182,9 +186,7 @@ public class ParallelUniverseTest {
     }
   }
 
-  /**
-   * Can't use Mockito for classloader issues
-   */
+  /** Can't use Mockito for classloader issues */
   class ThrowingManifest extends AndroidManifest {
     public ThrowingManifest() {
       super(null, null, null);

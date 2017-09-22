@@ -2,7 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.admin.DevicePolicyManager;
@@ -471,5 +474,107 @@ public final class ShadowDevicePolicyManagerTest {
     // DevicePolicyManager#getAccountTypesWithManagementDisabled
     // THEN it should not contain the re-enabled account type
     assertThat(devicePolicyManager.getAccountTypesWithManagementDisabled()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setOrganizationNameShouldWorkForPoSinceN() {
+    // GIVEN the caller is the profile owner
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // WHEN setting an organization name
+    String organizationName = "TestOrg";
+    devicePolicyManager.setOrganizationName(testComponent, organizationName);
+
+    // THEN the name should be set properly
+    assertThat(devicePolicyManager.getOrganizationName(testComponent)).isEqualTo(organizationName);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setOrganizationNameShouldClearNameWithEmptyNameForPoSinceN() {
+    // GIVEN the caller is the profile owner
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // GIVEN that the profile has already set the name TestOrg
+    String organizationName = "TestOrg";
+    devicePolicyManager.setOrganizationName(testComponent, organizationName);
+
+    // WHEN setting an organization name to empty
+    devicePolicyManager.setOrganizationName(testComponent, "");
+
+    // THEN the name should be cleared
+    assertThat(devicePolicyManager.getOrganizationName(testComponent)).isNull();
+  }
+
+  @Test
+  @Config(sdk = N)
+  public void setOrganizationNameShouldNotWorkForDoInN() {
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setting an organization name
+    // THEN the method should throw SecurityException
+    String organizationName = "TestOrg";
+    try {
+      devicePolicyManager.setOrganizationName(testComponent, organizationName);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setOrganizationNameShouldWorkForDoSinceO() {
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setting an organization name
+    String organizationName = "TestOrg";
+    devicePolicyManager.setOrganizationName(testComponent, organizationName);
+
+    // THEN the name should be set properly
+    assertThat(devicePolicyManager.getOrganizationName(testComponent)).isEqualTo(organizationName);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setOrganizationColorShouldWorkForPoSinceN() {
+    // GIVEN the caller is the profile owner
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // WHEN setting an organization color
+    int color = 0xFFFF00FF;
+    devicePolicyManager.setOrganizationColor(testComponent, color);
+
+    // THEN the color should be set properly
+    assertThat(devicePolicyManager.getOrganizationColor(testComponent)).isEqualTo(color);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getOrganizationColorShouldReturnDefaultColorIfNothingSet() {
+    // GIVEN the caller is the profile owner
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // WHEN getting an organization color without setting it
+    // THEN the color returned should be the default color
+    assertThat(devicePolicyManager.getOrganizationColor(testComponent)).isEqualTo(0xFF008080);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setOrganizationColorShouldNotWorkForDo() {
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setting an organization color
+    // THEN the method should throw SecurityException
+    int color = 0xFFFF00FF;
+    try {
+      devicePolicyManager.setOrganizationColor(testComponent, color);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
   }
 }

@@ -9,6 +9,7 @@ import android.app.Application;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -156,6 +157,19 @@ public class ConfigMergerTest {
   /////////////////////////////
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties) throws InitializationError {
+    return configFor(testClass, methodName, configProperties, Config.Builder.defaults().build());
+  }
+
+  private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
+    Config.Implementation globalConfig = Config.Builder.defaults().build();
+    return configFor(testClass, methodName, globalConfig);
+  }
+
+  private Config configFor(Class<?> testClass, String methodName, Config.Implementation globalConfig) throws InitializationError {
+    return configFor(testClass, methodName, new HashMap<>(), globalConfig);
+  }
+
+  private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties, Config.Implementation globalConfig) throws InitializationError {
     Method info = getMethod(testClass, methodName);
     return new ConfigMerger() {
       @Override
@@ -163,17 +177,7 @@ public class ConfigMergerTest {
         String properties = configProperties.get(resourceName);
         return properties == null ? null : new ByteArrayInputStream(properties.getBytes());
       }
-    }.getConfig(testClass, info, Config.Builder.defaults().build());
-  }
-
-  private Config configFor(Class<?> testClass, String methodName) {
-    Config.Implementation globalConfig = Config.Builder.defaults().build();
-    return configFor(testClass, methodName, globalConfig);
-  }
-
-  private Config configFor(Class<?> testClass, String methodName, Config.Implementation globalConfig) {
-    Method info = getMethod(testClass, methodName);
-    return new ConfigMerger().getConfig(testClass, info, globalConfig);
+    }.getConfig(testClass, info, globalConfig);
   }
 
   private static Method getMethod(Class<?> testClass, String methodName) {
