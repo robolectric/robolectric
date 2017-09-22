@@ -78,7 +78,7 @@ public class RobolectricTestRunnerSelfTest {
   }
 
   @AfterClass
-  public void resetStaticState_shouldBeCalled_onMainThread() {
+  public static void resetStaticState_shouldBeCalled_onMainThread() {
     assertThat(onTerminateCalledFromMain).isTrue();
   }
 

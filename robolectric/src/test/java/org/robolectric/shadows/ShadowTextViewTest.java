@@ -37,6 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +88,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void testGetUrls() throws Exception {
+    Locale.setDefault(Locale.ENGLISH);
     textView.setAutoLinkMask(Linkify.ALL);
     textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
 
