@@ -14,21 +14,6 @@ public class TestRunners {
       super(testClass);
       Locale.setDefault(Locale.ENGLISH);
     }
-
-    @Override
-    protected Config buildGlobalConfig() {
-      return new Config.Builder(super.buildGlobalConfig())
-          .setManifest("TestAndroidManifest.xml")
-          .build();
-    }
-
-    @Override
-    public Config getConfig(Method method) {
-      Config baseConfig = super.getConfig(method);
-      return new Config.Builder(baseConfig)
-              .setManifest(resourceFile(baseConfig.manifest()).toString())
-              .build();
-    }
   }
 
   public static class MultiApiSelfTest extends SelfTest {
