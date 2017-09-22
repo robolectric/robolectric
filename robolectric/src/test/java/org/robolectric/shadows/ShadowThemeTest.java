@@ -25,6 +25,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
+@Config(sdk = VERSION_CODES.N_MR1)
 public class ShadowThemeTest {
   private Resources resources;
 
@@ -220,11 +221,13 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReference").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReference").build(),
+        new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(),
+        new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
   }
 

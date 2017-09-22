@@ -48,7 +48,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.N_MR1)
+@Config(sdk = VERSION_CODES.N_MR1) // todo: unpin
 public class ShadowResourcesTest {
   private Resources resources;
 
@@ -698,7 +698,7 @@ public class ShadowResourcesTest {
     typedArray.recycle();
   }
 
-  @Test @Config(sdk = 25) // todo: unpin
+  @Test
   public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() throws Exception {
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
