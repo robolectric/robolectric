@@ -4,14 +4,15 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.Application;
 import android.app.LoadedApk;
+import android.app.ResourcesManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemProperties;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.security.Security;
@@ -99,11 +100,30 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp != 0 ? resTab.smallestScreenWidthDp : 320;
     configuration.screenWidthDp = resTab.screenWidthDp != 0 ? resTab.screenWidthDp : 320 ;
     configuration.orientation = resTab.orientation;
+
+    // begin new stuff
+    configuration.mcc = resTab.mcc;
+    configuration.mnc = resTab.mnc;
+    configuration.screenLayout = resTab.screenLayout;
+    configuration.touchscreen = resTab.touchscreen;
+    configuration.keyboard = resTab.keyboard;
+    configuration.keyboardHidden = resTab.keyboardHidden();
+    configuration.navigation = resTab.navigation;
+    configuration.navigationHidden = resTab.navigationHidden();
+    configuration.orientation = resTab.orientation;
+    configuration.uiMode = resTab.uiMode;
+    configuration.screenHeightDp = resTab.screenHeightDp;
+    configuration.densityDpi = resTab.density;
+    // end new stuff
+
     if (resTab.languageString() != null && resTab.regionString() != null) {
-      configuration.locale = new Locale(resTab.languageString(), resTab.regionString());
+      configuration.setLocale(new Locale(resTab.languageString(), resTab.regionString()));
     } else if (resTab.languageString() != null) {
-      configuration.locale = new Locale(resTab.languageString());
+      configuration.setLocale(new Locale(resTab.languageString()));
     }
+
+    ResourcesManager.getInstance().applyConfigurationToResourcesLocked(configuration,
+        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
 
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
 

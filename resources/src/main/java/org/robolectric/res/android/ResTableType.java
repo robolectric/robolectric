@@ -70,4 +70,11 @@ public class ResTableType {
         // todo
         return null;
     }
-};
+
+    @Override
+    public String toString() {
+        return "ResTableType{" +
+            "config=" + config +
+            '}';
+    }
+}

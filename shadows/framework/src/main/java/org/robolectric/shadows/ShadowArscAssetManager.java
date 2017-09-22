@@ -281,25 +281,48 @@ public class ShadowArscAssetManager {
       int orientation, int touchscreen, int density, int keyboard,
       int keyboardHidden, int navigation, int screenWidth, int screenHeight,
       int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-      int screenLayout, int uiMode, int majorVersion) {
-    directlyOn(realObject, AssetManager.class, "setConfiguration",
-        ClassParameter.from(int.class, mcc),
-        ClassParameter.from(int.class, mnc),
-        ClassParameter.from(String.class, locale),
-        ClassParameter.from(int.class, orientation),
-        ClassParameter.from(int.class, touchscreen),
-        ClassParameter.from(int.class, density),
-        ClassParameter.from(int.class, keyboard),
-        ClassParameter.from(int.class, keyboardHidden),
-        ClassParameter.from(int.class, navigation),
-        ClassParameter.from(int.class, screenWidth),
-        ClassParameter.from(int.class, screenHeight),
-        ClassParameter.from(int.class, smallestScreenWidthDp),
-        ClassParameter.from(int.class, screenWidthDp),
-        ClassParameter.from(int.class, screenHeightDp),
-        ClassParameter.from(int.class, screenLayout),
-        ClassParameter.from(int.class, uiMode),
-        ClassParameter.from(int.class, majorVersion));
+      int screenLayout, int uiMode, int sdkVersion) {
+    CppAssetManager am = assetManagerForJavaObject();
+    if (am == null) {
+      return;
+    }
+
+    ResTableConfig config = new ResTableConfig();
+//    memset(&config, 0, sizeof(config));
+
+//    const char* locale8 = locale != NULL ? env->GetStringUTFChars(locale, NULL) : NULL;
+
+    // Constants duplicated from Java class android.content.res.Configuration.
+    int kScreenLayoutRoundMask = 0x300;
+    int kScreenLayoutRoundShift = 8;
+
+    config.mcc = mcc;
+    config.mnc = mnc;
+    config.orientation = orientation;
+    config.touchscreen = touchscreen;
+    config.density = density;
+    config.keyboard = keyboard;
+    config.inputFlags = keyboardHidden;
+    config.navigation = navigation;
+    config.screenWidth = screenWidth;
+    config.screenHeight = screenHeight;
+    config.smallestScreenWidthDp = smallestScreenWidthDp;
+    config.screenWidthDp = screenWidthDp;
+    config.screenHeightDp = screenHeightDp;
+    config.screenLayout = screenLayout;
+    config.uiMode = uiMode;
+    config.sdkVersion = sdkVersion;
+    config.minorVersion = 0;
+
+    // In Java, we use a 32bit integer for screenLayout, while we only use an 8bit integer
+    // in C++. We must extract the round qualifier out of the Java screenLayout and put it
+    // into screenLayout2.
+    config.screenLayout2 =
+        (byte) ((screenLayout & kScreenLayoutRoundMask) >> kScreenLayoutRoundShift);
+
+    am.setConfiguration(config, locale);
+
+//    if (locale != null) env->ReleaseStringUTFChars(locale, locale8);
   }
 
   @HiddenApi

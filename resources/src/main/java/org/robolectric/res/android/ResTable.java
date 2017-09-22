@@ -4,8 +4,8 @@ import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.BAD_VALUE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
-import static org.robolectric.res.android.Errors.NO_MEMORY;
 import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
+import static org.robolectric.res.android.Util.ALOGD;
 import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGW;
@@ -76,7 +76,6 @@ public class ResTable {
   byte[]                     mPackageMap = new byte[256];
 
   byte                     mNextPackageId;
-  private ResTableConfig parameters;
 
   static boolean Res_CHECKID(int resid) { return ((resid&0xFFFF0000) != 0);}
   static int Res_GETPACKAGE(int id) {
@@ -556,22 +555,17 @@ public class ResTable {
           continue;
         }
 
-        bestEntry = thisType.entries.get(realEntryIndex);
-        if (bestEntry == null) {
-          // There is no entry for this index and configuration.
-          continue;
-        }
-
         // Check if there is the desired entry in this type.
 //        final uint* final eindex = reinterpret_cast<final uint*>(
 //            reinterpret_cast<final uint8_t*>(thisType) + dtohs(thisType.header.headerSize));
 //        final int[] eindex = thisType.eindex(dtohs(thisType.header.headerSize));
-
 //        int thisOffset = dtohl(eindex[realEntryIndex]);
 //        if (thisOffset == ResTableType.NO_ENTRY) {
-//          // There is no entry for this index and configuration.
-//          continue;
-//        }
+        ResTableEntry thisEntry = thisType.entries.get(realEntryIndex);
+        if (thisEntry == null) {
+          // There is no entry for this index and configuration.
+          continue;
+        }
 
         if (bestType != NULL) {
           // Check if this one is less specific than the last found.  If so,
@@ -585,6 +579,7 @@ public class ResTable {
         }
 
         bestType = thisType;
+        bestEntry = thisEntry;
 //        bestOffset = thisOffset;
         bestConfig = thisConfig;
         bestPackage = typeSpec._package_;
@@ -639,12 +634,75 @@ public class ResTable {
     return NO_ERROR;
   }
 
-  public void setParameters(ResTableConfig parameters) {
-    this.parameters = parameters;
-  }
-
   public int getTableCookie(int index) {
     return mHeaders.get(index).cookie;
+  }
+
+  void setParameters(ResTableConfig params)
+  {
+//    AutoMutex _lock(mLock);
+//    AutoMutex _lock2(mFilteredConfigLock);
+    synchronized (mLock) {
+      synchronized (mFilteredConfigLock) {
+        if (kDebugTableGetEntry) {
+          ALOGI("Setting parameters: %s\n", params.toString());
+        }
+        mParams = params;
+        for (Integer p : mPackageGroups.keySet()) {
+          PackageGroup packageGroup = mPackageGroups.get(p);
+          if (kDebugTableNoisy) {
+            ALOGI("CLEARING BAGS FOR GROUP %zu!", p);
+          }
+          packageGroup.clearBagCache();
+
+          // Find which configurations match the set of parameters. This allows for a much
+          // faster lookup in getEntry() if the set of values is narrowed down.
+          for (int t = 0; t < packageGroup.types.size(); t++) {
+            if (packageGroup.types.get(t).isEmpty()) {
+              continue;
+            }
+
+            List<Type> typeList = packageGroup.types.get(t);
+
+            // Retrieve the cache entry for this type.
+            TypeCacheEntry cacheEntry = packageGroup.typeCacheEntries.editItemAt(t);
+
+            for (int ts = 0; ts < typeList.size(); ts++) {
+              Type type = typeList.get(ts);
+
+//              std::shared_ptr<Vector<const ResTable_type*>> newFilteredConfigs =
+//                  std::make_shared<Vector<const ResTable_type*>>();
+              List<ResTableType> newFilteredConfigs = new ArrayList<>();
+
+              for (int ti = 0; ti < type.configs.size(); ti++) {
+                ResTableConfig config = ResTableConfig.fromDtoH(type.configs.get(ti).config);
+
+                if (config.match(mParams)) {
+                  newFilteredConfigs.add(type.configs.get(ti));
+                }
+              }
+
+              if (kDebugTableNoisy) {
+                ALOGD("Updating pkg=%zu type=%zu with %zu filtered configs",
+                    p, t, newFilteredConfigs.size());
+              }
+
+              // todo: implement cache
+//              cacheEntry.filteredConfigs.add(newFilteredConfigs);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ResTableConfig getParameters()
+  {
+//    mLock.lock();
+    synchronized (mLock) {
+      return mParams;
+    }
+//    mLock.unlock();
   }
 
   private static final Map<String, Integer> sInternalNameToIdMap = new HashMap<>();
@@ -1977,11 +2035,11 @@ public class ResTable {
 //      }
 //    }
 
-//    /**
-//     * Clear all cache related data that depends on parameters/configuration.
-//     * This includes the bag caches and filtered types.
-//     */
-//    void clearBagCache() {
+    /**
+     * Clear all cache related data that depends on parameters/configuration.
+     * This includes the bag caches and filtered types.
+     */
+    void clearBagCache() {
 //      for (int i = 0; i < typeCacheEntries.size(); i++) {
 //        if (kDebugTableNoisy) {
 //          printf("type=%zu\n", i);
@@ -2013,7 +2071,7 @@ public class ResTable {
 //          }
 //        }
 //      }
-//    }
+    }
 
     private void printf(String message, Object... arguments) {
       System.out.print(String.format(message, arguments));

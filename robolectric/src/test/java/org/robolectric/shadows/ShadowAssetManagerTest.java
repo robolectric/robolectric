@@ -100,7 +100,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
+    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/an_image.png", 0);
 
     ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
     assertThat(byteArrayInputStream.available()).isEqualTo(6559);
