@@ -179,8 +179,8 @@ public class ShadowResourcesTest {
 
     assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.typed_array_values);
     assertThat(refsTypedArray.getTextArray(8))
-        .containsExactly("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
-            "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
+        .containsExactly("abcdefg", null, null, null, null, null,
+            null, null, null, null, null, null);
 
     assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
   }
@@ -739,7 +739,7 @@ public class ShadowResourcesTest {
         android.R.attr.viewportWidth,
         android.R.attr.viewportHeight
     }, 0, 0);
-    assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
+    assertThat(typedArray.getFloat(0, 0)).isEqualTo(23.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
     typedArray.recycle();
   }

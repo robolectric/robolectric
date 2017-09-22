@@ -62,7 +62,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attr2FromLib1=0x7f010026;
+        public static final int attr2FromLib1=0x7f010025;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -70,7 +70,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attrFromLib1=0x7f010025;
+        public static final int attrFromLib1=0x7f010024;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -78,7 +78,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attrFromLib2=0x7f010024;
+        public static final int attrFromLib2=0x7f010026;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
@@ -529,7 +529,7 @@ containing a value of this type.
         public static final int howdy=0x7f0f0002;
         public static final int in_all_libs=0x7f0f0008;
         public static final int in_lib1_and_lib3=0x7f0f0025;
-        public static final int in_lib2_and_lib3=0x7f0f0026;
+        public static final int in_lib2_and_lib3=0x7f0f0027;
         public static final int in_main_and_lib1=0x7f0f0009;
         public static final int interpolate=0x7f0f000c;
         public static final int leading_and_trailing_new_lines=0x7f0f0010;
@@ -540,9 +540,9 @@ containing a value of this type.
         public static final int not_in_the_r_file=0x7f0f0006;
         public static final int ok=0x7f0f000a;
         public static final int ok2=0x7f0f000b;
-        public static final int only_in_lib1=0x7f0f0028;
-        public static final int only_in_lib2=0x7f0f0027;
-        public static final int only_in_lib3=0x7f0f0024;
+        public static final int only_in_lib1=0x7f0f0024;
+        public static final int only_in_lib2=0x7f0f0026;
+        public static final int only_in_lib3=0x7f0f0028;
         public static final int only_in_main=0x7f0f0007;
         public static final int preference_resource_default_value=0x7f0f001c;
         public static final int preference_resource_key=0x7f0f0019;
@@ -669,7 +669,7 @@ containing a value of this type.
             0x7f010000, 0x7f010001, 0x7f010002, 0x7f010003,
             0x7f010004, 0x7f010005, 0x7f010006, 0x7f010007,
             0x7f010008, 0x7f010009, 0x7f01000a, 0x7f01000b,
-            0x7f01000c, 0x7f01000d, 0x7f010024
+            0x7f01000c, 0x7f01000d, 0x7f010026
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#animalStyle}
@@ -905,7 +905,7 @@ containing a value of this type.
            @see #Lib1Styleable_attrFromLib1
          */
         public static final int[] Lib1Styleable = {
-            0x7f010025, 0x7f010026
+            0x7f010024, 0x7f010025
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#attr2FromLib1}
