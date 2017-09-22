@@ -302,8 +302,7 @@ public class ShadowResources {
     private String message;
 
     @Implementation
-    public void __constructor__() {
-    }
+    public void __constructor__() {}
 
     @Implementation
     public void __constructor__(String name) {
