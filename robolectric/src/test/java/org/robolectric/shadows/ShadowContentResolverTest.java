@@ -50,14 +50,14 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContentResolverTest {
   private static final String AUTHORITY = "org.robolectric";
 

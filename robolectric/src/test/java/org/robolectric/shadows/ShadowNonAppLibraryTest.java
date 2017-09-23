@@ -9,11 +9,11 @@ import android.content.pm.PackageInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @Config(manifest = Config.NONE)
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowNonAppLibraryTest {
   @Test public void shouldStillCreateAnApplication() throws Exception {
     assertThat(RuntimeEnvironment.application).isExactlyInstanceOf(Application.class);

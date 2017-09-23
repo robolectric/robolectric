@@ -80,11 +80,11 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowPackageManagerTest {
 
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";

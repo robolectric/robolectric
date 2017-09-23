@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ResourceMergerTest {
   private final Resources resources = RuntimeEnvironment.application.getResources();
 

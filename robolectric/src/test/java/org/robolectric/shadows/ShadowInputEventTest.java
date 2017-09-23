@@ -7,9 +7,9 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowInputEventTest {
   @Test
   public void canSetInputDeviceOnKeyEvent() throws Exception {

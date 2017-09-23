@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @Config(qualifiers = "en")
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class QualifiersTest {
 
   @Test

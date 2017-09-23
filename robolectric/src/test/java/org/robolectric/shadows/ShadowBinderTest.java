@@ -9,9 +9,9 @@ import android.os.Parcel;
 import android.os.RemoteException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowBinderTest {
   @Test
   public void transactCallsOnTransact() throws Exception {

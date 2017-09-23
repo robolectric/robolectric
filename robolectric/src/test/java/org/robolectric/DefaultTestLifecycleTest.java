@@ -22,7 +22,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class DefaultTestLifecycleTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();

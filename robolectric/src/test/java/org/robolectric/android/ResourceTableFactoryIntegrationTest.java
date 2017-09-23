@@ -2,13 +2,16 @@ package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.os.Build;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(minSdk = Build.VERSION_CODES.L)
 public class ResourceTableFactoryIntegrationTest {
   @Test
   public void shouldIncludeStyleableAttributesThatDoNotHaveACorrespondingEntryInAttrClass() throws Exception {

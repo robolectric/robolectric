@@ -11,9 +11,9 @@ import android.view.Window;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSurfaceViewTest {
 
   private SurfaceHolder.Callback callback1 = new TestCallback();

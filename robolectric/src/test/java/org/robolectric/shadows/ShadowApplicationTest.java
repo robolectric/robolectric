@@ -48,7 +48,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.TestBroadcastReceiver;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboVibrator;
@@ -56,7 +56,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.util.Scheduler;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
