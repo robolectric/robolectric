@@ -37,7 +37,7 @@ dependencies {
     testCompile "org.mockito:mockito-core:2.5.4"
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
+    testRuntime AndroidSdk.MAX_SDK.coordinates
     testRuntime "com.android.support:support-v4:26.0.0-alpha1"
     testRuntime "com.android.support:support-compat:26.0.0-alpha1"
     testRuntime "com.android.support:support-core-ui:26.0.0-alpha1"
