@@ -13,6 +13,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.NEWEST_SDK)
 public class AndroidTranslatorClassInstrumentedTest {
 
   @Test
