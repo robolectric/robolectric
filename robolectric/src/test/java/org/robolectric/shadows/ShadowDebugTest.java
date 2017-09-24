@@ -6,10 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.os.Debug;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowDebugTest {
   @Test
   public void initNoCrash() {

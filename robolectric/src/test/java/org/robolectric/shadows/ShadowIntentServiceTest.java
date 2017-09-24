@@ -7,9 +7,9 @@ import android.app.IntentService;
 import android.content.Intent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowIntentServiceTest {
   @Test
   public void shouldSetIntentRedelivery() {
