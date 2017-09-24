@@ -11,7 +11,6 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.test.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 import android.app.Activity;
 import android.content.Context;
@@ -57,7 +56,7 @@ public class ShadowLayoutInflaterTest {
   public void testCreatesCorrectClasses() throws Exception {
     int layoutResId = context.getResources().getIdentifier("media", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(LinearLayout.class, view);
+    assertThat(view).isInstanceOf((Class<? extends ViewGroup>) LinearLayout.class);
 
     assertSame(context, view.getContext());
   }
@@ -110,29 +109,29 @@ public class ShadowLayoutInflaterTest {
   public void testFindsChildrenById() throws Exception {
     int layoutResId1 = context.getResources().getIdentifier("media", "layout", TEST_PACKAGE);
     ViewGroup mediaView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId1, null);
-    assertInstanceOf(TextView.class, mediaView.findViewById(R.id.title));
+    assertThat(mediaView.<TextView>findViewById(R.id.title)).isInstanceOf((Class<? extends TextView>) TextView.class);
 
     int layoutResId = context.getResources().getIdentifier("main", "layout", TEST_PACKAGE);
     ViewGroup mainView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(View.class, mainView.findViewById(R.id.title));
+    assertThat(mainView.<View>findViewById(R.id.title)).isInstanceOf((Class<? extends View>) View.class);
   }
 
   @Test
   public void testInflatingConflictingSystemAndLocalViewsWorks() throws Exception {
     int layoutResId1 = context.getResources().getIdentifier("activity_list_item", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId1, null);
-    assertInstanceOf(ImageView.class, view.findViewById(R.id.icon));
+    assertThat(view.<ImageView>findViewById(R.id.icon)).isInstanceOf((Class<? extends ImageView>) ImageView.class);
 
     int layoutResId = context.getResources().getIdentifier("activity_list_item", "layout", "android");
     view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(ImageView.class, view.findViewById(android.R.id.icon));
+    assertThat(view.<ImageView>findViewById(android.R.id.icon)).isInstanceOf((Class<? extends ImageView>) ImageView.class);
   }
 
   @Test
   public void testInclude() throws Exception {
     int layoutResId = context.getResources().getIdentifier("media", "layout", TEST_PACKAGE);
     ViewGroup mediaView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(TextView.class, mediaView.findViewById(R.id.include_id));
+    assertThat(mediaView.<TextView>findViewById(R.id.include_id)).isInstanceOf((Class<? extends TextView>) TextView.class);
   }
 
   @Test
@@ -153,22 +152,22 @@ public class ShadowLayoutInflaterTest {
   public void shouldRetainIdOnIncludedMergeWhenIncludeSpecifiesNoId() throws Exception {
     int layoutResId = context.getResources().getIdentifier("override_include", "layout", TEST_PACKAGE);
     ViewGroup mediaView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(TextView.class, mediaView.findViewById(R.id.inner_text));
+    assertThat(mediaView.<TextView>findViewById(R.id.inner_text)).isInstanceOf((Class<? extends TextView>) TextView.class);
   }
 
   @Test
   public void shouldRetainIdOnIncludedNonMergeWhenIncludeSpecifiesNoId() throws Exception {
     int layoutResId = context.getResources().getIdentifier("override_include", "layout", TEST_PACKAGE);
     ViewGroup mediaView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(TextView.class, mediaView.findViewById(R.id.snippet_text));
+    assertThat(mediaView.<TextView>findViewById(R.id.snippet_text)).isInstanceOf((Class<? extends TextView>) TextView.class);
   }
 
   @Test
   public void testIncludedIdShouldNotBeFoundWhenIncludedIsMerge() throws Exception {
     int layoutResId = context.getResources().getIdentifier("outer", "layout", TEST_PACKAGE);
     ViewGroup overrideIncludeView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(LinearLayout.class, overrideIncludeView.findViewById(R.id.outer_merge));
-    assertInstanceOf(TextView.class, overrideIncludeView.findViewById(R.id.inner_text));
+    assertThat(overrideIncludeView.<LinearLayout>findViewById(R.id.outer_merge)).isInstanceOf((Class<? extends LinearLayout>) LinearLayout.class);
+    assertThat(overrideIncludeView.<TextView>findViewById(R.id.inner_text)).isInstanceOf((Class<? extends TextView>) TextView.class);
     assertNull(overrideIncludeView.findViewById(R.id.include_id));
     assertEquals(1, overrideIncludeView.getChildCount());
   }
@@ -208,7 +207,7 @@ public class ShadowLayoutInflaterTest {
   public void testMerge() throws Exception {
     int layoutResId = context.getResources().getIdentifier("outer", "layout", TEST_PACKAGE);
     ViewGroup mediaView = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(TextView.class, mediaView.findViewById(R.id.inner_text));
+    assertThat(mediaView.<TextView>findViewById(R.id.inner_text)).isInstanceOf((Class<? extends TextView>) TextView.class);
   }
 
   @Test
@@ -329,7 +328,7 @@ public class ShadowLayoutInflaterTest {
     // Default screen orientation should be portrait.
     int layoutResId1 = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId1, null);
-    assertInstanceOf(LinearLayout.class, view);
+    assertThat(view).isInstanceOf((Class<? extends ViewGroup>) LinearLayout.class);
     assertEquals(view.getId(), R.id.portrait);
     assertSame(context, view.getContext());
 
@@ -337,7 +336,7 @@ public class ShadowLayoutInflaterTest {
     context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     int layoutResId = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
     view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(LinearLayout.class, view);
+    assertThat(view).isInstanceOf((Class<? extends ViewGroup>) LinearLayout.class);
     assertEquals(view.getId(), R.id.portrait);
     assertSame(context, view.getContext());
   }
@@ -352,7 +351,7 @@ public class ShadowLayoutInflaterTest {
     int layoutResId = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
     assertEquals(view.getId(), R.id.landscape);
-    assertInstanceOf(LinearLayout.class, view);
+    assertThat(view).isInstanceOf((Class<? extends ViewGroup>) LinearLayout.class);
   }
 
   @Test
@@ -476,10 +475,10 @@ public class ShadowLayoutInflaterTest {
   public void testConverterAcceptsEnumOrdinal() throws Exception {
     int layoutResId = context.getResources().getIdentifier("ordinal_scrollbar", "layout", TEST_PACKAGE);
     ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
-    assertInstanceOf(RelativeLayout.class, view);
+    assertThat(view).isInstanceOf((Class<? extends ViewGroup>) RelativeLayout.class);
     ListView listView = (ListView)
         view.findViewById(org.robolectric.R.id.list_view_with_enum_scrollbar);
-    assertInstanceOf(ListView.class, listView);
+    assertThat(listView).isInstanceOf((Class<? extends ListView>) ListView.class);
   }
 
   /////////////////////////
