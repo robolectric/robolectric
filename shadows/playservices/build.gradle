@@ -28,18 +28,18 @@ dependencies {
     compileOnly project(":shadows:framework")
 
     compileOnly "com.android.support:support-fragment:26.0.0"
-    compileOnly "com.google.android.gms:play-services-base:11.0.4"
-    compileOnly "com.google.android.gms:play-services-auth:11.0.4"
+    compileOnly "com.google.android.gms:play-services-base:11.4.0"
+    compileOnly "com.google.android.gms:play-services-auth:11.4.0"
 
     // Testing dependencies
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
     testImplementation "org.assertj:assertj-core:3.8.0"
     testImplementation "org.mockito:mockito-core:2.5.4"
-    testImplementation "com.android.support:support-fragment:26.0.0"
-    testImplementation "com.google.android.gms:play-services-base:11.0.4"
-    testImplementation "com.google.android.gms:play-services-basement:11.0.4"
-    testImplementation "com.google.android.gms:play-services-auth:11.0.4"
+    testImplementation "com.android.support:support-fragment:26.1.0"
+    testImplementation "com.google.android.gms:play-services-base:11.4.0"
+    testImplementation "com.google.android.gms:play-services-basement:11.4.0"
+    testImplementation "com.google.android.gms:play-services-auth:11.4.0"
 }
 
 //install {
