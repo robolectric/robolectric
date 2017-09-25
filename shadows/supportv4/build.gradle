@@ -23,15 +23,11 @@ android {
     }
 }
 
-configurations {
-    earlyTestRuntime
-}
-
 dependencies {
     annotationProcessor project(":processor")
 
-    compileOnly project(":robolectric")
-    compileOnly project(":shadows:framework")
+    implementation project(":robolectric")
+    implementation project(":shadows:framework")
 
     compileOnly "com.android.support:support-v4:26.0.0"
     compileOnly "com.android.support:support-compat:26.0.0"
@@ -39,18 +35,17 @@ dependencies {
     compileOnly "com.android.support:support-core-utils:26.0.0"
     compileOnly "com.android.support:support-fragment:26.0.0"
 
-    testCompile project(":robolectric")
-    testCompile "junit:junit:4.12"
-    testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testCompile "org.assertj:assertj-core:3.8.0"
-    testCompile "org.mockito:mockito-core:2.5.4"
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
+    testImplementation "org.assertj:assertj-core:3.8.0"
+    testImplementation "org.mockito:mockito-core:2.5.4"
 
-    earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testCompile "com.android.support:support-v4:26.0.0"
-    testCompile "com.android.support:support-compat:26.0.0"
-    testCompile "com.android.support:support-core-ui:26.0.0"
-    testCompile "com.android.support:support-core-utils:26.0.0"
-    testCompile "com.android.support:support-fragment:26.0.0"
+    testImplementation "com.android.support:support-v4:26.0.0"
+    testImplementation "com.android.support:support-compat:26.0.0"
+    testImplementation "com.android.support:support-core-ui:26.0.0"
+    testImplementation "com.android.support:support-core-utils:26.0.0"
+    testImplementation "com.android.support:support-fragment:26.0.0"
 }
 
 // TODO - Figure out how to migrate this

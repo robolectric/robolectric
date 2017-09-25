@@ -29,7 +29,7 @@ dependencies {
     compileOnly project(":shadows:framework")
     compileOnly "com.android.support:multidex:1.0.2"
 
-    testCompile project(":robolectric")
+    testImplementation project(":robolectric")
 }
 
 // TODO - Figure out how to migrate this

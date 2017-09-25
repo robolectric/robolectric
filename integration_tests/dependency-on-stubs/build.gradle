@@ -16,10 +16,10 @@ android {
 }
 
 dependencies {
-    compile project(":robolectric")
-    compile "junit:junit:4.12"
+    implementation project(":robolectric")
+    implementation "junit:junit:4.12"
 
     // Testing dependencies
-    testCompile "org.assertj:assertj-core:3.8.0"
-    testCompile "org.mockito:mockito-core:2.5.4"
+    testImplementation "org.assertj:assertj-core:3.8.0"
+    testImplementation "org.mockito:mockito-core:2.5.4"
 }

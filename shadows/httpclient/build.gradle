@@ -27,13 +27,13 @@ dependencies {
     annotationProcessor project(":processor")
     compileOnly project(":shadows:framework")
 
-    compile 'commons-logging:commons-logging-api:1.1'
+    implementation 'commons-logging:commons-logging-api:1.1'
 
     // Testing dependencies
-    testCompile project(":robolectric")
-    testCompile "junit:junit:4.12"
-    testCompile "org.assertj:assertj-core:3.8.0"
-    testCompile "org.mockito:mockito-core:2.5.4"
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.assertj:assertj-core:3.8.0"
+    testImplementation "org.mockito:mockito-core:2.5.4"
 }
 
 // TODO - Figure out how to migrate this
