@@ -51,6 +51,7 @@ dependencies {
     compile project(":annotations")
     compile project(":resources")
     compile project(":utils")
+    compile project(":shadowapi")
 
     // Compile dependencies
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
