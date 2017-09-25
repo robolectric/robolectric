@@ -121,6 +121,20 @@ public class InstrumentationConfigurationTest {
     assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isFalse();
   }
 
+  @Test
+  public void shouldNotInstrumentPackages() throws Exception {
+    String includedClass = "android.foo.Bar";
+    String excludedClass = "android.support.test.foo.Bar";
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder()
+            .addInstrumentedPackage("android.")
+            .doNotInstrumentPackage("android.support.test.")
+            .build();
+
+    assertThat(customConfig.shouldInstrument(wrap(includedClass))).isTrue();
+    assertThat(customConfig.shouldInstrument(wrap(excludedClass))).isFalse();
+  }
+
   private ClassInfo wrap(final String className) {
     ClassInfo info = mock(ClassInfo.class);
     when(info.getName()).thenReturn(className);
