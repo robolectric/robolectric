@@ -797,23 +797,22 @@ public static class ResTable_ref
 
           switch (attr.fullName) {
             case ":id":
-              idIndex = (short) i;
+              idIndex = (short) (i + 1);
               break;
             case ":style":
-              styleIndex = (short) i;
+              styleIndex = (short) (i + 1);
               break;
             case ":class":
-              classIndex = (short) i;
+              classIndex = (short) (i + 1);
               break;
           }
 
           attr.write(buf);
         }
 
-        // todo: 1-based index into attributes
-        idIndexWriter.write((short) (idIndex + 1));
-        classIndexWriter.write((short) (classIndex + 1));
-        styleIndexWriter.write((short) (styleIndex + 1));
+        idIndexWriter.write(idIndex);
+        classIndexWriter.write(classIndex);
+        styleIndexWriter.write(styleIndex);
       }
 
       private static class Attr {

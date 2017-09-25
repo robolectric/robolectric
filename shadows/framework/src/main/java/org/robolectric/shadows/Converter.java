@@ -287,7 +287,7 @@ public class Converter<T> {
   private static class FromDimen extends Converter<String> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
-      return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
+      return ResourceHelper.parseFloatAttribute(null, data, typedValue, true);
     }
   }
 
