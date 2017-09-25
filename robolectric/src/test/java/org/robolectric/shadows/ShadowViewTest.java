@@ -50,7 +50,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.android.TestOnClickListener;
 import org.robolectric.android.TestOnLongClickListener;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
@@ -196,12 +195,12 @@ public class ShadowViewTest {
 
   @Test
   public void checkedClick_shouldClickOnView() throws Exception {
-    TestOnClickListener clickListener = new TestOnClickListener();
+    OnClickListener clickListener = mock(OnClickListener.class);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnClickListener(clickListener);
     shadowOf(view).checkedPerformClick();
 
-    assertTrue(clickListener.clicked);
+    verify(clickListener).onClick(view);
   }
 
   @Test(expected = RuntimeException.class)

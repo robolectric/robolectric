@@ -3,6 +3,8 @@ package org.robolectric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -13,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewParent;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -20,7 +23,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.android.TestOnClickListener;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -116,10 +118,11 @@ public class RobolectricTest {
   public void clickOn_shouldCallClickListener() throws Exception {
     View view = new View(RuntimeEnvironment.application);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
-    TestOnClickListener testOnClickListener = new TestOnClickListener();
+    OnClickListener testOnClickListener = mock(OnClickListener.class);
     view.setOnClickListener(testOnClickListener);
     ShadowView.clickOn(view);
-    assertTrue(testOnClickListener.clicked);
+
+    verify(testOnClickListener).onClick(view);
   }
 
   @Test(expected = ActivityNotFoundException.class)
