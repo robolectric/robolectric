@@ -91,7 +91,7 @@ public class CppAssetManager {
   private String mLocale;
 
   private ResTable mResources;
-  private ResTableConfig mConfig;
+  private ResTableConfig mConfig = new ResTableConfig();
 
 
 //  static final boolean kIsDebug = false;
@@ -394,38 +394,42 @@ public class CppAssetManager {
 //      }
 //      return String8();
 //  }
-//  
-//  void setLocaleLocked(final char* locale)
-//  {
+
+  void setLocaleLocked(final String locale)
+  {
 //      if (mLocale != null) {
 //          delete[] mLocale;
 //      }
-//  
-//      mLocale = strdupNew(locale);
-//      updateResourceParamsLocked();
-//  }
-//  
-//  void setConfiguration(final ResTable_config& config, final char* locale)
-//  {
-//      AutoMutex _l(mLock);
-//      *mConfig = config;
-//      if (locale) {
-//          setLocaleLocked(locale);
-//      } else if (config.language[0] != 0) {
-//          char spec[RESTABLE_MAX_LOCALE_LEN];
-//          config.getBcp47Locale(spec);
-//          setLocaleLocked(spec);
-//      } else {
-//          updateResourceParamsLocked();
-//      }
-//  }
-//  
-//  void getConfiguration(ResTable_config* outConfig) final
-//  {
-//      AutoMutex _l(mLock);
-//      *outConfig = *mConfig;
-//  }
-//  
+
+      mLocale = /*strdupNew*/(locale);
+      updateResourceParamsLocked();
+  }
+
+  public void setConfiguration(final ResTableConfig config, final String locale)
+  {
+    synchronized (mLock) {
+      mConfig = config;
+      if (isTruthy(locale)) {
+        setLocaleLocked(locale);
+      } else {
+        if (config.language[0] != 0) {
+//          byte[] spec = new byte[RESTABLE_MAX_LOCALE_LEN];
+          String spec = config.getBcp47Locale();
+          setLocaleLocked(spec);
+        } else {
+          updateResourceParamsLocked();
+        }
+      }
+    }
+  }
+
+  void getConfiguration(Ref<ResTableConfig> outConfig)
+  {
+    synchronized (mLock) {
+      outConfig.set(mConfig);
+    }
+  }
+
   /*
    * Open an asset.
    *
@@ -715,12 +719,11 @@ public Asset open(final String fileName, AccessMode mode) {
       return;
     }
 
-    // todo: implement
-//    if (isTruthy(mLocale)) {
-//      mConfig.setBcp47Locale(mLocale);
-//    } else {
-//      mConfig.clearLocale();
-//    }
+    if (isTruthy(mLocale)) {
+      mConfig.setBcp47Locale(mLocale);
+    } else {
+      mConfig.clearLocale();
+    }
 
     res.setParameters(mConfig);
   }

@@ -2,8 +2,11 @@ package org.robolectric;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
+import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
 
+import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +20,7 @@ import org.robolectric.res.AttributeResource;
 @RunWith(TestRunners.SelfTest.class)
 public class AttributeSetBuilderTest {
 
-  private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+  private static final String APP_NS = RES_AUTO_NS_URI;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -73,7 +76,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.message, "@string/howdy")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "message", 0)).isEqualTo(R.string.howdy);
+    assertThat(roboAttributeSet.getAttributeResourceValue(APP_NS, "message", 0)).isEqualTo(R.string.howdy);
   }
 
   @Test
@@ -82,7 +85,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "message", -1)).isEqualTo(-1);
+    assertThat(roboAttributeSet.getAttributeResourceValue(APP_NS, "message", -1)).isEqualTo(-1);
   }
 
   @Test
@@ -90,7 +93,7 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "message", -1)).isEqualTo(-1);
+    assertThat(roboAttributeSet.getAttributeResourceValue(APP_NS, "message", -1)).isEqualTo(-1);
   }
 
   @Test
@@ -99,7 +102,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "true")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", false)).isTrue();
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", false)).isTrue();
   }
 
   @Test
@@ -109,7 +112,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "true")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", false)).isTrue();
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", false)).isTrue();
   }
 
   @Test
@@ -126,7 +129,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "oh heck yeah")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary")).isEqualTo("oh heck yeah");
+    assertThat(roboAttributeSet.getAttributeValue(APP_NS, "isSugary")).isEqualTo("oh heck yeah");
   }
 
   @Test
@@ -135,7 +138,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "@string/ok")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary")).isEqualTo("@org.robolectric:string/ok");
+    assertThat(roboAttributeSet.getAttributeValue(APP_NS, "isSugary")).isEqualTo("@" + R.string.ok);
   }
 
   @Test
@@ -153,7 +156,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "@string/ok")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("@org.robolectric:string/ok");
+    assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("@" + R.string.ok);
   }
 
   @Test
@@ -162,7 +165,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.sugarinessPercent, "100")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugarinessPercent", 0)).isEqualTo(100);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "sugarinessPercent", 0)).isEqualTo(100);
   }
 
   @Test
@@ -171,7 +174,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.sugarinessPercent, "0x10")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugarinessPercent", 0)).isEqualTo(16);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "sugarinessPercent", 0)).isEqualTo(16);
   }
 
   @Test
@@ -180,7 +183,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.numColumns, "3")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "numColumns", 0)).isEqualTo(3);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "numColumns", 0)).isEqualTo(3);
   }
 
   @Test
@@ -188,7 +191,7 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugarinessPercent", 42)).isEqualTo(42);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "sugarinessPercent", 42)).isEqualTo(42);
   }
 
   @Test
@@ -196,7 +199,7 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "itemType", 24)).isEqualTo(24);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "itemType", 24)).isEqualTo(24);
   }
 
   @Test
@@ -205,7 +208,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.aspectRatio, "1234.456")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "aspectRatio", 78.9f)).isEqualTo(1234.456f);
+    assertThat(roboAttributeSet.getAttributeFloatValue(APP_NS, "aspectRatio", 78.9f)).isEqualTo(1234.456f);
   }
 
   @Test
@@ -213,7 +216,7 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "aspectRatio", 78.9f)).isEqualTo(78.9f);
+    assertThat(roboAttributeSet.getAttributeFloatValue(APP_NS, "aspectRatio", 78.9f)).isEqualTo(78.9f);
   }
 
   @Test

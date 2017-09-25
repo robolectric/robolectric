@@ -83,6 +83,18 @@ import java.util.Map;
  */
 public class ResTableConfig {
 
+  // The most specific locale can consist of:
+  //
+  // - a 3 char language code
+  // - a 3 char region code prefixed by a 'r'
+  // - a 4 char script code prefixed by a 's'
+  // - a 8 char variant code prefixed by a 'v'
+  //
+  // each separated by a single char separator, which sums up to a total of 24
+  // chars, (25 include the string terminator) rounded up to 28 to be 4 byte
+  // aligned.
+  public static final int RESTABLE_MAX_LOCALE_LEN = 28;
+
   // Codes for specially handled languages and regions
   static final byte[] kEnglish = new byte[] {'e', 'n'};  // packed version of "en"
   static final byte[] kUnitedStates = new byte[] {'U', 'S'};  // packed version of "US"
@@ -318,12 +330,12 @@ public class ResTableConfig {
   /** The number of bytes that this resource configuration takes up. */
   int size;
 
-  int mcc;
-  int mnc;
+  public int mcc;
+  public int mnc;
 
   /** Returns a packed 2-byte language code. */
   @SuppressWarnings("mutable")
-  private final byte[] language;
+  public final byte[] language;
 
   /** Returns {@link #language} as an unpacked string representation. */
   public final String languageString() {
@@ -332,7 +344,7 @@ public class ResTableConfig {
 
   /** Returns a packed 2-byte country code. */
   @SuppressWarnings("mutable")
-  private final byte[] country;
+  public final byte[] country;
 
   /** Returns {@link #country} as an unpacked string representation. */
   public final String regionString() {
@@ -340,11 +352,11 @@ public class ResTableConfig {
   }
 
   public int orientation;
-  int touchscreen;
+  public int touchscreen;
   public int density;
-  int keyboard;
-  int navigation;
-  int inputFlags;
+  public int keyboard;
+  public int navigation;
+  public int inputFlags;
 
   public final int keyboardHidden() {
     return inputFlags & KEYBOARDHIDDEN_MASK;
@@ -354,9 +366,9 @@ public class ResTableConfig {
     return inputFlags & NAVIGATIONHIDDEN_MASK;
   }
 
-  int screenWidth;
-  int screenHeight;
-  int sdkVersion;
+  public int screenWidth;
+  public int screenHeight;
+  public int sdkVersion;
 
   /**
    * Returns a copy of this resource configuration with a different {@link #sdkVersion}, or this
@@ -417,8 +429,8 @@ public class ResTableConfig {
     this.localeVariant = new byte[2];
   }
 
-  int minorVersion;
-  int screenLayout;
+  public int minorVersion;
+  public int screenLayout;
 
   public final int screenLayoutDirection() {
     return screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK;
@@ -436,7 +448,7 @@ public class ResTableConfig {
     return screenLayout & SCREENLAYOUT_ROUND_MASK;
   }
 
-  int uiMode;
+  public int uiMode;
 
   public final int uiModeType() {
     return uiMode & UI_MODE_TYPE_MASK;
@@ -448,24 +460,24 @@ public class ResTableConfig {
 
   public int smallestScreenWidthDp;
   public int screenWidthDp;
-  int screenHeightDp;
+  public int screenHeightDp;
 
   /** The ISO-15924 short name for the script corresponding to this configuration. */
   @SuppressWarnings("mutable")
-  final byte[] localeScript;
+  public final byte[] localeScript;
 
   /** A single BCP-47 variant subtag. */
   @SuppressWarnings("mutable")
-  final byte[] localeVariant;
+  public final byte[] localeVariant;
 
   /** An extension to {@link #screenLayout}. Contains round/notround qualifier. */
-  byte screenLayout2;
-  byte screenConfigPad1;
-  short screenConfigPad2;
+  public byte screenLayout2;
+  public byte screenConfigPad1;
+  public short screenConfigPad2;
 
   /** Any remaining bytes in this resource configuration that are unaccounted for. */
   @SuppressWarnings("mutable")
-  byte[] unknown;
+  public byte[] unknown;
 
 
   /**
@@ -687,8 +699,8 @@ public class ResTableConfig {
   public final boolean isDefault() {
     return mcc == 0
         && mnc == 0
-        && Arrays.equals(language, new byte[2])
-        && Arrays.equals(country, new byte[2])
+        && isZeroes(language)
+        && isZeroes(country)
         && orientation == 0
         && touchscreen == 0
         && density == 0
@@ -704,11 +716,20 @@ public class ResTableConfig {
         && smallestScreenWidthDp == 0
         && screenWidthDp == 0
         && screenHeightDp == 0
-        && Arrays.equals(localeScript, new byte[4])
-        && Arrays.equals(localeVariant, new byte[8])
+        && isZeroes(localeScript)
+        && isZeroes(localeVariant)
         && screenLayout2 == 0;
   }
-  
+
+  private boolean isZeroes(byte[] bytes1) {
+    for (byte b : bytes1) {
+      if (b != 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public final String toString() {
     if (isDefault()) {  // Prevent the default configuration from returning the empty string
@@ -774,9 +795,23 @@ public class ResTableConfig {
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
 
-  /**
+/*
+  */
+/**
    * Is {@code requested} a better match to this {@link ResTableConfig} object than {@code o}
-   */
+   *//*
+
+  public boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
+    boolean result = isBetterThan_(o, requested);
+    System.out.println(this);
+    System.out.println("  .isBetterThan(");
+    System.out.println("    o: " + o);
+    System.out.println("    requested: " + o);
+    System.out.println("      -> " + result);
+    return result;
+  }
+*/
+
   public boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
     if (isTruthy(requested)) {
       if (isTruthy(imsi()) || isTruthy(o.imsi())) {
@@ -894,8 +929,8 @@ public class ResTableConfig {
       if (isTruthy(screenType()) || isTruthy(o.screenType())) {
         if (density != o.density) {
           // Use the system default density (DENSITY_MEDIUM, 160dpi) if none specified.
-                final int thisDensity = isTruthy(density) ? density : DENSITY_MEDIUM;
-                final int otherDensity = isTruthy(o.density) ? o.density : DENSITY_MEDIUM;
+          final int thisDensity = isTruthy(density) ? density : DENSITY_MEDIUM;
+          final int otherDensity = isTruthy(o.density) ? o.density : DENSITY_MEDIUM;
 
           // We always prefer DENSITY_ANY over scaling a density bucket.
           if (thisDensity == DENSITY_ANY) {
@@ -1024,6 +1059,15 @@ public class ResTableConfig {
     return isMoreSpecificThan(o);
   }
 
+/*
+  boolean match(final ResTableConfig settings) {
+    System.out.println(this + ".match(" + settings + ")");
+    boolean result = match_(settings);
+    System.out.println("    -> " + result);
+    return result;
+  }
+*/
+
   boolean match(final ResTableConfig settings) {
     if (imsi() != 0) {
       if (mcc != 0 && mcc != settings.mcc) {
@@ -1076,7 +1120,7 @@ public class ResTableConfig {
           return false;
         }
       } else {
-        if (Arrays.equals(script, settings.localeScript)) {
+        if (!Arrays.equals(script, settings.localeScript)) {
           return false;
         }
       }
@@ -1201,6 +1245,191 @@ public class ResTableConfig {
     }
     return true;
   }
+
+//  void appendDirLocale(String8& out) const {
+//    if (!language[0]) {
+//      return;
+//    }
+//    const bool scriptWasProvided = localeScript[0] != '\0' && !localeScriptWasComputed;
+//    if (!scriptWasProvided && !localeVariant[0]) {
+//      // Legacy format.
+//      if (out.size() > 0) {
+//        out.append("-");
+//      }
+//
+//      char buf[4];
+//      size_t len = unpackLanguage(buf);
+//      out.append(buf, len);
+//
+//      if (country[0]) {
+//        out.append("-r");
+//        len = unpackRegion(buf);
+//        out.append(buf, len);
+//      }
+//      return;
+//    }
+//
+//    // We are writing the modified BCP 47 tag.
+//    // It starts with 'b+' and uses '+' as a separator.
+//
+//    if (out.size() > 0) {
+//      out.append("-");
+//    }
+//    out.append("b+");
+//
+//    char buf[4];
+//    size_t len = unpackLanguage(buf);
+//    out.append(buf, len);
+//
+//    if (scriptWasProvided) {
+//      out.append("+");
+//      out.append(localeScript, sizeof(localeScript));
+//    }
+//
+//    if (country[0]) {
+//      out.append("+");
+//      len = unpackRegion(buf);
+//      out.append(buf, len);
+//    }
+//
+//    if (localeVariant[0]) {
+//      out.append("+");
+//      out.append(localeVariant, strnlen(localeVariant, sizeof(localeVariant)));
+//    }
+//  }
+
+  String getBcp47Locale() {
+    StringBuilder str = new StringBuilder();
+
+    // This represents the "any" locale value, which has traditionally been
+    // represented by the empty string.
+    if (!isTruthy(language[0]) && !isTruthy(country[0])) {
+      return "";
+    }
+
+    if (isTruthy(language[0])) {
+      String languageStr = unpackLanguage();
+      str.append(languageStr);
+    }
+
+    if (isTruthy(localeScript[0]) && !localeScriptWasComputed) {
+      if (str.length() > 0) {
+        str.append('-');
+      }
+      for (byte aLocaleScript : localeScript) {
+        str.append((char) aLocaleScript);
+      }
+    }
+
+    if (isTruthy(country[0])) {
+      if (str.length() > 0) {
+        str.append('-');
+      }
+      String regionStr = unpackRegion();
+      str.append(regionStr);
+    }
+
+    if (isTruthy(localeVariant[0])) {
+      if (str.length() > 0) {
+        str.append('-');
+      }
+
+      for (byte aLocaleScript : localeVariant) {
+        str.append((char) aLocaleScript);
+      }
+    }
+
+    return str.toString();
+  }
+
+   static boolean assignLocaleComponent(ResTableConfig config,
+        final String start, int size) {
+
+    switch (size) {
+      case 0:
+        return false;
+      case 2:
+      case 3:
+        if (isTruthy(config.language[0])) {
+          config.packRegion(start);
+        } else {
+          config.packLanguage(start);
+        }
+        break;
+      case 4:
+        char start0 = start.charAt(0);
+        if ('0' <= start0 && start0 <= '9') {
+          // this is a variant, so fall through
+        } else {
+          config.localeScript[0] = (byte) Character.toUpperCase(start0);
+          for (int i = 1; i < 4; ++i) {
+            config.localeScript[i] = (byte) Character.toLowerCase(start.charAt(i));
+          }
+          break;
+        }
+        // fall through
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+        for (int i = 0; i < size; ++i) {
+          config.localeVariant[i] = (byte) Character.toLowerCase(start.charAt(i));
+        }
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  }
+
+  void setBcp47Locale(final String in) {
+//    locale = 0;
+    clear(language);
+    clear(country);
+
+    clear(localeScript);
+    clear(localeVariant);
+
+    int separator;
+    int start = 0;
+    while ((separator = in.indexOf('-', start)) != -1) {
+        final int size = separator - start;
+      if (!assignLocaleComponent(this, in.substring(start), size)) {
+        System.err.println(String.format("Invalid BCP-47 locale string: %s", in));
+      }
+
+      start = (separator + 1);
+    }
+
+    final int size = in.length() - start;
+    assignLocaleComponent(this, in.substring(start), size);
+    localeScriptWasComputed = (localeScript[0] == '\0');
+    if (localeScriptWasComputed) {
+      computeScript();
+    }
+  }
+
+  void clearLocale() {
+//    locale = 0;
+    clear(language);
+    clear(country);
+
+    localeScriptWasComputed = false;
+    clear(localeScript);
+    clear(localeVariant);
+  }
+
+  void computeScript() {
+    localeDataComputeScript(localeScript, language, country);
+  }
+
+  private void clear(byte[] bytes) {
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = 0;
+    }
+  }
+
 
   /**
    *     union {

@@ -116,7 +116,9 @@ public class ShadowResourcesTest {
 
   @Test
   public void getText_withLayoutId() throws Exception {
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith(File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value"))
+        .endsWith(File.separator + "src" + File.separator + "test" + File.separator + "resources"
+            + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
   }
 
   @Test
@@ -177,8 +179,8 @@ public class ShadowResourcesTest {
 
     assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.typed_array_values);
     assertThat(refsTypedArray.getTextArray(8))
-        .containsExactly("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
-            "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
+        .containsExactly("abcdefg", null, null, null, null, null,
+            null, null, null, null, null, null);
 
     assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
   }
@@ -265,9 +267,9 @@ public class ShadowResourcesTest {
     resources.getIntArray(-1);
   }
 
-  @Test
+  @Test @Config(qualifiers = "en")
   public void getQuantityString() throws Exception {
-    // 0 and 2 should resolve to the 'other' plural in us-en locale aka the 0 and 2 quanitities
+    // 0 and 2 should resolve to the 'other' plural in us-en locale aka the 0 and 2 quantities
     // specified in the xml should be unused
     assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("beers");
     assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("beer");
@@ -533,7 +535,7 @@ public class ShadowResourcesTest {
     assertThat(bitmap.getWidth()).isEqualTo(64);
   }
 
-  @Test @Config(qualifiers = "hdpi")
+  @Test @Config(qualifiers = "fr")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
@@ -737,7 +739,7 @@ public class ShadowResourcesTest {
         android.R.attr.viewportWidth,
         android.R.attr.viewportHeight
     }, 0, 0);
-    assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
+    assertThat(typedArray.getFloat(0, 0)).isEqualTo(23.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
     typedArray.recycle();
   }

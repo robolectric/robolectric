@@ -116,13 +116,24 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ResourceTable resourceTable = legacyShadowOf(realResourcesImpl.getAssets()).getResourceTable();
-    InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
-    if (inputStream == null) {
-      throw newNotFoundException(id);
+    if (isLegacyAssetManager()) {
+      ResourceTable resourceTable = legacyShadowOf(realResourcesImpl.getAssets())
+          .getResourceTable();
+      InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+      if (inputStream == null) {
+        throw newNotFoundException(id);
+      } else {
+        return inputStream;
+      }
     } else {
-      return inputStream;
+      return directlyOn(realResourcesImpl, ResourcesImpl.class, "openRawResource",
+          from(int.class, id));
     }
+  }
+
+  private boolean isLegacyAssetManager() {
+    AssetManager assets = realResourcesImpl.getAssets();
+    return ShadowArscAssetManager.isLegacyAssetManager(assets);
   }
 
   /**
