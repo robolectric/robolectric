@@ -24,38 +24,27 @@ public class DefaultManifestFactory implements ManifestFactory {
     FsFile resourcesDir = Fs.fileFromPath(properties.getProperty("android_merged_resources"));
     FsFile assetsDir = Fs.fileFromPath(properties.getProperty("android_merged_assets"));
     String packageName = properties.getProperty("android_custom_package");
-    List<FsFile> libraryDirs = emptyList();
-
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
       Logger.info("@Config(manifest = Config.NONE) specified while using Build System API, ignoring");
     } else if (!Config.DEFAULT_MANIFEST_NAME.equals(manifestConfig)) {
-      manifestFile = resolveFile(manifestConfig);
+      Logger.info("@Config(manifest) specified while using Build System API, ignoring");
     }
 
     if (!Config.DEFAULT_RES_FOLDER.equals(config.resourceDir())) {
-      resourcesDir = resolveFile(config.resourceDir());
+      Logger.info("@Config(resourceDir) specified while using Build System API, ignoring");
     }
 
     if (!Config.DEFAULT_ASSET_FOLDER.equals(config.assetDir())) {
-      assetsDir = resolveFile(config.assetDir());
+      Logger.info("@Config(assetDir) specified while using Build System API, ignoring");
     }
 
     if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
-      packageName = config.packageName();
+      Logger.info("@Config(packageName) specified while using Build System API, ignoring");
     }
 
-    return new ManifestIdentifier(manifestFile, resourcesDir, assetsDir, packageName, libraryDirs);
-  }
-
-  private FsFile resolveFile(String manifestConfig) {
-    URL manifestUrl = getClass().getClassLoader().getResource(manifestConfig);
-    if (manifestUrl == null) {
-      throw new IllegalArgumentException("couldn't find '" + manifestConfig + "'");
-    } else {
-      return Fs.fromURL(manifestUrl);
-    }
+    return new ManifestIdentifier(manifestFile, resourcesDir, assetsDir, packageName, emptyList());
   }
 
   @Override
