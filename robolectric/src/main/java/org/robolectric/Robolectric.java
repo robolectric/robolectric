@@ -268,11 +268,12 @@ public class Robolectric {
             DataType type;
             int valueInt = 0;
 
+            String packageName = RuntimeEnvironment.application.getPackageName();
             if (attrResName != null) {
               ResourceTable resourceTable = RuntimeEnvironment.getAppResourceTable();
               TypedValue outValue = new TypedValue();
               AttributeResource attributeResource = new AttributeResource(attrResName, value,
-                  RuntimeEnvironment.application.getPackageName());
+                  packageName);
               Converter.convert(resourceTable, attributeResource, outValue,
                   RuntimeEnvironment.getQualifiers(), true);
 
@@ -284,12 +285,12 @@ public class Robolectric {
                 valueInt = outValue.data;
               }
             } else {
-              // it's a style, class, or id attribute, so no resource id
+              // it's a style, class, or id attribute, so no attr resource id
               if (value == null || AttributeResource.isNull(value)) {
                 type = DataType.NULL;
               } else if (AttributeResource.isResourceReference(value)) {
                 ResName resourceReference = AttributeResource
-                    .getResourceReference(value, "unknown", "unknown");
+                    .getResourceReference(value, packageName, null);
                 Integer valueResId = appResourceTable.getResourceId(resourceReference);
                 type = DataType.REFERENCE;
                 valueInt = valueResId;
