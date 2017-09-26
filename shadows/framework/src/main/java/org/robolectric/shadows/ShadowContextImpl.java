@@ -86,6 +86,7 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
     SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
+    SYSTEM_SERVICE_MAP.put(Context.USB_SERVICE, "android.hardware.usb.UsbManager");
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
       SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
