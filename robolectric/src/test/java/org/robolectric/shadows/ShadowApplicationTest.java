@@ -49,7 +49,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.android.TestBroadcastReceiver;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
@@ -577,5 +576,16 @@ public class ShadowApplicationTest {
 
     @Override
     public void onServiceDisconnected(ComponentName name) {}
+  }
+
+  public static class TestBroadcastReceiver extends BroadcastReceiver {
+    public Context context;
+    public Intent intent;
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      this.context = context;
+      this.intent = intent;
+    }
   }
 }
