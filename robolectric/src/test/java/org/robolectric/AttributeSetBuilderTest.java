@@ -6,7 +6,6 @@ import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
 
-import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -220,11 +219,20 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getStyleAttribute_doesNotThrowException() throws Exception {
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .build();
+  public void getClassAndIdAttribute_returnsZeroWhenNotSpecified() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
+    assertThat(roboAttributeSet.getClassAttribute()).isNull();
+    assertThat(roboAttributeSet.getIdAttribute()).isNull();
+  }
 
-    roboAttributeSet.getStyleAttribute();
+  @Test
+  public void getClassAndIdAttribute_returnsAttr() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .setIdAttribute("the id")
+        .setClassAttribute("the class")
+        .build();
+    assertThat(roboAttributeSet.getClassAttribute()).isEqualTo("the class");
+    assertThat(roboAttributeSet.getIdAttribute()).isEqualTo("the id");
   }
 
   @Test

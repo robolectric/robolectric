@@ -671,16 +671,16 @@ public class ShadowResourcesTest {
   public void obtainAttributes_shouldReturnValuesFromAttributeSet() throws Exception {
     AttributeSet attributes = Robolectric.buildAttributeSet()
         .addAttribute(android.R.attr.title, "A title!")
-        .addAttribute(android.R.attr.width, "12")
-        .addAttribute(android.R.attr.height, "24")
+        .addAttribute(android.R.attr.width, "12px")
+        .addAttribute(android.R.attr.height, "1in")
         .build();
     TypedArray typedArray = resources
-        .obtainAttributes(attributes, new int[]{android.R.attr.title,
-            android.R.attr.width, android.R.attr.height});
+        .obtainAttributes(attributes, new int[]{android.R.attr.height,
+            android.R.attr.width, android.R.attr.title});
 
-    assertThat(typedArray.getString(0)).isEqualTo("A title!");
-    assertThat(typedArray.getInt(1, 0)).isEqualTo(12);
-    assertThat(typedArray.getInt(2, 0)).isEqualTo(24);
+    assertThat(typedArray.getDimension(0, 0)).isEqualTo(240f);
+    assertThat(typedArray.getDimension(1, 0)).isEqualTo(12f);
+    assertThat(typedArray.getString(2)).isEqualTo("A title!");
     typedArray.recycle();
   }
 
@@ -695,7 +695,7 @@ public class ShadowResourcesTest {
 //        .obtainAttributes(attributes, new int[]{android.R.attr.scrollbarFadeDuration});
         .obtainAttributes(attributes, new int[]{android.R.attr.title, android.R.attr.scrollbarFadeDuration});
 
-    assertThat(typedArray.getString(0)).isEqualTo("Some string");
+    assertThat(typedArray.getString(0)).isEqualTo("Android Title");
     assertThat(typedArray.getInt(1, 0)).isEqualTo(0xFFFF);
     typedArray.recycle();
   }

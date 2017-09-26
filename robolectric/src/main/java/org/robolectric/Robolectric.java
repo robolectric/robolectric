@@ -278,8 +278,13 @@ public class Robolectric {
 
               type = DataType.fromCode(outValue.type);
               value = (String) outValue.string;
-              valueInt = outValue.data;
+              if (type == DataType.STRING) {
+                valueInt = resStringPoolWriter.string(value);
+              } else {
+                valueInt = outValue.data;
+              }
             } else {
+              // it's a style, class, or id attribute, so no resource id
               if (value == null || AttributeResource.isNull(value)) {
                 type = DataType.NULL;
               } else if (AttributeResource.isResourceReference(value)) {

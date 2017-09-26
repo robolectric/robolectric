@@ -36,7 +36,9 @@ import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.ResTableConfig;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowResourcesManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
@@ -122,8 +124,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       configuration.setLocale(new Locale(resTab.languageString()));
     }
 
-    ResourcesManager.getInstance().applyConfigurationToResourcesLocked(configuration,
-        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
+    ResourcesManager resourcesManager = ResourcesManager.getInstance();
+    ShadowResourcesManager shadowResourcesManager = Shadow.extract(resourcesManager);
+    shadowResourcesManager.callApplyConfigurationToResourcesLocked(
+        configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
 
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
 

@@ -145,7 +145,7 @@ public final class ResourceHelper {
    */
   public static boolean parseFloatAttribute(String attribute, String value,
       TypedValue outValue, boolean requireUnit) {
-    assert requireUnit == false || attribute != null;
+//    assert requireUnit == false || attribute != null;
 
     // remove the space before and after
     value = value.trim();
@@ -209,7 +209,7 @@ public final class ResourceHelper {
 
             System.out.println(String.format(
                 "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
-                    value, attribute));
+                    value, attribute == null ? "(unknown)" : attribute));
           }
           return true;
         }
