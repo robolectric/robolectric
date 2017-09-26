@@ -109,7 +109,10 @@ public class ShadowResourcesTest {
 
   @Test
   public void getText_withLayoutId() throws Exception {
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith(File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
+    // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a String resource type
+    // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
+    // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith("res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
   }
 
   @Test

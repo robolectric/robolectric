@@ -73,10 +73,6 @@ public abstract class TestUtil {
     return new ResourcePath(org.robolectric.gradleapp.R.class, resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
   }
 
-  public static AndroidManifest newConfig(String androidManifestFile) {
-    return new AndroidManifest(resourceFile(androidManifestFile), null, null);
-  }
-
   public static String readString(InputStream is) throws IOException {
     Writer writer = new StringWriter();
     char[] buffer = new char[1024];
