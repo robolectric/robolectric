@@ -451,7 +451,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
-    assertThat(Resources.getSystem().getIdentifier("copy", "string", TestUtil.TEST_PACKAGE)).isEqualTo(0);
+    assertThat(Resources.getSystem().getIdentifier("copy", "string", RuntimeEnvironment.application.getPackageName())).isEqualTo(0);
   }
 
   @Test
