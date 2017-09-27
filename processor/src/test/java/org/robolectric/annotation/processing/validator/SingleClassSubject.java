@@ -44,7 +44,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
     try {
       return tester.compilesWithoutError();
     } catch (AssertionError e) {
-      failureStrategy.fail(e.getMessage());
+      failWithRawMessage(e.getMessage());
     }
     return null;
   }
@@ -53,7 +53,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
     try {
       return new SingleFileClause(tester.failsToCompile(), source);
     } catch (AssertionError e) {
-      failureStrategy.fail(e.getMessage());
+      failWithRawMessage(e.getMessage());
     }
     return null;
   }
@@ -72,7 +72,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
       try {
         return new SingleLineClause(unsuccessful.withErrorContaining(messageFragment).in(source));
       } catch (AssertionError e) {
-        failureStrategy.fail(e.getMessage());
+        failWithRawMessage(e.getMessage());
       }
       return null;
     }
@@ -83,8 +83,9 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
       } catch (AssertionError e) {
         return this;
       }
-      failureStrategy.fail("Shouldn't have found any errors containing " + messageFragment + ", but we did");
-      
+      failWithRawMessage(
+          "Shouldn't have found any errors containing " + messageFragment + ", but we did");
+
       return this;
     }
     
@@ -110,7 +111,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
             }
           };
         } catch (AssertionError e) {
-          failureStrategy.fail(e.getMessage());
+          failWithRawMessage(e.getMessage());
         }
         return null;
       }
