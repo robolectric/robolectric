@@ -333,7 +333,12 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final String[] list(String path) throws IOException {
-    FsFile file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(path);
+    FsFile file;
+    if (path.isEmpty()) {
+      file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
+    } else {
+      file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(path);
+    }
     if (file.isDirectory()) {
       return file.listFileNames();
     }
@@ -359,7 +364,9 @@ public final class ShadowAssetManager {
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {
-    if (fileName.startsWith("jar:")) {
+    // Resources from a jar belong to the "android" namespace, except when they come from "resource_files.zip"
+    // when they are application resources produced by Bazel.
+    if (fileName.startsWith("jar:") && !fileName.contains("resource_files.zip")) {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
