@@ -88,7 +88,7 @@ public class ResTable {
   List<Header>             mHeaders = new ArrayList<>();
 
   // Array of packages in all resource tables.
-  final List<PackageGroup> mPackageGroups = new ArrayList<>();
+  final Map<Integer, PackageGroup> mPackageGroups = new HashMap<>();
 
   // Mapping from resource package IDs to indices into the internal
   // package array.
@@ -169,8 +169,7 @@ public class ResTable {
       mHeaders.add(src.mHeaders.get(i));
     }
 
-    for (int i=0; i < src.mPackageGroups.size(); i++) {
-      PackageGroup srcPg = src.mPackageGroups.get(i);
+    for (PackageGroup srcPg : src.mPackageGroups.values()) {
       PackageGroup pg = new PackageGroup(this, srcPg.name, srcPg.id,
           false /* appAsLib */, isSystemAsset || srcPg.isSystemAsset);
       for (int j=0; j<srcPg.packages.size(); j++) {
@@ -187,7 +186,7 @@ public class ResTable {
       }
       pg.dynamicRefTable.addMappings(srcPg.dynamicRefTable);
       pg.largestTypeId = max(pg.largestTypeId, srcPg.largestTypeId);
-      mPackageGroups.add(pg);
+      mPackageGroups.put(pg.id, pg);
     }
 
 //    memcpy(mPackageMap, src->mPackageMap, sizeof(mPackageMap));
@@ -756,7 +755,7 @@ public class ResTable {
         return (mError=NO_MEMORY);
       }
 
-      mPackageGroups.add(group);
+      mPackageGroups.put(group.id, group);
 //      if (err < NO_ERROR) {
 //        return (mError=err);
 //      }
@@ -764,9 +763,10 @@ public class ResTable {
       mPackageMap[id] = (byte) idx;
 
       // Find all packages that reference this package
-      int N = mPackageGroups.size();
-      for (int i = 0; i < N; i++) {
-        mPackageGroups.get(i).dynamicRefTable.addMapping(
+//      int N = mPackageGroups.size();
+//      for (int i = 0; i < N; i++) {
+      for (PackageGroup packageGroup : mPackageGroups.values()) {
+        packageGroup.dynamicRefTable.addMapping(
             group.name, (byte) group.id);
       }
     } else {
@@ -973,10 +973,9 @@ public class ResTable {
           ALOGI("Setting parameters: %s\n", params.toString());
         }
         mParams = params;
-        for (int p = 0; p < mPackageGroups.size(); p++) {
-          PackageGroup packageGroup = mPackageGroups.get(p);
+        for (PackageGroup packageGroup : mPackageGroups.values()) {
           if (kDebugTableNoisy) {
-            ALOGI("CLEARING BAGS FOR GROUP %zu!", p);
+            ALOGI("CLEARING BAGS FOR GROUP %zu!", packageGroup.id);
           }
           packageGroup.clearBagCache();
 
@@ -1009,7 +1008,7 @@ public class ResTable {
 
               if (kDebugTableNoisy) {
                 ALOGD("Updating pkg=%zu type=%zu with %zu filtered configs",
-                    p, t, newFilteredConfigs.size());
+                    packageGroup.id, t, newFilteredConfigs.size());
               }
 
               // todo: implement cache
@@ -1137,8 +1136,7 @@ public class ResTable {
 //    }
     final String attr = "attr";
     final String attrPrivate = "^attr-private";
-    int NG = mPackageGroups.size();
-    for (PackageGroup group : mPackageGroups) {
+    for (PackageGroup group : mPackageGroups.values()) {
       if (!Strings.equals(packageName.trim(), group.name.trim())) {
         if (kDebugTableNoisy) {
            System.out.println(String.format("Skipping package group: %s\n", group.name));
@@ -2252,7 +2250,7 @@ public class ResTable {
   }
 
   public DynamicRefTable getDynamicRefTableForCookie(int cookie) {
-    for (PackageGroup pg : mPackageGroups) {
+    for (PackageGroup pg : mPackageGroups.values()) {
       int M = pg.packages.size();
       for (int j = 0; j < M; j++) {
         if (pg.packages.get(j).header.cookie == cookie) {
