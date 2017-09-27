@@ -99,7 +99,7 @@ public class ResTable {
   static int Res_GETPACKAGE(int id) {
     return ((id>>24)-1);
   }
-  static int Res_GETTYPE(int id) {
+  public static int Res_GETTYPE(int id) {
     return (((id>>16)&0xFF)-1);
   }
   static int Res_GETENTRY(int id) {
@@ -175,13 +175,9 @@ public class ResTable {
         pg.packages.add(srcPg.packages.get(j));
       }
 
-      for (int j = 0; j < srcPg.types.size(); j++) {
-        if (srcPg.types.get(j).isEmpty()) {
-          continue;
-        }
-
-        List<Type> typeList = pg.types.computeIfAbsent(j, k -> new ArrayList<>());
-        typeList.addAll(srcPg.types.get(j));
+      for (Integer typeId : srcPg.types.keySet()) {
+        List<Type> typeList = pg.types.computeIfAbsent(typeId, k -> new ArrayList<>());
+        typeList.addAll(srcPg.types.get(typeId));
       }
       pg.dynamicRefTable.addMappings(srcPg.dynamicRefTable);
       pg.largestTypeId = max(pg.largestTypeId, srcPg.largestTypeId);

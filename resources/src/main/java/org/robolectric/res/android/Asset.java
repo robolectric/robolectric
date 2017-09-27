@@ -201,7 +201,7 @@ static Asset createFromFile(String fileName, AccessMode mode)
 {
   int gCount = 0;
     synchronized (gAssetLock) {
-      gAssets.add(asset);
+//      gAssets.add(asset);
       gCount = gAssets.size();
     }
   if (kIsDebug) {
@@ -213,7 +213,7 @@ static Asset createFromFile(String fileName, AccessMode mode)
   protected void unregisterAsset(Asset asset) {
   int gCount = 0;
   synchronized (gAssetLock) {
-    gAssets.remove(asset);
+//    gAssets.remove(asset);
     gCount = gAssets.size();
   }
   if (kIsDebug) {

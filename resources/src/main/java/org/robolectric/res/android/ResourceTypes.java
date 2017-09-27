@@ -536,7 +536,7 @@ public static class ResTable_ref
             String string = strings.get(i);
             byte[] bytes = stringsAsBytes.get(i);
             buf.putInt(stringOffset);
-            stringOffset += lenLen(string.length()) + lenLen(bytes.length) + bytes.length;
+            stringOffset += lenLen(string.length()) + lenLen(bytes.length) + bytes.length + 1;
           }
 
           for (int i = 0; i < stringsAsBytes.size(); i++) {
@@ -548,6 +548,8 @@ public static class ResTable_ref
 
             // bytes
             buf.put(stringsAsBytes.get(i));
+            // null terminator
+            buf.put((byte) '\0');
           }
         });
       }
