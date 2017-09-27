@@ -23,20 +23,4 @@ public final class ResTableMapEntry extends ResTableEntry {
     count = array.size();
     parentIdent = parent;
   }
-
-  @Override
-  MapEntry createEntry(ResTableType bestType, Package bestPackage, int specFlags, byte actualTypeIndex,
-      ResTableConfig bestConfig) {
-    MapEntry outEntry = new MapEntry();
-    outEntry.entry = this;
-    outEntry.config = bestConfig;
-    outEntry.type = bestType;
-    outEntry.specFlags = specFlags;
-    outEntry._package_ = bestPackage;
-    outEntry.typeStr = new StringPoolRef(bestPackage.typeStrings, actualTypeIndex - bestPackage.typeIdOffset);
-    outEntry.keyStr = new StringPoolRef(bestPackage.keyStrings, key.index);
-    outEntry.nameValuePairs = array.toArray(new ResTableMap[array.size()]);
-    outEntry.count = count;
-    return outEntry;
-  }
 }

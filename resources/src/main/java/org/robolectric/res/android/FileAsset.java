@@ -20,6 +20,7 @@ import java.io.RandomAccessFile;
  */
 public class FileAsset extends Asset {
   protected final RandomAccessFile f;
+  private byte[] mBuf;
 
   public FileAsset(RandomAccessFile f) {
     this.f = f;
@@ -90,7 +91,23 @@ public class FileAsset extends Asset {
       throw new RuntimeException(e);
     }
   }
-  //
+
+  /*
+ * Return a read-only pointer to a buffer.
+ *
+ * We can either read the whole thing in or map the relevant piece of
+ * the source file.  Ideally a map would be established at a higher
+ * level and we'd be using a different object, but we didn't, so we
+ * deal with it here.
+ */
+  public byte[] getBuffer(boolean wordAligned) {
+    if (mBuf != null) {
+      return mBuf;
+    }
+
+    mBuf = readFully();
+    return mBuf;
+  }
 
   /*
  * Create a new Asset from a compressed file on disk.  There is a fair chance

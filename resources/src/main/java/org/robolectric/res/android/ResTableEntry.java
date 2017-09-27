@@ -47,17 +47,4 @@ public class ResTableEntry {
     this.flags = flags;
     this.value = value;
   }
-
-  Entry createEntry(ResTableType bestType, Package bestPackage, int specFlags,
-      byte actualTypeIndex, ResTableConfig bestConfig) {
-    Entry outEntry = new Entry();
-    outEntry.entry = this;
-    outEntry.config = bestConfig;
-    outEntry.type = bestType;
-    outEntry.specFlags = specFlags;
-    outEntry._package_ = bestPackage;
-    outEntry.typeStr = new StringPoolRef(bestPackage.typeStrings, actualTypeIndex - bestPackage.typeIdOffset);
-    outEntry.keyStr = new StringPoolRef(bestPackage.keyStrings, key.index);
-    return outEntry;
-  }
 }

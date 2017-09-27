@@ -155,8 +155,6 @@ static Asset createFromFile(String fileName, AccessMode mode)
     return new CompressedAsset(pZipFile, entry, string8);
   }
 
-  public abstract int getLength();
-
   /*
    * Get the total amount of data that can be read from the current position.
    */
@@ -166,11 +164,33 @@ static Asset createFromFile(String fileName, AccessMode mode)
 
   public abstract int read();
 
+  /**
+   * Read data from the current offset.  Returns the actual number of
+   * bytes read, 0 on EOF, or -1 on error.
+   */
   public abstract int read(byte[] b, int off, int len);
 
+  /**
+   * Seek to the specified offset.  "whence" uses the same values as
+   * lseek/fseek.  Returns the new position on success, or (off64_t) -1
+   * on failure.
+   */
   public abstract long seek(long offset, int whence);
 
+  /**
+   * Close the asset, freeing all associated resources.
+   */
   public abstract void close();
+
+  /**
+   * Get a pointer to a buffer with the entire contents of the file.
+   */
+  public abstract byte[] getBuffer(boolean wordAligned);
+
+  /**
+   * Get the total amount of data that can be read.
+   */
+  public abstract int getLength();
 
   /* set the asset source string */
   void setAssetSource(String8 path) {
@@ -208,19 +228,22 @@ static Asset createFromFile(String fileName, AccessMode mode)
   }
 }
 
-  /*
- * Return a read-only pointer to a buffer.
- *
- * We can either read the whole thing in or map the relevant piece of
- * the source file.  Ideally a map would be established at a higher
- * level and we'd be using a different object, but we didn't, so we
- * deal with it here.
- */
-  public byte[] getBuffer(boolean wordAligned) {
+  byte[] readFully() {
     int size = (int) size();
     byte[] bytes = new byte[size];
-    if (read(bytes, 0, size) != size) {
-      throw new RuntimeException("failed to read " + size);
+
+    int remaining = size;
+    while (remaining > 0) {
+      int location = size - remaining;
+      int bytesRead = read(bytes, location, remaining);
+      if (bytesRead == -1) {
+        break;
+      }
+      remaining -= bytesRead;
+    }
+
+    if (remaining > 0) {
+      throw new RuntimeException("failed to read " + size + " (" + remaining + " bytes unread)");
     }
     return bytes;
   }
@@ -450,6 +473,21 @@ static Asset createFromFile(String fileName, AccessMode mode)
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
+    }
+
+    /*
+     * Get a pointer to a read-only buffer of data.
+     *
+     * The first time this is called, we expand the compressed data into a
+     * buffer.
+     */
+    public byte[] getBuffer(boolean wordAligned) {
+      if (mBuf != null) {
+        return mBuf;
+      }
+
+      mBuf = readFully();
+      return mBuf;
     }
 
     /*
