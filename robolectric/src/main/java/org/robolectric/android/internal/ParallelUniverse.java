@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import java.io.File;
@@ -115,19 +116,25 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     configuration.orientation = resTab.orientation;
     configuration.uiMode = resTab.uiMode;
     configuration.screenHeightDp = resTab.screenHeightDp;
-    configuration.densityDpi = resTab.density;
+    if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
+      configuration.densityDpi = resTab.density;
+    }
     // end new stuff
 
-    if (resTab.languageString() != null && resTab.regionString() != null) {
-      configuration.setLocale(new Locale(resTab.languageString(), resTab.regionString()));
-    } else if (resTab.languageString() != null) {
-      configuration.setLocale(new Locale(resTab.languageString()));
+    if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
+      if (resTab.languageString() != null && resTab.regionString() != null) {
+        configuration.setLocale(new Locale(resTab.languageString(), resTab.regionString()));
+      } else if (resTab.languageString() != null) {
+        configuration.setLocale(new Locale(resTab.languageString()));
+      }
     }
 
-    ResourcesManager resourcesManager = ResourcesManager.getInstance();
-    ShadowResourcesManager shadowResourcesManager = Shadow.extract(resourcesManager);
-    shadowResourcesManager.callApplyConfigurationToResourcesLocked(
-        configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
+    if (sdkConfig.getApiLevel() >= VERSION_CODES.KITKAT) {
+      ResourcesManager resourcesManager = ResourcesManager.getInstance();
+      ShadowResourcesManager shadowResourcesManager = Shadow.extract(resourcesManager);
+      shadowResourcesManager.callApplyConfigurationToResourcesLocked(
+          configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
+    }
 
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
 

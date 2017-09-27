@@ -38,7 +38,7 @@ public class ResXMLParser {
   static final int SIZEOF_RESXMLTREE_NAMESPACE_EXT = 4;
   static final int SIZEOF_RESXMLTREE_NODE = ResChunk_header.SIZEOF + 8;
   static final int SIZEOF_RESXMLTREE_ATTR_EXT = 20;
-  static final int SIZEOF_RESXMLTREE_CDATA_EXT = 4 + Res_value.SIZEOF;
+  static final int SIZEOF_RESXMLTREE_CDATA_EXT = 4 + ResourceTypes.Res_value.SIZEOF;
   static final int SIZEOF_CHAR = 2;
 
   public static class event_code_t {
@@ -122,11 +122,11 @@ final String getText(Ref<Integer> outLen)
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
 
-  int getTextValue(ResValue outValue)
+  int getTextValue(Res_value outValue)
   {
     if (mEventCode == TEXT) {
       //outValue.copyFrom_dtoh(new ResourceTypes.ResXMLTree_cdataExt(mTree.mBuffer.buf, mCurExt).typedData);
-      return Res_value.SIZEOF /* sizeof(Res_value) */;
+      return ResourceTypes.Res_value.SIZEOF /* sizeof(Res_value) */;
     }
     return BAD_TYPE;
   }
@@ -362,7 +362,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     return 0;
   }
 
-  public int getAttributeValue(int idx, ResValue outValue)
+  public int getAttributeValue(int idx, Res_value outValue)
   {
     if (mEventCode == START_TAG) {
       ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
@@ -377,7 +377,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
             mTree.mDynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
           return BAD_TYPE;
         }
-        return Res_value.SIZEOF /* sizeof(ResValue) */;
+        return ResourceTypes.Res_value.SIZEOF /* sizeof(Res_value) */;
       }
     }
     return BAD_TYPE;

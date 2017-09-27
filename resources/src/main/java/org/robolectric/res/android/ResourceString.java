@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.robolectric.res.arsc;
+package org.robolectric.res.android;
 
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -145,15 +145,15 @@ public final class ResourceString {
     }
   }
 
-  private static int computeLengthOffset(int length, Type type) {
+  static int computeLengthOffset(int length, Type type) {
     return (type == Type.UTF8 ? 1 : 2) * (length >= (type == Type.UTF8 ? 0x80 : 0x8000) ? 2 : 1);
   }
 
-  private static int decodeLength(ByteBuffer buffer, int offset, Type type) {
+  static int decodeLength(ByteBuffer buffer, int offset, Type type) {
     return type == Type.UTF8 ? decodeLengthUTF8(buffer, offset) : decodeLengthUTF16(buffer, offset);
   }
 
-  private static int decodeLengthUTF8(ByteBuffer buffer, int offset) {
+  static int decodeLengthUTF8(ByteBuffer buffer, int offset) {
     // UTF-8 strings use a clever variant of the 7-bit integer for packing the string length.
     // If the first byte is >= 0x80, then a second byte follows. For these values, the length
     // is WORD-length in big-endian & 0x7FFF.
@@ -164,7 +164,7 @@ public final class ResourceString {
     return length;
   }
 
-  private static int decodeLengthUTF16(ByteBuffer buffer, int offset) {
+  static int decodeLengthUTF16(ByteBuffer buffer, int offset) {
     // UTF-16 strings use a clever variant of the 7-bit integer for packing the string length.
     // If the first word is >= 0x8000, then a second word follows. For these values, the length
     // is DWORD-length in big-endian & 0x7FFFFFFF.

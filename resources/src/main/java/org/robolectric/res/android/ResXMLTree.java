@@ -27,7 +27,6 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.robolectric.res.android.Chunk.StringPoolChunk;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
@@ -142,19 +141,7 @@ public class ResXMLTree {
 //            (void*)(((uintptr_t)chunk)-((uintptr_t)mHeader)), type, size1);
       }
       if (type == RES_STRING_POOL_TYPE) {
-        // todo: merge Chunk/interface buffer reading strategies
-        StringPoolChunk stringPoolChunk = new StringPoolChunk(mBuffer.buf, chunk.myOffset(), chunk);
-//        mStrings.setTo(mBuffer.new XmlResStringPool(chunk.myOffset()));
-        int stringCount = stringPoolChunk.getStringCount();
-        List<String> stringEntries = new ArrayList<>(stringCount);
-        for (int i=0; i < stringCount; i++) {
-          stringEntries.add(stringPoolChunk.getString(i));
-        }
-
-        ResStringPoolHeader header = new ResStringPoolHeader();
-        header.flags = stringPoolChunk.getFlags();
-        header.stringCount = stringPoolChunk.getStringCount();
-        mStrings.setTo(header, stringEntries);
+        mStrings.setTo(mBuffer.buf, chunk.myOffset(), size, false);
       } else if (type == RES_XML_RESOURCE_MAP_TYPE) {
 //        mResIds = (final int*)
 //        (((final uint8_t*)chunk)+dtohs(chunk.headerSize()));

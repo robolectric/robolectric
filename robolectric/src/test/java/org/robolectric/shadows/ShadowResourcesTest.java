@@ -33,6 +33,7 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.android.ResourceTypes;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
@@ -46,6 +47,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.res.android.ResTable.Res_GETTYPE;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 @Config(sdk = VERSION_CODES.N_MR1) // todo: unpin
@@ -94,6 +96,12 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void hellowWorld() throws Exception {
+    assertThat(resources.getString(R.string.some_html)).isEqualTo("Hello, world");
+    assertThat(resources.getString(R.string.howdy)).isEqualTo("Howdy");
+  }
+
+  @Test
   public void getStringShouldStripNewLines() {
     assertThat(resources.getString(R.string.leading_and_trailing_new_lines)).isEqualTo("Some text");
   }
@@ -117,8 +125,7 @@ public class ShadowResourcesTest {
   @Test
   public void getText_withLayoutId() throws Exception {
     assertThat(resources.getText(R.layout.different_screen_sizes, "value"))
-        .endsWith(File.separator + "src" + File.separator + "test" + File.separator + "resources"
-            + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
+        .endsWith("res" + File.separator + "layout-xlarge-v4" + File.separator + "different_screen_sizes.xml");
   }
 
   @Test
@@ -692,11 +699,10 @@ public class ShadowResourcesTest {
     AttributeSet attributes = Xml.asAttributeSet(parser);
 
     TypedArray typedArray = resources
-//        .obtainAttributes(attributes, new int[]{android.R.attr.scrollbarFadeDuration});
         .obtainAttributes(attributes, new int[]{android.R.attr.title, android.R.attr.scrollbarFadeDuration});
 
     assertThat(typedArray.getString(0)).isEqualTo("Android Title");
-    assertThat(typedArray.getInt(1, 0)).isEqualTo(0xFFFF);
+    assertThat(typedArray.getInt(1, 0)).isEqualTo(1111);
     typedArray.recycle();
   }
 
@@ -845,7 +851,9 @@ public class ShadowResourcesTest {
       resources.getXml(R.id.ungulate);
       fail();
     } catch (Resources.NotFoundException e) {
-      assertThat(e.getMessage()).contains("org.robolectric:id/ungulate");
+      assertThat(e.getMessage()).contains("Resource ID #0x"
+          + Integer.toString(R.id.ungulate, 16) + " type #0x"
+          + Res_GETTYPE(R.id.ungulate) + " is not valid");
     }
   }
 

@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import static java.lang.System.getenv;
+import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.Util.ALOGD;
 import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGI;
@@ -63,10 +65,10 @@ public class CppAssetManager {
 
 
     public asset_path() {
-      this(new String8(), FileType.kFileTypeRegular, "", false, false);
+      this(new String8(), FileType.kFileTypeRegular, new String8(""), false, false);
     }
 
-    public asset_path(String8 path, FileType fileType, String idmap,
+    public asset_path(String8 path, FileType fileType, String8 idmap,
         boolean isSystemOverlay,
         boolean isSystemAsset) {
       this.path = path;
@@ -78,9 +80,20 @@ public class CppAssetManager {
 
     String8 path;
     FileType type;
-    String idmap;
+    String8 idmap;
     boolean isSystemOverlay;
     boolean isSystemAsset;
+
+    @Override
+    public String toString() {
+      return "asset_path{" +
+          "path=" + path +
+          ", type=" + type +
+          ", idmap='" + idmap + '\'' +
+          ", isSystemOverlay=" + isSystemOverlay +
+          ", isSystemAsset=" + isSystemAsset +
+          '}';
+    }
   }
 
   private final Object mLock = new Object();
@@ -218,7 +231,7 @@ public class CppAssetManager {
         } else {
           ap.path = path;
           ap.type = getFileType(path.string());
-          if (ap.type != FileType.kFileTypeDirectory && ap.type != FileType.kFileTypeRegular) {
+          if (ap.type != kFileTypeDirectory && ap.type != FileType.kFileTypeRegular) {
             ALOGW("Asset path %s is neither a directory nor file (type=%s).",
                 path.toString(), ap.type.name());
             return false;
@@ -534,7 +547,7 @@ public Asset open(final String fileName, AccessMode mode) {
     } else if (assetFile.isFile()) {
       return FileType.kFileTypeRegular;
     } else if (assetFile.isDirectory()) {
-      return FileType.kFileTypeDirectory;
+      return kFileTypeDirectory;
     }
     return FileType.kFileTypeNonexistent;
 //      Asset pAsset = null;
@@ -556,79 +569,72 @@ public Asset open(final String fileName, AccessMode mode) {
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
     // TODO: properly handle reading system resources
-    if (!ap.isSystemAsset) {
-      URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
-      // System.out.println("Reading ARSC file  from " + resource);
-      LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
-      try {
-        ZipFile zipFile = new ZipFile(resource.getFile());
-        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
-        InputStream inputStream = zipFile.getInputStream(arscEntry);
-        mResources.add(inputStream, mResources.getTableCount() + 1);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      ZipFile zipFile = null;
-      try {
-        zipFile = new ZipFile(ap.path.string());
-        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
-        InputStream inputStream = zipFile.getInputStream(arscEntry);
-        mResources.add(inputStream, mResources.getTableCount() + 1);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-    return false;
-
-    // todo: this   vvv
-
-//      // skip those ap's that correspond to system overlays
-//      if (ap.isSystemOverlay) {
-//          return true;
+//    if (!ap.isSystemAsset) {
+//      URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
+//      // System.out.println("Reading ARSC file  from " + resource);
+//      LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
+//      try {
+//        ZipFile zipFile = new ZipFile(resource.getFile());
+//        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
+//        InputStream inputStream = zipFile.getInputStream(arscEntry);
+//        mResources.add(inputStream, mResources.getTableCount() + 1);
+//      } catch (IOException e) {
+//        throw new RuntimeException(e);
 //      }
-//  
-//      Asset* ass = null;
-//      ResTable* sharedRes = null;
-//      boolean shared = true;
-//      boolean onlyEmptyResources = true;
+//    } else {
+//      try {
+//        ZipFile zipFile = new ZipFile(ap.path.string());
+//        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
+//        InputStream inputStream = zipFile.getInputStream(arscEntry);
+//        mResources.add(inputStream, mResources.getTableCount() + 1);
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
+//    }
+//    return false;
+
+      // skip those ap's that correspond to system overlays
+      if (ap.isSystemOverlay) {
+          return true;
+      }
+
+      Asset ass = null;
+      ResTable sharedRes = null;
+      boolean shared = true;
+      boolean onlyEmptyResources = true;
 //      ATRACE_NAME(ap.path.string());
-//      Asset* idmap = openIdmapLocked(ap);
-//      int nextEntryIdx = mResources.getTableCount();
-//      ALOGV("Looking for resource asset in '%s'\n", ap.path.string());
-//      if (ap.type != kFileTypeDirectory) {
-//          if (nextEntryIdx == 0) {
-//              // The first item is typically the framework resources,
-//              // which we want to avoid parsing every time.
-//              sharedRes = final_cast<AssetManager*>(this).
-//                  mZipSet.getZipResourceTable(ap.path);
-//              if (sharedRes != null) {
-//                  // skip ahead the number of system overlay packages preloaded
-//                  nextEntryIdx = sharedRes.getTableCount();
-//              }
-//          }
-//          if (sharedRes == null) {
-//              ass = final_cast<AssetManager*>(this).
-//                  mZipSet.getZipResourceTableAsset(ap.path);
-//              if (ass == null) {
-//                  ALOGV("loading resource table %s\n", ap.path.string());
-//                  ass = final_cast<AssetManager*>(this).
-//                      openNonAssetInPathLocked("resources.arsc",
-//                                               Asset.ACCESS_BUFFER,
-//                                               ap);
-//                  if (ass != null && ass != kExcludedAsset) {
-//                      ass = final_cast<AssetManager*>(this).
-//                          mZipSet.setZipResourceTableAsset(ap.path, ass);
-//                  }
-//              }
-//              
-//              if (nextEntryIdx == 0 && ass != null) {
-//                  // If this is the first resource table in the asset
-//                  // manager, then we are going to cache it so that we
-//                  // can quickly copy it out for others.
-//                  ALOGV("Creating shared resources for %s", ap.path.string());
-//                  sharedRes = new ResTable();
-//                  sharedRes.add(ass, idmap, nextEntryIdx + 1, false);
+      Asset idmap = openIdmapLocked(ap);
+      int nextEntryIdx = mResources.getTableCount();
+      ALOGV("Looking for resource asset in '%s'\n", ap.path.string());
+      if (ap.type != kFileTypeDirectory) {
+          if (nextEntryIdx == 0) {
+              // The first item is typically the framework resources,
+              // which we want to avoid parsing every time.
+              sharedRes = mZipSet.getZipResourceTable(ap.path);
+              if (sharedRes != null) {
+                  // skip ahead the number of system overlay packages preloaded
+                  nextEntryIdx = sharedRes.getTableCount();
+              }
+          }
+          if (sharedRes == null) {
+              ass = mZipSet.getZipResourceTableAsset(ap.path);
+              if (ass == null) {
+                  ALOGV("loading resource table %s\n", ap.path.string());
+                  ass = openNonAssetInPathLocked("resources.arsc",
+                                               AccessMode.ACCESS_BUFFER,
+                                               ap);
+                  if (ass != null && ass != kExcludedAsset) {
+                      ass = mZipSet.setZipResourceTableAsset(ap.path, ass);
+                  }
+              }
+
+              if (nextEntryIdx == 0 && ass != null) {
+                  // If this is the first resource table in the asset
+                  // manager, then we are going to cache it so that we
+                  // can quickly copy it out for others.
+                  ALOGV("Creating shared resources for %s", ap.path.string());
+                  sharedRes = new ResTable();
+                  sharedRes.add(ass, idmap, nextEntryIdx + 1, false, false, false);
 //  #ifdef __ANDROID__
 //                  final char* data = getenv("ANDROID_DATA");
 //                  LOG_ALWAYS_FATAL_IF(data == null, "ANDROID_DATA not set");
@@ -637,42 +643,40 @@ public Asset open(final String fileName, AccessMode mode) {
 //                  overlaysListPath.appendPath("overlays.list");
 //                  addSystemOverlays(overlaysListPath.string(), ap.path, sharedRes, nextEntryIdx);
 //  #endif
-//                  sharedRes = final_cast<AssetManager*>(this).
-//                      mZipSet.setZipResourceTable(ap.path, sharedRes);
-//              }
-//          }
-//      } else {
-//          ALOGV("loading resource table %s\n", ap.path.string());
-//          ass = final_cast<AssetManager*>(this).
-//              openNonAssetInPathLocked("resources.arsc",
-//                                       Asset.ACCESS_BUFFER,
-//                                       ap);
-//          shared = false;
-//      }
-//  
-//      if ((ass != null || sharedRes != null) && ass != kExcludedAsset) {
-//          ALOGV("Installing resource asset %p in to table %p\n", ass, mResources);
-//          if (sharedRes != null) {
-//              ALOGV("Copying existing resources for %s", ap.path.string());
-//              mResources.add(sharedRes, ap.isSystemAsset);
-//          } else {
-//              ALOGV("Parsing resources for %s", ap.path.string());
-//              mResources.add(ass, idmap, nextEntryIdx + 1, !shared, appAsLib, ap.isSystemAsset);
-//          }
-//          onlyEmptyResources = false;
-//  
+                  sharedRes = mZipSet.setZipResourceTable(ap.path, sharedRes);
+              }
+          }
+      } else {
+          ALOGV("loading resource table %s\n", ap.path.string());
+          ass = openNonAssetInPathLocked("resources.arsc",
+                                       AccessMode.ACCESS_BUFFER,
+                                       ap);
+          shared = false;
+      }
+
+      if ((ass != null || sharedRes != null) && ass != kExcludedAsset) {
+          ALOGV("Installing resource asset %p in to table %p\n", ass, mResources);
+          if (sharedRes != null) {
+              ALOGV("Copying existing resources for %s", ap.path.string());
+              mResources.add(sharedRes, ap.isSystemAsset);
+          } else {
+              ALOGV("Parsing resources for %s", ap.path.string());
+              mResources.add(ass, idmap, nextEntryIdx + 1, !shared, appAsLib, ap.isSystemAsset);
+          }
+          onlyEmptyResources = false;
+
 //          if (!shared) {
 //              delete ass;
 //          }
-//      } else {
-//          ALOGV("Installing empty resources in to table %p\n", mResources);
-//          mResources.addEmpty(nextEntryIdx + 1);
-//      }
-//  
+      } else {
+          ALOGV("Installing empty resources in to table %p\n", mResources);
+          mResources.addEmpty(nextEntryIdx + 1);
+      }
+
 //      if (idmap != null) {
 //          delete idmap;
 //      }
-//      return onlyEmptyResources;
+      return onlyEmptyResources;
   }
 
   final ResTable getResTable(boolean required) {
@@ -684,6 +688,7 @@ public Asset open(final String fileName, AccessMode mode) {
     // Iterate through all asset packages, collecting resources from each.
 
     synchronized (mLock) {
+      long startedAt = System.currentTimeMillis();
       if (mResources != null) {
         return mResources;
       }
@@ -708,6 +713,7 @@ public Asset open(final String fileName, AccessMode mode) {
         mResources = null;
       }
 
+      System.out.println("Loading resources took " + (System.currentTimeMillis() - startedAt) + "ms - " + mAssetPaths);
       return mResources;
     }
   }
@@ -728,21 +734,20 @@ public Asset open(final String fileName, AccessMode mode) {
     res.setParameters(mConfig);
   }
 
-//  Asset* openIdmapLocked(final struct asset_path& ap) final
-//  {
-//      Asset* ass = null;
-//      if (ap.idmap.size() != 0) {
-//          ass = final_cast<AssetManager*>(this).
-//              openAssetFromFileLocked(ap.idmap, Asset.ACCESS_BUFFER);
-//          if (ass) {
-//              ALOGV("loading idmap %s\n", ap.idmap.string());
-//          } else {
-//              ALOGW("failed to load idmap %s\n", ap.idmap.string());
-//          }
-//      }
-//      return ass;
-//  }
-//  
+  Asset openIdmapLocked(asset_path ap)
+  {
+      Asset ass = null;
+      if (ap.idmap.length() != 0) {
+          ass = openAssetFromFileLocked(ap.idmap, AccessMode.ACCESS_BUFFER);
+        if (isTruthy(ass)) {
+          ALOGV("loading idmap %s\n", ap.idmap.string());
+        } else {
+          ALOGW("failed to load idmap %s\n", ap.idmap.string());
+        }
+      }
+      return ass;
+  }
+
 //  void addSystemOverlays(final char* pathOverlaysList,
 //          final String8& targetPackagePath, ResTable* sharedRes, int offset) final
 //  {
@@ -831,7 +836,7 @@ public Asset open(final String fileName, AccessMode mode) {
       Asset pAsset = null;
 
       /* look at the filesystem on disk */
-      if (ap.type == FileType.kFileTypeDirectory) {
+      if (ap.type == kFileTypeDirectory) {
           String8 path = new String8(ap.path);
           path.appendPath(fileName);
 
@@ -1212,7 +1217,7 @@ public Asset open(final String fileName, AccessMode mode) {
           fileType = getFileType(pathCopy.appendPath(entry.getName()).string());
 //  #endif
 
-          if (fileType != FileType.kFileTypeRegular && fileType != FileType.kFileTypeDirectory)
+          if (fileType != FileType.kFileTypeRegular && fileType != kFileTypeDirectory)
               continue;
 
           AssetDir.FileInfo info = new AssetDir.FileInfo();
@@ -1352,7 +1357,7 @@ public Asset open(final String fileName, AccessMode mode) {
        */
     for (int i = 0; i < (int) dirs.size(); i++) {
       AssetDir.FileInfo info = new FileInfo();
-      info.set(dirs.get(i), FileType.kFileTypeDirectory);
+      info.set(dirs.get(i), kFileTypeDirectory);
       info.setSourceName(
           createZipSourceNameLocked(zipName, dirName, info.getFileName()));
       contents.add(info);
@@ -1524,48 +1529,45 @@ public Asset open(final String fileName, AccessMode mode) {
     return mZipFile;
   }
 
-//  Asset* SharedZip.getResourceTableAsset()
-//  {
-//      AutoMutex _l(gLock);
-//      ALOGV("Getting from SharedZip %p resource asset %p\n", this, mResourceTableAsset);
-//      return mResourceTableAsset;
-//  }
-//
-//  Asset* SharedZip.setResourceTableAsset(Asset* asset)
-//  {
-//      {
-//          AutoMutex _l(gLock);
-//          if (mResourceTableAsset == null) {
-//              // This is not thread safe the first time it is called, so
-//              // do it here with the global lock held.
-//              asset.getBuffer(true);
-//              mResourceTableAsset = asset;
-//              return asset;
-//          }
-//      }
-//      delete asset;
-//      return mResourceTableAsset;
-//  }
-//
-//  ResTable* SharedZip.getResourceTable()
-//  {
-//      ALOGV("Getting from SharedZip %p resource table %p\n", this, mResourceTable);
-//      return mResourceTable;
-//  }
-//
-//  ResTable* SharedZip.setResourceTable(ResTable* res)
-//  {
-//      {
-//          AutoMutex _l(gLock);
-//          if (mResourceTable == null) {
-//              mResourceTable = res;
-//              return res;
-//          }
-//      }
-//      delete res;
-//      return mResourceTable;
-//  }
-//
+  Asset getResourceTableAsset()
+  {
+    synchronized (gLock) {
+      ALOGV("Getting from SharedZip %p resource asset %p\n", this, mResourceTableAsset);
+      return mResourceTableAsset;
+    }
+  }
+
+  Asset setResourceTableAsset(Asset asset)
+  {
+      synchronized (gLock) {
+          if (mResourceTableAsset == null) {
+              // This is not thread safe the first time it is called, so
+              // do it here with the global lock held.
+              asset.getBuffer(true);
+              mResourceTableAsset = asset;
+              return asset;
+          }
+      }
+      return mResourceTableAsset;
+  }
+
+  ResTable getResourceTable()
+  {
+      ALOGV("Getting from SharedZip %p resource table %p\n", this, mResourceTable);
+      return mResourceTable;
+  }
+
+  ResTable setResourceTable(ResTable res)
+  {
+      synchronized (gLock) {
+          if (mResourceTable == null) {
+              mResourceTable = res;
+              return res;
+          }
+      }
+      return mResourceTable;
+  }
+
 //  boolean SharedZip.isUpToDate()
 //  {
 //      time_t modWhen = getFileModDate(mPath.string());
@@ -1658,46 +1660,46 @@ public Asset open(final String fileName, AccessMode mode) {
       return zip.getZip();
   }
 
-//  Asset* ZipSet.getZipResourceTableAsset(final String8& path)
-//  {
-//      int idx = getIndex(path);
-//      sp<SharedZip> zip = mZipFile[idx];
-//      if (zip == null) {
-//          zip = SharedZip.get(path);
-//          mZipFile.editItemAt(idx) = zip;
-//      }
-//      return zip.getResourceTableAsset();
-//  }
-//
-//  Asset* ZipSet.setZipResourceTableAsset(final String8& path,
-//                                                   Asset* asset)
-//  {
-//      int idx = getIndex(path);
-//      sp<SharedZip> zip = mZipFile[idx];
-//      // doesn't make sense to call before previously accessing.
-//      return zip.setResourceTableAsset(asset);
-//  }
-//
-//  ResTable* ZipSet.getZipResourceTable(final String8& path)
-//  {
-//      int idx = getIndex(path);
-//      sp<SharedZip> zip = mZipFile[idx];
-//      if (zip == null) {
-//          zip = SharedZip.get(path);
-//          mZipFile.editItemAt(idx) = zip;
-//      }
-//      return zip.getResourceTable();
-//  }
-//
-//  ResTable* ZipSet.setZipResourceTable(final String8& path,
-//                                                      ResTable* res)
-//  {
-//      int idx = getIndex(path);
-//      sp<SharedZip> zip = mZipFile[idx];
-//      // doesn't make sense to call before previously accessing.
-//      return zip.setResourceTable(res);
-//  }
-//
+  Asset getZipResourceTableAsset(final String8 path)
+  {
+      int idx = getIndex(path.string());
+      SharedZip zip = mZipFile.get(idx);
+      if (zip == null) {
+        zip = SharedZip.get(path);
+        mZipFile.set(idx, zip);
+      }
+      return zip.getResourceTableAsset();
+  }
+
+  Asset setZipResourceTableAsset(final String8 path,
+                                                   Asset asset)
+  {
+      int idx = getIndex(path.string());
+      SharedZip zip = mZipFile.get(idx);
+      // doesn't make sense to call before previously accessing.
+      return zip.setResourceTableAsset(asset);
+  }
+
+  ResTable getZipResourceTable(final String8 path)
+  {
+      int idx = getIndex(path.string());
+      SharedZip zip = mZipFile.get(idx);
+      if (zip == null) {
+        zip = SharedZip.get(path);
+        mZipFile.set(idx, zip);
+      }
+      return zip.getResourceTable();
+  }
+
+  ResTable setZipResourceTable(final String8 path,
+                                                      ResTable res)
+  {
+      int idx = getIndex(path.string());
+      SharedZip zip = mZipFile.get(idx);
+      // doesn't make sense to call before previously accessing.
+      return zip.setResourceTable(res);
+  }
+
   /*
    * Generate the partial pathname for the specified archive.  The caller
    * gets to prepend the asset root directory.

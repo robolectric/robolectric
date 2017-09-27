@@ -70,6 +70,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -95,11 +96,90 @@ public class ResTableConfig {
   // aligned.
   public static final int RESTABLE_MAX_LOCALE_LEN = 28;
 
+  /** The minimum size in bytes that this configuration must be to contain screen config info. */
+  private static final int SCREEN_CONFIG_MIN_SIZE = 32;
+
+  /** The minimum size in bytes that this configuration must be to contain screen dp info. */
+  private static final int SCREEN_DP_MIN_SIZE = 36;
+
+  /** The minimum size in bytes that this configuration must be to contain locale info. */
+  private static final int LOCALE_MIN_SIZE = 48;
+
+  /** The minimum size in bytes that this config must be to contain the screenConfig extension. */
+  private static final int SCREEN_CONFIG_EXTENSION_MIN_SIZE = 52;
+
   // Codes for specially handled languages and regions
   static final byte[] kEnglish = new byte[] {'e', 'n'};  // packed version of "en"
   static final byte[] kUnitedStates = new byte[] {'U', 'S'};  // packed version of "US"
   static final byte[] kFilipino = new byte[] {(byte)0xAD, 0x05};  // packed version of "fil" ported from C {'\xAD', '\x05'}
   static final byte[] kTagalog = new byte[] {'t', 'l'};  // packed version of "tl"
+
+  static ResTableConfig createConfig(ByteBuffer buffer) {
+    int startPosition = buffer.position();  // The starting buffer position to calculate bytes read.
+    int size = buffer.getInt();
+    int mcc = buffer.getShort() & 0xFFFF;
+    int mnc = buffer.getShort() & 0xFFFF;
+    byte[] language = new byte[2];
+    buffer.get(language);
+    byte[] region = new byte[2];
+    buffer.get(region);
+    int orientation = UnsignedBytes.toInt(buffer.get());
+    int touchscreen = UnsignedBytes.toInt(buffer.get());
+    int density = buffer.getShort() & 0xFFFF;
+    int keyboard = UnsignedBytes.toInt(buffer.get());
+    int navigation = UnsignedBytes.toInt(buffer.get());
+    int inputFlags = UnsignedBytes.toInt(buffer.get());
+    buffer.get();  // 1 byte of padding
+    int screenWidth = buffer.getShort() & 0xFFFF;
+    int screenHeight = buffer.getShort() & 0xFFFF;
+    int sdkVersion = buffer.getShort() & 0xFFFF;
+    int minorVersion = buffer.getShort() & 0xFFFF;
+
+    // At this point, the configuration's size needs to be taken into account as not all
+    // configurations have all values.
+    int screenLayout = 0;
+    int uiMode = 0;
+    int smallestScreenWidthDp = 0;
+    int screenWidthDp = 0;
+    int screenHeightDp = 0;
+    byte[] localeScript = new byte[4];
+    byte[] localeVariant = new byte[8];
+    byte screenLayout2 = 0;
+    byte screenConfigPad1 = 0;
+    short screenConfigPad2 = 0;
+
+    if (size >= SCREEN_CONFIG_MIN_SIZE) {
+      screenLayout = UnsignedBytes.toInt(buffer.get());
+      uiMode = UnsignedBytes.toInt(buffer.get());
+      smallestScreenWidthDp = buffer.getShort() & 0xFFFF;
+    }
+
+    if (size >= SCREEN_DP_MIN_SIZE) {
+      screenWidthDp = buffer.getShort() & 0xFFFF;
+      screenHeightDp = buffer.getShort() & 0xFFFF;
+    }
+
+    if (size >= LOCALE_MIN_SIZE) {
+      buffer.get(localeScript);
+      buffer.get(localeVariant);
+    }
+
+    if (size >= SCREEN_CONFIG_EXTENSION_MIN_SIZE) {
+      screenLayout2 = (byte) UnsignedBytes.toInt(buffer.get());
+      screenConfigPad1 = buffer.get();  // Reserved padding
+      screenConfigPad2 = buffer.getShort();  // More reserved padding
+    }
+
+    // After parsing everything that's known, account for anything that's unknown.
+    int bytesRead = buffer.position() - startPosition;
+    byte[] unknown = new byte[size - bytesRead];
+    buffer.get(unknown);
+
+    return new ResTableConfig(size, mcc, mnc, language, region, orientation,
+        touchscreen, density, keyboard, navigation, inputFlags, screenWidth, screenHeight,
+        sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp,
+        screenHeightDp, localeScript, localeVariant, screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
+  }
 
   /** The different types of configs that can be present in a {@link ResTableConfig}. */
   public enum Type {

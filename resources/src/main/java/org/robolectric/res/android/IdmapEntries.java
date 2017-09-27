@@ -20,13 +20,13 @@ public class IdmapEntries {
 //    short entryCount = Util.dtohs(mData[2]);
 //    return (SIZEOF_SHORT * 4) + (SIZEOF_INT * static_cast<int>(entryCount));
 //  }
-//
-//  byte targetTypeId() {
-//    if (mData == null) {
-//      return 0;
-//    }
-//    return (byte) Util.dtohs(mData[0]);
-//  }
+
+  byte targetTypeId() {
+    if (mData == null) {
+      return 0;
+    }
+    return (byte) Util.dtohs(mData[0]);
+  }
 
   public byte overlayTypeId() {
     if (mData == null) {
