@@ -180,7 +180,7 @@ public class ResTable {
           continue;
         }
 
-        List<Type> typeList = pg.types.get(j);
+        List<Type> typeList = pg.types.computeIfAbsent(j, k -> new ArrayList<>());
         typeList.addAll(srcPg.types.get(j));
       }
       pg.dynamicRefTable.addMappings(srcPg.dynamicRefTable);
@@ -305,8 +305,8 @@ public class ResTable {
           dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
           (Object)((chunk.myOffset()) - (header.header.myOffset())));
     }
-        final int csize = dtohl(chunk.size);
-        final int ctype = dtohs(chunk.type);
+    final int csize = dtohl(chunk.size);
+    final int ctype = dtohs(chunk.type);
     if (ctype == RES_STRING_POOL_TYPE) {
       if (header.values.getError() != NO_ERROR) {
         // Only use the first string chunk; ignore any others that
@@ -783,7 +783,10 @@ public class ResTable {
     // Iterate through all chunks.
     ResChunk_header chunk =
       new ResChunk_header(pkg.myBuf(), pkg.myOffset() + dtohs(pkg.header.headerSize));
-    final int endPos = (pkg.myOffset()) + dtohs((short) pkg.header.size);
+//      const uint8_t* endPos = ((const uint8_t*)pkg) + dtohs(pkg->header.size);
+    final int endPos = (pkg.myOffset()) + pkg.header.size;
+//    while (((const uint8_t*)chunk) <= (endPos-sizeof(ResChunk_header)) &&
+//      ((const uint8_t*)chunk) <= (endPos-dtohl(chunk->size))) {
     while (chunk != null && (chunk.myOffset()) <= (endPos-ResChunk_header.SIZEOF) &&
       (chunk.myOffset()) <= (endPos-dtohl(chunk.size))) {
     if (kDebugTableNoisy) {
