@@ -22,7 +22,6 @@ import android.util.TypedValue;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import dalvik.system.VMRuntime;
-import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,9 +44,8 @@ import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResTableConfig;
-import org.robolectric.res.android.ResTableResourceName;
+import org.robolectric.res.android.ResTable.ResourceName;
 import org.robolectric.res.android.ResTableTheme;
-import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
@@ -355,14 +353,14 @@ public class ShadowArscAssetManager {
   public String getResourceName(int resid) {
     CppAssetManager am = assetManagerForJavaObject();
 
-    ResTableResourceName name = new ResTableResourceName();
+    ResourceName name = new ResourceName();
     if (!am.getResources().getResourceName(resid, true, name)) {
       return null;
     }
 
     StringBuilder str = new StringBuilder();
     if (name.packageName != null) {
-      str.append(name.packageName);
+      str.append(name.packageName.trim());
     }
     if (name.type != null) {
       if (str.length() > 0) {
@@ -649,7 +647,7 @@ public class ShadowArscAssetManager {
     }
     final ResTable res = am.getResources();
 
-    Ref<ResValue> value = new Ref<>(null);
+    Ref<Res_value> value = new Ref<>(null);
     Ref<ResTableConfig> config = new Ref<>(null);
     Ref<Integer> typeSpecFlags = new Ref<>(null);
     int block = res.getResource(ident, value, false, density, typeSpecFlags, config);
@@ -678,12 +676,12 @@ public class ShadowArscAssetManager {
     return block;
 }
 
-  private static int copyValue(TypedValue outValue, ResTable table,  ResValue value, int ref, int block,
+  private static int copyValue(TypedValue outValue, ResTable table,  Res_value value, int ref, int block,
       int typeSpecFlags) {
     return copyValue(outValue, table, value, ref, block, typeSpecFlags, null);
   }
 
-  private static int copyValue(TypedValue outValue, ResTable table,  ResValue value, int ref, int block,
+  private static int copyValue(TypedValue outValue, ResTable table,  Res_value value, int ref, int block,
       int typeSpecFlags, ResTableConfig config) {
     outValue.type = value.dataType;
     outValue.assetCookie = table.getTableCookie(block);
@@ -716,14 +714,14 @@ public class ShadowArscAssetManager {
     res.lock();
 
     int block = -1;
-    Ref<ResValue> valueRef = new Ref<>(null);
+    Ref<org.robolectric.res.android.ResourceTypes.Res_value> valueRef = new Ref<>(null);
     Ref<bag_entry[]> entryRef = new Ref<>(null);
     Ref<Integer> typeSpecFlags = new Ref<>(0);
     int entryCount = res.getBagLocked(ident, entryRef, typeSpecFlags);
 
     for (int i=0; i < entryCount; i++) {
       bag_entry entry = entryRef.get()[i];
-      if (bagEntryId == entry.map.nameIdent) {
+      if (bagEntryId == entry.map.name.ident) {
         block = entry.stringBlock;
         valueRef.set(entry.map.value);
       }
@@ -827,7 +825,7 @@ public class ShadowArscAssetManager {
     final ResTable res = theme.getResTable();
     ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
     Ref<ResTableConfig> config = new Ref(new ResTableConfig());
-    Ref<ResValue> value = new Ref<>(new ResValue());
+    Ref<Res_value> value = new Ref<>(new Res_value());
 
     final int NI = attrs.length;
     final int NV = outValues.length;
@@ -1090,7 +1088,7 @@ public class ShadowArscAssetManager {
     ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
 
     Ref<ResTableConfig> config = new Ref<>(new ResTableConfig());
-    Ref<ResValue> value = new Ref<>(new ResValue());
+    Ref<Res_value> value = new Ref<>(new Res_value());
 
 //    const jsize NI = env.GetArrayLength(attrs);
 //    const jsize NV = env.GetArrayLength(outValues);
@@ -1144,8 +1142,8 @@ public class ShadowArscAssetManager {
       final int curIdent = (int)src[ii];
 
       // Try to find a value for this attribute...
-      value.get().dataType = Res_value.TYPE_NULL;
-      value.get().data = Res_value.DATA_NULL_UNDEFINED;
+      value.get().dataType = org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL;
+      value.get().data = org.robolectric.res.android.ResourceTypes.Res_value.DATA_NULL_UNDEFINED;
       typeSetFlags.set(0);
       config.get().density = 0;
 
@@ -1164,7 +1162,7 @@ public class ShadowArscAssetManager {
 
       //printf("Attribute 0x%08x: type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
       Ref<Integer> resid = new Ref<>(0);
-      if (value.get().dataType != Res_value.TYPE_NULL) {
+      if (value.get().dataType != org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
         //printf("Resolving attribute reference\n");
         int newBlock = res.resolveReference(value, block, resid,
@@ -1179,9 +1177,9 @@ public class ShadowArscAssetManager {
       }
 
       // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.get().dataType == Res_value.TYPE_REFERENCE && value.get().data == 0) {
-        value.get().dataType = Res_value.TYPE_NULL;
-        value.get().data = Res_value.DATA_NULL_UNDEFINED;
+      if (value.get().dataType == org.robolectric.res.android.ResourceTypes.Res_value.TYPE_REFERENCE && value.get().data == 0) {
+        value.get().dataType = org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL;
+        value.get().data = org.robolectric.res.android.ResourceTypes.Res_value.DATA_NULL_UNDEFINED;
       }
 
       //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
@@ -1195,7 +1193,7 @@ public class ShadowArscAssetManager {
       dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
       dest[destOffset + STYLE_DENSITY] = config.get().density;
 
-      if (indices != null && value.get().dataType != Res_value.TYPE_NULL) {
+      if (indices != null && value.get().dataType != org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL) {
         indicesIdx++;
         indices[indicesIdx] = ii;
       }
@@ -1248,7 +1246,7 @@ public class ShadowArscAssetManager {
     }
     ResTable res = am.getResources();
     Ref<ResTableConfig> config = new Ref<>(new ResTableConfig());
-    ResValue value;
+    Res_value value;
     int block;
 
     int NV = outValues.length;
@@ -1284,7 +1282,7 @@ public class ShadowArscAssetManager {
       if (value.dataType != DataType.NULL.code()) {
         // Take care of resolving the found resource to its final value.
         //printf("Resolving attribute reference\n");
-        Ref<ResValue> resValueRef = new Ref<>(value);
+        Ref<Res_value> resValueRef = new Ref<>(value);
         int newBlock = res.resolveReference(resValueRef, block, resid,
                     typeSetFlags, config);
         value = resValueRef.get();
@@ -1422,7 +1420,7 @@ public class ShadowArscAssetManager {
     ResTableTheme theme = Preconditions.checkNotNull(nativeThemeRegistry.getNativeObject(themeHandle));
     ResTable res = theme.getResTable();
 
-    Ref<ResValue> value = new Ref<>(null);
+    Ref<Res_value> value = new Ref<>(null);
     // XXX value could be different in different configs!
     Ref<Integer> typeSpecFlags = new Ref<>(0);
     int block = theme.getAttribute(ident, value, typeSpecFlags);
@@ -1500,7 +1498,7 @@ public class ShadowArscAssetManager {
 
     String[] array = new String[N];
 
-    Ref<ResValue> valueRef = new Ref<>(null);
+    Ref<Res_value> valueRef = new Ref<>(null);
     final bag_entry[] bag = startOfBag.get();
     int strLen = 0;
     for (int i=0; ((int)i)<N; i++) {
@@ -1564,7 +1562,7 @@ public class ShadowArscAssetManager {
 
     int[] array = new int[N * 2];
 
-    Ref<ResValue> value = new Ref<>(null);
+    Ref<Res_value> value = new Ref<>(null);
     bag_entry[] bag = startOfBag.get();
     for (int i = 0, j = 0; i<N; i++) {
       int stringIndex = -1;
@@ -1618,7 +1616,7 @@ public class ShadowArscAssetManager {
       return null;
     }
 
-    Ref<ResValue> valueRef = new Ref<>(null);
+    Ref<Res_value> valueRef = new Ref<>(null);
     bag_entry[] bag = startOfBag.get();
     for (int i=0; i<N; i++) {
       valueRef.set(bag[i].map.value);
@@ -1632,7 +1630,7 @@ public class ShadowArscAssetManager {
 //          return array;
         }
       }
-      ResValue value = valueRef.get();
+      Res_value value = valueRef.get();
       if (value.dataType >= DataType.TYPE_FIRST_INT
           && value.dataType <= DataType.TYPE_LAST_INT) {
         int intVal = value.data;

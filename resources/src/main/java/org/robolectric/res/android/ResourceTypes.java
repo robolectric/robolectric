@@ -161,7 +161,9 @@ public class ResourceTypes {
 //#define Res_GETENTRY(id) (id&0xFFFF)
 
 //#define Res_INTERNALID(resid) ((resid&0xFFFF0000) != 0 && (resid&0xFF0000) == 0)
-//#define Res_MAKEINTERNAL(entry) (0x01000000 | (entry&0xFFFF))
+  private static int Res_MAKEINTERNAL(int entry) {
+    return (0x01000000 | (entry & 0xFFFF));
+  }
 //#define Res_MAKEARRAY(entry) (0x02000000 | (entry&0xFFFF))
 
 //  static const size_t Res_MAXPACKAGE = 255;
@@ -237,7 +239,7 @@ public class ResourceTypes {
     // ...end of integer flavors.
     public static final int TYPE_LAST_INT = 0x1f;
 //  };
-    byte dataType;
+public byte dataType;
 
     // Structure of complex data values (TYPE_UNIT and TYPE_FRACTION)
 //    enum {
@@ -295,7 +297,14 @@ public class ResourceTypes {
 
     // The data for this item, as interpreted according to dataType.
 //    typedef uint32_t data_type;
-    int data;
+    public int data;
+
+    public Res_value() {
+      this.size = 0;
+      this.res0 = 0;
+      this.dataType = 0;
+      this.data = 0;
+    }
 
     public Res_value(ByteBuffer buf, int offset) {
       this.size = buf.getShort(offset);
@@ -308,11 +317,32 @@ public class ResourceTypes {
       }
     }
 
+    public Res_value(Res_value other) {
+      this.size = other.size;
+      this.res0 = other.res0;
+      this.dataType = other.dataType;
+      this.data = other.data;
+    }
+
+    public Res_value(byte dataType, int data) {
+      this.size = 0;
+      this.res0 = 0;
+      this.dataType = dataType;
+      this.data = data;
+    }
+
     public static void write(ByteBuffer buf, int dataType, int data) {
       buf.putShort((short) SIZEOF); // size
       buf.put((byte) 0); // res0
       buf.put((byte) dataType); // dataType
       buf.putInt(data); // data
+    }
+
+    public void copyFrom_dtoh(Res_value other) {
+      this.size = other.size;
+      this.res0 = other.res0;
+      this.dataType = other.dataType;
+      this.data = other.data;
     }
 
 //  void copyFrom_dtoh(const Res_value& src);
@@ -330,10 +360,14 @@ public static class ResTable_ref
     {
       public static final int SIZEOF = 4;
 
-      int ident;
+      public int ident;
 
       public ResTable_ref(ByteBuffer buf, int offset) {
         ident = buf.getInt(offset);
+      }
+
+      public ResTable_ref() {
+        ident = 0;
       }
     };
 
@@ -651,14 +685,14 @@ public static class ResTable_ref
     final ResStringPool_ref data;
 
     // The typed value of the character data if this is a CDATA node.
-    final ResValue typedData;
+    final Res_value typedData;
 
     public ResXMLTree_cdataExt(ByteBuffer buf, int offset) {
       this.data = new ResStringPool_ref(buf, offset);
 
       int dataType = buf.getInt(offset + 4);
       int data = buf.getInt(offset + 8);
-      this.typedData = new ResValue(dataType, data);
+      this.typedData = new Res_value((byte) dataType, data);
     }
   };
 
@@ -797,7 +831,7 @@ public static class ResTable_ref
         this.name = resStringPoolWriter.string(name);
       }
 
-      public void attr(int ns, int name, int value, ResValue resValue, String fullName) {
+      public void attr(int ns, int name, int value, Res_value resValue, String fullName) {
         attrs.add(new Attr(ns, name, value, resValue, fullName));
       }
 
@@ -846,7 +880,7 @@ public static class ResTable_ref
         final int resValueData;
         final String fullName;
 
-        public Attr(int ns, int name, int value, ResValue resValue, String fullName) {
+        public Attr(int ns, int name, int value, Res_value resValue, String fullName) {
           this.ns = ns;
           this.name = name;
           this.value = value;
@@ -864,7 +898,7 @@ public static class ResTable_ref
 
   static class ResXMLTree_attribute
   {
-    public static final int SIZEOF = 12+ Res_value.SIZEOF;
+    public static final int SIZEOF = 12+ ResourceTypes.Res_value.SIZEOF;
 
     // Namespace of this attribute.
     final ResStringPool_ref ns;
@@ -890,7 +924,7 @@ public static class ResTable_ref
       ResStringPool_ref.write(buf, ns);
       ResStringPool_ref.write(buf, name);
       ResStringPool_ref.write(buf, value);
-      Res_value.write(buf, resValueDataType, resValueData);
+      ResourceTypes.Res_value.write(buf, resValueDataType, resValueData);
     }
   };
 
@@ -1505,14 +1539,24 @@ static class ResTable_typeSpec extends WithOffset
         ByteBuffer byteBuffer = myBuf();
         int offset = myOffset();
 
-        return byteBuffer.getInt(offset + header.size + 4 * entryIndex);
+        // from ResTable cpp:
+//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+//
+//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
+        return byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
       }
 
       private int entryNameIndex(int entryIndex) {
         ByteBuffer byteBuffer = myBuf();
         int offset = myOffset();
 
-        int entryOffset = byteBuffer.getInt(offset + header.size + 4 * entryIndex);
+        // from ResTable cpp:
+//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+//
+//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
+        int entryOffset = byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
         if (entryOffset == -1) {
           return -1;
         }
@@ -1578,100 +1622,115 @@ static class ResTable_typeSpec extends WithOffset
       ResTable_map_entry(ByteBuffer buf, int offset) {
         super(buf, offset);
 
-        parent = new ResTable_ref(buf, offset);
-        count = buf.getInt(offset + ResTable_ref.SIZEOF);
+        parent = new ResTable_ref(buf, offset + ResTable_entry.SIZEOF);
+        count = buf.getInt(offset + ResTable_entry.SIZEOF + ResTable_ref.SIZEOF);
       }
     };
 
-///**
-// * A single name/value mapping that is part of a complex resource
-// * entry.
-// */
-//    struct ResTable_map
-//    {
-//    // The resource identifier defining this mapping's name.  For attribute
-//    // resources, 'name' can be one of the following special resource types
-//    // to supply meta-data about the attribute; for all other resource types
-//    // it must be an attribute resource.
-//    ResTable_ref name;
-//
-//// Special values for 'name' when defining attribute resources.
+/**
+ * A single name/value mapping that is part of a complex resource
+ * entry.
+ */
+    public static class ResTable_map extends WithOffset
+    {
+      public static final int SIZEOF = ResTable_ref.SIZEOF + ResourceTypes.Res_value.SIZEOF;
+
+      // The resource identifier defining this mapping's name.  For attribute
+    // resources, 'name' can be one of the following special resource types
+    // to supply meta-data about the attribute; for all other resource types
+    // it must be an attribute resource.
+    public final ResTable_ref name;
+
+// Special values for 'name' when defining attribute resources.
 //enum {
-//    // This entry holds the attribute's type code.
-//    ATTR_TYPE = Res_MAKEINTERNAL(0),
-//
-//    // For integral attributes, this is the minimum value it can hold.
-//    ATTR_MIN = Res_MAKEINTERNAL(1),
-//
-//    // For integral attributes, this is the maximum value it can hold.
-//    ATTR_MAX = Res_MAKEINTERNAL(2),
-//
-//    // Localization of this resource is can be encouraged or required with
-//    // an aapt flag if this is set
-//    ATTR_L10N = Res_MAKEINTERNAL(3),
-//
-//    // for plural support, see android.content.res.PluralRules#attrForQuantity(int)
-//    ATTR_OTHER = Res_MAKEINTERNAL(4),
-//    ATTR_ZERO = Res_MAKEINTERNAL(5),
-//    ATTR_ONE = Res_MAKEINTERNAL(6),
-//    ATTR_TWO = Res_MAKEINTERNAL(7),
-//    ATTR_FEW = Res_MAKEINTERNAL(8),
-//    ATTR_MANY = Res_MAKEINTERNAL(9)
-//
+    // This entry holds the attribute's type code.
+    public static final int ATTR_TYPE = Res_MAKEINTERNAL(0);
+
+    // For integral attributes, this is the minimum value it can hold.
+    public static final int ATTR_MIN = Res_MAKEINTERNAL(1);
+
+    // For integral attributes, this is the maximum value it can hold.
+    public static final int ATTR_MAX = Res_MAKEINTERNAL(2);
+
+    // Localization of this resource is can be encouraged or required with
+    // an aapt flag if this is set
+    public static final int ATTR_L10N = Res_MAKEINTERNAL(3);
+
+    // for plural support, see android.content.res.PluralRules#attrForQuantity(int)
+    public static final int ATTR_OTHER = Res_MAKEINTERNAL(4);
+    public static final int ATTR_ZERO = Res_MAKEINTERNAL(5);
+    public static final int ATTR_ONE = Res_MAKEINTERNAL(6);
+    public static final int ATTR_TWO = Res_MAKEINTERNAL(7);
+    public static final int ATTR_FEW = Res_MAKEINTERNAL(8);
+    public static final int ATTR_MANY = Res_MAKEINTERNAL(9);
+
 //    };
-//
-//// Bit mask of allowed types, for use with ATTR_TYPE.
+
+// Bit mask of allowed types, for use with ATTR_TYPE.
 //enum {
-//    // No type has been defined for this attribute, use generic
-//    // type handling.  The low 16 bits are for types that can be
-//    // handled generically; the upper 16 require additional information
-//    // in the bag so can not be handled generically for TYPE_ANY.
-//    TYPE_ANY = 0x0000FFFF,
-//
-//    // Attribute holds a references to another resource.
-//    TYPE_REFERENCE = 1<<0,
-//
-//    // Attribute holds a generic string.
-//    TYPE_STRING = 1<<1,
-//
-//    // Attribute holds an integer value.  ATTR_MIN and ATTR_MIN can
-//    // optionally specify a constrained range of possible integer values.
-//    TYPE_INTEGER = 1<<2,
-//
-//    // Attribute holds a boolean integer.
-//    TYPE_BOOLEAN = 1<<3,
-//
-//    // Attribute holds a color value.
-//    TYPE_COLOR = 1<<4,
-//
-//    // Attribute holds a floating point value.
-//    TYPE_FLOAT = 1<<5,
-//
-//    // Attribute holds a dimension value, such as "20px".
-//    TYPE_DIMENSION = 1<<6,
-//
-//    // Attribute holds a fraction value, such as "20%".
-//    TYPE_FRACTION = 1<<7,
-//
-//    // Attribute holds an enumeration.  The enumeration values are
-//    // supplied as additional entries in the map.
-//    TYPE_ENUM = 1<<16,
-//
-//    // Attribute holds a bitmaks of flags.  The flag bit values are
-//    // supplied as additional entries in the map.
-//    TYPE_FLAGS = 1<<17
+    // No type has been defined for this attribute, use generic
+    // type handling.  The low 16 bits are for types that can be
+    // handled generically; the upper 16 require additional information
+    // in the bag so can not be handled generically for TYPE_ANY.
+    public static final int TYPE_ANY = 0x0000FFFF;
+
+    // Attribute holds a references to another resource.
+    public static final int TYPE_REFERENCE = 1<<0;
+
+    // Attribute holds a generic string.
+    public static final int TYPE_STRING = 1<<1;
+
+    // Attribute holds an integer value.  ATTR_MIN and ATTR_MIN can
+    // optionally specify a constrained range of possible integer values.
+    public static final int TYPE_INTEGER = 1<<2;
+
+    // Attribute holds a boolean integer.
+    public static final int TYPE_BOOLEAN = 1<<3;
+
+    // Attribute holds a color value.
+    public static final int TYPE_COLOR = 1<<4;
+
+    // Attribute holds a floating point value.
+    public static final int TYPE_FLOAT = 1<<5;
+
+    // Attribute holds a dimension value, such as "20px".
+    public static final int TYPE_DIMENSION = 1<<6;
+
+    // Attribute holds a fraction value, such as "20%".
+    public static final int TYPE_FRACTION = 1<<7;
+
+    // Attribute holds an enumeration.  The enumeration values are
+    // supplied as additional entries in the map.
+    public static final int TYPE_ENUM = 1<<16;
+
+    // Attribute holds a bitmaks of flags.  The flag bit values are
+    // supplied as additional entries in the map.
+    public static final int TYPE_FLAGS = 1<<17;
 //    };
-//
-//// Enum of localization modes, for use with ATTR_L10N.
+
+// Enum of localization modes, for use with ATTR_L10N.
 //enum {
-//    L10N_NOT_REQUIRED = 0,
-//    L10N_SUGGESTED    = 1
+    public static final int L10N_NOT_REQUIRED = 0;
+    public static final int L10N_SUGGESTED    = 1;
 //    };
-//
-//    // This mapping's value.
-//    Res_value value;
-//    };
-//
+
+    // This mapping's value.
+    public Res_value value;
+
+      public ResTable_map(ByteBuffer buf, int offset) {
+        super(buf, offset);
+
+        name = new ResTable_ref(buf, offset);
+        value = new Res_value(buf, offset + ResTable_ref.SIZEOF);
+      }
+
+      public ResTable_map() {
+        super(null, 0);
+        this.name = new ResTable_ref();
+        this.value = new Res_value();
+      }
+    };
+
 ///**
 // * A package-id to package name mapping for any shared libraries used
 // * in this resource table. The package-id's encoded in this resource

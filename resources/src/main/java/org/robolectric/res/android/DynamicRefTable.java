@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import org.robolectric.res.android.ResourceTypes.Res_value;
 
 /**
  * Holds the shared library ID table. Shared libraries are assigned package IDs at
@@ -129,7 +130,7 @@ public class DynamicRefTable
     return NO_ERROR;
   }
 //
-  int lookupResourceValue(ResValue value) {
+  int lookupResourceValue(Res_value value) {
     byte resolvedType = DataType.REFERENCE.code();
     switch (DataType.fromCode(value.dataType)) {
       case ATTRIBUTE:

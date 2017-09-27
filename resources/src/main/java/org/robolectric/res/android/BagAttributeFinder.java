@@ -15,7 +15,7 @@ public class BagAttributeFinder {
 
   public bag_entry find(int curIdent) {
     for (int curIndex = bagEndIndex - 1; curIndex >= 0; curIndex--) {
-      if (bag_entries[curIndex].map.nameIdent == curIdent) {
+      if (bag_entries[curIndex].map.name.ident == curIdent) {
         return bag_entries[curIndex];
       }
     }

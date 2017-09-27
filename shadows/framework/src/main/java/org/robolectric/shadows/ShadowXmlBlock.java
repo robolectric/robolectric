@@ -5,7 +5,6 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import android.os.Build.VERSION_CODES;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
@@ -193,13 +192,13 @@ public class ShadowXmlBlock {
       return 0;
     }
 
-    ResValue value = new ResValue();
+    Res_value value = new Res_value();
     if (resXMLParser.getAttributeValue(idx, value) < 0) {
       return 0;
     }
 
-    return value.dataType == Res_value.TYPE_REFERENCE
-        || value.dataType == Res_value.TYPE_ATTRIBUTE
+    return value.dataType == org.robolectric.res.android.ResourceTypes.Res_value.TYPE_REFERENCE
+        || value.dataType == org.robolectric.res.android.ResourceTypes.Res_value.TYPE_ATTRIBUTE
         ? value.data : 0;
   }
 

@@ -25,12 +25,10 @@ import static org.robolectric.res.android.Util.htodl;
 import static org.robolectric.res.android.Util.htods;
 import static org.robolectric.res.android.Util.isTruthy;
 
-import com.google.common.io.ByteStreams;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +37,7 @@ import java.util.concurrent.Semaphore;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResTable_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_header;
+import org.robolectric.res.android.ResourceTypes.ResTable_map;
 import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_package;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
@@ -357,7 +356,7 @@ public class ResTable {
     return mError;
   }
 
-  public final int getResource(int resID, Ref<ResValue> outValue, boolean mayBeBag, int density,
+  public final int getResource(int resID, Ref<Res_value> outValue, boolean mayBeBag, int density,
       Ref<Integer> outSpecFlags, Ref<ResTableConfig> outConfig)
   {
     if (mError != NO_ERROR) {
@@ -397,7 +396,7 @@ public class ResTable {
       return err;
     }
 
-    if ((entry.entry.flags & ResTableEntry.FLAG_COMPLEX) != 0) {
+    if ((entry.entry.flags & ResTable_entry.FLAG_COMPLEX) != 0) {
       if (!mayBeBag) {
         ALOGW("Requesting resource 0x%08x failed because it is complex\n", resID);
       }
@@ -406,13 +405,13 @@ public class ResTable {
 
 //    const Res_value* value = reinterpret_cast<const Res_value*>(
 //      reinterpret_cast<const uint8_t*>(entry.entry) + entry.entry->size);
-    Res_value value = new Res_value(entry.entry.myBuf(), entry.entry.myOffset() + entry.entry.size);
+    ResourceTypes.Res_value value = new ResourceTypes.Res_value(entry.entry.myBuf(), entry.entry.myOffset() + entry.entry.size);
 
 //    outValue.size = dtohs(value.size);
 //    outValue.res0 = value.res0;
 //    outValue.dataType = value.dataType;
 //    outValue.data = dtohl(value.data);
-    outValue.set(new ResValue(value.dataType, dtohl(value.data)));
+    outValue.set(new Res_value(value.dataType, dtohl(value.data)));
 
     // The reference may be pointing to a resource in a shared library. These
     // references have build-time generated package IDs. These ids may not match
@@ -443,17 +442,17 @@ public class ResTable {
     return entry._package_.header.index;
   }
 
-  public final int resolveReference(Ref<ResValue> value, int blockIndex,
+  public final int resolveReference(Ref<Res_value> value, int blockIndex,
       Ref<Integer> outLastRef) {
     return resolveReference(value, blockIndex, outLastRef, null, null);
   }
 
-  public final int resolveReference(Ref<ResValue> value, int blockIndex,
+  public final int resolveReference(Ref<Res_value> value, int blockIndex,
       Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags) {
     return resolveReference(value, blockIndex, outLastRef, inoutTypeSpecFlags, null);
   }
 
-  public final int resolveReference(Ref<ResValue> value, int blockIndex,
+  public final int resolveReference(Ref<Res_value> value, int blockIndex,
       Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
       Ref<ResTableConfig> outConfig)
   {
@@ -494,14 +493,14 @@ public class ResTable {
       final ResTableConfig config,
       Entry outEntry)
   {
-    final List<Type> typeList = packageGroup.types.get(typeIndex);
+    final List<Type> typeList = packageGroup.types.getOrDefault(typeIndex, Collections.emptyList());
     if (typeList.isEmpty()) {
       ALOGV("Skipping entry type index 0x%02x because type is NULL!\n", typeIndex);
       return BAD_TYPE;
     }
 
     ResTable_type bestType = null;
-    int bestOffset = ResTableType.NO_ENTRY;
+    int bestOffset = ResTable_type.NO_ENTRY;
     Package bestPackage = null;
     int specFlags = 0;
     byte actualTypeIndex = (byte) typeIndex;
@@ -548,7 +547,7 @@ public class ResTable {
 
       List<ResTable_type> candidateConfigs = typeSpec.configs;
 
-      List<ResTableType> filteredConfigs;
+//      List<ResTable_type> filteredConfigs;
 //      if (isTruthy(config) && Objects.equals(mParams, config)) {
 //        // Grab the lock first so we can safely get the current filtered list.
 //        synchronized (mFilteredConfigLock) {
@@ -901,7 +900,7 @@ public class ResTable {
           typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
         }
 
-        List<Type> typeList = group.types.get((int) typeIndex);
+        List<Type> typeList = group.types.getOrDefault((int) typeIndex, Collections.emptyList());
         if (typeList.isEmpty()) {
           ALOGE("No TypeSpec for type %d", type.id);
           return (mError=BAD_TYPE);
@@ -1031,16 +1030,16 @@ public class ResTable {
 
   private static final Map<String, Integer> sInternalNameToIdMap = new HashMap<>();
   static {
-    sInternalNameToIdMap.put("^type", ResTableMap.ATTR_TYPE);
-    sInternalNameToIdMap.put("^l10n", ResTableMap.ATTR_L10N);
-    sInternalNameToIdMap.put("^min" , ResTableMap.ATTR_MIN);
-    sInternalNameToIdMap.put("^max", ResTableMap.ATTR_MAX);
-    sInternalNameToIdMap.put("^other", ResTableMap.ATTR_OTHER);
-    sInternalNameToIdMap.put("^zero", ResTableMap.ATTR_ZERO);
-    sInternalNameToIdMap.put("^one", ResTableMap.ATTR_ONE);
-    sInternalNameToIdMap.put("^two", ResTableMap.ATTR_TWO);
-    sInternalNameToIdMap.put("^few", ResTableMap.ATTR_FEW);
-    sInternalNameToIdMap.put("^many", ResTableMap.ATTR_MANY);
+    sInternalNameToIdMap.put("^type", ResTable_map.ATTR_TYPE);
+    sInternalNameToIdMap.put("^l10n", ResTable_map.ATTR_L10N);
+    sInternalNameToIdMap.put("^min" , ResTable_map.ATTR_MIN);
+    sInternalNameToIdMap.put("^max", ResTable_map.ATTR_MAX);
+    sInternalNameToIdMap.put("^other", ResTable_map.ATTR_OTHER);
+    sInternalNameToIdMap.put("^zero", ResTable_map.ATTR_ZERO);
+    sInternalNameToIdMap.put("^one", ResTable_map.ATTR_ONE);
+    sInternalNameToIdMap.put("^two", ResTable_map.ATTR_TWO);
+    sInternalNameToIdMap.put("^few", ResTable_map.ATTR_FEW);
+    sInternalNameToIdMap.put("^many", ResTable_map.ATTR_MANY);
   }
 
   public int identifierForName(String name, String type, String packageName) {
@@ -1057,7 +1056,7 @@ public class ResTable {
     if (nameString.startsWith("^")) {
       if (sInternalNameToIdMap.containsKey(nameString)) {
         if (outTypeSpecFlags != null) {
-          outTypeSpecFlags.set(ResTableTypeSpec.SPEC_PUBLIC);
+          outTypeSpecFlags.set(ResTable_typeSpec.SPEC_PUBLIC);
         }
         return sInternalNameToIdMap.get(nameString);
       }
@@ -1070,7 +1069,7 @@ public class ResTable {
             return 0;
           }
           if (outTypeSpecFlags != null) {
-            outTypeSpecFlags.set(ResTableTypeSpec.SPEC_PUBLIC);
+            outTypeSpecFlags.set(ResTable_typeSpec.SPEC_PUBLIC);
           }
           return  Res_MAKEARRAY(index);
         }
@@ -1155,7 +1154,7 @@ public class ResTable {
           int identifier = findEntry(group, ti, nameString, outTypeSpecFlags);
           if (identifier != 0) {
             if (fakePublic && outTypeSpecFlags != null) {
-                        outTypeSpecFlags.set(outTypeSpecFlags.get() | ResTableTypeSpec.SPEC_PUBLIC);
+                        outTypeSpecFlags.set(outTypeSpecFlags.get() | ResTable_typeSpec.SPEC_PUBLIC);
             }
             return identifier;
           }
@@ -1169,7 +1168,7 @@ public class ResTable {
   }
 
   int findEntry(PackageGroup group, int typeIndex, String name, Ref<Integer> outTypeSpecFlags) {
-    List<Type> typeList = group.types.get(typeIndex);
+    List<Type> typeList = group.types.getOrDefault(typeIndex, Collections.emptyList());
     for (Type type : typeList) {
       int ei = type._package_.keyStrings.indexOfString(name);
       if (ei < 0) {
@@ -2261,7 +2260,7 @@ public class ResTable {
     return null;
   }
 
-  public boolean getResourceName(int resID, boolean allowUtf8, ResTableResourceName outName) {
+  public boolean getResourceName(int resID, boolean allowUtf8, ResourceName outName) {
     if (mError != NO_ERROR) {
       return false;
     }
@@ -2344,7 +2343,7 @@ public class ResTable {
 //
 //      final int N = packages.size();
 //      for (int i=0; i<N; i++) {
-//        ResTablePackage pkg = packages[i];
+//        ResTable_package pkg = packages[i];
 //        if (pkg.owner == owner) {
 //          delete pkg;
 //        }
@@ -2485,14 +2484,6 @@ public class ResTable {
     StringPoolRef keyStr;
   }
 
-  public static class MapEntry extends Entry {
-    ResTable parent;
-    // Number of name/value pairs that follow for FLAG_COMPLEX.
-    int count;
-
-    ResTableMap[] nameValuePairs;
-  }
-
   // struct ResTable::DataType
   public static class Type {
 
@@ -2545,7 +2536,7 @@ public class ResTable {
 
   public static class bag_entry {
     public int stringBlock;
-    public ResTableMap map = new ResTableMap(0, new ResValue(0, 0));
+    public ResTable_map map = new ResTable_map();
   }
 
   public void lock() {
@@ -2596,7 +2587,7 @@ public class ResTable {
       return BAD_INDEX;
     }
 
-    final List<Type> typeConfigs = grp.types.get(t);
+    final List<Type> typeConfigs = grp.types.getOrDefault(t, Collections.emptyList());
     if (typeConfigs.isEmpty()) {
       ALOGW("Type identifier 0x%x does not exist.", t+1);
       return BAD_INDEX;
@@ -2719,9 +2710,8 @@ public class ResTable {
     // Now merge in the new attributes...
 //    int curOff = (reinterpret_cast<uintptr_t>(entry.entry) - reinterpret_cast<uintptr_t>(entry.type))
 //        + dtohs(entry.entry.size);
-    // use curOff as an index instead of as a pointer offset
-    int curOff = 0;
-    ResTableMap map;
+    int curOff = entry.entry.myOffset() - entry.type.myOffset() + entry.entry.size;
+    ResTable_map map;
 //    bag_entry* entries = (bag_entry*)(set+1);
     bag_entry[] entries = set.bag_entries;
     int curEntry = 0;
@@ -2735,19 +2725,16 @@ public class ResTable {
         ALOGI("Now at %p\n", curEntry);
       }
 
-//      if (curOff > (dtohl(entry.type.header.size)-sizeof(ResTable_map))) {
-//        ALOGW("ResTable_map at %d is beyond type chunk data %d",
-//            (int)curOff, dtohl(entry.type.header.size));
-//        return BAD_TYPE;
-//      }
-//      map = (final ResTable_map*)(((final uint8_t*)entry.type) + curOff);
-      if (curOff >= ((MapEntry) entry).nameValuePairs.length) {
+      if (curOff > (dtohl(entry.type.header.size)- ResTable_map.SIZEOF)) {
+        ALOGW("ResTable_map at %d is beyond type chunk data %d",
+            (int)curOff, dtohl(entry.type.header.size));
         return BAD_TYPE;
       }
-      map = ((MapEntry) entry).nameValuePairs[curOff];
+//      map = (const ResTable_map*)(((const uint8_t*)entry.type) + curOff);
+      map = new ResTable_map(entry.type.myBuf(), entry.type.myOffset() + curOff);
       N++;
 
-      Ref<Integer> newName = new Ref<>(htodl(map.nameIdent));
+      Ref<Integer> newName = new Ref<>(htodl(map.name.ident));
       if (!Res_INTERNALID(newName.get())) {
         // Attributes don't have a resource id as the name. They specify
         // other data, which would be wrong to change via a lookup.
@@ -2761,10 +2748,10 @@ public class ResTable {
       boolean isInside;
       int oldName = 0;
       while ((isInside=(curEntry < set.numAttrs))
-          && (oldName=entries[curEntry].map.nameIdent) < newName.get()) {
+          && (oldName=entries[curEntry].map.name.ident) < newName.get()) {
         if (kDebugTableNoisy) {
           ALOGI("#%zu: Keeping existing attribute: 0x%08x\n",
-              curEntry, entries[curEntry].map.nameIdent);
+              curEntry, entries[curEntry].map.name.ident);
         }
         curEntry++;
       }
@@ -2808,9 +2795,8 @@ public class ResTable {
       }
 
       cur.stringBlock = entry._package_.header.index;
-      cur.map.nameIdent = newName.get();
-//      cur.map.value.copyFrom_dtoh(map.value);
-      cur.map.value = new ResValue(map.value);
+      cur.map.name.ident = newName.get();
+      cur.map.value.copyFrom_dtoh(map.value);
       err = grp.dynamicRefTable.lookupResourceValue(cur.map.value);
       if (err != NO_ERROR) {
         ALOGE("Reference item(0x%08x) in bag could not be resolved.", cur.map.value.data);
@@ -2819,16 +2805,16 @@ public class ResTable {
 
       if (kDebugTableNoisy) {
         ALOGI("Setting entry #%zu %p: block=%zd, name=0x%08d, type=%d, data=0x%08x\n",
-            curEntry, cur, cur.stringBlock, cur.map.nameIdent,
+            curEntry, cur, cur.stringBlock, cur.map.name.ident,
             cur.map.value.dataType, cur.map.value.data);
       }
 
       // On to the next!
       curEntry++;
       pos++;
-//        final int size = dtohs(map.value.size);
-//      curOff += size + sizeof(*map)-sizeof(map.value);
-      curOff++;
+      final int size = dtohs(map.value.size);
+//      curOff += size + sizeof(*map)-sizeof(map->value);
+      curOff += size + ResTable_map.SIZEOF-Res_value.SIZEOF;
     };
 
     if (curEntry > set.numAttrs) {
@@ -2892,7 +2878,7 @@ public class ResTable {
 
     // Pre-filtered list of configurations (per asset path) that match the parameters set on this
     // ResTable.
-    List<List<ResTableType>> filteredConfigs;
+    List<List<ResTable_type>> filteredConfigs;
   };
 
 
@@ -2900,4 +2886,10 @@ public class ResTable {
     return (((packageId+1)<<24) | (((typeId+1)&0xFF)<<16) | (entryId&0xFFFF));
   }
 
+  // struct resource_name
+  public static class ResourceName {
+    public String packageName;
+    public String type;
+    public String name;
+  }
 }

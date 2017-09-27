@@ -34,7 +34,6 @@ import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.DataType;
-import org.robolectric.res.android.ResValue;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
@@ -42,6 +41,7 @@ import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
+import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.*;
@@ -301,7 +301,7 @@ public class Robolectric {
             }
 
             System.out.println(attrName + " type " + type + " value " + valueInt);
-            ResValue resValue = new ResValue(type.code(), valueInt);
+            Res_value resValue = new Res_value(type.code(), valueInt);
 
             int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
             attr(resStringPoolWriter.string(attrNs), attrNameIndex,

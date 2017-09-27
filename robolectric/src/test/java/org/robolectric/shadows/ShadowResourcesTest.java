@@ -94,6 +94,12 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void hellowWorld() throws Exception {
+    assertThat(resources.getString(R.string.some_html)).isEqualTo("Hello, world");
+    assertThat(resources.getString(R.string.howdy)).isEqualTo("Howdy");
+  }
+
+  @Test
   public void getStringShouldStripNewLines() {
     assertThat(resources.getString(R.string.leading_and_trailing_new_lines)).isEqualTo("Some text");
   }

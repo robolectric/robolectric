@@ -287,24 +287,24 @@ public class ResStringPool {
       if (off < (mStringPoolSize-1)) {
         if (!isUTF8) {
           final int strings = mStrings;
-          final int str = strings+off;
-
-          int u16len = decodeLengthUTF16(buf, bufOffset + str);
-          if ((str+u16len-strings) < mStringPoolSize) {
-            // Reject malformed (non null-terminated) strings
-            if (buf.getShort(bufOffset + str + u16len) != 0x0000) {
-              ALOGW("Bad string block: string #%d is not null-terminated",
-                  (int)idx);
-              return null;
-            }
-            byte[] bytes = new byte[u16len * 2];
-            buf.position(bufOffset + str);
-            buf.get(bytes);
-            return new String(bytes, StandardCharsets.UTF_16);
-          } else {
-            ALOGW("Bad string block: string #%d extends to %d, past end at %d\n",
-                (int)idx, (int)(str+u16len-strings), (int)mStringPoolSize);
-          }
+          final int str = strings+off*2;
+          return decodeString(buf, bufOffset + str, Type.UTF16);
+//          int u16len = decodeLengthUTF16(buf, bufOffset + str);
+//          if ((str+u16len*2-strings) < mStringPoolSize) {
+//            // Reject malformed (non null-terminated) strings
+//            if (buf.getShort(bufOffset + str + u16len*2) != 0x0000) {
+//              ALOGW("Bad string block: string #%d is not null-terminated",
+//                  (int)idx);
+//              return null;
+//            }
+//            byte[] bytes = new byte[u16len * 2];
+//            buf.position(bufOffset + str);
+//            buf.get(bytes);
+//            return new String(bytes, StandardCharsets.UTF_16);
+//          } else {
+//            ALOGW("Bad string block: string #%d extends to %d, past end at %d\n",
+//                (int)idx, (int)(str+u16len-strings), (int)mStringPoolSize);
+//          }
         } else {
           final int strings = mStrings;
           final int u8str = strings+off;

@@ -10,10 +10,12 @@ import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
 
+import java.util.Collections;
 import java.util.List;
 import org.robolectric.res.android.ResTable.PackageGroup;
 import org.robolectric.res.android.ResTable.Type;
 import org.robolectric.res.android.ResTable.bag_entry;
+import org.robolectric.res.android.ResourceTypes.Res_value;
 
 public class ResTableTheme {
 
@@ -31,7 +33,7 @@ public class ResTableTheme {
     return this.mTable;
   }
 
-  public int getAttribute(int resID, Ref<ResValue> valueRef,
+  public int getAttribute(int resID, Ref<Res_value> valueRef,
       Ref<Integer> outTypeSpecFlags) {
     int cnt = 20;
 
@@ -98,7 +100,7 @@ public class ResTableTheme {
 
   }
 
-  public int resolveAttributeReference(Ref<ResValue> value, int block, Ref<Integer> resid,
+  public int resolveAttributeReference(Ref<Res_value> value, int block, Ref<Integer> resid,
       Ref<Integer> typeSetFlags, Ref<ResTableConfig> config) {
     return -1;
   }
@@ -128,7 +130,7 @@ public class ResTableTheme {
     final int end = N;
     int bagIndex = 0;
     while (bagIndex < end) {
-      final int attrRes = bag.get()[bagIndex].map.nameIdent;
+      final int attrRes = bag.get()[bagIndex].map.name.ident;
       final int p = Res_GETPACKAGE(attrRes);
       final int t = Res_GETTYPE(attrRes);
       final int e = Res_GETENTRY(attrRes);
@@ -159,7 +161,7 @@ public class ResTableTheme {
         curEntries = curPI.types[t] != null ? curPI.types[t].entries: null;
         if (curEntries == null) {
           final PackageGroup grp = mTable.mPackageGroups.get(curPackageIndex);
-          final List<Type> typeList = grp.types.get(t);
+          final List<Type> typeList = grp.types.getOrDefault(t, Collections.emptyList());
           int cnt = typeList.isEmpty() ? 0 : typeList.get(0).entryCount;
           curEntries = new theme_entry[cnt];
           curPI.types[t] = new type_info();
@@ -283,7 +285,7 @@ public class ResTableTheme {
   class theme_entry {
     int stringBlock;
     int typeSpecFlags;
-    ResValue value = new ResValue();
+    Res_value value = new Res_value();
 
     theme_entry() {}
 
@@ -291,7 +293,7 @@ public class ResTableTheme {
     public theme_entry(theme_entry src) {
       stringBlock = src.stringBlock;
       typeSpecFlags = src.typeSpecFlags;
-      value = new ResValue(src.value);
+      value = new Res_value(src.value);
     }
   };
 
