@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
+/** Unit tests for {@link ShadowUsbManager}. */
 @RunWith(RobolectricTestRunner.class)
 public class ShadowUsbManagerTest {
   private static final String DEVICE_NAME_1 = "usb1";
