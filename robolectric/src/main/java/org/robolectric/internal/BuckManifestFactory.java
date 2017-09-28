@@ -1,6 +1,8 @@
 package org.robolectric.internal;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +15,7 @@ import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.Logger;
+import org.robolectric.util.Util;
 
 public class BuckManifestFactory implements ManifestFactory {
 
@@ -34,10 +37,8 @@ public class BuckManifestFactory implements ManifestFactory {
     String packageName = manifestIdentifier.getPackageName();
     FsFile manifestFile = manifestIdentifier.getManifestFile();
 
-    final List<String> buckResources = buckResDirs == null ? null :
-            Arrays.asList(buckResDirs.split(File.pathSeparator));
-    final List<String> buckAssets = buckAssetsDirs == null ? null :
-              Arrays.asList(buckAssetsDirs.split(File.pathSeparator));
+    final List<String> buckResources = getDirectoriesFromProperty(buckResDirs);
+    final List<String> buckAssets = getDirectoriesFromProperty(buckAssetsDirs);
 
     final FsFile resDir = (buckResources == null || buckResources.isEmpty()) ? null :
             Fs.fileFromPath(buckResources.get(buckResources.size() - 1));
@@ -72,5 +73,20 @@ public class BuckManifestFactory implements ManifestFactory {
 
   public static boolean isBuck() {
     return System.getProperty(BUCK_ROBOLECTRIC_MANIFEST) != null;
+  }
+
+  private List<String> getDirectoriesFromProperty(String property) {
+    if (property == null) {
+      return null;
+    }
+    if (property.startsWith("@")) {
+      String filename = property.substring(1);
+      try {
+        return Arrays.asList(new String(Util.readBytes(new FileInputStream(filename))).split("\\n"));
+      } catch (IOException e) {
+        throw new RuntimeException("Cannot read file " + filename);
+      }
+    }
+    return Arrays.asList(property.split(File.pathSeparator));
   }
 }
