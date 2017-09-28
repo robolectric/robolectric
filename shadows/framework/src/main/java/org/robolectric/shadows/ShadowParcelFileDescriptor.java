@@ -29,14 +29,14 @@ public class ShadowParcelFileDescriptor {
     return pfd;
   }
 
-  @Implementation
-  public FileDescriptor getFileDescriptor() {
-    try {
-      return file.getFD();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  // @Implementation
+  // public FileDescriptor getFileDescriptor() {
+  //   try {
+  //     return file.getFD();
+  //   } catch (IOException e) {
+  //     throw new RuntimeException(e);
+  //   }
+  // }
 
   @Implementation
   public long getStatSize() {

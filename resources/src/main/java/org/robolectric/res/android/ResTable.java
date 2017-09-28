@@ -153,10 +153,10 @@ public class ResTable {
         ALOGW("Unable to get buffer of idmap asset file");
         return UNKNOWN_ERROR;
       }
-      idmapSize = idmapAsset.getLength();
+      idmapSize = (int) idmapAsset.getLength();
     }
 
-    return addInternal(data, asset.getLength(),
+    return addInternal(data, (int) asset.getLength(),
         idmapData, idmapSize, appAsLib, cookie, copyData, isSystemAsset);
   }
 

@@ -12,7 +12,7 @@ import java.util.zip.ZipFile;
 
 public class ZipFileRO {
 
-  final int kCompressStored = 0;
+  static final int kCompressStored = 0;
   final int kCompressDeflated = 8;
 
   final ZipArchiveHandle mHandle;
@@ -245,6 +245,33 @@ public class ZipFileRO {
   }
 
   /*
+ * Create a new FileMap object that spans the data in "entry".
+ */
+  FileMap createEntryFileMap(ZipEntryRO entry)
+  {
+    // final _ZipEntryRO *zipEntry = reinterpret_cast<_ZipEntryRO*>(entry);
+    // const ZipEntry& ze = zipEntry->entry;
+    ZipEntry ze = entry.entry;
+    // int fd = GetFileDescriptor(mHandle);
+    int fd = -1;
+    int actualLen = 0;
+
+    if (ze.getMethod() == kCompressStored) {
+      actualLen = Math.toIntExact(ze.getSize());
+    } else {
+      actualLen = Math.toIntExact(ze.getCompressedSize());
+    }
+
+    FileMap newMap = new FileMap();
+    if (!newMap.createFromZip(mFileName, mHandle.zipFile, entry.entry, actualLen, true)) {
+      // delete newMap;
+      return null;
+    }
+
+    return newMap;
+  }
+
+  /*
    * Uncompress an entry, in its entirety, into the provided output buffer.
    *
    * This doesn't verify the data's CRC, which might be useful for
@@ -284,8 +311,5 @@ public class ZipFileRO {
 
   static String String(String string) {
     return string;
-  }
-
-  static class FileMap {
   }
 }

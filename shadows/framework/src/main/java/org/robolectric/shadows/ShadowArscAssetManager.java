@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGI;
@@ -22,6 +21,7 @@ import android.util.TypedValue;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import dalvik.system.VMRuntime;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,13 +38,12 @@ import org.robolectric.res.android.BagAttributeFinder;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.DynamicRefTable;
-import org.robolectric.res.android.FileAsset;
 import org.robolectric.res.android.Ref;
 import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
+import org.robolectric.res.android.ResTable.ResourceName;
 import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResTableConfig;
-import org.robolectric.res.android.ResTable.ResourceName;
 import org.robolectric.res.android.ResTableTheme;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
@@ -185,8 +184,16 @@ public class ShadowArscAssetManager {
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    return directlyOn(realObject, AssetManager.class, "openFd",
-        ClassParameter.from(String.class, fileName));
+    try {
+      return directlyOn(realObject, AssetManager.class, "openFd",
+          ClassParameter.from(String.class, fileName));
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof IOException) {
+        throw (IOException) e.getCause();
+      } else {
+        throw e;
+      }
+    }
   }
 
   @Implementation
@@ -524,8 +531,8 @@ public class ShadowArscAssetManager {
       return -1;
     }
     AccessMode mode = AccessMode.values()[accessMode];
-    if (mode != FileAsset.AccessMode.ACCESS_UNKNOWN && mode != FileAsset.AccessMode.ACCESS_RANDOM
-        && mode != FileAsset.AccessMode.ACCESS_STREAMING && mode != FileAsset.AccessMode.ACCESS_BUFFER) {
+    if (mode != Asset.AccessMode.ACCESS_UNKNOWN && mode != Asset.AccessMode.ACCESS_RANDOM
+        && mode != Asset.AccessMode.ACCESS_STREAMING && mode != Asset.AccessMode.ACCESS_BUFFER) {
       throw new IllegalArgumentException("Bad access mode");
     }
     Asset a = isTruthy(cookie)
@@ -535,7 +542,7 @@ public class ShadowArscAssetManager {
       throw new FileNotFoundException(fileName8);
     }
     long assetId = nativeAssetRegistry.getNativeObjectId(a);
-    // todo: something better than this
+    // todo: something better than this [xw]
     a.onClose = () -> destroyAsset(assetId);
     //printf("Created Asset Stream: %p\n", a);
     return assetId;
@@ -609,7 +616,7 @@ public class ShadowArscAssetManager {
   @Implementation(minSdk = LOLLIPOP)
   public final long getAssetLength(long asset) {
     Asset a = getAsset(asset);
-    return a.size();
+    return a.getLength();
   }
 
   @HiddenApi
@@ -1472,7 +1479,7 @@ public class ShadowArscAssetManager {
     final DynamicRefTable dynamicRefTable =
         am.getResources().getDynamicRefTableForCookie(assetCookie);
     ResXMLTree block = new ResXMLTree(dynamicRefTable);
-    int err = block.setTo(a.getBuffer(true), a.getLength(), true);
+    int err = block.setTo(a.getBuffer(true), (int) a.getLength(), true);
     a.close();
 //    delete a;
 
@@ -1706,31 +1713,31 @@ public class ShadowArscAssetManager {
 
   static ParcelFileDescriptor returnParcelFileDescriptor(Asset a, long[] outOffsets)
       throws FileNotFoundException {
-    throw new UnsupportedOperationException("not yet implemented");
-//    Ref<Long> startOffset = new Ref<Long>(-1L);
-//    Ref<Long> length = new Ref<Long>(-1L);;
-//    int fd = a.openFileDescriptor(startOffset, length);
-//
-//    if (fd < 0) {
-//      throw new FileNotFoundException(
-//          "This file can not be opened as a file descriptor; it is probably compressed");
-//    }
-//
-//    long[] offsets = outOffsets;
-//    if (offsets == null) {
-//      close(fd);
-//      return null;
-//    }
-//
-//    offsets[0] = startOffset.get();
-//    offsets[1] = length.get();
-//
-//    FileDescriptor fileDesc = jniCreateFileDescriptor(fd);
-//    if (fileDesc == null) {
-//      close(fd);
-//      return null;
-//    }
-//
-//    return newParcelFileDescriptor(fileDesc);
+   Ref<Long> startOffset = new Ref<Long>(-1L);
+   Ref<Long> length = new Ref<Long>(-1L);;
+   FileDescriptor fd = a.openFileDescriptor(startOffset, length);
+
+   if (fd == null) {
+     throw new FileNotFoundException(
+         "This file can not be opened as a file descriptor; it is probably compressed");
+   }
+
+   long[] offsets = outOffsets;
+   if (offsets == null) {
+     // fd.close();
+     return null;
+   }
+
+   offsets[0] = startOffset.get();
+   offsets[1] = length.get();
+
+   // FileDescriptor fileDesc = jniCreateFileDescriptor(fd);
+   // if (fileDesc == null) {
+     // close(fd);
+     // return null;
+   // }
+
+   // return newParcelFileDescriptor(fileDesc);
+    return new ParcelFileDescriptor(fd);
   }
 }

@@ -13,10 +13,7 @@ import static org.robolectric.res.android.Util.isTruthy;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -26,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
@@ -118,7 +114,7 @@ public class CppAssetManager {
 //  
 
   // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
-  static final Asset kExcludedAsset = new FileAsset(null);
+  static final Asset kExcludedAsset = Asset.EXCLUDED_ASSET;
 //  
 //  static volatile int gCount = 0;
 //  
@@ -968,29 +964,28 @@ public Asset open(final String fileName, AccessMode mode) {
           return null;
       }
 
-      return Asset.createFromZipEntry(pZipFile, entry, entryName);
-//      FileMap dataMap = pZipFile.createEntryFileMap(entry);
+      //return Asset.createFromZipEntry(pZipFile, entry, entryName);
+     FileMap dataMap = pZipFile.createEntryFileMap(entry);
 //      if (dataMap == null) {
 //          ALOGW("create map from entry failed\n");
 //          return null;
 //      }
 //
-//      if (method == ZipFileRO.kCompressStored) {
-//          pAsset = Asset.createFromUncompressedMap(dataMap, mode);
-//          ALOGV("Opened uncompressed entry %s in zip %s mode %d: %p", entryName.string(),
-//                  dataMap.getFileName(), mode, pAsset);
-//      } else {
-//          pAsset = Asset.createFromCompressedMap(dataMap,
-//              static_cast<int>(uncompressedLen), mode);
-//          ALOGV("Opened compressed entry %s in zip %s mode %d: %p", entryName.string(),
-//                  dataMap.getFileName(), mode, pAsset);
-//      }
-//      if (pAsset == null) {
-//          /* unexpected */
-//          ALOGW("create from segment failed\n");
-//      }
+     if (method.get() == ZipFileRO.kCompressStored) {
+         pAsset = Asset.createFromUncompressedMap(dataMap, mode);
+         ALOGV("Opened uncompressed entry %s in zip %s mode %d: %p", entryName.string(),
+                 pZipFile.mFileName, mode, pAsset);
+     } else {
+         pAsset = Asset.createFromCompressedMap(dataMap, Math.toIntExact(uncompressedLen.get()), mode);
+         ALOGV("Opened compressed entry %s in zip %s mode %d: %p", entryName.string(),
+             pZipFile.mFileName, mode, pAsset);
+     }
+     if (pAsset == null) {
+         /* unexpected */
+         ALOGW("create from segment failed\n");
+     }
 
-//      return pAsset;
+     return pAsset;
   }
 
   /*
