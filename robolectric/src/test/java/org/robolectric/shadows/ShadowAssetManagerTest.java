@@ -38,7 +38,6 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.N_MR1)
 public class ShadowAssetManagerTest {
 
   @Rule
@@ -69,7 +68,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void assetsPathListing() throws IOException {
-    assertThat(assetManager.list("")).containsExactlyInAnyOrder("assetsHome.txt", "deflatedAsset.xml", "docs", "myFont.ttf", "images", "sounds", "webkit");
+    assertThat(assetManager.list("")).contains("assetsHome.txt", "deflatedAsset.xml", "docs", "myFont.ttf", "images", "webkit");
 
     assertThat(assetManager.list("docs")).containsExactlyInAnyOrder("extra");
 
