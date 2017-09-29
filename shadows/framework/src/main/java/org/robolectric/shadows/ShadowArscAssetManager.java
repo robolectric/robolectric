@@ -552,7 +552,25 @@ public class ShadowArscAssetManager {
   @Implementation
   public ParcelFileDescriptor openNonAssetFdNative(int cookie,
       String fileName, long[] outOffsets) throws IOException {
-    throw new UnsupportedOperationException("not yet implemented");
+    CppAssetManager am = assetManagerForJavaObject();
+
+    ALOGV("openNonAssetFd in %p (Java object %p)\n", am, this);
+
+    if (fileName == null) {
+      return null;
+    }
+
+    Asset a = isTruthy(cookie)
+        ? am.openNonAsset(cookie, fileName, Asset.AccessMode.ACCESS_RANDOM)
+        : am.openNonAsset(fileName, Asset.AccessMode.ACCESS_RANDOM, null);
+
+    if (a == null) {
+      throw new FileNotFoundException(fileName);
+    }
+
+    //printf("Created Asset Stream: %p\n", a);
+
+    return returnParcelFileDescriptor(a, outOffsets);
   }
 
   @HiddenApi
