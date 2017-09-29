@@ -49,6 +49,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
@@ -685,7 +686,7 @@ public class ShadowViewTest {
 
   @Test
   public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
-    TestView2 view = new TestView2(buildActivity(Activity.class).create().get(), 1111, 1112);
+    TestView2 view = new TestView2(setupActivity(Activity.class), 1111, 1112);
     assertThat(shadowOf(view).onLayoutWasCalled()).isFalse();
     view.onLayout(true, 1, 2, 3, 4);
     assertThat(shadowOf(view).onLayoutWasCalled()).isTrue();
