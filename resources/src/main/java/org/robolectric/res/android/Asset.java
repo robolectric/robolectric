@@ -64,19 +64,17 @@ public abstract class Asset {
     }
   }
 
+  public final int read(byte[] buf, int count) {
+    return read(buf, 0, count);
+  }
+
   /*
    * Read data from the current offset.  Returns the actual number of
    * bytes read, 0 on EOF, or -1 on error.
+   *
+   * Transliteration note: added bufOffset to translate to: index into buf to start writing at
    */
-  public abstract int read(byte[] buf, int offset, int count);
-
-  public int read() {
-    byte[] buf = new byte[1];
-    if (read(buf, 0, 1) != 1) {
-      return -1;
-    }
-    return buf[0] & 0xff;
-  }
+  public abstract int read(byte[] buf, int bufOffset, int count);
 
   /*
    * Seek to the specified offset.  "whence" uses the same values as
@@ -690,7 +688,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /*
      * Read a chunk of data.
      */
-    public int read(byte[] buf, int offset, int count) {
+    public int read(byte[] buf, int bufOffset, int count) {
       int maxLen;
       int actual;
 
@@ -720,13 +718,13 @@ static Asset createFromCompressedMap(FileMap dataMap,
           /* copy from mapped area */
         //printf("map read\n");
         // memcpy(buf, (String)mMap.getDataPtr() + mOffset, count);
-        System.arraycopy(mMap.getDataPtr(), Math.toIntExact(mOffset), buf, 0, count);
+        System.arraycopy(mMap.getDataPtr(), Math.toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else if (mBuf != null) {
           /* copy from buffer */
         //printf("buf read\n");
         // memcpy(buf, (String)mBuf + mOffset, count);
-        System.arraycopy(mBuf, Math.toIntExact(mOffset), buf, 0, count);
+        System.arraycopy(mBuf, Math.toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else {
           /* read from the file */
@@ -1088,7 +1086,8 @@ static Asset createFromCompressedMap(FileMap dataMap,
      *
      * [For now, that's just copying data out of a buffer.]
      */
-    public int read(byte[] buf, int offset, int count) {
+    @Override
+    public int read(byte[] buf, int bufOffset, int count) {
       throw new UnsupportedOperationException();
       // int maxLen;
       // int actual;
@@ -1121,10 +1120,6 @@ static Asset createFromCompressedMap(FileMap dataMap,
       //
       // mOffset += actual;
       // return actual;
-    }
-
-    public int read() {
-      throw new UnsupportedOperationException();
     }
 
     /*

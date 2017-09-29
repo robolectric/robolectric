@@ -530,7 +530,7 @@ public class ShadowArscAssetManager {
     if (fileName8 == null) {
       return -1;
     }
-    AccessMode mode = AccessMode.values()[accessMode];
+    AccessMode mode = AccessMode.fromInt(accessMode);
     if (mode != Asset.AccessMode.ACCESS_UNKNOWN && mode != Asset.AccessMode.ACCESS_RANDOM
         && mode != Asset.AccessMode.ACCESS_STREAMING && mode != Asset.AccessMode.ACCESS_BUFFER) {
       throw new IllegalArgumentException("Bad access mode");
@@ -595,20 +595,44 @@ public class ShadowArscAssetManager {
   @Implementation(minSdk = LOLLIPOP)
   public final int readAssetChar(long asset) {
     Asset a = getAsset(asset);
-    return a.read();
+    byte[] b = new byte[1];
+    int res = a.read(b, 1);
+    return res == 1 ? b[0] : -1;
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public final int readAsset(int asset, byte[] b, int off, int len) {
+  public final int readAsset(int asset, byte[] b, int off, int len) throws IOException {
     return readAsset((long) asset, b, off, len);
   }
 
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
-  public final int readAsset(long asset, byte[] b, int off, int len) {
+  public final int readAsset(long asset, byte[] bArray, int off, int len) throws IOException {
     Asset a = getAsset(asset);
-    return a.read(b, off, len);
+
+    if (a == null || bArray == null) {
+      throw new NullPointerException("asset");
+    }
+
+    if (len == 0) {
+      return 0;
+    }
+
+    int bLen = bArray.length;
+    if (off < 0 || off >= bLen || len < 0 || len > bLen || (off+len) > bLen) {
+      throw new IndexOutOfBoundsException();
+    }
+
+    byte[] b = bArray;
+    int res = a.read(b, off, len);
+
+    if (res > 0) return res;
+
+    if (res < 0) {
+      throw new IOException();
+    }
+    return -1;
   }
 
   @HiddenApi
