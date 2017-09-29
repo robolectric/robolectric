@@ -2890,5 +2890,10 @@ public class ResTable {
     public String packageName;
     public String type;
     public String name;
+
+    @Override
+    public String toString() {
+      return packageName.trim() + '@' + type + ':' + name;
+    }
   }
 }

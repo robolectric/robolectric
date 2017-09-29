@@ -181,7 +181,7 @@ public class ResourceTypes {
     short size;
 
     // Always set to 0.
-    byte res0;
+//    byte res0;
 
     // Type of the data value.
 //    enum {
@@ -301,32 +301,32 @@ public byte dataType;
 
     public Res_value() {
       this.size = 0;
-      this.res0 = 0;
+//      this.res0 = 0;
       this.dataType = 0;
       this.data = 0;
     }
 
     public Res_value(ByteBuffer buf, int offset) {
       this.size = buf.getShort(offset);
-      this.res0 = buf.get(offset + 2);
+      byte res0 = buf.get(offset + 2);
       this.dataType = buf.get(offset + 3);
       this.data = buf.getInt(offset + 4);
 
-      if (this.res0 != 0) {
-        throw new IllegalStateException("res0 != 0 (" + this.res0 + ")");
+      if (res0 != 0) {
+        throw new IllegalStateException("res0 != 0 (" + res0 + ")");
       }
     }
 
     public Res_value(Res_value other) {
       this.size = other.size;
-      this.res0 = other.res0;
+//      this.res0 = other.res0;
       this.dataType = other.dataType;
       this.data = other.data;
     }
 
     public Res_value(byte dataType, int data) {
       this.size = 0;
-      this.res0 = 0;
+//      this.res0 = 0;
       this.dataType = dataType;
       this.data = data;
     }
@@ -340,13 +340,16 @@ public byte dataType;
 
     public void copyFrom_dtoh(Res_value other) {
       this.size = other.size;
-      this.res0 = other.res0;
+//      this.res0 = other.res0;
       this.dataType = other.dataType;
       this.data = other.data;
     }
 
-//  void copyFrom_dtoh(const Res_value& src);
-}
+    @Override
+    public String toString() {
+      return "Res_value{dataType=" + dataType + ", data=" + data + '}';
+    }
+  }
 
 /**
  *  This is a reference to a unique entry (a ResTable_entry structure)

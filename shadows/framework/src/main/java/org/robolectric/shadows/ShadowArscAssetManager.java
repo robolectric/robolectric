@@ -68,7 +68,7 @@ public class ShadowArscAssetManager {
   private static NativeObjRegistry<ResXMLParser> nativeXMLParserRegistry = new NativeObjRegistry<>();
   private static NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
 
-  static boolean isLegacyAssetManager(AssetManager assets) {
+  public static boolean isLegacyAssetManager(AssetManager assets) {
     return Shadow.extract(assets) instanceof ShadowAssetManager;
   }
 
