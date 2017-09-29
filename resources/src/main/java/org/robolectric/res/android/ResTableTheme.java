@@ -24,7 +24,7 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 public class ResTableTheme {
 
   private final List<AppliedStyle> styles = new ArrayList<>();
-  private static boolean styleDebug = true;
+  private static boolean styleDebug = false;
 
   private class AppliedStyle {
     private final int styleResId;

@@ -916,10 +916,10 @@ public class ShadowArscAssetManager {
     Ref<Integer> styleBagTypeSetFlags = new Ref(0);
     if (xmlParser != null) {
       int idx = xmlParser.indexOfStyle();
-      if (idx >= 0 && xmlParser.getAttributeValue(idx, value.get()) >= 0) {
+      if (idx >= 0 && xmlParser.getAttributeValue(idx, value) >= 0) {
         if (value.get().dataType == DataType.ATTRIBUTE.code()) {
           if (theme.getAttribute(value.get().data, value, styleBagTypeSetFlags) < 0) {
-            value.get().dataType = DataType.NULL.code();
+            value.set(value.get().withType(DataType.NULL.code()));
           }
         }
         if (value.get().dataType == DataType.REFERENCE.code()) {
@@ -975,8 +975,7 @@ public class ShadowArscAssetManager {
       // Try to find a value for this attribute...  we prioritize values
       // coming from, first XML attributes, then XML style, then default
       // style, and finally the theme.
-      value.get().dataType = DataType.NULL.code();
-      value.get().data = TypedValue.DATA_NULL_UNDEFINED;
+      value.set(Res_value.NULL_VALUE);
       typeSetFlags = new Ref<>(0);
       config.get().density = 0;
 
@@ -985,7 +984,7 @@ public class ShadowArscAssetManager {
       if (xmlAttrIdx != xmlAttrEnd) {
         // We found the attribute we were looking for.
         block = kXmlBlock;
-        xmlParser.getAttributeValue(xmlAttrIdx, value.get());
+        xmlParser.getAttributeValue(xmlAttrIdx, value);
         if (kDebugStyles) {
           ALOGI(". From XML: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
         }
@@ -1063,8 +1062,7 @@ public class ShadowArscAssetManager {
         if (kDebugStyles) {
           ALOGI(". Setting to @null!");
         }
-        value.get().dataType = DataType.NULL.code();
-        value.get().data = TypedValue.DATA_NULL_UNDEFINED;
+        value.set(Res_value.NULL_VALUE);
         block = kXmlBlock;
       }
 
@@ -1191,8 +1189,7 @@ public class ShadowArscAssetManager {
       final int curIdent = (int)src[ii];
 
       // Try to find a value for this attribute...
-      value.get().dataType = org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL;
-      value.get().data = org.robolectric.res.android.ResourceTypes.Res_value.DATA_NULL_UNDEFINED;
+      value.set(Res_value.NULL_VALUE);
       typeSetFlags.set(0);
       config.get().density = 0;
 
@@ -1204,14 +1201,14 @@ public class ShadowArscAssetManager {
       // Retrieve the current XML attribute if it matches, and step to next.
       if (ix < NX && curIdent == curXmlAttr) {
         block = kXmlBlock;
-        xmlParser.getAttributeValue(ix, value.get());
+        xmlParser.getAttributeValue(ix, value);
         ix++;
         curXmlAttr = xmlParser.getAttributeNameResID(ix);
       }
 
       //printf("Attribute 0x%08x: type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
       Ref<Integer> resid = new Ref<>(0);
-      if (value.get().dataType != org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL) {
+      if (value.get().dataType != Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
         //printf("Resolving attribute reference\n");
         int newBlock = res.resolveReference(value, block, resid,
@@ -1226,9 +1223,8 @@ public class ShadowArscAssetManager {
       }
 
       // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.get().dataType == org.robolectric.res.android.ResourceTypes.Res_value.TYPE_REFERENCE && value.get().data == 0) {
-        value.get().dataType = org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL;
-        value.get().data = org.robolectric.res.android.ResourceTypes.Res_value.DATA_NULL_UNDEFINED;
+      if (value.get().dataType == Res_value.TYPE_REFERENCE && value.get().data == 0) {
+        value.set(Res_value.NULL_VALUE);
       }
 
       //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
@@ -1242,7 +1238,7 @@ public class ShadowArscAssetManager {
       dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
       dest[destOffset + STYLE_DENSITY] = config.get().density;
 
-      if (indices != null && value.get().dataType != org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL) {
+      if (indices != null && value.get().dataType != Res_value.TYPE_NULL) {
         indicesIdx++;
         indices[indicesIdx] = ii;
       }
@@ -1345,8 +1341,7 @@ public class ShadowArscAssetManager {
 
       // Deal with the special @null value -- it turns back to TYPE_NULL.
       if (value.dataType == DataType.REFERENCE.code() && value.data == 0) {
-        value.dataType = DataType.NULL.code();
-        value.data = TypedValue.DATA_NULL_UNDEFINED;
+        value = Res_value.NULL_VALUE;
       }
 
       //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);

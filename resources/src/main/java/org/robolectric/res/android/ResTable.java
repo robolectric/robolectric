@@ -401,19 +401,19 @@ public class ResTable {
 
 //    const Res_value* value = reinterpret_cast<const Res_value*>(
 //      reinterpret_cast<const uint8_t*>(entry.entry) + entry.entry->size);
-    ResourceTypes.Res_value value = new ResourceTypes.Res_value(entry.entry.myBuf(), entry.entry.myOffset() + entry.entry.size);
+    Res_value value = new Res_value(entry.entry.myBuf(), entry.entry.myOffset() + entry.entry.size);
 
 //    outValue.size = dtohs(value.size);
 //    outValue.res0 = value.res0;
 //    outValue.dataType = value.dataType;
 //    outValue.data = dtohl(value.data);
-    outValue.set(new Res_value(value.dataType, dtohl(value.data)));
+    outValue.set(value);
 
     // The reference may be pointing to a resource in a shared library. These
     // references have build-time generated package IDs. These ids may not match
     // the actual package IDs of the corresponding packages in this ResTable.
     // We need to fix the package ID based on a mapping.
-    if (grp.dynamicRefTable.lookupResourceValue(outValue.get()) != NO_ERROR) {
+    if (grp.dynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
       ALOGW("Failed to resolve referenced package: 0x%08x", outValue.get().data);
       return BAD_VALUE;
     }
@@ -2795,8 +2795,11 @@ public class ResTable {
 
       cur.stringBlock = entry._package_.header.index;
       cur.map.name.ident = newName.get();
-      cur.map.value.copyFrom_dtoh(map.value);
-      err = grp.dynamicRefTable.lookupResourceValue(cur.map.value);
+//      cur->map.value.copyFrom_dtoh(map->value);
+      cur.map.value = map.value;
+      Ref<Res_value> valueRef = new Ref<>(cur.map.value);
+      err = grp.dynamicRefTable.lookupResourceValue(valueRef);
+      cur.map.value = map.value = valueRef.get();
       if (err != NO_ERROR) {
         ALOGE("Reference item(0x%08x) in bag could not be resolved.", cur.map.value.data);
         return UNKNOWN_ERROR;
