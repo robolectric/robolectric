@@ -528,6 +528,8 @@ public class ResTableConfig {
     return screenLayout & SCREENLAYOUT_ROUND_MASK;
   }
 
+  public int colorMode;
+
   public int uiMode;
 
   public final int uiModeType() {

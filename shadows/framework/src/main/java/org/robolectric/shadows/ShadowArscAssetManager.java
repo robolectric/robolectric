@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGI;
@@ -281,12 +283,26 @@ public class ShadowArscAssetManager {
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = N_MR1)
   public void setConfiguration(int mcc, int mnc, String locale,
       int orientation, int touchscreen, int density, int keyboard,
       int keyboardHidden, int navigation, int screenWidth, int screenHeight,
       int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
       int screenLayout, int uiMode, int sdkVersion) {
+    setConfiguration(mcc, mnc, locale,
+        orientation, touchscreen, density, keyboard,
+        keyboardHidden, navigation, screenWidth, screenHeight,
+        smallestScreenWidthDp, screenWidthDp, screenHeightDp,
+        screenLayout, uiMode, 0, sdkVersion);
+  }
+  
+  @HiddenApi
+  @Implementation(minSdk = O)
+  public void setConfiguration(int mcc, int mnc, String locale,
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int colorMode, int sdkVersion) {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
       return;
@@ -316,6 +332,7 @@ public class ShadowArscAssetManager {
     config.screenHeightDp = screenHeightDp;
     config.screenLayout = screenLayout;
     config.uiMode = uiMode;
+    config.colorMode = colorMode;
     config.sdkVersion = sdkVersion;
     config.minorVersion = 0;
 
@@ -845,7 +862,7 @@ public class ShadowArscAssetManager {
         outValues, outIndices);
   }
 
-  @Implementation(maxSdk = VERSION_CODES.N_MR1)
+  @Implementation(maxSdk = N_MR1)
   @HiddenApi
   public static final boolean applyStyle(long themeToken,
       int defStyleAttr,
@@ -1111,7 +1128,14 @@ public class ShadowArscAssetManager {
     throw new UnsupportedOperationException("not yet implemented");
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi
+  public final boolean retrieveAttributes(
+      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+    return retrieveAttributes((long)xmlParserToken, attrs, outValues, outIndices);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   public final boolean retrieveAttributes(
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
@@ -1462,7 +1486,18 @@ public class ShadowArscAssetManager {
   /*package*/@HiddenApi @Implementation public static final void clearTheme(long theme){
     throw new UnsupportedOperationException("not yet implemented");
   }
-  /*package*/@HiddenApi @Implementation public static final int loadThemeAttributeValue(long themeHandle, int ident,
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  /*package*/ public static final int loadThemeAttributeValue(int themeHandle, int ident,
+      TypedValue outValue,
+      boolean resolve) {
+    return loadThemeAttributeValue((long) themeHandle, ident, outValue, resolve);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
+  /*package*/ public static final int loadThemeAttributeValue(long themeHandle, int ident,
       TypedValue outValue,
       boolean resolve){
 

@@ -979,15 +979,19 @@ public class ResTable {
 
           // Find which configurations match the set of parameters. This allows for a much
           // faster lookup in getEntry() if the set of values is narrowed down.
-          for (int t = 0; t < packageGroup.types.size(); t++) {
-            if (packageGroup.types.get(t).isEmpty()) {
-              continue;
+          //for (int t = 0; t < packageGroup.types.size(); t++) {
+            //if (packageGroup.types.get(t).isEmpty()) {
+            //   continue;
+            // }
+            //
+            // List<Type> typeList = packageGroup.types.get(t);
+        for (List<Type> typeList : packageGroup.types.values()) {
+          if (typeList.isEmpty()) {
+               continue;
             }
 
-            List<Type> typeList = packageGroup.types.get(t);
-
-            // Retrieve the cache entry for this type.
-            TypeCacheEntry cacheEntry = packageGroup.typeCacheEntries.editItemAt(t);
+          // Retrieve the cache entry for this type.
+            //TypeCacheEntry cacheEntry = packageGroup.typeCacheEntries.editItemAt(t);
 
             for (int ts = 0; ts < typeList.size(); ts++) {
               Type type = typeList.get(ts);
@@ -1006,7 +1010,7 @@ public class ResTable {
 
               if (kDebugTableNoisy) {
                 ALOGD("Updating pkg=%zu type=%zu with %zu filtered configs",
-                    packageGroup.id, t, newFilteredConfigs.size());
+                    packageGroup.id, newFilteredConfigs.size());
               }
 
               // todo: implement cache

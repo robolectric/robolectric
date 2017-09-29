@@ -121,11 +121,17 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
     // end new stuff
 
-    if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
-      if (resTab.languageString() != null && resTab.regionString() != null) {
-        configuration.setLocale(new Locale(resTab.languageString(), resTab.regionString()));
-      } else if (resTab.languageString() != null) {
-        configuration.setLocale(new Locale(resTab.languageString()));
+    Locale locale = null;
+    if (resTab.languageString() != null && resTab.regionString() != null) {
+      locale = new Locale(resTab.languageString(), resTab.regionString());
+    } else if (resTab.languageString() != null) {
+      locale = new Locale(resTab.languageString());
+    }
+    if (locale != null) {
+      if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
+        configuration.setLocale(locale);
+      } else {
+        configuration.locale = locale;
       }
     }
 

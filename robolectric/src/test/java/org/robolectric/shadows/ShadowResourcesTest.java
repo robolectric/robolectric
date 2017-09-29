@@ -621,6 +621,7 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  @Config
   public void themeResolveAttribute_shouldSupportDereferenceResource() {
     TypedValue out = new TypedValue();
 
@@ -648,6 +649,7 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  @Config
   public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() throws Exception {
     // android:id/mask was introduced in API 21, but it's still possible for apps built against API 21 to refer to it
     // in older runtimes because referenced resource ids are compiled (by aapt) into the binary XML format.
@@ -669,7 +671,7 @@ public class ShadowResourcesTest {
     assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT).isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
   }
 
-  @Test @Config(sdk = 25) // todo: unpin
+  @Test
   public void obtainAttributes_shouldReturnValuesFromAttributeSet() throws Exception {
     AttributeSet attributes = Robolectric.buildAttributeSet()
         .addAttribute(android.R.attr.title, "A title!")
@@ -686,7 +688,7 @@ public class ShadowResourcesTest {
     typedArray.recycle();
   }
 
-  @Test @Config(sdk = 25) // todo: unpin
+  @Test
   public void obtainAttributes_shouldReturnValuesFromResources() throws Exception {
     XmlPullParser parser = resources.getXml(R.xml.xml_attrs);
     parser.next();
