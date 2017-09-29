@@ -614,7 +614,7 @@ public class ShadowArscAssetManager {
     Asset a = getAsset(asset);
     byte[] b = new byte[1];
     int res = a.read(b, 1);
-    return res == 1 ? b[0] : -1;
+    return res == 1 ? b[0] & 0xff : -1;
   }
 
   @HiddenApi

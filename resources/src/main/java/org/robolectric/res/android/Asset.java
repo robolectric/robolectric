@@ -711,7 +711,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
         count = maxLen;
 
       if (!isTruthy(count)) {
-        return -1;
+        return 0;
       }
 
       if (mMap != null) {
