@@ -1,6 +1,5 @@
 package org.robolectric.res.android;
 
-import static android.system.OsConstants.O_RDONLY;
 import static org.robolectric.res.android.Asset.AccessMode.ACCESS_BUFFER;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGE;
@@ -714,7 +713,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
         count = maxLen;
 
       if (!isTruthy(count)) {
-        return 0;
+        return -1;
       }
 
       if (mMap != null) {
@@ -1155,22 +1154,21 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * Close the asset.
      */
     public void close() {
-      throw new UnsupportedOperationException();
-      // if (mMap != null) {
-      // delete mMap;
-      // mMap = null;
-      // }
-      //
-      // delete[] mBuf;
-      // mBuf = null;
-      //
-      // delete mZipInflater;
-      // mZipInflater = null;
-      //
-      // if (mFd > 0) {
-      // ::close(mFd);
-      // mFd = -1;
-      // }
+       if (mMap != null) {
+//       delete mMap;
+       mMap = null;
+       }
+
+//       delete[] mBuf;
+       mBuf = null;
+
+//       delete mZipInflater;
+//       mZipInflater = null;
+
+       if (mFd > 0) {
+//       ::close(mFd);
+       mFd = -1;
+       }
     }
 
     /*
@@ -1180,7 +1178,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * buffer.
      */
     public final byte[] getBuffer(boolean wordAligned) {
-      throw new UnsupportedOperationException();
+      return mMap.getDataPtr();
       // unsigned String buf = null;
       //
       // if (mBuf != null)

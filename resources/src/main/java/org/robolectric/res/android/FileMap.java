@@ -1,10 +1,5 @@
 package org.robolectric.res.android;
 
-import static android.system.Os.sysconf;
-import static android.system.OsConstants.MAP_SHARED;
-import static android.system.OsConstants.PROT_READ;
-import static android.system.OsConstants.PROT_WRITE;
-import static android.system.OsConstants._SC_PAGESIZE;
 import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGV;
 
@@ -147,13 +142,13 @@ public class FileMap {
     assert(length > 0);
 
     // init on first use
-    if (mPageSize == -1) {
-      mPageSize = sysconf(_SC_PAGESIZE);
-      if (mPageSize == -1) {
-        ALOGE("could not get _SC_PAGESIZE\n");
-        return false;
-      }
-    }
+//    if (mPageSize == -1) {
+//      mPageSize = sysconf(_SC_PAGESIZE);
+//      if (mPageSize == -1) {
+//        ALOGE("could not get _SC_PAGESIZE\n");
+//        return false;
+//      }
+//    }
 
     // adjust = Math.toIntExact(offset % mPageSize);
     // adjOffset = offset - adjust;
@@ -176,7 +171,7 @@ public class FileMap {
     //mBaseLength = adjLength;
     mDataOffset = offset;
     //mDataPtr = mBasePtr + adjust;
-    mDataLength = length;
+    mDataLength = Math.toIntExact(entry.getSize());
 
     //assert(mBasePtr != 0);
 
