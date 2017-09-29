@@ -362,7 +362,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     return 0;
   }
 
-  public int getAttributeValue(int idx, Res_value outValue)
+  public int getAttributeValue(int idx, Ref<Res_value> outValue)
   {
     if (mEventCode == START_TAG) {
       ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
@@ -372,7 +372,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
 //        + dtohs(tag.attributeStart())
 //            + (dtohs(tag.attributeSize())*idx));
         ResXMLTree_attribute attr = tag.attributeAt(idx);
-        outValue.copyFrom_dtoh(attr.typedValue);
+        outValue.set(attr.typedValue);
         if (mTree.mDynamicRefTable != null &&
             mTree.mDynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
           return BAD_TYPE;

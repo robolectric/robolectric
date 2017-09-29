@@ -130,9 +130,10 @@ public class DynamicRefTable
     return NO_ERROR;
   }
 //
-  int lookupResourceValue(Res_value value) {
+  int lookupResourceValue(Ref<Res_value> value) {
     byte resolvedType = DataType.REFERENCE.code();
-    switch (DataType.fromCode(value.dataType)) {
+    Res_value inValue = value.get();
+    switch (DataType.fromCode(inValue.dataType)) {
       case ATTRIBUTE:
         resolvedType = DataType.ATTRIBUTE.code();
         // fallthrough
@@ -153,14 +154,14 @@ public class DynamicRefTable
         return NO_ERROR;
     }
 
-    Ref<Integer> resIdRef = new Ref<>(value.data);
+    Ref<Integer> resIdRef = new Ref<>(inValue.data);
     int err = lookupResourceId(resIdRef);
-    value.data = resIdRef.get();
+    value.set(inValue.withData(resIdRef.get()));
     if (err != NO_ERROR) {
       return err;
     }
 
-    value.dataType = resolvedType;
+    value.set(new Res_value(resolvedType, resIdRef.get()));
     return NO_ERROR;
  }
 

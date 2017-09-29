@@ -5,19 +5,52 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.ResTable.Res_GETENTRY;
 import static org.robolectric.res.android.ResTable.Res_GETPACKAGE;
 import static org.robolectric.res.android.ResTable.Res_GETTYPE;
+import static org.robolectric.res.android.ResourceTypes.Res_value.TYPE_ATTRIBUTE;
+import static org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL;
 import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.robolectric.res.android.ResTable.PackageGroup;
+import org.robolectric.res.android.ResTable.ResourceName;
 import org.robolectric.res.android.ResTable.Type;
 import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
 public class ResTableTheme {
+
+  private final List<AppliedStyle> styles = new ArrayList<>();
+  private static boolean styleDebug = false;
+
+  private class AppliedStyle {
+    private final int styleResId;
+    private final boolean forced;
+
+    public AppliedStyle(int styleResId, boolean forced) {
+      this.styleResId = styleResId;
+      this.forced = forced;
+    }
+
+    @Override
+    public String toString() {
+      ResourceName resourceName = new ResourceName();
+      boolean found = mTable.getResourceName(styleResId, true, resourceName);
+      return (found ? resourceName : "unknown") + (forced ? " (forced)" : "");
+    }
+  }
+
+  @Override
+  public String toString() {
+    if (styles.isEmpty()) {
+      return "theme with no applied styles";
+    } else {
+      return "theme with applied styles: " + styles + "";
+    }
+  }
 
   private ResTable mTable;
   private boolean kDebugTableTheme = false;
@@ -65,7 +98,7 @@ public class ResTableTheme {
             if (e < ti.numEntries) {
               theme_entry te = ti.entries[e];
               if (te == null) {
-                te = ti.entries[e] = new theme_entry();
+                te = new theme_entry();
               }
               if (outTypeSpecFlags != null) {
                 outTypeSpecFlags.set(outTypeSpecFlags.get() | te.typeSpecFlags);
@@ -75,7 +108,7 @@ public class ResTableTheme {
                     te.value.dataType, te.value.data);
               }
               final int type = te.value.dataType;
-              if (type == DataType.ATTRIBUTE.code()) {
+              if (type == TYPE_ATTRIBUTE) {
                 if (cnt > 0) {
                   cnt--;
                   resID = te.value.data;
@@ -83,7 +116,7 @@ public class ResTableTheme {
                 }
                 ALOGW("Too many attribute references, stopped at: 0x%08x\n", resID);
                 return BAD_INDEX;
-              } else if (type != DataType.NULL.code()) {
+              } else if (type != TYPE_NULL) {
                 valueRef.set(te.value);
                 return te.stringBlock;
               }
@@ -100,12 +133,34 @@ public class ResTableTheme {
 
   }
 
-  public int resolveAttributeReference(Ref<Res_value> value, int block, Ref<Integer> resid,
-      Ref<Integer> typeSetFlags, Ref<ResTableConfig> config) {
-    return -1;
+  public int resolveAttributeReference(Ref<Res_value> inOutValue,
+      int blockIndex, Ref<Integer> outLastRef,
+      Ref<Integer> inoutTypeSpecFlags, Ref<ResTableConfig> inoutConfig) {
+    //printf("Resolving type=0x%x\n", inOutValue->dataType);
+    if (inOutValue.get().dataType == TYPE_ATTRIBUTE) {
+      Ref<Integer> newTypeSpecFlags = new Ref<>(0);
+      blockIndex = getAttribute(inOutValue.get().data, inOutValue, newTypeSpecFlags);
+      if (kDebugTableTheme) {
+        ALOGI("Resolving attr reference: blockIndex=%d, type=0x%x, data=0x%x\n",
+            (int)blockIndex, (int)inOutValue.get().dataType, inOutValue.get().data);
+      }
+      if (inoutTypeSpecFlags != null) inoutTypeSpecFlags.set(inoutTypeSpecFlags.get() | newTypeSpecFlags.get());
+      //printf("Retrieved attribute new type=0x%x\n", inOutValue->dataType);
+      if (blockIndex < 0) {
+        return blockIndex;
+      }
+    }
+    return mTable.resolveReference(inOutValue, blockIndex, outLastRef,
+        inoutTypeSpecFlags, inoutConfig);
   }
 
   public int applyStyle(int resID, boolean force) {
+    AppliedStyle newAppliedStyle = new AppliedStyle(resID, force);
+    if (styleDebug) {
+      System.out.println("Apply " + newAppliedStyle + " to " + this);
+    }
+    styles.add(newAppliedStyle);
+
     final Ref<bag_entry[]> bag = new Ref<>(null);
     Ref<Integer> bagTypeSpecFlags = new Ref(0);
     mTable.lock();
@@ -130,7 +185,8 @@ public class ResTableTheme {
     final int end = N;
     int bagIndex = 0;
     while (bagIndex < end) {
-      final int attrRes = bag.get()[bagIndex].map.name.ident;
+      bag_entry bag_entry = bag.get()[bagIndex];
+      final int attrRes = bag_entry.map.name.ident;
       final int p = Res_GETPACKAGE(attrRes);
       final int t = Res_GETTYPE(attrRes);
       final int e = Res_GETENTRY(attrRes);
@@ -181,18 +237,21 @@ public class ResTableTheme {
       }
       theme_entry curEntry = curEntries[e];
 
-      //new theme_entry();
+      if (styleDebug) {
+        ResourceName outName = new ResourceName();
+        mTable.getResourceName(attrRes, true, outName);
+        System.out.println("  " + outName + " := " + bag_entry.map.value);
+      }
 
-      //curEntries[e] = curEntry;
 //      if (kDebugTableNoisy) {
 //        ALOGV("Attr 0x%08x: type=0x%x, data=0x%08x; curType=0x%x",
 //            attrRes, bag.get()[bagIndex].map.value.dataType, bag.get()[bagIndex].map.value.data,
 //            curEntry.value.dataType);
 //      }
-      if (force || curEntry.value.dataType == DataType.NULL.code()) {
-        curEntry.stringBlock = bag.get()[bagIndex].stringBlock;
+      if (force || curEntry.value.dataType == TYPE_NULL) {
+        curEntry.stringBlock = bag_entry.stringBlock;
         curEntry.typeSpecFlags |= bagTypeSpecFlags.get();
-        curEntry.value = bag.get()[bagIndex].map.value;
+        curEntry.value = new Res_value(bag_entry.map.value);
       }
 
       bagIndex++;
@@ -214,6 +273,9 @@ public class ResTableTheme {
   }
 
   public int setTo(ResTableTheme other) {
+    styles.clear();
+    styles.addAll(other.styles);
+
     if (kDebugTableTheme) {
       ALOGI("Setting theme %s from theme %s...\n", this, other);
       dumpToLog();
@@ -260,29 +322,31 @@ public class ResTableTheme {
   }
 
   private package_info copy_package(package_info pi) {
-    return new package_info(pi);
-//    package_info newpi = new package_info();
-//    for (int j = 0; j <= Res_MAXTYPE; j++) {
-//      if (pi.types[j] == null) {
-//        newpi.types[j] = null;
-//        continue;
-//      }
-//      int cnt = pi.types[j].numEntries;
-//      newpi.types[j] = new type_info();
-//      newpi.types[j].numEntries = cnt;
-//      theme_entry[] te = pi.types[j].entries;
-//      if (te != null) {
-//        theme_entry[] newte = new theme_entry[cnt];
-//        newpi.types[j].entries = newte;
-//        System.arraycopy(te, 0, newte, 0, te.length);
-//      } else {
-//        newpi.types[j].entries = null;
-//      }
-//    }
-//    return newpi;
+    package_info newpi = new package_info();
+    for (int j = 0; j <= Res_MAXTYPE; j++) {
+      if (pi.types[j] == null) {
+        newpi.types[j] = null;
+        continue;
+      }
+      int cnt = pi.types[j].numEntries;
+      newpi.types[j] = new type_info();
+      newpi.types[j].numEntries = cnt;
+      theme_entry[] te = pi.types[j].entries;
+      if (te != null) {
+        theme_entry[] newte = new theme_entry[cnt];
+        newpi.types[j].entries = newte;
+//        memcpy(newte, te, cnt*sizeof(theme_entry));
+        for (int i = 0; i < newte.length; i++) {
+          newte[i] = te[i] == null ? null : new theme_entry(te[i]); // deep copy
+        }
+      } else {
+        newpi.types[j].entries = null;
+      }
+    }
+    return newpi;
   }
 
-  class theme_entry {
+  static class theme_entry {
     int stringBlock;
     int typeSpecFlags;
     Res_value value = new Res_value();
@@ -291,13 +355,15 @@ public class ResTableTheme {
 
     /** copy constructor. Performs a deep copy */
     public theme_entry(theme_entry src) {
-      stringBlock = src.stringBlock;
-      typeSpecFlags = src.typeSpecFlags;
-      value = new Res_value(src.value);
+      if (src != null) {
+        stringBlock = src.stringBlock;
+        typeSpecFlags = src.typeSpecFlags;
+        value = new Res_value(src.value);
+      }
     }
   };
 
-  class type_info {
+  static class type_info {
     int numEntries;
     theme_entry[] entries;
 
@@ -317,7 +383,7 @@ public class ResTableTheme {
     }
   };
 
-  class package_info {
+  static class package_info {
     type_info[] types = new type_info[Res_MAXTYPE + 1];
 
     package_info() {}

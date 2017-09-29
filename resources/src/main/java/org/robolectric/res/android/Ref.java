@@ -15,4 +15,9 @@ public class Ref<T> {
   public void set(T t) {
     this.t = t;
   }
+
+  @Override
+  public String toString() {
+    return "Ref<" + t + '>';
+  }
 }

@@ -24,6 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.android.CustomStateView;
 import org.robolectric.android.CustomView;
@@ -46,11 +48,11 @@ import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
 public class ShadowLayoutInflaterTest {
-  private Activity context;
+  private Context context;
 
   @Before
   public void setUp() throws Exception {
-    context = buildActivity(Activity.class).create().get();
+    context = RuntimeEnvironment.application;
   }
 
   @Test
@@ -324,33 +326,33 @@ public class ShadowLayoutInflaterTest {
 
   @Test
   public void testMultiOrientation() throws Exception {
-    context = buildActivity(Activity.class).create().start().resume().get();
+    Activity activity = buildActivity(Activity.class).create().start().resume().get();
 
     // Default screen orientation should be portrait.
-    int layoutResId1 = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
-    ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId1, null);
+    int layoutResId1 = activity.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
+    ViewGroup view = (ViewGroup) LayoutInflater.from(activity).inflate(layoutResId1, null);
     assertInstanceOf(LinearLayout.class, view);
     assertEquals(view.getId(), R.id.portrait);
-    assertSame(context, view.getContext());
+    assertSame(activity, view.getContext());
 
     // Confirm explicit "orientation = portrait" works.
-    context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-    int layoutResId = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
-    view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
+    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    int layoutResId = activity.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
+    view = (ViewGroup) LayoutInflater.from(activity).inflate(layoutResId, null);
     assertInstanceOf(LinearLayout.class, view);
     assertEquals(view.getId(), R.id.portrait);
-    assertSame(context, view.getContext());
+    assertSame(activity, view.getContext());
   }
 
   @Test
   @Config(qualifiers = "land")
   public void testMultiOrientation_explicitLandscape() throws Exception {
-    context = buildActivity(Activity.class).create().start().resume().get();
+    Activity activity = buildActivity(Activity.class).create().start().resume().get();
 
     // Confirm explicit "orientation = landscape" works.
-    context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-    int layoutResId = context.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
-    ViewGroup view = (ViewGroup) LayoutInflater.from(context).inflate(layoutResId, null);
+    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    int layoutResId = activity.getResources().getIdentifier("multi_orientation", "layout", TEST_PACKAGE);
+    ViewGroup view = (ViewGroup) LayoutInflater.from(activity).inflate(layoutResId, null);
     assertEquals(view.getId(), R.id.landscape);
     assertInstanceOf(LinearLayout.class, view);
   }

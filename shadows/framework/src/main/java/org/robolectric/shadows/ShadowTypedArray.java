@@ -60,7 +60,12 @@ public class ShadowTypedArray {
 
   @Implementation
   public String getPositionDescription() {
-    return positionDescription;
+    if (ShadowArscAssetManager.isLegacyAssetManager(
+        shadowOf(realTypedArray.getResources()).realResources.getAssets())) {
+      return positionDescription;
+    } else {
+      return directlyOn(realTypedArray, TypedArray.class, "getPositionDescription");
+    }
   }
 
   public static void dump(TypedArray typedArray) {

@@ -711,7 +711,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
         count = maxLen;
 
       if (!isTruthy(count)) {
-        return 0;
+        return -1;
       }
 
       if (mMap != null) {
@@ -1088,38 +1088,38 @@ static Asset createFromCompressedMap(FileMap dataMap,
      */
     @Override
     public int read(byte[] buf, int bufOffset, int count) {
-      throw new UnsupportedOperationException();
-      // int maxLen;
-      // int actual;
-      //
-      // assert(mOffset >= 0 && mOffset <= mUncompressedLen);
-      //
-      // /* If we're relying on a streaming inflater, go through that */
-      // if (mZipInflater) {
-      // actual = mZipInflater.read(buf, count);
-      // } else {
-      // if (mBuf == null) {
-      // if (getBuffer(false) == null)
-      // return -1;
-      // }
-      // assert(mBuf != null);
-      //
-      //     /* adjust count if we're near EOF */
-      // maxLen = mUncompressedLen - mOffset;
-      // if (count > maxLen)
-      // count = maxLen;
-      //
-      // if (!count)
-      // return 0;
-      //
-      //     /* copy from buffer */
-      // //printf("comp buf read\n");
-      // memcpy(buf, (String)mBuf + mOffset, count);
-      // actual = count;
-      // }
-      //
-      // mOffset += actual;
-      // return actual;
+      int maxLen;
+      int actual;
+
+      assert(mOffset >= 0 && mOffset <= mUncompressedLen);
+
+       /* If we're relying on a streaming inflater, go through that */
+//       if (mZipInflater) {
+//       actual = mZipInflater.read(buf, count);
+//       } else {
+      if (mBuf == null) {
+        if (getBuffer(false) == null)
+          return -1;
+      }
+      assert(mBuf != null);
+
+      /* adjust count if we're near EOF */
+      maxLen = Math.toIntExact(mUncompressedLen - mOffset);
+      if (count > maxLen)
+        count = maxLen;
+
+      if (!isTruthy(count))
+        return -1;
+
+      /* copy from buffer */
+      //printf("comp buf read\n");
+//      memcpy(buf, (String)mBuf + mOffset, count);
+      System.arraycopy(mBuf, Math.toIntExact(mOffset), buf, bufOffset, count);
+      actual = count;
+//       }
+
+      mOffset += actual;
+      return actual;
     }
 
     /*
@@ -1173,7 +1173,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * buffer.
      */
     public final byte[] getBuffer(boolean wordAligned) {
-      return mMap.getDataPtr();
+      return mBuf = mMap.getDataPtr();
       // unsigned String buf = null;
       //
       // if (mBuf != null)
