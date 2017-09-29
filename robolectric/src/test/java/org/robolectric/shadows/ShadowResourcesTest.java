@@ -576,7 +576,11 @@ public class ShadowResourcesTest {
 
   @Test
   public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
-    assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
+    if (ShadowArscAssetManager.isLegacyAssetManager(resources.getAssets())) {
+      assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
+    } else {
+      assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNotNull();
+    }
   }
 
   @Test
