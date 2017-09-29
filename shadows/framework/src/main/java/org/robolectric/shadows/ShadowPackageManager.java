@@ -741,6 +741,7 @@ public class ShadowPackageManager {
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+    applicationInfo.uid = android.os.Process.myUid();
     setUpPackageStorage(applicationInfo);
 
     int labelRes = 0;
