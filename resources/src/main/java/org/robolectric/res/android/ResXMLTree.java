@@ -292,34 +292,11 @@ public class ResXMLTree {
     return mParser.getStrings();
   }
 
-  public int next() {
-    return mParser.next();
-  }
-
   static class XmlBuffer {
     final ByteBuffer buf;
 
     public XmlBuffer(byte[] data) {
       this.buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    class XmlResStringPool {
-      private final int offset;
-      private final ResStringPool_header header;
-
-      XmlResStringPool(int offset) {
-        this.offset = offset;
-        header = new ResStringPool_header(buf, offset);
-      }
-
-      public List<String> strings() {
-        int stringCount = header.stringCount;
-        ArrayList<String> list = new ArrayList<>(stringCount);
-        for (int i = 0; i < stringCount; i++) {
-//          list.add(header.string(i));
-        }
-        return list;
-      }
     }
   }
 }

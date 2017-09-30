@@ -803,13 +803,6 @@ public class ShadowViewTest {
     assertFalse(shadowOf(temporaryChild).isAttachedToWindow());
   }
 
-  @Test @Config(sdk = 25)
-  public void thing() throws Exception {
-    shouldCallOnAttachedToAndDetachedFromWindow();
-    transcript.clear();
-    shouldCallOnAttachedToAndDetachedFromWindow();
-  }
-
   @Test @Config(minSdk = JELLY_BEAN_MR2)
   public void getWindowId_shouldReturnValidObjectWhenAttached() throws Exception {
     MyView parent = new MyView("parent", transcript);

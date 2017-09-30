@@ -71,8 +71,7 @@ public class ShadowXmlBlock {
 //      return 0;
 //    }
 
-//    ResXMLParser st = new ResXMLParser(osb);
-    ResXMLParser st = osb.mParser;
+    ResXMLParser st = new ResXMLParser(osb);
 //    if (st == NULL) {
 //      jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
 //      return 0;
@@ -90,7 +89,7 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public static int nativeNext(long state) throws XmlPullParserException {
-    ResXMLTree st = NATIVE_RES_XML_TREES.getNativeObject(state);
+    ResXMLParser st = getResXMLParser(state);
     if (st == null) {
       return ResXMLParser.event_code_t.END_DOCUMENT;
     }
