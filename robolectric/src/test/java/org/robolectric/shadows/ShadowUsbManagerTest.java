@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
+import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import org.junit.Before;
@@ -85,5 +86,11 @@ public class ShadowUsbManagerTest {
 
     shadowUsbManager.reset();
     assertThat(usbManager.getDeviceList()).isEmpty();
+  }
+
+  @Test
+  public void openAccessory() {
+    UsbAccessory usbAccessory = new UsbAccessory("", "", "", "", "", "");
+    assertThat(usbManager.openAccessory(usbAccessory)).isNotNull();
   }
 }

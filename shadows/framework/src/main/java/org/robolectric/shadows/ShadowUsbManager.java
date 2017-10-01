@@ -1,9 +1,16 @@
 package org.robolectric.shadows;
 
+import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.ParcelFileDescriptor;
 import com.google.common.base.Preconditions;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
+
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -53,5 +60,20 @@ public class ShadowUsbManager {
   public void removeUsbDevice(UsbDevice usbDevice) {
     Preconditions.checkNotNull(usbDevice);
     usbDevicesPermissionMap.remove(usbDevice);
+  }
+
+  /**
+   * Opens a file descriptor from a temporary file.
+   */
+  @Implementation
+  public ParcelFileDescriptor openAccessory(UsbAccessory accessory) {
+    try {
+      File tmpUsbDir =
+          RuntimeEnvironment.getTempDirectory().createIfNotExists("usb-accessory").toFile();
+      return ParcelFileDescriptor.open(
+          new File(tmpUsbDir, "usb-accessory-file"), ParcelFileDescriptor.MODE_READ_WRITE);
+    } catch (FileNotFoundException error) {
+      throw new RuntimeException("Error shadowing openAccessory", error);
+    }
   }
 }
