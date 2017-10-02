@@ -339,6 +339,11 @@ public final class ShadowAssetManager {
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
   }
 
+  /**
+   * Extract an asset from a zipped up assets provided by the build system, this is required because there is no
+   * way to get a FileDescriptor from a zip entry. This is a temporary measure for Bazel which can be removed
+   * once binary resources are supported.
+   */
   private static File getFileFromZip(File file) {
     File fileFromZip = null;
     String pathString = file.getPath();
@@ -368,7 +373,7 @@ public final class ShadowAssetManager {
       zis.closeEntry();
       zis.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return fileFromZip;
   }
