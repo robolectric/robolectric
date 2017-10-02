@@ -1475,8 +1475,8 @@ public class ResTableConfig {
 
     int separator;
     int start = 0;
-    while ((separator = in.indexOf('-', start)) != -1) {
-        final int size = separator - start;
+    while ((separator = in.indexOf('-', start)) > 0) {
+      final int size = separator - start;
       if (!assignLocaleComponent(this, in.substring(start), size)) {
         System.err.println(String.format("Invalid BCP-47 locale string: %s", in));
       }
