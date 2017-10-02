@@ -45,7 +45,7 @@ import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTable.ResourceName;
 import org.robolectric.res.android.ResTable.bag_entry;
-import org.robolectric.res.android.ResTableConfig;
+import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.android.ResTableTheme;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
@@ -308,7 +308,7 @@ public class ShadowArscAssetManager {
       return;
     }
 
-    ResTableConfig config = new ResTableConfig();
+    ResTable_config config = new ResTable_config();
 //    memset(&config, 0, sizeof(config));
 
 //    const char* locale8 = locale != NULL ? env->GetStringUTFChars(locale, NULL) : NULL;
@@ -714,7 +714,7 @@ public class ShadowArscAssetManager {
     final ResTable res = am.getResources();
 
     Ref<Res_value> value = new Ref<>(null);
-    Ref<ResTableConfig> config = new Ref<>(null);
+    Ref<ResTable_config> config = new Ref<>(null);
     Ref<Integer> typeSpecFlags = new Ref<>(null);
     int block = res.getResource(ident, value, false, density, typeSpecFlags, config);
     if (kThrowOnBadId) {
@@ -748,7 +748,7 @@ public class ShadowArscAssetManager {
   }
 
   private static int copyValue(TypedValue outValue, ResTable table,  Res_value value, int ref, int block,
-      int typeSpecFlags, ResTableConfig config) {
+      int typeSpecFlags, ResTable_config config) {
     outValue.type = value.dataType;
     outValue.assetCookie = table.getTableCookie(block);
     outValue.data = value.data;
@@ -890,7 +890,7 @@ public class ShadowArscAssetManager {
     ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
     final ResTable res = theme.getResTable();
     ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
-    Ref<ResTableConfig> config = new Ref(new ResTableConfig());
+    Ref<ResTable_config> config = new Ref(new ResTable_config());
     Ref<Res_value> value = new Ref<>(new Res_value());
 
     final int NI = attrs.length;
@@ -1120,10 +1120,210 @@ public class ShadowArscAssetManager {
 
   @Implementation
   @HiddenApi
-  public static boolean resolveAttrs(long theme,
+  public static boolean resolveAttrs(long themeToken,
       int defStyleAttr, int defStyleRes, int[] inValues,
-      int[] inAttrs, int[] outValues, int[] outIndices) {
-    throw new UnsupportedOperationException("not yet implemented");
+      int[] attrs, int[] outValues, int[] outIndices) {
+    if (themeToken == 0) {
+      throw new NullPointerException("theme token");
+    }
+    if (attrs == null) {
+      throw new NullPointerException("attrs");
+    }
+    if (outValues == null) {
+      throw new NullPointerException("out values");
+    }
+
+    if (kDebugStyles) {
+      ALOGI("APPLY STYLE: theme=0x%" + PRIx64 + " defStyleAttr=0x%x " +
+          "defStyleRes=0x%x", themeToken, defStyleAttr, defStyleRes);
+    }
+
+    ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
+    final ResTable res = theme.getResTable();
+    ResTable_config config = new ResTable_config();
+    Res_value value;
+
+    final int NI = attrs.length;
+    final int NV = outValues.length;
+    if (NV < (NI*STYLE_NUM_ENTRIES)) {
+      throw new IndexOutOfBoundsException("out values too small");
+    }
+
+    int[] src = attrs;
+//    if (src == null) {
+//      return JNI_FALSE;
+//    }
+
+    int[] srcValues = inValues;
+    final int NSV = srcValues == null ? 0 : inValues.length;
+
+    int[] baseDest = outValues;
+    int[] dest = baseDest;
+    int destOffset = 0;
+    if (dest == null) {
+      return false;
+    }
+
+    int[] indices = null;
+    int indicesIdx = 0;
+    if (outIndices != null) {
+      if (outIndices.length > NI) {
+        indices = outIndices;
+      }
+    }
+
+    // Load default style from attribute, if specified...
+    Ref<Integer> defStyleBagTypeSetFlags = new Ref<>(0);
+    if (defStyleAttr != 0) {
+      Ref<Res_value> valueRef = new Ref<>(null);
+      if (theme.getAttribute(defStyleAttr, valueRef, defStyleBagTypeSetFlags) >= 0) {
+        value = valueRef.get();
+        if (value.dataType == Res_value.TYPE_REFERENCE) {
+          defStyleRes = value.data;
+        }
+      }
+    }
+
+    // Now lock down the resource object and start pulling stuff from it.
+    res.lock();
+
+    // Retrieve the default style bag, if requested.
+    final Ref<bag_entry[]> defStyleStart = new Ref<>(null);
+    Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
+    int bagOff = defStyleRes != 0
+        ? res.getBagLocked(defStyleRes, defStyleStart, defStyleTypeSetFlags) : -1;
+    defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
+//    const ResTable::bag_entry* const defStyleEnd = defStyleStart + (bagOff >= 0 ? bagOff : 0);
+    final int defStyleEnd = (bagOff >= 0 ? bagOff : 0);
+    BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleStart.get(), defStyleEnd);
+
+    // Now iterate through all of the attributes that the client has requested,
+    // filling in each with whatever data we can find.
+    int block = 0;
+    int typeSetFlags;
+    for (int ii=0; ii<NI; ii++) {
+        final int curIdent = (int)src[ii];
+
+      if (kDebugStyles) {
+        ALOGI("RETRIEVING ATTR 0x%08x...", curIdent);
+      }
+
+      // Try to find a value for this attribute...  we prioritize values
+      // coming from, first XML attributes, then XML style, then default
+      // style, and finally the theme.
+      value = Res_value.NULL_VALUE;
+      typeSetFlags = 0;
+      config.density = 0;
+
+      // Retrieve the current input value if available.
+      if (NSV > 0 && srcValues[ii] != 0) {
+        block = -1;
+        value = new Res_value((byte) Res_value.TYPE_ATTRIBUTE, srcValues[ii]);
+        if (kDebugStyles) {
+          ALOGI(". From values: type=0x%x, data=0x%08x", value.dataType, value.data);
+        }
+      }
+
+      if (value.dataType == Res_value.TYPE_NULL) {
+            final bag_entry defStyleEntry = defStyleAttrFinder.find(curIdent);
+        if (defStyleEntry != null) {
+          block = defStyleEntry.stringBlock;
+          typeSetFlags = defStyleTypeSetFlags.get();
+          value = defStyleEntry.map.value;
+          if (kDebugStyles) {
+            ALOGI(". From def style: type=0x%x, data=0x%08x", value.dataType, value.data);
+          }
+        }
+      }
+
+      int resid = 0;
+      Ref<Res_value> valueRef = new Ref<>(value);
+      Ref<Integer> residRef = new Ref<>(resid);
+      Ref<Integer> typeSetFlagsRef = new Ref<>(typeSetFlags);
+      Ref<ResTable_config> configRef = new Ref<>(config);
+      if (value.dataType != Res_value.TYPE_NULL) {
+        // Take care of resolving the found resource to its final value.
+        int newBlock = theme.resolveAttributeReference(valueRef, block,
+                    residRef, typeSetFlagsRef, configRef);
+        value = valueRef.get();
+        resid = residRef.get();
+        typeSetFlags = typeSetFlagsRef.get();
+        config = configRef.get();
+        if (newBlock >= 0) block = newBlock;
+        if (kDebugStyles) {
+          ALOGI(". Resolved attr: type=0x%x, data=0x%08x", value.dataType, value.data);
+        }
+      } else {
+        // If we still don't have a value for this attribute, try to find
+        // it in the theme!
+        int newBlock = theme.getAttribute(curIdent, valueRef, typeSetFlagsRef);
+        value = valueRef.get();
+        typeSetFlags = typeSetFlagsRef.get();
+
+        if (newBlock >= 0) {
+          if (kDebugStyles) {
+            ALOGI(". From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
+          }
+          newBlock = res.resolveReference(valueRef, block, residRef,
+                        typeSetFlagsRef, configRef);
+          value = valueRef.get();
+          resid = residRef.get();
+          typeSetFlags = typeSetFlagsRef.get();
+          config = configRef.get();
+          if (kThrowOnBadId) {
+            if (newBlock == BAD_INDEX) {
+              throw new IllegalStateException("Bad resource!");
+            }
+          }
+          if (newBlock >= 0) block = newBlock;
+          if (kDebugStyles) {
+            ALOGI(". Resolved theme: type=0x%x, data=0x%08x", value.dataType, value.data);
+          }
+        }
+      }
+
+      // Deal with the special @null value -- it turns back to TYPE_NULL.
+      if (value.dataType == Res_value.TYPE_REFERENCE && value.data == 0) {
+        if (kDebugStyles) {
+          ALOGI(". Setting to @null!");
+        }
+        value = Res_value.NULL_VALUE;
+        block = -1;
+      }
+
+      if (kDebugStyles) {
+        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.dataType,
+            value.data);
+      }
+
+      // Write the final value back to Java.
+      dest[destOffset + STYLE_TYPE] = value.dataType;
+      dest[destOffset + STYLE_DATA] = value.data;
+      dest[destOffset + STYLE_ASSET_COOKIE] =
+          block != -1 ? res.getTableCookie(block) : -1;
+      dest[destOffset + STYLE_RESOURCE_ID] = resid;
+      dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags;
+      dest[destOffset + STYLE_DENSITY] = config.density;
+
+      if (indices != null && value.dataType != Res_value.TYPE_NULL) {
+        indicesIdx++;
+        indices[indicesIdx] = ii;
+      }
+
+      destOffset += STYLE_NUM_ENTRIES;
+    }
+
+    res.unlock();
+
+    if (indices != null) {
+      indices[0] = indicesIdx;
+//      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
+    }
+//    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
+//    env.ReleasePrimitiveArrayCritical(inValues, srcValues, 0);
+//    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
+
+    return true;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -1158,11 +1358,11 @@ public class ShadowArscAssetManager {
 //    ResXMLParser xmlParser = (ResXMLParser*)xmlParserToken;
     ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
 
-    Ref<ResTableConfig> config = new Ref<>(new ResTableConfig());
+    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     Ref<Res_value> value = new Ref<>(new Res_value());
 
-//    const jsize NI = env.GetArrayLength(attrs);
-//    const jsize NV = env.GetArrayLength(outValues);
+//    const int NI = env.GetArrayLength(attrs);
+//    const int NV = env.GetArrayLength(outValues);
     final int NI = attrs.length;
     final int NV = outValues.length;
     if (NV < (NI*STYLE_NUM_ENTRIES)) {
@@ -1170,13 +1370,13 @@ public class ShadowArscAssetManager {
 //      return JNI_FALSE;
     }
 
-//    jint* src = (jint*)env.GetPrimitiveArrayCritical(attrs, 0);
+//    int[] src = (int[])env.GetPrimitiveArrayCritical(attrs, 0);
 //    if (src == null) {
 //      return JNI_FALSE;
 //    }
     int[] src = attrs;
 
-//    jint* baseDest = (jint*)env.GetPrimitiveArrayCritical(outValues, 0);
+//    int[] baseDest = (int[])env.GetPrimitiveArrayCritical(outValues, 0);
     int[] baseDest = outValues;
     int[] dest = baseDest;
     int destOffset = 0;
@@ -1190,7 +1390,7 @@ public class ShadowArscAssetManager {
     int indicesIdx = 0;
     if (outIndices != null) {
       if (outIndices.length > NI) {
-//        indices = (jint*)env.GetPrimitiveArrayCritical(outIndices, 0);
+//        indices = (int[])env.GetPrimitiveArrayCritical(outIndices, 0);
         indices = outIndices;
       }
     }
@@ -1314,13 +1514,13 @@ public class ShadowArscAssetManager {
       return 0 /*JNI_FALSE */;
     }
     ResTable res = am.getResources();
-    Ref<ResTableConfig> config = new Ref<>(new ResTableConfig());
+    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     Res_value value;
     int block;
 
     int NV = outValues.length;
 
-//    jint* baseDest = (jint*)env->GetPrimitiveArrayCritical(outValues, 0);
+//    int[] baseDest = (int[])env->GetPrimitiveArrayCritical(outValues, 0);
     int[] baseDest = outValues;
     int[] dest = baseDest;
 //    if (dest == null) {

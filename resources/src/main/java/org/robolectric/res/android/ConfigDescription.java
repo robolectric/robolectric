@@ -176,7 +176,7 @@ public class ConfigDescription {
       return 0;
     }
 
-    public void writeTo(ResTableConfig out) {
+    public void writeTo(ResTable_config out) {
       out.packLanguage(language);
       out.packRegion(region);
 
@@ -190,7 +190,7 @@ public class ConfigDescription {
     }
   }
 
-  public boolean parse(final String str, ResTableConfig out) {
+  public boolean parse(final String str, ResTable_config out) {
     PeekingIterator<String> part_iter = Iterators
         .peekingIterator(Arrays.asList(str.toLowerCase().split("-")).iterator());
 
@@ -362,26 +362,26 @@ public class ConfigDescription {
     return true;
   }
 
-  private boolean parseLayoutDirection(String name, ResTableConfig out) {
+  private boolean parseLayoutDirection(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_LAYOUTDIR) |
-                ResTableConfig.LAYOUTDIR_ANY;
+            (out.screenLayout & ~ResTable_config.MASK_LAYOUTDIR) |
+                ResTable_config.LAYOUTDIR_ANY;
       }
       return true;
     } else if (Objects.equals(name, "ldltr")) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_LAYOUTDIR) |
-                ResTableConfig.LAYOUTDIR_LTR;
+            (out.screenLayout & ~ResTable_config.MASK_LAYOUTDIR) |
+                ResTable_config.LAYOUTDIR_LTR;
       }
       return true;
     } else if (Objects.equals(name, "ldrtl")) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_LAYOUTDIR) |
-                ResTableConfig.LAYOUTDIR_RTL;
+            (out.screenLayout & ~ResTable_config.MASK_LAYOUTDIR) |
+                ResTable_config.LAYOUTDIR_RTL;
       }
       return true;
     }
@@ -389,10 +389,10 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseSmallestScreenWidthDp(String name, ResTableConfig out) {
+  private boolean parseSmallestScreenWidthDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.smallestScreenWidthDp = ResTableConfig.SCREENWIDTH_ANY;
+        out.smallestScreenWidthDp = ResTable_config.SCREENWIDTH_ANY;
       }
       return true;
     }
@@ -405,10 +405,10 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenWidthDp(String name, ResTableConfig out) {
+  private boolean parseScreenWidthDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.screenWidthDp = ResTableConfig.SCREENWIDTH_ANY;
+        out.screenWidthDp = ResTable_config.SCREENWIDTH_ANY;
       }
       return true;
     }
@@ -421,10 +421,10 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenHeightDp(String name, ResTableConfig out) {
+  private boolean parseScreenHeightDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.screenHeightDp = ResTableConfig.SCREENWIDTH_ANY;
+        out.screenHeightDp = ResTable_config.SCREENWIDTH_ANY;
       }
       return true;
     }
@@ -437,40 +437,40 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenLayoutSize(String name, ResTableConfig out) {
+  private boolean parseScreenLayoutSize(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
-                ResTableConfig.SCREENSIZE_ANY;
+            (out.screenLayout & ~ResTable_config.MASK_SCREENSIZE) |
+                ResTable_config.SCREENSIZE_ANY;
       }
       return true;
     } else if (Objects.equals(name, "small")) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
-                ResTableConfig.SCREENSIZE_SMALL;
+            (out.screenLayout & ~ResTable_config.MASK_SCREENSIZE) |
+                ResTable_config.SCREENSIZE_SMALL;
       }
       return true;
     } else if (Objects.equals(name, "normal")) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
-                ResTableConfig.SCREENSIZE_NORMAL;
+            (out.screenLayout & ~ResTable_config.MASK_SCREENSIZE) |
+                ResTable_config.SCREENSIZE_NORMAL;
       }
       return true;
     } else if (Objects.equals(name, "large")) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
-                ResTableConfig.SCREENSIZE_LARGE;
+            (out.screenLayout & ~ResTable_config.MASK_SCREENSIZE) |
+                ResTable_config.SCREENSIZE_LARGE;
       }
       return true;
     } else if (Objects.equals(name, "xlarge")) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout & ~ResTableConfig.MASK_SCREENSIZE) |
-                ResTableConfig.SCREENSIZE_XLARGE;
+            (out.screenLayout & ~ResTable_config.MASK_SCREENSIZE) |
+                ResTable_config.SCREENSIZE_XLARGE;
       }
       return true;
     }
@@ -478,55 +478,55 @@ public class ConfigDescription {
     return false;
   }
 
-  static boolean parseScreenLayoutLong(final String name, ResTableConfig out) {
+  static boolean parseScreenLayoutLong(final String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout =
-            (out.screenLayout&~ResTableConfig.MASK_SCREENLONG)
-                | ResTableConfig.SCREENLONG_ANY;
+            (out.screenLayout&~ResTable_config.MASK_SCREENLONG)
+                | ResTable_config.SCREENLONG_ANY;
       }
       return true;
     } else if (Objects.equals(name, "long")) {
       if (out != null) out.screenLayout =
-          (out.screenLayout&~ResTableConfig.MASK_SCREENLONG)
-              | ResTableConfig.SCREENLONG_YES;
+          (out.screenLayout&~ResTable_config.MASK_SCREENLONG)
+              | ResTable_config.SCREENLONG_YES;
       return true;
     } else if (Objects.equals(name, "notlong")) {
       if (out != null) out.screenLayout =
-          (out.screenLayout&~ResTableConfig.MASK_SCREENLONG)
-              | ResTableConfig.SCREENLONG_NO;
+          (out.screenLayout&~ResTable_config.MASK_SCREENLONG)
+              | ResTable_config.SCREENLONG_NO;
       return true;
     }
     return false;
   }
 
-  private boolean parseScreenRound(String name, ResTableConfig out) {
+  private boolean parseScreenRound(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout2 =
-            (byte) ((out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
-                            ResTableConfig.SCREENROUND_ANY);
+            (byte) ((out.screenLayout2 & ~ResTable_config.MASK_SCREENROUND) |
+                            ResTable_config.SCREENROUND_ANY);
       }
       return true;
     } else if (Objects.equals(name, "round")) {
       if (out != null) {
         out.screenLayout2 =
-            (byte) ((out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
-                            ResTableConfig.SCREENROUND_YES);
+            (byte) ((out.screenLayout2 & ~ResTable_config.MASK_SCREENROUND) |
+                            ResTable_config.SCREENROUND_YES);
       }
       return true;
     } else if (Objects.equals(name, "notround")) {
       if (out != null) {
         out.screenLayout2 =
-            (byte) ((out.screenLayout2 & ~ResTableConfig.MASK_SCREENROUND) |
-                ResTableConfig.SCREENROUND_NO);
+            (byte) ((out.screenLayout2 & ~ResTable_config.MASK_SCREENROUND) |
+                ResTable_config.SCREENROUND_NO);
       }
       return true;
     }
     return false;
   }
 
-  private boolean parseOrientation(String name, ResTableConfig out) {
+  private boolean parseOrientation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.orientation = out.ORIENTATION_ANY;
@@ -552,41 +552,41 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseUiModeType(String name, ResTableConfig out) {
+  private boolean parseUiModeType(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
-            ResTableConfig.UI_MODE_TYPE_ANY;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_ANY;
       }
       return true;
     } else if (Objects.equals(name, "desk")) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
-            ResTableConfig.UI_MODE_TYPE_DESK;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_DESK;
       }
       return true;
     } else if (Objects.equals(name, "car")) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
-            ResTableConfig.UI_MODE_TYPE_CAR;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_CAR;
       }
       return true;
     } else if (Objects.equals(name, "television")) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
-            ResTableConfig.UI_MODE_TYPE_TELEVISION;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_TELEVISION;
       }
       return true;
     } else if (Objects.equals(name, "appliance")) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
-            ResTableConfig.UI_MODE_TYPE_APPLIANCE;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_APPLIANCE;
       }
       return true;
     } else if (Objects.equals(name, "watch")) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_TYPE) |
-            ResTableConfig.UI_MODE_TYPE_WATCH;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_WATCH;
       }
       return true;
     }
@@ -594,23 +594,23 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseUiModeNight(String name, ResTableConfig out) {
+  private boolean parseUiModeNight(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_NIGHT) |
-            ResTableConfig.UI_MODE_NIGHT_ANY;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_NIGHT) |
+            ResTable_config.UI_MODE_NIGHT_ANY;
       }
       return true;
     } else if (Objects.equals(name, "night")) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_NIGHT) |
-            ResTableConfig.UI_MODE_NIGHT_YES;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_NIGHT) |
+            ResTable_config.UI_MODE_NIGHT_YES;
       }
       return true;
     } else if (Objects.equals(name, "notnight")) {
       if (out != null) {
-        out.uiMode = (out.uiMode & ~ResTableConfig.MASK_UI_MODE_NIGHT) |
-            ResTableConfig.UI_MODE_NIGHT_NO;
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_NIGHT) |
+            ResTable_config.UI_MODE_NIGHT_NO;
       }
       return true;
     }
@@ -618,73 +618,73 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseDensity(String name, ResTableConfig out) {
+  private boolean parseDensity(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_DEFAULT;
+        out.density = ResTable_config.DENSITY_DEFAULT;
       }
       return true;
     }
 
     if (Objects.equals(name, "anydpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_ANY;
+        out.density = ResTable_config.DENSITY_ANY;
       }
       return true;
     }
 
     if (Objects.equals(name, "nodpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_NONE;
+        out.density = ResTable_config.DENSITY_NONE;
       }
       return true;
     }
 
     if (Objects.equals(name, "ldpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_LOW;
+        out.density = ResTable_config.DENSITY_LOW;
       }
       return true;
     }
 
     if (Objects.equals(name, "mdpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_MEDIUM;
+        out.density = ResTable_config.DENSITY_MEDIUM;
       }
       return true;
     }
 
     if (Objects.equals(name, "tvdpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_TV;
+        out.density = ResTable_config.DENSITY_TV;
       }
       return true;
     }
 
     if (Objects.equals(name, "hdpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_HIGH;
+        out.density = ResTable_config.DENSITY_HIGH;
       }
       return true;
     }
 
     if (Objects.equals(name, "xhdpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_XHIGH;
+        out.density = ResTable_config.DENSITY_XHIGH;
       }
       return true;
     }
 
     if (Objects.equals(name, "xxhdpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_XXHIGH;
+        out.density = ResTable_config.DENSITY_XXHIGH;
       }
       return true;
     }
 
     if (Objects.equals(name, "xxxhdpi")) {
       if (out != null) {
-        out.density = ResTableConfig.DENSITY_XXXHIGH;
+        out.density = ResTable_config.DENSITY_XXXHIGH;
       }
       return true;
     }
@@ -697,7 +697,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseTouchscreen(String name, ResTableConfig out) {
+  private boolean parseTouchscreen(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.touchscreen = out.TOUCHSCREEN_ANY;
@@ -723,21 +723,21 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseKeysHidden(String name, ResTableConfig out) {
+  private boolean parseKeysHidden(String name, ResTable_config out) {
     byte mask = 0;
     byte value = 0;
     if (Objects.equals(name, kWildcardName)) {
-      mask = ResTableConfig.MASK_KEYSHIDDEN;
-      value = ResTableConfig.KEYSHIDDEN_ANY;
+      mask = ResTable_config.MASK_KEYSHIDDEN;
+      value = ResTable_config.KEYSHIDDEN_ANY;
     } else if (Objects.equals(name, "keysexposed")) {
-      mask = ResTableConfig.MASK_KEYSHIDDEN;
-      value = ResTableConfig.KEYSHIDDEN_NO;
+      mask = ResTable_config.MASK_KEYSHIDDEN;
+      value = ResTable_config.KEYSHIDDEN_NO;
     } else if (Objects.equals(name, "keyshidden")) {
-      mask = ResTableConfig.MASK_KEYSHIDDEN;
-      value = ResTableConfig.KEYSHIDDEN_YES;
+      mask = ResTable_config.MASK_KEYSHIDDEN;
+      value = ResTable_config.KEYSHIDDEN_YES;
     } else if (Objects.equals(name, "keyssoft")) {
-      mask = ResTableConfig.MASK_KEYSHIDDEN;
-      value = ResTableConfig.KEYSHIDDEN_SOFT;
+      mask = ResTable_config.MASK_KEYSHIDDEN;
+      value = ResTable_config.KEYSHIDDEN_SOFT;
     }
 
     if (mask != 0) {
@@ -750,7 +750,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseKeyboard(String name, ResTableConfig out) {
+  private boolean parseKeyboard(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.keyboard = out.KEYBOARD_ANY;
@@ -776,18 +776,18 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseNavHidden(String name, ResTableConfig out) {
+  private boolean parseNavHidden(String name, ResTable_config out) {
     byte mask = 0;
     byte value = 0;
     if (Objects.equals(name, kWildcardName)) {
-      mask = ResTableConfig.MASK_NAVHIDDEN;
-      value = ResTableConfig.NAVHIDDEN_ANY;
+      mask = ResTable_config.MASK_NAVHIDDEN;
+      value = ResTable_config.NAVHIDDEN_ANY;
     } else if (Objects.equals(name, "navexposed")) {
-      mask = ResTableConfig.MASK_NAVHIDDEN;
-      value = ResTableConfig.NAVHIDDEN_NO;
+      mask = ResTable_config.MASK_NAVHIDDEN;
+      value = ResTable_config.NAVHIDDEN_NO;
     } else if (Objects.equals(name, "navhidden")) {
-      mask = ResTableConfig.MASK_NAVHIDDEN;
-      value = ResTableConfig.NAVHIDDEN_YES;
+      mask = ResTable_config.MASK_NAVHIDDEN;
+      value = ResTable_config.NAVHIDDEN_YES;
     }
 
     if (mask != 0) {
@@ -800,7 +800,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseNavigation(String name, ResTableConfig out) {
+  private boolean parseNavigation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.navigation = out.NAVIGATION_ANY;
@@ -831,7 +831,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenSize(String name, ResTableConfig out) {
+  private boolean parseScreenSize(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenWidth = out.SCREENWIDTH_ANY;
@@ -854,7 +854,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseVersion(String name, ResTableConfig out) {
+  private boolean parseVersion(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.sdkVersion = out.SDKVERSION_ANY;
@@ -872,7 +872,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseMnc(String name, ResTableConfig out) {
+  private boolean parseMnc(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.mnc = 0;
@@ -891,7 +891,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private static boolean parseMcc(final String name, ResTableConfig out) {
+  private static boolean parseMcc(final String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.mcc = 0;
@@ -908,29 +908,29 @@ public class ConfigDescription {
   }
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/tools/aapt/AaptConfig.cpp
-  private void applyVersionForCompatibility(ResTableConfig config) {
+  private void applyVersionForCompatibility(ResTable_config config) {
     if (config == null) {
       return;
     }
     int minSdk = 0;
-    if (isTruthy(config.screenLayout2 & ResTableConfig.MASK_SCREENROUND)) {
+    if (isTruthy(config.screenLayout2 & ResTable_config.MASK_SCREENROUND)) {
       minSdk = SDK_MNC;
-    } else if (config.density == ResTableConfig.DENSITY_ANY) {
+    } else if (config.density == ResTable_config.DENSITY_ANY) {
       minSdk = SDK_LOLLIPOP;
-    } else if (config.smallestScreenWidthDp != ResTableConfig.SCREENWIDTH_ANY
-        || config.screenWidthDp != ResTableConfig.SCREENWIDTH_ANY
-        || config.screenHeightDp != ResTableConfig.SCREENHEIGHT_ANY) {
+    } else if (config.smallestScreenWidthDp != ResTable_config.SCREENWIDTH_ANY
+        || config.screenWidthDp != ResTable_config.SCREENWIDTH_ANY
+        || config.screenHeightDp != ResTable_config.SCREENHEIGHT_ANY) {
       minSdk = SDK_HONEYCOMB_MR2;
-    } else if ((config.uiMode & ResTableConfig.MASK_UI_MODE_TYPE)
-        != ResTableConfig.UI_MODE_TYPE_ANY
-        ||  (config.uiMode & ResTableConfig.MASK_UI_MODE_NIGHT)
-        != ResTableConfig.UI_MODE_NIGHT_ANY) {
+    } else if ((config.uiMode & ResTable_config.MASK_UI_MODE_TYPE)
+        != ResTable_config.UI_MODE_TYPE_ANY
+        ||  (config.uiMode & ResTable_config.MASK_UI_MODE_NIGHT)
+        != ResTable_config.UI_MODE_NIGHT_ANY) {
       minSdk = SDK_FROYO;
-    } else if ((config.screenLayout & ResTableConfig.MASK_SCREENSIZE)
-        != ResTableConfig.SCREENSIZE_ANY
-        ||  (config.screenLayout & ResTableConfig.MASK_SCREENLONG)
-        != ResTableConfig.SCREENLONG_ANY
-        || config.density != ResTableConfig.DENSITY_DEFAULT) {
+    } else if ((config.screenLayout & ResTable_config.MASK_SCREENSIZE)
+        != ResTable_config.SCREENSIZE_ANY
+        ||  (config.screenLayout & ResTable_config.MASK_SCREENLONG)
+        != ResTable_config.SCREENLONG_ANY
+        || config.density != ResTable_config.DENSITY_DEFAULT) {
       minSdk = SDK_DONUT;
     }
     if (minSdk > config.sdkVersion) {

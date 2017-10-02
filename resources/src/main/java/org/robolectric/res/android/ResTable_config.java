@@ -82,7 +82,7 @@ import java.util.Map;
  *
  * <p>frameworks/base/include/androidfw/ResourceTypes.h (struct ResTable_config)
  */
-public class ResTableConfig {
+public class ResTable_config {
 
   // The most specific locale can consist of:
   //
@@ -114,7 +114,7 @@ public class ResTableConfig {
   static final byte[] kFilipino = new byte[] {(byte)0xAD, 0x05};  // packed version of "fil" ported from C {'\xAD', '\x05'}
   static final byte[] kTagalog = new byte[] {'t', 'l'};  // packed version of "tl"
 
-  static ResTableConfig createConfig(ByteBuffer buffer) {
+  static ResTable_config createConfig(ByteBuffer buffer) {
     int startPosition = buffer.position();  // The starting buffer position to calculate bytes read.
     int size = buffer.getInt();
     int mcc = buffer.getShort() & 0xFFFF;
@@ -175,13 +175,13 @@ public class ResTableConfig {
     byte[] unknown = new byte[size - bytesRead];
     buffer.get(unknown);
 
-    return new ResTableConfig(size, mcc, mnc, language, region, orientation,
+    return new ResTable_config(size, mcc, mnc, language, region, orientation,
         touchscreen, density, keyboard, navigation, inputFlags, screenWidth, screenHeight,
         sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp,
         screenHeightDp, localeScript, localeVariant, screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
   }
 
-  /** The different types of configs that can be present in a {@link ResTableConfig}. */
+  /** The different types of configs that can be present in a {@link ResTable_config}. */
   public enum Type {
     MCC,
     MNC,
@@ -457,18 +457,18 @@ public class ResTableConfig {
    * @param sdkVersion The SDK version of the returned configuration.
    * @return A copy of this configuration with the only difference being #sdkVersion.
    */
-  public final ResTableConfig withSdkVersion(int sdkVersion) {
+  public final ResTable_config withSdkVersion(int sdkVersion) {
     if (sdkVersion == this.sdkVersion) {
       return this;
     }
-    return new ResTableConfig(size, mcc, mnc, language, country,
+    return new ResTable_config(size, mcc, mnc, language, country,
         orientation, touchscreen, density, keyboard, navigation, inputFlags,
         screenWidth, screenHeight, sdkVersion, minorVersion, screenLayout, uiMode,
         smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant,
         screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
   }
 
-  public ResTableConfig(int size, int mcc, int mnc, byte[] language, byte[] country,
+  public ResTable_config(int size, int mcc, int mnc, byte[] language, byte[] country,
       int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
       int screenWidth, int screenHeight, int sdkVersion, int minorVersion, int screenLayout,
       int uiMode, int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
@@ -502,7 +502,7 @@ public class ResTableConfig {
     this.unknown = unknown;
   }
 
-  public ResTableConfig() {
+  public ResTable_config() {
     this.language = new byte[2];
     this.country = new byte[2];
     this.localeScript = new byte[LocaleData.SCRIPT_LENGTH];
@@ -589,7 +589,7 @@ public class ResTableConfig {
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 
-//  void copyFromDeviceNoSwap(final ResTableConfig o) {
+//  void copyFromDeviceNoSwap(final ResTable_config o) {
 //    final int size = dtohl(o.size);
 //    if (size >= sizeof(ResTable_config)) {
 //        *this = o;
@@ -655,7 +655,7 @@ public class ResTableConfig {
     return unpackLanguageOrRegion(country, 0x30);
   }
 
-//  void copyFromDtoH(final ResTableConfig o) {
+//  void copyFromDtoH(final ResTable_config o) {
 //    copyFromDeviceNoSwap(o);
 //    size = sizeof(ResTable_config);
 //    mcc = dtohs(mcc);
@@ -671,8 +671,8 @@ public class ResTableConfig {
 //  }
 
 //  void ResTable_config::copyFromDtoH(const ResTable_config& o) {
-  static ResTableConfig fromDtoH(final ResTableConfig o) {
-    return new ResTableConfig(
+  static ResTable_config fromDtoH(final ResTable_config o) {
+    return new ResTable_config(
         0 /*sizeof(ResTable_config)*/,
         dtohs((short) o.mcc),
         dtohs((short) o.mnc),
@@ -716,7 +716,7 @@ public class ResTableConfig {
 //    screenHeightDp = htods(screenHeightDp);
   }
 
-  static final int compareLocales(final ResTableConfig l, final ResTableConfig r) {
+  static final int compareLocales(final ResTable_config l, final ResTable_config r) {
     if (l.locale() != r.locale()) {
       // NOTE: This is the old behaviour with respect to comparison orders.
       // The diff value here doesn't make much sense (given our bit packing scheme)
@@ -751,7 +751,7 @@ public class ResTableConfig {
     return 0;
   }
 
-  int compare(final ResTableConfig o) {
+  int compare(final ResTable_config o) {
     int diff = imsi() - o.imsi();
     if (diff != 0) return diff;
     diff = compareLocales(this, o);
@@ -825,7 +825,7 @@ public class ResTableConfig {
   /**
    * Returns a map of the configuration parts for {@link #toString}.
    *
-   * <p>If a configuration part is not defined for this {@link ResTableConfig}, its value
+   * <p>If a configuration part is not defined for this {@link ResTable_config}, its value
    * will be the empty string.
    */
   public final Map<Type, String> toStringParts() {
@@ -880,10 +880,10 @@ public class ResTableConfig {
 /*
   */
 /**
-   * Is {@code requested} a better match to this {@link ResTableConfig} object than {@code o}
+   * Is {@code requested} a better match to this {@link ResTable_config} object than {@code o}
    *//*
 
-  public boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
+  public boolean isBetterThan(ResTable_config o, ResTable_config requested) {
     boolean result = isBetterThan_(o, requested);
     System.out.println(this);
     System.out.println("  .isBetterThan(");
@@ -894,7 +894,7 @@ public class ResTableConfig {
   }
 */
 
-  public boolean isBetterThan(ResTableConfig o, ResTableConfig requested) {
+  public boolean isBetterThan(ResTable_config o, ResTable_config requested) {
     if (isTruthy(requested)) {
       if (isTruthy(imsi()) || isTruthy(o.imsi())) {
         if ((mcc != o.mcc) && isTruthy(requested.mcc)) {
@@ -1142,7 +1142,7 @@ public class ResTableConfig {
   }
 
 /*
-  boolean match(final ResTableConfig settings) {
+  boolean match(final ResTable_config settings) {
     System.out.println(this + ".match(" + settings + ")");
     boolean result = match_(settings);
     System.out.println("    -> " + result);
@@ -1150,7 +1150,7 @@ public class ResTableConfig {
   }
 */
 
-  boolean match(final ResTableConfig settings) {
+  boolean match(final ResTable_config settings) {
     if (imsi() != 0) {
       if (mcc != 0 && mcc != settings.mcc) {
         return false;
@@ -1424,7 +1424,7 @@ public class ResTableConfig {
     return str.toString();
   }
 
-   static boolean assignLocaleComponent(ResTableConfig config,
+   static boolean assignLocaleComponent(ResTable_config config,
         final String start, int size) {
 
     switch (size) {
@@ -1665,7 +1665,7 @@ public class ResTableConfig {
     return (language[0] & 0xff << 24) | (language[1] * 0xff << 16) | (country[0] & 0xffff << 8) | (country[1] & 0xffff);
   }
 
-  private boolean isLocaleBetterThan(ResTableConfig o, ResTableConfig requested) {
+  private boolean isLocaleBetterThan(ResTable_config o, ResTable_config requested) {
     if (requested.locale() == 0) {
       // The request doesn't have a locale, so no resource is better
       // than the other.
@@ -1772,7 +1772,7 @@ public class ResTableConfig {
   }
 
   // TODO Convert from C
-  private boolean isMoreSpecificThan(ResTableConfig o) {
+  private boolean isMoreSpecificThan(ResTable_config o) {
     return false;
   }
 

@@ -35,7 +35,7 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.CppAssetManager;
-import org.robolectric.res.android.ResTableConfig;
+import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
@@ -95,7 +95,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setQualifiers(qualifiers);
 
     ConfigDescription configDescription = new ConfigDescription();
-    ResTableConfig resTab = new ResTableConfig();
+    ResTable_config resTab = new ResTable_config();
     configDescription.parse(qualifiers, resTab);
 
     Resources systemResources = Resources.getSystem();

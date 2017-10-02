@@ -135,7 +135,7 @@ public class ResTableTheme {
 
   public int resolveAttributeReference(Ref<Res_value> inOutValue,
       int blockIndex, Ref<Integer> outLastRef,
-      Ref<Integer> inoutTypeSpecFlags, Ref<ResTableConfig> inoutConfig) {
+      Ref<Integer> inoutTypeSpecFlags, Ref<ResTable_config> inoutConfig) {
     //printf("Resolving type=0x%x\n", inOutValue->dataType);
     if (inOutValue.get().dataType == TYPE_ATTRIBUTE) {
       Ref<Integer> newTypeSpecFlags = new Ref<>(0);

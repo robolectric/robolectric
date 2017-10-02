@@ -1498,7 +1498,7 @@ static class ResTable_typeSpec extends WithOffset
  */
     static class ResTable_type extends WithOffset
     {
-//      public static final int SIZEOF = ResChunk_header.SIZEOF + 12 + ResTableConfig.SIZ;
+//      public static final int SIZEOF = ResChunk_header.SIZEOF + 12 + ResTable_config.SIZ;
       public static final int SIZEOF_WITHOUT_CONFIG = ResChunk_header.SIZEOF + 12;
 
       final ResChunk_header header;
@@ -1524,7 +1524,7 @@ static class ResTable_typeSpec extends WithOffset
     final int entriesStart;
 
     // Configuration this collection of entries is designed for.
-    final ResTableConfig config;
+    final ResTable_config config;
 
       ResTable_type(ByteBuffer buf, int offset) {
         super(buf, offset);
@@ -1537,7 +1537,7 @@ static class ResTable_typeSpec extends WithOffset
         entriesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 8);
         
         buf.position(offset + ResChunk_header.SIZEOF + 12);
-        config = ResTableConfig.createConfig(buf);
+        config = ResTable_config.createConfig(buf);
       }
 
       public int findEntryByResName(int stringId) {

@@ -8,7 +8,6 @@ public class BagAttributeFinder {
   private final int bagEndIndex;
 
   public BagAttributeFinder(bag_entry[] bag_entries, int bagEndIndex) {
-
     this.bag_entries = bag_entries;
     this.bagEndIndex = bagEndIndex;
   }

@@ -81,7 +81,7 @@ public class ResTable {
   // type defined in Errors
   int mError;
 
-  ResTableConfig             mParams;
+  ResTable_config mParams;
 
   // Array of all resource tables.
   List<Header>             mHeaders = new ArrayList<>();
@@ -353,7 +353,7 @@ public class ResTable {
   }
 
   public final int getResource(int resID, Ref<Res_value> outValue, boolean mayBeBag, int density,
-      Ref<Integer> outSpecFlags, Ref<ResTableConfig> outConfig)
+      Ref<Integer> outSpecFlags, Ref<ResTable_config> outConfig)
   {
     if (mError != NO_ERROR) {
       return mError;
@@ -380,7 +380,7 @@ public class ResTable {
       return BAD_INDEX;
     }
     // Allow overriding density
-    ResTableConfig desiredConfig = mParams;
+    ResTable_config desiredConfig = mParams;
     if (density > 0) {
       desiredConfig.density = density;
     }
@@ -450,7 +450,7 @@ public class ResTable {
 
   public final int resolveReference(Ref<Res_value> value, int blockIndex,
       Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
-      Ref<ResTableConfig> outConfig)
+      Ref<ResTable_config> outConfig)
   {
     int count=0;
     while (blockIndex >= 0 && value.get().dataType == DataType.REFERENCE.code()
@@ -486,7 +486,7 @@ public class ResTable {
 
   private int getEntry(
       final PackageGroup packageGroup, int typeIndex, int entryIndex,
-      final ResTableConfig config,
+      final ResTable_config config,
       Entry outEntry)
   {
     final List<Type> typeList = packageGroup.types.getOrDefault(typeIndex, Collections.emptyList());
@@ -500,7 +500,7 @@ public class ResTable {
     Package bestPackage = null;
     int specFlags = 0;
     byte actualTypeIndex = (byte) typeIndex;
-    ResTableConfig bestConfig = null;
+    ResTable_config bestConfig = null;
 //    memset(&bestConfig, 0, sizeof(bestConfig));
 
     // Iterate over the Types of each package.
@@ -571,9 +571,9 @@ public class ResTable {
           continue;
         }
 
-        final ResTableConfig thisConfig;
+        final ResTable_config thisConfig;
 //        thisConfig.copyFromDtoH(thisType.config);
-        thisConfig = ResTableConfig.fromDtoH(thisType.config);
+        thisConfig = ResTable_config.fromDtoH(thisType.config);
 
         // Check to make sure this one is valid for the current parameters.
         if (config != NULL && !thisConfig.match(config)) {
@@ -920,7 +920,7 @@ public class ResTable {
         t.configs.add(type);
 
         if (kDebugTableGetEntry) {
-          ResTableConfig thisConfig = ResTableConfig.fromDtoH(type.config);
+          ResTable_config thisConfig = ResTable_config.fromDtoH(type.config);
           ALOGI("Adding config to type %d: %s\n", type.id,
               thisConfig.toString());
         }
@@ -961,7 +961,7 @@ public class ResTable {
     return mHeaders.get(index).cookie;
   }
 
-  void setParameters(ResTableConfig params)
+  void setParameters(ResTable_config params)
   {
 //    AutoMutex _lock(mLock);
 //    AutoMutex _lock2(mFilteredConfigLock);
@@ -1001,7 +1001,7 @@ public class ResTable {
               List<ResTable_type> newFilteredConfigs = new ArrayList<>();
 
               for (int ti = 0; ti < type.configs.size(); ti++) {
-                ResTableConfig config = ResTableConfig.fromDtoH(type.configs.get(ti).config);
+                ResTable_config config = ResTable_config.fromDtoH(type.configs.get(ti).config);
 
                 if (config.match(mParams)) {
                   newFilteredConfigs.add(type.configs.get(ti));
@@ -1022,7 +1022,7 @@ public class ResTable {
     }
   }
 
-  ResTableConfig getParameters()
+  ResTable_config getParameters()
   {
 //    mLock.lock();
     synchronized (mLock) {
@@ -2477,7 +2477,7 @@ public class ResTable {
   };
 
   public static class Entry {
-    ResTableConfig config;
+    ResTable_config config;
     ResTable_entry entry;
     ResTable_type type;
     int specFlags;

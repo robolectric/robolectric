@@ -100,7 +100,7 @@ public class CppAssetManager {
   private String mLocale;
 
   private ResTable mResources;
-  private ResTableConfig mConfig = new ResTableConfig();
+  private ResTable_config mConfig = new ResTable_config();
 
 
 //  static final boolean kIsDebug = false;
@@ -414,7 +414,7 @@ public class CppAssetManager {
       updateResourceParamsLocked();
   }
 
-  public void setConfiguration(final ResTableConfig config, final String locale)
+  public void setConfiguration(final ResTable_config config, final String locale)
   {
     synchronized (mLock) {
       mConfig = config;
@@ -432,7 +432,7 @@ public class CppAssetManager {
     }
   }
 
-  void getConfiguration(Ref<ResTableConfig> outConfig)
+  void getConfiguration(Ref<ResTable_config> outConfig)
   {
     synchronized (mLock) {
       outConfig.set(mConfig);

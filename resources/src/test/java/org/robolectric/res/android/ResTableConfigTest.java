@@ -80,7 +80,8 @@ public class ResTableConfigTest {
   public void isBetterThan_language_comparedNotSame_requestedEnglish() {
     // When requested has no language, is not a better match
     assertThat(newBuilder().setLanguage(LANGUAGE_FRENCH).build()
-        .isBetterThan(newBuilder().setLanguage(LANGUAGE_SPANISH).build(), newBuilder().setLanguage(ResTableConfig.kEnglish).build()))
+        .isBetterThan(newBuilder().setLanguage(LANGUAGE_SPANISH).build(), newBuilder().setLanguage(
+            ResTable_config.kEnglish).build()))
         .isTrue();
   }
 
@@ -88,22 +89,23 @@ public class ResTableConfigTest {
   public void isBetterThan_language_comparedNotSame_requestedEnglishUS() {
     // When requested has no language, is not a better match
     assertThat(newBuilder().setLanguage(LANGUAGE_FRENCH).build()
-        .isBetterThan(newBuilder().setLanguage(LANGUAGE_SPANISH).build(), newBuilder().setLanguage(ResTableConfig.kEnglish).build()))
+        .isBetterThan(newBuilder().setLanguage(LANGUAGE_SPANISH).build(), newBuilder().setLanguage(
+            ResTable_config.kEnglish).build()))
         .isTrue();
   }
 
   @Test
   public void isBetterThan_layoutDirection_() {
     // Requested matches this configuration
-    assertThat(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build()
-        .isBetterThan(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_LTR).build(),
-            newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build()))
+    assertThat(newBuilder().setLayoutDirection(ResTable_config.SCREENLAYOUT_LAYOUTDIR_RTL).build()
+        .isBetterThan(newBuilder().setLayoutDirection(ResTable_config.SCREENLAYOUT_LAYOUTDIR_LTR).build(),
+            newBuilder().setLayoutDirection(ResTable_config.SCREENLAYOUT_LAYOUTDIR_RTL).build()))
         .isTrue();
 
     // Requested matches this configuration
-    assertThat(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_LTR).build()
-        .isBetterThan(newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build(),
-            newBuilder().setLayoutDirection(ResTableConfig.SCREENLAYOUT_LAYOUTDIR_RTL).build()))
+    assertThat(newBuilder().setLayoutDirection(ResTable_config.SCREENLAYOUT_LAYOUTDIR_LTR).build()
+        .isBetterThan(newBuilder().setLayoutDirection(ResTable_config.SCREENLAYOUT_LAYOUTDIR_RTL).build(),
+            newBuilder().setLayoutDirection(ResTable_config.SCREENLAYOUT_LAYOUTDIR_RTL).build()))
         .isFalse();
   }
 
@@ -137,8 +139,8 @@ public class ResTableConfigTest {
         byte screenConfigPad1;
         short screenConfigPad2;
 
-    ResTableConfig build() {
-      return new ResTableConfig(0, mcc, mnc, language, region, orientation, touchscreen, density, keyboard, navigation, inputFlags, screenWidth,
+    ResTable_config build() {
+      return new ResTable_config(0, mcc, mnc, language, region, orientation, touchscreen, density, keyboard, navigation, inputFlags, screenWidth,
           screenHeight, sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant, screenLayout2,
           screenConfigPad1, screenConfigPad2, null
       );
