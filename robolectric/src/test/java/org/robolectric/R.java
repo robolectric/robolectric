@@ -579,6 +579,7 @@ containing a value of this type.
         public static final int StyleReferredToByParentAttrReference=0x7f120007;
         public static final int StyleWithAttributeReference=0x7f12001b;
         public static final int StyleWithCircularReference=0x7f12001c;
+        public static final int StyleWithMultipleAttributes=0x7f12001d;
         public static final int StyleWithReference=0x7f120019;
         public static final int StyleWithReferenceInLib1=0x7f12001a;
         public static final int Theme=0x7f120004;

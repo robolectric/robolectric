@@ -132,4 +132,8 @@
   <style name="StyleWithCircularReference">
     <item name="circularReference">?circularReference</item>
   </style>
+  <style name="StyleWithMultipleAttributes">
+    <item name="string1">string 1 from StyleWithMultipleAttributes</item>
+    <item name="string2">string 2 from StyleWithMultipleAttributes</item>
+  </style>
 </resources>

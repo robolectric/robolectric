@@ -25,7 +25,6 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 @RunWith(TestRunners.MultiApiSelfTest.class)
-@Config(sdk = VERSION_CODES.N_MR1)
 public class ShadowThemeTest {
   private Resources resources;
 
@@ -108,6 +107,29 @@ public class ShadowThemeTest {
     assertThat(resolved).isTrue();
     assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);
     assertThat(value.data).isEqualTo(R.style.Widget_AnotherTheme_Button);
+  }
+
+  @Test
+  public void resolveAttributes() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.StyleA, true);
+
+    TypedArray result = theme.resolveAttributes(new int[]{R.attr.string1}, new int[1]);
+
+    assertThat(result).isNotNull();
+    assertThat(result.getString(0)).isEqualTo("string 1 from style A");
+  }
+
+  @Test
+  public void resolveAttributes_withMultipleAttrs() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.StyleWithMultipleAttributes, true);
+
+    TypedArray result = theme.resolveAttributes(new int[]{R.attr.string1, R.attr.string2}, new int[2]);
+
+    assertThat(result).isNotNull();
+    assertThat(result.getString(0)).isEqualTo("string 1 from StyleWithMultipleAttributes");
+    assertThat(result.getString(1)).isEqualTo("string 2 from StyleWithMultipleAttributes");
   }
 
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
