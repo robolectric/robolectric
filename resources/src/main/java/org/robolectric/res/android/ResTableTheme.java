@@ -91,7 +91,10 @@ public class ResTableTheme {
             ALOGI("Desired type index is %d in avail %d", t, Res_MAXTYPE + 1);
           }
           if (t <= Res_MAXTYPE) {
-            final type_info ti = pi.types[t];
+            type_info ti = pi.types[t];
+            if (ti == null) {
+              ti = new type_info();
+            }
             if (kDebugTableTheme) {
               ALOGI("Desired entry index is %d in avail %d", e, ti.numEntries);
             }
