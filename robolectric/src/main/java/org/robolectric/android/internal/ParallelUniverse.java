@@ -89,14 +89,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    ConfigDescription configDescription = new ConfigDescription();
-    ResTableConfig resTab = new ResTableConfig();
-    configDescription.parse(config.qualifiers(), resTab);
-
     String qualifiers = Qualifiers.addPlatformVersion(config.qualifiers(), sdkConfig.getApiLevel());
     qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
     qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
     RuntimeEnvironment.setQualifiers(qualifiers);
+
+    ConfigDescription configDescription = new ConfigDescription();
+    ResTableConfig resTab = new ResTableConfig();
+    configDescription.parse(qualifiers, resTab);
 
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
@@ -119,6 +119,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
     }
+    //configuration.
     // end new stuff
 
     Locale locale = null;
