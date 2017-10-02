@@ -253,8 +253,11 @@ public class ShadowDevicePolicyManager {
   /**
    * Returns organization name.
    *
-   * <p>The API can only be called by profile owner since Android N and can be called by both of
-   * profile owner and device owner since Android O.
+   * <p>The API can only be called by profile owner since Android N.
+   *
+   * <p>Android framework has a hidden API for getting the organization name for device owner since
+   * Android O. This method, however, is extended to return the organization name for device owners
+   * too to make testing of {@link setOrganizationName} easier for device owner cases.
    */
   @Implementation(minSdk = N)
   @Nullable
