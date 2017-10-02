@@ -522,9 +522,15 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     }
 
     do {
+      int nextOffset = mCurNode.myOffset() + dtohl(mCurNode.header.size);
+      if (nextOffset >= mTree.mDataLen) {
+        mCurNode = null;
+        return (mEventCode=END_DOCUMENT);
+      }
+
 //        final ResXMLTree_node next = (ResXMLTree_node)
 //      (((final int8_t*)mCurNode) + dtohl(mCurNode.header.size));
-        ResXMLTree_node next = new ResXMLTree_node(mTree.mBuffer.buf, mCurNode.myOffset() + dtohl(mCurNode.header.size));
+      ResXMLTree_node next = new ResXMLTree_node(mTree.mBuffer.buf, nextOffset);
       if (kDebugXMLNoisy) {
         ALOGI("Next node: prev=%p, next=%p\n", mCurNode, next);
       }

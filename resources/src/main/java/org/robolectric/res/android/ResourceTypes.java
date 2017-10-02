@@ -746,9 +746,8 @@ public static class ResTable_ref
     final ResStringPool_ref name;
 
     public ResXMLTree_endElementExt(ByteBuffer buf, int offset) {
-      throw new UnsupportedOperationException();
-//      this.ns = throw new UnsupportedOperationException();
-//      this.name = name;
+      this.ns = new ResStringPool_ref(buf, offset);
+      this.name = new ResStringPool_ref(buf, offset + ResStringPool_ref.SIZEOF);
     }
 
     public static class Writer {
