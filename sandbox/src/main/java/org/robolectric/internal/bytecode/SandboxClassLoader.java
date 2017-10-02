@@ -1,11 +1,16 @@
 package org.robolectric.internal.bytecode;
 
+import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
+import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
 import static java.lang.invoke.MethodType.methodType;
 import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.CallSite;
@@ -13,6 +18,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -54,18 +60,19 @@ import org.robolectric.util.Util;
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
  */
 public class SandboxClassLoader extends URLClassLoader implements Opcodes {
-  private final URLClassLoader systemClassLoader;
+  private final ClassLoader systemClassLoader;
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
   private final Map<String, String> classesToRemap;
   private final Set<MethodRef> methodsToIntercept;
 
   public SandboxClassLoader(InstrumentationConfiguration config) {
-    this(((URLClassLoader) ClassLoader.getSystemClassLoader()), config);
+    this(ClassLoader.getSystemClassLoader(), config);
   }
 
-  public SandboxClassLoader(URLClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
-    super(systemClassLoader.getURLs(), systemClassLoader.getParent());
+  public SandboxClassLoader(
+      ClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
+    super(getClassPathUrls(systemClassLoader), systemClassLoader.getParent());
     this.systemClassLoader = systemClassLoader;
 
     this.config = config;
@@ -75,6 +82,30 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     for (URL url : urls) {
       Logger.debug("Loading classes from: %s", url);
     }
+  }
+
+  private static URL[] getClassPathUrls(ClassLoader classloader) {
+    if (classloader instanceof URLClassLoader) {
+      return ((URLClassLoader) classloader).getURLs();
+    }
+    return parseJavaClassPath();
+  }
+
+  // TODO(b/65488446): Use a public API once one is available.
+  private static URL[] parseJavaClassPath() {
+    ImmutableList.Builder<URL> urls = ImmutableList.builder();
+    for (String entry : Splitter.on(PATH_SEPARATOR.value()).split(JAVA_CLASS_PATH.value())) {
+      try {
+        try {
+          urls.add(new File(entry).toURI().toURL());
+        } catch (SecurityException e) { // File.toURI checks to see if the file is a directory
+          urls.add(new URL("file", null, new File(entry).getAbsolutePath()));
+        }
+      } catch (MalformedURLException e) {
+        Logger.strict("malformed classpath entry: " + entry, e);
+      }
+    }
+    return urls.build().toArray(new URL[0]);
   }
 
   @Override
