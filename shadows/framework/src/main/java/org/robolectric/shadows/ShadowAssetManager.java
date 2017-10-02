@@ -16,11 +16,16 @@ import android.util.SparseArray;
 import android.util.TypedValue;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
@@ -327,8 +332,45 @@ public final class ShadowAssetManager {
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
     File file = new File(ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getPath());
+    if (file.getPath().startsWith("jar")) {
+      file = getFileFromZip(file);
+    }
     ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
+  }
+
+  private static File getFileFromZip(File file) {
+    File fileFromZip = null;
+    String pathString = file.getPath();
+    String zipFile = pathString.substring(pathString.indexOf(":") + 1, pathString.indexOf("!"));
+    String filePathInsideZip = pathString.split("!")[1].substring(1);
+    byte[] buffer = new byte[1024];
+    try {
+      File outputDir = Files.createTempDirectory("robolectric_assets").toFile();
+      ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
+      ZipEntry ze = zis.getNextEntry();
+      while (ze != null) {
+        String currentFilename = ze.getName();
+        if (!currentFilename.equals(filePathInsideZip)) {
+          ze = zis.getNextEntry();
+          continue;
+        }
+        fileFromZip = new File(outputDir + File.separator + currentFilename);
+        new File(fileFromZip.getParent()).mkdirs();
+        FileOutputStream fos = new FileOutputStream(fileFromZip);
+        int len;
+        while ((len = zis.read(buffer)) > 0) {
+          fos.write(buffer, 0, len);
+        }
+        fos.close();
+        break;
+      }
+      zis.closeEntry();
+      zis.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return fileFromZip;
   }
 
   @Implementation
