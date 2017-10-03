@@ -320,12 +320,12 @@ public class ResStringPool {
 //            if (mCache == NULL) {
 //#ifndef __ANDROID__
 //              if (kDebugStringPoolNoisy) {
-//                ALOGI("CREATING STRING CACHE OF %zu bytes",
+//                ALOGI("CREATING STRING CACHE OF 0x%x bytes",
 //                    mHeader.stringCount*sizeof(char16_t**));
 //              }
 //#else
 //              // We do not want to be in this case when actually running Android.
-//              ALOGW("CREATING STRING CACHE OF %zu bytes",
+//              ALOGW("CREATING STRING CACHE OF 0x%x bytes",
 //                  static_cast<size_t>(mHeader.stringCount*sizeof(char16_t**)));
 //#endif
 //                  mCache = (char16_t**)calloc(mHeader.stringCount, sizeof(char16_t**));

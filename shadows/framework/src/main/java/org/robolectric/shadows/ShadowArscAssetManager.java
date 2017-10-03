@@ -890,7 +890,7 @@ public class ShadowArscAssetManager {
     ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
     final ResTable res = theme.getResTable();
     ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
-    Ref<ResTable_config> config = new Ref(new ResTable_config());
+    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     Ref<Res_value> value = new Ref<>(new Res_value());
 
     final int NI = attrs.length;
@@ -900,15 +900,15 @@ public class ShadowArscAssetManager {
     }
 
     int[] src = attrs;
-    if (src == null) {
-      return false;
-    }
+//    if (src == null) {
+//      return false;
+//    }
 
     int[] baseDest = outValues;
     int[] dest = baseDest;
-    if (dest == null) {
-      return false;
-    }
+//    if (dest == null) {
+//      return false;
+//    }
 
     int[] indices = null;
     int indicesIdx = 0;
@@ -930,7 +930,7 @@ public class ShadowArscAssetManager {
 
     // Retrieve the style class associated with the current XML tag.
     int style = 0;
-    Ref<Integer> styleBagTypeSetFlags = new Ref(0);
+    Ref<Integer> styleBagTypeSetFlags = new Ref<>(0);
     if (xmlParser != null) {
       int idx = xmlParser.indexOfStyle();
       if (idx >= 0 && xmlParser.getAttributeValue(idx, value) >= 0) {
@@ -950,7 +950,7 @@ public class ShadowArscAssetManager {
 
     // Retrieve the default style bag, if requested.
     final Ref<ResTable.bag_entry[]> defStyleAttrStart = new Ref<>(null);
-    Ref<Integer> defStyleTypeSetFlags = new Ref(0);
+    Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
     int bagOff = defStyleRes != 0
         ? res.getBagLocked(defStyleRes, defStyleAttrStart, defStyleTypeSetFlags) : -1;
     defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
@@ -962,8 +962,8 @@ public class ShadowArscAssetManager {
     BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart.get(), bagOff);
 
     // Retrieve the style class bag, if requested.
-    final Ref<ResTable.bag_entry[]> styleAttrStart = new Ref(null);
-    Ref<Integer> styleTypeSetFlags = new Ref(0);
+    final Ref<ResTable.bag_entry[]> styleAttrStart = new Ref<>(null);
+    Ref<Integer> styleTypeSetFlags = new Ref<>(0);
     bagOff = style != 0 ? res.getBagLocked(style, styleAttrStart, styleTypeSetFlags) : -1;
     styleTypeSetFlags.set(styleTypeSetFlags.get() | styleBagTypeSetFlags.get());
 
@@ -1934,19 +1934,31 @@ public class ShadowArscAssetManager {
     init(false);
   }
 
-    @HiddenApi
-    @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
-    public void init(boolean isSystem) {
-  //  if (isSystem) {
-  //    verifySystemIdmaps();
-  //  }
+  private static CppAssetManager systemCppAssetManager;
+
+  @HiddenApi
+  @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
+  public void init(boolean isSystem) {
+    //  if (isSystem) {
+    //    verifySystemIdmaps();
+    //  }
+
+    if (isSystem) {
+      synchronized (ShadowArscAssetManager.class) {
+        if (systemCppAssetManager == null) {
+          systemCppAssetManager = new CppAssetManager();
+          systemCppAssetManager.addDefaultAssets();
+        }
+      }
+      this.cppAssetManager = systemCppAssetManager;
+    } else {
       this.cppAssetManager = new CppAssetManager();
-
       cppAssetManager.addDefaultAssets();
-
-      ALOGV("Created AssetManager %s for Java object %s\n", cppAssetManager,
-          ShadowArscAssetManager.class);
     }
+
+    ALOGV("Created AssetManager %s for Java object %s\n", cppAssetManager,
+        ShadowArscAssetManager.class);
+  }
 
 //  private native final void destroy();
 

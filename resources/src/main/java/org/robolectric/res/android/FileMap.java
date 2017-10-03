@@ -1,6 +1,5 @@
 package org.robolectric.res.android;
 
-import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGV;
 
 import java.io.FileInputStream;
@@ -50,7 +49,7 @@ public class FileMap {
 //     mFileHandle  = (HANDLE) _get_osfhandle(fd);
 //     mFileMapping = CreateFileMapping( mFileHandle, NULL, protect, 0, 0, NULL);
 //     if (mFileMapping == NULL) {
-//       ALOGE("CreateFileMapping(%p, %" PRIx32 ") failed with error %" PRId32 "\n",
+//       ALOGE("CreateFileMapping(%s, %" PRIx32 ") failed with error %" PRId32 "\n",
 //           mFileHandle, protect, GetLastError() );
 //       return false;
 //     }
@@ -65,7 +64,7 @@ public class FileMap {
 //         (DWORD)(adjOffset),
 //         adjLength );
 //     if (mBasePtr == NULL) {
-//       ALOGE("MapViewOfFile(%" PRId64 ", %zu) failed with error %" PRId32 "\n",
+//       ALOGE("MapViewOfFile(%" PRId64 ", 0x%x) failed with error %" PRId32 "\n",
 //           adjOffset, adjLength, GetLastError() );
 //       CloseHandle(mFileMapping);
 //       mFileMapping = INVALID_HANDLE_VALUE;
@@ -102,7 +101,7 @@ public class FileMap {
 //
 //     ptr = mmap(NULL, adjLength, prot, flags, fd, adjOffset);
 //     if (ptr == MAP_FAILED) {
-//       ALOGE("mmap(%lld,%zu) failed: %s\n",
+//       ALOGE("mmap(%lld,0x%x) failed: %s\n",
 //           (long long)adjOffset, adjLength, strerror(errno));
 //       return false;
 //     }
@@ -117,7 +116,7 @@ public class FileMap {
 //
 //     assert(mBasePtr != NULL);
 //
-//     ALOGV("MAP: base %p/%zu data %p/%zu\n",
+//     ALOGV("MAP: base %s/0x%x data %s/0x%x\n",
 //         mBasePtr, mBaseLength, mDataPtr, mDataLength);
 //
 //     return true;
@@ -161,7 +160,7 @@ public class FileMap {
 
     // ptr = mmap(null, adjLength, prot, flags, fd, adjOffset);
     // if (ptr == MAP_FAILED) {
-    //   ALOGE("mmap(%lld,%zu) failed: %s\n",
+    //   ALOGE("mmap(%lld,0x%x) failed: %s\n",
     //       (long long)adjOffset, adjLength, strerror(errno));
     //   return false;
     // }
@@ -175,7 +174,7 @@ public class FileMap {
 
     //assert(mBasePtr != 0);
 
-    ALOGV("MAP: base %p/%zu data %p/%zu\n",
+    ALOGV("MAP: base %s/0x%x data %s/0x%x\n",
         mBasePtr, mBaseLength, mDataPtr, mDataLength);
 
     return true;
@@ -327,4 +326,18 @@ public class FileMap {
   byte[]       mDataPtr;       // start of requested data, offset from base
   int      mDataLength;    // length, measured from "mDataPtr"
   static long mPageSize;
+
+  @Override
+  public String toString() {
+    if (isFromZip) {
+      return "FileMap{" +
+          "zipFile=" + zipFile.getName() +
+          ", zipEntry=" + zipEntry +
+          '}';
+    } else {
+      return "FileMap{" +
+          "mFileName='" + mFileName + '\'' +
+          '}';
+    }
+  }
 }

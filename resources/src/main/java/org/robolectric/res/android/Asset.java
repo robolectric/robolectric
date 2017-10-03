@@ -242,7 +242,7 @@ public abstract class Asset {
   //   }
   //
   //   if (kIsDebug) {
-  //     ALOGI("Creating Asset %p #%d\n", asset, gCount);
+  //     ALOGI("Creating Asset %s #%d\n", asset, gCount);
   //   }
   }
 
@@ -265,7 +265,7 @@ public abstract class Asset {
   //   asset.mNext = asset.mPrev = null;
   //
   //   if (kIsDebug) {
-  //     ALOGI("Destroying Asset in %p #%d\n", asset, gCount);
+  //     ALOGI("Destroying Asset in %s #%d\n", asset, gCount);
   //   }
   }
 
@@ -846,7 +846,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
           return null;
         }
 
-        ALOGV("Asset %p allocating buffer size %d (smaller than threshold)", this, (int)allocLen);
+        ALOGV("Asset %s allocating buffer size %d (smaller than threshold)", this, (int)allocLen);
         if (mLength > 0) {
           try {
             // long oldPosn = ftell(mFp);
@@ -927,13 +927,13 @@ static Asset createFromCompressedMap(FileMap dataMap,
       //   if ((((int)data)&0x3) == 0) {
       //     // We can return this directly if it is aligned on a word
       //     // boundary.
-      //     ALOGV("Returning aligned FileAsset %p (%s).", this,
+      //     ALOGV("Returning aligned FileAsset %s (%s).", this,
       //         getAssetSource());
       //     return data;
       //   }
       //   // If not aligned on a word boundary, then we need to copy it into
       //   // our own buffer.
-      //   ALOGV("Copying FileAsset %p (%s) to buffer size %d to make it aligned.", this,
+      //   ALOGV("Copying FileAsset %s (%s) to buffer size %d to make it aligned.", this,
       //       getAssetSource(), (int)mLength);
       //   unsigned String buf = new unsigned char[mLength];
       //   if (buf == null) {
@@ -944,6 +944,19 @@ static Asset createFromCompressedMap(FileMap dataMap,
       //   mBuf = buf;
       //   return buf;
       // }
+    }
+
+    @Override
+    public String toString() {
+      if (mFileName == null) {
+        return "_FileAsset{" +
+            "mMap=" + mMap +
+            '}';
+      } else {
+        return "_FileAsset{" +
+            "mFileName='" + mFileName + '\'' +
+            '}';
+      }
     }
   }
 
@@ -1223,6 +1236,12 @@ static Asset createFromCompressedMap(FileMap dataMap,
       // delete[] buf;
       // return mBuf;
     }
-  }
 
-};
+    @Override
+    public String toString() {
+      return "_CompressedAsset{" +
+          "mMap=" + mMap +
+          '}';
+    }
+  }
+}

@@ -165,7 +165,7 @@ public class ResTableTheme {
     styles.add(newAppliedStyle);
 
     final Ref<bag_entry[]> bag = new Ref<>(null);
-    Ref<Integer> bagTypeSpecFlags = new Ref(0);
+    Ref<Integer> bagTypeSpecFlags = new Ref<>(0);
     mTable.lock();
     final int N = mTable.getBagLocked(resID, bag, bagTypeSpecFlags);
     if (kDebugTableNoisy) {

@@ -61,7 +61,6 @@ public class ResXMLParser {
     int                 mCurExt;
 
   public ResXMLParser(ResXMLTree tree) {
-    System.out.println("new ResXMLParser for " + tree + ": " + System.identityHashCode(this));
     this.mTree = tree;
     this.mEventCode = BAD_DOCUMENT;
   }
@@ -142,7 +141,7 @@ final String getText(Ref<Integer> outLen)
 final String getNamespacePrefix(Ref<Integer> outLen)
   {
     int id = getNamespacePrefixID();
-    //printf("prefix=%d  event=%p\n", id, mEventCode);
+    //printf("prefix=%d  event=%s\n", id, mEventCode);
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
 
@@ -157,7 +156,7 @@ final String getNamespacePrefix(Ref<Integer> outLen)
 final String getNamespaceUri(Ref<Integer> outLen)
   {
     int id = getNamespaceUriID();
-    //printf("uri=%d  event=%p\n", id, mEventCode);
+    //printf("uri=%d  event=%s\n", id, mEventCode);
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
 
@@ -222,7 +221,7 @@ final String getElementName(Ref<Integer> outLen)
 final String getAttributeNamespace(int idx, Ref<Integer> outLen)
   {
     int id = getAttributeNamespaceID(idx);
-    //printf("attribute namespace=%d  idx=%d  event=%p\n", id, idx, mEventCode);
+    //printf("attribute namespace=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
       System.out.println(String.format("getAttributeNamespace 0x%x=0x%x\n", idx, id));
     }
@@ -232,7 +231,7 @@ final String getAttributeNamespace(int idx, Ref<Integer> outLen)
 final String getAttributeNamespace8(int idx, Ref<Integer> outLen)
   {
     int id = getAttributeNamespaceID(idx);
-    //printf("attribute namespace=%d  idx=%d  event=%p\n", id, idx, mEventCode);
+    //printf("attribute namespace=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
       System.out.println(String.format("getAttributeNamespace 0x%x=0x%x\n", idx, id));
     }
@@ -258,7 +257,7 @@ final String getAttributeNamespace8(int idx, Ref<Integer> outLen)
 final String getAttributeName(int idx, Ref<Integer> outLen)
   {
     int id = getAttributeNameID(idx);
-    //printf("attribute name=%d  idx=%d  event=%p\n", id, idx, mEventCode);
+    //printf("attribute name=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
       System.out.println(String.format("getAttributeName 0x%x=0x%x\n", idx, id));
     }
@@ -268,7 +267,7 @@ final String getAttributeName(int idx, Ref<Integer> outLen)
 final String getAttributeName8(int idx, Ref<Integer> outLen)
   {
     int id = getAttributeNameID(idx);
-    //printf("attribute name=%d  idx=%d  event=%p\n", id, idx, mEventCode);
+    //printf("attribute name=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
       System.out.println(String.format("getAttributeName 0x%x=0x%x\n", idx, id));
     }
@@ -406,7 +405,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
         }
         attr8 = new String8(attr, attrLen);
         if (kDebugStringPoolNoisy) {
-          ALOGI("indexOfAttribute UTF8 %s (%zu) / %s (%zu)", ns8.string(), nsLen,
+          ALOGI("indexOfAttribute UTF8 %s (0x%x) / %s (0x%x)", ns8.string(), nsLen,
               attr8.string(), attrLen);
         }
         for (int i=0; i<N; i++) {
@@ -414,7 +413,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
                 final String curNs = getAttributeNamespace8(i, curNsLen);
                 final String curAttr = getAttributeName8(i, curAttrLen);
           if (kDebugStringPoolNoisy) {
-            ALOGI("  curNs=%s (%zu), curAttr=%s (%zu)", curNs, curNsLen, curAttr, curAttrLen);
+            ALOGI("  curNs=%s (0x%x), curAttr=%s (0x%x)", curNs, curNsLen, curAttr, curAttrLen);
           }
           if (curAttr != null && curNsLen.get() == nsLen && curAttrLen.get() == attrLen
               && memcmp(attr8.string(), curAttr, attrLen) == 0) {
@@ -439,7 +438,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
         }
       } else {
         if (kDebugStringPoolNoisy) {
-          ALOGI("indexOfAttribute UTF16 %s (%zu) / %s (%zu)",
+          ALOGI("indexOfAttribute UTF16 %s (0x%x) / %s (0x%x)",
               ns /*String8(ns, nsLen).string()*/, nsLen,
               attr /*String8(attr, attrLen).string()*/, attrLen);
         }
@@ -448,7 +447,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
                 final String curNs = getAttributeNamespace(i, curNsLen);
                 final String curAttr = getAttributeName(i, curAttrLen);
           if (kDebugStringPoolNoisy) {
-            ALOGI("  curNs=%s (%zu), curAttr=%s (%zu)",
+            ALOGI("  curNs=%s (0x%x), curAttr=%s (0x%x)",
                 curNs /*String8(curNs, curNsLen).string()*/, curNsLen,
                 curAttr /*String8(curAttr, curAttrLen).string()*/, curAttrLen);
           }
@@ -532,7 +531,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
 //      (((final int8_t*)mCurNode) + dtohl(mCurNode.header.size));
       ResXMLTree_node next = new ResXMLTree_node(mTree.mBuffer.buf, nextOffset);
       if (kDebugXMLNoisy) {
-        ALOGI("Next node: prev=%p, next=%p\n", mCurNode, next);
+        ALOGI("Next node: prev=%s, next=%s\n", mCurNode, next);
       }
 
       if (next.myOffset() >= mTree.mDataLen) {
@@ -580,7 +579,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
         return (mEventCode=BAD_DOCUMENT);
       }
 
-      //printf("CurNode=%p, CurExt=%p, headerSize=%d, minExtSize=%d\n",
+      //printf("CurNode=%s, CurExt=%s, headerSize=%d, minExtSize=%d\n",
       //       mCurNode, mCurExt, headerSize, minExtSize);
 
       return eventCode;

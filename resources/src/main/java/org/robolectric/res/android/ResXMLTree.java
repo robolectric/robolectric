@@ -62,7 +62,7 @@ public class ResXMLTree {
     mOwnedData = null;
 
     if (kDebugResXMLTree) {
-      ALOGI("Creating ResXMLTree %p #%d\n", this, gCount.getAndIncrement()+1);
+      ALOGI("Creating ResXMLTree %s #%d\n", this, gCount.getAndIncrement()+1);
     }
     mParser.restart();
   }
@@ -75,7 +75,7 @@ public class ResXMLTree {
 //  {
   protected void finalize() {
     if (kDebugResXMLTree) {
-      ALOGI("Destroying ResXMLTree in %p #%d\n", this, gCount.getAndDecrement()-1);
+      ALOGI("Destroying ResXMLTree in %s #%d\n", this, gCount.getAndDecrement()-1);
     }
     uninit();
   }
@@ -137,7 +137,7 @@ public class ResXMLTree {
       final short type = dtohs(chunk.type);
       final int size1 = dtohl(chunk.size);
       if (kDebugXMLNoisy) {
-//        System.out.println(String.format("Scanning @ %p: type=0x%x, size=0x%zx\n",
+//        System.out.println(String.format("Scanning @ %s: type=0x%x, size=0x%zx\n",
 //            (void*)(((uintptr_t)chunk)-((uintptr_t)mHeader)), type, size1);
       }
       if (type == RES_STRING_POOL_TYPE) {

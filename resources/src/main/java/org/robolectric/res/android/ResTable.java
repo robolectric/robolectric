@@ -242,8 +242,8 @@ public class ResTable {
     final boolean notDeviceEndian = htods((short) 0xf0) != 0xf0;
 
     if (kDebugLoadTableNoisy) {
-      ALOGV("Adding resources to ResTable: data=%p, size=%zu, cookie=%d, copy=%d " +
-          "idmap=%p\n", data, dataSize, cookie, copyData, idmapData);
+      ALOGV("Adding resources to ResTable: data=%s, size=0x%x, cookie=%d, copy=%d " +
+          "idmap=%s\n", data, dataSize, cookie, copyData, idmapData);
     }
 
     if (copyData || notDeviceEndian) {
@@ -260,11 +260,11 @@ public class ResTable {
     header.header = new ResTable_header(buf, 0);
     header.size = dtohl(header.header.header.size);
     if (kDebugLoadTableSuperNoisy) {
-      ALOGI("Got size %zu, again size 0x%x, raw size 0x%x\n", header.size,
+      ALOGI("Got size 0x%x, again size 0x%x, raw size 0x%x\n", header.size,
           dtohl(header.header.header.size), header.header.header.size);
     }
     if (kDebugLoadTableNoisy) {
-      ALOGV("Loading ResTable @%p:\n", header.header);
+      ALOGV("Loading ResTable @%s:\n", header.header);
     }
     if (dtohs(header.header.header.headerSize) > header.size
         || header.size > dataSize) {
@@ -297,7 +297,7 @@ public class ResTable {
       return (mError=err);
     }
     if (kDebugTableNoisy) {
-      ALOGV("Chunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%p\n",
+      ALOGV("Chunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
           dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
           (Object)((chunk.myOffset()) - (header.header.myOffset())));
     }
@@ -420,7 +420,7 @@ public class ResTable {
 
 //    if (kDebugTableNoisy) {
 //      size_t len;
-//      printf("Found value: pkg=%zu, type=%d, str=%s, int=%d\n",
+//      printf("Found value: pkg=0x%x, type=%d, str=%s, int=%d\n",
 //          entry.package.header.index,
 //          outValue.dataType,
 //          outValue.dataType == Res_value::TYPE_STRING ?
@@ -786,7 +786,7 @@ public class ResTable {
     while (chunk != null && (chunk.myOffset()) <= (endPos-ResChunk_header.SIZEOF) &&
       (chunk.myOffset()) <= (endPos-dtohl(chunk.size))) {
     if (kDebugTableNoisy) {
-      ALOGV("PackageChunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%p\n",
+      ALOGV("PackageChunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
           dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
           ((chunk.myOffset()) - (header.header.myOffset())));
     }
@@ -804,7 +804,7 @@ public class ResTable {
             final int newEntryCount = dtohl(typeSpec.entryCount);
 
       if (kDebugLoadTableNoisy) {
-        ALOGI("TypeSpec off %p: type=0x%x, headerSize=0x%x, size=%p\n",
+        ALOGI("TypeSpec off %s: type=0x%x, headerSize=0x%x, size=%s\n",
             (base-chunk.myOffset()),
         dtohs(typeSpec.header.type),
             dtohs(typeSpec.header.headerSize),
@@ -814,7 +814,7 @@ public class ResTable {
       if ((dtohl(typeSpec.entryCount) > (Integer.MAX_VALUE/4 /*sizeof(int)*/)
           || dtohs(typeSpec.header.headerSize)+(4 /*sizeof(int)*/*newEntryCount)
           > typeSpecSize)) {
-        ALOGW("ResTable_typeSpec entry index to %p extends beyond chunk end %p.",
+        ALOGW("ResTable_typeSpec entry index to %s extends beyond chunk end %s.",
             (dtohs(typeSpec.header.headerSize) + (4 /*sizeof(int)*/*newEntryCount)),
             typeSpecSize);
         return (mError=BAD_TYPE);
@@ -874,7 +874,7 @@ public class ResTable {
             typeSize));
       }
       if (dtohs(type.header.headerSize)+(4/*sizeof(int)*/*newEntryCount) > typeSize) {
-        ALOGW("ResTable_type entry index to %p extends beyond chunk end 0x%x.",
+        ALOGW("ResTable_type entry index to %s extends beyond chunk end 0x%x.",
             (dtohs(type.header.headerSize) + (4/*sizeof(int)*/*newEntryCount)),
             typeSize);
         return (mError=BAD_TYPE);
@@ -973,7 +973,7 @@ public class ResTable {
         mParams = params;
         for (PackageGroup packageGroup : mPackageGroups.values()) {
           if (kDebugTableNoisy) {
-            ALOGI("CLEARING BAGS FOR GROUP %zu!", packageGroup.id);
+            ALOGI("CLEARING BAGS FOR GROUP 0x%x!", packageGroup.id);
           }
           packageGroup.clearBagCache();
 
@@ -1009,7 +1009,7 @@ public class ResTable {
               }
 
               if (kDebugTableNoisy) {
-                ALOGD("Updating pkg=%zu type=%zu with %zu filtered configs",
+                ALOGD("Updating pkg=0x%x type=0x%x with 0x%x filtered configs",
                     packageGroup.id, newFilteredConfigs.size());
               }
 
@@ -1306,7 +1306,7 @@ public class ResTable {
 //    { "in", strlen("in"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_IN, 1.0f },
 //    { "mm", strlen("mm"), Res_value::TYPE_DIMENSION, Res_value::COMPLEX_UNIT_MM, 1.0f },
 //    { "%", strlen("%"), Res_value::TYPE_FRACTION, Res_value::COMPLEX_UNIT_FRACTION, 1.0f/100 },
-//    { "%p", strlen("%p"), Res_value::TYPE_FRACTION, Res_value::COMPLEX_UNIT_FRACTION_PARENT, 1.0f/100 },
+//    { "%s", strlen("%s"), Res_value::TYPE_FRACTION, Res_value::COMPLEX_UNIT_FRACTION_PARENT, 1.0f/100 },
 //    { NULL, 0, 0, 0, 0 }
 //};
 //
@@ -2360,7 +2360,7 @@ public class ResTable {
     void clearBagCache() {
 //      for (int i = 0; i < typeCacheEntries.size(); i++) {
 //        if (kDebugTableNoisy) {
-//          printf("type=%zu\n", i);
+//          printf("type=0x%x\n", i);
 //        }
 //        final List<DataType> typeList = types.get(i);
 //        if (!typeList.isEmpty()) {
@@ -2371,13 +2371,13 @@ public class ResTable {
 //
 //          bag_set[][] typeBags = cacheEntry.cachedBags;
 //          if (kDebugTableNoisy) {
-//            printf("typeBags=%p\n", typeBags);
+//            printf("typeBags=%s\n", typeBags);
 //          }
 //
 //          if (isTruthy(typeBags)) {
 //            final int N = typeList.get(0).entryCount;
 //            if (kDebugTableNoisy) {
-//              printf("type.entryCount=%zu\n", N);
+//              printf("type.entryCount=0x%x\n", N);
 //            }
 //            for (int j = 0; j < N; j++) {
 //              if (typeBags[j] && typeBags[j] != (bag_set *) 0xFFFFFFFF){
@@ -2720,12 +2720,12 @@ public class ResTable {
     int curEntry = 0;
     int pos = 0;
     if (kDebugTableNoisy) {
-      ALOGI("Starting with set %p, entries=%p, avail=%zu\n", set, entries, set.availAttrs);
+      ALOGI("Starting with set %s, entries=%s, avail=0x%x\n", set, entries, set.availAttrs);
     }
     while (pos < count) {
       if (kDebugTableNoisy) {
-//        ALOGI("Now at %p\n", curOff);
-        ALOGI("Now at %p\n", curEntry);
+//        ALOGI("Now at %s\n", curOff);
+        ALOGI("Now at %s\n", curEntry);
       }
 
       if (curOff > (dtohl(entry.type.header.size)- ResTable_map.SIZEOF)) {
@@ -2753,7 +2753,7 @@ public class ResTable {
       while ((isInside=(curEntry < set.numAttrs))
           && (oldName=entries[curEntry].map.name.ident) < newName.get()) {
         if (kDebugTableNoisy) {
-          ALOGI("#%zu: Keeping existing attribute: 0x%08x\n",
+          ALOGI("#0x%x: Keeping existing attribute: 0x%08x\n",
               curEntry, entries[curEntry].map.name.ident);
         }
         curEntry++;
@@ -2772,7 +2772,7 @@ public class ResTable {
 //          entries = (bag_entry*)(set+1);
           entries = set.bag_entries;
           if (kDebugTableNoisy) {
-            ALOGI("Reallocated set %p, entries=%p, avail=%zu\n",
+            ALOGI("Reallocated set %s, entries=%s, avail=0x%x\n",
                 set, entries, set.availAttrs);
           }
         }
@@ -2784,11 +2784,11 @@ public class ResTable {
           set.numAttrs++;
         }
         if (kDebugTableNoisy) {
-          ALOGI("#%zu: Inserting new attribute: 0x%08x\n", curEntry, newName);
+          ALOGI("#0x%x: Inserting new attribute: 0x%08x\n", curEntry, newName);
         }
       } else {
         if (kDebugTableNoisy) {
-          ALOGI("#%zu: Replacing existing attribute: 0x%08x\n", curEntry, oldName);
+          ALOGI("#0x%x: Replacing existing attribute: 0x%08x\n", curEntry, oldName);
         }
       }
 
@@ -2810,7 +2810,7 @@ public class ResTable {
       }
 
       if (kDebugTableNoisy) {
-        ALOGI("Setting entry #%zu %p: block=%zd, name=0x%08d, type=%d, data=0x%08x\n",
+        ALOGI("Setting entry #0x%x %s: block=%zd, name=0x%08d, type=%d, data=0x%08x\n",
             curEntry, cur, cur.stringBlock, cur.map.name.ident,
             cur.map.value.dataType, cur.map.value.data);
       }
@@ -2835,7 +2835,7 @@ public class ResTable {
       }
       outBag.set(set.bag_entries);
       if (kDebugTableNoisy) {
-        ALOGI("Returning %zu attrs\n", set.numAttrs);
+        ALOGI("Returning 0x%x attrs\n", set.numAttrs);
       }
       return set.numAttrs;
     }

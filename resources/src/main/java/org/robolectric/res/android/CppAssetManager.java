@@ -94,7 +94,8 @@ public class CppAssetManager {
 
   private final Object mLock = new Object();
 
-  ZipSet          mZipSet = new ZipSet();
+  // unlike AssetManager.cpp, this is shared between CppAssetManager instances.
+  private static final ZipSet mZipSet = new ZipSet();
 
   private final List<asset_path> mAssetPaths = new ArrayList<>();
   private String mLocale;
@@ -189,7 +190,7 @@ public class CppAssetManager {
 //          mLocale(null), mResources(null), mConfig(new ResTable_config) {
 //      int count = android_atomic_inc(&gCount) + 1;
 //      if (kIsDebug) {
-//          ALOGI("Creating AssetManager %p #%d\n", this, count);
+//          ALOGI("Creating AssetManager %s #%d\n", this, count);
 //      }
 //      memset(mConfig, 0, sizeof(ResTable_config));
 //  }
@@ -197,7 +198,7 @@ public class CppAssetManager {
 //  ~AssetManager() {
 //      int count = android_atomic_dec(&gCount);
 //      if (kIsDebug) {
-//          ALOGI("Destroying AssetManager in %p #%d\n", this, count);
+//          ALOGI("Destroying AssetManager in %s #%d\n", this, count);
 //      }
 //  
 //      delete mConfig;
@@ -651,7 +652,7 @@ public Asset open(final String fileName, AccessMode mode) {
       }
 
       if ((ass != null || sharedRes != null) && ass != kExcludedAsset) {
-          ALOGV("Installing resource asset %p in to table %p\n", ass, mResources);
+          ALOGV("Installing resource asset %s in to table %s\n", ass, mResources);
           if (sharedRes != null) {
               ALOGV("Copying existing resources for %s", ap.path.string());
               mResources.add(sharedRes, ap.isSystemAsset);
@@ -665,7 +666,7 @@ public Asset open(final String fileName, AccessMode mode) {
 //              delete ass;
 //          }
       } else {
-          ALOGV("Installing empty resources in to table %p\n", mResources);
+          ALOGV("Installing empty resources in to table %s\n", mResources);
           mResources.addEmpty(nextEntryIdx + 1);
       }
 
@@ -971,11 +972,11 @@ public Asset open(final String fileName, AccessMode mode) {
 //
     if (method.get() == ZipFileRO.kCompressStored) {
       pAsset = Asset.createFromUncompressedMap(dataMap, mode);
-      ALOGV("Opened uncompressed entry %s in zip %s mode %d: %p", entryName.string(),
+      ALOGV("Opened uncompressed entry %s in zip %s mode %s: %s", entryName.string(),
           pZipFile.mFileName, mode, pAsset);
     } else {
       pAsset = Asset.createFromCompressedMap(dataMap, Math.toIntExact(uncompressedLen.get()), mode);
-      ALOGV("Opened compressed entry %s in zip %s mode %d: %p", entryName.string(),
+      ALOGV("Opened compressed entry %s in zip %s mode %s: %s", entryName.string(),
           pZipFile.mFileName, mode, pAsset);
     }
     if (pAsset == null) {
@@ -1485,14 +1486,14 @@ public Asset open(final String fileName, AccessMode mode) {
       this.mResourceTable = null;
 
       if (kIsDebug) {
-          ALOGI("Creating SharedZip %s %s\n", this, mPath);
+        ALOGI("Creating SharedZip %s %s\n", this, mPath);
       }
       ALOGV("+++ opening zip '%s'\n", mPath);
       mZipFile = ZipFileRO.open(mPath);
       if (mZipFile == null) {
-          ALOGD("failed to open Zip archive '%s'\n", mPath);
+        ALOGD("failed to open Zip archive '%s'\n", mPath);
       }
-  }
+    }
 
     static SharedZip get(final String8 path) {
       return get(path, true);
@@ -1515,51 +1516,51 @@ public Asset open(final String fileName, AccessMode mode) {
 
       }
 
-  }
+    }
 
     ZipFileRO getZip()
-  {
-    return mZipFile;
-  }
+    {
+      return mZipFile;
+    }
 
-  Asset getResourceTableAsset()
-  {
-    synchronized (gLock) {
-      ALOGV("Getting from SharedZip %p resource asset %p\n", this, mResourceTableAsset);
+    Asset getResourceTableAsset()
+    {
+      synchronized (gLock) {
+        ALOGV("Getting from SharedZip %s resource asset %s\n", this, mResourceTableAsset);
+        return mResourceTableAsset;
+      }
+    }
+
+    Asset setResourceTableAsset(Asset asset)
+    {
+      synchronized (gLock) {
+        if (mResourceTableAsset == null) {
+          // This is not thread safe the first time it is called, so
+          // do it here with the global lock held.
+          asset.getBuffer(true);
+          mResourceTableAsset = asset;
+          return asset;
+        }
+      }
       return mResourceTableAsset;
     }
-  }
 
-  Asset setResourceTableAsset(Asset asset)
-  {
-      synchronized (gLock) {
-          if (mResourceTableAsset == null) {
-              // This is not thread safe the first time it is called, so
-              // do it here with the global lock held.
-              asset.getBuffer(true);
-              mResourceTableAsset = asset;
-              return asset;
-          }
-      }
-      return mResourceTableAsset;
-  }
-
-  ResTable getResourceTable()
-  {
-      ALOGV("Getting from SharedZip %p resource table %p\n", this, mResourceTable);
+    ResTable getResourceTable()
+    {
+      ALOGV("Getting from SharedZip %s resource table %s\n", this, mResourceTable);
       return mResourceTable;
-  }
+    }
 
-  ResTable setResourceTable(ResTable res)
-  {
+    ResTable setResourceTable(ResTable res)
+    {
       synchronized (gLock) {
-          if (mResourceTable == null) {
-              mResourceTable = res;
-              return res;
-          }
+        if (mResourceTable == null) {
+          mResourceTable = res;
+          return res;
+        }
       }
       return mResourceTable;
-  }
+    }
 
 //  boolean SharedZip.isUpToDate()
 //  {
@@ -1584,7 +1585,7 @@ public Asset open(final String fileName, AccessMode mode) {
 //  SharedZip.~SharedZip()
 //  {
 //      if (kIsDebug) {
-//          ALOGI("Destroying SharedZip %p %s\n", this, (final char*)mPath);
+//          ALOGI("Destroying SharedZip %s %s\n", this, (final char*)mPath);
 //      }
 //      if (mResourceTable != null) {
 //          delete mResourceTable;
@@ -1597,8 +1598,13 @@ public Asset open(final String fileName, AccessMode mode) {
 //          ALOGV("Closed '%s'\n", mPath.string());
 //      }
 //  }
-//
-};
+
+    @Override
+    public String toString() {
+      String id = Integer.toString(System.identityHashCode(this), 16);
+      return "SharedZip{mPath='" + mPath + "\', id=0x" + id + "}";
+    }
+  };
 
 
   /*
@@ -1619,42 +1625,42 @@ public Asset open(final String fileName, AccessMode mode) {
    * ===========================================================================
    */
 
-  /*
-   * Destructor.  Close any open archives.
-   */
+    /*
+     * Destructor.  Close any open archives.
+     */
 //  ZipSet.~ZipSet(void)
     protected void finalize()
-  {
+    {
       int N = mZipFile.size();
       for (int i = 0; i < N; i++)
-          closeZip(i);
-  }
+        closeZip(i);
+    }
 
-  /*
-   * Close a Zip file and reset the entry.
-   */
-  void closeZip(int idx)
-  {
+    /*
+     * Close a Zip file and reset the entry.
+     */
+    void closeZip(int idx)
+    {
       mZipFile.set(idx, null);
-  }
+    }
 
 
-  /*
-   * Retrieve the appropriate Zip file from the set.
-   */
-  ZipFileRO getZip(final String path)
-  {
+    /*
+     * Retrieve the appropriate Zip file from the set.
+     */
+    synchronized ZipFileRO getZip(final String path)
+    {
       int idx = getIndex(path);
       SharedZip zip = mZipFile.get(idx);
       if (zip == null) {
-          zip = SharedZip.get(new String8(path));
-          mZipFile.set(idx, zip);
+        zip = SharedZip.get(new String8(path));
+        mZipFile.set(idx, zip);
       }
       return zip.getZip();
-  }
+    }
 
-  Asset getZipResourceTableAsset(final String8 path)
-  {
+    synchronized Asset getZipResourceTableAsset(final String8 path)
+    {
       int idx = getIndex(path.string());
       SharedZip zip = mZipFile.get(idx);
       if (zip == null) {
@@ -1662,19 +1668,17 @@ public Asset open(final String fileName, AccessMode mode) {
         mZipFile.set(idx, zip);
       }
       return zip.getResourceTableAsset();
-  }
+    }
 
-  Asset setZipResourceTableAsset(final String8 path,
-                                                   Asset asset)
-  {
+    synchronized Asset setZipResourceTableAsset(final String8 path, Asset asset) {
       int idx = getIndex(path.string());
       SharedZip zip = mZipFile.get(idx);
       // doesn't make sense to call before previously accessing.
       return zip.setResourceTableAsset(asset);
-  }
+    }
 
-  ResTable getZipResourceTable(final String8 path)
-  {
+    synchronized ResTable getZipResourceTable(final String8 path)
+    {
       int idx = getIndex(path.string());
       SharedZip zip = mZipFile.get(idx);
       if (zip == null) {
@@ -1682,28 +1686,26 @@ public Asset open(final String fileName, AccessMode mode) {
         mZipFile.set(idx, zip);
       }
       return zip.getResourceTable();
-  }
+    }
 
-  ResTable setZipResourceTable(final String8 path,
-                                                      ResTable res)
-  {
+    synchronized ResTable setZipResourceTable(final String8 path, ResTable res) {
       int idx = getIndex(path.string());
       SharedZip zip = mZipFile.get(idx);
       // doesn't make sense to call before previously accessing.
       return zip.setResourceTable(res);
-  }
+    }
 
-  /*
-   * Generate the partial pathname for the specified archive.  The caller
-   * gets to prepend the asset root directory.
-   *
-   * Returns something like "common/en-US-noogle.jar".
-   */
-  static String8 getPathName(final String zipPath)
-  {
+    /*
+     * Generate the partial pathname for the specified archive.  The caller
+     * gets to prepend the asset root directory.
+     *
+     * Returns something like "common/en-US-noogle.jar".
+     */
+    static String8 getPathName(final String zipPath)
+    {
       return new String8(zipPath);
-  }
-//
+    }
+    //
 //  boolean ZipSet.isUpToDate()
 //  {
 //      final int N = mZipFile.size();
@@ -1737,20 +1739,20 @@ public Asset open(final String fileName, AccessMode mode) {
    * "appName", "locale", and "vendor" should be set to null to indicate the
    * default directory.
    */
-  int getIndex(final String zip)
-  {
+    int getIndex(final String zip)
+    {
       final int N = mZipPath.size();
       for (int i=0; i<N; i++) {
-          if (Objects.equals(mZipPath.get(i), zip)) {
-              return i;
-          }
+        if (Objects.equals(mZipPath.get(i), zip)) {
+          return i;
+        }
       }
 
       mZipPath.add(zip);
       mZipFile.add(null);
 
       return mZipPath.size()-1;
-  }
+    }
 
   }
 
