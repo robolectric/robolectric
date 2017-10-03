@@ -1609,7 +1609,16 @@ public class ShadowArscAssetManager {
 
   @Implementation
   public final SparseArray<String> getAssignedPackageIdentifiers() {
-    return directlyOn(realObject, AssetManager.class, "getAssignedPackageIdentifiers");
+    CppAssetManager am = assetManagerForJavaObject();
+    final ResTable res = am.getResources();
+
+    SparseArray<String> sparseArray = new SparseArray<>();
+    final int N = res.getBasePackageCount();
+    for (int i = 0; i < N; i++) {
+      final String name = res.getBasePackageName(i);
+      sparseArray.put(res.getBasePackageId(i), name);
+    }
+    return sparseArray;
   }
 
   @HiddenApi @Implementation public static final int getGlobalAssetCount(){

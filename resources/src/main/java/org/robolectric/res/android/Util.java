@@ -68,8 +68,8 @@ public class Util {
     System.out.println("ERROR: " + String.format(message, args));
   }
 
-  static void LOG_FATAL_IF(boolean assertion, String message) {
-    assert !assertion : message;
+  static void LOG_FATAL_IF(boolean assertion, String message, Object... args) {
+    assert !assertion : String.format(message, args);
   }
 
   static void ATRACE_CALL() {

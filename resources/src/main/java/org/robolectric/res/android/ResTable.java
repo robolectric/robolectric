@@ -19,6 +19,7 @@ import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
+import static org.robolectric.res.android.Util.LOG_FATAL_IF;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.htodl;
@@ -2242,6 +2243,54 @@ public class ResTable {
 //
 //    return true;
 //}
+
+  public int getBasePackageCount()
+  {
+    if (mError != NO_ERROR) {
+      return 0;
+    }
+    return mPackageGroups.size();
+  }
+
+  public String getBasePackageName(int idx)
+  {
+    if (mError != NO_ERROR) {
+      return null;
+    }
+    LOG_FATAL_IF(idx >= mPackageGroups.size(),
+        "Requested package index %d past package count %d",
+        (int)idx, (int)mPackageGroups.size());
+    return mPackageGroups.get(keyFor(idx)).name;
+  }
+
+  public int getBasePackageId(int idx)
+  {
+    if (mError != NO_ERROR) {
+      return 0;
+    }
+    LOG_FATAL_IF(idx >= mPackageGroups.size(),
+        "Requested package index %d past package count %d",
+        (int)idx, (int)mPackageGroups.size());
+    return mPackageGroups.get(keyFor(idx)).id;
+  }
+
+  int getLastTypeIdForPackage(int idx)
+  {
+    if (mError != NO_ERROR) {
+      return 0;
+    }
+    LOG_FATAL_IF(idx >= mPackageGroups.size(),
+        "Requested package index %d past package count %d",
+        (int)idx, (int)mPackageGroups.size());
+    PackageGroup group = mPackageGroups.get(keyFor(idx));
+    return group.largestTypeId;
+  }
+
+  int keyFor(int idx) {
+    ArrayList<Integer> keys = new ArrayList<>(mPackageGroups.keySet());
+    Collections.sort(keys);
+    return keys.get(idx);
+  }
 
   public int getTableCount() {
     return mHeaders.size();
