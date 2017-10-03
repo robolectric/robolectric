@@ -20,6 +20,9 @@ public class ShadowProcess {
     return uid;
   }
 
+  /**
+   * Sets the identifier of this process.
+   */
   public static void setPid(int pid) {
     ShadowProcess.pid = pid;
   }
