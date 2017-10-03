@@ -1,15 +1,13 @@
 package org.robolectric.shadows;
 
 import android.webkit.MimeTypeMap;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {

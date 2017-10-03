@@ -1,5 +1,7 @@
 package org.robolectric.android.controller;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
@@ -8,8 +10,6 @@ import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.util.ReflectionHelpers;
-
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T> {
 
@@ -81,6 +81,17 @@ public class ServiceController<T extends Service> extends ComponentController<Se
 
   public ServiceController<T> unbind() {
     invokeWhilePaused("onUnbind", from(Intent.class, getIntent()));
+    return this;
+  }
+
+  /**
+   * @deprecated Use the appropriate builder in {@link org.robolectric.Robolectric} instead.
+   *
+   * This method will be removed in Robolectric 3.6.
+   */
+  @Deprecated
+  public ServiceController<T> withIntent(Intent intent) {
+    this.intent = intent;
     return this;
   }
 }

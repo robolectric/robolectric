@@ -1,13 +1,13 @@
 package org.robolectric.shadows.support.v4;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.net.Uri;
 import android.support.v4.content.CursorLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowCursorLoaderTest {

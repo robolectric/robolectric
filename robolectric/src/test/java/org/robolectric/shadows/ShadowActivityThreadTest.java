@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.Context;
 import android.content.pm.PackageManager;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowActivityThreadTest {
     @Test
     public void testTriggersUndeclaredThrowableException() throws Exception {

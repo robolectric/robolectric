@@ -1,23 +1,22 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowRenderNodeAnimatorTest {
   private Activity activity;

@@ -1,16 +1,14 @@
 package org.robolectric.annotation.processing.generator;
 
-import org.robolectric.annotation.processing.RobolectricModel;
-
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 
 /**
  * Generator that creates the service loader metadata for a shadow package.

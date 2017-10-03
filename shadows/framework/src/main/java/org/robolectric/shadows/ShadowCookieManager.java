@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.webkit.CookieManager;
 import android.webkit.RoboCookieManager;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;

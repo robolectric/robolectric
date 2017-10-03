@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,11 +12,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Matrix.class)
@@ -37,6 +35,7 @@ public class ShadowMatrix {
 
   private SimpleMatrix mMatrix = SimpleMatrix.IDENTITY;
 
+  @Implementation
   public void __constructor__(Matrix src) {
     set(src);
   }
@@ -273,7 +272,7 @@ public class ShadowMatrix {
     final SimpleMatrix inverseMatrix = mMatrix.invert();
     if (inverseMatrix != null) {
       if (inverse != null) {
-        final ShadowMatrix shadowInverse = (ShadowMatrix) ShadowExtractor.extract(inverse);
+        final ShadowMatrix shadowInverse = Shadow.extract(inverse);
         shadowInverse.mMatrix = inverseMatrix;
       }
       return true;
@@ -323,7 +322,7 @@ public class ShadowMatrix {
   }
 
   private static SimpleMatrix getSimpleMatrix(Matrix matrix) {
-    final ShadowMatrix otherMatrix = (ShadowMatrix) ShadowExtractor.extract(matrix);
+    final ShadowMatrix otherMatrix = Shadow.extract(matrix);
     return otherMatrix.mMatrix;
   }
 

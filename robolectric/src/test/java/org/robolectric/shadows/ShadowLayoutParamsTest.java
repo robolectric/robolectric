@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Gallery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowLayoutParamsTest {
   @Test
   public void testConstructor() throws Exception {

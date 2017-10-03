@@ -1,18 +1,18 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.*;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowVideoViewTest {
 
   private VideoView view;

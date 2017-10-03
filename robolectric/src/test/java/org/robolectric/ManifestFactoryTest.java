@@ -1,11 +1,13 @@
 package org.robolectric;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.resourceFile;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -17,11 +19,6 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.TestUtil;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
 
 @RunWith(JUnit4.class)
 public class ManifestFactoryTest {
@@ -52,12 +49,11 @@ public class ManifestFactoryTest {
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
     String baseDir = "./" + TestUtil.resourcesBaseDir().getPath();
-    assertEquals(asList(
-        joinPath(baseDir, "res"),
-        joinPath(baseDir, "lib1", "res"),
-        joinPath(baseDir, "lib1", "..", "lib3", "res"),
-        joinPath(baseDir, "lib1", "..", "lib2", "res")),
-        resourcePaths);
+    assertThat(resourcePaths).contains(
+        baseDir + "/res",
+        baseDir + "/lib1/res",
+        baseDir + "/lib1/../lib3/res",
+        baseDir + "/lib1/../lib2/res");
   }
 
   @Test

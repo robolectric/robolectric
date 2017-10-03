@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,15 +11,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowBluetoothAdapterTest {
   private BluetoothAdapter bluetoothAdapter;
   private ShadowBluetoothAdapter shadowBluetoothAdapter;

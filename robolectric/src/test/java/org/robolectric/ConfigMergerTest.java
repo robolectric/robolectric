@@ -1,6 +1,15 @@
 package org.robolectric;
 
+import static com.google.common.collect.ImmutableMap.of;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
+
 import android.app.Application;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,20 +18,10 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.util.ReflectionHelpers;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import static com.google.common.collect.ImmutableMap.of;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
-import static org.robolectric.util.TestUtil.stringify;
 
 @RunWith(JUnit4.class)
 public class ConfigMergerTest {
+
   @Test public void defaultValuesAreMerged() throws Exception {
     assertThat(configFor(Test2.class, "withoutAnnotation",
         new Config.Builder().build()).manifest())
@@ -158,6 +157,19 @@ public class ConfigMergerTest {
   /////////////////////////////
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties) throws InitializationError {
+    return configFor(testClass, methodName, configProperties, Config.Builder.defaults().build());
+  }
+
+  private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
+    Config.Implementation globalConfig = Config.Builder.defaults().build();
+    return configFor(testClass, methodName, globalConfig);
+  }
+
+  private Config configFor(Class<?> testClass, String methodName, Config.Implementation globalConfig) throws InitializationError {
+    return configFor(testClass, methodName, new HashMap<>(), globalConfig);
+  }
+
+  private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties, Config.Implementation globalConfig) throws InitializationError {
     Method info = getMethod(testClass, methodName);
     return new ConfigMerger() {
       @Override
@@ -165,17 +177,7 @@ public class ConfigMergerTest {
         String properties = configProperties.get(resourceName);
         return properties == null ? null : new ByteArrayInputStream(properties.getBytes());
       }
-    }.getConfig(testClass, info, Config.Builder.defaults().build());
-  }
-
-  private Config configFor(Class<?> testClass, String methodName) {
-    Config.Implementation globalConfig = Config.Builder.defaults().build();
-    return configFor(testClass, methodName, globalConfig);
-  }
-
-  private Config configFor(Class<?> testClass, String methodName, Config.Implementation globalConfig) {
-    Method info = getMethod(testClass, methodName);
-    return new ConfigMerger().getConfig(testClass, info, globalConfig);
+    }.getConfig(testClass, info, globalConfig);
   }
 
   private static Method getMethod(Class<?> testClass, String methodName) {
@@ -186,8 +188,19 @@ public class ConfigMergerTest {
     }
   }
 
-  private void assertConfig(Config config, int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, String[] instrumentedPackages, String[] libraries, Class<?> constants) {
-    assertThat(stringify(config)).isEqualTo(stringify(sdk, manifest, application, packageName, qualifiers, resourceDir, assetsDir, shadows, instrumentedPackages, libraries, constants));
+  private static void assertConfig(Config config, int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir,
+                            String assetsDir, Class<?>[] shadows, String[] instrumentedPackages, String[] libraries, Class<?> constants) {
+    assertThat(config.sdk()).isEqualTo(sdk);
+    assertThat(config.manifest()).isEqualTo(manifest);
+    assertThat(config.application()).isEqualTo(application);
+    assertThat(config.packageName()).isEqualTo(packageName);
+    assertThat(config.qualifiers()).isEqualTo(qualifiers);
+    assertThat(config.resourceDir()).isEqualTo(resourceDir);
+    assertThat(config.assetDir()).isEqualTo(assetsDir);
+    assertThat(config.shadows()).containsExactlyInAnyOrder(shadows);
+    assertThat(config.instrumentedPackages()).containsExactlyInAnyOrder(instrumentedPackages);
+    assertThat(config.libraries()).containsExactlyInAnyOrder(libraries);
+    assertThat(config.constants()).isEqualTo(constants);
   }
 
   @Ignore

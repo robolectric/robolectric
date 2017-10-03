@@ -1,10 +1,8 @@
 package org.robolectric.res;
 
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.robolectric.manifest.AndroidManifest;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ResourceMerger {
   @Nonnull

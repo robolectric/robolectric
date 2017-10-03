@@ -7,7 +7,6 @@ import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NAME_NOT_FOUND;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Errors.NO_INIT;
-import static org.robolectric.res.android.ResourceString.decodeLengthUTF16;
 import static org.robolectric.res.android.ResourceString.decodeString;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGW;
@@ -15,12 +14,11 @@ import static org.robolectric.res.android.Util.isTruthy;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import org.robolectric.res.android.ResourceString.Type;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_span;
-import org.robolectric.util.Strings;
 
 /**
  * Convenience class for accessing data in a ResStringPool resource.
@@ -446,7 +444,7 @@ public class ResStringPool {
         if (kDebugStringPoolNoisy) {
           ALOGI("Looking at %s, i=%d\n", s, i);
         }
-        if (Strings.equals(s, str)) {
+        if (Objects.equals(s, str)) {
           if (kDebugStringPoolNoisy) {
             ALOGI("MATCH!");
           }

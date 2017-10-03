@@ -1,14 +1,14 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.util.JsonReader;
 import java.io.StringReader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowJsonReaderTest {
   @Test public void shouldWork() throws Exception {
     JsonReader jsonReader = new JsonReader(new StringReader("{\"abc\": \"def\"}"));

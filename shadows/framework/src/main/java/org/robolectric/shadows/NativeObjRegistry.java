@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.assertj.core.util.Preconditions;
 
 /**
  * A unique id per object registry. Used to emulate android platform behavior of storing a long

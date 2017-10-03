@@ -1,12 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -15,12 +19,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.RoboIntentSender;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.robolectric.Shadows.shadowOf;
 
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {

@@ -1,18 +1,18 @@
 package org.robolectric.shadows;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
 import android.app.Application;
 import android.view.View;
 import android.widget.ViewAnimator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowViewAnimatorTest {
 
   ViewAnimator viewAnimator;

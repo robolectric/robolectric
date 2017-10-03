@@ -1,17 +1,17 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.buildActivity;
+
 import android.app.Activity;
 import android.preference.ListPreference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.buildActivity;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowListPreferenceTest {
 
   private ListPreference listPreference;

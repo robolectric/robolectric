@@ -1,25 +1,24 @@
 package org.robolectric.shadows;
 
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Icon;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Icon;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowNotificationBuilderTest {
   private final Notification.Builder builder = new Notification.Builder(RuntimeEnvironment.application);
 

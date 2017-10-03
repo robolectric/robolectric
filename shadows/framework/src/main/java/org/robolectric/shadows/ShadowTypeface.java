@@ -1,7 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
@@ -10,18 +19,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 
 @Implements(value = Typeface.class, looseSignatures = true)
 public class ShadowTypeface {
@@ -31,11 +31,13 @@ public class ShadowTypeface {
   @RealObject private Typeface realTypeface;
 
   @HiddenApi
+  @Implementation
   public void __constructor__(int fontId) {
     description = findById((long) fontId);
   }
 
   @HiddenApi
+  @Implementation
   public void __constructor__(long fontId) {
     description = findById(fontId);
   }
@@ -66,7 +68,9 @@ public class ShadowTypeface {
     }
 
     for (String assetPath : paths) {
-      if (new File(assetPath).exists()) {
+      // check if in zip file too?
+      FsFile[] files = appManifest.getAssetsDirectory().listFiles(new StartsWith(path));
+      if (new File(assetPath).exists() || files.length != 0) {
         return createUnderlyingTypeface(path, Typeface.NORMAL);
       }
     }
@@ -173,6 +177,19 @@ public class ShadowTypeface {
 
     public int getStyle() {
       return style;
+    }
+  }
+
+  private static class StartsWith implements FsFile.Filter {
+    private final String contains;
+
+    public StartsWith(String contains) {
+      this.contains = contains;
+    }
+
+    @Override
+    public boolean accept(FsFile file) {
+      return file.getName().startsWith(contains);
     }
   }
 }

@@ -1,22 +1,19 @@
 package org.robolectric.shadows;
 
-import android.app.KeyguardManager;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import static android.content.Context.KEYGUARD_SERVICE;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.KeyguardManager;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowKeyguardManagerTest {
 
   private KeyguardManager manager;
@@ -27,8 +24,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  public void testIsInRestrcitedInputMode() {
-
+  public void testIsInRestrictedInputMode() {
     assertThat(manager.inKeyguardRestrictedInputMode()).isFalse();
     ShadowKeyguardManager shadowMgr = shadowOf(manager);
     shadowMgr.setinRestrictedInputMode(true);
@@ -36,15 +32,23 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
+  public void testIsKeyguardLocked() {
+    assertThat(manager.isKeyguardLocked()).isFalse();
+    ShadowKeyguardManager shadowMgr = shadowOf(manager);
+    shadowMgr.setKeyguardLocked(true);
+    assertThat(manager.isKeyguardLocked()).isTrue();
+  }
+
+  @Test
   public void testShouldBeAbleToDisableTheKeyguardLock() throws Exception {
     KeyguardManager.KeyguardLock lock = manager.newKeyguardLock(KEYGUARD_SERVICE);
-    assertTrue(shadowOf(lock).isEnabled());
+    assertThat(shadowOf(lock).isEnabled()).isTrue();
 
     lock.disableKeyguard();
-    assertFalse(shadowOf(lock).isEnabled());
+    assertThat(shadowOf(lock).isEnabled()).isFalse();
 
     lock.reenableKeyguard();
-    assertTrue(shadowOf(lock).isEnabled());
+    assertThat(shadowOf(lock).isEnabled()).isTrue();
   }
 
   @Test

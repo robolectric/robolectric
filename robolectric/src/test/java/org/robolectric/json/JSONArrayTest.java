@@ -1,15 +1,14 @@
 package org.robolectric.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import java.util.Arrays;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class JSONArrayTest {
   @Test
   public void testEquality() throws Exception {

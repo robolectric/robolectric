@@ -2,7 +2,7 @@ package org.robolectric.fakes;
 
 import android.database.DatabaseUtils;
 import android.net.Uri;
-
+import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +19,7 @@ public class RoboCursor extends BaseCursor {
   protected List<String> columnNames = new ArrayList<>();
   private int resultsIndex = -1;
   private boolean closeWasCalled;
+  private Bundle extras;
 
   @Override
   public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
@@ -179,6 +180,14 @@ public class RoboCursor extends BaseCursor {
 
   @Override public boolean isClosed() {
     return closeWasCalled;
+  }
+
+  @Override public Bundle getExtras() {
+    return extras;
+  }
+
+  public void setExtras(Bundle extras) {
+    this.extras = extras;
   }
 
   public void setColumnNames(List<String> columnNames) {

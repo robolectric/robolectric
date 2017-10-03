@@ -1,20 +1,20 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowActivityManagerTest {
 
   @Test

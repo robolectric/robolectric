@@ -1,10 +1,9 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RobolectricModel;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.Implementation}.

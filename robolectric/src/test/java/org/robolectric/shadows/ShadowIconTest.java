@@ -1,19 +1,19 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(minSdk = M)
 public class ShadowIconTest {
   public static final int TYPE_BITMAP = 1;

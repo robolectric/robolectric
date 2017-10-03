@@ -1,22 +1,18 @@
 package org.robolectric.shadows;
 
-
-import android.content.res.Configuration;
-import android.os.Build;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
-import java.util.Locale;
-
 import static android.content.res.Configuration.SCREENLAYOUT_UNDEFINED;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.content.res.Configuration;
+import android.os.Build;
+import java.util.Locale;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowConfigurationTest {
 
   private Configuration configuration;

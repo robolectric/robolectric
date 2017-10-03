@@ -1,29 +1,27 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
-import android.os.Build;
 import android.util.AttributeSet;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContextTest {
   private final Context context = RuntimeEnvironment.application;
 

@@ -1,16 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowRemoteCallbackListTest {
   @Test
   public void testBasicWiring() throws Exception {

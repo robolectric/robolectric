@@ -1,22 +1,21 @@
 package org.robolectric.annotation.processing.generator;
 
-import javax.annotation.Nonnull;
-import org.junit.Before;
-import org.junit.Test;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.processing.RobolectricModel;
+import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashMap;
+import javax.annotation.Nonnull;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashMap;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 public class ShadowProviderGeneratorTest {
 

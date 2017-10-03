@@ -1,37 +1,34 @@
 package org.robolectric.shadows;
 
-import android.os.OperationCanceledException;
+import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.CancellationSignal;
-
+import android.os.OperationCanceledException;
 import com.google.common.io.Files;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.res.FileFsFile;
-import org.robolectric.util.TempDirectory;
-import org.robolectric.util.TestUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.res.FileFsFile;
+import org.robolectric.util.TempDirectory;
+import org.robolectric.util.TestUtil;
 
-import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
     private List<SQLiteDatabase> openDatabases = new ArrayList<>();

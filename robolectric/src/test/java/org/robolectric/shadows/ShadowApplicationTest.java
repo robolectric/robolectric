@@ -1,45 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
-import android.app.Application;
-import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.hardware.SystemSensorManager;
-import android.media.session.MediaSessionManager;
-import android.os.*;
-import android.print.PrintManager;
-import android.telephony.SubscriptionManager;
-import android.view.Gravity;
-import android.view.accessibility.AccessibilityManager;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboVibrator;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
-import org.robolectric.util.Scheduler;
-import org.robolectric.android.TestBroadcastReceiver;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
@@ -55,7 +15,47 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.Activity;
+import android.app.Application;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.hardware.SystemSensorManager;
+import android.media.session.MediaSessionManager;
+import android.os.BatteryManager;
+import android.os.Binder;
+import android.os.IBinder;
+import android.os.UserManager;
+import android.print.PrintManager;
+import android.telephony.SubscriptionManager;
+import android.view.Gravity;
+import android.view.accessibility.AccessibilityManager;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
+import org.robolectric.fakes.RoboVibrator;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.Fs;
+import org.robolectric.util.Scheduler;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -576,5 +576,16 @@ public class ShadowApplicationTest {
 
     @Override
     public void onServiceDisconnected(ComponentName name) {}
+  }
+
+  public static class TestBroadcastReceiver extends BroadcastReceiver {
+    public Context context;
+    public Intent intent;
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      this.context = context;
+      this.intent = intent;
+    }
   }
 }

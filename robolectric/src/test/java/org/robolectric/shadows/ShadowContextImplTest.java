@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.N;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
 import android.bluetooth.BluetoothManager;
@@ -9,23 +14,16 @@ import android.content.IntentSender;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
-
+import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestApplication;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-import java.io.File;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.N;
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContextImplTest {
   private final Context context = RuntimeEnvironment.application;
 

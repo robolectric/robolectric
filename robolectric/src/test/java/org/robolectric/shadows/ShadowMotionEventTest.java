@@ -1,16 +1,16 @@
 package org.robolectric.shadows;
 
-import android.view.MotionEvent;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.view.MotionEvent;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowMotionEventTest {
   private MotionEvent event;
   private ShadowMotionEvent shadowMotionEvent;

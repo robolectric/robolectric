@@ -2,16 +2,40 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.robolectric.annotation.Config;
-import org.robolectric.internal.*;
-import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.android.AndroidInterceptors;
+import org.robolectric.android.internal.ParallelUniverse;
+import org.robolectric.annotation.Config;
+import org.robolectric.internal.AndroidConfigurer;
+import org.robolectric.internal.BuckManifestFactory;
+import org.robolectric.internal.DefaultManifestFactory;
+import org.robolectric.internal.GradleManifestFactory;
+import org.robolectric.internal.ManifestFactory;
+import org.robolectric.internal.ManifestIdentifier;
+import org.robolectric.internal.MavenManifestFactory;
+import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SandboxFactory;
+import org.robolectric.internal.SandboxTestRunner;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
@@ -35,15 +59,6 @@ import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.security.SecureRandom;
-import java.util.*;
 
 /**
  * Installs a {@link SandboxClassLoader} and {@link ResourceTable} in order to
@@ -82,8 +97,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected DependencyResolver getJarResolver() {
     if (dependencyResolver == null) {
       if (Boolean.getBoolean("robolectric.offline")) {
-        String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-        dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
+        String propPath = System.getProperty("robolectric-deps.properties");
+        if (propPath != null) {
+          try {
+            dependencyResolver = new PropertiesDependencyResolver(
+                Fs.newFile(propPath),
+                null);
+          } catch (IOException e) {
+            throw new RuntimeException("couldn't read dependencies" , e);
+          }
+        } else {
+          String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
+          dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
+        }
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
 
@@ -363,6 +389,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return properties;
     } catch (IOException e) {
       return null;
+    } finally {
+      try {
+        resourceAsStream.close();
+      } catch (IOException e) {
+        throw new RuntimeException("couldn't close test_config.properties", e);
+      }
     }
   }
 

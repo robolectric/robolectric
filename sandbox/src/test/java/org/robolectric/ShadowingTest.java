@@ -1,7 +1,15 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
@@ -13,16 +21,6 @@ import org.robolectric.internal.bytecode.ShadowConstants;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.Pony;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 @RunWith(SandboxTestRunner.class)
 public class ShadowingTest {

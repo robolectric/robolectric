@@ -1,18 +1,17 @@
 package org.robolectric.shadows;
 
-import android.widget.RadioGroup;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.widget.RadioGroup;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowRadioGroupTest {
   private static final int BUTTON_ID = 3245;
 

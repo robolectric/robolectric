@@ -2,13 +2,6 @@ package org.robolectric.android.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.assertStringsInclude;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 
 import android.app.IntentService;
 import android.content.ComponentName;
@@ -16,15 +9,17 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import org.robolectric.android.controller.IntentServiceController;
-import org.robolectric.shadows.CoreShadowsAdapter;
-import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.util.TestUtil;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.CoreShadowsAdapter;
+import org.robolectric.shadows.ShadowLooper;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class IntentServiceControllerTest {
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyService.class.getName());
@@ -67,7 +62,7 @@ public class IntentServiceControllerTest {
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
-    assertStringsInclude(transcript, "finishedOnCreate", "onCreate");
+    assertThat(transcript).contains("finishedOnCreate", "onCreate");
   }
 
   @Test
@@ -75,40 +70,40 @@ public class IntentServiceControllerTest {
     ShadowLooper.pauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
-    assertStringsInclude(transcript, "finishedOnCreate");
+    assertThat(transcript).contains("finishedOnCreate");
 
     ShadowLooper.unPauseMainLooper();
-    assertStringsInclude(transcript, "onCreate");
+    assertThat(transcript).contains("onCreate");
   }
 
   @Test
   public void unbind_callsUnbindWhilePaused() {
     controller.create().bind().unbind();
-    assertStringsInclude(transcript, "finishedOnUnbind", "onUnbind");
+    assertThat(transcript).contains("finishedOnUnbind", "onUnbind");
   }
 
   @Test
   public void rebind_callsRebindWhilePaused() {
     controller.create().bind().unbind().bind().rebind();
-    assertStringsInclude(transcript, "finishedOnRebind", "onRebind");
+    assertThat(transcript).contains("finishedOnRebind", "onRebind");
   }
 
   @Test
   public void destroy_callsOnDestroyWhilePaused() {
     controller.create().destroy();
-    assertStringsInclude(transcript, "finishedOnDestroy", "onDestroy");
+    assertThat(transcript).contains("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void bind_callsOnBindWhilePaused() {
     controller.create().bind();
-    assertStringsInclude(transcript, "finishedOnBind", "onBind");
+    assertThat(transcript).contains("finishedOnBind", "onBind");
   }
 
   @Test
   public void startCommand_callsOnHandleIntentWhilePaused() {
     controller.create().startCommand(1, 2);
-    assertStringsInclude(transcript, "finishedOnHandleIntent", "onHandleIntent");
+    assertThat(transcript).contains("finishedOnHandleIntent", "onHandleIntent");
   }
 
   public static class MyService extends IntentService {

@@ -1,25 +1,20 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nonnull;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(application = RobolectricTestRunnerSelfTest.MyTestApplication.class)
 public class RobolectricTestRunnerSelfTest {
 
   @Test
@@ -87,42 +82,18 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(onTerminateCalledFromMain).isTrue();
   }
 
-  public static class RunnerForTesting extends TestRunners.SelfTest {
-    public static RunnerForTesting instance;
-
-    public RunnerForTesting(Class<?> testClass) throws InitializationError {
-      super(testClass);
-      instance = this;
-    }
-
-    @Nonnull
-    @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
-      return MyTestLifecycle.class;
-    }
-
-    public static class MyTestLifecycle extends DefaultTestLifecycle {
-      @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
-        return new MyTestApplication();
-      }
-    }
-  }
-
-  private static List<String> order = new ArrayList<>();
   private static Boolean onTerminateCalledFromMain = null;
 
   public static class MyTestApplication extends Application {
     private boolean onCreateWasCalled;
-    private Boolean onCreateCalledFromMain;
 
     @Override
     public void onCreate() {
       this.onCreateWasCalled = true;
-      this.onCreateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
     }
     
     @Override
     public void onTerminate() {
-      order.add("onTerminate");
       onTerminateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
     }
   }

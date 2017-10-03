@@ -16,7 +16,7 @@ import org.robolectric.res.AttributeResource;
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}
  */
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class AttributeSetBuilderTest {
 
   private static final String APP_NS = RES_AUTO_NS_URI;

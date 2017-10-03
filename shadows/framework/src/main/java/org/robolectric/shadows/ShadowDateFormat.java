@@ -2,10 +2,9 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.text.format.DateFormat;
+import java.util.Locale;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.util.Locale;
 
 @Implements(DateFormat.class)
 public class ShadowDateFormat {

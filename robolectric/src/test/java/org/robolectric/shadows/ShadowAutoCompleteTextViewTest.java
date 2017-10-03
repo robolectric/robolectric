@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.Context;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -11,12 +13,10 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAutoCompleteTextViewTest {
   private final AutoCompleteAdapter adapter = new AutoCompleteAdapter(RuntimeEnvironment.application);
 

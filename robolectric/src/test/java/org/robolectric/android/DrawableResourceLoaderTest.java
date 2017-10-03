@@ -1,5 +1,11 @@
 package org.robolectric.android;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.robolectric.RuntimeEnvironment.application;
+
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.content.res.Resources;
@@ -7,24 +13,16 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
-
 import android.graphics.drawable.VectorDrawable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
-
-@RunWith(TestRunners.SelfTest.class) // todo: @Config(sdk=ALL_SDKS) or something
+@RunWith(RobolectricTestRunner.class) // todo: @Config(sdk=ALL_SDKS) or something
 public class DrawableResourceLoaderTest {
   private Resources resources;
 
@@ -76,11 +74,11 @@ public class DrawableResourceLoaderTest {
   @Test
   public void shouldCreateAnimators() throws Exception {
     Animator animator = AnimatorInflater.loadAnimator(application, R.animator.spinning);
-    assertInstanceOf(Animator.class, animator);
+    assertThat(animator).isInstanceOf((Class<? extends Animator>) Animator.class);
   }
 
   @Test
   public void shouldCreateAnimsAndColors() throws Exception {
-    assertInstanceOf(ColorDrawable.class, resources.getDrawable(R.color.grey42));
+    assertThat(resources.getDrawable(R.color.grey42)).isInstanceOf((Class<? extends android.graphics.drawable.Drawable>) ColorDrawable.class);
   }
 }

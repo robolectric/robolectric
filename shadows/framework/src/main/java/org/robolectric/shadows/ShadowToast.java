@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.util.List;
-
-import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
@@ -25,8 +24,8 @@ public class ShadowToast {
 
   @RealObject Toast toast;
 
-  public void __constructor__(Context context) {
-  }
+  @Implementation
+  public void __constructor__(Context context) {}
 
   @Implementation
   public static Toast makeText(Context context, int resId, int duration) {

@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
-import android.media.audiofx.AudioEffect;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.media.audiofx.AudioEffect;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAudioEffectTest {
 
   @Test public void queryEffects() {

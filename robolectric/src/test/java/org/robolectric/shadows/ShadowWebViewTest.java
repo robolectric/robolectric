@@ -1,28 +1,24 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowWebViewTest {
 
   private WebView webView;
@@ -124,21 +120,50 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void shouldStoreCanGoBack() throws Exception {
-    shadowWebView.setCanGoBack(false);
-    assertFalse(webView.canGoBack());
-    shadowWebView.setCanGoBack(true);
-    assertTrue(webView.canGoBack());
+  public void canGoBack() throws Exception {
+    shadowWebView.clearHistory();
+    assertThat(webView.canGoBack()).isFalse();
+    shadowWebView.loadUrl("fake.url", null);
+    shadowWebView.loadUrl("fake.url", null);
+    assertThat(webView.canGoBack()).isTrue();
+    webView.goBack();
+    assertThat(webView.canGoBack()).isFalse();
   }
 
   @Test
   public void shouldStoreTheNumberOfTimesGoBackWasCalled() throws Exception {
-    assertEquals(0, shadowWebView.getGoBackInvocations());
+    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(0);
     webView.goBack();
-    assertEquals(1, shadowWebView.getGoBackInvocations());
+    webView.loadUrl("foo.bar", null);
+    // If there is no history (only one page), we shouldn't invoke go back.
+    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(0);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.goBack();
+    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(1);
     webView.goBack();
     webView.goBack();
-    assertEquals(3, shadowWebView.getGoBackInvocations());
+    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(3);
+    webView.goBack();
+    webView.goBack();
+    webView.goBack();
+    // We've gone back one too many times for the history, so we should only have 5 invocations.
+    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(5);
+  }
+
+  @Test
+  public void shouldStoreTheNumberOfTimesGoBackWasCalled_SetCanGoBack() {
+    shadowWebView.setCanGoBack(true);
+    webView.goBack();
+    webView.goBack();
+    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(2);
+    shadowWebView.setCanGoBack(false);
+    webView.goBack();
+    webView.goBack();
+    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(2);
   }
 
   @Test
@@ -178,6 +203,30 @@ public class ShadowWebViewTest {
     assertThat(shadowWebView.wasClearViewCalled()).isFalse();
     webView.clearView();
     assertThat(shadowWebView.wasClearViewCalled()).isTrue();
+  }
+
+  @Test
+  public void getOriginalUrl() throws Exception {
+    webView.clearHistory();
+    assertThat(webView.getOriginalUrl()).isNull();
+    webView.loadUrl("fake.url", null);
+    assertThat(webView.getOriginalUrl()).isEqualTo("fake.url");
+  }
+
+  @Test
+  public void getUrl() throws Exception {
+    webView.clearHistory();
+    assertThat(webView.getUrl()).isNull();
+    webView.loadUrl("fake.url", null);
+    assertThat(webView.getUrl()).isEqualTo("fake.url");
+  }
+
+  @Test
+  @Config(minSdk = 19)
+  public void evaluateJavascript() {
+    assertThat(shadowWebView.getLastEvaluatedJavascript()).isNull();
+    webView.evaluateJavascript("myScript", null);
+    assertThat(shadowWebView.getLastEvaluatedJavascript()).isEqualTo("myScript");
   }
 
   @Test

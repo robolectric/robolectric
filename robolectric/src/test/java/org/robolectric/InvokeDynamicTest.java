@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -8,11 +10,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowExtractor;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.NEWEST_SDK)
 public class InvokeDynamicTest {
   @Test
   @Config(shadows = {DoNothingShadow.class})
@@ -25,7 +25,7 @@ public class InvokeDynamicTest {
   @Config(shadows = {RealShadow.class})
   public void directlyOn() {
     Real real = new Real();
-    RealShadow shadow = (RealShadow) ShadowExtractor.extract(real);
+    RealShadow shadow = Shadow.extract(real);
 
     assertThat(real.x).isEqualTo(-1);
     assertThat(shadow.x).isEqualTo(-2);

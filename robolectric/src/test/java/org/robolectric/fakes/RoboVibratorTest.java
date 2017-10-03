@@ -1,15 +1,16 @@
 package org.robolectric.fakes;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.Context;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class RoboVibratorTest {
   private RoboVibrator vibrator;
 
@@ -24,6 +25,9 @@ public class RoboVibratorTest {
 
     assertThat(vibrator.isVibrating()).isTrue();
     assertThat(vibrator.getMilliseconds()).isEqualTo(5000L);
+
+    Robolectric.getForegroundThreadScheduler().advanceToNextPostedRunnable();
+    assertThat(vibrator.isVibrating()).isFalse();
   }
 
   @Test

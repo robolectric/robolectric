@@ -1,14 +1,14 @@
 package org.robolectric.shadows;
 
+import static junit.framework.Assert.assertEquals;
+
 import android.widget.ScrollView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static junit.framework.Assert.assertEquals;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowScrollViewTest {
   @Test
   public void shouldSmoothScrollTo() throws Exception {

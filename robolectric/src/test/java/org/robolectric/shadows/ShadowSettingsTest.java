@@ -1,19 +1,18 @@
 package org.robolectric.shadows;
 
-import android.content.ContentResolver;
-import android.provider.Settings;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.content.ContentResolver;
+import android.provider.Settings;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSettingsTest {
   private ContentResolver contentResolver;
 

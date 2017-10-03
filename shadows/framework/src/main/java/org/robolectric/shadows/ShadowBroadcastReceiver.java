@@ -3,11 +3,10 @@ package org.robolectric.shadows;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Implements(BroadcastReceiver.class)
 public class ShadowBroadcastReceiver {

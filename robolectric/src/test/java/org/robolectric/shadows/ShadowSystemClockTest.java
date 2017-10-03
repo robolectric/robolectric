@@ -1,17 +1,17 @@
 package org.robolectric.shadows;
 
-import android.os.SystemClock;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.internal.bytecode.RobolectricInternals;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.os.SystemClock;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.internal.bytecode.RobolectricInternals;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSystemClockTest {
   @Test
   public void shouldAllowForFakingOfTime() throws Exception {

@@ -1,13 +1,11 @@
 package org.robolectric.shadows;
 
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
-import java.util.Locale;
-
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
+import java.util.Locale;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = libcore.icu.ICU.class, isInAndroidSdk = false)
 public class ShadowICU {

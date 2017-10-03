@@ -1,5 +1,20 @@
 package org.robolectric.shadows.httpclient;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.robolectric.shadows.httpclient.Shadows.shadowOf;
+
+import com.google.common.io.CharStreams;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import junit.framework.Assert;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -19,22 +34,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.Strings;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.robolectric.shadows.httpclient.Shadows.shadowOf;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowDefaultRequestDirectorTest {
+
   private DefaultRequestDirector requestDirector;
   private ConnectionKeepAliveStrategy connectionKeepAliveStrategy;
 
@@ -45,12 +49,27 @@ public class ShadowDefaultRequestDirectorTest {
     assertFalse(fakeHttpLayer.hasRequestInfos());
     assertFalse(fakeHttpLayer.hasResponseRules());
 
-    connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
-      @Override public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
-        return 0;
-      }
-    };
-    requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
+    connectionKeepAliveStrategy =
+        new ConnectionKeepAliveStrategy() {
+          @Override
+          public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
+            return 0;
+          }
+        };
+    requestDirector =
+        new DefaultRequestDirector(
+            null,
+            null,
+            null,
+            connectionKeepAliveStrategy,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
   }
 
   @After
@@ -65,7 +84,7 @@ public class ShadowDefaultRequestDirectorTest {
 
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
+    assertThat(getStringContent(response)).isEqualTo("a happy response body");
   }
 
   @Test
@@ -79,7 +98,7 @@ public class ShadowDefaultRequestDirectorTest {
 
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
+    assertThat(getStringContent(response)).isEqualTo("a happy response body");
   }
 
   @Test
@@ -91,7 +110,7 @@ public class ShadowDefaultRequestDirectorTest {
 
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a cheery response body");
+    assertThat(getStringContent(response)).isEqualTo("a cheery response body");
   }
 
   @Test
@@ -108,17 +127,19 @@ public class ShadowDefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnRequestsByRule_AnyMethod() throws Exception {
-    FakeHttp.addHttpResponseRule("http://some.uri", new TestHttpResponse(200, "a cheery response body"));
+    FakeHttp.addHttpResponseRule(
+        "http://some.uri", new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
     assertNotNull(getResponse);
     assertThat(getResponse.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(getResponse.getEntity().getContent())).isEqualTo("a cheery response body");
+    assertThat(getStringContent(getResponse)).isEqualTo("a cheery response body");
 
-    HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
+    HttpResponse postResponse =
+        requestDirector.execute(null, new HttpPost("http://some.uri"), null);
     assertNotNull(postResponse);
     assertThat(postResponse.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(postResponse.getEntity().getContent())).isEqualTo("a cheery response body");
+    assertThat(getStringContent(postResponse)).isEqualTo("a cheery response body");
   }
 
   @Test
@@ -130,12 +151,15 @@ public class ShadowDefaultRequestDirectorTest {
 
     HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
     InputStream getResponseStream = getResponse.getEntity().getContent();
-    assertThat(Strings.fromStream(getResponseStream)).isEqualTo("a cheery response body");
+    assertThat(CharStreams.toString(new InputStreamReader(getResponseStream)))
+        .isEqualTo("a cheery response body");
     assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isFalse();
 
-    HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
+    HttpResponse postResponse =
+        requestDirector.execute(null, new HttpPost("http://some.uri"), null);
     InputStream postResponseStream = postResponse.getEntity().getContent();
-    assertThat(Strings.fromStream(postResponseStream)).isEqualTo("a cheery response body");
+    assertThat(CharStreams.toString(new InputStreamReader(postResponseStream)))
+        .isEqualTo("a cheery response body");
     assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isFalse();
 
     getResponseStream.close();
@@ -153,7 +177,7 @@ public class ShadowDefaultRequestDirectorTest {
 
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a cheery response body");
+    assertThat(getStringContent(response)).isEqualTo("a cheery response body");
   }
 
   @Test
@@ -166,7 +190,7 @@ public class ShadowDefaultRequestDirectorTest {
 
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a gloomy response body");
+    assertThat(getStringContent(response)).isEqualTo("a gloomy response body");
   }
 
   @Test
@@ -179,7 +203,7 @@ public class ShadowDefaultRequestDirectorTest {
 
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(500);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("later");
+    assertThat(getStringContent(response)).isEqualTo("later");
   }
 
   @Test
@@ -196,12 +220,12 @@ public class ShadowDefaultRequestDirectorTest {
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://matching.uri"), null);
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a cheery response body");
+    assertThat(getStringContent(response)).isEqualTo("a cheery response body");
 
     response = requestDirector.execute(null, new HttpGet("http://non-matching.uri"), null);
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(404);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("no such page");
+    assertThat(getStringContent(response)).isEqualTo("no such page");
   }
 
   @Test
@@ -210,7 +234,7 @@ public class ShadowDefaultRequestDirectorTest {
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
 
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
+    assertThat(getStringContent(response)).isEqualTo("a happy response body");
   }
 
   @Test
@@ -222,10 +246,10 @@ public class ShadowDefaultRequestDirectorTest {
     HttpResponse response2 = requestDirector.execute(null, new HttpGet("www.example.com"), null);
 
     assertThat(response1.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response1.getEntity().getContent())).isEqualTo("a happy response body");
+    assertThat(getStringContent(response1)).isEqualTo("a happy response body");
 
     assertThat(response2.getStatusLine().getStatusCode()).isEqualTo(201);
-    assertThat(Strings.fromStream(response2.getEntity().getContent())).isEqualTo("another happy response body");
+    assertThat(getStringContent(response2)).isEqualTo("another happy response body");
   }
 
   @Test
@@ -251,7 +275,10 @@ public class ShadowDefaultRequestDirectorTest {
       requestDirector.execute(null, new HttpGet("http://example.com"), null);
       fail();
     } catch (RuntimeException expected) {
-      assertThat(expected.getMessage()).isEqualTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: GET http://example.com");
+      assertThat(expected.getMessage())
+          .isEqualTo(
+              "Unexpected call to execute, no pending responses are available. "
+                  + "See Robolectric.addPendingResponse(). Request was: GET http://example.com");
     }
   }
 
@@ -262,7 +289,9 @@ public class ShadowDefaultRequestDirectorTest {
     requestDirector.execute(null, httpGet, null);
 
     assertSame(FakeHttp.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
-    ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) FakeHttp.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
+    ConnectionKeepAliveStrategy strategy =
+        shadowOf((DefaultRequestDirector) FakeHttp.getSentHttpRequestInfo(0).getRequestDirector())
+            .getConnectionKeepAliveStrategy();
     assertSame(strategy, connectionKeepAliveStrategy);
   }
 
@@ -293,7 +322,8 @@ public class ShadowDefaultRequestDirectorTest {
     DefaultHttpClient client = new DefaultHttpClient();
     HttpResponse response = client.execute(new HttpGet("http://www.nowhere.org"));
 
-    assertThat(((HttpUriRequest) FakeHttp.getSentHttpRequest(0)).getURI()).isEqualTo(URI.create("http://www.nowhere.org"));
+    assertThat(((HttpUriRequest) FakeHttp.getSentHttpRequest(0)).getURI())
+        .isEqualTo(URI.create("http://www.nowhere.org"));
 
     Assert.assertNotNull(response);
     String responseStr = new BasicResponseHandler().handleResponse(response);
@@ -311,7 +341,8 @@ public class ShadowDefaultRequestDirectorTest {
     client.execute(new HttpGet("http://www.second.org"));
     client.execute(new HttpGet("http://www.third.org"));
 
-    assertThat(((HttpUriRequest) FakeHttp.getLatestSentHttpRequest()).getURI()).isEqualTo(URI.create("http://www.third.org"));
+    assertThat(((HttpUriRequest) FakeHttp.getLatestSentHttpRequest()).getURI())
+        .isEqualTo(URI.create("http://www.third.org"));
   }
 
 
@@ -389,12 +420,14 @@ public class ShadowDefaultRequestDirectorTest {
     byte[] cachedContent = FakeHttp.getFakeHttpLayer().getHttpResposeContentList().get(0);
     assertThat(cachedContent.length).isNotEqualTo(0);
 
-    InputStream content = FakeHttp.getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
+    InputStream content =
+        FakeHttp.getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
     BufferedReader contentReader = new BufferedReader(new InputStreamReader(content));
     String firstLineOfContent = contentReader.readLine();
     assertThat(firstLineOfContent).contains("Google");
 
-    BufferedReader cacheReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cachedContent)));
+    BufferedReader cacheReader =
+        new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cachedContent)));
     String firstLineOfCachedContent = cacheReader.readLine();
     assertThat(firstLineOfCachedContent).isEqualTo(firstLineOfContent);
   }
@@ -411,7 +444,11 @@ public class ShadowDefaultRequestDirectorTest {
 
     assertNotNull(response);
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
+    assertThat(getStringContent(response)).isEqualTo("a happy response body");
+  }
+
+  private static String getStringContent(HttpResponse response) throws IOException {
+    return CharStreams.toString(new InputStreamReader(response.getEntity().getContent()));
   }
 
 }

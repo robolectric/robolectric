@@ -1,0 +1,16 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.11"
+}
+
+apply plugin: RoboJavaModulePlugin
+
+dependencies {
+    compile project(":robolectric")
+    compile "junit:junit:4.12"
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    // Testing dependencies
+    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testCompile "org.assertj:assertj-core:2.0.0"
+    testCompile 'com.googlecode.libphonenumber:libphonenumber:8.0.0'
+}

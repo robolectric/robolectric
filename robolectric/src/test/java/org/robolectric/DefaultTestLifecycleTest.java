@@ -1,10 +1,14 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Application;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -14,16 +18,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class DefaultTestLifecycleTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -48,32 +43,29 @@ public class DefaultTestLifecycleTest {
         .isExactlyInstanceOf(TestApplication.class);
   }
 
-  @Config(manifest = "TestAndroidManifestWithReceiversCustomPackage.xml")
   @Test public void shouldAssignThePackageNameFromTheManifest() throws Exception {
     Application application = RuntimeEnvironment.application;
 
-    assertThat(application.getPackageName()).isEqualTo("org.robolectric.mypackage");
-    assertThat(application).isExactlyInstanceOf(Application.class);
+    assertThat(application.getPackageName()).isEqualTo("org.robolectric");
+    assertThat(application).isExactlyInstanceOf(TestApplication.class);
   }
 
   @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
+    AndroidManifest appManifest = newConfigWith(
+        "<application>"
+            + "    <receiver android:name=\"org.robolectric.fakes.ConfigTestReceiver\">"
+            + "      <intent-filter>\n"
+            + "        <action android:name=\"org.robolectric.ACTION_SUPERSET_PACKAGE\"/>\n"
+            + "      </intent-filter>"
+            + "    </receiver>"
+            + "</application>");
     Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
     shadowOf(application).bind(appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
-    assertThat(receivers.size()).isEqualTo(5);
-    assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
-  }
-
-  @Config(manifest = "TestAndroidManifestForActivities.xml")
-  @Test public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
-    Application application = RuntimeEnvironment.application;
-
-    PackageManager packageManager = application.getPackageManager();
-    assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity"), -1)).isNotNull();
-    assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity2"), -1)).isNotNull();
+    assertThat(receivers).hasSize(1);
+    assertThat(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION_SUPERSET_PACKAGE")).isTrue();
   }
 
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {

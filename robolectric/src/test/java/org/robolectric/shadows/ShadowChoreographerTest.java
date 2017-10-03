@@ -1,19 +1,18 @@
 package org.robolectric.shadows;
 
-import android.view.Choreographer;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.util.TimeUtils;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.view.Choreographer;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.util.TimeUtils;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowChoreographerTest {
 
   @Test

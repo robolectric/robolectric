@@ -8,16 +8,19 @@ import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TY
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.Service;
 import android.app.IntentService;
+import android.app.Service;
 import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
-
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.View;
+import java.util.ServiceLoader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Map;
@@ -44,15 +47,11 @@ import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.*;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.ServiceLoader;
 
 public class Robolectric {
   private static ShadowsAdapter shadowsAdapter = null;
@@ -66,7 +65,6 @@ public class Robolectric {
       provider.reset();
     }
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setRobolectricPackageManager(null);
     RuntimeEnvironment.setActivityThread(null);
   }
 
@@ -148,7 +146,7 @@ public class Robolectric {
   }
 
   public static <T extends BackupAgent> T setupBackupAgent(Class<T> backupAgentClass) {
-    return buildBackupAgent(backupAgentClass).setUp().get();
+    return buildBackupAgent(backupAgentClass).create().get();
   }
 
   /**

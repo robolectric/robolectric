@@ -1,19 +1,20 @@
 package org.robolectric.fakes;
 
-import android.content.ContentResolver;
-import android.database.Cursor;
-import android.net.Uri;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.SelfTest.class)
+import android.content.ContentResolver;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.RobolectricTestRunner;
+
+@RunWith(RobolectricTestRunner.class)
 public class RoboCursorTest {
   private static final String STRING_COLUMN = "stringColumn";
   private static final String LONG_COLUMN = "longColumn";
@@ -225,6 +226,15 @@ public class RoboCursorTest {
 
     cursor.moveToPosition(1);
     assertThat(cursor.isLast()).isTrue();
+  }
+
+  @Test
+  public void getExtras_shouldReturnExtras() {
+    Bundle extras = new Bundle();
+    extras.putString("Foo", "Bar");
+    cursor.setExtras(extras);
+    assertThat(cursor.getExtras()).isEqualTo(extras);
+    assertThat(cursor.getExtras().getString("Foo")).isEqualTo("Bar");
   }
 
   private int indexOf(String stringColumn) {

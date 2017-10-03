@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.app.ProgressDialog;
 import android.widget.TextView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ProgressDialog.class)

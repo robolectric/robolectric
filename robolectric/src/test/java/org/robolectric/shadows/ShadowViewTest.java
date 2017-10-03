@@ -1,42 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.BitmapFactory;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.util.AttributeSet;
-import android.view.*;
-import android.view.View.MeasureSpec;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.android.TestOnClickListener;
-import org.robolectric.android.TestOnLongClickListener;
-import org.robolectric.android.controller.ActivityController;
-import org.robolectric.annotation.AccessibilityChecks;
-import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TestRunnable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static junit.framework.Assert.assertEquals;
@@ -52,7 +15,49 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.util.AttributeSet;
+import android.view.ContextMenu;
+import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.MeasureSpec;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.ViewTreeObserver;
+import android.view.WindowId;
+import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.AccessibilityChecks;
+import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.TestRunnable;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;
@@ -181,21 +186,22 @@ public class ShadowViewTest {
 
   @Test
   public void performLongClick_shouldClickOnView() throws Exception {
-    TestOnLongClickListener clickListener = new TestOnLongClickListener();
+    OnLongClickListener clickListener = mock(OnLongClickListener.class);
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnLongClickListener(clickListener);
     view.performLongClick();
 
-    assertTrue(clickListener.clicked);
+    verify(clickListener).onLongClick(view);
   }
 
   @Test
   public void checkedClick_shouldClickOnView() throws Exception {
-    TestOnClickListener clickListener = new TestOnClickListener();
+    OnClickListener clickListener = mock(OnClickListener.class);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnClickListener(clickListener);
     shadowOf(view).checkedPerformClick();
 
-    assertTrue(clickListener.clicked);
+    verify(clickListener).onClick(view);
   }
 
   @Test(expected = RuntimeException.class)

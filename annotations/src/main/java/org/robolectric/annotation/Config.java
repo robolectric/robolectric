@@ -1,9 +1,6 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
-
-import javax.annotation.Nonnull;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -15,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Configuration settings that can be used on a per-class or per-test basis.
@@ -78,8 +76,11 @@ public @interface Config {
   /**
    * Reference to the BuildConfig class created by the Gradle build system.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
+   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
    * @return Reference to BuildConfig class.
    */
+  @Deprecated
   Class<?> constants() default Void.class;  // DEFAULT_CONSTANTS
 
   /**
@@ -106,8 +107,11 @@ public @interface Config {
    *
    * You do not typically have to set this, unless you are utilizing the ABI split feature.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
+   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
    * @return The ABI split to test with
    */
+  @Deprecated
   String abiSplit() default DEFAULT_ABI_SPLIT;
 
   /**
@@ -140,8 +144,11 @@ public @interface Config {
    *
    * If not specified, Robolectric defaults to {@code build}.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
+   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
    * @return Android build directory.
    */
+  @Deprecated
   String buildDir() default DEFAULT_BUILD_FOLDER;
 
   /**

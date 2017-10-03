@@ -1,25 +1,24 @@
 package org.robolectric.shadows;
 
-import android.os.AsyncTask;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.util.Join;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.os.AsyncTask;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.util.Join;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAsyncTaskTest {
   private List<String> transcript;
 
@@ -152,7 +151,7 @@ public class ShadowAsyncTaskTest {
       asyncTask.execute();
       fail("Task swallowed onPostExecute() exception!");
     } catch (RuntimeException e) {
-      assertThat(e.getCause().getMessage()).isEqualTo("java.lang.RuntimeException: Don't swallow me!");
+      assertThat(e.getCause().getMessage()).isEqualTo("Don't swallow me!");
     }
   }
 

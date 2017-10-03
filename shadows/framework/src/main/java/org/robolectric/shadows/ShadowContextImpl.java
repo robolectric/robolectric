@@ -1,6 +1,12 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.*;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
@@ -80,6 +86,7 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
     SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
+    SYSTEM_SERVICE_MAP.put(Context.USB_SERVICE, "android.hardware.usb.UsbManager");
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
       SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
@@ -92,6 +99,7 @@ public class ShadowContextImpl {
     }
     if (getApiLevel() >= LOLLIPOP) {
       SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
+      SYSTEM_SERVICE_MAP.put(Context.NETWORK_SCORE_SERVICE, "android.net.NetworkScoreManager");
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
       SYSTEM_SERVICE_MAP.put(Context.BATTERY_SERVICE, "android.os.BatteryManager");

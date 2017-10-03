@@ -1,15 +1,14 @@
 package org.robolectric.shadows.support.v4;
 
+import static junit.framework.Assert.assertTrue;
+
 import android.database.DataSetObserver;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
+import java.lang.reflect.Method;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import java.lang.reflect.Method;
-
-import static junit.framework.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowPagerAdapterTest {

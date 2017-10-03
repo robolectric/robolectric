@@ -1,5 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -13,25 +20,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Scheduler;
 
-import java.io.IOException;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAccountManagerTest {
   private AccountManager am;
   private Scheduler scheduler;
@@ -511,13 +510,10 @@ public class ShadowAccountManagerTest {
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
     AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
     assertThat(callback.hasBeenCalled()).isFalse();
-    assertThat(result.isDone()).isFalse();
 
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
 
     scheduler.unPause();
-
-    assertThat(result.isDone()).isTrue();
     assertThat(callback.hasBeenCalled()).isTrue();
 
     Bundle resultBundle = callback.getResult();
@@ -594,7 +590,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void getAuthToken() throws Exception {
+  public void getAuthToken_withActivity_returnsCorrectToken() throws Exception {
     Account account = new Account("name", "google.com");
     shadowOf(am).addAccount(account);
     shadowOf(am).addAuthenticator("google.com");
@@ -618,8 +614,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void whenPaused_getAuthToken() throws Exception {
-    scheduler.pause();
+  public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsCorrectToken() throws Exception {
     Account account = new Account("name", "google.com");
     shadowOf(am).addAccount(account);
     shadowOf(am).addAuthenticator("google.com");
@@ -627,14 +622,22 @@ public class ShadowAccountManagerTest {
     am.setAuthToken(account, "auth_token_type", "token1");
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
-    AccountManagerFuture<Bundle> future = am.getAuthToken(account, "auth_token_type", new Bundle(), activity, callback, new Handler());
-
-    assertThat(future.isDone()).isFalse();
-    assertThat(callback.hasBeenCalled()).isFalse();
-
-    scheduler.unPause();
+    AccountManagerFuture<Bundle> future =
+        am.getAuthToken(
+            account,
+            "auth_token_type",
+            new Bundle(),
+            /* notifyAuthFailure= */ false,
+            callback,
+            new Handler());
 
     assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
+
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -650,27 +653,6 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isTrue();
     assertThat(future.getResult().booleanValue()).isEqualTo(true);
 
-    assertThat(callback.hasBeenCalled()).isTrue();
-  }
-
-  @Test
-  public void whenSchedulerPaused_getHasFeatures_returnsTrueWhenAllFeaturesSatisfied() throws Exception {
-    scheduler.pause();
-
-    Account account = new Account("name", "google.com");
-    shadowOf(am).addAccount(account);
-    shadowOf(am).setFeatures(account, new String[] { "FEATURE_1", "FEATURE_2" });
-
-    TestAccountManagerCallback<Boolean> callback = new TestAccountManagerCallback<>();
-    AccountManagerFuture<Boolean> future = am.hasFeatures(account, new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
-
-    assertThat(future.isDone()).isFalse();
-    assertThat(callback.hasBeenCalled()).isFalse();
-    assertThat(future.getResult()).isNull();
-
-    scheduler.unPause();
-    assertThat(future.getResult().booleanValue()).isEqualTo(true);
-    assertThat(future.isDone()).isTrue();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -711,28 +693,6 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isTrue();
     assertThat(future.getResult()).containsOnly(accountWithCorrectTypeAndFeatures);
 
-    assertThat(callback.hasBeenCalled()).isTrue();
-  }
-
-  @Test
-  public void whenSchedulerPaused_getAccountsByTypeAndFeatures() throws Exception {
-    scheduler.pause();
-
-    Account accountWithCorrectTypeAndFeatures = new Account("account_1", "google.com");
-    shadowOf(am).addAccount(accountWithCorrectTypeAndFeatures);
-    shadowOf(am).setFeatures(accountWithCorrectTypeAndFeatures, new String[] { "FEATURE_1", "FEATURE_2" });
-
-    TestAccountManagerCallback<Account[]> callback = new TestAccountManagerCallback<>();
-
-    AccountManagerFuture<Account[]> future = am.getAccountsByTypeAndFeatures("google.com", new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
-
-    assertThat(future.isDone()).isFalse();
-    assertThat(callback.hasBeenCalled()).isFalse();
-
-    scheduler.unPause();
-    assertThat(future.getResult()).containsOnly(accountWithCorrectTypeAndFeatures);
-
-    assertThat(future.isDone()).isTrue();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 

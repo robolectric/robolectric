@@ -1,6 +1,17 @@
 package org.robolectric.shadows;
 
-import android.content.res.*;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.ResourcesImpl;
+import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -8,16 +19,6 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.*;
-import org.robolectric.res.Plural;
-import org.robolectric.res.PluralRules;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceTable;
-import org.robolectric.res.TypedResource;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,14 +27,19 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.res.Plural;
+import org.robolectric.res.PluralRules;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceTable;
+import org.robolectric.res.TypedResource;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)
 public class ShadowResourcesImpl {
@@ -251,4 +257,16 @@ public class ShadowResourcesImpl {
     return drawable;
   }
 
+  @Implementation(minSdk = O)
+  public Drawable loadDrawable(Resources wrapper,  TypedValue value, int id, int density, Resources.Theme theme) {
+    Drawable drawable = directlyOn(realResourcesImpl, ResourcesImpl.class, "loadDrawable",
+        from(Resources.class, wrapper),
+        from(TypedValue.class, value),
+        from(int.class, id),
+        from(int.class, density),
+        from(Resources.Theme.class, theme));
+
+    ShadowResources.setCreatedFromResId(wrapper, id, drawable);
+    return drawable;
+  }
 }

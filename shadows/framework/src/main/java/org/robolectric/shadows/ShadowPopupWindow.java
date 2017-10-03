@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.view.WindowManager;
 import android.widget.PopupWindow;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @Implements(PopupWindow.class)
 public class ShadowPopupWindow {

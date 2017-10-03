@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
@@ -8,19 +12,15 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Pair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowWifiManagerTest {
   private final WifiManager wifiManager = (WifiManager) RuntimeEnvironment.application.getSystemService(Context.WIFI_SERVICE);
   private final ShadowWifiManager shadowWifiManager = shadowOf(wifiManager);
@@ -61,6 +61,16 @@ public class ShadowWifiManagerTest {
 
     wifiManager.setWifiEnabled(false);
     assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getIsScanAlwaysAvailable() {
+    shadowWifiManager.setIsScanAlwaysAvailable(true);
+    assertThat(wifiManager.isScanAlwaysAvailable()).isEqualTo(true);
+
+    shadowWifiManager.setIsScanAlwaysAvailable(false);
+    assertThat(wifiManager.isScanAlwaysAvailable()).isEqualTo(false);
   }
 
   @Test

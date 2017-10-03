@@ -1,13 +1,17 @@
 package org.robolectric.res;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.lib1Resources;
+import static org.robolectric.util.TestUtil.lib2Resources;
+import static org.robolectric.util.TestUtil.lib3Resources;
+import static org.robolectric.util.TestUtil.systemResources;
+import static org.robolectric.util.TestUtil.testResources;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.*;
 
 @RunWith(JUnit4.class)
 public class ResourceTableFactoryTest {

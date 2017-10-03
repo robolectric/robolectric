@@ -1,48 +1,38 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewParent;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowProvider;
-import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.android.TestOnClickListener;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class RobolectricTest {
 
   private PrintStream originalSystemOut;
@@ -128,10 +118,11 @@ public class RobolectricTest {
   public void clickOn_shouldCallClickListener() throws Exception {
     View view = new View(RuntimeEnvironment.application);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
-    TestOnClickListener testOnClickListener = new TestOnClickListener();
+    OnClickListener testOnClickListener = mock(OnClickListener.class);
     view.setOnClickListener(testOnClickListener);
     ShadowView.clickOn(view);
-    assertTrue(testOnClickListener.clicked);
+
+    verify(testOnClickListener).onClick(view);
   }
 
   @Test(expected = ActivityNotFoundException.class)
@@ -150,28 +141,6 @@ public class RobolectricTest {
     assertThat(activity.isVisible()).isTrue();
   }
 
-  private List<String> order = new ArrayList<>();
-  
-  private class MockProvider implements ShadowProvider {
-    @Override
-    public void reset() {
-      order.add("shadowProvider");
-      assertThat(RuntimeEnvironment.application).as("app during shadow reset").isNotNull();
-      assertThat(RuntimeEnvironment.getActivityThread()).as("activityThread during shadow reset").isNotNull();
-      assertThat(RuntimeEnvironment.getRobolectricPackageManager()).as("packageManager during shadow reset").isNotNull();
-    }
-
-    @Override
-    public String[] getProvidedPackageNames() {
-      return null;
-    }
-
-    @Override
-    public Map<String, String> getShadowMap() {
-      return null;
-    }
-  }
-  
   @Implements(View.class)
   public static class TestShadowView {
     @Implementation

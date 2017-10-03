@@ -9,7 +9,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ActivityManager.class)

@@ -1,45 +1,30 @@
 class AndroidSdk implements Comparable<AndroidSdk> {
-    static final JELLY_BEAN = new AndroidSdk(16, "4.1.2_r1", 0, "1.6")
-    static final JELLY_BEAN_MR1 = new AndroidSdk(17, "4.2.2_r1.2", 0, "1.6")
-    static final JELLY_BEAN_MR2 = new AndroidSdk(18, "4.3_r2", 0, "1.6")
-    static final KITKAT = new AndroidSdk(19, "4.4_r1", 1, "1.7")
-    static final LOLLIPOP = new AndroidSdk(21, "5.0.0_r2", 1, "1.7")
-    static final LOLLIPOP_MR1 = new AndroidSdk(22, "5.1.1_r9", 1, "1.7")
-    static final M = new AndroidSdk(23, "6.0.1_r3", 0, "1.7")
-    static final N = new AndroidSdk(24, "7.0.0_r1", 0, "1.8")
-    static final N_MR1 = new AndroidSdk(25, "7.1.0_r7", 0, "1.8")
-    static final O = new AndroidSdk(26, "o-preview-2", 0, "1.8")
-
-    private static final double jdkVersion = Double.parseDouble(System.getProperty("java.specification.version"));
+    static final JELLY_BEAN = new AndroidSdk(16, "4.1.2_r1", 0)
+    static final JELLY_BEAN_MR1 = new AndroidSdk(17, "4.2.2_r1.2", 0)
+    static final JELLY_BEAN_MR2 = new AndroidSdk(18, "4.3_r2", 0)
+    static final KITKAT = new AndroidSdk(19, "4.4_r1", 1)
+    static final LOLLIPOP = new AndroidSdk(21, "5.0.0_r2", 1)
+    static final LOLLIPOP_MR1 = new AndroidSdk(22, "5.1.1_r9", 1)
+    static final M = new AndroidSdk(23, "6.0.1_r3", 0)
+    static final N = new AndroidSdk(24, "7.0.0_r1", 0)
+    static final N_MR1 = new AndroidSdk(25, "7.1.0_r7", 0)
+    static final O = new AndroidSdk(26, "o-preview-4", 0)
 
     static final List<AndroidSdk> ALL_SDKS = [
             JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT,
             LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O
     ]
-    static final JDK_SUPPORTED_SDKS = ALL_SDKS.findAll { it.isSupportedOnThisJdk() }
-    static final MAX_SDK_FOR_THIS_JDK = Collections.max(JDK_SUPPORTED_SDKS)
-    static final MAX_SDK = Collections.max(ALL_SDKS)
 
-    static {
-        if (MAX_SDK_FOR_THIS_JDK != MAX_SDK) {
-            println "WARNING: Running with JDK $jdkVersion, max supported Android SDK is $MAX_SDK_FOR_THIS_JDK.apiLevel."
-        }
-    }
+    static final MAX_SDK = Collections.max(ALL_SDKS)
 
     private final int apiLevel
     private final String androidVersion
     private final String frameworkSdkBuildVersion
-    private final String minJdkVersion
 
-    AndroidSdk(int apiLevel, String androidVersion, int frameworkSdkBuildVersion, String minJdkVersion) {
+    AndroidSdk(int apiLevel, String androidVersion, int frameworkSdkBuildVersion) {
         this.apiLevel = apiLevel
         this.androidVersion = androidVersion
         this.frameworkSdkBuildVersion = frameworkSdkBuildVersion
-        this.minJdkVersion = minJdkVersion
-    }
-
-    boolean isSupportedOnThisJdk() {
-        return jdkVersion >= Double.parseDouble(minJdkVersion)
     }
 
     String getCoordinates() {

@@ -1,32 +1,34 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.fakes.RoboWebSettings;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.fakes.RoboWebSettings;
+import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
 public class ShadowWebView extends ShadowViewGroup {
   @RealObject
   private WebView realWebView;
-  
+
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
   private HashMap<String, Object> javascriptInterfaces = new HashMap<>();
@@ -46,6 +48,12 @@ public class ShadowWebView extends ShadowViewGroup {
   private int goBackInvocations = 0;
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
+  private String originalUrl;
+  private List<String> history = new ArrayList<>();
+  private String lastEvaluatedJavascript;
+  // TODO: Delete this when setCanGoBack is deleted. This is only used to determine which "path" we
+  // use when canGoBack or goBack is called.
+  private boolean canGoBackIsSet;
 
   @HiddenApi @Implementation
   public void ensureProviderCreated() {
@@ -114,6 +122,8 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
+    history.add(0, url);
+    originalUrl = url;
     lastUrl = url;
 
     if (additionalHttpHeaders != null) {
@@ -125,6 +135,10 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+    if (historyUrl != null) {
+      originalUrl = historyUrl;
+      history.add(0, historyUrl);
+    }
     lastLoadDataWithBaseURL = new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
   }
 
@@ -138,6 +152,16 @@ public class ShadowWebView extends ShadowViewGroup {
    */
   public String getLastLoadedUrl() {
     return lastUrl;
+  }
+
+  @Implementation
+  public String getOriginalUrl() {
+    return originalUrl;
+  }
+
+  @Implementation
+  public String getUrl() {
+    return originalUrl;
   }
 
   /**
@@ -201,6 +225,7 @@ public class ShadowWebView extends ShadowViewGroup {
   @Implementation
   public void clearHistory() {
     clearHistoryCalled = true;
+    history.clear();
   }
 
   public boolean wasClearHistoryCalled() {
@@ -263,12 +288,27 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   public boolean canGoBack() {
-    return canGoBack;
+    // TODO: Remove the canGoBack check when setCanGoBack is deleted.
+    if (canGoBackIsSet) {
+      return canGoBack;
+    }
+    return history.size() > 1;
   }
 
   @Implementation
   public void goBack() {
-    goBackInvocations++;
+    if (canGoBack()) {
+      goBackInvocations++;
+      // TODO: Delete this when setCanGoBack is deleted, since this creates two different behavior
+      // paths.
+      if (canGoBackIsSet) {
+        return;
+      }
+      history.remove(0);
+      if (!history.isEmpty()) {
+        originalUrl = history.get(0);
+      }
+    }
   }
 
   @Implementation
@@ -276,21 +316,34 @@ public class ShadowWebView extends ShadowViewGroup {
     return null;
   }
 
-  /**
-   * @return goBackInvocations the number of times {@code android.webkit.WebView#goBack()}
-   * was invoked
-   */
-  public int getGoBackInvocations() {
-    return goBackInvocations;
+  @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
+  public void evaluateJavascript(String script, ValueCallback<String> callback) {
+    this.lastEvaluatedJavascript = script;
+  }
+
+  public String getLastEvaluatedJavascript() {
+    return lastEvaluatedJavascript;
   }
 
   /**
    * Sets the value to return from {@code android.webkit.WebView#canGoBack()}
    *
    * @param canGoBack Value to return from {@code android.webkit.WebView#canGoBack()}
+   * @deprecated Do not depend on this method as it will be removed in a future update. The
+   *     preferered method is to populate a fake web history to use for going back.
    */
+  @Deprecated
   public void setCanGoBack(boolean canGoBack) {
+    canGoBackIsSet = true;
     this.canGoBack = canGoBack;
+  }
+
+  /**
+   * @return goBackInvocations the number of times {@code android.webkit.WebView#goBack()} was
+   *     invoked
+   */
+  public int getGoBackInvocations() {
+    return goBackInvocations;
   }
 
   public LoadData getLastLoadData() {

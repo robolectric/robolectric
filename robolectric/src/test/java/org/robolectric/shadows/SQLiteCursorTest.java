@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
@@ -9,11 +10,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteCursorTest {
 
   private SQLiteDatabase database;

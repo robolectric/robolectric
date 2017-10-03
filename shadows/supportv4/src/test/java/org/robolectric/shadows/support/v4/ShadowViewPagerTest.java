@@ -1,5 +1,11 @@
 package org.robolectric.shadows.support.v4;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.assertTrue;
+
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -8,8 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import static junit.framework.Assert.*;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowViewPagerTest {

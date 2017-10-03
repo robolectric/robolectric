@@ -1,5 +1,36 @@
 package org.robolectric;
 
+import static java.lang.invoke.MethodHandles.constant;
+import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodHandles.insertArguments;
+import static java.lang.invoke.MethodType.methodType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.robolectric.util.ReflectionHelpers.newInstance;
+import static org.robolectric.util.ReflectionHelpers.setStaticField;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.SwitchPoint;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,38 +81,6 @@ import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.AnUninstrumentedParent;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.SwitchPoint;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static java.lang.invoke.MethodHandles.constant;
-import static java.lang.invoke.MethodHandles.dropArguments;
-import static java.lang.invoke.MethodHandles.insertArguments;
-import static java.lang.invoke.MethodType.methodType;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.robolectric.util.ReflectionHelpers.newInstance;
-import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 @RunWith(JUnit4.class)
 public class SandboxClassLoaderTest {

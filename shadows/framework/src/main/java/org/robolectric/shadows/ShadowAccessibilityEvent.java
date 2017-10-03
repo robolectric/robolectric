@@ -5,15 +5,13 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.accessibility.AccessibilityEvent;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Shadow of {@link android.view.accessibility.AccessibilityEvent}.
@@ -36,6 +34,7 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
   @RealObject
   private AccessibilityEvent realAccessibilityEvent;
 
+  @Implementation
   public void __constructor__() {
     ReflectionHelpers.setStaticField(AccessibilityEvent.class, "CREATOR", ShadowAccessibilityEvent.CREATOR);
   }
@@ -55,8 +54,7 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
 
   @Implementation
   public static AccessibilityEvent obtain(AccessibilityEvent event) {
-    ShadowAccessibilityEvent shadowEvent =
-        ((ShadowAccessibilityEvent) ShadowExtractor.extract(event));
+    ShadowAccessibilityEvent shadowEvent = Shadow.extract(event);
     AccessibilityEvent obtainedInstance = shadowEvent.getClone();
 
     sAllocationCount++;
@@ -73,8 +71,7 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
     // non-shadow objects.
     final AccessibilityEvent obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityEvent.class);
-    final ShadowAccessibilityEvent shadowObtained =
-        ((ShadowAccessibilityEvent) ShadowExtractor.extract(obtainedInstance));
+    final ShadowAccessibilityEvent shadowObtained = Shadow.extract(obtainedInstance);
 
     sAllocationCount++;
     StrictEqualityEventWrapper wrapper = new StrictEqualityEventWrapper(obtainedInstance);
@@ -98,8 +95,7 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
   public static boolean areThereUnrecycledEvents(boolean printUnrecycledEventsToSystemErr) {
     if (printUnrecycledEventsToSystemErr) {
       for (final StrictEqualityEventWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityEvent shadow =
-            ((ShadowAccessibilityEvent) ShadowExtractor.extract(wrapper.mEvent));
+        final ShadowAccessibilityEvent shadow = Shadow.extract(wrapper.mEvent);
 
         System.err.println(String.format(
             "Leaked AccessibilityEvent type: %d. Stack trace of allocation:",
@@ -201,8 +197,7 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
     }
 
     final AccessibilityEvent event = (AccessibilityEvent) object;
-    final ShadowAccessibilityEvent otherShadow =
-        (ShadowAccessibilityEvent) ShadowExtractor.extract(event);
+    final ShadowAccessibilityEvent otherShadow = Shadow.extract(event);
 
     boolean areEqual = (eventType == otherShadow.eventType);
     areEqual &= (enabled == otherShadow.enabled);
@@ -236,8 +231,7 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
     // the private constructor. Not doing so affects test suites which use both shadow and
     // non-shadow objects.
     final AccessibilityEvent newEvent = ReflectionHelpers.callConstructor(AccessibilityEvent.class);
-    final ShadowAccessibilityEvent newShadow =
-        (ShadowAccessibilityEvent) ShadowExtractor.extract(newEvent);
+    final ShadowAccessibilityEvent newShadow = Shadow.extract(newEvent);
 
     newShadow.eventType = eventType;
     newShadow.contentDescription = contentDescription;

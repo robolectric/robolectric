@@ -1,15 +1,17 @@
 package org.robolectric.shadows;
 
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.HashMap;
-import java.util.TreeMap;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.INITIALIZED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PAUSED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PLAYBACK_COMPLETED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARING;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STARTED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
+import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
 import android.media.MediaPlayer;
@@ -17,17 +19,22 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-
+import java.io.FileDescriptor;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.TreeMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.util.DataSource;
-
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
-import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 /**
  * Automated testing of media playback can be a difficult thing - especially
@@ -80,6 +87,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  */
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer extends ShadowPlayerBase {
+  @Implementation
   public static void __staticInitializer__() {
     // don't bind the JNI library
   }
@@ -522,6 +530,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return mp;
   }
 
+  @Implementation
   public void __constructor__() {
     // Contract of audioSessionId is that if it is 0 (which represents
     // the master mix) then that's an error. By default it generates

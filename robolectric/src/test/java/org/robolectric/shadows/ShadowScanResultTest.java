@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
-import android.net.wifi.ScanResult;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-
 import static junit.framework.Assert.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.net.wifi.ScanResult;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowScanResultTest {
 
   @Test

@@ -1,5 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.accounts.Account;
 import android.app.Activity;
 import android.app.Application;
@@ -13,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
@@ -24,19 +34,6 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.robolectric.DefaultTestLifecycle;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.fakes.BaseCursor;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -46,18 +43,23 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.robolectric.DefaultTestLifecycle;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.fakes.BaseCursor;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.util.ReflectionHelpers;
 
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContentResolverTest {
-  static final String AUTHORITY = "org.robolectric";
+  private static final String AUTHORITY = "org.robolectric";
 
   private ContentResolver contentResolver;
   private ShadowContentResolver shadowContentResolver;
@@ -66,7 +68,7 @@ public class ShadowContentResolverTest {
   private Account a, b;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     contentResolver = Robolectric.setupActivity(Activity.class).getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
     uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
@@ -77,7 +79,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void insert_shouldReturnIncreasingUris() throws Exception {
+  public void insert_shouldReturnIncreasingUris() {
     shadowContentResolver.setNextDatabaseIdForInserts(20);
 
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri21);
@@ -85,12 +87,12 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void getType_shouldDefaultToNull() throws Exception {
+  public void getType_shouldDefaultToNull() {
     assertThat(contentResolver.getType(uri21)).isNull();
   }
 
   @Test
-  public void getType_shouldReturnProviderValue() throws Exception {
+  public void getType_shouldReturnProviderValue() {
     ShadowContentResolver.registerProviderInternal(AUTHORITY, new ContentProvider() {
       @Override public boolean onCreate() {
         return false;
@@ -116,7 +118,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void insert_shouldTrackInsertStatements() throws Exception {
+  public void insert_shouldTrackInsertStatements() {
     ContentValues contentValues = new ContentValues();
     contentValues.put("foo", "bar");
     contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
@@ -132,7 +134,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void insert_shouldTrackUpdateStatements() throws Exception {
+  public void insert_shouldTrackUpdateStatements() {
     ContentValues contentValues = new ContentValues();
     contentValues.put("foo", "bar");
     contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
@@ -153,19 +155,19 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void insert_supportsNullContentValues() throws Exception {
+  public void insert_supportsNullContentValues() {
     contentResolver.insert(EXTERNAL_CONTENT_URI, null);
     assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues()).isNull();
   }
 
   @Test
-  public void update_supportsNullContentValues() throws Exception {
+  public void update_supportsNullContentValues() {
     contentResolver.update(EXTERNAL_CONTENT_URI, null, null, null);
     assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues()).isNull();
   }
 
   @Test
-  public void delete_shouldTrackDeletedUris() throws Exception {
+  public void delete_shouldTrackDeletedUris() {
     assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(0);
 
     assertThat(contentResolver.delete(uri21, null, null)).isEqualTo(1);
@@ -196,7 +198,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void whenCursorHasBeenSet_query_shouldReturnTheCursor() throws Exception {
+  public void whenCursorHasBeenSet_query_shouldReturnTheCursor() {
     assertThat(shadowContentResolver.query(null, null, null, null, null)).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
@@ -204,7 +206,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void whenCursorHasBeenSet_queryWithCancellationSignal_shouldReturnTheCursor() throws Exception {
+  public void whenCursorHasBeenSet_queryWithCancellationSignal_shouldReturnTheCursor() {
     assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
@@ -212,7 +214,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void query_shouldReturnSpecificCursorsForSpecificUris() throws Exception {
+  public void query_shouldReturnSpecificCursorsForSpecificUris() {
     assertThat(shadowContentResolver.query(uri21, null, null, null, null)).isNull();
     assertThat(shadowContentResolver.query(uri22, null, null, null, null)).isNull();
 
@@ -226,7 +228,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void query_shouldKnowWhatItsParamsWere() throws Exception {
+  public void query_shouldKnowWhatItsParamsWere() {
     String[] projection = {};
     String selection = "select";
     String[] selectionArgs = {};
@@ -245,12 +247,12 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void acquireUnstableProvider_shouldDefaultToNull() throws Exception {
+  public void acquireUnstableProvider_shouldDefaultToNull() {
     assertThat(contentResolver.acquireUnstableProvider(uri21)).isNull();
   }
 
   @Test
-  public void acquireUnstableProvider_shouldReturnWithUri() throws Exception {
+  public void acquireUnstableProvider_shouldReturnWithUri() {
     ContentProvider cp = mock(ContentProvider.class);
     ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
     final Uri uri = Uri.parse("content://" + AUTHORITY);
@@ -258,14 +260,14 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void acquireUnstableProvider_shouldReturnWithString() throws Exception {
+  public void acquireUnstableProvider_shouldReturnWithString() {
     ContentProvider cp = mock(ContentProvider.class);
     ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
     assertThat(contentResolver.acquireUnstableProvider(AUTHORITY)).isSameAs(cp.getIContentProvider());
   }
 
   @Test
-  public void call_shouldCallProvider() throws Exception {
+  public void call_shouldCallProvider() {
     final String METHOD = "method";
     final String ARG = "arg";
     final Bundle EXTRAS = new Bundle();
@@ -280,7 +282,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void registerProvider_shouldAttachProviderInfo() throws Exception {
+  public void registerProvider_shouldAttachProviderInfo() {
     ContentProvider mock = mock(ContentProvider.class);
 
     ProviderInfo providerInfo0 = new ProviderInfo();
@@ -318,7 +320,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldTrackNotifiedUris() throws Exception {
+  public void shouldTrackNotifiedUris() {
     contentResolver.notifyChange(Uri.parse("foo"), null, true);
     contentResolver.notifyChange(Uri.parse("bar"), null);
 
@@ -339,7 +341,7 @@ public class ShadowContentResolverTest {
   @SuppressWarnings("serial")
   @Test
   public void applyBatchForRegisteredProvider() throws RemoteException, OperationApplicationException {
-    final ArrayList<String> operations = new ArrayList<>();
+    final List<String> operations = new ArrayList<>();
     ShadowContentResolver.registerProviderInternal("registeredProvider", new ContentProvider() {
       @Override
       public boolean onCreate() {
@@ -426,7 +428,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldKeepTrackOfSyncRequests() throws Exception {
+  public void shouldKeepTrackOfSyncRequests() {
     ShadowContentResolver.Status status = ShadowContentResolver.getStatus(a, AUTHORITY, true);
     assertThat(status).isNotNull();
     assertThat(status.syncRequests).isEqualTo(0);
@@ -436,14 +438,14 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldKnowIfSyncIsActive() throws Exception {
+  public void shouldKnowIfSyncIsActive() {
     assertThat(ContentResolver.isSyncActive(a, AUTHORITY)).isFalse();
     ContentResolver.requestSync(a, AUTHORITY, new Bundle());
     assertThat(ContentResolver.isSyncActive(a, AUTHORITY)).isTrue();
   }
 
   @Test
-  public void shouldCancelSync() throws Exception {
+  public void shouldCancelSync() {
     ContentResolver.requestSync(a, AUTHORITY, new Bundle());
     ContentResolver.requestSync(b, AUTHORITY, new Bundle());
     assertThat(ContentResolver.isSyncActive(a, AUTHORITY)).isTrue();
@@ -455,7 +457,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldSetIsSyncable() throws Exception {
+  public void shouldSetIsSyncable() {
     assertThat(ContentResolver.getIsSyncable(a, AUTHORITY)).isEqualTo(-1);
     assertThat(ContentResolver.getIsSyncable(b, AUTHORITY)).isEqualTo(-1);
     ContentResolver.setIsSyncable(a, AUTHORITY, 1);
@@ -465,14 +467,14 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldSetSyncAutomatically() throws Exception {
+  public void shouldSetSyncAutomatically() {
     assertThat(ContentResolver.getSyncAutomatically(a, AUTHORITY)).isFalse();
     ContentResolver.setSyncAutomatically(a, AUTHORITY, true);
     assertThat(ContentResolver.getSyncAutomatically(a, AUTHORITY)).isTrue();
   }
 
   @Test
-  public void shouldAddPeriodicSync() throws Exception {
+  public void shouldAddPeriodicSync() {
     Bundle fooBar = new Bundle();
     fooBar.putString("foo", "bar");
     Bundle fooBaz = new Bundle();
@@ -501,7 +503,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldRemovePeriodSync() throws Exception {
+  public void shouldRemovePeriodSync() {
     Bundle fooBar = new Bundle();
     fooBar.putString("foo", "bar");
     Bundle fooBaz = new Bundle();
@@ -510,7 +512,7 @@ public class ShadowContentResolverTest {
     foo42.putInt("foo", 42);
     assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).isEmpty();
     assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
- 
+
     ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 6000L);
     ContentResolver.addPeriodicSync(a, AUTHORITY, fooBaz, 6000L);
     ContentResolver.addPeriodicSync(a, AUTHORITY, foo42, 6000L);
@@ -542,7 +544,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldGetPeriodSyncs() throws Exception {
+  public void shouldGetPeriodSyncs() {
     assertThat(ContentResolver.getPeriodicSyncs(a, AUTHORITY).size()).isEqualTo(0);
     ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000L);
 
@@ -557,7 +559,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldValidateSyncExtras() throws Exception {
+  public void shouldValidateSyncExtras() {
     Bundle bundle = new Bundle();
     bundle.putString("foo", "strings");
     bundle.putLong("long", 10L);
@@ -569,21 +571,21 @@ public class ShadowContentResolverTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldValidateSyncExtrasAndThrow() throws Exception {
+  public void shouldValidateSyncExtrasAndThrow() {
     Bundle bundle = new Bundle();
     bundle.putParcelable("intent", new Intent());
     ContentResolver.validateSyncExtrasBundle(bundle);
   }
 
   @Test
-  public void shouldSetMasterSyncAutomatically() throws Exception {
+  public void shouldSetMasterSyncAutomatically() {
     assertThat(ContentResolver.getMasterSyncAutomatically()).isFalse();
     ContentResolver.setMasterSyncAutomatically(true);
     assertThat(ContentResolver.getMasterSyncAutomatically()).isTrue();
   }
 
   @Test
-  public void shouldDelegateCallsToRegisteredProvider() throws Exception {
+  public void shouldDelegateCallsToRegisteredProvider() {
     ShadowContentResolver.registerProviderInternal(AUTHORITY, new ContentProvider() {
       @Override
       public boolean onCreate() {
@@ -631,7 +633,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldRegisterContentObservers() throws Exception {
+  public void shouldRegisterContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
 
@@ -648,9 +650,9 @@ public class ShadowContentResolverTest {
     scr.clearContentObservers();
     assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
   }
-    
+
   @Test
-  public void shouldRegisterMultipleContentObservers() throws Exception {
+  public void shouldRegisterMultipleContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
     TestContentObserver co1 = new TestContentObserver(null);
     TestContentObserver co2 = new TestContentObserver(null);
@@ -677,7 +679,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldUnregisterContentObservers() throws Exception {
+  public void shouldUnregisterContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
@@ -690,13 +692,13 @@ public class ShadowContentResolverTest {
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isFalse();
   }
-    
+
   @Test
-  public void shouldUnregisterMultipleContentObservers() throws Exception {
+  public void shouldUnregisterMultipleContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
     TestContentObserver co1 = new TestContentObserver(null);
     TestContentObserver co2 = new TestContentObserver(null);
-      
+
     contentResolver.registerContentObserver(uri21, true, co);
     contentResolver.registerContentObserver(uri21, true, co1);
     contentResolver.registerContentObserver(uri22, true, co);
@@ -707,7 +709,7 @@ public class ShadowContentResolverTest {
     contentResolver.unregisterContentObserver(co);
     assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
     assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
-      
+
     contentResolver.unregisterContentObserver(co2);
     assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
     assertThat(shadowContentResolver.getContentObservers(uri22)).isEmpty();
@@ -757,23 +759,6 @@ public class ShadowContentResolverTest {
     }
   }
 
-  static class QueryParamTrackingCursor extends BaseCursor {
-    public Uri uri;
-    public String[] projection;
-    public String selection;
-    public String[] selectionArgs;
-    public String sortOrder;
-
-    @Override
-    public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-      this.uri = uri;
-      this.projection = projection;
-      this.selection = selection;
-      this.selectionArgs = selectionArgs;
-      this.sortOrder = sortOrder;
-    }
-  }
-
   @Test
   public void openTypedAssetFileDescriptor_shouldOpenDescriptor() throws IOException, RemoteException {
     final File file = new File(RuntimeEnvironment.application.getFilesDir(), "test_file");
@@ -820,6 +805,56 @@ public class ShadowContentResolverTest {
 
     FileDescriptor descriptor = afd.getFileDescriptor();
     assertThat(descriptor).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void takeAndReleasePersistableUriPermissions() {
+    List<UriPermission> permissions = contentResolver.getPersistedUriPermissions();
+    assertThat(permissions).isEmpty();
+
+    // Take the read permission for the uri.
+    Uri uri = Uri.parse("content://" + AUTHORITY + "/whatever");
+    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    assertThat(permissions).hasSize(1);
+    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).isReadPermission()).isTrue();
+    assertThat(permissions.get(0).isWritePermission()).isFalse();
+
+    // Take the write permission for the uri.
+    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+    assertThat(permissions).hasSize(1);
+    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).isReadPermission()).isTrue();
+    assertThat(permissions.get(0).isWritePermission()).isTrue();
+
+    // Release the read permission for the uri.
+    contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    assertThat(permissions).hasSize(1);
+    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).isReadPermission()).isFalse();
+    assertThat(permissions.get(0).isWritePermission()).isTrue();
+
+    // Release the write permission for the uri.
+    contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+    assertThat(permissions).isEmpty();
+  }
+
+  private static class QueryParamTrackingCursor extends BaseCursor {
+    public Uri uri;
+    public String[] projection;
+    public String selection;
+    public String[] selectionArgs;
+    public String sortOrder;
+
+    @Override
+    public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+      this.uri = uri;
+      this.projection = projection;
+      this.selection = selection;
+      this.selectionArgs = selectionArgs;
+      this.sortOrder = sortOrder;
+    }
   }
 
   private class TestContentObserver extends ContentObserver {

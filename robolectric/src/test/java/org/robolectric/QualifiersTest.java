@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -12,10 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Config(qualifiers = "en")
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class QualifiersTest {
 
   private Resources resources;

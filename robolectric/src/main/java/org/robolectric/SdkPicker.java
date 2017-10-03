@@ -2,13 +2,6 @@ package org.robolectric;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.ConfigUtils;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.manifest.AndroidManifest;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,6 +10,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.internal.ConfigUtils;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.manifest.AndroidManifest;
 
 public class SdkPicker {
   private final Set<SdkConfig> supportedSdks;

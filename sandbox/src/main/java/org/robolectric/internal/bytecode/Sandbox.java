@@ -1,11 +1,10 @@
 package org.robolectric.internal.bytecode;
 
-import org.robolectric.shadow.api.Shadow;
-
-import java.util.Set;
-
 import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
+
+import java.util.Set;
+import org.robolectric.shadow.api.Shadow;
 
 public class Sandbox {
   private final ClassLoader robolectricClassLoader;

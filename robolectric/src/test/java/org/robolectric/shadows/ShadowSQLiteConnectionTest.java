@@ -11,22 +11,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteStatement;
 import com.almworks.sqlite4java.SQLiteConnection;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;

@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
@@ -8,12 +11,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAnimationSetTest {
   final Animation.AnimationListener moveListener = mock(Animation.AnimationListener.class);
   final Animation.AnimationListener spinListener = mock(Animation.AnimationListener.class);

@@ -1,13 +1,13 @@
 package org.robolectric.shadows.support.v4;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.support.v4.content.Loader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for support loaders.

@@ -1,25 +1,24 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.content.Context;
+import android.content.SharedPreferences;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSharedPreferencesTest {
   private final static String FILENAME = "filename";
   private SharedPreferences.Editor editor;

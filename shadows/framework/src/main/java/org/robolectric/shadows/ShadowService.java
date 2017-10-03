@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -38,6 +37,7 @@ public class ShadowService extends ShadowContextWrapper {
 
   @Implementation
   public final void startForeground(int id, Notification notification) {
+    foregroundStopped = false;
 	  lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
     notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;

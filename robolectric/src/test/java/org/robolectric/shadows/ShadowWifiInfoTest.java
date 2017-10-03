@@ -1,18 +1,19 @@
 package org.robolectric.shadows;
 
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
-import org.robolectric.TestRunners;
 import static android.content.Context.WIFI_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowWifiInfoTest {
 
   @Test

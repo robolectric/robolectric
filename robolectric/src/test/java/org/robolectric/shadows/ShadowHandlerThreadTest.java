@@ -1,5 +1,12 @@
 package org.robolectric.shadows;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.os.HandlerThread;
 import android.os.Looper;
 import java.util.concurrent.CountDownLatch;
@@ -7,13 +14,10 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.junit.Assert.*;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowHandlerThreadTest {
 
   private HandlerThread handlerThread;

@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResTable_entry;
@@ -44,7 +45,6 @@ import org.robolectric.res.android.ResourceTypes.ResTable_package;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
-import org.robolectric.util.Strings;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
 //   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
@@ -1140,7 +1140,7 @@ public class ResTable {
     final String attr = "attr";
     final String attrPrivate = "^attr-private";
     for (PackageGroup group : mPackageGroups.values()) {
-      if (!Strings.equals(packageName.trim(), group.name.trim())) {
+      if (!Objects.equals(packageName.trim(), group.name.trim())) {
         if (kDebugTableNoisy) {
            System.out.println(String.format("Skipping package group: %s\n", group.name));
         }

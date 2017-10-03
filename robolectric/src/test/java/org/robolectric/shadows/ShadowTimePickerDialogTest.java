@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
-import android.app.TimePickerDialog;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.TimePickerDialog;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowTimePickerDialogTest {
 
   @Test

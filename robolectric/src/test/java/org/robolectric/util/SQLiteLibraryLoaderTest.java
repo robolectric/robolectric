@@ -1,20 +1,20 @@
 package org.robolectric.util;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.shadows.util.SQLiteLibraryLoader;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.util.SQLiteLibraryLoader;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteLibraryLoaderTest {
   /** Saved system properties. */
   private String savedOs, savedArch;
