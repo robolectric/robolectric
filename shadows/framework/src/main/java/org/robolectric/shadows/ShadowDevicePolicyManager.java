@@ -35,9 +35,12 @@ public class ShadowDevicePolicyManager {
   private ComponentName deviceOwner;
   private ComponentName profileOwner;
   private List<ComponentName> deviceAdmins = new ArrayList<>();
+  private List<String> permittedAccessibilityServices = new ArrayList<>();
+  private List<String> permittedInputMethods = new ArrayList<>();
   private Map<String, Bundle> applicationRestrictionsMap = new HashMap<>();
   private CharSequence organizationName;
   private int organizationColor;
+  private boolean isAutoTimeRequired;
 
   private final Set<String> hiddenPackages = new HashSet<>();
   private final Set<String> wasHiddenPackages = new HashSet<>();
@@ -275,5 +278,60 @@ public class ShadowDevicePolicyManager {
   public int getOrganizationColor(ComponentName admin) {
     enforceProfileOwner(admin);
     return organizationColor;
+  }
+
+  @Implementation
+  public void setAutoTimeRequired(ComponentName admin, boolean required) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    isAutoTimeRequired = required;
+  }
+
+  @Implementation
+  public boolean getAutoTimeRequired() {
+    return isAutoTimeRequired;
+  }
+
+  /**
+   * Sets permitted accessibility services.
+   *
+   * <p>The API can be called by either a profile or device owner.
+   *
+   * <p>This method does not check already enabled non-system accessibility services, so will always
+   * set the restriction and return true.
+   */
+  @Implementation
+  public boolean setPermittedAccessibilityServices(ComponentName admin, List<String> packageNames) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    permittedAccessibilityServices = packageNames;
+    return true;
+  }
+
+  @Implementation
+  @Nullable
+  public List<String> getPermittedAccessibilityServices(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return permittedAccessibilityServices;
+  }
+
+  /**
+   * Sets permitted input methods.
+   *
+   * <p>The API can be called by either a profile or device owner.
+   *
+   * <p>This method does not check already enabled non-system input methods, so will always set the
+   * restriction and return true.
+   */
+  @Implementation
+  public boolean setPermittedInputMethods(ComponentName admin, List<String> packageNames) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    permittedInputMethods = packageNames;
+    return true;
+  }
+
+  @Implementation
+  @Nullable
+  public List<String> getPermittedInputMethods(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return permittedInputMethods;
   }
 }
