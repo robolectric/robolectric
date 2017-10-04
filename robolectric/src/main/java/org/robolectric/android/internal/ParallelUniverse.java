@@ -118,12 +118,23 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (application != null) {
       shadowsAdapter.bind(application, appManifest);
 
-      ApplicationInfo applicationInfo;
+      final ApplicationInfo applicationInfo;
       try {
         applicationInfo = systemContextImpl.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
+
+      final Class<?> appBindDataClass;
+      try {
+        appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+      Object data = ReflectionHelpers.newInstance(appBindDataClass);
+      ReflectionHelpers.setField(data, "processName", "org.robolectric");
+      ReflectionHelpers.setField(data, "appInfo", applicationInfo);
+      ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
       LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
 
