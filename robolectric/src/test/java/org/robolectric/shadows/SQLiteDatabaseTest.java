@@ -30,6 +30,8 @@ import org.robolectric.util.TempDirectory;
 
 @RunWith(RobolectricTestRunner.class)
 public class SQLiteDatabaseTest {
+    private static File cachedDbFile = null;
+
     private SQLiteDatabase database;
     private List<SQLiteDatabase> openDatabases = new ArrayList<>();
     private static final String ANY_VALID_SQL = "SELECT 1";
@@ -40,35 +42,50 @@ public class SQLiteDatabaseTest {
         databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
         databasePath.getParentFile().mkdirs();
 
-        database = openOrCreateDatabase(databasePath);
+        database = setupDatabase(databasePath);
+    }
+
+    /**
+     * Return a setup database; from a cached file if available.
+     */
+    private SQLiteDatabase setupDatabase(File databasePath) throws IOException {
+        if (cachedDbFile != null) {
+            Files.copy(cachedDbFile, databasePath);
+            return openOrCreateDatabase(databasePath);
+        }
+
+        // cache empty. Setup the database
+
+        SQLiteDatabase database = openOrCreateDatabase(databasePath);
+
         database.execSQL("CREATE TABLE table_name (\n" +
-                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "  first_column VARCHAR(255),\n" +
-                "  second_column BINARY,\n" +
-                "  name VARCHAR(255),\n" +
-                "  big_int INTEGER\n" +
-                ");");
+            "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+            "  first_column VARCHAR(255),\n" +
+            "  second_column BINARY,\n" +
+            "  name VARCHAR(255),\n" +
+            "  big_int INTEGER\n" +
+            ");");
 
         database.execSQL("CREATE TABLE rawtable (\n" +
-                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "  first_column VARCHAR(255),\n" +
-                "  second_column BINARY,\n" +
-                "  name VARCHAR(255),\n" +
-                "  big_int INTEGER\n" +
-                ");");
+            "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+            "  first_column VARCHAR(255),\n" +
+            "  second_column BINARY,\n" +
+            "  name VARCHAR(255),\n" +
+            "  big_int INTEGER\n" +
+            ");");
 
         database.execSQL("CREATE TABLE exectable (\n" +
-                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "  first_column VARCHAR(255),\n" +
-                "  second_column BINARY,\n" +
-                "  name VARCHAR(255),\n" +
-                "  big_int INTEGER\n" +
-                ");");
+            "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+            "  first_column VARCHAR(255),\n" +
+            "  second_column BINARY,\n" +
+            "  name VARCHAR(255),\n" +
+            "  big_int INTEGER\n" +
+            ");");
 
         database.execSQL("CREATE TABLE blob_table (\n" +
-                "  id INTEGER PRIMARY KEY,\n" +
-                "  blob_col BLOB\n" +
-                ");");
+            "  id INTEGER PRIMARY KEY,\n" +
+            "  blob_col BLOB\n" +
+            ");");
 
         String stringColumnValue = "column_value";
         byte[] byteColumnValue = new byte[]{1, 2, 3};
@@ -88,6 +105,13 @@ public class SQLiteDatabaseTest {
         values2.put("second_column", byteColumnValue2);
 
         database.insert("rawtable", null, values2);
+
+        // now cached the result so it can be used by subsequent tests
+        cachedDbFile = File.createTempFile("SQLiteDatabaseTest", "dbCache.db");
+        cachedDbFile.deleteOnExit();
+        Files.copy(databasePath, cachedDbFile);
+
+        return database;
     }
 
     @After
