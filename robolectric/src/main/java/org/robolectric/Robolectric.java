@@ -1,11 +1,8 @@
 package org.robolectric;
 
-import static org.robolectric.res.android.ResourceTypes.ANDROID_NS;
-import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
-import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE;
-import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYPE;
-import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
+import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
+import android.annotation.IdRes;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.IntentService;
@@ -13,19 +10,15 @@ import android.app.Service;
 import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.util.AttributeSet;
-import android.util.SparseArray;
-import android.util.TypedValue;
 import android.view.View;
 import java.util.ServiceLoader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import org.robolectric.android.AttributeSetBuilder;
+import org.robolectric.android.AttributeSetBuilderImpl;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -33,23 +26,10 @@ import org.robolectric.android.controller.FragmentController;
 import org.robolectric.android.controller.IntentServiceController;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.res.AttributeResource;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceTable;
-import org.robolectric.res.android.DataType;
-import org.robolectric.res.android.ResourceTypes.ResChunk_header;
-import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
-import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
-import org.robolectric.res.android.ResourceTypes.Res_value;
-import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowArscAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -150,209 +130,67 @@ public class Robolectric {
   }
 
   /**
-   * Allows for the programatic creation of an {@link AttributeSet} useful for testing {@link View} classes without
-   * the need for creating XML snippets.
+   * Allows for the programmatic creation of an {@link AttributeSet}.
+   *
+   * Useful for testing {@link View} classes without the need for creating XML snippets.
    */
-  public static AttributeSetBuilder buildAttributeSet() {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setIgnoringComments(true);
-    factory.setIgnoringElementContentWhitespace(true);
-    Document document;
-    try {
-      DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-      document = documentBuilder.newDocument();
-      Element dummy = document.createElementNS("http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(), "dummy");
-      document.appendChild(dummy);
-    } catch (ParserConfigurationException e) {
-      throw new RuntimeException(e);
+  public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
+    if (isLegacyAssetManager(AssetManager.getSystem())) {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setIgnoringComments(true);
+      factory.setIgnoringElementContentWhitespace(true);
+      Document document;
+      try {
+        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+        document = documentBuilder.newDocument();
+        Element dummy = document.createElementNS(
+            "http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(),
+            "dummy");
+        document.appendChild(dummy);
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException(e);
+      }
+      throw new UnsupportedOperationException(); // todo
+    } else {
+      return new AttributeSetBuilderImpl(RuntimeEnvironment.getCompileTimeResourceTable()) {};
     }
-    return new AttributeSetBuilder(RuntimeEnvironment.getCompileTimeResourceTable());
   }
 
-  public static class AttributeSetBuilder {
-    private static final int STYLE_RES_ID = Integer.MAX_VALUE - 2;
-    private static final int CLASS_RES_ID = Integer.MAX_VALUE - 1;
-    private static final int ID_RES_ID = Integer.MAX_VALUE;
+  /**
+   * Builder of {@link AttributeSet}s.
+   *
+   * @deprecated Use {@link org.robolectric.android.AttributeSetBuilder} instead.
+   */
+  @Deprecated
+  public interface AttributeSetBuilder {
+    /**
+     * Set an attribute to the given value.
+     *
+     * The value will be interpreted according to the attribute's format.
+     *
+     * @param resId The attribute resource id to set.
+     * @param value The value to set.
+     * @return This {@link org.robolectric.android.AttributeSetBuilder}.
+     */
+    AttributeSetBuilder addAttribute(@IdRes int resId, String value);
 
-    private ResourceTable appResourceTable;
-    private Map<Integer, AttrInfo> attrToValue = new TreeMap<>();
-
-    static class AttrInfo {
-      private final String value;
-
-      public AttrInfo(String value) {
-        this.value = value;
-      }
-
-      public AttrInfo(int value) {
-        this.value = "@" + value;
-      }
-    }
-
-    AttributeSetBuilder(ResourceTable resourceTable) {
-      this.appResourceTable = resourceTable;
-    }
-
-    public AttributeSetBuilder addAttribute(int resId, String value) {
-      attrToValue.put(resId, new AttrInfo(value));
-      return this;
-    }
-
-    public AttributeSetBuilder setStyleAttribute(String value) {
-      attrToValue.put(STYLE_RES_ID, new AttrInfo(value));
-      return this;
-    }
-
-    public AttributeSetBuilder setClassAttribute(String value) {
-      attrToValue.put(CLASS_RES_ID, new AttrInfo(value));
-      return this;
-    }
-
-    public AttributeSetBuilder setIdAttribute(String value) {
-      attrToValue.put(ID_RES_ID, new AttrInfo(value));
-      return this;
-    }
-
-    public AttributeSet build() {
-//      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceTable);
-//      try {
-//        parser.next(); // Root document element
-//        parser.next(); // "dummy" element
-//      } catch (Exception e) {
-//        throw new IllegalStateException("Expected single dummy element in the document to contain the attributes.", e);
-//      }
-
-      Class<?> xmlBlockClass = ReflectionHelpers
-          .loadClass(this.getClass().getClassLoader(), "android.content.res.XmlBlock");
-
-      ByteBuffer buf = ByteBuffer.allocate(16 * 1024).order(ByteOrder.LITTLE_ENDIAN);
-      Writer resStringPoolWriter = new ResStringPool_header.Writer();
-
-      final SparseArray<Integer> resIds = new SparseArray<>();
-      final int[] maxAttrNameIndex = new int[] { 0 };
-
-      ResXMLTree_attrExt.Writer dummyStart = new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter,
-          null, "dummy") {
-        {
-          for (Entry<Integer, AttrInfo> entry : attrToValue.entrySet()) {
-            Integer attrId = entry.getKey();
-            String attrNs = "";
-            String attrName;
-            ResName attrResName = null;
-            switch (attrId) {
-              case STYLE_RES_ID:
-                attrId = null;
-                attrName = "style";
-                break;
-
-              case CLASS_RES_ID:
-                attrId = null;
-                attrName = "class";
-                break;
-
-              case ID_RES_ID:
-                attrId = null;
-                attrName = "id";
-                break;
-
-              default:
-                attrResName = appResourceTable.getResName(attrId);
-                attrNs = (attrResName.packageName.equals("android")) ? ANDROID_NS : AUTO_NS;
-                attrName = attrResName.name;
-            }
-
-            String value = entry.getValue().value;
-            DataType type;
-            int valueInt = 0;
-
-            String packageName = RuntimeEnvironment.application.getPackageName();
-            if (attrResName != null) {
-              ResourceTable resourceTable = RuntimeEnvironment.getAppResourceTable();
-              TypedValue outValue = new TypedValue();
-              AttributeResource attributeResource = new AttributeResource(attrResName, value,
-                  packageName);
-              Converter.convert(resourceTable, attributeResource, outValue,
-                  RuntimeEnvironment.getQualifiers(), true);
-
-              type = DataType.fromCode(outValue.type);
-              value = (String) outValue.string;
-              if (type == DataType.STRING) {
-                valueInt = resStringPoolWriter.string(value);
-              } else {
-                valueInt = outValue.data;
-              }
-            } else {
-              // it's a style, class, or id attribute, so no attr resource id
-              if (value == null || AttributeResource.isNull(value)) {
-                type = DataType.NULL;
-              } else if (AttributeResource.isResourceReference(value)) {
-                ResName resourceReference = AttributeResource
-                    .getResourceReference(value, packageName, null);
-                Integer valueResId = appResourceTable.getResourceId(resourceReference);
-                type = DataType.REFERENCE;
-                valueInt = valueResId;
-              } else {
-                type = DataType.STRING;
-                valueInt = resStringPoolWriter.string(value);
-              }
-            }
-
-            System.out.println(attrName + " type " + type + " value " + valueInt);
-            Res_value resValue = new Res_value(type.code(), valueInt);
-
-            int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
-            attr(resStringPoolWriter.string(attrNs), attrNameIndex,
-                resStringPoolWriter.string(value), resValue, attrNs + ":" + attrName);
-            if (attrId != null) {
-              resIds.put(attrNameIndex, attrId);
-            }
-            maxAttrNameIndex[0] = Math.max(maxAttrNameIndex[0], attrNameIndex);
-          }
-        }
-      };
-
-      ResXMLTree_endElementExt.Writer dummyEnd =
-          new ResXMLTree_endElementExt.Writer(buf, resStringPoolWriter, null, "dummy");
-
-      int finalMaxAttrNameIndex = maxAttrNameIndex[0];
-      ResXMLTree_header.write(buf, resStringPoolWriter, () -> {
-        if (finalMaxAttrNameIndex > 0) {
-          ResChunk_header.write(buf, (short) RES_XML_RESOURCE_MAP_TYPE, () -> {}, () -> {
-            // not particularly compact, but no big deal for our purposes...
-            for (int i = 0; i <= finalMaxAttrNameIndex; i++) {
-              Integer value = resIds.get(i);
-              buf.putInt(value == null ? 0 : value);
-            }
-          });
-        }
-
-        ResXMLTree_node.write(buf, RES_XML_START_ELEMENT_TYPE, dummyStart::write);
-        ResXMLTree_node.write(buf, RES_XML_END_ELEMENT_TYPE, dummyEnd::write);
-      });
-
-      int size = buf.position();
-      byte[] bytes = new byte[size];
-      buf.position(0);
-      buf.get(bytes, 0, size);
-
-      Object xmlBlockInstance = ReflectionHelpers
-          .callConstructor(xmlBlockClass, ClassParameter.from(byte[].class, bytes));
-
-      AttributeSet parser = ReflectionHelpers.callInstanceMethod(xmlBlockClass, xmlBlockInstance,
-          "newParser");
-      ReflectionHelpers.callInstanceMethod(parser, "next");
-      ReflectionHelpers.callInstanceMethod(parser, "next");
-
-      return parser;
-    }
+    /**
+     * Set the style attribute to the given value.
+     *
+     * The value will be interpreted as a resource reference.
+     *
+     * @param value The value for the specified attribute in this {@link AttributeSet}.
+     * @return This {@link org.robolectric.android.AttributeSetBuilder}.
+     */
+    AttributeSetBuilder setStyleAttribute(String value);
   }
 
 
   /**
    * Return the foreground scheduler (e.g. the UI thread scheduler).
    *
-   * @return  Foreground scheduler.
+   * @return Foreground scheduler.
    */
   public static Scheduler getForegroundThreadScheduler() {
     return ShadowApplication.getInstance().getForegroundThreadScheduler();
@@ -368,7 +206,7 @@ public class Robolectric {
   /**
    * Return the background scheduler.
    *
-   * @return  Background scheduler.
+   * @return Background scheduler.
    */
   public static Scheduler getBackgroundThreadScheduler() {
     return ShadowApplication.getInstance().getBackgroundThreadScheduler();
