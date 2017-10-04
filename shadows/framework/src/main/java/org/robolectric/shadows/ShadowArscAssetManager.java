@@ -100,9 +100,9 @@ public class ShadowArscAssetManager {
   @Resetter
   public static void reset() {
     ShadowAssetManager.reset();
-    nativeThemeRegistry.clear();
-    nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly?
-    nativeAssetRegistry.clear();
+    // nativeThemeRegistry.clear();
+    // nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly? [yes! xw]
+    // nativeAssetRegistry.clear();
   }
 
   @HiddenApi

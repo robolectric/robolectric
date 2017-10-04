@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 public class Util {
 
   static final int SIZEOF_SHORT = 2;
-  static final int SIZEOF_INT = 4;
+  public static final int SIZEOF_INT = 4;
   private static boolean littleEndian = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN;
 
   private static final boolean DEBUG = false;

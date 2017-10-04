@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -371,7 +370,7 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.string).isEqualTo("OK");
   }
 
-  @Test @Config(sdk = N_MR1) // todo unpin
+  @Test
   public void getResourceValue_fromSystem() {
     TypedValue outValue = new TypedValue();
     ShadowArscAssetManager systemShadowAssetManager = shadowOf(AssetManager.getSystem());

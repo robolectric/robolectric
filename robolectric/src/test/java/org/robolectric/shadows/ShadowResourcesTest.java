@@ -113,7 +113,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void getText_withHtml() throws Exception {
-    assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
+    assertThat(resources.getText(R.string.some_html, "value").toString()).isEqualTo("Hello, world");
   }
 
   @Test

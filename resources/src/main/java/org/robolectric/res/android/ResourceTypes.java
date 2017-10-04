@@ -388,14 +388,14 @@ public static class ResTable_ref
   /**
    * Reference to a string in a string pool.
    */
-  static class ResStringPool_ref
+  public static class ResStringPool_ref
   {
     public static final int SIZEOF = 4;
 
     // Index into the string pool table (uint32_t-offset from the indices
     // immediately after ResStringPool_header) at which to find the location
     // of the string data in the pool.
-    final int index;
+    public final int index;
 
     public ResStringPool_ref(ByteBuffer buf, int offset) {
       this.index = buf.getInt(offset);
@@ -591,7 +591,7 @@ public static class ResTable_ref
    * This structure defines a span of style information associated with
    * a string in the pool.
    */
-  static class ResStringPool_span
+  public static class ResStringPool_span extends WithOffset
   {
     public static final int SIZEOF = ResStringPool_ref.SIZEOF + 8;
 
@@ -602,13 +602,15 @@ public static class ResTable_ref
     // This is the name of the span -- that is, the name of the XML
     // tag that defined it.  The special value END (0xFFFFFFFF) indicates
     // the end of an array of spans.
-    final ResStringPool_ref name;
+    public final ResStringPool_ref name;
 
     // The range of characters in the string that this span applies to.
     final int firstChar;
     final int lastChar;
 
     public ResStringPool_span(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
       name = new ResStringPool_ref(buf, offset);
       firstChar = buf.getInt(offset + ResStringPool_ref.SIZEOF);
       lastChar = buf.getInt(offset + ResStringPool_ref.SIZEOF + 4);

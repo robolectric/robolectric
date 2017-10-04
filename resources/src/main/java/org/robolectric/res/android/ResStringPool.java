@@ -10,6 +10,7 @@ import static org.robolectric.res.android.Errors.NO_INIT;
 import static org.robolectric.res.android.ResourceString.decodeString;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGW;
+import static org.robolectric.res.android.Util.SIZEOF_INT;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import java.nio.ByteBuffer;
@@ -18,7 +19,9 @@ import java.util.Objects;
 import org.robolectric.res.android.ResourceString.Type;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
+import org.robolectric.res.android.ResourceTypes.ResStringPool_ref;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_span;
+import org.robolectric.res.android.ResourceTypes.WithOffset;
 
 /**
  * Convenience class for accessing data in a ResStringPool resource.
@@ -36,9 +39,9 @@ public class ResStringPool {
   private int                      mSize;
 //    private mutable Mutex               mDecodeLock;
 //    const uint32_t*             mEntries;
-  private int             mEntries;
+  private IntArray             mEntries;
 //    const uint32_t*             mEntryStyles;
-    private int             mEntryStyles;
+    private IntArray             mEntryStyles;
 //    const void*                 mStrings;
     private int                 mStrings;
   //private List<String> mStrings;
@@ -51,6 +54,16 @@ public class ResStringPool {
 
   public ResStringPool() {
     mError = NO_INIT;
+  }
+
+  static class IntArray extends WithOffset {
+    IntArray(ByteBuffer buf, int offset) {
+      super(buf, offset);
+    }
+
+    int get(int idx) {
+      return myBuf().getInt(myOffset() + idx * SIZEOF_INT);
+    }
   }
 
   void setToEmpty()
@@ -66,10 +79,10 @@ public class ResStringPool {
 
     ResStringPool_header header = new ResStringPool_header(buf, 0);
     mSize = 0;
-    mEntries = 0;
+    mEntries = null;
     mStrings = 0;
     mStringPoolSize = 0;
-    mEntryStyles = 0;
+    mEntryStyles = null;
     mStyles = 0;
     mStylePoolSize = 0;
     mHeader = header;
@@ -115,7 +128,7 @@ public class ResStringPool {
       return (mError=BAD_TYPE);
     }
     mSize = mHeader.header.size;
-    mEntries = mHeader.header.headerSize;
+    mEntries = new IntArray(mHeader.myBuf(), mHeader.myOffset() + mHeader.header.headerSize);
 
     if (mHeader.stringCount > 0) {
       if ((mHeader.stringCount*4 /*sizeof(uint32_t)*/ < mHeader.stringCount)  // uint32 overflow?
@@ -202,17 +215,17 @@ public class ResStringPool {
     }
 
     if (mHeader.styleCount > 0) {
-      mEntryStyles = mEntries + mHeader.stringCount;
+      mEntryStyles = new IntArray(mEntries.myBuf(), mEntries.myOffset() + mHeader.stringCount * SIZEOF_INT);
       // invariant: integer overflow in calculating mEntryStyles
-      if (mEntryStyles < mEntries) {
+      if (mEntryStyles.myOffset() < mEntries.myOffset()) {
         ALOGW("Bad string block: integer overflow finding styles\n");
         return (mError=BAD_TYPE);
       }
 
 //      if (((const uint8_t*)mEntryStyles-(const uint8_t*)mHeader) > (int)size) {
-      if ((mEntryStyles) > (int)size) {
+      if ((mEntryStyles.myOffset() - mHeader.myOffset()) > (int)size) {
         ALOGW("Bad string block: entry of %d styles extends past data size %d\n",
-            (int)(mEntryStyles),
+            (int)(mEntryStyles.myOffset()),
         (int)size);
         return (mError=BAD_TYPE);
       }
@@ -250,7 +263,7 @@ public class ResStringPool {
         return (mError=BAD_TYPE);
       }
     } else {
-      mEntryStyles = 0;
+      mEntryStyles = null;
       mStyles = 0;
       mStylePoolSize = 0;
     }
@@ -280,7 +293,8 @@ public class ResStringPool {
 //        const uint32_t off = mEntries[idx]/(isUTF8?sizeof(uint8_t):sizeof(uint16_t));
       ByteBuffer buf = mHeader.myBuf();
       int bufOffset = mHeader.myOffset();
-      final int off = buf.getInt(bufOffset + mEntries + idx * 4)
+      // const uint32_t off = mEntries[idx]/(isUTF8?sizeof(uint8_t):sizeof(uint16_t));
+      final int off = mEntries.get(idx)
             /(isUTF8?1/*sizeof(uint8_t)*/:2/*sizeof(uint16_t)*/);
       if (off < (mStringPoolSize-1)) {
         if (!isUTF8) {
@@ -393,8 +407,25 @@ public class ResStringPool {
     return stringAt(id, outLen);
   }
 
-//    final ResStringPool_span* styleAt(final ResStringPool_ref& ref) final;
-//    final ResStringPool_span* styleAt(int idx) final;
+  final ResStringPool_span styleAt(final ResStringPool_ref ref) {
+    return styleAt(ref.index);
+  }
+
+  public final ResStringPool_span styleAt(int idx) {
+    if (mError == NO_ERROR && idx < mHeader.styleCount) {
+      // const uint32_t off = (mEntryStyles[idx]/sizeof(uint32_t));
+      final int off = mEntryStyles.get(idx) / SIZEOF_INT;
+      if (off < mStylePoolSize) {
+        // return (const ResStringPool_span*)(mStyles+off);
+        return new ResStringPool_span(mHeader.myBuf(), mHeader.myOffset() + mStyles + off);
+      } else {
+        ALOGW("Bad string block: style #%d entry is at %d, past end at %d\n",
+            (int)idx, (int)(off*SIZEOF_INT),
+            (int)(mStylePoolSize*SIZEOF_INT));
+      }
+    }
+    return null;
+  }
 
   public int indexOfString(String str) {
     if (mError != NO_ERROR) {
