@@ -52,6 +52,13 @@ dependencies {
     testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }
 
+test {
+    if (project.hasProperty('maxParallelForks'))
+        maxParallelForks = project.maxParallelForks as int
+    if (project.hasProperty('forkEvery'))
+        forkEvery = project.forkEvery as int
+}
+
 project.apply plugin: CheckApiChangesPlugin
 
 checkApiChanges {
