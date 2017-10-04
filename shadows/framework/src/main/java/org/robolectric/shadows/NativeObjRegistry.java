@@ -33,6 +33,9 @@ public class NativeObjRegistry<T> {
     return nativeObjToIdMap.get(nativeId);
   }
 
+  /**
+   * WARNING -- dangerous! Call {@link #unregister(long)} instead!
+   */
   public synchronized void clear() {
     ids = INITIAL_ID;
     nativeObjToIdMap.clear();

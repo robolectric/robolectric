@@ -67,7 +67,6 @@ public class ShadowArscAssetManager {
   private CppAssetManager cppAssetManager;
 
   private static NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
-  private static NativeObjRegistry<ResXMLParser> nativeXMLParserRegistry = new NativeObjRegistry<>();
   private static NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
 
   public static boolean isLegacyAssetManager(AssetManager assets) {
