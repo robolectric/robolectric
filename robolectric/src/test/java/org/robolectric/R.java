@@ -31,6 +31,11 @@ public final class R {
         public static final int zero_to_four_int_array=0x7f0e0000;
     }
     public static final class attr {
+        /** <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
+         */
+        public static final int altTitle=0x7f010024;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
@@ -62,7 +67,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attr2FromLib1=0x7f010025;
+        public static final int attr2FromLib1=0x7f010026;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -70,7 +75,7 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attrFromLib1=0x7f010024;
+        public static final int attrFromLib1=0x7f010025;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
 <p>This may also be a reference to a resource (in the form
 "<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
@@ -78,15 +83,16 @@ theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
          */
-        public static final int attrFromLib2=0x7f010026;
+        public static final int attrFromLib2=0x7f010027;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
         public static final int attributeReferencingAnAttribute=0x7f010019;
-        /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+        /** <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
-<p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
-or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a dimension value, which is a floating point number appended with a unit such as "<code>14.5sp</code>".
+Available units are: px (pixels), dp (density-independent pixels), sp (scaled pixels based on preferred font size),
+in (inches), mm (millimeters).
          */
         public static final int averageSheepWidth=0x7f01001d;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
@@ -120,8 +126,9 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 </table>
          */
         public static final int gravity=0x7f01000c;
-        /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+        /** <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a boolean value, either "<code>true</code>" or "<code>false</code>".
          */
         public static final int isSugary=0x7f01001e;
         /** <p>Must be one of the following constant values.</p>
@@ -146,12 +153,21 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 </table>
          */
         public static final int keycode=0x7f01000d;
-        /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+        /** <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a dimension value, which is a floating point number appended with a unit such as "<code>14.5sp</code>".
+Available units are: px (pixels), dp (density-independent pixels), sp (scaled pixels based on preferred font size),
+in (inches), mm (millimeters).
          */
         public static final int logoHeight=0x7f01001f;
-        /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
-or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+        /** <p>Must be a dimension value, which is a floating point number appended with a unit such as "<code>14.5sp</code>".
+Available units are: px (pixels), dp (density-independent pixels), sp (scaled pixels based on preferred font size),
+in (inches), mm (millimeters).
+<p>This may also be a reference to a resource (in the form
+"<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
+theme attribute (in the form
+"<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
+containing a value of this type.
          */
         public static final int logoWidth=0x7f010020;
         /** <p>Must be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
@@ -670,7 +686,7 @@ containing a value of this type.
             0x7f010000, 0x7f010001, 0x7f010002, 0x7f010003,
             0x7f010004, 0x7f010005, 0x7f010006, 0x7f010007,
             0x7f010008, 0x7f010009, 0x7f01000a, 0x7f01000b,
-            0x7f01000c, 0x7f01000d, 0x7f010026
+            0x7f01000c, 0x7f01000d, 0x7f010027
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#animalStyle}
@@ -906,7 +922,7 @@ containing a value of this type.
            @see #Lib1Styleable_attrFromLib1
          */
         public static final int[] Lib1Styleable = {
-            0x7f010024, 0x7f010025
+            0x7f010025, 0x7f010026
         };
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#attr2FromLib1}
@@ -942,6 +958,7 @@ containing a value of this type.
            <colgroup align="left" />
            <colgroup align="left" />
            <tr><th>Attribute</th><th>Description</th></tr>
+           <tr><td><code>{@link #Theme_AnotherTheme_Attributes_altTitle org.robolectric:altTitle}</code></td><td></td></tr>
            <tr><td><code>{@link #Theme_AnotherTheme_Attributes_averageSheepWidth org.robolectric:averageSheepWidth}</code></td><td></td></tr>
            <tr><td><code>{@link #Theme_AnotherTheme_Attributes_isSugary org.robolectric:isSugary}</code></td><td></td></tr>
            <tr><td><code>{@link #Theme_AnotherTheme_Attributes_logoHeight org.robolectric:logoHeight}</code></td><td></td></tr>
@@ -950,6 +967,7 @@ containing a value of this type.
            <tr><td><code>{@link #Theme_AnotherTheme_Attributes_styleReference org.robolectric:styleReference}</code></td><td></td></tr>
            <tr><td><code>{@link #Theme_AnotherTheme_Attributes_styleReferenceWithoutExplicitType org.robolectric:styleReferenceWithoutExplicitType}</code></td><td></td></tr>
            </table>
+           @see #Theme_AnotherTheme_Attributes_altTitle
            @see #Theme_AnotherTheme_Attributes_averageSheepWidth
            @see #Theme_AnotherTheme_Attributes_isSugary
            @see #Theme_AnotherTheme_Attributes_logoHeight
@@ -960,17 +978,29 @@ containing a value of this type.
          */
         public static final int[] Theme_AnotherTheme_Attributes = {
             0x7f01001d, 0x7f01001e, 0x7f01001f, 0x7f010020,
-            0x7f010021, 0x7f010022, 0x7f010023
+            0x7f010021, 0x7f010022, 0x7f010023, 0x7f010024
         };
+        /**
+          <p>This symbol is the offset where the {@link org.robolectric.R.attr#altTitle}
+          attribute's value can be found in the {@link #Theme_AnotherTheme_Attributes} array.
+
+
+          <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a string value, using '\\;' to escape characters such as '\\n' or '\\uxxxx' for a unicode character.
+          @attr name org.robolectric:altTitle
+        */
+        public static final int Theme_AnotherTheme_Attributes_altTitle = 7;
         /**
           <p>This symbol is the offset where the {@link org.robolectric.R.attr#averageSheepWidth}
           attribute's value can be found in the {@link #Theme_AnotherTheme_Attributes} array.
 
 
-          <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+          <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
-<p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
-or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a dimension value, which is a floating point number appended with a unit such as "<code>14.5sp</code>".
+Available units are: px (pixels), dp (density-independent pixels), sp (scaled pixels based on preferred font size),
+in (inches), mm (millimeters).
           @attr name org.robolectric:averageSheepWidth
         */
         public static final int Theme_AnotherTheme_Attributes_averageSheepWidth = 0;
@@ -979,8 +1009,9 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
           attribute's value can be found in the {@link #Theme_AnotherTheme_Attributes} array.
 
 
-          <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+          <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a boolean value, either "<code>true</code>" or "<code>false</code>".
           @attr name org.robolectric:isSugary
         */
         public static final int Theme_AnotherTheme_Attributes_isSugary = 1;
@@ -989,8 +1020,11 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
           attribute's value can be found in the {@link #Theme_AnotherTheme_Attributes} array.
 
 
-          <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
+          <p>May be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+<p>May be a dimension value, which is a floating point number appended with a unit such as "<code>14.5sp</code>".
+Available units are: px (pixels), dp (density-independent pixels), sp (scaled pixels based on preferred font size),
+in (inches), mm (millimeters).
           @attr name org.robolectric:logoHeight
         */
         public static final int Theme_AnotherTheme_Attributes_logoHeight = 2;
@@ -999,8 +1033,14 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
           attribute's value can be found in the {@link #Theme_AnotherTheme_Attributes} array.
 
 
-          <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
-or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+          <p>Must be a dimension value, which is a floating point number appended with a unit such as "<code>14.5sp</code>".
+Available units are: px (pixels), dp (density-independent pixels), sp (scaled pixels based on preferred font size),
+in (inches), mm (millimeters).
+<p>This may also be a reference to a resource (in the form
+"<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
+theme attribute (in the form
+"<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
+containing a value of this type.
           @attr name org.robolectric:logoWidth
         */
         public static final int Theme_AnotherTheme_Attributes_logoWidth = 3;

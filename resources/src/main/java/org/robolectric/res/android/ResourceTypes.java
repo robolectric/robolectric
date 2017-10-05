@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
 public class ResourceTypes {
   public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String AUTO_NS = "http://schemas.android.com/apk/res-auto";

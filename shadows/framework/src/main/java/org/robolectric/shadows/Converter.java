@@ -20,11 +20,12 @@ public class Converter<T> {
     return nextStringCookie++;
   }
 
-  static Converter getConverterFor(AttrData attrData, String type) {
+  public static Converter getConverterFor(AttrData attrData, String type) {
     switch (type) {
       case "enum":
         return new EnumConverter(attrData);
       case "flag":
+      case "flags": // because {@link ResourceTable#gFormatFlags} uses "flags"
         return new FlagConverter(attrData);
       case "boolean":
         return new FromBoolean();
@@ -133,7 +134,11 @@ public class Converter<T> {
     throw cantDo("getItems");
   }
 
-  public boolean fillTypedValue(T data, TypedValue typedValue) {
+  final public boolean fillTypedValue(T data, TypedValue typedValue) {
+    return fillTypedValue(data, typedValue, false);
+  }
+
+  public boolean fillTypedValue(T data, TypedValue typedValue, boolean throwOnFailure) {
     return false;
   }
 
@@ -148,7 +153,7 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(AttrData data, TypedValue typedValue) {
+    public boolean fillTypedValue(AttrData data, TypedValue typedValue, boolean throwOnFailure) {
       typedValue.type = TypedValue.TYPE_STRING;
       return false;
     }
@@ -166,7 +171,7 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.assetCookie = getNextStringCookie();
@@ -177,7 +182,7 @@ public class Converter<T> {
 
   public static class FromColor extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       try {
         typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
         typedValue.data = ResourceHelper.getColor(data);
@@ -199,7 +204,7 @@ public class Converter<T> {
 
   public static class FromFilePath extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.string = data;
@@ -217,7 +222,7 @@ public class Converter<T> {
 
   private static class FromInt extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       try {
         typedValue.type = data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
         typedValue.data = convertInt(data);
@@ -237,14 +242,14 @@ public class Converter<T> {
 
   private static class FromFraction extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
   private static class FromFile extends Converter<FsFile> {
     @Override
-    public boolean fillTypedValue(FsFile data, TypedValue typedValue) {
+    public boolean fillTypedValue(FsFile data, TypedValue typedValue, boolean throwOnFailure) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.string = data.getPath();
@@ -255,14 +260,14 @@ public class Converter<T> {
 
   private static class FromFloat extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
   private static class FromBoolean extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       typedValue.type = TypedValue.TYPE_INT_BOOLEAN;
       typedValue.assetCookie = 0;
       typedValue.string = null;
@@ -285,7 +290,7 @@ public class Converter<T> {
 
   private static class FromDimen extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       return ResourceHelper.parseFloatAttribute(null, data, typedValue, true);
     }
   }
@@ -309,16 +314,20 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
-      try {
-        typedValue.type = TypedValue.TYPE_INT_HEX;
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+      typedValue.type = TypedValue.TYPE_INT_HEX;
+      if (throwOnFailure) {
         typedValue.data = findValueFor(data);
-        typedValue.assetCookie = 0;
-        typedValue.string = null;
-        return true;
-      } catch (Exception e) {
-        return false;
+      } else {
+        try {
+          typedValue.data = findValueFor(data);
+        } catch (Exception e) {
+          return false;
+        }
       }
+      typedValue.assetCookie = 0;
+      typedValue.string = null;
+      return true;
     }
   }
 
@@ -328,21 +337,25 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue) {
-      try {
-        int flags = 0;
-        for (String key : data.split("\\|")) {
+    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+      int flags = 0;
+      for (String key : data.split("\\|")) {
+        if (throwOnFailure) {
           flags |= findValueFor(key);
+        } else {
+          try {
+            flags |= findValueFor(key);
+          } catch (Exception e) {
+            return false;
+          }
         }
-
-        typedValue.type = TypedValue.TYPE_INT_HEX;
-        typedValue.data = flags;
-        typedValue.assetCookie = 0;
-        typedValue.string = null;
-        return true;
-      } catch (Exception e) {
-        return false;
       }
+
+      typedValue.type = TypedValue.TYPE_INT_HEX;
+      typedValue.data = flags;
+      typedValue.assetCookie = 0;
+      typedValue.string = null;
+      return true;
     }
   }
 

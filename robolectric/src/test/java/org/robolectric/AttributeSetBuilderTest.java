@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
@@ -128,7 +129,9 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "oh heck yeah")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(APP_NS, "isSugary")).isEqualTo("oh heck yeah");
+    assertThat(roboAttributeSet.getAttributeValue(APP_NS, "isSugary")).isEqualTo("false");
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", true)).isEqualTo(false);
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "animalStyle", true)).isEqualTo(true);
   }
 
   @Test
@@ -146,7 +149,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "oh heck yeah")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("oh heck yeah");
+    assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("false");
   }
 
   @Test
@@ -199,6 +202,56 @@ public class AttributeSetBuilderTest {
         .build();
 
     assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "itemType", 24)).isEqualTo(24);
+  }
+
+  @Test
+  public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesInAttributeSet() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.itemType, "ungulate")
+        .build();
+
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "itemType", 24)).isEqualTo(1);
+
+    AttributeSet roboAttributeSet2 = Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.itemType, "marsupial")
+        .build();
+
+    assertThat(roboAttributeSet2.getAttributeIntValue(APP_NS, "itemType", 24)).isEqualTo(0);
+  }
+
+  @Test
+  public void shouldFailOnMissingEnumValue() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.itemType, "simian")
+          .build();
+      fail("should fail");
+    } catch (Exception e) {
+      // expected
+      assertThat(e.getMessage()).contains("no value found for simian");
+    }
+  }
+
+  @Test
+  public void shouldFailOnMissingFlagValue() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.scrollBars, "temporal")
+          .build();
+      fail("should fail");
+    } catch (Exception e) {
+      // expected
+      assertThat(e.getMessage()).contains("no value found for temporal");
+    }
+  }
+
+  @Test
+  public void getAttributeIntValue_shouldReturnFlagValuesForFlagAttributesInAttributeSet() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.scrollBars, "horizontal|vertical")
+        .build();
+
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "scrollBars", 24)).isEqualTo(0x100 | 0x200);
   }
 
   @Test

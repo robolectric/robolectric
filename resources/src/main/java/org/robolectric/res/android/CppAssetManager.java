@@ -1,6 +1,5 @@
 package org.robolectric.res.android;
 
-import static java.lang.System.getenv;
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.Util.ALOGD;
 import static org.robolectric.res.android.Util.ALOGE;
@@ -11,6 +10,7 @@ import static org.robolectric.res.android.Util.ATRACE_CALL;
 import static org.robolectric.res.android.Util.LOG_FATAL_IF;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;

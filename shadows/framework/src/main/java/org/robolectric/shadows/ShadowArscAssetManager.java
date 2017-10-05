@@ -27,6 +27,8 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -761,6 +763,35 @@ public class ShadowArscAssetManager {
     return block;
   }
 
+  public Map<String, Integer> getResourceBagValues(int ident) {
+    CppAssetManager am = assetManagerForJavaObject();
+    final ResTable res = am.getResources();
+
+    // Now lock down the resource object and start pulling stuff from it.
+    res.lock();
+
+    HashMap<String, Integer> map;
+    try {
+      Ref<bag_entry[]> entryRef = new Ref<>(null);
+      Ref<Integer> typeSpecFlags = new Ref<>(0);
+      int entryCount = res.getBagLocked(ident, entryRef, typeSpecFlags);
+
+      map = new HashMap<>();
+      bag_entry[] bag_entries = entryRef.get();
+      for (int i=0; i < entryCount; i++) {
+        bag_entry entry = bag_entries[i];
+        ResourceName resourceName = new ResourceName();
+        if (res.getResourceName(entry.map.name.ident, true, resourceName)) {
+          map.put(resourceName.name, entry.map.value.data);
+        }
+      }
+    } finally {
+      res.unlock();
+    }
+
+    return map;
+  }
+
   /**
    * Returns true if the resource was found, filling in mRetStringBlock and
    * mRetData.
@@ -784,8 +815,9 @@ public class ShadowArscAssetManager {
     Ref<Integer> typeSpecFlags = new Ref<>(0);
     int entryCount = res.getBagLocked(ident, entryRef, typeSpecFlags);
 
+    bag_entry[] bag_entries = entryRef.get();
     for (int i=0; i < entryCount; i++) {
-      bag_entry entry = entryRef.get()[i];
+      bag_entry entry = bag_entries[i];
       if (bagEntryId == entry.map.name.ident) {
         block = entry.stringBlock;
         valueRef.set(entry.map.value);

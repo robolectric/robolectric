@@ -6,21 +6,27 @@ import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
+import static org.robolectric.res.android.ResourceTypes.ResTable_map.ATTR_TYPE;
 
+import android.content.Context;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.DataType;
+import org.robolectric.res.android.ResourceTable.flag_entry;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
@@ -126,18 +132,14 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           DataType type;
           int valueInt = 0;
 
-          AssetManager assets = RuntimeEnvironment.application.getAssets();
+          Context context = RuntimeEnvironment.application;
+          Resources resources = context.getResources();
+          AssetManager assets = resources.getAssets();
           ShadowArscAssetManager shadowArscAssetManager = shadowOf(assets);
-          String packageName = RuntimeEnvironment.application.getPackageName();
+          String packageName = context.getPackageName();
           if (attrResName != null) {
-            shadowArscAssetManager.getResourceBagText(attrId, 0);
-
-            ResourceTable resourceTable = RuntimeEnvironment.getAppResourceTable();
-            TypedValue outValue = new TypedValue();
-            AttributeResource attributeResource = new AttributeResource(attrResName, value,
-                packageName);
-            Converter.convert(resourceTable, attributeResource, outValue,
-                RuntimeEnvironment.getQualifiers(), true);
+            TypedValue outValue = parse(attrId, attrResName, value, resources,
+                shadowArscAssetManager, packageName);
 
             type = DataType.fromCode(outValue.type);
             value = (String) outValue.string;
@@ -162,7 +164,6 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
             }
           }
 
-          System.out.println(attrName + " type " + type + " value " + valueInt);
           Res_value resValue = new Res_value(type.code(), valueInt);
 
           int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
@@ -209,5 +210,50 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     ReflectionHelpers.callInstanceMethod(parser, "next");
 
     return parser;
+  }
+
+  private TypedValue parse(Integer attrId, ResName attrResName, String value, Resources resources,
+      ShadowArscAssetManager shadowArscAssetManager, String packageName) {
+    AttributeResource attribute =
+        new AttributeResource(attrResName, value, packageName);
+    TypedValue outValue = new TypedValue();
+
+    if (attribute.isResourceReference()) {
+      ResName resourceReference = attribute.getResourceReference();
+      int id = resources.getIdentifier(resourceReference.name, resourceReference.type,
+          resourceReference.packageName);
+      if (id == 0) {
+        throw new IllegalArgumentException("couldn't resolve " + attribute);
+      }
+
+      outValue.type = Res_value.TYPE_REFERENCE;
+      outValue.data = id;
+      outValue.resourceId = id;
+      outValue.string = "@" + id;
+    } else {
+      String format = shadowArscAssetManager.getResourceBagText(attrId, ATTR_TYPE)
+          .toString();
+      Map<String, Integer> map = shadowArscAssetManager.getResourceBagValues(attrId);
+      ArrayList<AttrData.Pair> pairs = new ArrayList<>();
+      for (Entry<String, Integer> e : map.entrySet()) {
+        pairs.add(new AttrData.Pair(e.getKey(), Integer.toString(e.getValue())));
+      }
+      int formatFlags = Integer.parseInt(format);
+      flag_entry[] flags = org.robolectric.res.android.ResourceTable.gFormatFlags;
+      for (flag_entry flag : flags) {
+        if ((formatFlags & flag.value) != 0) {
+          if ("reference".equals(flag.name)) {
+            continue;
+          }
+
+          AttrData attrData = new AttrData(attrResName.getFullyQualifiedName(), flag.name, pairs);
+          Converter converter = Converter.getConverterFor(attrData, flag.name);
+          if (converter.fillTypedValue(attribute.value, outValue, true)) {
+            break;
+          }
+        }
+      }
+    }
+    return outValue;
   }
 }
