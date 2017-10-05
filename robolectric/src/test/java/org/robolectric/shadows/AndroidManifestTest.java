@@ -1,4 +1,4 @@
-package org.robolectric.manifest;
+package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -19,10 +19,18 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.AndroidManifestPullParser;
+import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.PermissionItemData;
+import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.Fs;
 
-@RunWith(JUnit4.class)
+@RunWith(RobolectricTestRunner.class) @Config(sdk = Config.NEWEST_SDK)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -251,6 +259,7 @@ public class AndroidManifestTest {
   @Test
   public void shouldTolerateMissingRFile() throws Exception {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"), resourceFile("assets"));
+    appManifest.setParser(new AndroidManifestPullParser());
     assertThat(appManifest.getPackageName()).isEqualTo("org.no.resources.for.me");
     assertThat(appManifest.getRClass()).isNull();
   }
@@ -482,10 +491,15 @@ public class AndroidManifestTest {
         "</manifest>\n";
     File f = temporaryFolder.newFile(fileName);
     Files.write(contents, f, Charsets.UTF_8);
-    return new AndroidManifest(Fs.newFile(f), null, null);
+    AndroidManifest androidManifest = new AndroidManifest(Fs.newFile(f), null, null);
+    androidManifest.setParser(new AndroidManifestPullParser());
+    return androidManifest;
   }
 
   private static AndroidManifest newConfig(String androidManifestFile) {
-    return new AndroidManifest(resourceFile(androidManifestFile), null, null);
+    AndroidManifest androidManifest = new AndroidManifest(resourceFile(androidManifestFile), null,
+        null);
+    androidManifest.setParser(new AndroidManifestPullParser());
+    return androidManifest;
   }
 }
