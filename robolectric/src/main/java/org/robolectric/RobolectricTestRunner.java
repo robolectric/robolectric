@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import android.app.Application;
+import android.content.res.AssetManager;
 import android.os.Build;
 import java.io.File;
 import java.io.IOException;
@@ -242,7 +243,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       try {
         Config config = getConfig(frameworkMethod.getMethod());
         AndroidManifest appManifest = getAppManifest(config);
-        appManifest.setParser(new AndroidManifestPullParser());
+        appManifest.setParser(new AndroidManifestPullParser(new AssetManager()));
 
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;

@@ -1,5 +1,14 @@
 package org.robolectric.manifest;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
+import android.content.pm.PackageParser;
+import android.content.pm.PackageParser.Package;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
+import android.util.DisplayMetrics;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,14 +16,65 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import libcore.io.IoUtils;
+import org.robolectric.util.ReflectionHelpers;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class AndroidManifestPullParser implements AndroidManifestParser {
+  private static final String ANDROID_MANIFEST_FILENAME = "AndroidManifest.xml";
+  private final AssetManager assets;
+
+  public AndroidManifestPullParser(AssetManager assets) {
+    this.assets = assets;
+  }
+
   @Override
   public void parse(AndroidManifest androidManifest) {
+    String apkPath = ANDROID_MANIFEST_FILENAME;
+
+    Resources res = new Resources(assets, new DisplayMetrics(), new Configuration());
+    XmlResourceParser parser = null;
+    try {
+      parser = assets.openXmlResourceParser(0, ANDROID_MANIFEST_FILENAME);
+
+      int flags = 0;
+      final String[] outError = new String[1];
+
+      PackageParser packageParser = new PackageParser();
+      // final Package pkg = parseBaseApk(apkPath, res, parser, flags, outError);
+      final Package pkg =
+          ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parseBaseApk",
+          from(String.class, "dunno"),
+          from(Resources.class, res),
+          from(XmlResourceParser.class, parser),
+          from(int.class, flags),
+          from(String[].class, outError)
+      );
+      if (pkg == null) {
+        throw new RuntimeException("dunno (at " +  parser.getPositionDescription() + "): " + outError[0]);
+        // throw new PackageParserException(mParseError,
+        //     apkPath + " (at " + parser.getPositionDescription() + "): " + outError[0]);
+      }
+
+      // pkg.setVolumeUuid(volumeUuid);
+      // pkg.setApplicationVolumeUuid(volumeUuid);
+      // pkg.setBaseCodePath(apkPath);
+      pkg.setSignatures(null);
+
+      System.out.println("pkg = " + pkg);
+
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    // } catch (Exception e) {
+    //   throw new PackageParserException(INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION,
+    //       "Failed to read manifest from " + apkPath, e);
+    } finally {
+      IoUtils.closeQuietly(parser);
+    }
+
     try {
       DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
