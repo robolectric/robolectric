@@ -14,17 +14,16 @@ import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.collect.ImmutableMap;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.ResourceTable.flag_entry;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
@@ -44,46 +43,44 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
   private static final int CLASS_RES_ID = Integer.MAX_VALUE - 1;
   private static final int ID_RES_ID = Integer.MAX_VALUE;
 
-  private ResourceTable appResourceTable;
-  private Map<Integer, AttrInfo> attrToValue = new TreeMap<>();
+  private static final Map<Integer, String> MAGIC_ATTRS = ImmutableMap.of(
+      STYLE_RES_ID, "style",
+      CLASS_RES_ID, "class",
+      ID_RES_ID, "id"
+  );
 
-  static class AttrInfo {
-    private final String value;
+  private final Context context;
+  private Map<Integer, String> attrToValue = new TreeMap<>();
 
-    public AttrInfo(String value) {
-      this.value = value;
-    }
-
-    public AttrInfo(int value) {
-      this.value = "@" + value;
-    }
+  protected AttributeSetBuilderImpl(Context context) {
+    this.context = context;
   }
 
-  protected AttributeSetBuilderImpl(ResourceTable resourceTable) {
-    this.appResourceTable = resourceTable;
-  }
-
+  // todo rename to setAttribute(), or just set()?
   @Override
   public AttributeSetBuilder addAttribute(int resId, String value) {
-    attrToValue.put(resId, new AttrInfo(value));
+    attrToValue.put(resId, value);
     return this;
   }
 
+  // todo rename to setStyle()?
   @Override
   public AttributeSetBuilder setStyleAttribute(String value) {
-    attrToValue.put(STYLE_RES_ID, new AttrInfo(value));
+    attrToValue.put(STYLE_RES_ID, value);
     return this;
   }
 
+  // todo rename to setClass()?
   @Override
   public AttributeSetBuilder setClassAttribute(String value) {
-    attrToValue.put(CLASS_RES_ID, new AttrInfo(value));
+    attrToValue.put(CLASS_RES_ID, value);
     return this;
   }
 
+  // todo rename to setId()?
   @Override
   public AttributeSetBuilder setIdAttribute(String value) {
-    attrToValue.put(ID_RES_ID, new AttrInfo(value));
+    attrToValue.put(ID_RES_ID, value);
     return this;
   }
 
@@ -101,42 +98,32 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     ResXMLTree_attrExt.Writer dummyStart = new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter,
         null, "dummy") {
       {
-        for (Entry<Integer, AttrInfo> entry : attrToValue.entrySet()) {
+        Resources resources = context.getResources();
+        AssetManager assets = resources.getAssets();
+        ShadowArscAssetManager shadowArscAssetManager = shadowOf(assets);
+        String packageName = context.getPackageName();
+
+        for (Entry<Integer, String> entry : attrToValue.entrySet()) {
           Integer attrId = entry.getKey();
           String attrNs = "";
           String attrName;
           ResName attrResName = null;
-          switch (attrId) {
-            case STYLE_RES_ID:
-              attrId = null;
-              attrName = "style";
-              break;
 
-            case CLASS_RES_ID:
-              attrId = null;
-              attrName = "class";
-              break;
-
-            case ID_RES_ID:
-              attrId = null;
-              attrName = "id";
-              break;
-
-            default:
-              attrResName = appResourceTable.getResName(attrId);
-              attrNs = (attrResName.packageName.equals("android")) ? ANDROID_NS : AUTO_NS;
-              attrName = attrResName.name;
+          String magicAttr = MAGIC_ATTRS.get(attrId);
+          if (magicAttr != null) {
+            attrId = null;
+            attrName = magicAttr;
+          } else {
+            String attrNameStr = shadowArscAssetManager.getResourceName(attrId);
+            attrResName = ResName.qualifyResName(attrNameStr, packageName, "attr");
+            attrNs = (attrResName.packageName.equals("android")) ? ANDROID_NS : AUTO_NS;
+            attrName = attrResName.name;
           }
 
-          String value = entry.getValue().value;
+          String value = entry.getValue();
           DataType type;
           int valueInt = 0;
 
-          Context context = RuntimeEnvironment.application;
-          Resources resources = context.getResources();
-          AssetManager assets = resources.getAssets();
-          ShadowArscAssetManager shadowArscAssetManager = shadowOf(assets);
-          String packageName = context.getPackageName();
           if (attrResName != null) {
             TypedValue outValue = parse(attrId, attrResName, value, resources,
                 shadowArscAssetManager, packageName);
@@ -153,9 +140,8 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
             if (value == null || AttributeResource.isNull(value)) {
               type = DataType.NULL;
             } else if (AttributeResource.isResourceReference(value)) {
-              ResName resourceReference = AttributeResource
-                  .getResourceReference(value, packageName, null);
-              Integer valueResId = appResourceTable.getResourceId(resourceReference);
+              ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
+              Integer valueResId = resources.getIdentifier(resRef.name, resRef.type, resRef.packageName);
               type = DataType.REFERENCE;
               valueInt = valueResId;
             } else {

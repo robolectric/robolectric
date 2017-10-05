@@ -51,6 +51,7 @@ import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.NullResourceTable;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceMerger;
 import org.robolectric.res.ResourcePath;
@@ -314,10 +315,24 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
-    PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
-    PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
+    boolean isLegacy = false;
+    if (isLegacy) {
+      PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
+      PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
-    roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, roboMethod.testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
+      roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod,
+          roboMethod.testLifecycle, appManifest, config,
+          new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable),
+          new RoutingResourceTable(systemResourceTable, appResourceTable),
+          new RoutingResourceTable(systemResourceTable));
+    } else {
+      ResourceTable nullResourceTable = new NullResourceTable();
+
+      roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod,
+          roboMethod.testLifecycle, appManifest, config,
+          nullResourceTable, nullResourceTable,
+          nullResourceTable);
+    }
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
 
@@ -580,4 +595,5 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return result;
     }
   }
+
 }
