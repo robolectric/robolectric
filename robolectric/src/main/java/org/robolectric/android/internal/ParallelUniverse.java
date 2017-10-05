@@ -25,6 +25,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.ApplicationTestUtil;
+import org.robolectric.android.BinaryAndroidManifestParser;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
@@ -79,6 +80,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     hackySetSystemResources(); // todo: remove this before merge to master
 
     try {
+      appManifest.setAndroidManifestParser(new BinaryAndroidManifestParser());
+
       appManifest.initMetaData(appResourceTable);
     } catch (RoboNotFoundException e1) {
       throw new Resources.NotFoundException(e1.getMessage());

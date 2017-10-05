@@ -86,9 +86,6 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
   @Override
   public AttributeSet build() {
-    Class<?> xmlBlockClass = ReflectionHelpers
-        .loadClass(this.getClass().getClassLoader(), "android.content.res.XmlBlock");
-
     ByteBuffer buf = ByteBuffer.allocate(16 * 1024).order(ByteOrder.LITTLE_ENDIAN);
     Writer resStringPoolWriter = new Writer();
 
@@ -187,6 +184,8 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     buf.position(0);
     buf.get(bytes, 0, size);
 
+    Class<?> xmlBlockClass = ReflectionHelpers
+        .loadClass(this.getClass().getClassLoader(), "android.content.res.XmlBlock");
     Object xmlBlockInstance = ReflectionHelpers
         .callConstructor(xmlBlockClass, ClassParameter.from(byte[].class, bytes));
 

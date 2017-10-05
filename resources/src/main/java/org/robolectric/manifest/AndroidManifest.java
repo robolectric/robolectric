@@ -13,9 +13,13 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.robolectric.res.FileFsFile;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -36,7 +40,7 @@ public class AndroidManifest {
   private String applicationName;
   private String applicationLabel;
   private String rClassName;
-  private String packageName;
+  public String packageName;
   private String processName;
   private String themeRef;
   private String labelRef;
@@ -54,6 +58,7 @@ public class AndroidManifest {
   private final Map<String, String> applicationAttributes = new HashMap<>();
   private MetaData applicationMetaData;
   private List<AndroidManifest> libraryManifests = new ArrayList<>();
+  private AndroidManifestParser androidManifestParser;
 
   /**
    * Creates a Robolectric configuration using specified locations.
@@ -106,68 +111,20 @@ public class AndroidManifest {
     }
   }
 
+  public void setAndroidManifestParser(AndroidManifestParser androidManifestParser) {
+    this.androidManifestParser = androidManifestParser;
+  }
+
   void parseAndroidManifest() {
     if (manifestIsParsed) {
       return;
     }
 
     if (androidManifestFile != null && androidManifestFile.exists()) {
-      try {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        InputStream inputStream = androidManifestFile.getInputStream();
-        Document manifestDocument = db.parse(inputStream);
-        inputStream.close();
-
-        if (!packageNameIsOverridden()) {
-          packageName = getTagAttributeText(manifestDocument, "manifest", "package");
-        }
-
-        versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
-        versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
-        rClassName = packageName + ".R";
-
-        Node applicationNode = findApplicationNode(manifestDocument);
-        if (applicationNode != null) {
-          NamedNodeMap attributes = applicationNode.getAttributes();
-          int attrCount = attributes.getLength();
-          for (int i = 0; i < attrCount; i++) {
-            Node attr = attributes.item(i);
-            applicationAttributes.put(attr.getNodeName(), attr.getTextContent());
-          }
-
-          applicationName = applicationAttributes.get("android:name");
-          applicationLabel = applicationAttributes.get("android:label");
-          processName = applicationAttributes.get("android:process");
-          themeRef = applicationAttributes.get("android:theme");
-          labelRef = applicationAttributes.get("android:label");
-
-          parseReceivers(applicationNode);
-          parseServices(applicationNode);
-          parseActivities(applicationNode);
-          parseApplicationMetaData(applicationNode);
-          parseContentProviders(applicationNode);
-        }
-
-        minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-
-        String targetSdkText = getTagAttributeText(manifestDocument, "uses-sdk",
-            "android:targetSdkVersion");
-        if (targetSdkText != null) {
-          // Support Android O Preview. This can be removed once Android O is officially launched.
-          targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
-        }
-
-        maxSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:maxSdkVersion");
-        if (processName == null) {
-          processName = packageName;
-        }
-
-        parseUsedPermissions(manifestDocument);
-        parsePermissions(manifestDocument);
-      } catch (Exception ignored) {
-        ignored.printStackTrace();
+      if (androidManifestFile.toString().startsWith("jar:")) {
+        androidManifestParser.parse(androidManifestFile, this);
+      } else {
+        parseRaw();
       }
     } else {
       rClassName = (packageName != null && !packageName.equals("")) ? packageName + ".R" : null;
@@ -178,6 +135,69 @@ public class AndroidManifest {
     }
 
     manifestIsParsed = true;
+  }
+
+  private void parseRaw() {
+    try {
+      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+      DocumentBuilder db = dbf.newDocumentBuilder();
+      InputStream inputStream = androidManifestFile.getInputStream();
+      Document manifestDocument = db.parse(inputStream);
+      inputStream.close();
+
+      if (!packageNameIsOverridden()) {
+        packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+      }
+
+      versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode",
+          0);
+      versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
+      rClassName = packageName + ".R";
+
+      Node applicationNode = findApplicationNode(manifestDocument);
+      if (applicationNode != null) {
+        NamedNodeMap attributes = applicationNode.getAttributes();
+        int attrCount = attributes.getLength();
+        for (int i = 0; i < attrCount; i++) {
+          Node attr = attributes.item(i);
+          applicationAttributes.put(attr.getNodeName(), attr.getTextContent());
+        }
+
+        applicationName = applicationAttributes.get("android:name");
+        applicationLabel = applicationAttributes.get("android:label");
+        processName = applicationAttributes.get("android:process");
+        themeRef = applicationAttributes.get("android:theme");
+        labelRef = applicationAttributes.get("android:label");
+
+        parseReceivers(applicationNode);
+        parseServices(applicationNode);
+        parseActivities(applicationNode);
+        parseApplicationMetaData(applicationNode);
+        parseContentProviders(applicationNode);
+      }
+
+      minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk",
+          "android:minSdkVersion");
+
+      String targetSdkText = getTagAttributeText(manifestDocument, "uses-sdk",
+          "android:targetSdkVersion");
+      if (targetSdkText != null) {
+        // Support Android O Preview. This can be removed once Android O is officially launched.
+        targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
+      }
+
+      maxSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk",
+          "android:maxSdkVersion");
+      if (processName == null) {
+        processName = packageName;
+      }
+
+      parseUsedPermissions(manifestDocument);
+      parsePermissions(manifestDocument);
+    } catch (Exception ignored) {
+      ignored.printStackTrace();
+    }
   }
 
   private boolean packageNameIsOverridden() {

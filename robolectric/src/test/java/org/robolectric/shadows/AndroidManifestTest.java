@@ -1,4 +1,4 @@
-package org.robolectric.manifest;
+package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -18,11 +18,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.BinaryAndroidManifestParser;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.PermissionItemData;
+import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 
-@RunWith(JUnit4.class)
+@RunWith(RobolectricTestRunner.class)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -104,6 +112,12 @@ public class AndroidManifestTest {
     assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServiceData("com.foo.Service").getPermission())
         .isEqualTo("com.foo.Permission");
+  }
+
+  @Test
+  public void getPackageName() throws Exception {
+    AndroidManifest config = newConfig("AndroidManifest.xml");
+    assertThat(config.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test
@@ -485,7 +499,10 @@ public class AndroidManifestTest {
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
-  private static AndroidManifest newConfig(String androidManifestFile) {
-    return new AndroidManifest(resourceFile(androidManifestFile), null, null);
+  private AndroidManifest newConfig(String androidManifestFile) {
+    FsFile manifestFile = Fs.fromJar(getClass().getResource("/resources.ap_")).join("AndroidManifest.xml");
+    AndroidManifest androidManifest = new AndroidManifest(manifestFile, null, null);
+    androidManifest.setAndroidManifestParser(new BinaryAndroidManifestParser());
+    return androidManifest;
   }
 }
