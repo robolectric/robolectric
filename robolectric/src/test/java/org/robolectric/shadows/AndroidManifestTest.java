@@ -6,6 +6,7 @@ import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
@@ -18,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.ActivityData;
@@ -259,7 +259,7 @@ public class AndroidManifestTest {
   @Test
   public void shouldTolerateMissingRFile() throws Exception {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"), resourceFile("assets"));
-    appManifest.setParser(new AndroidManifestPullParser());
+    appManifest.setParser(new AndroidManifestPullParser(new AssetManager()));
     assertThat(appManifest.getPackageName()).isEqualTo("org.no.resources.for.me");
     assertThat(appManifest.getRClass()).isNull();
   }
@@ -492,14 +492,14 @@ public class AndroidManifestTest {
     File f = temporaryFolder.newFile(fileName);
     Files.write(contents, f, Charsets.UTF_8);
     AndroidManifest androidManifest = new AndroidManifest(Fs.newFile(f), null, null);
-    androidManifest.setParser(new AndroidManifestPullParser());
+    androidManifest.setParser(new AndroidManifestPullParser(new AssetManager()));
     return androidManifest;
   }
 
   private static AndroidManifest newConfig(String androidManifestFile) {
     AndroidManifest androidManifest = new AndroidManifest(resourceFile(androidManifestFile), null,
         null);
-    androidManifest.setParser(new AndroidManifestPullParser());
+    androidManifest.setParser(new AndroidManifestPullParser(new AssetManager()));
     return androidManifest;
   }
 }
