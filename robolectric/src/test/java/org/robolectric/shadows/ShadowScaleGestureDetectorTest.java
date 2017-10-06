@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.view.MotionEvent;
@@ -10,8 +10,8 @@ import android.view.ScaleGestureDetector;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowScaleGestureDetectorTest {

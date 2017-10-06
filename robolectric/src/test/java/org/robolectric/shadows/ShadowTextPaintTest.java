@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import android.text.TextPaint;
 import org.junit.Test;
