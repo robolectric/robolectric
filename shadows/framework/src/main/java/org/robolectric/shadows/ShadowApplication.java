@@ -741,7 +741,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     this.latestListPopupWindow = latestListPopupWindow;
   }
 
-  public class Wrapper {
+  public static class Wrapper {
     public BroadcastReceiver broadcastReceiver;
     public IntentFilter intentFilter;
     public Context context;

@@ -68,7 +68,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
   @Override
   public boolean equals(Object that) {
-    return that == this || that instanceof SdkConfig && ((SdkConfig) that).apiLevel == (apiLevel);
+    return that == this || (that instanceof SdkConfig && ((SdkConfig) that).apiLevel == (apiLevel));
   }
 
   @Override
@@ -111,13 +111,14 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
     @Override
     public boolean equals(Object that) {
-      return that == this || that instanceof SdkVersion && equals((SdkVersion) that);
+      return that == this || (that instanceof SdkVersion && isEqualTo((SdkVersion) that));
     }
 
-    public boolean equals(SdkVersion that) {
+    @SuppressWarnings("ReferenceEquality")
+    public boolean isEqualTo(SdkVersion that) {
       return that == this ||
-          Objects.equals(that.androidVersion, androidVersion) &&
-              Objects.equals(that.robolectricVersion, robolectricVersion);
+          (Objects.equals(that.androidVersion, androidVersion) &&
+              Objects.equals(that.robolectricVersion, robolectricVersion));
     }
 
     @Override

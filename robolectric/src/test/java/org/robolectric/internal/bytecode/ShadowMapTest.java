@@ -54,7 +54,7 @@ public class ShadowMapTest {
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }
 
-  class CursorAdapter {
+  static class CursorAdapter {
   }
 
 }

@@ -920,9 +920,8 @@ public class ShadowAccessibilityNodeInfo {
       performedActionAndArgsList = new LinkedList<>();
     }
 
-    performedActionAndArgsList.add(new Pair<Integer, Bundle>(new Integer(action), arguments));
-    return (actionListener != null) ? actionListener.onPerformAccessibilityAction(action, arguments)
-      : true;
+    performedActionAndArgsList.add(new Pair<>(action, arguments));
+    return actionListener == null || actionListener.onPerformAccessibilityAction(action, arguments);
   }
 
   private boolean childrenEqualityCheck(
@@ -1219,6 +1218,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public boolean equals(Object object) {
       if (object == null) {
         return false;

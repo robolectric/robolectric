@@ -517,7 +517,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * Container object to hold an Intent, together with the requestCode used
    * in a call to {@code Activity.startActivityForResult(Intent, int)}
    */
-  public class IntentForResult {
+  public static class IntentForResult {
     public Intent intent;
     public int requestCode;
     public Bundle options;

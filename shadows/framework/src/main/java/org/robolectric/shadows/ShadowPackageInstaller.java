@@ -29,7 +29,7 @@ public class ShadowPackageInstaller {
   private Map<Integer, PackageInstaller.Session> sessions = new HashMap<>();
   private Set<CallbackInfo> callbackInfos = new HashSet<>();
 
-  private class CallbackInfo {
+  private static class CallbackInfo {
     PackageInstaller.SessionCallback callback;
     Handler handler;
   }

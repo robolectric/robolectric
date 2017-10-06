@@ -368,7 +368,7 @@ public class ShadowMatrix {
       final float m01 = mValues[1];
       final float m10 = mValues[3];
       final float m11 = mValues[4];
-      return m00 == 0 && m11 == 0 && m01 != 0 && m10 != 0 || m00 != 0 && m11 != 0 && m01 == 0 && m10 == 0;
+      return (m00 == 0 && m11 == 0 && m01 != 0 && m10 != 0) || (m00 != 0 && m11 != 0 && m01 == 0 && m10 == 0);
     }
 
     public void getValues(float[] values) {
@@ -490,7 +490,7 @@ public class ShadowMatrix {
 
     @Override
     public boolean equals(Object o) {
-      return this == o || o instanceof SimpleMatrix && equals((SimpleMatrix) o);
+      return this == o || (o instanceof SimpleMatrix && equals((SimpleMatrix) o));
     }
 
     public boolean equals(SimpleMatrix matrix) {

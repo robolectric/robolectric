@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -154,11 +155,11 @@ public class ShadowLogTest {
     try {
       ShadowLog.stream = new PrintStream(bos);
       Log.d("tag", "msg");
-      assertThat(new String(bos.toByteArray())).isEqualTo("D/tag: msg" + System.getProperty("line.separator"));
+      assertThat(new String(bos.toByteArray(), UTF_8)).isEqualTo("D/tag: msg" + System.getProperty("line.separator"));
 
 
       Log.w("tag", new RuntimeException());
-      assertTrue(new String(bos.toByteArray()).contains("RuntimeException"));
+      assertTrue(new String(bos.toByteArray(), UTF_8).contains("RuntimeException"));
     } finally {
       ShadowLog.stream = old;
     }

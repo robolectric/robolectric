@@ -187,7 +187,7 @@ public class ParallelUniverseTest {
   }
 
   /** Can't use Mockito for classloader issues */
-  class ThrowingManifest extends AndroidManifest {
+  static class ThrowingManifest extends AndroidManifest {
     public ThrowingManifest() {
       super(null, null, null);
     }

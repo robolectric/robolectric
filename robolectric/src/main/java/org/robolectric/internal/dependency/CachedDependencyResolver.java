@@ -113,7 +113,7 @@ public class CachedDependencyResolver implements DependencyResolver {
     public <T extends Serializable> T load(String id, Class<T> type) {
       try {
         File file = new File(dir, id);
-        if (!file.exists() || validTime > 0 && file.lastModified() < new Date().getTime() - validTime) {
+        if (!file.exists() || (validTime > 0 && file.lastModified() < new Date().getTime() - validTime)) {
           return null;
         }
 

@@ -502,7 +502,7 @@ public class ShadowLocationManagerTest {
     }
   }
 
-  private class TestGpsListener implements Listener {
+  private static class TestGpsListener implements Listener {
 
     @Override
     public void onGpsStatusChanged(int event) {
