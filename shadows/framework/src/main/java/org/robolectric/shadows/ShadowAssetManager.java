@@ -98,6 +98,7 @@ public final class ShadowAssetManager {
 
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = Converter.getNextStringCookie();
+    outValue.changingConfigurations = 0;
 
     // TODO: Handle resource and style references
     if (attribute.isStyleReference()) {

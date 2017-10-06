@@ -108,7 +108,7 @@ public class ShadowPackageManagerTest {
     shadowPackageManager = shadowOf(packageManager);
   }
 
-  @Test
+  @Test @Config(sdk=25)
   public void testManifestParser() {
     AndroidManifestPullParser parser = new AndroidManifestPullParser();
     parser.parse();
