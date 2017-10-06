@@ -1,9 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.robolectric" android:sharedUserId="sharedUserId"
+      package="org.robolectric" android:sharedUserId="sharedUserId.robolectric"
     android:versionCode="123"
     android:versionName="aVersionName">
   <uses-sdk android:targetSdkVersion="23"/>
+
+  <permission android:name="some_permission"
+      android:description="@string/test_permission_description"
+      android:icon="@drawable/an_image"
+      android:label="@string/test_permission_label"
+      android:permissionGroup="my_permission_group"
+      android:protectionLevel="dangerous">
+    <meta-data android:name="meta_data_name" android:value="meta_data_value"/>
+  </permission>
+
+  <permission android:name="permission_with_literal_label"
+      android:description="@string/test_permission_description"
+      android:icon="@drawable/an_image"
+      android:label="Literal label"/>
+
+  <permission android:name="permission_with_minimal_fields"/>
+
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+  <uses-permission android:name="android.permission.GET_TASKS"/>
 
   <application android:name="org.robolectric.TestApplication"
          android:theme="@style/Theme.Robolectric"
@@ -23,26 +43,6 @@
          android:anyDensity="true"
          android:testOnly="true"
          android:vmSafeMode="true">
-
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.GET_TASKS"/>
-
-    <permission android:name="some_permission"
-                android:description="@string/test_permission_description"
-                android:icon="@drawable/an_image"
-                android:label="@string/test_permission_label"
-                android:permissionGroup="my_permission_group"
-                android:protectionLevel="dangerous">
-      <meta-data android:name="meta_data_name" android:value="meta_data_value"/>
-    </permission>
-
-    <permission android:name="permission_with_literal_label"
-                android:description="@string/test_permission_description"
-                android:icon="@drawable/an_image"
-                android:label="Literal label"/>
-
-    <permission android:name="permission_with_minimal_fields"/>
 
     <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
     <meta-data android:name="org.robolectric.metaName2" android:value="metaValue2" />
