@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.content.res.AssetManager;
 import android.os.Build;
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +49,6 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.AndroidManifestPullParser;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
@@ -243,7 +241,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       try {
         Config config = getConfig(frameworkMethod.getMethod());
         AndroidManifest appManifest = getAppManifest(config);
-        appManifest.setParser(new AndroidManifestPullParser(new AssetManager()));
 
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;

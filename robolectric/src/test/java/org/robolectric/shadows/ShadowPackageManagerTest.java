@@ -27,6 +27,7 @@ import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -102,6 +103,12 @@ public class ShadowPackageManagerTest {
   public void setUp() {
     packageManager = RuntimeEnvironment.application.getPackageManager();
     shadowPackageManager = shadowOf(packageManager);
+  }
+
+  @Test
+  public void testManifestParser() {
+    AndroidManifestPullParser parser = new AndroidManifestPullParser();
+    parser.parse();
   }
 
   @Test
