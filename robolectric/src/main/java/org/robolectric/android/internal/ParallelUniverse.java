@@ -25,7 +25,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.AndroidManifestPullParser;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;

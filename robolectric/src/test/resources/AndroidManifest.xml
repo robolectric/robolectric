@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.robolectric">
+      package="org.robolectric" android:sharedUserId="sharedUserId"
+    android:versionCode="123"
+    android:versionName="aVersionName">
   <uses-sdk android:targetSdkVersion="23"/>
 
   <application android:name="org.robolectric.TestApplication"
