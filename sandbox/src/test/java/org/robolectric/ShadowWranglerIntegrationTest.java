@@ -210,6 +210,7 @@ public class ShadowWranglerIntegrationTest {
 
   @Instrument
   public static class Child extends Parent {
+    @Override
     public String get() {
       return "from child (" + super.get() + ")";
     }

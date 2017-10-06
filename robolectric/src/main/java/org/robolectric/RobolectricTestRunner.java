@@ -490,7 +490,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   private static class MethodPassThrough extends Config.Implementation {
-    private FrameworkMethod method;
+    private final FrameworkMethod method;
 
     private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);

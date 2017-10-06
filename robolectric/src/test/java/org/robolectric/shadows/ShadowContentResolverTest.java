@@ -2,8 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -307,11 +308,11 @@ public class ShadowContentResolverTest {
 
   @Test
   public void openInputStream_returnsPreRegisteredStream() throws Exception {
-    shadowContentResolver.registerInputStream(uri21, new ByteArrayInputStream("ourStream".getBytes()));
+    shadowContentResolver.registerInputStream(uri21, new ByteArrayInputStream("ourStream".getBytes(UTF_8)));
     InputStream inputStream = contentResolver.openInputStream(uri21);
     byte[] data = new byte[9];
     inputStream.read(data);
-    assertThat(new String(data)).isEqualTo("ourStream");
+    assertThat(new String(data, UTF_8)).isEqualTo("ourStream");
   }
 
   @Test
@@ -857,7 +858,7 @@ public class ShadowContentResolverTest {
     }
   }
 
-  private class TestContentObserver extends ContentObserver {
+  private static class TestContentObserver extends ContentObserver {
     public TestContentObserver(Handler handler) {
       super(handler);
     }

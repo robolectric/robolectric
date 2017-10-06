@@ -221,7 +221,7 @@ public class SQLiteOpenHelperTest {
     assertThat(helper.onUpgradeCalled).isFalse();
   }
 
-  private class TestOpenHelper extends SQLiteOpenHelper {
+  private static class TestOpenHelper extends SQLiteOpenHelper {
     public boolean onCreateCalled;
     public boolean onUpgradeCalled;
     public boolean onOpenCalled;

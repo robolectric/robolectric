@@ -78,7 +78,7 @@ public class ShadowTypedArray {
     System.out.println(result.toString());
   }
 
-  private static final Map<Integer, String> TYPE_MAP = ImmutableMap.<Integer, String>builder()
+  private static final ImmutableMap<Integer, String> TYPE_MAP = ImmutableMap.<Integer, String>builder()
           .put(TypedValue.TYPE_NULL, "TYPE_NULL")
           .put(TypedValue.TYPE_REFERENCE, "TYPE_REFERENCE")
           .put(TypedValue.TYPE_ATTRIBUTE, "TYPE_ATTRIBUTE")

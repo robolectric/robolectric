@@ -1,5 +1,6 @@
 package org.robolectric.res.builder;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -75,7 +76,7 @@ public class XmlResourceParserImplTest {
       factory.setIgnoringElementContentWhitespace(true);
       DocumentBuilder documentBuilder = factory.newDocumentBuilder();
       Document document = documentBuilder.parse(
-          new ByteArrayInputStream(xmlValue.getBytes()));
+          new ByteArrayInputStream(xmlValue.getBytes(UTF_8)));
 
       parser = new XmlResourceParserImpl(document, "file", R.class.getPackage().getName(),
           TEST_PACKAGE, resourceTable);

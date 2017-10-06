@@ -492,7 +492,7 @@ public class ShadowIntentTest {
     }
   }
 
-  private class TestCharSequence implements CharSequence {
+  private static class TestCharSequence implements CharSequence {
     String s;
 
     public TestCharSequence(String s) {
