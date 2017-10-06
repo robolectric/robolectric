@@ -79,7 +79,7 @@ public class Scheduler {
     this.idleState = idleState;
     switch (idleState) {
       case UNPAUSED:
-        advanceBy(0);
+        advanceBy(0, TimeUnit.MILLISECONDS);
         break;
       case CONSTANT_IDLE:
         advanceToLastPostedRunnable();
@@ -206,22 +206,12 @@ public class Scheduler {
   /**
    * Run all runnables that are scheduled to run in the next time interval.
    *
-   * @param   interval  Time interval (in millis).
-   * @return  True if a runnable was executed.
-   * @deprecated Use {@link #advanceBy(long, TimeUnit)}.
-   */
-  @Deprecated
-  public synchronized boolean advanceBy(long interval) {
-    return advanceBy(interval, TimeUnit.MILLISECONDS);
-  }
-
-  /**
-   * Run all runnables that are scheduled to run in the next time interval.
-   *
+   * @param   interval  Time interval.
+   * @param   unit      Time unit.
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceBy(long amount, TimeUnit unit) {
-    long endingTime = currentTime + unit.toMillis(amount);
+  public boolean advanceBy(long interval, TimeUnit unit) {
+    long endingTime = currentTime + unit.toMillis(interval);
     return advanceTo(endingTime);
   }
 
@@ -331,7 +321,7 @@ public class Scheduler {
         advanceToLastPostedRunnable();
         break;
       case UNPAUSED:
-        advanceBy(0);
+        advanceBy(0, TimeUnit.MILLISECONDS);
         break;
       default:
     }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -110,9 +111,9 @@ public class ShadowLooperTest {
     }, 2000);
 
     assertThat(wasRun[0]).as("first").isFalse();
-    ShadowLooper.idleMainLooper(1999);
+    ShadowLooper.idleMainLooper(1999, MILLISECONDS);
     assertThat(wasRun[0]).as("second").isFalse();
-    ShadowLooper.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1, MILLISECONDS);
     assertThat(wasRun[0]).as("last").isTrue();
   }
 

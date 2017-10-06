@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -308,7 +309,7 @@ public class ShadowViewTest {
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    Robolectric.getForegroundThreadScheduler().advanceBy(1);
+    Robolectric.getForegroundThreadScheduler().advanceBy(1, MILLISECONDS);
     assertTrue(runnable.wasRun);
   }
 
@@ -319,7 +320,7 @@ public class ShadowViewTest {
 
     view.removeCallbacks(runnable);
 
-    Robolectric.getForegroundThreadScheduler().advanceBy(1);
+    Robolectric.getForegroundThreadScheduler().advanceBy(1, MILLISECONDS);
     assertThat(runnable.wasRun).isFalse();
   }
 

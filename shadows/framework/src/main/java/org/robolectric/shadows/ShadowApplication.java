@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
@@ -102,7 +103,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    * Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runBackgroundTasks() {
-    getInstance().getBackgroundThreadScheduler().advanceBy(0);
+    getInstance().getBackgroundThreadScheduler().advanceBy(0, TimeUnit.MILLISECONDS);
   }
 
   public static void setDisplayMetricsDensity(float densityMultiplier) {

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.view.animation.LinearInterpolator;
@@ -35,19 +36,19 @@ public class ShadowOverScrollerTest {
     assertThat(overScroller.timePassed()).isEqualTo(0);
     assertThat(overScroller.isFinished()).isFalse();
 
-    ShadowLooper.idleMainLooper(100);
+    ShadowLooper.idleMainLooper(100, MILLISECONDS);
     assertThat(overScroller.getCurrX()).isEqualTo(10);
     assertThat(overScroller.getCurrY()).isEqualTo(20);
     assertThat(overScroller.timePassed()).isEqualTo(100);
     assertThat(overScroller.isFinished()).isFalse();
 
-    ShadowLooper.idleMainLooper(401);
+    ShadowLooper.idleMainLooper(401, MILLISECONDS);
     assertThat(overScroller.getCurrX()).isEqualTo(50);
     assertThat(overScroller.getCurrY()).isEqualTo(100);
     assertThat(overScroller.timePassed()).isEqualTo(501);
     assertThat(overScroller.isFinished()).isFalse();
 
-    ShadowLooper.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000, MILLISECONDS);
     assertThat(overScroller.getCurrX()).isEqualTo(100);
     assertThat(overScroller.getCurrY()).isEqualTo(200);
     assertThat(overScroller.timePassed()).isEqualTo(1501);
@@ -63,10 +64,10 @@ public class ShadowOverScrollerTest {
     overScroller.startScroll(0, 0, 100, 200, 1000);
     assertThat(overScroller.computeScrollOffset()).isTrue();
 
-    ShadowLooper.idleMainLooper(500);
+    ShadowLooper.idleMainLooper(500, MILLISECONDS);
     assertThat(overScroller.computeScrollOffset()).isTrue();
 
-    ShadowLooper.idleMainLooper(500);
+    ShadowLooper.idleMainLooper(500, MILLISECONDS);
     assertThat(overScroller.computeScrollOffset()).isTrue();
     assertThat(overScroller.computeScrollOffset()).isFalse();
   }
@@ -74,7 +75,7 @@ public class ShadowOverScrollerTest {
   @Test
   public void abortAnimationShouldMoveToFinalPositionImmediately() {
     overScroller.startScroll(0, 0, 100, 200, 1000);
-    ShadowLooper.idleMainLooper(500);
+    ShadowLooper.idleMainLooper(500, MILLISECONDS);
     overScroller.abortAnimation();
 
     assertThat(overScroller.getCurrX()).isEqualTo(100);
@@ -86,7 +87,7 @@ public class ShadowOverScrollerTest {
   @Test
   public void forceFinishedShouldFinishWithoutMovingFurther() {
     overScroller.startScroll(0, 0, 100, 200, 1000);
-    ShadowLooper.idleMainLooper(500);
+    ShadowLooper.idleMainLooper(500, MILLISECONDS);
     overScroller.forceFinished(true);
 
     assertThat(overScroller.getCurrX()).isEqualTo(50);
