@@ -1,7 +1,6 @@
 package org.robolectric.integration_tests.mockito;
 
 import android.app.Activity;
-import android.support.v4.app.FragmentActivity;
 import android.widget.TextView;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,7 +21,7 @@ public class MockitoInjectMocksTest {
   TextView textView;
 
   @InjectMocks
-  Activity activity = Robolectric.setupActivity(FragmentActivity.class);
+  Activity activity = Robolectric.setupActivity(Activity.class);
 
   @Test
   public void testInjection() {
