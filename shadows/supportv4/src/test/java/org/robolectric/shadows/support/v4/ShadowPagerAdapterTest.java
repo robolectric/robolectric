@@ -1,6 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 import android.database.DataSetObserver;
 import android.support.v4.view.PagerAdapter;

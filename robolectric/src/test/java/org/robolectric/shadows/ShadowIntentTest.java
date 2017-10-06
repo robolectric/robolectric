@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)

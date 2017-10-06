@@ -1,10 +1,10 @@
 package org.robolectric.shadows.support.v4;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertSame;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
