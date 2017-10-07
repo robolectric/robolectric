@@ -30,6 +30,7 @@ public class AndroidManifest {
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
   private final String overridePackageName;
+  private final List<AndroidManifest> libraryManifests;
 
   private boolean manifestIsParsed;
 
@@ -53,7 +54,6 @@ public class AndroidManifest {
   private final List<String> usedPermissions = new ArrayList<>();
   private final Map<String, String> applicationAttributes = new HashMap<>();
   private MetaData applicationMetaData;
-  private List<AndroidManifest> libraryManifests = new ArrayList<>();
 
   /**
    * Creates a Robolectric configuration using specified locations.
@@ -74,13 +74,31 @@ public class AndroidManifest {
    * @param assetsDirectory     Location of the assets directory.
    * @param overridePackageName Application package name.
    */
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String overridePackageName) {
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
+      String overridePackageName) {
+    this(androidManifestFile, resDirectory, assetsDirectory, Collections.emptyList(), overridePackageName);
+    this.packageName = overridePackageName;
+  }
+
+  /**
+   * Creates a Robolectric configuration using specified values.
+   *
+   * @param androidManifestFile Location of the AndroidManifest.xml file.
+   * @param resDirectory        Location of the res directory.
+   * @param assetsDirectory     Location of the assets directory.
+   * @param libraryManifests    List of dependency library manifests.
+   * @param overridePackageName Application package name.
+   */
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
+      List<AndroidManifest> libraryManifests, String overridePackageName) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
     this.overridePackageName = overridePackageName;
+    this.libraryManifests = libraryManifests;
 
     this.packageName = overridePackageName;
+
   }
 
   public String getThemeRef(String activityClassName) {
@@ -561,11 +579,6 @@ public class AndroidManifest {
   public List<ContentProviderData> getContentProviders() {
     parseAndroidManifest();
     return providers;
-  }
-
-  public void setLibraryManifests(List<AndroidManifest> libraryManifests) {
-    Preconditions.checkNotNull(libraryManifests);
-    this.libraryManifests = libraryManifests;
   }
 
   public List<AndroidManifest> getLibraryManifests() {

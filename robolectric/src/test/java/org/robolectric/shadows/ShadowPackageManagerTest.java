@@ -229,7 +229,7 @@ public class ShadowPackageManagerTest {
 
   public static class ActivityWithConfigChanges extends Activity { }
 
-  @Test
+  @Test @Config(sdk=25)
   public void getActivityMetaData_configChanges() throws Exception {
     Activity activity = setupActivity(ShadowPackageManagerTest.ActivityWithConfigChanges.class);
 

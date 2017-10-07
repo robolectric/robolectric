@@ -16,7 +16,7 @@ public class MavenManifestFactory implements ManifestFactory {
   @Override
   public ManifestIdentifier identify(Config config) {
     if (config.manifest().equals(Config.NONE)) {
-      return new ManifestIdentifier(null, null, null, null, null);
+      return new ManifestIdentifier((String) null, null, null, null, null);
     }
 
     FsFile manifestFile = getBaseDir().join(config.manifest());
@@ -56,11 +56,11 @@ public class MavenManifestFactory implements ManifestFactory {
       Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
       Logger.debug("    Robolectric package name: " + packageName);
 
-      appManifest = new AndroidManifest(manifestFile, resDir, assetDir, packageName);
+      List<ManifestIdentifier> libraries = manifestIdentifier.getLibraries();
+      List<AndroidManifest> libraryManifests = createLibraryManifests(resDir, libraries);
+      appManifest = new AndroidManifest(manifestFile, resDir, assetDir, libraryManifests, packageName);
     }
 
-    List<FsFile> libraryDirs = manifestIdentifier.getLibraryDirs();
-    appManifest.setLibraryManifests(createLibraryManifests(appManifest, libraryDirs));
     return appManifest;
   }
 
@@ -84,32 +84,32 @@ public class MavenManifestFactory implements ManifestFactory {
   /**
    * Search through an AndroidManifest's library directories to load library AppManifest files.
    * For testing, allow a parameter override of the library directories.
-   * @param androidManifest The main AppManifest which may have library resources.
-   * @param libraryDirectories If not null, override the libraries in androidManifest.
+   * @param resDirectory
+   * @param libraries If not null, override the libraries in androidManifest.
    * @return A list of AndroidManifest objects, one for each library found.
    */
   private static List<AndroidManifest> createLibraryManifests(
-      AndroidManifest androidManifest,
-      List<FsFile> libraryDirectories) {
+      FsFile resDirectory, List<ManifestIdentifier> libraries) {
     List<AndroidManifest> libraryManifests = new ArrayList<>();
-    if (androidManifest != null) {
+    if (resDirectory != null) {
       // If there is no library override, look through subdirectories.
-      if (libraryDirectories == null) {
-        libraryDirectories = findLibraries(androidManifest);
+      if (libraries == null) {
+        libraries = findLibraries(resDirectory);
       }
 
-      for (FsFile libraryBaseDir : libraryDirectories) {
-        AndroidManifest libraryManifest = createLibraryAndroidManifest(libraryBaseDir);
-        libraryManifest.setLibraryManifests(
-            createLibraryManifests(libraryManifest, null));
+      for (ManifestIdentifier library : libraries) {
+        AndroidManifest libraryManifest = createLibraryAndroidManifest(library,
+            createLibraryManifests(resDirectory, null));
         libraryManifests.add(libraryManifest);
       }
     }
     return libraryManifests;
   }
 
-  private static AndroidManifest createLibraryAndroidManifest(FsFile libraryBaseDir) {
-    return new AndroidManifest(libraryBaseDir.join(Config.DEFAULT_MANIFEST_NAME), libraryBaseDir.join(Config.DEFAULT_RES_FOLDER), libraryBaseDir.join(Config.DEFAULT_ASSET_FOLDER));
+  private static AndroidManifest createLibraryAndroidManifest(ManifestIdentifier libraryBaseDir,
+      List<AndroidManifest> libraryManifests) {
+    return new AndroidManifest(libraryBaseDir.getManifestFile(), libraryBaseDir.getResDir(),
+        libraryBaseDir.getAssetDir(), libraryManifests, null);
   }
 
   private static Properties getProperties(FsFile propertiesFile) {
@@ -140,13 +140,12 @@ public class MavenManifestFactory implements ManifestFactory {
   /**
    * Find valid library AndroidManifest files referenced from an already loaded AndroidManifest's
    * "project.properties" file.
-   * @param androidManifest
    */
-  private static List<FsFile> findLibraries(AndroidManifest androidManifest) {
-    List<FsFile> libraryBaseDirs = new ArrayList<>();
+  private static List<ManifestIdentifier> findLibraries(FsFile resDirectory) {
+    List<ManifestIdentifier> libraryBaseDirs = new ArrayList<>();
 
-    if (androidManifest.getResDirectory() != null) {
-      FsFile baseDir = androidManifest.getResDirectory().getParent();
+    if (resDirectory != null) {
+      FsFile baseDir = resDirectory.getParent();
       final Properties properties = getProperties(baseDir.join("project.properties"));
       Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
       properties.putAll(overrideProperties);
@@ -154,12 +153,17 @@ public class MavenManifestFactory implements ManifestFactory {
       int libRef = 1;
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-        FsFile libraryBaseDir = baseDir.join(lib);
-        if (libraryBaseDir.isDirectory()) {
+        FsFile libraryDir = baseDir.join(lib);
+        if (libraryDir.isDirectory()) {
           // Ignore directories without any files
-          FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
+          FsFile[] libraryBaseDirFiles = libraryDir.listFiles();
           if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
-            libraryBaseDirs.add(libraryBaseDir);
+            libraryBaseDirs.add(new ManifestIdentifier(
+                null,
+                existsOrNull(libraryDir.join(Config.DEFAULT_MANIFEST_NAME)),
+                existsOrNull(libraryDir.join(Config.DEFAULT_RES_FOLDER)),
+                existsOrNull(libraryDir.join(Config.DEFAULT_ASSET_FOLDER)),
+                null));
           }
         }
 
@@ -167,5 +171,9 @@ public class MavenManifestFactory implements ManifestFactory {
       }
     }
     return libraryBaseDirs;
+  }
+
+  private static FsFile existsOrNull(FsFile fsFile) {
+    return fsFile.exists() ? fsFile : null;
   }
 }
