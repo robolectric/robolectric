@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
@@ -34,14 +34,14 @@ public class ShadowScaleGestureDetectorTest {
   @Test
   public void test_getScaleFactor() throws Exception {
     shadowOf(detector).setScaleFactor(2.0f);
-    assertEquals(detector.getScaleFactor(), 2.0f);
+    assertThat(2.0f).isEqualTo(detector.getScaleFactor());
   }
 
   @Test
   public void test_getFocusXY() throws Exception {
     shadowOf(detector).setFocusXY(2.0f, 3.0f);
-    assertEquals(detector.getFocusX(), 2.0f);
-    assertEquals(detector.getFocusY(), 3.0f);
+    assertThat(2.0f).isEqualTo(detector.getFocusX());
+    assertThat(3.0f).isEqualTo(detector.getFocusY());
   }
 
   @Test
@@ -66,9 +66,9 @@ public class ShadowScaleGestureDetectorTest {
 
   private void assertDefaults() {
     assertNull(shadowOf(detector).getOnTouchEventMotionEvent());
-    assertEquals(detector.getScaleFactor(), 1f);
-    assertEquals(detector.getFocusX(), 0f);
-    assertEquals(detector.getFocusY(), 0f);
+    assertThat(1f).isEqualTo(detector.getScaleFactor());
+    assertThat(0f).isEqualTo(detector.getFocusX());
+    assertThat(0f).isEqualTo(detector.getFocusY());
   }
 
   private static class TestOnGestureListener implements ScaleGestureDetector.OnScaleGestureListener {

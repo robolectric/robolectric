@@ -35,7 +35,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -79,8 +82,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -641,7 +644,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
-    assertEquals(1.23f, metaValue);
+    assertThat(metaValue).isEqualTo(1.23f);
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));
@@ -813,7 +816,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
-    assertEquals(1.23f, metaValue);
+    assertThat(metaValue).isEqualTo(1.23f);
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));

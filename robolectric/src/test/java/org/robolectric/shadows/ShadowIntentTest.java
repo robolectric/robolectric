@@ -77,15 +77,15 @@ public class ShadowIntentTest {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2d));
     assertEquals(2d, intent.getExtras().get("foo"));
-    assertEquals(2d, intent.getDoubleExtra("foo", -1));
+    assertThat(intent.getDoubleExtra("foo", -1)).isEqualTo(2d);
   }
 
   @Test
   public void testFloatExtra() throws Exception {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2f));
-    assertEquals(2f, intent.getExtras().get("foo"));
-    assertEquals(2f, intent.getFloatExtra("foo", -1));
+    assertThat(intent.getExtras().get("foo")).isEqualTo(2f);
+    assertThat(intent.getFloatExtra("foo", -1)).isEqualTo(2f);
   }
 
   @Test
