@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import android.app.ActivityThread;
+import android.app.Application;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -29,11 +31,9 @@ public class ShadowActivityThread {
         if (method.getName().equals("getApplicationInfo")) {
           String packageName = (String) args[0];
           int flags = (Integer) args[1];
-          try {
-            return RuntimeEnvironment.application.getPackageManager().getApplicationInfo(packageName, flags);
-          } catch (PackageManager.NameNotFoundException e) {
-            return null;
-          }
+          ApplicationInfo applicationInfo = new ApplicationInfo();
+          applicationInfo.packageName = packageName;
+          return applicationInfo;
         } else if (method.getName().equals("notifyPackageUse")) {
           return null;
         } else if (method.getName().equals("getPackageInstaller")) {
