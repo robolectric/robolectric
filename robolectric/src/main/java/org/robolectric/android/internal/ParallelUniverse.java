@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
@@ -7,7 +8,9 @@ import android.app.Application;
 import android.app.LoadedApk;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageParser.Package;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -26,8 +29,10 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.res.Fs;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.AndroidManifestPullParser;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -113,18 +118,29 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
+
+
+    String packageName = appManifest.getPackageName();
+
     RuntimeEnvironment.application = application;
 
     if (application != null) {
       shadowsAdapter.bind(application, appManifest);
 
-      final ApplicationInfo applicationInfo;
       try {
-        applicationInfo = systemContextImpl.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
+        Context contextImpl = systemContextImpl.createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE);
+        ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
+        ApplicationTestUtil.attach(application, contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
 
+      AndroidManifestPullParser parser = new AndroidManifestPullParser();
+      Package packageInfo = parser.parse(packageName, Fs.fileFromPath("./src/test/resources/AndroidManifest.xml"),
+          application.getResources());
+      shadowOf(application.getPackageManager()).addPackage(packageInfo);
+
+      Resources appResources = application.getResources();
       final Class<?> appBindDataClass;
       try {
         appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
@@ -132,21 +148,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         throw new RuntimeException(e);
       }
       Object data = ReflectionHelpers.newInstance(appBindDataClass);
-      ReflectionHelpers.setField(data, "processName", "org.robolectric");
-      ReflectionHelpers.setField(data, "appInfo", applicationInfo);
+      ReflectionHelpers.setField(data, "processName", packageName);
+      ReflectionHelpers.setField(data, "appInfo", packageInfo.applicationInfo);
       ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
-      LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
-
-      try {
-        Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-        ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
-        ApplicationTestUtil.attach(application, contextImpl);
-      } catch (PackageManager.NameNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-
-      Resources appResources = application.getResources();
+      LoadedApk loadedApk = activityThread.getPackageInfo(packageInfo.applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 

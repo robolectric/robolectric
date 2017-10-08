@@ -36,10 +36,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.*;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -83,8 +80,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -612,7 +609,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getProviderInfo_shouldMetaDataInProviderInfos() throws Exception {
-    ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
+    ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), PackageManager.GET_META_DATA);
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
 
     assertThat(providerInfo.metaData.getString("greeting")).isEqualTo("Hello");
@@ -628,58 +625,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void testReceiverInfo() throws Exception {
     ActivityInfo info = packageManager.getReceiverInfo(new ComponentName(RuntimeEnvironment.application, ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
-    Bundle meta = info.metaData;
-    Object metaValue = meta.get("org.robolectric.metaName1");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue1", metaValue);
-
-    metaValue = meta.get("org.robolectric.metaName2");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue2", metaValue);
-
-    metaValue = meta.get("org.robolectric.metaFalse");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(false, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaTrue");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(true, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaInt");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(123, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaFloat");
-    assertTrue(Float.class.isInstance(metaValue));
-    assertThat(metaValue).isEqualTo(1.23f);
-
-    metaValue = meta.get("org.robolectric.metaColor");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(Color.WHITE, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.app_name), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.str_int), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(R.string.app_name, metaValue);
+    assertThat(info.metaData.getString("numberOfSheep")).isEqualTo("42");
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -823,7 +769,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
-    assertThat(metaValue).isEqualTo(1.23f);
+    assertEquals(new Float(1.23), metaValue);
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));

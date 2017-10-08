@@ -16,7 +16,24 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+import static android.content.pm.PackageManager.GET_ACTIVITIES;
+import static android.content.pm.PackageManager.GET_CONFIGURATIONS;
+import static android.content.pm.PackageManager.GET_GIDS;
+import static android.content.pm.PackageManager.GET_INSTRUMENTATION;
+import static android.content.pm.PackageManager.GET_INTENT_FILTERS;
 import static android.content.pm.PackageManager.GET_META_DATA;
+import static android.content.pm.PackageManager.GET_PERMISSIONS;
+import static android.content.pm.PackageManager.GET_PROVIDERS;
+import static android.content.pm.PackageManager.GET_RECEIVERS;
+import static android.content.pm.PackageManager.GET_RESOLVED_FILTER;
+import static android.content.pm.PackageManager.GET_SERVICES;
+import static android.content.pm.PackageManager.GET_SHARED_LIBRARY_FILES;
+import static android.content.pm.PackageManager.GET_SIGNATURES;
+import static android.content.pm.PackageManager.GET_URI_PERMISSION_PATTERNS;
+import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
+import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
+import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
+import static android.content.pm.PackageManager.MATCH_DISABLED_UNTIL_USED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_MATCH;
@@ -40,10 +57,14 @@ import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageParser;
+import android.content.pm.PackageParser.Activity;
+import android.content.pm.PackageParser.IntentInfo;
+import android.content.pm.PackageParser.Package;
+import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
-import android.content.pm.PathPermission;
+import android.content.pm.PackageUserState;
 import android.content.pm.PermissionInfo;
-import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
@@ -52,8 +73,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.PatternMatcher;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Pair;
@@ -75,12 +94,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.manifest.ActivityData;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.manifest.IntentFilterData;
-import org.robolectric.manifest.PathPermissionData;
 import org.robolectric.manifest.PermissionItemData;
-import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.util.TempDirectory;
@@ -126,6 +140,7 @@ public class ShadowPackageManager {
   Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   List<FeatureInfo> systemAvailableFeatures = new LinkedList<>();
   final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  final Map<String, Package> packages = new LinkedHashMap<>();
   private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
   final Map<String, PackageStats> packageStatsMap = new HashMap<>();
   final Map<String, String> packageInstallerMap = new HashMap<>();
@@ -135,7 +150,6 @@ public class ShadowPackageManager {
   final Map<Integer, Integer> verificationResults = new HashMap<>();
   final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
   final Map<String, String> currentToCanonicalNames = new HashMap<>();
-  final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
   final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
   final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   final Map<String, Drawable> applicationIcons = new HashMap<>();
@@ -150,10 +164,6 @@ public class ShadowPackageManager {
   private Set<String> deletedPackages = new HashSet<>();
   Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
 
-  public ShadowPackageManager() {
-    addManifest(RuntimeEnvironment.getAppManifest());
-  }
-
   /**
    * Goes through the meta data and puts each value in to a
    * bundle as the correct type.
@@ -163,7 +173,7 @@ public class ShadowPackageManager {
    * @param meta Meta data to put in to a bundle
    * @return bundle containing the meta data
    */
-  static Bundle metaDataToBundle(Map<String, Object> meta) {
+  private static Bundle metaDataToBundle(Map<String, Object> meta) {
     if (meta.size() == 0) {
         return null;
     }
@@ -212,106 +222,37 @@ public class ShadowPackageManager {
     return classString;
   }
 
-  static PathPermission[] createPathPermissions(List<PathPermissionData> pathPermissionDatas) {
-    PathPermission[] pathPermissions = new PathPermission[pathPermissionDatas.size()];
-    for (int i = 0; i < pathPermissions.length; i++) {
-      PathPermissionData data = pathPermissionDatas.get(i);
-
-      final String path;
-      final int type;
-      if (data.pathPrefix != null) {
-        path = data.pathPrefix;
-        type = PathPermission.PATTERN_PREFIX;
-      } else if (data.pathPattern != null) {
-        path = data.pathPattern;
-        type = PathPermission.PATTERN_SIMPLE_GLOB;
-      } else {
-        path = data.path;
-        type = PathPermission.PATTERN_LITERAL;
-      }
-
-      pathPermissions[i] = new PathPermission(path, type, data.readPermission, data.writePermission);
-    }
-
-    return pathPermissions;
-  }
-
-  static IntentFilter matchIntentFilter(Intent intent, List<IntentFilterData> intentFilters) {
-    for (IntentFilterData intentFilterData : intentFilters) {
-      List<String> actionList = intentFilterData.getActions();
-      List<String> categoryList = intentFilterData.getCategories();
-      IntentFilter intentFilter = new IntentFilter();
-
-      for (String action : actionList) {
-        intentFilter.addAction(action);
-      }
-
-      for (String category : categoryList) {
-        intentFilter.addCategory(category);
-      }
-
-      for (String scheme : intentFilterData.getSchemes()) {
-        intentFilter.addDataScheme(scheme);
-      }
-
-      for (String mimeType : intentFilterData.getMimeTypes()) {
-        try {
-          intentFilter.addDataType(mimeType);
-        } catch (IntentFilter.MalformedMimeTypeException ex) {
-          throw new RuntimeException(ex);
-        }
-      }
-
-      for (String path : intentFilterData.getPaths()) {
-        intentFilter.addDataPath(path, PatternMatcher.PATTERN_LITERAL);
-      }
-
-      for (String pathPattern : intentFilterData.getPathPatterns()) {
-        intentFilter.addDataPath(pathPattern, PatternMatcher.PATTERN_SIMPLE_GLOB);
-      }
-
-      for (String pathPrefix : intentFilterData.getPathPrefixes()) {
-        intentFilter.addDataPath(pathPrefix, PatternMatcher.PATTERN_PREFIX);
-      }
-
-      for (IntentFilterData.DataAuthority authority : intentFilterData.getAuthorities()) {
-        intentFilter.addDataAuthority(authority.getHost(), authority.getPort());
-      }
-
-      // match action
-      boolean matchActionResult = intentFilter.matchAction(intent.getAction());
-      // match category
-      String matchCategoriesResult = intentFilter.matchCategories(intent.getCategories());
-      // match data
-
-      int matchResult = intentFilter.matchData(intent.getType(),
-          (intent.getData() != null ? intent.getData().getScheme() : null),
-          intent.getData());
-      if (matchActionResult && (matchCategoriesResult == null) &&
-          (matchResult != IntentFilter.NO_MATCH_DATA && matchResult != IntentFilter.NO_MATCH_TYPE)){
-        return intentFilter;
+  static IntentFilter matchIntentFilter(Intent intent, ArrayList<? extends IntentInfo> intentFilters) {
+    for (IntentInfo intentInfo : intentFilters) {
+      if (intentInfo.match(intent.getAction(), intent.getType(), intent.getScheme(), intent.getData(), intent.getCategories(), "ShadowPackageManager") >= 0) {
+        return intentInfo;
       }
     }
     return null;
   }
 
-  static ResolveInfo getResolveInfo(ServiceData service, IntentFilter intentFilter,
-      String packageName) {
-    try {
-      ResolveInfo info = new ResolveInfo();
-      info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
-      info.serviceInfo = new ServiceInfo();
-      info.serviceInfo.name = service.getClassName();
-      info.serviceInfo.packageName = packageName;
-      info.serviceInfo.applicationInfo = new ApplicationInfo();
-      info.filter = new IntentFilter();
-      for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
-        info.filter.addDataType(it.next());
-      }
-      return info;
-    } catch (IntentFilter.MalformedMimeTypeException e) {
-      throw new RuntimeException(e);
-    }
+  static ResolveInfo getResolveInfo(Activity activity, IntentFilter intentFilter) {
+    ResolveInfo info = new ResolveInfo();
+    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
+    info.activityInfo = new ActivityInfo();
+    info.activityInfo.name = activity.info.name;
+    info.activityInfo.packageName = activity.info.packageName;
+    info.activityInfo.applicationInfo = activity.info.applicationInfo;
+    info.activityInfo.permission = activity.info.permission;
+    info.filter = new IntentFilter(intentFilter);
+    return info;
+  }
+
+  static ResolveInfo getResolveInfo(Service service, IntentFilter intentFilter) {
+    ResolveInfo info = new ResolveInfo();
+    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
+    info.serviceInfo = new ServiceInfo();
+    info.serviceInfo.name = service.info.name;
+    info.serviceInfo.packageName = service.info.packageName;
+    info.serviceInfo.applicationInfo = service.info.applicationInfo;
+    info.activityInfo.permission = service.info.permission;
+    info.filter = new IntentFilter(intentFilter);
+    return info;
   }
 
   private static int decodeProtectionLevel(String protectionLevel) {
@@ -363,16 +304,6 @@ public class ShadowPackageManager {
       permissionInfo.metaData = metaDataToBundle(permissionItemData.getMetaData().getValueMap());
     }
     return permissionInfo;
-  }
-
-  private static int decodeFlags(Map<String, String> applicationAttributes) {
-    int applicationFlags = 0;
-    for (Pair<String, Integer> pair : APPLICATION_FLAGS) {
-      if ("true".equals(applicationAttributes.get(pair.first))) {
-        applicationFlags |= pair.second;
-      }
-    }
-    return applicationFlags;
   }
 
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
@@ -656,114 +587,8 @@ public class ShadowPackageManager {
     extraPermissions.put(permissionInfo.name, permissionInfo);
   }
 
-  public void addManifest(AndroidManifest androidManifest) {
-    androidManifests.put(androidManifest.getPackageName(), androidManifest);
-
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = androidManifest.getPackageName();
-    packageInfo.versionName = androidManifest.getVersionName();
-    packageInfo.versionCode = androidManifest.getVersionCode();
-
-    Map<String,ActivityData> activityDatas = androidManifest.getActivityDatas();
-
-    for (ActivityData data : activityDatas.values()) {
-      String name = data.getName();
-      String activityName = name.startsWith(".") ? androidManifest.getPackageName() + name : name;
-      Intent intent = new Intent(activityName);
-      List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
-      if (infoList1 == null) {
-        infoList1 = new ArrayList<>();
-        resolveInfoForIntent.put(intent, infoList1);
-      }
-      List<ResolveInfo> infoList = infoList1;
-      infoList.add(new ResolveInfo());
-    }
-
-    ContentProviderData[] cpdata = androidManifest.getContentProviders().toArray(new ContentProviderData[]{});
-    if (cpdata.length == 0) {
-      packageInfo.providers = null;
-    } else {
-      packageInfo.providers = new ProviderInfo[cpdata.length];
-      for (int i = 0; i < cpdata.length; i++) {
-        ProviderInfo info = new ProviderInfo();
-        info.authority = cpdata[i].getAuthorities(); // todo: support multiple authorities
-        info.name = cpdata[i].getClassName();
-        info.packageName = androidManifest.getPackageName();
-        info.metaData = metaDataToBundle(cpdata[i].getMetaData().getValueMap());
-        packageInfo.providers[i] = info;
-      }
-    }
-
-    // Populate information related to BroadcastReceivers. Broadcast receivers can be queried in two
-    // possible ways,
-    // 1. PackageManager#getPackageInfo(...),
-    // 2. PackageManager#queryBroadcastReceivers(...)
-    // The following piece of code will let you enable querying receivers through both the methods.
-    List<ActivityInfo> receiverActivityInfos = new ArrayList<>();
-    for (int i = 0; i < androidManifest.getBroadcastReceivers().size(); ++i) {
-      ActivityInfo activityInfo = new ActivityInfo();
-      activityInfo.name = androidManifest.getBroadcastReceivers().get(i).getClassName();
-      activityInfo.permission = androidManifest.getBroadcastReceivers().get(i).getPermission();
-      receiverActivityInfos.add(activityInfo);
-
-      ResolveInfo resolveInfo = new ResolveInfo();
-      resolveInfo.activityInfo = activityInfo;
-      IntentFilter filter = new IntentFilter();
-      for (String action : androidManifest.getBroadcastReceivers().get(i).getActions()) {
-        filter.addAction(action);
-      }
-      resolveInfo.filter = filter;
-
-      for (String action : androidManifest.getBroadcastReceivers().get(i).getActions()) {
-        Intent intent = new Intent(action);
-        intent.setPackage(androidManifest.getPackageName());
-        List<ResolveInfo> infoList1 = resolveInfoForIntent.get(intent);
-        if (infoList1 == null) {
-          infoList1 = new ArrayList<>();
-          resolveInfoForIntent.put(intent, infoList1);
-        }
-        List<ResolveInfo> infoList = infoList1;
-        infoList.add(resolveInfo);
-      }
-    }
-    packageInfo.receivers = receiverActivityInfos.toArray(new ActivityInfo[0]);
-
-    String[] usedPermissions = androidManifest.getUsedPermissions().toArray(new String[]{});
-    if (usedPermissions.length == 0) {
-      packageInfo.requestedPermissions = null;
-    } else {
-      packageInfo.requestedPermissions = usedPermissions;
-    }
-
-    ApplicationInfo applicationInfo = new ApplicationInfo();
-    applicationInfo.flags = decodeFlags(androidManifest.getApplicationAttributes());
-    applicationInfo.targetSdkVersion = androidManifest.getTargetSdkVersion();
-    applicationInfo.packageName = androidManifest.getPackageName();
-    applicationInfo.processName = androidManifest.getProcessName();
-    applicationInfo.name = androidManifest.getApplicationName();
-    applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
-    applicationInfo.uid = Process.myUid();
-    setUpPackageStorage(applicationInfo);
-
-    int labelRes = 0;
-    if (androidManifest.getLabelRef() != null) {
-      String fullyQualifiedName = ResName.qualifyResName(androidManifest.getLabelRef(), androidManifest
-          .getPackageName());
-      Integer id = fullyQualifiedName == null ? null : RuntimeEnvironment.getAppResourceTable().getResourceId(new ResName(fullyQualifiedName));
-      labelRes = id != null ? id : 0;
-    }
-
-    applicationInfo.labelRes = labelRes;
-    String labelRef = androidManifest.getLabelRef();
-    if (labelRef != null && !labelRef.startsWith("@")) {
-      applicationInfo.nonLocalizedLabel = labelRef;
-    }
-
-    packageInfo.applicationInfo = applicationInfo;
-    addPackage(packageInfo);
-  }
-
   public void removePackage(String packageName) {
+    packages.remove(packageName);
     packageInfos.remove(packageName);
   }
 
@@ -973,6 +798,34 @@ public class ShadowPackageManager {
       }
     }
     return res;
+  }
+
+  public void addPackage(Package appPackage) {
+    int flags =
+        GET_ACTIVITIES |
+            GET_RECEIVERS |
+            GET_SERVICES |
+            GET_PROVIDERS |
+            GET_INSTRUMENTATION |
+            GET_INTENT_FILTERS |
+            GET_SIGNATURES |
+            GET_RESOLVED_FILTER |
+            GET_META_DATA |
+            GET_GIDS |
+            MATCH_DISABLED_COMPONENTS |
+            GET_SHARED_LIBRARY_FILES |
+            GET_URI_PERMISSION_PATTERNS |
+            GET_PERMISSIONS |
+            MATCH_UNINSTALLED_PACKAGES |
+            GET_CONFIGURATIONS |
+            MATCH_DISABLED_UNTIL_USED_COMPONENTS |
+            MATCH_DIRECT_BOOT_UNAWARE |
+            MATCH_DIRECT_BOOT_AWARE
+        ;
+
+    packages.put(appPackage.packageName, appPackage);
+    PackageInfo packageInfo = PackageParser.generatePackageInfo(appPackage, new int[]{0}, flags, 0, 0, new HashSet<String>(), new PackageUserState());
+    addPackage(packageInfo);
   }
 
   public static class IntentComparator implements Comparator<Intent> {
