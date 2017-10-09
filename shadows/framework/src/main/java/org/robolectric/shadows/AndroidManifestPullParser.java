@@ -34,21 +34,28 @@ public class AndroidManifestPullParser {
       PackageParser packageParser = new PackageParser();
 
       Package pkg = null;
-      if(RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.O) {
+      if(RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
         pkg = ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parseBaseApk",
-                from(Resources.class, resources),
-                from(XmlResourceParser.class, parser),
-                from(int.class, 0),
-                from(String[].class, outError)
-            );
+            from(String.class, "unused"),
+            from(Resources.class, resources),
+            from(XmlResourceParser.class, parser),
+            from(int.class, 0),
+            from(String[].class, outError)
+        );
+      } else if(RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.L) {
+        pkg = ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parseBaseApk",
+            from(Resources.class, resources),
+            from(XmlResourceParser.class, parser),
+            from(int.class, 0),
+            from(String[].class, outError)
+        );
       } else {
-        pkg = ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parseBaseApk",
-                        from(String.class, "dunno"),
-                        from(Resources.class, resources),
-                        from(XmlResourceParser.class, parser),
-                        from(int.class, 0),
-                        from(String[].class, outError)
-                );
+        pkg = ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parsePackage",
+            from(Resources.class, resources),
+            from(XmlResourceParser.class, parser),
+            from(int.class, 0),
+            from(String[].class, outError)
+        );
       }
       if (pkg == null) {
         throw new RuntimeException("dunno (at " + parser.getPositionDescription() + "): " + outError[0]);

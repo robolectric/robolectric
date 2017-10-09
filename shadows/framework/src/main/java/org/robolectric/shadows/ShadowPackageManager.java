@@ -71,10 +71,8 @@ import android.content.pm.Signature;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Binder;
-import android.os.Bundle;
-import android.os.RemoteException;
-import android.os.UserHandle;
+import android.os.*;
+import android.util.ArraySet;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
@@ -97,45 +95,11 @@ import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.PermissionItemData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
 @Implements(PackageManager.class)
 public class ShadowPackageManager {
-
-  private static final List<Pair<String, Integer>> APPLICATION_FLAGS = asList(
-      Pair.create("android:allowBackup", FLAG_ALLOW_BACKUP),
-      Pair.create("android:allowClearUserData", FLAG_ALLOW_CLEAR_USER_DATA),
-      Pair.create("android:allowTaskReparenting", FLAG_ALLOW_TASK_REPARENTING),
-      Pair.create("android:debuggable", FLAG_DEBUGGABLE),
-      Pair.create("android:hasCode", FLAG_HAS_CODE),
-      Pair.create("android:killAfterRestore", FLAG_KILL_AFTER_RESTORE),
-      Pair.create("android:persistent", FLAG_PERSISTENT),
-      Pair.create("android:resizeable", FLAG_RESIZEABLE_FOR_SCREENS),
-      Pair.create("android:restoreAnyVersion", FLAG_RESTORE_ANY_VERSION),
-      Pair.create("android:largeScreens", FLAG_SUPPORTS_LARGE_SCREENS),
-      Pair.create("android:normalScreens", FLAG_SUPPORTS_NORMAL_SCREENS),
-      Pair.create("android:anyDensity", FLAG_SUPPORTS_SCREEN_DENSITIES),
-      Pair.create("android:smallScreens", FLAG_SUPPORTS_SMALL_SCREENS),
-      Pair.create("android:testOnly", FLAG_TEST_ONLY),
-      Pair.create("android:vmSafeMode", FLAG_VM_SAFE_MODE)
-  );
-
-  private static final List<Pair<String, Integer>> CONFIG_OPTIONS = asList(
-      Pair.create("mcc", ActivityInfo.CONFIG_MCC),
-      Pair.create("mnc", ActivityInfo.CONFIG_MNC),
-      Pair.create("locale", ActivityInfo.CONFIG_LOCALE),
-      Pair.create("touchscreen", ActivityInfo.CONFIG_TOUCHSCREEN),
-      Pair.create("keyboard", ActivityInfo.CONFIG_KEYBOARD),
-      Pair.create("keyboardHidden", ActivityInfo.CONFIG_KEYBOARD_HIDDEN),
-      Pair.create("navigation", ActivityInfo.CONFIG_NAVIGATION),
-      Pair.create("screenLayout", ActivityInfo.CONFIG_SCREEN_LAYOUT),
-      Pair.create("fontScale", ActivityInfo.CONFIG_FONT_SCALE),
-      Pair.create("uiMode", ActivityInfo.CONFIG_UI_MODE),
-      Pair.create("orientation", ActivityInfo.CONFIG_ORIENTATION),
-      Pair.create("screenSize", ActivityInfo.CONFIG_SCREEN_SIZE),
-      Pair.create("smallestScreenSize", ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE)
-  );
-
 
   Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   List<FeatureInfo> systemAvailableFeatures = new LinkedList<>();
@@ -775,31 +739,6 @@ public class ShadowPackageManager {
     }
   }
 
-  protected static int getConfigChanges(ActivityData activityData) {
-    String s = activityData.getConfigChanges();
-
-    int res = 0;
-
-    //quick sanity check.
-    if (s == null || "".equals(s)) {
-      return res;
-    }
-
-    String[] pieces = s.split("\\|");
-
-    for(String s1 : pieces) {
-      s1 = s1.trim();
-
-      for (Pair<String, Integer> pair : CONFIG_OPTIONS) {
-        if (s1.equals(pair.first)) {
-          res |= pair.second;
-          break;
-        }
-      }
-    }
-    return res;
-  }
-
   public void addPackage(Package appPackage) {
     int flags =
         GET_ACTIVITIES |
@@ -824,7 +763,28 @@ public class ShadowPackageManager {
         ;
 
     packages.put(appPackage.packageName, appPackage);
-    PackageInfo packageInfo = PackageParser.generatePackageInfo(appPackage, new int[]{0}, flags, 0, 0, new HashSet<String>(), new PackageUserState());
+    PackageInfo packageInfo;
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.M) {
+      packageInfo = PackageParser.generatePackageInfo(appPackage, new int[]{0}, flags, 0, 0, new HashSet<String>(), new PackageUserState());
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+      packageInfo = ReflectionHelpers.callStaticMethod(PackageParser.class, "generatePackageInfo",
+          ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
+          ReflectionHelpers.ClassParameter.from(int[].class, new int[]{0}),
+          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(long.class, 0L),
+          ReflectionHelpers.ClassParameter.from(long.class, 0L),
+          ReflectionHelpers.ClassParameter.from(ArraySet.class, new ArraySet<>()),
+          ReflectionHelpers.ClassParameter.from(PackageUserState.class, new PackageUserState()));
+    } else {
+      packageInfo = ReflectionHelpers.callStaticMethod(PackageParser.class, "generatePackageInfo",
+          ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
+          ReflectionHelpers.ClassParameter.from(int[].class, new int[]{0}),
+          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(long.class, 0L),
+          ReflectionHelpers.ClassParameter.from(long.class, 0L),
+          ReflectionHelpers.ClassParameter.from(HashSet.class, new HashSet<>()),
+          ReflectionHelpers.ClassParameter.from(PackageUserState.class, new PackageUserState()));
+    }
     addPackage(packageInfo);
   }
 
