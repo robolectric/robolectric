@@ -1,77 +1,18 @@
 package org.robolectric.shadows;
 
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
-import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
-import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
-import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
-import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
-import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
-import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
-import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
-import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
-import static android.content.pm.PackageManager.NameNotFoundException;
-import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_MATCH;
-import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
-import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
-import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
-import static org.robolectric.Robolectric.setupActivity;
-import static org.robolectric.Shadows.shadowOf;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.FeatureInfo;
-import android.content.pm.IPackageDeleteObserver;
-import android.content.pm.IPackageStatsObserver;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageInstaller;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageStats;
-import android.content.pm.PathPermission;
-import android.content.pm.PermissionInfo;
-import android.content.pm.ProviderInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
-import android.content.pm.Signature;
+import android.content.pm.*;
 import android.content.res.XmlResourceParser;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,12 +21,25 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.content.pm.ApplicationInfo.*;
+import static android.content.pm.PackageManager.*;
+import static android.os.Build.VERSION_CODES.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.robolectric.Robolectric.setupActivity;
+import static org.robolectric.Shadows.shadowOf;
+
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 25)
 public class ShadowPackageManagerTest {
 
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
@@ -161,7 +115,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(sdk = 25)
   public void applicationFlags() throws Exception {
     int flags = packageManager.getApplicationInfo("org.robolectric", 0).flags;
     assertThat((flags & FLAG_ALLOW_BACKUP)).isEqualTo(FLAG_ALLOW_BACKUP);
