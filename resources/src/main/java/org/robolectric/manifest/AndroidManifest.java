@@ -188,7 +188,17 @@ public class AndroidManifest {
         ignored.printStackTrace();
       }
     } else {
-      rClassName = (packageName != null && !packageName.equals("")) ? packageName + ".R" : null;
+      if (androidManifestFile != null) {
+        System.out.println("WARNING: No manifest file found at " + androidManifestFile.getPath() + ".");
+        System.out.println("Falling back to the Android OS resources only.");
+        System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
+      }
+
+      if (packageName == null || packageName.equals("")) {
+        packageName = "org.robolectric.default";
+      }
+
+      rClassName = packageName + ".R";
 
       if (androidManifestFile != null) {
         System.err.println("No such manifest file: " + androidManifestFile);

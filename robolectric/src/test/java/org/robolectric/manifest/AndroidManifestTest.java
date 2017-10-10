@@ -270,6 +270,13 @@ public class AndroidManifestTest {
   }
 
   @Test
+  public void whenMissingManifestFile_getPackageName_shouldBeDefault() throws Exception {
+    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), null);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.default");
+    assertThat(appManifest.getRClass()).isEqualTo(null);
+  }
+
+  @Test
   public void shouldRead1IntentFilter() {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
     appManifest.getMinSdkVersion(); // Force parsing

@@ -40,9 +40,9 @@ public class ManifestIdentifier {
       for (FsFile libraryDir : libraryDirs) {
         this.libraries.add(new ManifestIdentifier(
             null,
-            existsOrNull(libraryDir.join(Config.DEFAULT_MANIFEST_NAME)),
-            existsOrNull(libraryDir.join(Config.DEFAULT_RES_FOLDER)),
-            existsOrNull(libraryDir.join(Config.DEFAULT_ASSET_FOLDER)),
+            libraryDir.join(Config.DEFAULT_MANIFEST_NAME),
+            libraryDir.join(Config.DEFAULT_RES_FOLDER),
+            libraryDir.join(Config.DEFAULT_ASSET_FOLDER),
             null));
       }
     }
@@ -102,9 +102,5 @@ public class ManifestIdentifier {
         ", packageName='" + packageName + '\'' +
         ", libraries=" + libraries +
         '}';
-  }
-
-  private static FsFile existsOrNull(FsFile fsFile) {
-    return fsFile.exists() ? fsFile : null;
   }
 }
