@@ -93,6 +93,17 @@ public class ManifestIdentifier {
     return result;
   }
 
+  @Override
+  public String toString() {
+    return "ManifestIdentifier{" +
+        "manifestFile=" + manifestFile +
+        ", resDir=" + resDir +
+        ", assetDir=" + assetDir +
+        ", packageName='" + packageName + '\'' +
+        ", libraries=" + libraries +
+        '}';
+  }
+
   private static FsFile existsOrNull(FsFile fsFile) {
     return fsFile.exists() ? fsFile : null;
   }

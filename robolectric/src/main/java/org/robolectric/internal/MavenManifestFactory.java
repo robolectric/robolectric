@@ -3,6 +3,7 @@ package org.robolectric.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
@@ -85,7 +86,8 @@ public class MavenManifestFactory implements ManifestFactory {
    * Search through an AndroidManifest's library directories to load library AppManifest files.
    * For testing, allow a parameter override of the library directories.
    * @param resDirectory
-   * @param libraries If not null, override the libraries in androidManifest.
+   * @param libraries If not null, override the libraries in androidManifest. If null, search for
+   *                  libraries in the project.properties file using {@link #findLibraries(FsFile)}.
    * @return A list of AndroidManifest objects, one for each library found.
    */
   private static List<AndroidManifest> createLibraryManifests(
@@ -99,7 +101,7 @@ public class MavenManifestFactory implements ManifestFactory {
 
       for (ManifestIdentifier library : libraries) {
         AndroidManifest libraryManifest = createLibraryAndroidManifest(library,
-            createLibraryManifests(resDirectory, null));
+            createLibraryManifests(resDirectory, Collections.emptyList()));
         libraryManifests.add(libraryManifest);
       }
     }
