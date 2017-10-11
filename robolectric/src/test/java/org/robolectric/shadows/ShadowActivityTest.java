@@ -659,28 +659,23 @@ public class ShadowActivityTest {
 
   @Test
   public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
-    Activity parentActivity = new Activity() {
-    };
-    Activity activity = new Activity() {
-    };
+    Activity parentActivity = new Activity();
+    Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
     assertSame(parentActivity, activity.getParent());
   }
 
   @Test
   public void getAndSetRequestedOrientation_shouldRemember() throws Exception {
-    Activity activity = new Activity() {
-    };
+    Activity activity = new Activity();
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
   }
 
   @Test
   public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() throws Exception {
-    Activity parentActivity = new Activity() {
-    };
-    Activity activity = new Activity() {
-    };
+    Activity parentActivity = new Activity();
+    Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
     parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
@@ -713,6 +708,8 @@ public class ShadowActivityTest {
 
   @Test public void shouldGetAttributeFromThemeSetOnActivity() throws Exception {
     ShadowThemeTest.TestActivity activity = setupActivity(ShadowThemeTest.TestActivityWithAnotherTheme.class);
+    assertThat(activity.getThemeResId()).isEqualTo(R.style.Theme_AnotherTheme);
+
     TypedArray a = activity.obtainStyledAttributes(R.styleable.AnotherTheme);
 
     assertThat(a.hasValue(R.styleable.AnotherTheme_animalStyle)).isTrue();
