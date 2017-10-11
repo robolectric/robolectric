@@ -14,6 +14,7 @@ import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -31,12 +32,6 @@ import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
   private static final boolean kIsDebug = false;
-  private static File systemResourcesPathHackHackHack;
-
-  // todo: not this!
-  public static void setSystemResourcesPathHackHackHack(File systemResourcesPathHackHackHack) {
-    CppAssetManager.systemResourcesPathHackHackHack = systemResourcesPathHackHackHack;
-  }
 
   enum FileType {
     kFileTypeUnknown,
@@ -374,15 +369,8 @@ public class CppAssetManager {
 //      return ret;
 //  }
 //  
-  public boolean addDefaultAssets()
-  {
-//      final char* root = getenv("ANDROID_ROOT");
-      final String root = CppAssetManager.systemResourcesPathHackHackHack.toString();
-      Util.LOG_FATAL_IF(root == null, "systemResourcesPathHackHackHack not set");
-
-      String8 path = new String8(root);
-      path.appendPath(kSystemAssets);
-//
+  public boolean addDefaultAssets(String systemAssetsPath) {
+      String8 path = new String8(systemAssetsPath);
       return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
   }
 //  

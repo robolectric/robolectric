@@ -1983,17 +1983,18 @@ public class ShadowArscAssetManager {
     //    verifySystemIdmaps();
     //  }
 
+    Preconditions.checkNotNull(RuntimeEnvironment.getAndroidFrameworkJarPath());
     if (isSystem) {
       synchronized (ShadowArscAssetManager.class) {
         if (systemCppAssetManager == null) {
           systemCppAssetManager = new CppAssetManager();
-          systemCppAssetManager.addDefaultAssets();
+          systemCppAssetManager.addDefaultAssets(RuntimeEnvironment.getAndroidFrameworkJarPath());
         }
       }
       this.cppAssetManager = systemCppAssetManager;
     } else {
       this.cppAssetManager = new CppAssetManager();
-      cppAssetManager.addDefaultAssets();
+      cppAssetManager.addDefaultAssets(RuntimeEnvironment.getAndroidFrameworkJarPath());
     }
 
     ALOGV("Created AssetManager %s for Java object %s\n", cppAssetManager,

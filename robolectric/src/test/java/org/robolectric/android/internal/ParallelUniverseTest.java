@@ -67,6 +67,7 @@ public class ParallelUniverseTest {
         method,
         new DefaultTestLifecycle(),
         appManifest,
+        null,
         defaultConfig,
         sdkResourceProvider,
         routingResourceTable,

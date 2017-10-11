@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Looper;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.security.Security;
 import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -29,6 +30,7 @@ import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.Qualifiers;
@@ -62,7 +64,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, AndroidManifest appManifest,
-                                    Config config, ResourceTable compileTimeResourceTable,
+      DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
                                     ResourceTable appResourceTable,
                                     ResourceTable systemResourceTable) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
@@ -75,8 +77,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
-
-    hackySetSystemResources(); // todo: remove this before merge to master
+    RuntimeEnvironment.setAndroidFrameworkJarPath(
+        jarResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
 
     try {
       appManifest.initMetaData(appResourceTable);
@@ -192,19 +194,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
-  }
-
-  private void hackySetSystemResources() {
-    File defaultAndroidHome = new File(System.getProperty("user.home"), "Android/Sdk");
-    String androidHomeString = System.getenv("ANDROID_HOME");
-    File androidHome = androidHomeString == null ? defaultAndroidHome : new File(androidHomeString);
-    File sdkDir = new File(androidHome,
-        "platforms/android-" + sdkConfig.getApiLevel());
-    if (!new File(sdkDir, "android.jar").exists()) {
-      throw new RuntimeException(new File(sdkDir, "android.jar ") + "not found, install it!");
-    }
-    CppAssetManager.setSystemResourcesPathHackHackHack(
-        sdkDir);
   }
 
   /**
