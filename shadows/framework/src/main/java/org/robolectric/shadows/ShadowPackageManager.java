@@ -186,15 +186,6 @@ public class ShadowPackageManager {
     return classString;
   }
 
-  static IntentFilter matchIntentFilter(Intent intent, ArrayList<? extends IntentInfo> intentFilters) {
-    for (IntentInfo intentInfo : intentFilters) {
-      if (intentInfo.match(intent.getAction(), intent.getType(), intent.getScheme(), intent.getData(), intent.getCategories(), "ShadowPackageManager") >= 0) {
-        return intentInfo;
-      }
-    }
-    return null;
-  }
-
   static ResolveInfo getResolveInfo(Activity activity, IntentFilter intentFilter) {
     ResolveInfo info = new ResolveInfo();
     info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
@@ -214,7 +205,7 @@ public class ShadowPackageManager {
     info.serviceInfo.name = service.info.name;
     info.serviceInfo.packageName = service.info.packageName;
     info.serviceInfo.applicationInfo = service.info.applicationInfo;
-    info.activityInfo.permission = service.info.permission;
+    info.serviceInfo.permission = service.info.permission;
     info.filter = new IntentFilter(intentFilter);
     return info;
   }
@@ -770,20 +761,28 @@ public class ShadowPackageManager {
       packageInfo = ReflectionHelpers.callStaticMethod(PackageParser.class, "generatePackageInfo",
           ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
           ReflectionHelpers.ClassParameter.from(int[].class, new int[]{0}),
-          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(int.class, flags),
           ReflectionHelpers.ClassParameter.from(long.class, 0L),
           ReflectionHelpers.ClassParameter.from(long.class, 0L),
           ReflectionHelpers.ClassParameter.from(ArraySet.class, new ArraySet<>()),
+          ReflectionHelpers.ClassParameter.from(PackageUserState.class, new PackageUserState()));
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      packageInfo = ReflectionHelpers.callStaticMethod(PackageParser.class, "generatePackageInfo",
+          ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
+          ReflectionHelpers.ClassParameter.from(int[].class, new int[]{0}),
+          ReflectionHelpers.ClassParameter.from(int.class, flags),
+          ReflectionHelpers.ClassParameter.from(long.class, 0L),
+          ReflectionHelpers.ClassParameter.from(long.class, 0L),
+          ReflectionHelpers.ClassParameter.from(HashSet.class, new HashSet<>()),
           ReflectionHelpers.ClassParameter.from(PackageUserState.class, new PackageUserState()));
     } else {
       packageInfo = ReflectionHelpers.callStaticMethod(PackageParser.class, "generatePackageInfo",
           ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
           ReflectionHelpers.ClassParameter.from(int[].class, new int[]{0}),
-          ReflectionHelpers.ClassParameter.from(int.class, 0),
+          ReflectionHelpers.ClassParameter.from(int.class, flags),
           ReflectionHelpers.ClassParameter.from(long.class, 0L),
           ReflectionHelpers.ClassParameter.from(long.class, 0L),
-          ReflectionHelpers.ClassParameter.from(HashSet.class, new HashSet<>()),
-          ReflectionHelpers.ClassParameter.from(PackageUserState.class, new PackageUserState()));
+          ReflectionHelpers.ClassParameter.from(HashSet.class, new HashSet<>()));
     }
     addPackage(packageInfo);
   }

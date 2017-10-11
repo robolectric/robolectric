@@ -6,14 +6,17 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.LoadedApk;
+import android.app.ResourcesManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageParser.Package;
+import android.content.pm.PackageParser;
+import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import java.lang.reflect.Method;
 import java.security.Security;
@@ -33,6 +36,7 @@ import org.robolectric.res.Fs;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.AndroidManifestPullParser;
+import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -101,8 +105,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
-
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
@@ -111,6 +113,75 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
+    ResourcesManager resourcesManager = ResourcesManager.getInstance();
+    Resources resources;
+
+    if (RuntimeEnvironment.getApiLevel() == Build.VERSION_CODES.M) {
+      ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager, "applyConfigurationToResourcesLocked",
+          ClassParameter.from(Configuration.class, configuration),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT){
+      resourcesManager.applyConfigurationToResourcesLocked(configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      resources = resourcesManager.getResources(null, appManifest.getResDirectory().getPath(), new String[0], new String[0], new String[0], 0, configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, this.getClass().getClassLoader());
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.M) {
+      resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
+          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(String[].class, new String[0]),
+          ClassParameter.from(String[].class, new String[0]),
+          ClassParameter.from(String[].class, new String[0]),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(Configuration.class, configuration),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.L) {
+      resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
+          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(String[].class, new String[0]),
+          ClassParameter.from(String[].class, new String[0]),
+          ClassParameter.from(String[].class, new String[0]),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(Configuration.class, configuration),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO),
+          ClassParameter.from(IBinder.class, null));
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
+      resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
+          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(Configuration.class, configuration),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO),
+          ClassParameter.from(IBinder.class, null));
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "applyConfigurationToResourcesLocked", ClassParameter.from(Configuration.class, configuration),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+
+      resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
+          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(Configuration.class, configuration),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+    }
+    else {
+      ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "applyConfigurationToResourcesLocked", ClassParameter.from(Configuration.class, configuration),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+
+      resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
+          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+    }
+
+    AndroidManifestPullParser parser = new AndroidManifestPullParser();
+    PackageParser.Package packageInfo = parser.parse(appManifest.getPackageName(), Fs.fileFromPath("./src/test/resources/AndroidManifest.xml"),
+        resources);
+
+    ShadowActivityThread.setApplicationPackage(packageInfo);
+
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
+
+
+
+
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
@@ -118,29 +189,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
-
-
-    String packageName = appManifest.getPackageName();
-
     RuntimeEnvironment.application = application;
 
     if (application != null) {
       shadowsAdapter.bind(application, appManifest);
 
-      try {
-        Context contextImpl = systemContextImpl.createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE);
-        ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
-        ApplicationTestUtil.attach(application, contextImpl);
-      } catch (PackageManager.NameNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+      final ApplicationInfo applicationInfo = packageInfo.applicationInfo;
 
-      AndroidManifestPullParser parser = new AndroidManifestPullParser();
-      Package packageInfo = parser.parse(packageName, Fs.fileFromPath("./src/test/resources/AndroidManifest.xml"),
-          application.getResources());
-      shadowOf(application.getPackageManager()).addPackage(packageInfo);
-
-      Resources appResources = application.getResources();
       final Class<?> appBindDataClass;
       try {
         appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
@@ -148,11 +203,23 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         throw new RuntimeException(e);
       }
       Object data = ReflectionHelpers.newInstance(appBindDataClass);
-      ReflectionHelpers.setField(data, "processName", packageName);
-      ReflectionHelpers.setField(data, "appInfo", packageInfo.applicationInfo);
+      ReflectionHelpers.setField(data, "processName", "org.robolectric");
+      ReflectionHelpers.setField(data, "appInfo", applicationInfo);
       ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
-      LoadedApk loadedApk = activityThread.getPackageInfo(packageInfo.applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+      LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+
+      try {
+        Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+        ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
+        ApplicationTestUtil.attach(application, contextImpl);
+      } catch (PackageManager.NameNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+
+      shadowOf(application.getPackageManager()).addPackage(packageInfo);
+
+      Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
