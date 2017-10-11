@@ -161,6 +161,9 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       ClassInfo classInfo = new ClassInfo(className, classNode);
       if (config.shouldInstrument(classInfo)) {
         bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
+      } else if (classNode.name.contains("_Delegate")) {
+        System.out.println("classInfo = " + classInfo.getName());
+        bytes = fixLayoutLibDelegate(classNode);
       } else {
         bytes = origClassBytes;
       }
@@ -188,7 +191,9 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
     String classFilename = className.replace('.', '/') + ".class";
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
-      if (classBytesStream == null) throw new ClassNotFoundException(className);
+      if (classBytesStream == null) {
+        throw new ClassNotFoundException(className);
+      }
 
       return Util.readBytes(classBytesStream);
     } catch (IOException e) {
@@ -271,6 +276,25 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     ClassWriter writer = new InstrumentingClassWriter(classNode);
     classNode.accept(writer);
     return writer.toByteArray();
+  }
+
+  private byte[] fixLayoutLibDelegate(ClassNode classNode) {
+    final ClassWriter classWriter = new ClassWriter(
+        classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS) {
+      @Override
+      public int newUTF8(String s) {
+        if (s.endsWith("_Original")) {
+          String newS = ShadowConstants.ROBO_PREFIX + s.substring(0, s.length() - 9);
+          System.out.println("s = " + newS);
+          return super.newUTF8(newS);
+        } else {
+          return super.newUTF8(s);
+        }
+      }
+    };
+
+    classNode.accept(classWriter);
+    return classWriter.toByteArray();
   }
 
   private Map<String, String> convertToSlashes(Map<String, String> map) {
@@ -377,8 +401,23 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       // Need Java version >=7 to allow invokedynamic
       classNode.version = Math.max(classNode.version, V1_7);
 
+      // Make private fields package-accessible for liblayout --
+      //   (in particular, Typeface_Delegate.makeFamilyFromParsed refers to
+      //   FontFamily.mBuilderPtr.
+      for (FieldNode field : (List<FieldNode>) classNode.fields) {
+        if ((field.access & ACC_PRIVATE) != 0) {
+          field.access &= ~ACC_PRIVATE;
+        }
+      }
+
       classNode.fields.add(0, new FieldNode(ACC_PUBLIC | ACC_FINAL,
           ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+
+      if (classNode.name.endsWith("/Typeface")) {
+        for (MethodNode method : (List<MethodNode>) classNode.methods) {
+          System.out.println("method.name = " + method.name);
+        }
+      }
 
       Set<String> foundMethods = instrumentMethods();
 
@@ -629,8 +668,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
       delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;
       delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
+      // delegatorMethodNode.access |= ACC_PUBLIC;
 
-      makeMethodPrivate(method);
+      // makeMethodPrivate(method);
+      makeMethodPublic(method);
+      method.access &= ~ACC_FINAL;
 
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(delegatorMethodNode);
 

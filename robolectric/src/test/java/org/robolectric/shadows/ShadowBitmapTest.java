@@ -4,25 +4,46 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.annotation.NonNull;
+import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap_Delegate;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.layoutlib.bridge.Bridge;
+import com.android.layoutlib.bridge.impl.ParserFactory;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kxml2.io.KXmlParser;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowBitmapTest {
@@ -178,7 +199,7 @@ public class ShadowBitmapTest {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     Bitmap bitmapCopy = bitmap.copy(Bitmap.Config.ARGB_8888, true);
     assertThat(shadowOf(bitmapCopy).getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
-    assertThat(shadowOf(bitmapCopy).isMutable()).isTrue();
+    assertThat(bitmapCopy.isMutable()).isTrue();
   }
 
   @Test(expected = NullPointerException.class)
@@ -476,6 +497,7 @@ public class ShadowBitmapTest {
 
   @Test(expected = RuntimeException.class)
   public void throwsExceptionCopyPixelsFromBufferTooSmall() {
+    System.out.println("Typeface.create(null, 0) = " + Typeface.create((String) null, 0));
     Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount() - 1);
     bitmapOriginal.copyPixelsFromBuffer(buffer);
@@ -494,6 +516,50 @@ public class ShadowBitmapTest {
     ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount());
     bitmapOriginal.recycle();
     bitmapOriginal.copyPixelsFromBuffer(buffer);
+  }
+
+  @Test @Config(sdk = 26)
+  public void testEraseColor() throws Exception {
+    init();
+
+    System.out.println("testEraseColor");
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(android.graphics.Color.BLUE);
+
+    System.out.println("nativeInstance = " + bitmap.getNativeInstance());
+
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    ViewGroup mainView = (ViewGroup) LayoutInflater.from(RuntimeEnvironment.application)
+        .inflate(R.layout.main, activity.findViewById(android.R.id.content), false);
+    mainView.layout(0, 0, 100, 100);
+    Canvas canvas = new Canvas(bitmap);
+    mainView.draw(canvas);
+
+
+    Bitmap_Delegate delegate = Bitmap_Delegate.getDelegate(bitmap);
+    java.awt.image.BufferedImage image = delegate.getImage();
+    javax.imageio.ImageIO.write(image, "png", new File("/tmp/image.png"));
+    System.out.println("testEraseColor done");
+  }
+
+  private void init() {
+    com.android.ide.common.rendering.api.ParserFactory parserFactory = new com.android.ide.common.rendering.api.ParserFactory() {
+      @NonNull
+      @Override
+      public XmlPullParser createParser(@Nullable String debugName)
+          throws XmlPullParserException {
+        return new KXmlParser();
+      }
+    };
+
+    ParserFactory.setParserFactory(parserFactory);
+    Bridge bridge = new Bridge();
+    HashMap<String, String> platformProperties = new HashMap<>();
+    File fontLocation = new File(
+        "/google/src/head/depot/google3/third_party/java/android/android_sdk_linux/platforms/stable/data/fonts/");
+    HashMap<String, Map<String, Integer>> enumValueMap = new HashMap<>();
+    LayoutLog log = new LayoutLog();
+    bridge.init(platformProperties, fontLocation, enumValueMap, log);
   }
 
   private static Bitmap create(String name, int width, int height) {

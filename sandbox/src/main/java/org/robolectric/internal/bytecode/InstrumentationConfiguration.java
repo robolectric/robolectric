@@ -78,7 +78,8 @@ public class InstrumentationConfiguration {
             || instrumentedClasses.contains(classInfo.getName())
             || classInfo.hasAnnotation(Instrument.class))
         && !(classesToNotInstrument.contains(classInfo.getName()))
-        && !(isInPackagesToNotInstrument(classInfo));
+        && !(isInPackagesToNotInstrument(classInfo))
+        && !(classInfo.getName().contains("_Delegate"));
   }
 
   /**

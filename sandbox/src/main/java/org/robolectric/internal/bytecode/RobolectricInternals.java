@@ -53,6 +53,7 @@ public class RobolectricInternals {
   }
 
   public static void performStaticInitialization(Class<?> clazz) {
+    System.out.println("clinit " + clazz);
     ReflectionHelpers.callStaticMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
   }
 

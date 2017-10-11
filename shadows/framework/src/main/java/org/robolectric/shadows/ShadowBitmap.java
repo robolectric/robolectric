@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.os.Parcel;
-import android.util.DisplayMetrics;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
@@ -188,42 +187,44 @@ public class ShadowBitmap {
     return true;
   }
 
-  @Implementation
-  public static Bitmap createBitmap(int width, int height, Bitmap.Config config) {
-    return createBitmap((DisplayMetrics) null, width, height, config);
-  }
+  // @Implementation
+  // public static Bitmap createBitmap(int width, int height, Bitmap.Config config) {
+  //   return createBitmap((DisplayMetrics) null, width, height, config);
+  // }
+  //
+  // @Implementation
+  // public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config, boolean hasAlpha) {
+  //   return createBitmap((DisplayMetrics) null, width, height, config);
+  // }
+  //
+  // @Implementation
+  // public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
+  //   if (width <= 0 || height <= 0) {
+  //     throw new IllegalArgumentException("width and height must be > 0");
+  //   }
+  //
+  //   directlyOn(Bitmap.class, "createBitmap", )
+  //   Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
+  //   ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
+  //   shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
+  //
+  //   shadowBitmap.width = width;
+  //   shadowBitmap.height = height;
+  //   shadowBitmap.config = config;
+  //   shadowBitmap.setMutable(true);
+  //   if (displayMetrics != null) {
+  //     shadowBitmap.density = displayMetrics.densityDpi;
+  //   }
+  //   shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, shadowBitmap.getWidth(), 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
+  //   return scaledBitmap;
+  // }
 
-  @Implementation
-  public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config, boolean hasAlpha) {
-    return createBitmap((DisplayMetrics) null, width, height, config);
-  }
-
-  @Implementation
-  public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
-    if (width <= 0 || height <= 0) {
-      throw new IllegalArgumentException("width and height must be > 0");
-    }
-    Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
-    shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
-
-    shadowBitmap.width = width;
-    shadowBitmap.height = height;
-    shadowBitmap.config = config;
-    shadowBitmap.setMutable(true);
-    if (displayMetrics != null) {
-      shadowBitmap.density = displayMetrics.densityDpi;
-    }
-    shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, shadowBitmap.getWidth(), 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
-    return scaledBitmap;
-  }
-
-  @Implementation
-  public static Bitmap createBitmap(Bitmap src) {
-    ShadowBitmap shadowBitmap = shadowOf(src);
-    shadowBitmap.appendDescription(" created from Bitmap object");
-    return src;
-  }
+  // @Implementation
+  // public static Bitmap createBitmap(Bitmap src) {
+  //   ShadowBitmap shadowBitmap = shadowOf(src);
+  //   shadowBitmap.appendDescription(" created from Bitmap object");
+  //   return src;
+  // }
 
   @Implementation
   public static Bitmap createScaledBitmap(Bitmap src, int dstWidth, int dstHeight, boolean filter) {
@@ -248,28 +249,28 @@ public class ShadowBitmap {
     return scaledBitmap;
   }
 
-  @Implementation
-  public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
-    if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight()) {
-      return src; // Return the original.
-    }
-
-    Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = shadowOf(newBitmap);
-
-    shadowBitmap.appendDescription(shadowOf(src).getDescription());
-    shadowBitmap.appendDescription(" at (" + x + "," + y);
-    shadowBitmap.appendDescription(" with width " + width + " and height " + height);
-
-    shadowBitmap.createdFromBitmap = src;
-    shadowBitmap.createdFromX = x;
-    shadowBitmap.createdFromY = y;
-    shadowBitmap.createdFromWidth = width;
-    shadowBitmap.createdFromHeight = height;
-    shadowBitmap.width = width;
-    shadowBitmap.height = height;
-    return newBitmap;
-  }
+  // @Implementation
+  // public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
+  //   if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight()) {
+  //     return src; // Return the original.
+  //   }
+  //
+  //   Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
+  //   ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+  //
+  //   shadowBitmap.appendDescription(shadowOf(src).getDescription());
+  //   shadowBitmap.appendDescription(" at (" + x + "," + y);
+  //   shadowBitmap.appendDescription(" with width " + width + " and height " + height);
+  //
+  //   shadowBitmap.createdFromBitmap = src;
+  //   shadowBitmap.createdFromX = x;
+  //   shadowBitmap.createdFromY = y;
+  //   shadowBitmap.createdFromWidth = width;
+  //   shadowBitmap.createdFromHeight = height;
+  //   shadowBitmap.width = width;
+  //   shadowBitmap.height = height;
+  //   return newBitmap;
+  // }
 
   @Implementation
   public void setPixels(int[] pixels, int offset, int stride,
@@ -355,7 +356,7 @@ public class ShadowBitmap {
   public void setPixel(int x, int y, int color) {
     if (isRecycled()) {
       throw new IllegalStateException("Can't call setPixel() on a recycled bitmap");
-    } else if (!isMutable()) {
+    } else if (!realBitmap.isMutable()) {
       throw new IllegalStateException("Bitmap is immutable");
     }
     internalCheckPixelAccess(x, y);
@@ -424,10 +425,10 @@ public class ShadowBitmap {
     this.config = config;
   }
 
-  @Implementation
-  public final boolean isMutable() {
-    return mutable;
-  }
+  // @Implementation
+  // public final boolean isMutable() {
+  //   return mutable;
+  // }
 
   public void setMutable(boolean mutable) {
     this.mutable = mutable;
@@ -503,11 +504,6 @@ public class ShadowBitmap {
   @Implementation
   public Bitmap createAshmemBitmap() {
     return realBitmap;
-  }
-
-  @Implementation
-  public void eraseColor(int c) {
-
   }
 
   @Implementation

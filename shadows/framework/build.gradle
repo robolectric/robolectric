@@ -59,6 +59,13 @@ dependencies {
     compile "com.ibm.icu:icu4j:53.1"
     compile "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
+    compile files(
+            'libs/layoutlib_api-prebuilt.jar',
+            'libs/layoutlib_create_intermediates.jar',
+            'libs/layoutlib_intermediates.jar'
+//            'libs/layoutlib.jar'
+    )
+
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"

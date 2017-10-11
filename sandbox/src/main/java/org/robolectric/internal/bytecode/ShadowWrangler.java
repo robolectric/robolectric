@@ -131,16 +131,40 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+    Plan plan;
     if (planCache.containsKey(signature)) {
-      return planCache.get(signature);
+      plan = planCache.get(signature);
+    } else {
+      plan = calculatePlan(signature, isStatic, theClass);
+      planCache.put(signature, plan);
     }
-    Plan plan = calculatePlan(signature, isStatic, theClass);
-    planCache.put(signature, plan);
+    if (signature.contains("Typeface")) {
+      System.out.println("call to " + signature + " -> " + (plan == null ? "null" : plan.describe()));
+    }
     return plan;
   }
 
   @Override public MethodHandle findShadowMethod(Class<?> caller, String name, MethodType type,
       boolean isStatic) throws IllegalAccessException {
+    Method delegateMethod = findDelegateMethod(name, type, isStatic, caller);
+    if (delegateMethod != null) {
+      MethodHandle mh = LOOKUP.unreflect(delegateMethod);
+
+      // Robolectric doesn't actually look for static, this for example happens
+      // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
+      // if (!isStatic && Modifier.isStatic(delegateMethod.getModifiers())) {
+      //   return dropArguments(mh, 0, Object.class);
+      // } else {
+      //   return mh;
+      // }
+
+      // if (!isStatic && Modifier.isStatic(delegateMethod.getModifiers())) {
+      //   MethodHandles.insertArguments(mh, 0, )
+      // }
+
+      return mh;
+    }
+
     ShadowConfig shadowConfig = shadowConfigs.get(caller);
     if (shadowConfig == null) return CALL_REAL_CODE;
 
@@ -174,8 +198,14 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private Plan calculatePlan(String signature, boolean isStatic, Class<?> theClass) {
+    Method delegateMethod = findDelegateMethod(signature, isStatic, theClass);
+    if (delegateMethod != null) {
+      return new ShadowMethodPlan(delegateMethod);
+    }
+
     final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, theClass.getClassLoader());
     ShadowConfig shadowConfig = getShadowConfig(theClass);
+
 
     if (shadowConfig == null || !shadowConfig.supportsSdk(apiLevel)) {
       return CALL_REAL_CODE_PLAN;
@@ -207,6 +237,87 @@ public class ShadowWrangler implements ClassHandler {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  private Method findDelegateMethod(String name, MethodType type, boolean isStatic, Class<?> theClass) {
+    if (!delegateToLayoutLib(theClass)) {
+      return null;
+    }
+
+    String delegateName = calculateDelegateName(theClass);
+    Class<?> delegateClass = null;
+    try {
+      delegateClass = theClass.getClassLoader().loadClass(delegateName);
+    } catch (ClassNotFoundException e) {
+      // ok
+    }
+    if (delegateClass != null) {
+      Method delegateMethod = null;
+      try {
+        delegateMethod = delegateClass.getDeclaredMethod(name, type.parameterArray());
+      } catch (NoSuchMethodException e) {
+        // ok
+      }
+      if (delegateMethod != null) {
+        delegateMethod.setAccessible(true);
+      }
+      System.out.println("Found " + delegateMethod + " for " + theClass + "." + name);
+      return delegateMethod;
+    }
+    return null;
+  }
+
+  private boolean delegateToLayoutLib(Class<?> theClass) {
+    String name = theClass.getName();
+    return !name.startsWith("android.os.");
+  }
+
+  private Method findDelegateMethod(String signature, boolean isStatic, Class<?> theClass) {
+    if (!delegateToLayoutLib(theClass)) {
+      return null;
+    }
+
+    final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, theClass.getClassLoader());
+    Class<?>[] paramClasses;
+    try {
+      paramClasses = invocationProfile.getParamClasses(theClass.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+
+    String delegateName = calculateDelegateName(theClass);
+
+    Class<?> delegateClass = null;
+    try {
+      delegateClass = theClass.getClassLoader().loadClass(delegateName);
+    } catch (ClassNotFoundException e) {
+      if (!e.getMessage().contains(delegateName)) {
+        throw new RuntimeException("no such class " + e.getMessage() + " while loading " + delegateName);
+      }
+      // ok
+    }
+    if (delegateClass != null) {
+      Method method = null;
+      try {
+        method = delegateClass.getDeclaredMethod(invocationProfile.methodName, paramClasses);
+      } catch (NoClassDefFoundError e) {
+        throw new RuntimeException("no such class " + e.getMessage() + " while loading " + delegateName);
+      } catch (NoSuchMethodException e) {
+        // ok
+      }
+
+      if (method != null) {
+        method.setAccessible(true);
+      }
+      return method;
+    }
+    return null;
+  }
+
+  private String calculateDelegateName(Class<?> theClass) {
+    String name = theClass.getName();
+    String[] parts = name.split("\\$");
+    return parts[0] + "_Delegate";
   }
 
   private Method findShadowMethod(ClassLoader classLoader, ShadowConfig config, String name, Class<?>[] types) {
