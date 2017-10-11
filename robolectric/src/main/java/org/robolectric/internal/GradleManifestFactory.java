@@ -6,9 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
-import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -69,20 +67,6 @@ public class GradleManifestFactory implements ManifestFactory {
     }
 
     return new ManifestIdentifier(manifest, res, assets, packageName, null);
-  }
-
-  @Override
-  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
-    FsFile manifestFile = manifestIdentifier.getManifestFile();
-    FsFile resDir = manifestIdentifier.getResDir();
-    FsFile assetDir = manifestIdentifier.getAssetDir();
-    final String packageName = manifestIdentifier.getPackageName();
-
-    Logger.debug("Robolectric assets directory: " + assetDir.getPath());
-    Logger.debug("   Robolectric res directory: " + resDir.getPath());
-    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
-    Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
   private static String getBuildOutputDir(Config config) {

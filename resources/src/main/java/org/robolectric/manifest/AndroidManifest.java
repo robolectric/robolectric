@@ -1,6 +1,5 @@
 package org.robolectric.manifest;
 
-import com.google.common.base.Preconditions;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -90,7 +90,7 @@ public class AndroidManifest {
    * @param overridePackageName Application package name.
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
-      List<AndroidManifest> libraryManifests, String overridePackageName) {
+      @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;

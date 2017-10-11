@@ -10,10 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.util.Logger;
 import org.robolectric.util.Util;
 
 public class BuckManifestFactory implements ManifestFactory {
@@ -59,25 +57,6 @@ public class BuckManifestFactory implements ManifestFactory {
     }
 
     return new ManifestIdentifier(packageName, manifestFile, resDir, assetsDir, libraries);
-  }
-
-  @Override
-  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
-    FsFile manifestFile = manifestIdentifier.getManifestFile();
-    FsFile resDir = manifestIdentifier.getResDir();
-    FsFile assetsDir = manifestIdentifier.getAssetDir();
-    final String packageName = manifestIdentifier.getPackageName();
-
-    Logger.debug("Robolectric assets directory: " + assetsDir);
-    Logger.debug("   Robolectric res directory: " + resDir);
-    Logger.debug("   Robolectric manifest path: " + manifestFile);
-    Logger.debug("    Robolectric package name: " + packageName);
-
-    List<ManifestIdentifier> libraries = manifestIdentifier.getLibraries();
-    List<AndroidManifest> libraryManifests = libraries == null
-        ? Collections.emptyList()
-        : libraries.stream().map(this::create).collect(Collectors.toList());
-    return new AndroidManifest(manifestFile, resDir, assetsDir, libraryManifests, packageName);
   }
 
   public static boolean isBuck() {

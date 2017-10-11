@@ -1,7 +1,9 @@
 package org.robolectric.internal;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.FsFile;
 
@@ -19,7 +21,7 @@ public class ManifestIdentifier {
     this.resDir = resDir;
     this.assetDir = assetDir;
     this.packageName = packageName;
-    this.libraries = libraries;
+    this.libraries = libraries == null ? Collections.emptyList() : libraries;
   }
 
   /**
@@ -33,12 +35,10 @@ public class ManifestIdentifier {
     this.assetDir = assetDir;
     this.packageName = packageName;
 
-    if (libraryDirs == null) {
-      this.libraries = null;
-    } else {
-      this.libraries = new ArrayList<>();
+    List<ManifestIdentifier> libraries = new ArrayList<>();
+    if (libraryDirs != null) {
       for (FsFile libraryDir : libraryDirs) {
-        this.libraries.add(new ManifestIdentifier(
+        libraries.add(new ManifestIdentifier(
             null,
             libraryDir.join(Config.DEFAULT_MANIFEST_NAME),
             libraryDir.join(Config.DEFAULT_RES_FOLDER),
@@ -46,6 +46,7 @@ public class ManifestIdentifier {
             null));
       }
     }
+    this.libraries = Collections.unmodifiableList(libraries);
   }
 
   public FsFile getManifestFile() {
@@ -64,6 +65,7 @@ public class ManifestIdentifier {
     return packageName;
   }
 
+  @Nonnull
   public List<ManifestIdentifier> getLibraries() {
     return libraries;
   }
