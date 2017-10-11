@@ -190,14 +190,27 @@ public class ShadowPackageManagerTest {
     ActivityInfo activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
 
     int configChanges = activityInfo.configChanges;
-    assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
     assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_LAYOUT).isEqualTo(ActivityInfo.CONFIG_SCREEN_LAYOUT);
     assertThat(configChanges & ActivityInfo.CONFIG_ORIENTATION).isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
 
     // Spot check a few other possible values that shouldn't be in the flags.
-    assertThat(configChanges & ActivityInfo.CONFIG_MNC).isZero();
     assertThat(configChanges & ActivityInfo.CONFIG_FONT_SCALE).isZero();
     assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_SIZE).isZero();
+  }
+
+  /**
+   * MCC + MNC are always present in config changes since Oreo.
+   */
+  @Test
+  @Config(minSdk = O)
+  public void getActivityMetaData_configChangesAlwaysIncludesMccAndMnc() throws Exception {
+    Activity activity = setupActivity(ShadowPackageManagerTest.ActivityWithConfigChanges.class);
+
+    ActivityInfo activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
+
+    int configChanges = activityInfo.configChanges;
+    assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
+    assertThat(configChanges & ActivityInfo.CONFIG_MNC).isEqualTo(ActivityInfo.CONFIG_MNC);
   }
 
   @Test
