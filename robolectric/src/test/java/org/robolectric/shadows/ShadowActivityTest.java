@@ -49,16 +49,11 @@ import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import java.io.File;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
@@ -67,14 +62,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowActivityTest {
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Activity activity;
 
   @Test
@@ -892,21 +884,6 @@ public class ShadowActivityTest {
   }
 
   /////////////////////////////
-
-  public AndroidManifest newConfigWith(String contents) throws IOException {
-    return newConfigWith("org.robolectric", contents);
-  }
-
-  private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
-    String fileContents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-        "          package=\"" + packageName + "\">\n" +
-        "    " + contents + "\n" +
-        "</manifest>\n";
-    File f = temporaryFolder.newFile("whatever.xml");
-    Files.write(fileContents, f, Charsets.UTF_8);
-    return new AndroidManifest(Fs.newFile(f), null, null);
-  }
 
   private static class DialogCreatingActivity extends Activity {
     @Override

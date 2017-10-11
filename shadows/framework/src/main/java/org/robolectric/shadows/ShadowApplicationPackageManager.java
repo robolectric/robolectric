@@ -55,32 +55,31 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ActivityInfo getActivityInfo(ComponentName component, int flags) throws NameNotFoundException {
-    ActivityInfo result = new ActivityInfo();
-    String packageName = component.getPackageName();
     String activityName = component.getClassName();
-    result.name = activityName;
-    result.packageName = packageName;
-
+    String packageName = component.getPackageName();
     PackageInfo packageInfo = packageInfos.get(packageName);
 
-    // In the cases where there is no manifest entry for the activity, e.g: a test that creates
-    // simply an android.app.Activity just return what we have.
-    if (packageInfo == null) {
-      return result;
-    }
+    if (packageInfo != null) {
+      for (ActivityInfo activity : packageInfo.activities) {
+        if (activityName.equals(activity.name)) {
+          ActivityInfo result = new ActivityInfo(activity);
+          if ((flags & GET_META_DATA) != 0) {
+            result.metaData = activity.metaData;
+          }
 
-    for (ActivityInfo activity : packageInfo.activities) {
-      if (activityName.equals(activity.name)) {
-        result.configChanges = activity.configChanges;
-        result.parentActivityName = activity.parentActivityName;
-        result.metaData = activity.metaData;
-        result.theme = activity.theme;
-        result.applicationInfo = activity.applicationInfo;
-        return result;
+          return result;
+        }
       }
     }
 
-    result.applicationInfo = getApplicationInfo(packageName, flags);
+    // TODO: Should throw a NameNotFoundException
+    // In the cases where there is no manifest entry for the activity, e.g: a test that creates
+    // simply an android.app.Activity just return what we have.
+    ActivityInfo result = new ActivityInfo();
+    result.name = activityName;
+    result.packageName = packageName;
+    result.applicationInfo = new ApplicationInfo();
+    result.applicationInfo.packageName = packageName;
     return result;
   }
 
@@ -929,11 +928,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public void removeOnPermissionsChangeListener(Object listener) {
-  }
-
-  @Implementation
-  public CharSequence getText(String packageName, @StringRes int resid, ApplicationInfo appInfo) {
-    return null;
   }
 
   @Implementation
