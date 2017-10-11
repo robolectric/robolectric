@@ -128,36 +128,6 @@ public class ShadowPackageManager {
   private Set<String> deletedPackages = new HashSet<>();
   Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
 
-  /**
-   * Goes through the meta data and puts each value in to a
-   * bundle as the correct type.
-   *
-   * Note that this will convert resource identifiers specified
-   * via the value attribute as well.
-   * @param meta Meta data to put in to a bundle
-   * @return bundle containing the meta data
-   */
-  private static Bundle metaDataToBundle(Map<String, Object> meta) {
-    if (meta.size() == 0) {
-        return null;
-    }
-
-    Bundle bundle = new Bundle();
-
-    for (Map.Entry<String,Object> entry : meta.entrySet()) {
-      if (Boolean.class.isInstance(entry.getValue())) {
-        bundle.putBoolean(entry.getKey(), (Boolean) entry.getValue());
-      } else if (Float.class.isInstance(entry.getValue())) {
-        bundle.putFloat(entry.getKey(), (Float) entry.getValue());
-      } else if (Integer.class.isInstance(entry.getValue())) {
-        bundle.putInt(entry.getKey(), (Integer) entry.getValue());
-      } else {
-        bundle.putString(entry.getKey(), entry.getValue().toString());
-      }
-    }
-    return bundle;
-  }
-
   // From com.android.server.pm.PackageManagerService.compareSignatures().
   static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
     if (signatures1 == null) {
@@ -208,57 +178,6 @@ public class ShadowPackageManager {
     info.serviceInfo.permission = service.info.permission;
     info.filter = new IntentFilter(intentFilter);
     return info;
-  }
-
-  private static int decodeProtectionLevel(String protectionLevel) {
-    if (protectionLevel == null) {
-      return PermissionInfo.PROTECTION_NORMAL;
-    }
-
-    switch (protectionLevel) {
-      case "normal":
-        return PermissionInfo.PROTECTION_NORMAL;
-      case "dangerous":
-        return PermissionInfo.PROTECTION_DANGEROUS;
-      case "signature":
-        return PermissionInfo.PROTECTION_SIGNATURE;
-      case "signatureOrSystem":
-        return PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
-      default:
-        throw new IllegalArgumentException("unknown protection level " + protectionLevel);
-    }
-  }
-
-  static PermissionInfo createPermissionInfo(int flags,
-      PermissionItemData permissionItemData) throws NameNotFoundException {
-    PermissionInfo permissionInfo = new PermissionInfo();
-    String packageName = RuntimeEnvironment.getAppManifest().getPackageName();
-    permissionInfo.packageName = packageName;
-    permissionInfo.name = permissionItemData.getName();
-    permissionInfo.group = permissionItemData.getPermissionGroup();
-    permissionInfo.protectionLevel = decodeProtectionLevel(permissionItemData.getProtectionLevel());
-
-    String descriptionRef = permissionItemData.getDescription();
-    if (descriptionRef != null) {
-      ResName descResName = AttributeResource
-          .getResourceReference(descriptionRef, packageName, "string");
-      permissionInfo.descriptionRes = RuntimeEnvironment.getAppResourceTable().getResourceId(descResName);
-    }
-
-    String labelRefOrString = permissionItemData.getLabel();
-    if (labelRefOrString != null) {
-      if (AttributeResource.isResourceReference(labelRefOrString)) {
-        ResName labelResName = AttributeResource.getResourceReference(labelRefOrString, packageName, "string");
-        permissionInfo.labelRes = RuntimeEnvironment.getAppResourceTable().getResourceId(labelResName);
-      } else {
-        permissionInfo.nonLocalizedLabel = labelRefOrString;
-      }
-    }
-
-    if ((flags & GET_META_DATA) != 0) {
-      permissionInfo.metaData = metaDataToBundle(permissionItemData.getMetaData().getValueMap());
-    }
-    return permissionInfo;
   }
 
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
