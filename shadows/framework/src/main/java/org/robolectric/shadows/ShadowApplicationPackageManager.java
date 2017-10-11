@@ -346,9 +346,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private static IntentFilter matchIntentFilter(Intent intent, ArrayList<? extends PackageParser.IntentInfo> intentFilters, int flags) {
     for (PackageParser.IntentInfo intentInfo : intentFilters) {
       if (intentInfo.match(intent.getAction(), intent.getType(), intent.getScheme(), intent.getData(), intent.getCategories(), "ShadowPackageManager") >= 0) {
-//        if (!intentInfo.hasCategory(Intent.CATEGORY_DEFAULT) && ((flags & MATCH_DEFAULT_ONLY) == 0)) {
-//          return null;
-//        }
         return intentInfo;
       }
     }
