@@ -351,6 +351,20 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryIntentActivities_launcher() {
+    Intent intent = new Intent(Intent.ACTION_MAIN);
+    intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+    // TODO: make this the default and remove.
+    shadowPackageManager.setQueryIntentImplicitly(true);
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
+    assertThat(resolveInfos).hasSize(1);
+
+    assertThat(resolveInfos.get(0).activityInfo.name).isEqualTo("org.robolectric.shadows.TestActivityAlias");
+    assertThat(resolveInfos.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
+  }
+
+  @Test
   public void queryIntentActivities_MatchSystemOnly() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
