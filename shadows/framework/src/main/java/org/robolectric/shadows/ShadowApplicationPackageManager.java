@@ -26,24 +26,15 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.RemoteException;
-import android.os.UserHandle;
+import android.os.*;
 import android.os.storage.VolumeInfo;
 import android.util.Pair;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+
+import java.util.*;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.manifest.PermissionItemData;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
@@ -424,15 +415,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       return permissionInfo;
     }
 
-    PermissionItemData permissionItemData = RuntimeEnvironment.getAppManifest().getPermissions().get(
-        name);
-    if (permissionItemData == null) {
-      throw new NameNotFoundException(name);
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      for (PermissionInfo permission : packageInfo.permissions) {
+        if (name.equals(permission.name)) {
+          return createCopyPermissionInfo(permission, flags);
+        }
+      }
     }
 
-    permissionInfo = createPermissionInfo(flags, permissionItemData);
-
-    return permissionInfo;
+    throw new NameNotFoundException(name);
   }
 
   @Implementation(minSdk = M)
@@ -587,13 +578,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
 
-    for (PermissionItemData permissionItemData : RuntimeEnvironment.getAppManifest().getPermissions().values()) {
-      if (Objects.equals(permissionItemData.getPermissionGroup(), group)) {
-        result.add(createPermissionInfo(flags, permissionItemData));
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      for (PermissionInfo permission : packageInfo.permissions) {
+        if (Objects.equals(group, permission.group)) {
+          result.add(createCopyPermissionInfo(permission, flags));
+        }
       }
     }
 
     return result;
+  }
+
+  private static PermissionInfo createCopyPermissionInfo(PermissionInfo src, int flags) {
+    PermissionInfo matchedPermission = new PermissionInfo(src);
+    if ((flags & GET_META_DATA) != GET_META_DATA) {
+      matchedPermission.metaData = null;
+    }
+    return matchedPermission;
   }
 
   @Override
