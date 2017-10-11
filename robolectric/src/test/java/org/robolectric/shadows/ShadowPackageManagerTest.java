@@ -676,6 +676,13 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void shouldAssignTheApplicationClassNameFromTheManifest() throws Exception {
+    ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
+    assertThat(applicationInfo.className).isEqualTo("org.robolectric.TestApplication");
+  }
+
+  @Test
+  @Config(minSdk = N_MR1)
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
