@@ -555,7 +555,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
     ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
-    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.my_content_provider_authority");
 
     assertThat(providerInfo.readPermission).isEqualTo("READ_PERMISSION");
     assertThat(providerInfo.writePermission).isEqualTo("WRITE_PERMISSION");
@@ -570,7 +570,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void getProviderInfo_shouldMetaDataInProviderInfos() throws Exception {
     ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), PackageManager.GET_META_DATA);
-    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.my_content_provider_authority");
 
     assertThat(providerInfo.metaData.getString("greeting")).isEqualTo("Hello");
   }
