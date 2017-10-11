@@ -161,11 +161,15 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void testQueryBroadcastReceiverFailsForMissingAction() {
+  public void testQueryBroadcastReceiver_matchAllWithoutIntentFilter() {
     Intent intent = new Intent();
     intent.setPackage(RuntimeEnvironment.application.getPackageName());
     List<ResolveInfo> receiverInfos = packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
-    assertTrue(receiverInfos.size() == 0);
+    assertThat(receiverInfos).hasSize(7);
+
+    for (ResolveInfo receiverInfo : receiverInfos) {
+      assertThat(receiverInfo.activityInfo.name).isNotEqualTo("com.bar.ReceiverWithoutIntentFilter");
+    }
   }
 
   @Test
