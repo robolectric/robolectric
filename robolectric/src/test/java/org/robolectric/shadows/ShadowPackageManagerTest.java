@@ -215,7 +215,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPermissionInfo_withMinimalFields() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("permission_with_minimal_fields", 0);
+    PermissionInfo permission = packageManager.getPermissionInfo("org.robolectric.permission_with_minimal_fields", 0);
     assertThat(permission.labelRes).isEqualTo(0);
     assertThat(permission.descriptionRes).isEqualTo(0);
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
@@ -1070,10 +1070,10 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPermissionInfo() throws Exception {
-    PermissionInfo permission = RuntimeEnvironment.application.getPackageManager().getPermissionInfo("some_permission", 0);
+    PermissionInfo permission = RuntimeEnvironment.application.getPackageManager().getPermissionInfo("org.robolectric.some_permission", 0);
     assertThat(permission.labelRes).isEqualTo(R.string.test_permission_label);
     assertThat(permission.descriptionRes).isEqualTo(R.string.test_permission_description);
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
   }
 
   @Test
@@ -1137,9 +1137,9 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPermissionInfo_noMetaData() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("some_permission", 0);
+    PermissionInfo permission = packageManager.getPermissionInfo("org.robolectric.some_permission", 0);
     assertThat(permission.metaData).isNull();
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
     assertThat(permission.descriptionRes).isEqualTo(R.string.test_permission_description);
     assertThat(permission.labelRes).isEqualTo(R.string.test_permission_label);
     assertThat(permission.nonLocalizedLabel).isNullOrEmpty();
@@ -1149,14 +1149,14 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPermissionInfo_withMetaData() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("some_permission", PackageManager.GET_META_DATA);
+    PermissionInfo permission = packageManager.getPermissionInfo("org.robolectric.some_permission", PackageManager.GET_META_DATA);
     assertThat(permission.metaData).isNotNull();
     assertThat(permission.metaData.getString("meta_data_name")).isEqualTo("meta_data_value");
   }
 
   @Test
   public void getPermissionInfo_withLiteralLabel() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("permission_with_literal_label", 0);
+    PermissionInfo permission = packageManager.getPermissionInfo("org.robolectric.permission_with_literal_label", 0);
     assertThat(permission.labelRes).isEqualTo(0);
     assertThat(permission.nonLocalizedLabel).isEqualTo("Literal label");
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
@@ -1170,7 +1170,7 @@ public class ShadowPackageManagerTest {
     PermissionInfo permission = permissions.get(0);
 
     assertThat(permission.group).isEqualTo("my_permission_group");
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
     assertThat(permission.metaData).isNull();
   }
 
@@ -1182,7 +1182,7 @@ public class ShadowPackageManagerTest {
     PermissionInfo permission = permissions.get(0);
 
     assertThat(permission.group).isEqualTo("my_permission_group");
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
     assertThat(permission.metaData).isNotNull();
     assertThat(permission.metaData.getString("meta_data_name")).isEqualTo("meta_data_value");
   }
@@ -1192,7 +1192,7 @@ public class ShadowPackageManagerTest {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
 
     assertThat(Iterables.transform(permissions, getPermissionNames()))
-        .containsExactlyInAnyOrder("permission_with_minimal_fields", "permission_with_literal_label");
+        .containsExactlyInAnyOrder("org.robolectric.permission_with_minimal_fields", "org.robolectric.permission_with_literal_label");
   }
 
   @Test
