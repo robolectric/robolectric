@@ -603,7 +603,7 @@ public class ShadowPackageManager {
   public void doPendingUninstallCallbacks() {
     boolean hasDeletePackagesPermission = false;
     String[] requestedPermissions =
-        packageInfos.get(RuntimeEnvironment.getAppManifest().getPackageName()).requestedPermissions;
+        packageInfos.get(RuntimeEnvironment.application.getPackageName()).requestedPermissions;
     if (requestedPermissions != null) {
       for (String permission : requestedPermissions) {
         if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {
