@@ -12,13 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.*;
 import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
@@ -28,13 +22,10 @@ import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidConfigurer;
-import org.robolectric.internal.BuckManifestFactory;
-import org.robolectric.internal.DefaultManifestFactory;
-import org.robolectric.internal.GradleManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.PluginLoader;
 import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkConfig;
@@ -79,7 +70,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static PackageResourceTable compiletimeSdkResourceTable;
 
   private final SdkPicker sdkPicker;
-  private final ConfigMerger configMerger;
+
+  private transient final PluginLoader<ManifestFactory> manifestFactoryPluginLoader =
+      new PluginLoader<>(ManifestFactory.class);
+
+  private transient final PluginLoader<ConfigMerger> configMergerPluginLoader =
+      new PluginLoader<>(ConfigMerger.class);
   private ServiceLoader<ShadowProvider> providers;
   private transient DependencyResolver dependencyResolver;
 
@@ -96,7 +92,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
     super(testClass);
-    this.configMerger = createConfigMerger();
     this.sdkPicker = createSdkPicker();
   }
 
@@ -165,11 +160,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * Create a {@link ConfigMerger} for calculating the {@link Config} tests.
+   * Create a {@link DefaultConfigMerger} for calculating the {@link Config} tests.
    *
    * Alternate implementations may be provided using a ServiceLoader.
    *
-   * @return a {@link ConfigMerger}
+   * @return a {@link DefaultConfigMerger}
    * @since 3.2
    */
   @Nonnull
@@ -179,7 +174,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     if (serviceLoader != null && serviceLoader.iterator().hasNext()) {
       merger = Iterators.getOnlyElement(serviceLoader.iterator());
     } else {
-      merger = new ConfigMerger();
+      merger = new DefaultConfigMerger();
     }
     return merger;
   }
@@ -440,22 +435,25 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param config Specification of the SDK version, manifest file, package name, etc.
+   * @deprecated This method is deprecated and will be removed in a future release of Robolectric.
+   *             Instead of overriding this method, provide your custom {@link ManifestFactory} as
+   *             a Java service (see {@link java.util.ServiceLoader}).
    */
+  @Deprecated
   protected ManifestFactory getManifestFactory(Config config) {
-    Properties buildSystemApiProperties = getBuildSystemApiProperties();
-    if (buildSystemApiProperties != null) {
-      return new DefaultManifestFactory(buildSystemApiProperties);
-    }
+    ManifestIdentifier manifestIdentifier = manifestFactoryPluginLoader
+        .invoke(manifestFactory -> manifestFactory.identify(config));
+    return new ManifestFactory() {
+      @Override
+      public ManifestIdentifier identify(Config config) {
+        return manifestIdentifier;
+      }
 
-    Class<?> buildConstants = config.constants();
-    //noinspection ConstantConditions
-    if (BuckManifestFactory.isBuck()) {
-      return new BuckManifestFactory();
-    } else if (buildConstants != null && buildConstants != Void.class) {
-      return new GradleManifestFactory();
-    } else {
-      return new MavenManifestFactory();
-    }
+      @Override
+      public float getPriority() {
+        return 0;
+      }
+    };
   }
 
   Properties getBuildSystemApiProperties() {
@@ -525,7 +523,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @since 2.0
    */
   public Config getConfig(Method method) {
-    return configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig());
+    return configMergerPluginLoader.invoke(configMerger ->
+        configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig()));
   }
 
   /**

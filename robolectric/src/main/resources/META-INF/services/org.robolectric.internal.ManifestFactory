@@ -1,0 +1,4 @@
+org.robolectric.internal.BuckManifestFactory
+org.robolectric.internal.DefaultManifestFactory
+org.robolectric.internal.GradleManifestFactory
+org.robolectric.internal.MavenManifestFactory

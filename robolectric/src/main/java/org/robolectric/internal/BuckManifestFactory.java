@@ -24,6 +24,10 @@ public class BuckManifestFactory implements ManifestFactory {
   @Override
   public ManifestIdentifier identify(Config config) {
     String buckManifest = System.getProperty(BUCK_ROBOLECTRIC_MANIFEST);
+    if (buckManifest == null) {
+      throw new UnsuitablePluginException();
+    }
+
     FsFile manifestFile = Fs.fileFromPath(buckManifest);
 
     String buckResDirs = System.getProperty(BUCK_ROBOLECTRIC_RES_DIRECTORIES);
@@ -81,5 +85,10 @@ public class BuckManifestFactory implements ManifestFactory {
       files.add(Fs.fileFromPath(dir));
     }
     return files;
+  }
+
+  @Override
+  public float getPriority() {
+    return isBuck() ? BUCK_PRIORITY : Float.MIN_VALUE;
   }
 }

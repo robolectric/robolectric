@@ -13,10 +13,14 @@ import org.robolectric.util.ReflectionHelpers;
 public class GradleManifestFactory implements ManifestFactory {
   @Override
   public ManifestIdentifier identify(Config config) {
+    if (config.constants() == null) {
+      throw new UnsuitablePluginException("No 'constants' field in @Config annotation!");
+    }
+
     if (config.constants() == Void.class) {
       Logger.error("Field 'constants' not specified in @Config annotation");
       Logger.error("This is required when using Robolectric with Gradle!");
-      throw new RuntimeException("No 'constants' field in @Config annotation!");
+      throw new UnsuitablePluginException("No 'constants' field in @Config annotation!");
     }
 
     final String buildOutputDir = getBuildOutputDir(config);
@@ -109,5 +113,10 @@ public class GradleManifestFactory implements ManifestFactory {
     } catch (Throwable e) {
       return null;
     }
+  }
+
+  @Override
+  public float getPriority() {
+    return GRADLE_PRIORITY;
   }
 }

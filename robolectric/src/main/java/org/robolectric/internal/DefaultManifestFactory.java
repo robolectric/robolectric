@@ -2,6 +2,8 @@ package org.robolectric.internal;
 
 import static java.util.Collections.emptyList;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -14,12 +16,21 @@ import org.robolectric.util.Logger;
 public class DefaultManifestFactory implements ManifestFactory {
   private Properties properties;
 
+  @SuppressWarnings("unused")
+  public DefaultManifestFactory() {
+    this(getBuildSystemApiProperties());
+  }
+
   public DefaultManifestFactory(Properties properties) {
     this.properties = properties;
   }
 
   @Override
   public ManifestIdentifier identify(Config config) {
+    if (properties == null) {
+      throw new UnsuitablePluginException();
+    }
+
     FsFile manifestFile = Fs.fileFromPath(properties.getProperty("android_merged_manifest"));
     FsFile resourcesDir = getFsFileFromPath(properties.getProperty("android_merged_resources"));
     FsFile assetsDir = getFsFileFromPath(properties.getProperty("android_merged_assets"));
@@ -72,5 +83,32 @@ public class DefaultManifestFactory implements ManifestFactory {
     } else {
       return Fs.fileFromPath(property);
     }
+  }
+
+  static Properties getBuildSystemApiProperties() {
+    InputStream resourceAsStream = DefaultManifestFactory.class
+        .getResourceAsStream("/com/android/tools/test_config.properties");
+    if (resourceAsStream == null) {
+      return null;
+    }
+
+    try {
+      Properties properties = new Properties();
+      properties.load(resourceAsStream);
+      return properties;
+    } catch (IOException e) {
+      return null;
+    } finally {
+      try {
+        resourceAsStream.close();
+      } catch (IOException e) {
+        throw new RuntimeException("couldn't close test_config.properties", e);
+      }
+    }
+  }
+
+  @Override
+  public float getPriority() {
+    return properties != null ? DEFAULT_PRIORITY : Float.MIN_VALUE;
   }
 }

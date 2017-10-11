@@ -1,5 +1,6 @@
 package org.robolectric.internal;
 
+import org.robolectric.Plugin;
 import org.robolectric.annotation.Config;
 
 /**
@@ -12,7 +13,12 @@ import org.robolectric.annotation.Config;
  * * Gradle
  * * Buck
  */
-public interface ManifestFactory {
+public interface ManifestFactory extends Plugin {
+
+  int DEFAULT_PRIORITY = DEFAULT_PLUGIN_PRIORITY;
+  int BUCK_PRIORITY = DEFAULT_PLUGIN_PRIORITY;
+  int GRADLE_PRIORITY = DEFAULT_PLUGIN_PRIORITY;
+  int MAVEN_PRIORITY = -2;
 
   /**
    * Creates a {@link ManifestIdentifier} which represents an Android app, service, or library

@@ -123,4 +123,9 @@ public class MavenManifestFactory implements ManifestFactory {
     }
     return libraryBaseDirs;
   }
+
+  @Override
+  public float getPriority() {
+    return MAVEN_PRIORITY;
+  }
 }
