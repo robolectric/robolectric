@@ -38,9 +38,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import java.util.List;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -56,7 +54,7 @@ public class ShadowApplicationTest {
   @Test
   @Config(packageName = "override.package")
   public void shouldOverridePackageWithConfig() {
-    assertEquals("override.package", RuntimeEnvironment.application.getPackageName());
+    assertThat(RuntimeEnvironment.application.getPackageName()).isEqualTo("override.package");
   }
 
   @Test

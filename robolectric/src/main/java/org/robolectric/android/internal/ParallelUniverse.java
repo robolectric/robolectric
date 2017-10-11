@@ -174,14 +174,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     AndroidManifestPullParser parser = new AndroidManifestPullParser();
     PackageParser.Package packageInfo = parser.parse(appManifest.getPackageName(), Fs.fileFromPath("./src/test/resources/AndroidManifest.xml"),
         resources);
+
+    // Support overriding the package name specified in the Manifest.
+    if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
+      packageInfo.packageName = config.packageName();
+      packageInfo.applicationInfo.packageName = config.packageName();
+    }
+
     setUpPackageStorage(packageInfo.applicationInfo);
 
     ShadowActivityThread.setApplicationPackage(packageInfo);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
-
-
-
 
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
