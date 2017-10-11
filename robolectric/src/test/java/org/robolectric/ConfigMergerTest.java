@@ -151,7 +151,7 @@ public class ConfigMergerTest {
   }
 
   @Test public void testPackageHierarchyOf() throws Exception {
-    assertThat(new ConfigMerger().packageHierarchyOf(ConfigMergerTest.class))
+    assertThat(new DefaultConfigMerger().packageHierarchyOf(ConfigMergerTest.class))
         .containsExactly("org.robolectric", "org", "");
   }
 
@@ -172,7 +172,7 @@ public class ConfigMergerTest {
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties, Config.Implementation globalConfig) throws InitializationError {
     Method info = getMethod(testClass, methodName);
-    return new ConfigMerger() {
+    return new DefaultConfigMerger() {
       @Override
       InputStream getResourceAsStream(String resourceName) {
         String properties = configProperties.get(resourceName);
