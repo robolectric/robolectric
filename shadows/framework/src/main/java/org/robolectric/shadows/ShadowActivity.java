@@ -190,7 +190,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     } else {
       throw new RuntimeException("Could not find AndroidRuntimeAdapter for API level: " + apiLevel);
     }
-    setThemeFromManifest();
+
+    int theme = activityInfo.getThemeResource();
+    if (theme != 0) {
+      realActivity.setTheme(theme);
+    }
   }
 
   private Class<?> getNonConfigurationClass() {
@@ -199,21 +203,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public boolean setThemeFromManifest() {
-    ShadowApplication shadowApplication = shadowOf(realActivity.getApplication());
-    AndroidManifest appManifest = shadowApplication.getAppManifest();
-    if (appManifest == null) return false;
-
-    String themeRef = appManifest.getThemeRef(realActivity.getClass().getName());
-
-    if (themeRef != null) {
-      int themeRes = realActivity.getResources().getIdentifier(themeRef.replace("@", ""), "style", appManifest.getPackageName());
-      realActivity.setTheme(themeRes);
-      return true;
-    }
-    return false;
   }
 
   public void setCallingActivity(ComponentName activityName) {
