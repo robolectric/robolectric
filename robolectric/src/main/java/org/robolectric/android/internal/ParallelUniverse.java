@@ -174,6 +174,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     AndroidManifestPullParser parser = new AndroidManifestPullParser();
     PackageParser.Package packageInfo = parser.parse(appManifest.getPackageName(), Fs.fileFromPath("./src/test/resources/AndroidManifest.xml"),
         resources);
+    setUpPackageStorage(packageInfo.applicationInfo);
 
     ShadowActivityThread.setApplicationPackage(packageInfo);
 
@@ -262,5 +263,17 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   public void setSdkConfig(SdkConfig sdkConfig) {
     this.sdkConfig = sdkConfig;
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+  }
+
+  private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.publicSourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-publicSourceDir").toAbsolutePath().toString();
+    applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
+
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+    }
   }
 }
