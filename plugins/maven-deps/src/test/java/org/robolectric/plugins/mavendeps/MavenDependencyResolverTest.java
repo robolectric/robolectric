@@ -1,4 +1,4 @@
-package org.robolectric.internal.dependency;
+package org.robolectric.plugins.mavendeps;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -20,6 +20,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.plugins.mavendeps.MavenDependencyResolver;
 
 @RunWith(JUnit4.class)
 public class MavenDependencyResolverTest {

@@ -69,11 +69,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   private final SdkPicker sdkPicker;
 
-  private transient final PluginLoader<ManifestFactory> manifestFactoryPluginLoader =
+  private transient final PluginLoader<ManifestFactory> manifestFactoryPlugins =
       new PluginLoader<>(ManifestFactory.class);
 
-  private transient final PluginLoader<ConfigMerger> configMergerPluginLoader =
+  private transient final PluginLoader<ConfigMerger> configMergerPlugins =
       new PluginLoader<>(ConfigMerger.class);
+
+  private transient final PluginLoader<DependencyResolver> dependencyResolverPlugins =
+      new PluginLoader<>(DependencyResolver.class);
 
   private transient DependencyResolver dependencyResolver;
 
@@ -94,6 +97,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected DependencyResolver getJarResolver() {
+    dependencyResolverPlugins.invoke(dependencyResolver -> dependencyResolver.)
     if (dependencyResolver == null) {
       if (Boolean.getBoolean("robolectric.offline")) {
         String propPath = System.getProperty("robolectric-deps.properties");
@@ -113,7 +117,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
 
         Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
-            "org.robolectric.internal.dependency.MavenDependencyResolver");
+            "org.robolectric.plugins.mavendeps.MavenDependencyResolver");
         DependencyResolver dependencyResolver = (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
         if (cacheDir.exists() || cacheDir.mkdir()) {
           Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
@@ -363,7 +367,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Deprecated
   protected ManifestFactory getManifestFactory(Config config) {
-    ManifestIdentifier manifestIdentifier = manifestFactoryPluginLoader
+    ManifestIdentifier manifestIdentifier = manifestFactoryPlugins
         .invoke(manifestFactory -> manifestFactory.identify(config));
     return new ManifestFactory() {
       @Override
@@ -400,7 +404,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @since 2.0
    */
   public Config getConfig(Method method) {
-    return configMergerPluginLoader.invoke(configMerger ->
+    return configMergerPlugins.invoke(configMerger ->
         configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig()));
   }
 

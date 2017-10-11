@@ -1,0 +1,24 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.11"
+}
+
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+dependencies {
+    // Compile dependencies
+    compileOnly project(":robolectric")
+    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
+    compile "org.apache.ant:ant:1.8.0"
+    compile("org.apache.maven:maven-ant-tasks:2.1.3") {
+        exclude group: "junit", module: "junit"
+    }
+
+    // Testing dependencies
+    testCompile project(":robolectric")
+    testCompile project(":shadowapi")
+    testCompile "junit:junit:4.12"
+    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "org.mockito:mockito-core:2.5.4"
+}

@@ -1,4 +1,4 @@
-package org.robolectric.internal.dependency;
+package org.robolectric.plugins.mavendeps;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,6 +8,8 @@ import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
 import org.robolectric.RoboSettings;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.util.Util;
 
 public class MavenDependencyResolver implements DependencyResolver {
@@ -15,6 +17,7 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final String repositoryUrl;
   private final String repositoryId;
 
+  @SuppressWarnings("unused")
   public MavenDependencyResolver() {
     this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId());
   }
@@ -85,5 +88,10 @@ public class MavenDependencyResolver implements DependencyResolver {
 
   protected void configureMaven(DependenciesTask dependenciesTask) {
     // maybe you want to override this method and some settings?
+  }
+
+  @Override
+  public float getPriority() {
+    return 0;
   }
 }

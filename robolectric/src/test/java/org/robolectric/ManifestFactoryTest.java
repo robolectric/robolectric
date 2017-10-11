@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.manifest.AndroidManifest;
@@ -73,7 +72,6 @@ public class ManifestFactoryTest {
 
     Config.Implementation config = Config.Builder.defaults().build();
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
-    assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
     assertThat(manifestIdentifier.getManifestFile()).isEqualTo(Fs.fileFromPath("/path/to/MergedManifest.xml"));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
@@ -107,7 +105,6 @@ public class ManifestFactoryTest {
         .setPackageName("another.package")
         .build();
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
-    assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
     assertThat(manifestIdentifier.getManifestFile())
             .isEqualTo(Fs.fromURL(getClass().getClassLoader().getResource("TestAndroidManifest.xml")));

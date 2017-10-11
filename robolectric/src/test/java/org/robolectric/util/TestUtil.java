@@ -106,7 +106,7 @@ public abstract class TestUtil {
       }
     } else {
       Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
-              "org.robolectric.internal.dependency.MavenDependencyResolver");
+              "org.robolectric.plugins.mavendeps.MavenDependencyResolver");
       return (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
     }
   }
