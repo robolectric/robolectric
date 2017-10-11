@@ -22,6 +22,7 @@ public class RuntimeEnvironment {
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static AndroidManifest appManifest;
+  private static String androidFrameworkJar;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -160,5 +161,13 @@ public class RuntimeEnvironment {
 
   public static TempDirectory getTempDirectory() {
     return tempDirectory;
+  }
+
+  public static void setAndroidFrameworkJarPath(String localArtifactPath) {
+    RuntimeEnvironment.androidFrameworkJar = localArtifactPath;
+  }
+
+  public static String getAndroidFrameworkJarPath() {
+    return RuntimeEnvironment.androidFrameworkJar;
   }
 }
