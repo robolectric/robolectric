@@ -8,6 +8,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import javax.annotation.Nonnull;
+
+import android.content.pm.PackageParser;
+import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -15,6 +18,7 @@ import org.robolectric.annotation.Implements;
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
   public static final String CLASS_NAME = "android.app.ActivityThread";
+  private static PackageParser.Package packageInfo;
 
   @Implementation
   public static Object getPackageManager() {
@@ -31,9 +35,12 @@ public class ShadowActivityThread {
         if (method.getName().equals("getApplicationInfo")) {
           String packageName = (String) args[0];
           int flags = (Integer) args[1];
-          ApplicationInfo applicationInfo = new ApplicationInfo();
-          applicationInfo.packageName = packageName;
-          return applicationInfo;
+
+          if (packageName.equals(ShadowActivityThread.packageInfo.packageName)) {
+            return ShadowActivityThread.packageInfo.applicationInfo;
+          }
+
+          return RuntimeEnvironment.application.getPackageManager().getApplicationInfo(packageName, flags);
         } else if (method.getName().equals("notifyPackageUse")) {
           return null;
         } else if (method.getName().equals("getPackageInstaller")) {
@@ -47,5 +54,9 @@ public class ShadowActivityThread {
   @Implementation
   public static Object currentActivityThread() {
     return RuntimeEnvironment.getActivityThread();
+  }
+
+  public static void setApplicationPackage(PackageParser.Package packageInfo) {
+    ShadowActivityThread.packageInfo = packageInfo;
   }
 }

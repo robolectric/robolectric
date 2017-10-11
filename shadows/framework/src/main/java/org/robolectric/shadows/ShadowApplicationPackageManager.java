@@ -1,10 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
-import static android.content.pm.PackageManager.GET_META_DATA;
-import static android.content.pm.PackageManager.GET_SIGNATURES;
-import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
-import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+import static android.content.pm.PackageManager.*;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -20,29 +16,11 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.FeatureInfo;
-import android.content.pm.IPackageDataObserver;
-import android.content.pm.IPackageDeleteObserver;
-import android.content.pm.IPackageInstallObserver;
-import android.content.pm.IPackageStatsObserver;
-import android.content.pm.InstrumentationInfo;
-import android.content.pm.IntentFilterVerificationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageItemInfo;
-import android.content.pm.PackageManager;
+import android.content.pm.*;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser.Activity;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.Service;
-import android.content.pm.PackageStats;
-import android.content.pm.PermissionGroupInfo;
-import android.content.pm.PermissionInfo;
-import android.content.pm.ProviderInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
-import android.content.pm.VerifierDeviceIdentity;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
@@ -166,20 +144,22 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     String packageName = component.getPackageName();
 
     PackageInfo packageInfo = packageInfos.get(packageName);
-    for (ProviderInfo provider : packageInfo.providers) {
-      if (resolvePackageName(packageName, component).equals(provider.name)) {
-        ProviderInfo result = new ProviderInfo();
-        result.packageName = provider.packageName;
-        result.name = provider.name;
-        result.authority = provider.authority;
-        result.readPermission = provider.readPermission;
-        result.writePermission = provider.writePermission;
-        result.pathPermissions = provider.pathPermissions;
+    if (packageInfo != null && packageInfo.providers != null) {
+      for (ProviderInfo provider : packageInfo.providers) {
+        if (resolvePackageName(packageName, component).equals(provider.name)) {
+          ProviderInfo result = new ProviderInfo();
+          result.packageName = provider.packageName;
+          result.name = provider.name;
+          result.authority = provider.authority;
+          result.readPermission = provider.readPermission;
+          result.writePermission = provider.writePermission;
+          result.pathPermissions = provider.pathPermissions;
 
-        if ((flags & GET_META_DATA) != 0) {
-          result.metaData = provider.metaData;
+          if ((flags & GET_META_DATA) != 0) {
+            result.metaData = provider.metaData;
+          }
+          return result;
         }
-        return result;
       }
     }
 
@@ -248,7 +228,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     for (Package appPackage : packages.values()) {
       if (resolveInfos.isEmpty()) {
         for (Service service : appPackage.services) {
-          IntentFilter intentFilter = matchIntentFilter(intent, service.intents);
+          IntentFilter intentFilter = matchIntentFilter(intent, service.intents, flags);
           if (intentFilter != null) {
             resolveInfos.add(getResolveInfo(service, intentFilter));
           }
@@ -299,7 +279,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
       for (Activity activity : appPackage.activities) {
 
-        IntentFilter intentFilter = matchIntentFilter(intent, activity.intents);
+        IntentFilter intentFilter = matchIntentFilter(intent, activity.intents, flags);
         if (intentFilter != null) {
           ResolveInfo resolveInfo = new ResolveInfo();
           resolveInfo.resolvePackageName = appPackage.packageName;
@@ -360,7 +340,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     for (Package appPackage : packages.values()) {
       if (resolveInfos.isEmpty()) {
         for (Activity receiver : appPackage.receivers) {
-          IntentFilter intentFilter = matchIntentFilter(intent, receiver.intents);
+
+          IntentFilter intentFilter = matchIntentFilter(intent, receiver.intents, flags);
           if (intentFilter != null) {
             resolveInfos.add(getResolveInfo(receiver, intentFilter));
           }
@@ -369,6 +350,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     return resolveInfos;
+  }
+
+  private static IntentFilter matchIntentFilter(Intent intent, ArrayList<? extends PackageParser.IntentInfo> intentFilters, int flags) {
+    for (PackageParser.IntentInfo intentInfo : intentFilters) {
+      if (intentInfo.match(intent.getAction(), intent.getType(), intent.getScheme(), intent.getData(), intent.getCategories(), "ShadowPackageManager") >= 0) {
+//        if (!intentInfo.hasCategory(Intent.CATEGORY_DEFAULT) && ((flags & MATCH_DEFAULT_ONLY) == 0)) {
+//          return null;
+//        }
+        return intentInfo;
+      }
+    }
+    return null;
   }
 
   @Implementation
@@ -384,17 +377,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     if (packageInfo != null) {
       String serviceName = className.getClassName();
-      for (ServiceInfo service : packageInfo.services) {
-        if (serviceName.equals(service.name)) {
-          ServiceInfo result = new ServiceInfo();
-          result.packageName = service.packageName;
-          result.name = service.name;
-          result.applicationInfo = service.applicationInfo;
-          result.permission = service.permission;
-          if ((flags & GET_META_DATA) != 0) {
-            result.metaData = service.metaData;
+      if (packageInfo.services != null) {
+        for (ServiceInfo service : packageInfo.services) {
+          if (serviceName.equals(service.name)) {
+            ServiceInfo result = new ServiceInfo();
+            result.packageName = service.packageName;
+            result.name = service.name;
+            result.applicationInfo = service.applicationInfo;
+            result.permission = service.permission;
+            if ((flags & GET_META_DATA) != 0) {
+              result.metaData = service.metaData;
+            }
+            return result;
           }
-          return result;
         }
       }
       throw new NameNotFoundException(serviceName);
