@@ -9,6 +9,7 @@ import android.app.LoadedApk;
 import android.app.ResourcesManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
 import android.content.res.CompatibilityInfo;
@@ -113,68 +114,74 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    ResourcesManager resourcesManager = ResourcesManager.getInstance();
-    Resources resources;
+    PackageParser.Package packageInfo = null;
+    if (appManifest.getAndroidManifestFile() != null && appManifest.getAndroidManifestFile().exists()) {
 
-    if (RuntimeEnvironment.getApiLevel() == Build.VERSION_CODES.M) {
-      ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager, "applyConfigurationToResourcesLocked",
-          ClassParameter.from(Configuration.class, configuration),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT){
-      resourcesManager.applyConfigurationToResourcesLocked(configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
+      ResourcesManager resourcesManager = ResourcesManager.getInstance();
+      Resources resources;
+
+      if (RuntimeEnvironment.getApiLevel() == Build.VERSION_CODES.M) {
+        ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager, "applyConfigurationToResourcesLocked",
+            ClassParameter.from(Configuration.class, configuration),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT){
+        resourcesManager.applyConfigurationToResourcesLocked(configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
+      }
+
+      String resDir = appManifest.getResDirectory() != null ? appManifest.getResDirectory().getPath() : config.resourceDir();
+      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+        resources = resourcesManager.getResources(null, resDir, new String[0], new String[0], new String[0], 0, configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, this.getClass().getClassLoader());
+      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.M) {
+        resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
+            ClassParameter.from(String.class, resDir),
+            ClassParameter.from(String[].class, new String[0]),
+            ClassParameter.from(String[].class, new String[0]),
+            ClassParameter.from(String[].class, new String[0]),
+            ClassParameter.from(int.class, 0),
+            ClassParameter.from(Configuration.class, configuration),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.L) {
+        resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
+            ClassParameter.from(String.class, resDir),
+            ClassParameter.from(String[].class, new String[0]),
+            ClassParameter.from(String[].class, new String[0]),
+            ClassParameter.from(String[].class, new String[0]),
+            ClassParameter.from(int.class, 0),
+            ClassParameter.from(Configuration.class, configuration),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO),
+            ClassParameter.from(IBinder.class, null));
+      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
+        resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
+            ClassParameter.from(String.class, resDir),
+            ClassParameter.from(int.class, 0),
+            ClassParameter.from(Configuration.class, configuration),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO),
+            ClassParameter.from(IBinder.class, null));
+      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "applyConfigurationToResourcesLocked", ClassParameter.from(Configuration.class, configuration),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+
+        resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
+            ClassParameter.from(String.class, resDir),
+            ClassParameter.from(int.class, 0),
+            ClassParameter.from(Configuration.class, configuration),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+      }
+      else {
+        ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "applyConfigurationToResourcesLocked", ClassParameter.from(Configuration.class, configuration),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+
+        resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
+            ClassParameter.from(String.class, resDir),
+            ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
+      }
+
+      AndroidManifestPullParser parser = new AndroidManifestPullParser();
+      packageInfo = parser.parse(appManifest.getPackageName(), appManifest.getAndroidManifestFile(),
+          resources);
+    } else {
+      packageInfo = new PackageParser.Package(config.packageName());
     }
-
-    String resDir = appManifest.getResDirectory() != null ? appManifest.getResDirectory().getPath() : config.resourceDir();
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      resources = resourcesManager.getResources(null, resDir, new String[0], new String[0], new String[0], 0, configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, this.getClass().getClassLoader());
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.M) {
-      resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
-          ClassParameter.from(String.class, resDir),
-          ClassParameter.from(String[].class, new String[0]),
-          ClassParameter.from(String[].class, new String[0]),
-          ClassParameter.from(String[].class, new String[0]),
-          ClassParameter.from(int.class, 0),
-          ClassParameter.from(Configuration.class, configuration),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.L) {
-      resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
-          ClassParameter.from(String.class, resDir),
-          ClassParameter.from(String[].class, new String[0]),
-          ClassParameter.from(String[].class, new String[0]),
-          ClassParameter.from(String[].class, new String[0]),
-          ClassParameter.from(int.class, 0),
-          ClassParameter.from(Configuration.class, configuration),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO),
-          ClassParameter.from(IBinder.class, null));
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
-      resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
-          ClassParameter.from(String.class, resDir),
-          ClassParameter.from(int.class, 0),
-          ClassParameter.from(Configuration.class, configuration),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO),
-          ClassParameter.from(IBinder.class, null));
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "applyConfigurationToResourcesLocked", ClassParameter.from(Configuration.class, configuration),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
-
-      resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
-          ClassParameter.from(String.class, resDir),
-          ClassParameter.from(int.class, 0),
-          ClassParameter.from(Configuration.class, configuration),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
-    }
-    else {
-      ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "applyConfigurationToResourcesLocked", ClassParameter.from(Configuration.class, configuration),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
-
-      resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
-          ClassParameter.from(String.class, resDir),
-          ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
-    }
-
-    AndroidManifestPullParser parser = new AndroidManifestPullParser();
-    PackageParser.Package packageInfo = parser.parse(appManifest.getPackageName(), Fs.fileFromPath("./src/test/resources/AndroidManifest.xml"),
-        resources);
 
     // Support overriding the package name specified in the Manifest.
     if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
