@@ -200,14 +200,14 @@ public class ShadowView {
     directly().setOnCreateContextMenuListener(onCreateContextMenuListener);
   }
 
-  @Implementation
-  public void draw(android.graphics.Canvas canvas) {
-    Drawable background = realView.getBackground();
-    if (background != null) {
-      shadowOf(canvas).appendDescription("background:");
-      background.draw(canvas);
-    }
-  }
+  // @Implementation
+  // public void draw(android.graphics.Canvas canvas) {
+  //   Drawable background = realView.getBackground();
+  //   if (background != null) {
+  //     shadowOf(canvas).appendDescription("background:");
+  //     background.draw(canvas);
+  //   }
+  // }
 
   @Implementation
   public void onLayout(boolean changed, int left, int top, int right, int bottom) {

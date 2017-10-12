@@ -65,7 +65,7 @@ public class Shadow {
     return SHADOW_IMPL.invokeConstructor(clazz, instance, paramValues);
   }
 
-  public static String directMethodName(String methodName) {
-    return SHADOW_IMPL.directMethodName(methodName);
+  public static String directMethodName(String className, String methodName) {
+    return SHADOW_IMPL.directMethodName(className, methodName);
   }
 }

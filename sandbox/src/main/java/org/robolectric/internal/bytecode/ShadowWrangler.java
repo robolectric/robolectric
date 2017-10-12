@@ -138,7 +138,7 @@ public class ShadowWrangler implements ClassHandler {
       plan = calculatePlan(signature, isStatic, theClass);
       planCache.put(signature, plan);
     }
-    if (signature.contains("Typeface")) {
+    if (signature.contains("View")) {
       System.out.println("call to " + signature + " -> " + (plan == null ? "null" : plan.describe()));
     }
     return plan;
@@ -307,6 +307,10 @@ public class ShadowWrangler implements ClassHandler {
       }
 
       if (method != null) {
+        if (!Modifier.isStatic(method.getModifiers())) {
+          return null;
+        }
+
         method.setAccessible(true);
       }
       return method;

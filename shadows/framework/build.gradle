@@ -62,7 +62,8 @@ dependencies {
     compile files(
             'libs/layoutlib_api-prebuilt.jar',
             'libs/layoutlib_create_intermediates.jar',
-            'libs/layoutlib_intermediates.jar'
+            'libs/layoutlib_intermediates.jar',
+            'libs/ninepatch-prebuilt.jar',
 //            'libs/layoutlib.jar'
     )
 

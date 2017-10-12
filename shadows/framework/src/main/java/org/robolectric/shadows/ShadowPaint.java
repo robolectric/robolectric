@@ -235,16 +235,16 @@ public class ShadowPaint {
     return width;
   }
 
-  @Implementation
-  public ColorFilter getColorFilter() {
-    return filter;
-  }
-
-  @Implementation
-  public ColorFilter setColorFilter(ColorFilter filter) {
-    this.filter = filter;
-    return filter;
-  }
+  // @Implementation
+  // public ColorFilter getColorFilter() {
+  //   return filter;
+  // }
+  //
+  // @Implementation
+  // public ColorFilter setColorFilter(ColorFilter filter) {
+  //   this.filter = filter;
+  //   return filter;
+  // }
 
   @Implementation
   public void setAntiAlias(boolean antiAlias) {

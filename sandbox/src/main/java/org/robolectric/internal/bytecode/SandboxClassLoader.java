@@ -52,6 +52,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
@@ -279,21 +280,50 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   }
 
   private byte[] fixLayoutLibDelegate(ClassNode classNode) {
-    final ClassWriter classWriter = new ClassWriter(
-        classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS) {
+    ClassNode replacementClassNode = new ClassNode(Opcodes.ASM4) {
       @Override
-      public int newUTF8(String s) {
-        if (s.endsWith("_Original")) {
-          String newS = ShadowConstants.ROBO_PREFIX + s.substring(0, s.length() - 9);
-          System.out.println("s = " + newS);
-          return super.newUTF8(newS);
-        } else {
-          return super.newUTF8(s);
-        }
+      public MethodVisitor visitMethod(int i, String s, String s1, String s2, String[] strings) {
+        MethodNode var6 = new MethodNode(Opcodes.ASM4, i, s, s1, s2, strings) {
+          @Override
+          public void visitMethodInsn(int i, String s, String s1, String s2, boolean b) {
+            switch (i) {
+              case Opcodes.INVOKEVIRTUAL:
+              case Opcodes.INVOKESPECIAL:
+              case Opcodes.INVOKESTATIC:
+                if (s1.endsWith("_Original")) {
+                  String methodName = s1.substring(0, s1.length() - 9);
+                  String newName = Shadow
+                      .directMethodName(s.replace('/', '.'), methodName);
+                  System.out.println("s = " + newName);
+                  s1 = newName;
+                }
+            }
+            super.visitMethodInsn(i, s, s1, s2, b);
+          }
+        };
+        this.methods.add(var6);
+        return var6;
       }
     };
 
-    classNode.accept(classWriter);
+    classNode.accept(replacementClassNode);
+    final ClassWriter classWriter = new ClassWriter(
+        classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS)/* {
+      //
+      // @Override
+      // public int newUTF8(String s) {
+      //   if (s.endsWith("_Original")) {
+      //     String methodName = s.substring(0, s.length() - 9);
+      //     String newName = Shadow.directMethodName(classNode.name.replace('/', '.'), methodName);
+      //     System.out.println("s = " + newName);
+      //     return super.newUTF8(newName);
+      //   } else {
+      //     return super.newUTF8(s);
+      //   }
+      // }
+    }*/;
+
+    replacementClassNode.accept(classWriter);
     return classWriter.toByteArray();
   }
 
@@ -585,7 +615,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       }
 
       InsnList removedInstructions = extractCallToSuperConstructor(method);
-      method.name = new ShadowImpl().directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+      method.name = new ShadowImpl().directMethodName(className, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
       classNode.methods.add(redirectorMethod(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
       String[] exceptions = exceptionArray(method);
@@ -663,7 +693,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
       // todo figure out
       String originalName = method.name;
-      method.name = new ShadowImpl().directMethodName(originalName);
+      method.name = new ShadowImpl().directMethodName(className, originalName);
 
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
       delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;
