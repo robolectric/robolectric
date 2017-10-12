@@ -124,11 +124,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       resourcesManager.applyConfigurationToResourcesLocked(configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
     }
 
+    String resDir = appManifest.getResDirectory() != null ? appManifest.getResDirectory().getPath() : config.resourceDir();
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      resources = resourcesManager.getResources(null, appManifest.getResDirectory().getPath(), new String[0], new String[0], new String[0], 0, configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, this.getClass().getClassLoader());
+      resources = resourcesManager.getResources(null, resDir, new String[0], new String[0], new String[0], 0, configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, this.getClass().getClassLoader());
     } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.M) {
       resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
-          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(String.class, resDir),
           ClassParameter.from(String[].class, new String[0]),
           ClassParameter.from(String[].class, new String[0]),
           ClassParameter.from(String[].class, new String[0]),
@@ -137,7 +138,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
     } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.L) {
       resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
-          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(String.class, resDir),
           ClassParameter.from(String[].class, new String[0]),
           ClassParameter.from(String[].class, new String[0]),
           ClassParameter.from(String[].class, new String[0]),
@@ -147,7 +148,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(IBinder.class, null));
     } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
       resources = ReflectionHelpers.callInstanceMethod(ResourcesManager.class, resourcesManager,"getTopLevelResources",
-          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(String.class, resDir),
           ClassParameter.from(int.class, 0),
           ClassParameter.from(Configuration.class, configuration),
           ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO),
@@ -157,7 +158,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
 
       resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
-          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(String.class, resDir),
           ClassParameter.from(int.class, 0),
           ClassParameter.from(Configuration.class, configuration),
           ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
@@ -167,7 +168,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
 
       resources = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread, "getTopLevelResources",
-          ClassParameter.from(String.class, appManifest.getResDirectory().getPath()),
+          ClassParameter.from(String.class, resDir),
           ClassParameter.from(CompatibilityInfo.class, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO));
     }
 
