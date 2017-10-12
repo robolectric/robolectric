@@ -10,6 +10,7 @@ import java.lang.reflect.Proxy;
 import javax.annotation.Nonnull;
 
 import android.content.pm.PackageParser;
+import android.os.RemoteException;
 import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -40,7 +41,11 @@ public class ShadowActivityThread {
             return ShadowActivityThread.packageInfo.applicationInfo;
           }
 
-          return RuntimeEnvironment.application.getPackageManager().getApplicationInfo(packageName, flags);
+          try {
+            return RuntimeEnvironment.application.getPackageManager().getApplicationInfo(packageName, flags);
+          } catch (PackageManager.NameNotFoundException e) {
+            throw new RemoteException(e.getMessage());
+          }
         } else if (method.getName().equals("notifyPackageUse")) {
           return null;
         } else if (method.getName().equals("getPackageInstaller")) {
