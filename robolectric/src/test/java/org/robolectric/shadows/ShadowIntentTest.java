@@ -32,7 +32,6 @@ public class ShadowIntentTest {
   private static final String TEST_ACTIVITY_CLASS_NAME = "org.robolectric.shadows.TestActivity";
 
   @Test
-  @Config(manifest = "TestAndroidManifestForActivities.xml")
   public void resolveActivityInfo_shouldReturnActivityInfoForExistingActivity() {
       Context context = RuntimeEnvironment.application;
       PackageManager packageManager = context.getPackageManager();
