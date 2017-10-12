@@ -182,12 +182,20 @@ public class ShadowPackageManager {
 
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
-    applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
-    applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
+    if (applicationInfo.sourceDir == null) {
+      applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    }
+    if (applicationInfo.dataDir == null) {
+      applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
+    }
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
-      applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
-      applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+      if (applicationInfo.credentialProtectedDataDir == null) {
+        applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      }
+      if (applicationInfo.deviceProtectedDataDir == null) {
+        applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+      }
     }
   }
 
@@ -454,8 +462,8 @@ public class ShadowPackageManager {
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+      setUpPackageStorage(packageInfo.applicationInfo);
     }
-    setUpPackageStorage(packageInfo.applicationInfo);
   }
 
   public void addPermissionInfo(PermissionInfo permissionInfo) {
