@@ -59,7 +59,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     String packageName = component.getPackageName();
     PackageInfo packageInfo = packageInfos.get(packageName);
 
-    if (packageInfo != null) {
+    if (packageInfo != null && packageInfo.activities != null) {
       for (ActivityInfo activity : packageInfo.activities) {
         if (activityName.equals(activity.name)) {
           ActivityInfo result = new ActivityInfo(activity);
