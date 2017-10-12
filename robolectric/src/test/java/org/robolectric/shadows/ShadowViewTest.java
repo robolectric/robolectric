@@ -911,10 +911,9 @@ public class ShadowViewTest {
     activityController.setup();
 
     Rect globalVisibleRect = new Rect();
-    assertThat(view.getGlobalVisibleRect(globalVisibleRect))
-        .isTrue();
-    assertThat(globalVisibleRect)
-        .isEqualTo(new Rect(0, 56, 480, 800));
+    assertThat(view.getGlobalVisibleRect(globalVisibleRect)).isTrue();
+    assertThat(globalVisibleRect.right).isEqualTo(480);
+    assertThat(globalVisibleRect.bottom).isEqualTo(800);
   }
 
   public static class MyActivity extends Activity {
