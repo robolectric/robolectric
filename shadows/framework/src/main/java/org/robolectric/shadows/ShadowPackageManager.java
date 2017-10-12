@@ -455,6 +455,7 @@ public class ShadowPackageManager {
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
+    setUpPackageStorage(packageInfo.applicationInfo);
   }
 
   public void addPermissionInfo(PermissionInfo permissionInfo) {
