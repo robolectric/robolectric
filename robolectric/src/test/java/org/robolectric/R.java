@@ -234,6 +234,7 @@ public final class R {
     public static final int custom_layout5 = 0x7f070026;
     public static final int custom_layout6 = 0x7f070027;
     public static final int layout_smallest_width = 0x7f070028;
+    public static final int image = 0x7f070029;
   }
 
   public static final class anim {

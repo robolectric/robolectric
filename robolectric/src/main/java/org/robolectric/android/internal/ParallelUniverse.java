@@ -84,6 +84,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = systemResources.getConfiguration();
     configuration.smallestScreenWidthDp = Qualifiers.getSmallestScreenWidth(qualifiers);
     configuration.screenWidthDp = Qualifiers.getScreenWidth(qualifiers);
+    configuration.screenHeightDp = 200;
     String orientation = Qualifiers.getOrientation(qualifiers);
     if ("land".equals(orientation)) {
       configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;

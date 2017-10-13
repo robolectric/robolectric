@@ -218,7 +218,7 @@ public class ShadowBitmapFactoryTest {
   public void decodeByteArray_shouldSetDataChecksum() throws Exception {
     byte[] data = {23, -125, 0, 52, 23, 18, 76, 43};
 
-    Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length);
+    Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
     assertThat(bitmap).isNotNull();
     assertThat(shadowOf(bitmap).getDescription()).isEqualTo("Bitmap for byte array, checksum: 3693078531");
     assertThat(bitmap.getWidth()).isEqualTo(100);
@@ -231,7 +231,7 @@ public class ShadowBitmapFactoryTest {
 
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = 4;
-    Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length - 1, options);
+    Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length - 1, options);
     assertThat(shadowOf(bitmap).getDescription()).isEqualTo("Bitmap for byte array, checksum: 3693078531 bytes 0..7 with options inSampleSize=4");
     assertThat(bitmap.getWidth()).isEqualTo(25);
     assertThat(bitmap.getHeight()).isEqualTo(25);

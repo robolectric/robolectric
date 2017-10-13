@@ -10,26 +10,26 @@ public class ShadowPorterDuffColorFilter {
   private int color;
   private PorterDuff.Mode mode;
 
-  @Implementation
-  public void __constructor__(int color, PorterDuff.Mode mode) {
-    this.color = color;
-    this.mode = mode;
-  }
-
-  @Implementation
-  public void setColor(int color) {
-    this.color = color;
-  }
-
-  @Implementation
-  public void setMode(PorterDuff.Mode mode) {
-    this.mode = mode;
-  }
-
-  @Override @Implementation
-  public int hashCode() {
-    return 31 * mode.hashCode() + color;
-  }
+  // @Implementation
+  // public void __constructor__(int color, PorterDuff.Mode mode) {
+  //   this.color = color;
+  //   this.mode = mode;
+  // }
+  //
+  // @Implementation
+  // public void setColor(int color) {
+  //   this.color = color;
+  // }
+  //
+  // @Implementation
+  // public void setMode(PorterDuff.Mode mode) {
+  //   this.mode = mode;
+  // }
+  //
+  // @Override @Implementation
+  // public int hashCode() {
+  //   return 31 * mode.hashCode() + color;
+  // }
 
   /**
    * @return Returns the ARGB color used to tint the source pixels when this filter

@@ -305,6 +305,9 @@ public class ShadowView {
       dumpAttribute(out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
     }
 
+    dumpAttribute(out, "width", realView.getWidth() + "px");
+    dumpAttribute(out, "height", realView.getWidth() + "px");
+
     switch (realView.getVisibility()) {
       case View.VISIBLE:
         break;

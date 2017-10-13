@@ -24,33 +24,33 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
   @RealObject private BitmapDrawable realBitmapDrawable;
 
-  /**
-   * Draws the contained bitmap onto the canvas at 0,0 with a default {@code Paint}
-   *
-   * @param canvas the canvas to draw on
-   */
-  @Implementation
-  public void draw(Canvas canvas) {
-    Paint paint = new Paint();
-    paint.setColorFilter(colorFilter);
-    canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, paint);
-  }
-
-  @Implementation
-  public Drawable mutate() {
-    Bitmap bitmap = realBitmapDrawable.getBitmap();
-    BitmapDrawable real = ReflectionHelpers.callConstructor(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
-    ShadowBitmapDrawable shadow = shadowOf(real);
-    shadow.colorFilter = this.colorFilter;
-    shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
-    return real;
-  }
-
-  @Implementation
-  public void setColorFilter(ColorFilter colorFilter) {
-    this.colorFilter = colorFilter;
-    directlyOn(realBitmapDrawable, BitmapDrawable.class).setColorFilter(colorFilter);
-  }
+  // /**
+  //  * Draws the contained bitmap onto the canvas at 0,0 with a default {@code Paint}
+  //  *
+  //  * @param canvas the canvas to draw on
+  //  */
+  // @Implementation
+  // public void draw(Canvas canvas) {
+  //   Paint paint = new Paint();
+  //   paint.setColorFilter(colorFilter);
+  //   canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, paint);
+  // }
+  //
+  // @Implementation
+  // public Drawable mutate() {
+  //   Bitmap bitmap = realBitmapDrawable.getBitmap();
+  //   BitmapDrawable real = ReflectionHelpers.callConstructor(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
+  //   ShadowBitmapDrawable shadow = shadowOf(real);
+  //   shadow.colorFilter = this.colorFilter;
+  //   shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
+  //   return real;
+  // }
+  //
+  // @Implementation
+  // public void setColorFilter(ColorFilter colorFilter) {
+  //   this.colorFilter = colorFilter;
+  //   directlyOn(realBitmapDrawable, BitmapDrawable.class).setColorFilter(colorFilter);
+  // }
 
   /**
    * Returns the resource id that this {@code BitmapDrawable} was loaded from. This lets

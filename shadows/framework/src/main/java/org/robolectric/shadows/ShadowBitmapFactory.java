@@ -35,96 +35,96 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<>();
 
-  @Implementation
-  public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
-    Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream",
-        ClassParameter.from(Resources.class, res),
-        ClassParameter.from(TypedValue.class, value),
-        ClassParameter.from(InputStream.class, is),
-        ClassParameter.from(Rect.class, pad),
-        ClassParameter.from(BitmapFactory.Options.class, opts));
-
-    if (value != null && value.string != null && value.string.toString().contains(".9.")) {
-      // todo: better support for nine-patches
-      ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
-    }
-    return bitmap;
-  }
-
-  @Implementation
-  public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
-    if (id == 0) {
-      return null;
-    }
-    Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
-    Shadows.shadowOf(bitmap).createdFromResId = id;
-    return bitmap;
-  }
-
-  @Implementation
-  public static Bitmap decodeResource(Resources res, int id) {
-    return decodeResource(res, id, null);
-  }
-
-  @Implementation
-  public static Bitmap decodeFile(String pathName) {
-    return decodeFile(pathName, null);
-  }
-
-  @Implementation
-  public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
-    Bitmap bitmap = create("file:" + pathName, options);
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
-    shadowBitmap.createdFromPath = pathName;
-    return bitmap;
-  }
-
-  @Implementation
-  public static Bitmap decodeFileDescriptor(FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
-    Bitmap bitmap = create("fd:" + fd, opts);
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
-    shadowBitmap.createdFromFileDescriptor = fd;
-    return bitmap;
-  }
-
-  @Implementation
-  public static Bitmap decodeStream(InputStream is) {
-    return decodeStream(is, null, null);
-  }
-
-  @Implementation
-  public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
-    String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
-    Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
-    Bitmap bitmap = create(name, opts, imageSize);
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
-    shadowBitmap.createdFromStream = is;
-    return bitmap;
-  }
-
-  @Implementation
-  public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
-    Bitmap bitmap = decodeByteArray(data, offset, length, new BitmapFactory.Options());
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
-    shadowBitmap.createdFromBytes = data;
-    return bitmap;
-  }
-
-  @Implementation
-  public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
-    String desc = new String(data, UTF_8);
-    if (!Charset.forName("US-ASCII").newEncoder().canEncode(desc)) {
-      Checksum checksumEngine = new CRC32();
-      checksumEngine.update(data, 0, data.length);
-
-      desc = "byte array, checksum: " + checksumEngine.getValue();
-    }
-
-    if (offset != 0 || length != data.length) {
-      desc += " bytes " + offset + ".." + length;
-    }
-    return create(desc, opts);
-  }
+  // @Implementation
+  // public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
+  //   Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream",
+  //       ClassParameter.from(Resources.class, res),
+  //       ClassParameter.from(TypedValue.class, value),
+  //       ClassParameter.from(InputStream.class, is),
+  //       ClassParameter.from(Rect.class, pad),
+  //       ClassParameter.from(BitmapFactory.Options.class, opts));
+  //
+  //   if (value != null && value.string != null && value.string.toString().contains(".9.")) {
+  //     // todo: better support for nine-patches
+  //     ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
+  //   }
+  //   return bitmap;
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
+  //   if (id == 0) {
+  //     return null;
+  //   }
+  //   Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
+  //   Shadows.shadowOf(bitmap).createdFromResId = id;
+  //   return bitmap;
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeResource(Resources res, int id) {
+  //   return decodeResource(res, id, null);
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeFile(String pathName) {
+  //   return decodeFile(pathName, null);
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
+  //   Bitmap bitmap = create("file:" + pathName, options);
+  //   ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+  //   shadowBitmap.createdFromPath = pathName;
+  //   return bitmap;
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeFileDescriptor(FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
+  //   Bitmap bitmap = create("fd:" + fd, opts);
+  //   ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+  //   shadowBitmap.createdFromFileDescriptor = fd;
+  //   return bitmap;
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeStream(InputStream is) {
+  //   return decodeStream(is, null, null);
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
+  //   String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
+  //   Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
+  //   Bitmap bitmap = create(name, opts, imageSize);
+  //   ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+  //   shadowBitmap.createdFromStream = is;
+  //   return bitmap;
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
+  //   Bitmap bitmap = decodeByteArray(data, offset, length, new BitmapFactory.Options());
+  //   ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+  //   shadowBitmap.createdFromBytes = data;
+  //   return bitmap;
+  // }
+  //
+  // @Implementation
+  // public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
+  //   String desc = new String(data, UTF_8);
+  //   if (!Charset.forName("US-ASCII").newEncoder().canEncode(desc)) {
+  //     Checksum checksumEngine = new CRC32();
+  //     checksumEngine.update(data, 0, data.length);
+  //
+  //     desc = "byte array, checksum: " + checksumEngine.getValue();
+  //   }
+  //
+  //   if (offset != 0 || length != data.length) {
+  //     desc += " bytes " + offset + ".." + length;
+  //   }
+  //   return create(desc, opts);
+  // }
 
   static Bitmap create(String name) {
     return create(name, null);
@@ -145,7 +145,7 @@ public class ShadowBitmapFactory {
     } else {
       config = Bitmap.Config.ARGB_8888;
     }
-    shadowBitmap.setConfig(config);
+    bitmap.setConfig(config);
 
     String optionsString = stringify(options);
     if (!optionsString.isEmpty()) {
@@ -162,9 +162,9 @@ public class ShadowBitmapFactory {
       p.y = p.y == 0 ? 1 : p.y;
     }
 
-    shadowBitmap.setWidth(p.x);
-    shadowBitmap.setHeight(p.y);
-    shadowBitmap.setPixels(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
+    bitmap.setWidth(p.x);
+    bitmap.setHeight(p.y);
+    bitmap.setPixels(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;

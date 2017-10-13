@@ -20,6 +20,8 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewRootImpl;
+import android.widget.LinearLayout;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.impl.ParserFactory;
@@ -114,8 +116,8 @@ public class ShadowBitmapTest {
   @Test
   public void shouldCreateBitmapWithMatrix() {
     Bitmap originalBitmap = create("Original bitmap", 100, 100);
-    shadowOf(originalBitmap).setWidth(200);
-    shadowOf(originalBitmap).setHeight(200);
+    originalBitmap.setWidth(200);
+    originalBitmap.setHeight(200);
     Matrix m = new Matrix();
     m.postRotate(90);
     Bitmap newBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, 100, 100, m, true);
@@ -198,7 +200,7 @@ public class ShadowBitmapTest {
   public void shouldCopyBitmap() {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     Bitmap bitmapCopy = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-    assertThat(shadowOf(bitmapCopy).getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
+    assertThat(bitmapCopy.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
     assertThat(bitmapCopy.isMutable()).isTrue();
   }
 
@@ -528,9 +530,16 @@ public class ShadowBitmapTest {
 
     System.out.println("nativeInstance = " + bitmap.getNativeInstance());
 
-    Activity activity = Robolectric.setupActivity(Activity.class);
-    ViewGroup mainView = (ViewGroup) LayoutInflater.from(RuntimeEnvironment.application)
-        .inflate(R.layout.main, activity.findViewById(android.R.id.content), false);
+    // Activity activity = Robolectric.setupActivity(Activity.class);
+    LinearLayout root = new LinearLayout(RuntimeEnvironment.application);
+    root.layout(0, 0, 100, 100);
+    View mainView = LayoutInflater.from(RuntimeEnvironment.application)
+        .inflate(R.layout.image, root, false);
+    // ViewRootImpl viewRootImpl = activity.getWindow().getDecorView().getViewRootImpl();
+    // activity.getWindow().getAttributes().width = 320;
+    // activity.getWindow().getAttributes().height = 320;
+    // ReflectionHelpers.callInstanceMethod(viewRootImpl, "scheduleTraversals");
+    // ReflectionHelpers.callInstanceMethod(viewRootImpl, "doTraversal");
     mainView.layout(0, 0, 100, 100);
     Canvas canvas = new Canvas(bitmap);
     mainView.draw(canvas);
