@@ -429,11 +429,11 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), RuntimeEnvironment.application.getPackageName());
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
-    return getXmlResourceParser(RuntimeEnvironment.getAppResourceTable(), xmlBlock, RuntimeEnvironment.application.getPackageName());
+    return getXmlResourceParser(resourceTable, xmlBlock, resourceTable.getPackageName());
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {

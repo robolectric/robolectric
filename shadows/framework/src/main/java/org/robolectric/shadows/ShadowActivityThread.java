@@ -1,20 +1,17 @@
 package org.robolectric.shadows;
 
 import android.app.ActivityThread;
-import android.app.Application;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import javax.annotation.Nonnull;
-
 import android.content.pm.PackageParser;
 import android.os.RemoteException;
-import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+
+import javax.annotation.Nonnull;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
