@@ -8,7 +8,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final M = new AndroidSdk(23, "6.0.1_r3", 0)
     static final N = new AndroidSdk(24, "7.0.0_r1", 0)
     static final N_MR1 = new AndroidSdk(25, "7.1.0_r7", 0)
-    static final O = new AndroidSdk(26, "o-preview-4", 0)
+    static final O = new AndroidSdk(26, "8.0.0_r4", 0)
 
     static final List<AndroidSdk> ALL_SDKS = [
             JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT,
