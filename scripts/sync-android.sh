@@ -14,7 +14,7 @@
 #
 # See README.md for additional instructions
 
-JAVA_6=/usr/local/google/home/brettchabot/java/jdk1.6.0_45/bin
+JAVA_6=/usr/lib/jvm/jdk1.6.0_45/bin
 JAVA_7=/usr/lib/jvm/java-7-openjdk-amd64/bin
 
 function usage() {
