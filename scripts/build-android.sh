@@ -53,9 +53,6 @@ ANDROID_CLASSES=android-classes-${ANDROID_VERSION}.jar
 LIB_PHONE_NUMBERS_PKG="com/android/i18n/phonenumbers"
 LIB_PHONE_NUMBERS_PATH="external/libphonenumber/java/src"
 
-# Architecture for tzdata
-TZDATA_ARCH="generic_x86"
-
 # Final artifact names
 ANDROID_ALL=android-all-${ROBOLECTRIC_VERSION}.jar
 ANDROID_ALL_POM=android-all-${ROBOLECTRIC_VERSION}.pom
@@ -68,46 +65,49 @@ build_platform() {
 
     if [[ "${ANDROID_VERSION}" == "4.1.2_r1" ]]; then
         ARTIFACTS=("core" "services" "framework" "android.policy" "ext")
-        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
+        SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
     elif [[ "${ANDROID_VERSION}" == "4.2.2_r1.2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
-        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
+        SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
-        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
+        SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
+        TZDATA_ARCH="generic_x86"
     elif [[ "${ANDROID_VERSION}" == "4.4_r1" ]]; then
-        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext" "webviewchromium")
-        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
-    elif [[ "${ANDROID_VERSION}" == "5.0.0_r2" ]]; then
-        ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
-        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
+        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext" "webviewchromium" "okhttp" "conscrypt")
+        SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
+        TZDATA_ARCH="generic_x86"
+    elif [[ "${ANDROID_VERSION}" == "5.0.2_r3" ]]; then
+        ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext" "okhttp" "conscrypt")
+        SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
+        TZDATA_ARCH="generic"
     elif [[ "${ANDROID_VERSION}" == "5.1.1_r9" ]]; then
-        ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
-        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
+        ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext" "okhttp" "conscrypt")
+        SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
+        TZDATA_ARCH="generic"
     elif [[ "${ANDROID_VERSION}" == "6.0.1_r3" ]]; then
-        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "icu4j-icudata-jarjar")
-        SOURCES=(core graphics media location opengl sax services telephony wifi)
+        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "icu4j-icudata-jarjar" "okhttp" "conscrypt")
+        SOURCES=(core/java graphics/java media/java location/java opengl/java sax/java services/java telephony/java wifi/java)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
         TZDATA_ARCH="generic"
     elif [[ "${ANDROID_VERSION}" == "7.0.0_r1" ]]; then
-        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext")
+        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "okhttp" "conscrypt")
         NATIVE_ARTIFACTS=("icu4j-icudata-host-jarjar" "icu4j-icutzdata-host-jarjar")
-        SOURCES=(core graphics media location opengl sax services telephony wifi)
+        SOURCES=(core/java graphics/java media/java location/java opengl/java sax/java services/java telephony/java wifi/java)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
-        TZDATA_ARCH="generic"
+        TZDATA_ARCH="generic_x86"
     elif [[ "${ANDROID_VERSION}" == "7.1.0_r7" ]]; then
-        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext")
+        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "okhttp" "conscrypt")
         NATIVE_ARTIFACTS=("icu4j-icudata-host-jarjar" "icu4j-icutzdata-host-jarjar")
-        SOURCES=(core graphics media location opengl sax services telephony wifi)
+        SOURCES=(core/java graphics/java media/java location/java opengl/java sax/java services/java telephony/java wifi/java)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
     elif [[ "${ANDROID_VERSION}" == "8.0.0_r4" ]]; then
         ARTIFACTS=("robolectric_android-all")
         NATIVE_ARTIFACTS=()
-        SOURCES=(core graphics media location opengl sax services telephony wifi)
-        echo "SOURCES = ${SOURCES}"
+        SOURCES=(core/java graphics/java media/java location/java opengl/java sax/java services/java telephony/java wifi/java)
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -115,7 +115,7 @@ build_platform() {
 
     cd ${ANDROID_SOURCES_BASE}
     if [ ! -d out/target/common/obj/JAVA_LIBRARIES ]; then
-      echo "Robolectric: You need to run 'make -j8' first"
+      echo "Robolectric: You need to run 'sync-android.sh' first"
       exit 1
     fi
 }
@@ -159,31 +159,16 @@ build_android_classes() {
         fi
     done
     build_tzdata
-    build_jarjared_classes
     cd ${OUT}/android-all-classes; jar cf ${OUT}/${ANDROID_CLASSES} .
     rm -rf ${OUT}/android-all-classes
 }
 
 build_tzdata() {
-    echo "Robolectric: Building tzdata..."
-    mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
-    cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
-}
-
-build_jarjared_classes() {
-    echo "Robolectric: jarjaring classes..."
-    mkdir ${OUT}/android-jarjar-workspace
-    cd ${OUT}/android-jarjar-workspace
-    wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/jarjar/jarjar-1.4.jar
-    echo "rule com.squareup.** com.android.**" >> rules
-    echo "rule org.conscrypt.** com.android.**" >> rules
-
-    java -jar jarjar-1.4.jar process rules ${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/okhttp_intermediates/classes.jar okhttp-classes.jar
-    java -jar jarjar-1.4.jar process rules ${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/conscrypt_intermediates/classes.jar conscrypt-classes.jar
-
-    cd ${OUT}/android-all-classes;
-    jar xf ${OUT}/android-jarjar-workspace/okhttp-classes.jar
-    jar xf ${OUT}/android-jarjar-workspace/conscrypt-classes.jar
+    if [[ ! -z "${TZDATA_ARCH}" ]]; then
+      echo "Robolectric: Building tzdata..."
+      mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
+      cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
+    fi
 }
 
 build_android_all_jar() {
@@ -223,7 +208,7 @@ build_android_src_jar() {
     mkdir ${tmp}
 
     for sourceSubDir in "${SOURCES[@]}"; do
-        rsync -a ${src}/${sourceSubDir}/java/ ${tmp}/
+        rsync -a ${src}/${sourceSubDir}/ ${tmp}/
     done
     rsync -a ${ANDROID_SOURCES_BASE}/libcore/luni/src/main/java/ ${tmp}/ # this is new
     cd ${tmp}; jar cf ${OUT}/${ANDROID_ALL_SRC} .
