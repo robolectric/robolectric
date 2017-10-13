@@ -77,7 +77,6 @@ public class AndroidManifest {
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
       String overridePackageName) {
     this(androidManifestFile, resDirectory, assetsDirectory, Collections.emptyList(), overridePackageName);
-    this.packageName = overridePackageName;
   }
 
   /**
@@ -98,7 +97,6 @@ public class AndroidManifest {
     this.libraryManifests = libraryManifests;
 
     this.packageName = overridePackageName;
-
   }
 
   public String getThemeRef(String activityClassName) {
