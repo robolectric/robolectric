@@ -80,59 +80,59 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   }
 
 
-  @Implementation
-  public static long nCreateFullPath() {
-    return put(new Path());
-  }
-
-  @Implementation
-  public static long nCreateFullPath(long nativeFullPathPtr) {
-    return put(getPath(nativeFullPathPtr).clone());
-  }
-
-  @Implementation
-  public static boolean nGetFullPathProperties(long pathPtr, byte[] properties,
-                                               int length) {
-    if (length != TOTAL_PROPERTY_COUNT * 4) return false;
-
-    Path path = getPath(pathPtr);
-    ByteBuffer propertiesBB = ByteBuffer.wrap(properties);
-    propertiesBB.order(ByteOrder.nativeOrder());
-    propertiesBB.putFloat(STROKE_WIDTH_INDEX * 4, path.strokeWidth);
-    propertiesBB.putInt(STROKE_COLOR_INDEX * 4, path.strokeColor);
-    propertiesBB.putFloat(STROKE_ALPHA_INDEX * 4, path.strokeAlpha);
-    propertiesBB.putInt(FILL_COLOR_INDEX * 4, path.fillColor);
-    propertiesBB.putFloat(FILL_ALPHA_INDEX * 4, path.fillAlpha);
-    propertiesBB.putFloat(TRIM_PATH_START_INDEX * 4, path.trimPathStart);
-    propertiesBB.putFloat(TRIM_PATH_END_INDEX * 4, path.trimPathEnd);
-    propertiesBB.putFloat(TRIM_PATH_OFFSET_INDEX * 4, path.trimPathOffset);
-    propertiesBB.putInt(STROKE_LINE_CAP_INDEX * 4, path.strokeLineCap);
-    propertiesBB.putInt(STROKE_LINE_JOIN_INDEX * 4, path.strokeLineJoin);
-    propertiesBB.putFloat(STROKE_MITER_LIMIT_INDEX * 4, path.strokeMiterLimit);
-    propertiesBB.putInt(FILL_TYPE_INDEX * 4, path.fillType);
-
-    return true;
-  }
-
-  @Implementation
-  public static void nUpdateFullPathProperties(long pathPtr, float strokeWidth,
-                                               int strokeColor, float strokeAlpha, int fillColor, float fillAlpha, float trimPathStart,
-                                               float trimPathEnd, float trimPathOffset, float strokeMiterLimit, int strokeLineCap,
-                                               int strokeLineJoin, int fillType) {
-    Path path = getPath(pathPtr);
-    path.strokeWidth = strokeWidth;
-    path.strokeColor = strokeColor;
-    path.strokeAlpha = strokeAlpha;
-    path.fillColor = fillColor;
-    path.fillAlpha = fillAlpha;
-    path.trimPathStart = trimPathStart;
-    path.trimPathEnd = trimPathEnd;
-    path.trimPathOffset = trimPathOffset;
-    path.strokeLineCap = strokeLineCap;
-    path.strokeLineJoin = strokeLineJoin;
-    path.strokeMiterLimit = strokeMiterLimit;
-    path.fillType = fillType;
-  }
+  // @Implementation
+  // public static long nCreateFullPath() {
+  //   return put(new Path());
+  // }
+  //
+  // @Implementation
+  // public static long nCreateFullPath(long nativeFullPathPtr) {
+  //   return put(getPath(nativeFullPathPtr).clone());
+  // }
+  //
+  // @Implementation
+  // public static boolean nGetFullPathProperties(long pathPtr, byte[] properties,
+  //                                              int length) {
+  //   if (length != TOTAL_PROPERTY_COUNT * 4) return false;
+  //
+  //   Path path = getPath(pathPtr);
+  //   ByteBuffer propertiesBB = ByteBuffer.wrap(properties);
+  //   propertiesBB.order(ByteOrder.nativeOrder());
+  //   propertiesBB.putFloat(STROKE_WIDTH_INDEX * 4, path.strokeWidth);
+  //   propertiesBB.putInt(STROKE_COLOR_INDEX * 4, path.strokeColor);
+  //   propertiesBB.putFloat(STROKE_ALPHA_INDEX * 4, path.strokeAlpha);
+  //   propertiesBB.putInt(FILL_COLOR_INDEX * 4, path.fillColor);
+  //   propertiesBB.putFloat(FILL_ALPHA_INDEX * 4, path.fillAlpha);
+  //   propertiesBB.putFloat(TRIM_PATH_START_INDEX * 4, path.trimPathStart);
+  //   propertiesBB.putFloat(TRIM_PATH_END_INDEX * 4, path.trimPathEnd);
+  //   propertiesBB.putFloat(TRIM_PATH_OFFSET_INDEX * 4, path.trimPathOffset);
+  //   propertiesBB.putInt(STROKE_LINE_CAP_INDEX * 4, path.strokeLineCap);
+  //   propertiesBB.putInt(STROKE_LINE_JOIN_INDEX * 4, path.strokeLineJoin);
+  //   propertiesBB.putFloat(STROKE_MITER_LIMIT_INDEX * 4, path.strokeMiterLimit);
+  //   propertiesBB.putInt(FILL_TYPE_INDEX * 4, path.fillType);
+  //
+  //   return true;
+  // }
+  //
+  // @Implementation
+  // public static void nUpdateFullPathProperties(long pathPtr, float strokeWidth,
+  //                                              int strokeColor, float strokeAlpha, int fillColor, float fillAlpha, float trimPathStart,
+  //                                              float trimPathEnd, float trimPathOffset, float strokeMiterLimit, int strokeLineCap,
+  //                                              int strokeLineJoin, int fillType) {
+  //   Path path = getPath(pathPtr);
+  //   path.strokeWidth = strokeWidth;
+  //   path.strokeColor = strokeColor;
+  //   path.strokeAlpha = strokeAlpha;
+  //   path.fillColor = fillColor;
+  //   path.fillAlpha = fillAlpha;
+  //   path.trimPathStart = trimPathStart;
+  //   path.trimPathEnd = trimPathEnd;
+  //   path.trimPathOffset = trimPathOffset;
+  //   path.strokeLineCap = strokeLineCap;
+  //   path.strokeLineJoin = strokeLineJoin;
+  //   path.strokeMiterLimit = strokeMiterLimit;
+  //   path.fillType = fillType;
+  // }
 
 //  @Implementation
 //  public static void nUpdateFullPathFillGradient(long pathPtr, long fillGradientPtr) {
@@ -171,46 +171,46 @@ public class ShadowVectorDrawable extends ShadowDrawable {
     return get(groupPtr);
   }
 
-  @Implementation
-  public static long nCreateGroup() {
-    return put(new Group());
-  }
-
-  @Implementation
-  public static long nCreateGroup(long groupPtr) {
-    return put(getGroup(groupPtr).clone());
-  }
-
-//  public static void nSetName(long nodePtr, String name) {
-//  }
-
-  @Implementation
-  public static boolean nGetGroupProperties(long groupPtr, float[] properties,
-                                            int length) {
-    if (length != 7) return false;
-    Group group = getGroup(groupPtr);
-    properties[0] = group.rotation;
-    properties[1] = group.pivotX;
-    properties[2] = group.pivotY;
-    properties[3] = group.scaleX;
-    properties[4] = group.scaleY;
-    properties[5] = group.translateX;
-    properties[6] = group.translateY;
-    return true;
-  }
-
-  @Implementation
-  public static void nUpdateGroupProperties(long groupPtr, float rotate, float pivotX,
-                                            float pivotY, float scaleX, float scaleY, float translateX, float translateY) {
-    Group group = getGroup(groupPtr);
-    group.rotation = rotate;
-    group.pivotX = pivotX;
-    group.pivotY = pivotY;
-    group.scaleX = scaleX;
-    group.scaleY = scaleY;
-    group.translateX = translateX;
-    group.translateY = translateY;
-  }
+//   @Implementation
+//   public static long nCreateGroup() {
+//     return put(new Group());
+//   }
+//
+//   @Implementation
+//   public static long nCreateGroup(long groupPtr) {
+//     return put(getGroup(groupPtr).clone());
+//   }
+//
+// //  public static void nSetName(long nodePtr, String name) {
+// //  }
+//
+//   @Implementation
+//   public static boolean nGetGroupProperties(long groupPtr, float[] properties,
+//                                             int length) {
+//     if (length != 7) return false;
+//     Group group = getGroup(groupPtr);
+//     properties[0] = group.rotation;
+//     properties[1] = group.pivotX;
+//     properties[2] = group.pivotY;
+//     properties[3] = group.scaleX;
+//     properties[4] = group.scaleY;
+//     properties[5] = group.translateX;
+//     properties[6] = group.translateY;
+//     return true;
+//   }
+//
+//   @Implementation
+//   public static void nUpdateGroupProperties(long groupPtr, float rotate, float pivotX,
+//                                             float pivotY, float scaleX, float scaleY, float translateX, float translateY) {
+//     Group group = getGroup(groupPtr);
+//     group.rotation = rotate;
+//     group.pivotX = pivotX;
+//     group.pivotY = pivotY;
+//     group.scaleX = scaleX;
+//     group.scaleY = scaleY;
+//     group.translateX = translateX;
+//     group.translateY = translateY;
+//   }
 
 //  private static native void nAddChild(long groupPtr, long nodePtr);
 //  private static native void nSetPathString(long pathPtr, String pathString, int length);

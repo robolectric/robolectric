@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.view.View.MeasureSpec.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -19,6 +20,7 @@ import android.os.Parcel;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.widget.LinearLayout;
@@ -525,22 +527,30 @@ public class ShadowBitmapTest {
     init();
 
     System.out.println("testEraseColor");
-    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-    bitmap.eraseColor(android.graphics.Color.BLUE);
+    int width = 400;
+    int height = 640;
+    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    // bitmap.eraseColor(android.graphics.Color.BLUE);
 
     System.out.println("nativeInstance = " + bitmap.getNativeInstance());
 
     // Activity activity = Robolectric.setupActivity(Activity.class);
     LinearLayout root = new LinearLayout(RuntimeEnvironment.application);
-    root.layout(0, 0, 100, 100);
+    root.layout(0, 0, width, height);
     View mainView = LayoutInflater.from(RuntimeEnvironment.application)
-        .inflate(R.layout.image, root, false);
+        .inflate(R.layout.main, root, false);
     // ViewRootImpl viewRootImpl = activity.getWindow().getDecorView().getViewRootImpl();
     // activity.getWindow().getAttributes().width = 320;
     // activity.getWindow().getAttributes().height = 320;
     // ReflectionHelpers.callInstanceMethod(viewRootImpl, "scheduleTraversals");
     // ReflectionHelpers.callInstanceMethod(viewRootImpl, "doTraversal");
-    mainView.layout(0, 0, 100, 100);
+    mainView.measure(
+        makeMeasureSpec(width, EXACTLY),
+        makeMeasureSpec(height, EXACTLY));
+    mainView.layout(0, 0, width, height);
+
+    shadowOf(mainView).dump();
+
     Canvas canvas = new Canvas(bitmap);
     mainView.draw(canvas);
 

@@ -754,7 +754,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void canResolveDrawableGivenPackageAndResourceId() throws Exception {
-    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable = Drawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     shadowPackageManager.addDrawableResolution("com.example.foo", 4334, drawable);
     Drawable actual = shadowPackageManager.getDrawable("com.example.foo", 4334, null);
     assertThat(actual).isSameAs(drawable);

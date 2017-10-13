@@ -10,15 +10,15 @@ import org.robolectric.annotation.Implements;
 public class ShadowColorMatrixColorFilter {
   private ColorMatrix matrix;
 
-  @Implementation
-  public void __constructor__(ColorMatrix matrix) {
-    this.matrix = matrix;
-  }
-
-  @Implementation
-  public void __constructor__(float[] array) {
-    this.matrix = new ColorMatrix(array);
-  }
+  // @Implementation
+  // public void __constructor__(ColorMatrix matrix) {
+  //   this.matrix = matrix;
+  // }
+  //
+  // @Implementation
+  // public void __constructor__(float[] array) {
+  //   this.matrix = new ColorMatrix(array);
+  // }
 
   @Override @Implementation
   public String toString() {

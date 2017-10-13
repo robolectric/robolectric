@@ -32,7 +32,7 @@ public class ShadowDrawableTest {
   public void createFromStream__shouldReturnNullWhenAskedToCreateADrawableFromACorruptedSourceStream() throws Exception {
     String corruptedStreamSource = "http://foo.com/image.jpg";
     ShadowDrawable.addCorruptStreamSource(corruptedStreamSource);
-    assertNull(ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), corruptedStreamSource));
+    assertNull(Drawable.createFromStream(new ByteArrayInputStream(new byte[0]), corruptedStreamSource));
   }
 
   @Test
@@ -44,7 +44,7 @@ public class ShadowDrawableTest {
 
   @Test
   public void createFromStream__shouldReturnDrawableWithSpecificSource() throws Exception {
-    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable = Drawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     assertNotNull(drawable);
     assertEquals("my_source", ((ShadowBitmapDrawable) shadowOf(drawable)).getSource());
   }
@@ -67,7 +67,7 @@ public class ShadowDrawableTest {
 
   @Test
   public void copyBoundsWithPassedRect() {
-    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable = Drawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     drawable.setBounds(1, 2, 3, 4);
     Rect r = new Rect();
     drawable.copyBounds(r);
@@ -79,7 +79,7 @@ public class ShadowDrawableTest {
 
   @Test
   public void copyBoundsToReturnedRect() {
-    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable = Drawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     drawable.setBounds(1, 2, 3, 4);
     Rect r = drawable.copyBounds();
     assertThat(r.left).isEqualTo(1);
@@ -90,7 +90,7 @@ public class ShadowDrawableTest {
 
   @Test
   public void createFromPath__shouldReturnDrawableWithSpecificPath() throws Exception {
-    Drawable drawable = ShadowDrawable.createFromPath("/foo");
+    Drawable drawable = Drawable.createFromPath("/foo");
     assertNotNull(drawable);
     assertEquals("/foo", ((ShadowBitmapDrawable) shadowOf(drawable)).getPath());
   }

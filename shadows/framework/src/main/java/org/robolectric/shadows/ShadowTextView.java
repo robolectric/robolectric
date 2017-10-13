@@ -61,25 +61,25 @@ public class ShadowTextView extends ShadowView {
   private int compoundDrawablesWithIntrinsicBoundsRight;
   private int compoundDrawablesWithIntrinsicBoundsBottom;
 
-  @Implementation
-  public void setTextAppearance(Context context, int resid) {
-    textAppearanceId = resid;
-    directlyOn(realTextView, TextView.class).setTextAppearance(context, resid);
-  }
-
-  @Implementation
-  public boolean onKeyDown(int keyCode, KeyEvent event) {
-    previousKeyCodes.add(keyCode);
-    previousKeyEvents.add(event);
-    return directlyOn(realTextView, TextView.class).onKeyDown(keyCode, event);
-  }
-
-  @Implementation
-  public boolean onKeyUp(int keyCode, KeyEvent event) {
-    previousKeyCodes.add(keyCode);
-    previousKeyEvents.add(event);
-    return directlyOn(realTextView, TextView.class).onKeyUp(keyCode, event);
-  }
+  // @Implementation
+  // public void setTextAppearance(Context context, int resid) {
+  //   textAppearanceId = resid;
+  //   directlyOn(realTextView, TextView.class).setTextAppearance(context, resid);
+  // }
+  //
+  // @Implementation
+  // public boolean onKeyDown(int keyCode, KeyEvent event) {
+  //   previousKeyCodes.add(keyCode);
+  //   previousKeyEvents.add(event);
+  //   return directlyOn(realTextView, TextView.class).onKeyDown(keyCode, event);
+  // }
+  //
+  // @Implementation
+  // public boolean onKeyUp(int keyCode, KeyEvent event) {
+  //   previousKeyCodes.add(keyCode);
+  //   previousKeyEvents.add(event);
+  //   return directlyOn(realTextView, TextView.class).onKeyUp(keyCode, event);
+  // }
 
   public int getPreviousKeyCode(int index) {
     return previousKeyCodes.get(index);
@@ -104,17 +104,17 @@ public class ShadowTextView extends ShadowView {
     return textAppearanceId;
   }
 
-  @Implementation
-  public void addTextChangedListener(TextWatcher watcher) {
-    this.watchers.add(watcher);
-    directlyOn(realTextView, TextView.class).addTextChangedListener(watcher);
-  }
-
-  @Implementation
-  public void removeTextChangedListener(TextWatcher watcher) {
-    this.watchers.remove(watcher);
-    directlyOn(realTextView, TextView.class).removeTextChangedListener(watcher);
-  }
+  // @Implementation
+  // public void addTextChangedListener(TextWatcher watcher) {
+  //   this.watchers.add(watcher);
+  //   directlyOn(realTextView, TextView.class).addTextChangedListener(watcher);
+  // }
+  //
+  // @Implementation
+  // public void removeTextChangedListener(TextWatcher watcher) {
+  //   this.watchers.remove(watcher);
+  //   directlyOn(realTextView, TextView.class).removeTextChangedListener(watcher);
+  // }
 
   /**
    * @return the list of currently registered watchers/listeners
@@ -123,10 +123,10 @@ public class ShadowTextView extends ShadowView {
     return watchers;
   }
 
-  @HiddenApi @Implementation
-  public Locale getTextServicesLocale() {
-    return Locale.getDefault();
-  }
+  // @HiddenApi @Implementation
+  // public Locale getTextServicesLocale() {
+  //   return Locale.getDefault();
+  // }
 
   @Override
   protected void dumpAttributes(PrintStream out) {
@@ -137,34 +137,34 @@ public class ShadowTextView extends ShadowView {
     }
   }
 
-  @Implementation
-  public int getPaintFlags() {
-    return paintFlags;
-  }
-
-  @Implementation
-  public void setPaintFlags(int paintFlags) {
-    this.paintFlags = paintFlags;
-  }
-
-  @Implementation
-  public void setOnEditorActionListener(TextView.OnEditorActionListener l) {
-    this.onEditorActionListener = l;
-    directlyOn(realTextView, TextView.class).setOnEditorActionListener(l);
-  }
+  // @Implementation
+  // public int getPaintFlags() {
+  //   return paintFlags;
+  // }
+  //
+  // @Implementation
+  // public void setPaintFlags(int paintFlags) {
+  //   this.paintFlags = paintFlags;
+  // }
+  //
+  // @Implementation
+  // public void setOnEditorActionListener(TextView.OnEditorActionListener l) {
+  //   this.onEditorActionListener = l;
+  //   directlyOn(realTextView, TextView.class).setOnEditorActionListener(l);
+  // }
 
   public TextView.OnEditorActionListener getOnEditorActionListener() {
     return onEditorActionListener;
   }
 
-  @Implementation
-  public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
-    this.compoundDrawablesWithIntrinsicBoundsLeft = left;
-    this.compoundDrawablesWithIntrinsicBoundsTop = top;
-    this.compoundDrawablesWithIntrinsicBoundsRight = right;
-    this.compoundDrawablesWithIntrinsicBoundsBottom = bottom;
-    directlyOn(realTextView, TextView.class).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
-  }
+  // @Implementation
+  // public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
+  //   this.compoundDrawablesWithIntrinsicBoundsLeft = left;
+  //   this.compoundDrawablesWithIntrinsicBoundsTop = top;
+  //   this.compoundDrawablesWithIntrinsicBoundsRight = right;
+  //   this.compoundDrawablesWithIntrinsicBoundsBottom = bottom;
+  //   directlyOn(realTextView, TextView.class).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
+  // }
 
   public int getCompoundDrawablesWithIntrinsicBoundsLeft() {
     return compoundDrawablesWithIntrinsicBoundsLeft;

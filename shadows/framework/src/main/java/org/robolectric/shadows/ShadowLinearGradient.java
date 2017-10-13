@@ -16,17 +16,17 @@ public class ShadowLinearGradient {
   private int color1;
   private Shader.TileMode tile;
 
-  @Implementation
-  public void __constructor__(
-      float x0, float y0, float x1, float y1, int color0, int color1, Shader.TileMode tile) {
-    this.x0 = x0;
-    this.y0 = y0;
-    this.x1 = x1;
-    this.y1 = y1;
-    this.color0 = color0;
-    this.color1 = color1;
-    this.tile = tile;
-  }
+  // @Implementation
+  // public void __constructor__(
+  //     float x0, float y0, float x1, float y1, int color0, int color1, Shader.TileMode tile) {
+  //   this.x0 = x0;
+  //   this.y0 = y0;
+  //   this.x1 = x1;
+  //   this.y1 = y1;
+  //   this.color0 = color0;
+  //   this.color1 = color1;
+  //   this.tile = tile;
+  // }
 
   public float getX0() {
     return x0;

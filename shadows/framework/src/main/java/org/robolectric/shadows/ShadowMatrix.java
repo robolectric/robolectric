@@ -35,10 +35,10 @@ public class ShadowMatrix {
 
   private SimpleMatrix mMatrix = SimpleMatrix.IDENTITY;
 
-  @Implementation
-  public void __constructor__(Matrix src) {
-    set(src);
-  }
+  // @Implementation
+  // public void __constructor__(Matrix src) {
+  //   set(src);
+  // }
 
   /**
    * A list of all 'pre' operations performed on this Matrix. The last operation performed will
@@ -66,219 +66,219 @@ public class ShadowMatrix {
     return Collections.unmodifiableMap(new LinkedHashMap<>(setOps));
   }
 
-  @Implementation
-  public boolean isIdentity() {
-    return mMatrix.equals(SimpleMatrix.IDENTITY);
-  }
-
-  @Implementation
-  public boolean isAffine() {
-    return mMatrix.isAffine();
-  }
-
-  @Implementation
-  public boolean rectStaysRect() {
-    return mMatrix.rectStaysRect();
-  }
-
-  @Implementation
-  public void getValues(float[] values) {
-    mMatrix.getValues(values);
-  }
-
-  @Implementation
-  public void setValues(float[] values) {
-    mMatrix = new SimpleMatrix(values);
-  }
-
-  @Implementation
-  public void set(Matrix src) {
-    reset();
-    if (src != null) {
-      ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
-      preOps.addAll(shadowMatrix.preOps);
-      postOps.addAll(shadowMatrix.postOps);
-      setOps.putAll(shadowMatrix.setOps);
-      mMatrix = new SimpleMatrix(getSimpleMatrix(src));
-    }
-  }
-
-  @Implementation
-  public void reset() {
-    preOps.clear();
-    postOps.clear();
-    setOps.clear();
-    mMatrix = SimpleMatrix.IDENTITY;
-  }
-
-  @Implementation
-  public void setTranslate(float dx, float dy) {
-    setOps.put(TRANSLATE, dx + " " + dy);
-    mMatrix = SimpleMatrix.translate(dx, dy);
-  }
-
-  @Implementation
-  public void setScale(float sx, float sy, float px, float py) {
-    setOps.put(SCALE, sx + " " + sy + " " + px + " " + py);
-    mMatrix = SimpleMatrix.scale(sx, sy, px, py);
-  }
-
-  @Implementation
-  public void setScale(float sx, float sy) {
-    setOps.put(SCALE, sx + " " + sy);
-    mMatrix = SimpleMatrix.scale(sx, sy);
-  }
-
-  @Implementation
-  public void setRotate(float degrees, float px, float py) {
-    setOps.put(ROTATE, degrees + " " + px + " " + py);
-    mMatrix = SimpleMatrix.rotate(degrees, px, py);
-  }
-
-  @Implementation
-  public void setRotate(float degrees) {
-    setOps.put(ROTATE, Float.toString(degrees));
-    mMatrix = SimpleMatrix.rotate(degrees);
-  }
-
-  @Implementation
-  public void setSinCos(float sinValue, float cosValue, float px, float py) {
-    setOps.put(SINCOS, sinValue + " " + cosValue + " " + px + " " + py);
-    mMatrix = SimpleMatrix.sinCos(sinValue, cosValue, px, py);
-  }
-
-  @Implementation
-  public void setSinCos(float sinValue, float cosValue) {
-    setOps.put(SINCOS, sinValue + " " + cosValue);
-    mMatrix = SimpleMatrix.sinCos(sinValue, cosValue);
-  }
-
-  @Implementation
-  public void setSkew(float kx, float ky, float px, float py) {
-    setOps.put(SKEW, kx + " " + ky + " " + px + " " + py);
-    mMatrix = SimpleMatrix.skew(kx, ky, px, py);
-  }
-
-  @Implementation
-  public void setSkew(float kx, float ky) {
-    setOps.put(SKEW, kx + " " + ky);
-    mMatrix = SimpleMatrix.skew(kx, ky);
-  }
-
-  @Implementation
-  public boolean setConcat(Matrix a, Matrix b) {
-    mMatrix = getSimpleMatrix(a).multiply(getSimpleMatrix(b));
-    return true;
-  }
-
-  @Implementation
-  public boolean preTranslate(float dx, float dy) {
-    preOps.addFirst(TRANSLATE + " " + dx + " " + dy);
-    return preConcat(SimpleMatrix.translate(dx, dy));
-  }
-
-  @Implementation
-  public boolean preScale(float sx, float sy, float px, float py) {
-    preOps.addFirst(SCALE + " " + sx + " " + sy + " " + px + " " + py);
-    return preConcat(SimpleMatrix.scale(sx, sy, px, py));
-  }
-
-  @Implementation
-  public boolean preScale(float sx, float sy) {
-    preOps.addFirst(SCALE + " " + sx + " " + sy);
-    return preConcat(SimpleMatrix.scale(sx, sy));
-  }
-
-  @Implementation
-  public boolean preRotate(float degrees, float px, float py) {
-    preOps.addFirst(ROTATE + " " + degrees + " " + px + " " + py);
-    return preConcat(SimpleMatrix.rotate(degrees, px, py));
-  }
-
-  @Implementation
-  public boolean preRotate(float degrees) {
-    preOps.addFirst(ROTATE + " " + Float.toString(degrees));
-    return preConcat(SimpleMatrix.rotate(degrees));
-  }
-
-  @Implementation
-  public boolean preSkew(float kx, float ky, float px, float py) {
-    preOps.addFirst(SKEW + " " + kx + " " + ky + " " + px + " " + py);
-    return preConcat(SimpleMatrix.skew(kx, ky, px, py));
-  }
-
-  @Implementation
-  public boolean preSkew(float kx, float ky) {
-    preOps.addFirst(SKEW + " " + kx + " " + ky);
-    return preConcat(SimpleMatrix.skew(kx, ky));
-  }
-
-  @Implementation
-  public boolean preConcat(Matrix other) {
-    preOps.addFirst(MATRIX + " " + other);
-    return preConcat(getSimpleMatrix(other));
-  }
-
-  @Implementation
-  public boolean postTranslate(float dx, float dy) {
-    postOps.addLast(TRANSLATE + " " + dx + " " + dy);
-    return postConcat(SimpleMatrix.translate(dx, dy));
-  }
-
-  @Implementation
-  public boolean postScale(float sx, float sy, float px, float py) {
-    postOps.addLast(SCALE + " " + sx + " " + sy + " " + px + " " + py);
-    return postConcat(SimpleMatrix.scale(sx, sy, px, py));
-  }
-
-  @Implementation
-  public boolean postScale(float sx, float sy) {
-    postOps.addLast(SCALE + " " + sx + " " + sy);
-    return postConcat(SimpleMatrix.scale(sx, sy));
-  }
-
-  @Implementation
-  public boolean postRotate(float degrees, float px, float py) {
-    postOps.addLast(ROTATE + " " + degrees + " " + px + " " + py);
-    return postConcat(SimpleMatrix.rotate(degrees, px, py));
-  }
-
-  @Implementation
-  public boolean postRotate(float degrees) {
-    postOps.addLast(ROTATE + " " + Float.toString(degrees));
-    return postConcat(SimpleMatrix.rotate(degrees));
-  }
-
-  @Implementation
-  public boolean postSkew(float kx, float ky, float px, float py) {
-    postOps.addLast(SKEW + " " + kx + " " + ky + " " + px + " " + py);
-    return postConcat(SimpleMatrix.skew(kx, ky, px, py));
-  }
-
-  @Implementation
-  public boolean postSkew(float kx, float ky) {
-    postOps.addLast(SKEW + " " + kx + " " + ky);
-    return postConcat(SimpleMatrix.skew(kx, ky));
-  }
-
-  @Implementation
-  public boolean postConcat(Matrix other) {
-    postOps.addLast(MATRIX + " " + other);
-    return postConcat(getSimpleMatrix(other));
-  }
-
-  @Implementation
-  public boolean invert(Matrix inverse) {
-    final SimpleMatrix inverseMatrix = mMatrix.invert();
-    if (inverseMatrix != null) {
-      if (inverse != null) {
-        final ShadowMatrix shadowInverse = Shadow.extract(inverse);
-        shadowInverse.mMatrix = inverseMatrix;
-      }
-      return true;
-    }
-    return false;
-  }
+  // @Implementation
+  // public boolean isIdentity() {
+  //   return mMatrix.equals(SimpleMatrix.IDENTITY);
+  // }
+  //
+  // @Implementation
+  // public boolean isAffine() {
+  //   return mMatrix.isAffine();
+  // }
+  //
+  // @Implementation
+  // public boolean rectStaysRect() {
+  //   return mMatrix.rectStaysRect();
+  // }
+  //
+  // @Implementation
+  // public void getValues(float[] values) {
+  //   mMatrix.getValues(values);
+  // }
+  //
+  // @Implementation
+  // public void setValues(float[] values) {
+  //   mMatrix = new SimpleMatrix(values);
+  // }
+  //
+  // @Implementation
+  // public void set(Matrix src) {
+  //   reset();
+  //   if (src != null) {
+  //     ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
+  //     preOps.addAll(shadowMatrix.preOps);
+  //     postOps.addAll(shadowMatrix.postOps);
+  //     setOps.putAll(shadowMatrix.setOps);
+  //     mMatrix = new SimpleMatrix(getSimpleMatrix(src));
+  //   }
+  // }
+  //
+  // @Implementation
+  // public void reset() {
+  //   preOps.clear();
+  //   postOps.clear();
+  //   setOps.clear();
+  //   mMatrix = SimpleMatrix.IDENTITY;
+  // }
+  //
+  // @Implementation
+  // public void setTranslate(float dx, float dy) {
+  //   setOps.put(TRANSLATE, dx + " " + dy);
+  //   mMatrix = SimpleMatrix.translate(dx, dy);
+  // }
+  //
+  // @Implementation
+  // public void setScale(float sx, float sy, float px, float py) {
+  //   setOps.put(SCALE, sx + " " + sy + " " + px + " " + py);
+  //   mMatrix = SimpleMatrix.scale(sx, sy, px, py);
+  // }
+  //
+  // @Implementation
+  // public void setScale(float sx, float sy) {
+  //   setOps.put(SCALE, sx + " " + sy);
+  //   mMatrix = SimpleMatrix.scale(sx, sy);
+  // }
+  //
+  // @Implementation
+  // public void setRotate(float degrees, float px, float py) {
+  //   setOps.put(ROTATE, degrees + " " + px + " " + py);
+  //   mMatrix = SimpleMatrix.rotate(degrees, px, py);
+  // }
+  //
+  // @Implementation
+  // public void setRotate(float degrees) {
+  //   setOps.put(ROTATE, Float.toString(degrees));
+  //   mMatrix = SimpleMatrix.rotate(degrees);
+  // }
+  //
+  // @Implementation
+  // public void setSinCos(float sinValue, float cosValue, float px, float py) {
+  //   setOps.put(SINCOS, sinValue + " " + cosValue + " " + px + " " + py);
+  //   mMatrix = SimpleMatrix.sinCos(sinValue, cosValue, px, py);
+  // }
+  //
+  // @Implementation
+  // public void setSinCos(float sinValue, float cosValue) {
+  //   setOps.put(SINCOS, sinValue + " " + cosValue);
+  //   mMatrix = SimpleMatrix.sinCos(sinValue, cosValue);
+  // }
+  //
+  // @Implementation
+  // public void setSkew(float kx, float ky, float px, float py) {
+  //   setOps.put(SKEW, kx + " " + ky + " " + px + " " + py);
+  //   mMatrix = SimpleMatrix.skew(kx, ky, px, py);
+  // }
+  //
+  // @Implementation
+  // public void setSkew(float kx, float ky) {
+  //   setOps.put(SKEW, kx + " " + ky);
+  //   mMatrix = SimpleMatrix.skew(kx, ky);
+  // }
+  //
+  // @Implementation
+  // public boolean setConcat(Matrix a, Matrix b) {
+  //   mMatrix = getSimpleMatrix(a).multiply(getSimpleMatrix(b));
+  //   return true;
+  // }
+  //
+  // @Implementation
+  // public boolean preTranslate(float dx, float dy) {
+  //   preOps.addFirst(TRANSLATE + " " + dx + " " + dy);
+  //   return preConcat(SimpleMatrix.translate(dx, dy));
+  // }
+  //
+  // @Implementation
+  // public boolean preScale(float sx, float sy, float px, float py) {
+  //   preOps.addFirst(SCALE + " " + sx + " " + sy + " " + px + " " + py);
+  //   return preConcat(SimpleMatrix.scale(sx, sy, px, py));
+  // }
+  //
+  // @Implementation
+  // public boolean preScale(float sx, float sy) {
+  //   preOps.addFirst(SCALE + " " + sx + " " + sy);
+  //   return preConcat(SimpleMatrix.scale(sx, sy));
+  // }
+  //
+  // @Implementation
+  // public boolean preRotate(float degrees, float px, float py) {
+  //   preOps.addFirst(ROTATE + " " + degrees + " " + px + " " + py);
+  //   return preConcat(SimpleMatrix.rotate(degrees, px, py));
+  // }
+  //
+  // @Implementation
+  // public boolean preRotate(float degrees) {
+  //   preOps.addFirst(ROTATE + " " + Float.toString(degrees));
+  //   return preConcat(SimpleMatrix.rotate(degrees));
+  // }
+  //
+  // @Implementation
+  // public boolean preSkew(float kx, float ky, float px, float py) {
+  //   preOps.addFirst(SKEW + " " + kx + " " + ky + " " + px + " " + py);
+  //   return preConcat(SimpleMatrix.skew(kx, ky, px, py));
+  // }
+  //
+  // @Implementation
+  // public boolean preSkew(float kx, float ky) {
+  //   preOps.addFirst(SKEW + " " + kx + " " + ky);
+  //   return preConcat(SimpleMatrix.skew(kx, ky));
+  // }
+  //
+  // @Implementation
+  // public boolean preConcat(Matrix other) {
+  //   preOps.addFirst(MATRIX + " " + other);
+  //   return preConcat(getSimpleMatrix(other));
+  // }
+  //
+  // @Implementation
+  // public boolean postTranslate(float dx, float dy) {
+  //   postOps.addLast(TRANSLATE + " " + dx + " " + dy);
+  //   return postConcat(SimpleMatrix.translate(dx, dy));
+  // }
+  //
+  // @Implementation
+  // public boolean postScale(float sx, float sy, float px, float py) {
+  //   postOps.addLast(SCALE + " " + sx + " " + sy + " " + px + " " + py);
+  //   return postConcat(SimpleMatrix.scale(sx, sy, px, py));
+  // }
+  //
+  // @Implementation
+  // public boolean postScale(float sx, float sy) {
+  //   postOps.addLast(SCALE + " " + sx + " " + sy);
+  //   return postConcat(SimpleMatrix.scale(sx, sy));
+  // }
+  //
+  // @Implementation
+  // public boolean postRotate(float degrees, float px, float py) {
+  //   postOps.addLast(ROTATE + " " + degrees + " " + px + " " + py);
+  //   return postConcat(SimpleMatrix.rotate(degrees, px, py));
+  // }
+  //
+  // @Implementation
+  // public boolean postRotate(float degrees) {
+  //   postOps.addLast(ROTATE + " " + Float.toString(degrees));
+  //   return postConcat(SimpleMatrix.rotate(degrees));
+  // }
+  //
+  // @Implementation
+  // public boolean postSkew(float kx, float ky, float px, float py) {
+  //   postOps.addLast(SKEW + " " + kx + " " + ky + " " + px + " " + py);
+  //   return postConcat(SimpleMatrix.skew(kx, ky, px, py));
+  // }
+  //
+  // @Implementation
+  // public boolean postSkew(float kx, float ky) {
+  //   postOps.addLast(SKEW + " " + kx + " " + ky);
+  //   return postConcat(SimpleMatrix.skew(kx, ky));
+  // }
+  //
+  // @Implementation
+  // public boolean postConcat(Matrix other) {
+  //   postOps.addLast(MATRIX + " " + other);
+  //   return postConcat(getSimpleMatrix(other));
+  // }
+  //
+  // @Implementation
+  // public boolean invert(Matrix inverse) {
+  //   final SimpleMatrix inverseMatrix = mMatrix.invert();
+  //   if (inverseMatrix != null) {
+  //     if (inverse != null) {
+  //       final ShadowMatrix shadowInverse = Shadow.extract(inverse);
+  //       shadowInverse.mMatrix = inverseMatrix;
+  //     }
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   public PointF mapPoint(float x, float y) {
     return mMatrix.transform(new PointF(x, y));
@@ -288,38 +288,38 @@ public class ShadowMatrix {
     return mMatrix.transform(point);
   }
 
-  @Implementation
-  public boolean mapRect(RectF destination, RectF source) {
-    final PointF leftTop = mapPoint(source.left, source.top);
-    final PointF rightBottom = mapPoint(source.right, source.bottom);
-    destination.set(
-        Math.min(leftTop.x, rightBottom.x),
-        Math.min(leftTop.y, rightBottom.y),
-        Math.max(leftTop.x, rightBottom.x),
-        Math.max(leftTop.y, rightBottom.y));
-    return true;
-  }
-
-  @Implementation
-  @Override
-  public boolean equals(Object obj) {
-    final float[] values;
-    if (obj instanceof Matrix) {
-        return getSimpleMatrix(((Matrix) obj)).equals(mMatrix);
-    } else {
-        return obj instanceof ShadowMatrix && obj.equals(mMatrix);
-    }
-  }
-
-  @Implementation
-  @Override
-  public int hashCode() {
-      return Objects.hashCode(mMatrix);
-  }
-
-  public String getDescription() {
-    return "Matrix[pre=" + preOps + ", set=" + setOps + ", post=" + postOps + "]";
-  }
+  // @Implementation
+  // public boolean mapRect(RectF destination, RectF source) {
+  //   final PointF leftTop = mapPoint(source.left, source.top);
+  //   final PointF rightBottom = mapPoint(source.right, source.bottom);
+  //   destination.set(
+  //       Math.min(leftTop.x, rightBottom.x),
+  //       Math.min(leftTop.y, rightBottom.y),
+  //       Math.max(leftTop.x, rightBottom.x),
+  //       Math.max(leftTop.y, rightBottom.y));
+  //   return true;
+  // }
+  //
+  // @Implementation
+  // @Override
+  // public boolean equals(Object obj) {
+  //   final float[] values;
+  //   if (obj instanceof Matrix) {
+  //       return getSimpleMatrix(((Matrix) obj)).equals(mMatrix);
+  //   } else {
+  //       return obj instanceof ShadowMatrix && obj.equals(mMatrix);
+  //   }
+  // }
+  //
+  // @Implementation
+  // @Override
+  // public int hashCode() {
+  //     return Objects.hashCode(mMatrix);
+  // }
+  //
+  // public String getDescription() {
+  //   return "Matrix[pre=" + preOps + ", set=" + setOps + ", post=" + postOps + "]";
+  // }
 
   private static SimpleMatrix getSimpleMatrix(Matrix matrix) {
     final ShadowMatrix otherMatrix = Shadow.extract(matrix);

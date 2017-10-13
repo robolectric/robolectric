@@ -23,25 +23,25 @@ public class ShadowBitmapRegionDecoder {
   private int width;
   private int height;
 
-  @Implementation
-  public static BitmapRegionDecoder newInstance(byte[] data, int offset, int length, boolean isShareable) throws IOException {
-    return fillWidthAndHeight(newInstance(), new ByteArrayInputStream(data));
-  }
-
-  @Implementation
-  public static BitmapRegionDecoder newInstance(FileDescriptor fd, boolean isShareable) throws IOException {
-    return fillWidthAndHeight(newInstance(), new FileInputStream(fd));
-  }
-
-  @Implementation
-  public static BitmapRegionDecoder newInstance(InputStream is, boolean isShareable) throws IOException {
-    return fillWidthAndHeight(newInstance(), is);
-  }
-
-  @Implementation
-  public static BitmapRegionDecoder newInstance(String pathName, boolean isShareable) throws IOException {
-    return fillWidthAndHeight(newInstance(), new FileInputStream(pathName));
-  }
+  // @Implementation
+  // public static BitmapRegionDecoder newInstance(byte[] data, int offset, int length, boolean isShareable) throws IOException {
+  //   return fillWidthAndHeight(newInstance(), new ByteArrayInputStream(data));
+  // }
+  //
+  // @Implementation
+  // public static BitmapRegionDecoder newInstance(FileDescriptor fd, boolean isShareable) throws IOException {
+  //   return fillWidthAndHeight(newInstance(), new FileInputStream(fd));
+  // }
+  //
+  // @Implementation
+  // public static BitmapRegionDecoder newInstance(InputStream is, boolean isShareable) throws IOException {
+  //   return fillWidthAndHeight(newInstance(), is);
+  // }
+  //
+  // @Implementation
+  // public static BitmapRegionDecoder newInstance(String pathName, boolean isShareable) throws IOException {
+  //   return fillWidthAndHeight(newInstance(), new FileInputStream(pathName));
+  // }
 
   private static BitmapRegionDecoder fillWidthAndHeight(BitmapRegionDecoder bitmapRegionDecoder, InputStream is) {
     ShadowBitmapRegionDecoder shadowDecoder = shadowOf(bitmapRegionDecoder);
@@ -53,21 +53,21 @@ public class ShadowBitmapRegionDecoder {
     return bitmapRegionDecoder;
   }
 
-  @Implementation
-  public int getWidth() {
-    return width;
-  }
-
-  @Implementation
-  public int getHeight() {
-    return height;
-  }
-
-  @Implementation
-  public Bitmap decodeRegion(Rect rect, BitmapFactory.Options options) {
-    return Bitmap.createBitmap(rect.width(), rect.height(),
-        options.inPreferredConfig != null ? options.inPreferredConfig : Bitmap.Config.ARGB_8888);
-  }
+  // @Implementation
+  // public int getWidth() {
+  //   return width;
+  // }
+  //
+  // @Implementation
+  // public int getHeight() {
+  //   return height;
+  // }
+  //
+  // @Implementation
+  // public Bitmap decodeRegion(Rect rect, BitmapFactory.Options options) {
+  //   return Bitmap.createBitmap(rect.width(), rect.height(),
+  //       options.inPreferredConfig != null ? options.inPreferredConfig : Bitmap.Config.ARGB_8888);
+  // }
 
   private static BitmapRegionDecoder newInstance() {
     if (getApiLevel() >= LOLLIPOP) {

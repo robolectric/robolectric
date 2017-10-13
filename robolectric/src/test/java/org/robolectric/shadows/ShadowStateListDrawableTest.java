@@ -17,7 +17,7 @@ public class ShadowStateListDrawableTest {
 
   @Test
   public void testAddStateWithDrawable() {
-    Drawable drawable = ShadowDrawable.createFromPath("/foo");
+    Drawable drawable = Drawable.createFromPath("/foo");
 
     StateListDrawable stateListDrawable = new StateListDrawable();
     int[] states = {R.attr.state_pressed};
@@ -31,7 +31,7 @@ public class ShadowStateListDrawableTest {
 
   @Test
   public void testAddDrawableWithWildCardState() {
-    Drawable drawable = ShadowDrawable.createFromPath("/foo");
+    Drawable drawable = Drawable.createFromPath("/foo");
 
     StateListDrawable stateListDrawable = new StateListDrawable();
     stateListDrawable.addState(StateSet.WILD_CARD, drawable);

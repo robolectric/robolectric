@@ -20,7 +20,7 @@ public class ShadowPaintTest {
     Paint paint = Shadow.newInstanceOf(Paint.class);
     assertFalse(paint.isAntiAlias());
     ShadowPaint shadowPaint = shadowOf(paint);
-    shadowPaint.setAntiAlias(true);
+    paint.setAntiAlias(true);
     assertTrue(paint.isAntiAlias());
   }
 
@@ -29,9 +29,9 @@ public class ShadowPaintTest {
     Paint paint = Shadow.newInstanceOf(Paint.class);
     assertFalse(paint.isAntiAlias());
     ShadowPaint shadowPaint = shadowOf(paint);
-    shadowPaint.setAntiAlias(true);
+    paint.setAntiAlias(true);
     assertTrue(paint.isAntiAlias());
-    shadowPaint.setAntiAlias(false);
+    paint.setAntiAlias(false);
     assertFalse(paint.isAntiAlias());
   }
 
@@ -40,7 +40,7 @@ public class ShadowPaintTest {
     Paint paint = Shadow.newInstanceOf(Paint.class);
     assertFalse(paint.isAntiAlias());
     ShadowPaint shadowPaint = shadowOf(paint);
-    shadowPaint.__constructor__( Paint.ANTI_ALIAS_FLAG );
+    // shadowPaint.__constructor__( Paint.ANTI_ALIAS_FLAG );
     assertTrue(paint.isAntiAlias());
   }
 

@@ -16,17 +16,17 @@ public class ShadowCompoundButton extends ShadowTextView {
   private int buttonDrawableId;
   private Drawable buttonDrawable;
 
-  @Implementation
-  public void setButtonDrawable(int buttonDrawableId) {
-    this.buttonDrawableId = buttonDrawableId;
-    directlyOn(realObject, CompoundButton.class, "setButtonDrawable", from(int.class, buttonDrawableId));
-  }
-
-  @Implementation
-  public void setButtonDrawable(Drawable buttonDrawable) {
-    this.buttonDrawable = buttonDrawable;
-    directlyOn(realObject, CompoundButton.class, "setButtonDrawable", from(Drawable.class, buttonDrawable));
-  }
+  // @Implementation
+  // public void setButtonDrawable(int buttonDrawableId) {
+  //   this.buttonDrawableId = buttonDrawableId;
+  //   directlyOn(realObject, CompoundButton.class, "setButtonDrawable", from(int.class, buttonDrawableId));
+  // }
+  //
+  // @Implementation
+  // public void setButtonDrawable(Drawable buttonDrawable) {
+  //   this.buttonDrawable = buttonDrawable;
+  //   directlyOn(realObject, CompoundButton.class, "setButtonDrawable", from(Drawable.class, buttonDrawable));
+  // }
 
   public int getButtonDrawableId() {
     return buttonDrawableId;

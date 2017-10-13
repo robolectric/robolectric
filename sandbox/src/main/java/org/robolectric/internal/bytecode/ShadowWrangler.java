@@ -139,7 +139,7 @@ public class ShadowWrangler implements ClassHandler {
       planCache.put(signature, plan);
     }
     // if (signature.contains("View")) {
-    System.out.println("call to " + signature + " -> " + (plan == null ? "null" : plan.describe()));
+    // System.out.println("call to " + signature + " -> " + (plan == null ? "null" : plan.describe()));
     // }
     return plan;
   }

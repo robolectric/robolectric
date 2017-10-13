@@ -28,14 +28,14 @@ public class ShadowStateListDrawable extends ShadowDrawable {
     return stateToResource.get(stateId);
   }
 
-  @Implementation
-  public void addState(int[] stateSet, Drawable drawable) {
-    stateToDrawable.put(createStateList(stateSet), drawable);
-  }
-
-  @Implementation
-  public void inflate(Resources r, XmlPullParser parser, AttributeSet attrs) throws XmlPullParserException, IOException {
-  }
+  // @Implementation
+  // public void addState(int[] stateSet, Drawable drawable) {
+  //   stateToDrawable.put(createStateList(stateSet), drawable);
+  // }
+  //
+  // @Implementation
+  // public void inflate(Resources r, XmlPullParser parser, AttributeSet attrs) throws XmlPullParserException, IOException {
+  // }
 
   /**
    * Non Android accessor to retrieve drawable added for a specific state.
