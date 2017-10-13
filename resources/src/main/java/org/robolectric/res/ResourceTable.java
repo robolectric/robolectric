@@ -22,6 +22,8 @@ public interface ResourceTable {
 
   void receive(Visitor visitor);
 
+  String getPackageName();
+
   interface Visitor {
     void visit(ResName key, Iterable<TypedResource> values);
   }
