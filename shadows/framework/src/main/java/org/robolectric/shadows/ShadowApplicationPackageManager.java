@@ -70,11 +70,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           return result;
         }
       }
+
+      // Activity is requested is not listed in the AndroidManifest.xml
+      ActivityInfo result = new ActivityInfo();
+      result.name = activityName;
+      result.packageName = packageName;
+      result.applicationInfo = new ApplicationInfo(packageInfo.applicationInfo);
+      return result;
     }
 
     // TODO: Should throw a NameNotFoundException
-    // In the cases where there is no manifest entry for the activity, e.g: a test that creates
-    // simply an android.app.Activity just return what we have.
+    // In the cases where an Activity from another package has been requested.
     ActivityInfo result = new ActivityInfo();
     result.name = activityName;
     result.packageName = packageName;
