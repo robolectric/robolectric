@@ -19,6 +19,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
@@ -40,10 +41,10 @@ public class ActivityControllerTest {
   }
 
   @Test
-  @Config(manifest = Config.NONE)
   public void canCreateActivityNotListedInManifest() {
-    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
-    assertThat(activityController.setup()).isNotNull();
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity).isNotNull();
+    assertThat(activity.getThemeResId()).isEqualTo(R.style.Theme_Robolectric);
   }
 
   public static class TestDelayedPostActivity extends Activity {
