@@ -49,13 +49,12 @@ public class ShadowPackageParser {
   public static Package callParsePackage(FsFile manifestFile) {
     MANIFEST_FILE = manifestFile.getPath();
     PackageParser packageParser = new PackageParser();
-    Package packageInfo = null;
 
     try {
       if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
-        packageParser.parsePackage(new File(manifestFile.getPath()), 0);
+        return packageParser.parsePackage(new File(manifestFile.getPath()), 0);
       } else { // JB -> KK
-        packageInfo = ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parsePackage",
+        return ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parsePackage",
             from(File.class, new File(manifestFile.getPath())),
             from(String.class, manifestFile.getPath()),
             from(DisplayMetrics.class, new DisplayMetrics()),
@@ -64,7 +63,6 @@ public class ShadowPackageParser {
     } catch (PackageParser.PackageParserException e) {
       throw new RuntimeException(e);
     }
-    return packageInfo;
   }
 
   /**
