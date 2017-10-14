@@ -60,7 +60,7 @@ public class ShadowPackageParser {
             from(DisplayMetrics.class, new DisplayMetrics()),
             from(int.class, 0));
       }
-    } catch (PackageParser.PackageParserException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -131,8 +131,7 @@ public class ShadowPackageParser {
    * {@link #parsePackage(java.io.File, java.lang.String, android.util.DisplayMetrics, int)}
    */
   @Implementation(minSdk = Build.VERSION_CODES.LOLLIPOP)
-  public Package parseBaseApk(File apkFile, AssetManager assets, int flags)
-      throws PackageParser.PackageParserException {
+  public Package parseBaseApk(File apkFile, AssetManager assets, int flags) {
     final String apkPath = apkFile.getAbsolutePath();
 
     mParseError = PackageManager.INSTALL_SUCCEEDED;
@@ -165,20 +164,15 @@ public class ShadowPackageParser {
       }
 
       if (pkg == null) {
-        throw new PackageParser.PackageParserException(mParseError,
-            apkPath + " (at " + parser.getPositionDescription() + "): " + outError[0]);
+        throw new Exception("Parse error at " + parser.getPositionDescription() + "): " + outError[0]);
       }
 
       pkg.baseCodePath = apkPath;
       pkg.mSignatures = null;
 
       return pkg;
-
-    } catch (PackageParser.PackageParserException e) {
-      throw e;
     } catch (Exception e) {
-      throw new PackageParser.PackageParserException(INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION,
-          "Failed to read manifest from " + apkPath, e);
+      throw new RuntimeException("Failed to read manifest from " + apkPath + "Error code: " + INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION, e);
     } finally {
       IoUtils.closeQuietly(parser);
     }
@@ -189,7 +183,7 @@ public class ShadowPackageParser {
    * {@link #parsePackage(java.io.File, java.lang.String, android.util.DisplayMetrics, int)}
    */
   @Implementation(minSdk = Build.VERSION_CODES.N)
-  public static PackageParser.ApkLite parseApkLite(File apkFile, int flags) throws PackageParser.PackageParserException {
+  public static Object parseApkLite(File apkFile, int flags) {
     final String apkPath = apkFile.getAbsolutePath();
 
     AssetManager assets = null;
@@ -199,8 +193,7 @@ public class ShadowPackageParser {
 
       int cookie = assets.addAssetPath(apkPath);
       if (cookie == 0) {
-        throw new PackageParser.PackageParserException(INSTALL_PARSE_FAILED_NOT_APK,
-            "Failed to parse " + apkPath);
+        throw new RuntimeException("Failed to parse " + apkPath + "Error code: " + INSTALL_PARSE_FAILED_NOT_APK);
       }
 
       final DisplayMetrics metrics = new DisplayMetrics();
@@ -251,9 +244,8 @@ public class ShadowPackageParser {
             ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
       }
 
-    } catch ( IOException | RuntimeException e) {
-      throw new PackageParser.PackageParserException(INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION,
-          "Failed to parse " + apkPath, e);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to parse " + apkPath + "Error code: " + INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION);
     } finally {
       IoUtils.closeQuietly(parser);
       IoUtils.closeQuietly(assets);
