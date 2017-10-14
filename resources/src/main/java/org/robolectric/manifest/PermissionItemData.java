@@ -1,5 +1,9 @@
 package org.robolectric.manifest;
 
+/**
+ * @deprecated Prefer to use {@link android.content.pm.PackageInfo} instead via the {@link android.content.pm.PackageManager}
+ */
+@Deprecated
 public class PermissionItemData {
 
   private final String name;

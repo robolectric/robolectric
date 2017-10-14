@@ -681,6 +681,12 @@ public class ShadowApplication extends ShadowContextWrapper {
     latestWakeLock = null;
   }
 
+  /**
+   * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
+   * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
+   * @deprecated Prefer to use {@link android.content.pm.PackageInfo} instead via the {@link android.content.pm.PackageManager}
+   */
+  @DeprecatedRun
   public AndroidManifest getAppManifest() {
     return appManifest;
   }
