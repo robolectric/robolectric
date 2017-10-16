@@ -170,14 +170,15 @@ public class ShadowPackageManager {
     Bundle bundle = new Bundle();
 
     for (Map.Entry<String,Object> entry : meta.entrySet()) {
-      if (Boolean.class.isInstance(entry.getValue())) {
-        bundle.putBoolean(entry.getKey(), (Boolean) entry.getValue());
-      } else if (Float.class.isInstance(entry.getValue())) {
-        bundle.putFloat(entry.getKey(), (Float) entry.getValue());
-      } else if (Integer.class.isInstance(entry.getValue())) {
-        bundle.putInt(entry.getKey(), (Integer) entry.getValue());
+      Object value = entry.getValue();
+      if (Boolean.class.isInstance(value)) {
+        bundle.putBoolean(entry.getKey(), (Boolean) value);
+      } else if (Float.class.isInstance(value)) {
+        bundle.putFloat(entry.getKey(), (Float) value);
+      } else if (Integer.class.isInstance(value)) {
+        bundle.putInt(entry.getKey(), (Integer) value);
       } else {
-        bundle.putString(entry.getKey(), entry.getValue().toString());
+        bundle.putString(entry.getKey(), value == null ? null : value.toString());
       }
     }
     return bundle;

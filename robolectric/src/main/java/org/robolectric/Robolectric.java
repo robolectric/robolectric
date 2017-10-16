@@ -17,7 +17,6 @@ import java.util.ServiceLoader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.robolectric.android.AttributeSetBuilder;
 import org.robolectric.android.AttributeSetBuilderImpl;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
@@ -27,7 +26,6 @@ import org.robolectric.android.controller.IntentServiceController;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowArscAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.w3c.dom.Document;
@@ -153,7 +151,7 @@ public class Robolectric {
       }
       throw new UnsupportedOperationException(); // todo
     } else {
-      return new AttributeSetBuilderImpl(RuntimeEnvironment.getCompileTimeResourceTable()) {};
+      return new AttributeSetBuilderImpl(RuntimeEnvironment.application) {};
     }
   }
 
