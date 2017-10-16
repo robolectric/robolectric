@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
@@ -188,6 +189,10 @@ public class ShadowContextImpl {
                 Class.forName(serviceClassName),
                 ClassParameter.from(Looper.class, Looper.getMainLooper()));
           }
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.app.KeyguardManager")) {
+          service =
+              ReflectionHelpers.callConstructor(
+                  clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else {
           service = newInstanceOf(clazz);
         }
