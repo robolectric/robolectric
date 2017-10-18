@@ -65,7 +65,7 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      Properties getBuildSystemApiProperties() {
+      @Override Properties getBuildSystemApiProperties() {
         return properties;
       }
     };
@@ -95,7 +95,7 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      Properties getBuildSystemApiProperties() {
+      @Override Properties getBuildSystemApiProperties() {
         return properties;
       }
     };

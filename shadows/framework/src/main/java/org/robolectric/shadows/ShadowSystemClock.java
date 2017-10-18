@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.SystemClock;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -30,7 +31,7 @@ public class ShadowSystemClock {
     }
 
     nanoTime = millis * MILLIS_PER_NANO;
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(millis);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(millis, TimeUnit.MILLISECONDS);
   }
 
   @Implementation

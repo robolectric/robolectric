@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
@@ -129,14 +130,14 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("two"), 0);
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
 
-    assertThat(scheduler.advanceBy(0)).isTrue();
+    assertThat(scheduler.advanceBy(0, MILLISECONDS)).isTrue();
     assertThat(transcript).containsExactly("one", "two");
     transcript.clear();
 
-    assertThat(scheduler.advanceBy(0)).isFalse();
+    assertThat(scheduler.advanceBy(0, MILLISECONDS)).isFalse();
     assertThat(transcript).isEmpty();
 
-    assertThat(scheduler.advanceBy(1000)).isTrue();
+    assertThat(scheduler.advanceBy(1000, MILLISECONDS)).isTrue();
     assertThat(transcript).containsExactly("three");
   }
 
@@ -146,18 +147,18 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("two"), 2000);
     scheduler.postDelayed(new AddToTranscript("three"), 3000);
 
-    scheduler.advanceBy(1000);
+    scheduler.advanceBy(1000, MILLISECONDS);
     assertThat(transcript).containsExactly("one");
     transcript.clear();
 
-    scheduler.advanceBy(500);
+    scheduler.advanceBy(500, MILLISECONDS);
     assertThat(transcript).isEmpty();
 
-    scheduler.advanceBy(501);
+    scheduler.advanceBy(501, MILLISECONDS);
     assertThat(transcript).containsExactly("two");
     transcript.clear();
 
-    scheduler.advanceBy(999);
+    scheduler.advanceBy(999, MILLISECONDS);
     assertThat(transcript).containsExactly("three");
   }
 
@@ -218,18 +219,18 @@ public class SchedulerTest {
       }
     }, 1000);
 
-    scheduler.advanceBy(1000);
+    scheduler.advanceBy(1000, MILLISECONDS);
     assertThat(transcript).containsExactly("one");
     transcript.clear();
 
-    scheduler.advanceBy(500);
+    scheduler.advanceBy(500, MILLISECONDS);
     assertThat(transcript).isEmpty();
 
-    scheduler.advanceBy(501);
+    scheduler.advanceBy(501, MILLISECONDS);
     assertThat(transcript).containsExactly("two");
     transcript.clear();
 
-    scheduler.advanceBy(999);
+    scheduler.advanceBy(999, MILLISECONDS);
     assertThat(transcript).containsExactly("three");
   }
 

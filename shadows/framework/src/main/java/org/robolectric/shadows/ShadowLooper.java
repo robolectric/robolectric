@@ -167,12 +167,6 @@ public class ShadowLooper {
     getShadowMainLooper().idle();
   }
 
-  /** @deprecated Use {@link #idleMainLooper(long, TimeUnit)}. */
-  @Deprecated
-  public static void idleMainLooper(long interval) {
-    idleMainLooper(interval, TimeUnit.MILLISECONDS);
-  }
-
   public static void idleMainLooper(long amount, TimeUnit unit) {
     getShadowMainLooper().idle(amount, unit);
   }

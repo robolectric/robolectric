@@ -2,8 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static junit.framework.Assert.assertEquals;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -48,8 +49,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
@@ -308,7 +309,7 @@ public class ShadowViewTest {
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    Robolectric.getForegroundThreadScheduler().advanceBy(1);
+    Robolectric.getForegroundThreadScheduler().advanceBy(1, MILLISECONDS);
     assertTrue(runnable.wasRun);
   }
 
@@ -319,7 +320,7 @@ public class ShadowViewTest {
 
     view.removeCallbacks(runnable);
 
-    Robolectric.getForegroundThreadScheduler().advanceBy(1);
+    Robolectric.getForegroundThreadScheduler().advanceBy(1, MILLISECONDS);
     assertThat(runnable.wasRun).isFalse();
   }
 

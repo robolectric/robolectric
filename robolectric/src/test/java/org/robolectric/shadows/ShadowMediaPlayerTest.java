@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
@@ -259,28 +260,28 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     // This time offset is just to make sure that it doesn't work by
     // accident because the offsets are calculated relative to 0.
-    scheduler.advanceBy(100);
+    scheduler.advanceBy(100, MILLISECONDS);
 
     mediaPlayer.start();
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(0);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(STARTED);
 
-    scheduler.advanceBy(500);
+    scheduler.advanceBy(500, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(500);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(STARTED);
 
-    scheduler.advanceBy(499);
+    scheduler.advanceBy(499, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(999);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(STARTED);
     Mockito.verifyZeroInteractions(completionListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(1000);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(completionListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(1000);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
     Mockito.verifyZeroInteractions(completionListener);
@@ -290,12 +291,12 @@ public class ShadowMediaPlayerTest {
   public void testStop() {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
-    scheduler.advanceBy(300);
+    scheduler.advanceBy(300, MILLISECONDS);
 
     mediaPlayer.stop();
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(300);
 
-    scheduler.advanceBy(400);
+    scheduler.advanceBy(400, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(300);
   }
 
@@ -303,17 +304,17 @@ public class ShadowMediaPlayerTest {
   public void testPauseReschedulesCompletionCallback() {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
     mediaPlayer.pause();
-    scheduler.advanceBy(800);
+    scheduler.advanceBy(800, MILLISECONDS);
 
     Mockito.verifyZeroInteractions(completionListener);
 
     mediaPlayer.start();
-    scheduler.advanceBy(799);
+    scheduler.advanceBy(799, MILLISECONDS);
     Mockito.verifyZeroInteractions(completionListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(completionListener);
 
@@ -326,15 +327,15 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
 
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
     mediaPlayer.pause();
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
 
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PAUSED);
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(200);
 
     mediaPlayer.start();
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
 
     assertThat(shadowMediaPlayer.getState()).isEqualTo(STARTED);
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(400);
@@ -345,11 +346,11 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
 
-    scheduler.advanceBy(300);
+    scheduler.advanceBy(300, MILLISECONDS);
     mediaPlayer.seekTo(400);
-    scheduler.advanceBy(599);
+    scheduler.advanceBy(599, MILLISECONDS);
     Mockito.verifyZeroInteractions(completionListener);
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(completionListener);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
@@ -364,29 +365,29 @@ public class ShadowMediaPlayerTest {
 
     // This time offset is just to make sure that it doesn't work by
     // accident because the offsets are calculated relative to 0.
-    scheduler.advanceBy(100);
+    scheduler.advanceBy(100, MILLISECONDS);
 
     mediaPlayer.start();
 
-    scheduler.advanceBy(400);
+    scheduler.advanceBy(400, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(400);
 
     mediaPlayer.seekTo(600);
-    scheduler.advanceBy(0);
+    scheduler.advanceBy(0, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(600);
 
-    scheduler.advanceBy(300);
+    scheduler.advanceBy(300, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(900);
 
     mediaPlayer.seekTo(100);
-    scheduler.advanceBy(0);
+    scheduler.advanceBy(0, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(100);
 
-    scheduler.advanceBy(900);
+    scheduler.advanceBy(900, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(1000);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
 
-    scheduler.advanceBy(100);
+    scheduler.advanceBy(100, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(1000);
   }
 
@@ -395,7 +396,7 @@ public class ShadowMediaPlayerTest {
     Mockito.when(errorListener.onError(mediaPlayer, 2, 3)).thenReturn(true);
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
 
     // We should have a pending completion callback.
     assertThat(scheduler.size()).isEqualTo(1);
@@ -613,7 +614,7 @@ public class ShadowMediaPlayerTest {
       }
     }
 
-    public String toString() {
+    @Override public String toString() {
       return method.toString();
     }
   }
@@ -689,7 +690,7 @@ public class ShadowMediaPlayerTest {
   }
 
   private interface Tester {
-    public void test(MethodSpec method);
+    void test(MethodSpec method);
   }
 
   private class OnErrorTester implements Tester {
@@ -701,6 +702,7 @@ public class ShadowMediaPlayerTest {
       this.extra = extra;
     }
 
+    @Override
     public void test(MethodSpec method) {
       final State state = shadowMediaPlayer.getState();
       final boolean wasPaused = scheduler.isPaused();
@@ -734,6 +736,7 @@ public class ShadowMediaPlayerTest {
       this.eClass = eClass;
     }
 
+    @Override
     public void test(MethodSpec method) {
       final State state = shadowMediaPlayer.getState();
       boolean success = false;
@@ -766,6 +769,7 @@ public class ShadowMediaPlayerTest {
       this.next = next;
     }
 
+    @Override
     public void test(MethodSpec method) {
       testMethodSuccess(method, next);
     }
@@ -877,18 +881,18 @@ public class ShadowMediaPlayerTest {
     assertThat(shadowMediaPlayer.getSeekDelay()).isEqualTo(100);
 
     mediaPlayer.start();
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(200);
     mediaPlayer.seekTo(450);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(200);
 
-    scheduler.advanceBy(99);
+    scheduler.advanceBy(99, MILLISECONDS);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(200);
     Mockito.verifyZeroInteractions(seekListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(450);
     Mockito.verify(seekListener).onSeekComplete(mediaPlayer);
@@ -902,14 +906,14 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PAUSED);
     shadowMediaPlayer.setSeekDelay(100);
 
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
     mediaPlayer.seekTo(450);
-    scheduler.advanceBy(99);
+    scheduler.advanceBy(99, MILLISECONDS);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(0);
     Mockito.verifyZeroInteractions(seekListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(450);
     Mockito.verify(seekListener).onSeekComplete(mediaPlayer);
@@ -923,16 +927,16 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PAUSED);
     shadowMediaPlayer.setSeekDelay(100);
 
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
     mediaPlayer.seekTo(450);
-    scheduler.advanceBy(50);
+    scheduler.advanceBy(50, MILLISECONDS);
     mediaPlayer.seekTo(600);
-    scheduler.advanceBy(99);
+    scheduler.advanceBy(99, MILLISECONDS);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(0);
     Mockito.verifyZeroInteractions(seekListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(600);
     Mockito.verify(seekListener).onSeekComplete(mediaPlayer);
@@ -948,11 +952,11 @@ public class ShadowMediaPlayerTest {
 
     final long startTime = scheduler.getCurrentTime();
     mediaPlayer.start();
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
     mediaPlayer.seekTo(450);
-    scheduler.advanceBy(50);
+    scheduler.advanceBy(50, MILLISECONDS);
     mediaPlayer.seekTo(600);
-    scheduler.advanceBy(99);
+    scheduler.advanceBy(99, MILLISECONDS);
 
     // Not sure of the correct behavior to emulate here, as the MediaPlayer
     // documentation is not detailed enough. There are three possibilities:
@@ -966,7 +970,7 @@ public class ShadowMediaPlayerTest {
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(200);
     Mockito.verifyZeroInteractions(seekListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(600);
     Mockito.verify(seekListener).onSeekComplete(mediaPlayer);
@@ -997,7 +1001,7 @@ public class ShadowMediaPlayerTest {
     
     shadowMediaPlayer.setState(INITIALIZED);
     shadowMediaPlayer.doStart();
-    scheduler.advanceBy(100);
+    scheduler.advanceBy((long) 100, MILLISECONDS);
     // Verify that the first event ran
     assertThat(shadowMediaPlayer.isReallyPlaying()).isFalse();
     Mockito.verify(e2).run(mediaPlayer, shadowMediaPlayer);
@@ -1131,13 +1135,13 @@ public class ShadowMediaPlayerTest {
   @Test
   public void testDoStartStop() {
     assertThat(shadowMediaPlayer.isReallyPlaying()).isFalse();
-    scheduler.advanceBy(100);
+    scheduler.advanceBy(100, MILLISECONDS);
     shadowMediaPlayer.doStart();
     assertThat(shadowMediaPlayer.isReallyPlaying()).isTrue();
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(0);
     assertThat(shadowMediaPlayer.getState()).isSameAs(IDLE);
 
-    scheduler.advanceBy(100);
+    scheduler.advanceBy(100, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
 
     shadowMediaPlayer.doStop();
@@ -1145,7 +1149,7 @@ public class ShadowMediaPlayerTest {
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
     assertThat(shadowMediaPlayer.getState()).isSameAs(IDLE);
 
-    scheduler.advanceBy(50);
+    scheduler.advanceBy(50, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
   }
 
@@ -1156,10 +1160,10 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
 
-    scheduler.advanceBy(499);
+    scheduler.advanceBy(499, MILLISECONDS);
     Mockito.verifyZeroInteractions(errorListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(errorListener).onError(mediaPlayer, 1, 3);
     assertThat(shadowMediaPlayer.getState()).isSameAs(ERROR);
     assertThat(scheduler.advanceToLastPostedRunnable()).isFalse();
@@ -1184,25 +1188,25 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
 
-    scheduler.advanceBy(99);
+    scheduler.advanceBy(99, MILLISECONDS);
 
     Mockito.verifyZeroInteractions(infoListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(infoListener).onInfo(mediaPlayer,
         MediaPlayer.MEDIA_INFO_BUFFERING_START, 0);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
     assertThat(shadowMediaPlayer.isReallyPlaying()).isFalse();
 
-    scheduler.advanceBy(49);
+    scheduler.advanceBy(49, MILLISECONDS);
     Mockito.verifyZeroInteractions(infoListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
     Mockito.verify(infoListener).onInfo(mediaPlayer,
         MediaPlayer.MEDIA_INFO_BUFFERING_END, 0);
 
-    scheduler.advanceBy(100);
+    scheduler.advanceBy(100, MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(200);
   }
 
@@ -1211,12 +1215,12 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
 
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
 
     MediaEvent e = info.scheduleInfoAtOffset(
         500, 1, 3);
 
-    scheduler.advanceBy(299);
+    scheduler.advanceBy(299, MILLISECONDS);
     info.removeEventAtOffset(500, e);
     scheduler.advanceToLastPostedRunnable();
     Mockito.verifyZeroInteractions(infoListener);
@@ -1227,11 +1231,11 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
 
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
 
     MediaEvent e = info.scheduleInfoAtOffset(500, 1, 3);
 
-    scheduler.advanceBy(299);
+    scheduler.advanceBy(299, MILLISECONDS);
     shadowMediaPlayer.doStop();
     info.removeEvent(e);
     shadowMediaPlayer.doStart();
@@ -1242,10 +1246,10 @@ public class ShadowMediaPlayerTest {
   @Test
   public void testScheduleMultipleRunnables() {
     shadowMediaPlayer.setState(PREPARED);
-    scheduler.advanceBy(25);
+    scheduler.advanceBy(25, MILLISECONDS);
     mediaPlayer.start();
 
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
     assertThat(scheduler.size()).isEqualTo(1);
     shadowMediaPlayer.doStop();
     info.scheduleInfoAtOffset(250, 2, 4);
@@ -1258,28 +1262,28 @@ public class ShadowMediaPlayerTest {
     info.scheduleEventAtOffset(400, e1);
     shadowMediaPlayer.doStart();
 
-    scheduler.advanceBy(49);
+    scheduler.advanceBy(49, MILLISECONDS);
     Mockito.verifyZeroInteractions(infoListener);
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(infoListener).onInfo(mediaPlayer, 2, 4);
-    scheduler.advanceBy(149);
+    scheduler.advanceBy(149, MILLISECONDS);
     shadowMediaPlayer.doStop();
     info.scheduleErrorAtOffset(675, 32, 22);
     shadowMediaPlayer.doStart();
     Mockito.verifyZeroInteractions(e1);
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(e1).run(mediaPlayer, shadowMediaPlayer);
 
     mediaPlayer.pause();
     assertThat(scheduler.size()).isEqualTo(0);
-    scheduler.advanceBy(324);
+    scheduler.advanceBy(324, MILLISECONDS);
     MediaEvent e2 = Mockito.mock(MediaEvent.class);
     info.scheduleEventAtOffset(680, e2);
     mediaPlayer.start();
-    scheduler.advanceBy(274);
+    scheduler.advanceBy(274, MILLISECONDS);
     Mockito.verifyZeroInteractions(errorListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(errorListener).onError(mediaPlayer, 32, 22);
     assertThat(scheduler.size()).isEqualTo(0);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(675);
@@ -1338,19 +1342,19 @@ public class ShadowMediaPlayerTest {
   public void testSetLoopingCalledWhilePlaying() {
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
-    scheduler.advanceBy(200);
+    scheduler.advanceBy(200, MILLISECONDS);
 
     mediaPlayer.setLooping(true);
-    scheduler.advanceBy(1100);
+    scheduler.advanceBy(1100, MILLISECONDS);
 
     Mockito.verifyZeroInteractions(completionListener);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(300);
 
     mediaPlayer.setLooping(false);
-    scheduler.advanceBy(699);
+    scheduler.advanceBy(699, MILLISECONDS);
     Mockito.verifyZeroInteractions(completionListener);
 
-    scheduler.advanceBy(1);
+    scheduler.advanceBy(1, MILLISECONDS);
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
   }
 
@@ -1364,7 +1368,7 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.setLooping(true);
       mediaPlayer.start();
 
-      scheduler.advanceBy(700);
+      scheduler.advanceBy(700, MILLISECONDS);
       Mockito.verifyZeroInteractions(completionListener);
       assertThat(mediaPlayer.getCurrentPosition()).as(state.toString())
           .isEqualTo(200);

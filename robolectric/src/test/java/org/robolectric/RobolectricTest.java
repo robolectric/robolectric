@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -86,9 +87,9 @@ public class RobolectricTest {
     }, 2000);
 
     assertFalse(wasRun[0]);
-    ShadowLooper.idleMainLooper(1999);
+    ShadowLooper.idleMainLooper(1999, MILLISECONDS);
     assertFalse(wasRun[0]);
-    ShadowLooper.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1, MILLISECONDS);
     assertTrue(wasRun[0]);
   }
 

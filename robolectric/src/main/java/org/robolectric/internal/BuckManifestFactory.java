@@ -1,8 +1,11 @@
 package org.robolectric.internal;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,7 +85,7 @@ public class BuckManifestFactory implements ManifestFactory {
     if (property.startsWith("@")) {
       String filename = property.substring(1);
       try {
-        return Arrays.asList(new String(Util.readBytes(new FileInputStream(filename))).split("\\n"));
+        return Arrays.asList(new String(Util.readBytes(new FileInputStream(filename)), UTF_8).split("\\n"));
       } catch (IOException e) {
         throw new RuntimeException("Cannot read file " + filename);
       }

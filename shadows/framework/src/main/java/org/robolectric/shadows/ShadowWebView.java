@@ -356,7 +356,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   public static void setWebContentsDebuggingEnabled(boolean enabled) { }
 
-  public class LoadDataWithBaseURL {
+  public static class LoadDataWithBaseURL {
     public final String baseUrl;
     public final String data;
     public final String mimeType;
@@ -372,7 +372,7 @@ public class ShadowWebView extends ShadowViewGroup {
     }
   }
 
-  public class LoadData {
+  public static class LoadData {
     public final String data;
     public final String mimeType;
     public final String encoding;

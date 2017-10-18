@@ -390,7 +390,7 @@ public class ShadowViewGroupTest {
     }
   }
 
-  class TestOnHierarchyChangeListener implements ViewGroup.OnHierarchyChangeListener {
+  static class TestOnHierarchyChangeListener implements ViewGroup.OnHierarchyChangeListener {
     boolean wasCalled = false;
 
     @Override
