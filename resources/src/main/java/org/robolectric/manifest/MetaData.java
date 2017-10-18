@@ -9,6 +9,10 @@ import org.robolectric.res.TypedResource;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+/**
+ * @deprecated Prefer to use {@link android.content.pm.PackageInfo} instead via the {@link android.content.pm.PackageManager}
+ */
+@Deprecated
 public final class MetaData {
   private final Map<String, Object> valueMap = new LinkedHashMap<>();
   private final Map<String, VALUE_TYPE> typeMap = new LinkedHashMap<>();

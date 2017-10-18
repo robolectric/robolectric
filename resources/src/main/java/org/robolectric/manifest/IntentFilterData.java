@@ -3,6 +3,10 @@ package org.robolectric.manifest;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @deprecated Prefer to use {@link android.content.pm.PackageInfo} instead via the {@link android.content.pm.PackageManager}
+ */
+@Deprecated
 public class IntentFilterData {
   private final List<String> actions;
   private final List<String> categories;

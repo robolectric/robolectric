@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @deprecated Prefer to use {@link android.content.pm.PackageInfo} instead via the {@link android.content.pm.PackageManager}
+ */
+@Deprecated
 public class ActivityData {
   private static final String ALLOW_TASK_REPARENTING = "allowTaskReparenting";
   private static final String ALWAYS_RETAIN_TASK_STATE = "alwaysRetainTaskState";

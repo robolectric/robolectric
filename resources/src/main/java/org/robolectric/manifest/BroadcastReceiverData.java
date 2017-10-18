@@ -6,6 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @deprecated Prefer to use {@link android.content.pm.PackageInfo} instead via the {@link android.content.pm.PackageManager}
+ */
+@Deprecated
 public class BroadcastReceiverData extends PackageItemData {
 
   private static final String EXPORTED = "android:exported";

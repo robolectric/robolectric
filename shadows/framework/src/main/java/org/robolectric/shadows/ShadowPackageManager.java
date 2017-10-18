@@ -795,10 +795,16 @@ public class ShadowPackageManager {
     return 0;
   }
 
+  /**
+   * @deprecated This will be enabled by default in the next release.
+   */
   public boolean isQueryIntentImplicitly() {
     return queryIntentImplicitly;
   }
 
+  /**
+   * @deprecated This will be enabled by default in the next release.
+   */
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
     this.queryIntentImplicitly = queryIntentImplicitly;
   }

@@ -24,7 +24,9 @@ import org.w3c.dom.NodeList;
 /**
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
  * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
+ * @deprecated Prefer to use {@link android.content.pm.PackageInfo} instead via the {@link android.content.pm.PackageManager}
  */
+@Deprecated
 public class AndroidManifest {
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
