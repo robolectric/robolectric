@@ -150,7 +150,7 @@ public class RuntimeEnvironment {
   }
 
   /**
-   * @deprecated Prefer to access manifest elements through @{link {@link android.content.pm.PackageManager}}
+   * @deprecated Prefer to access manifest elements through {@link android.content.pm.PackageManager}
    */
   @Deprecated
   public static AndroidManifest getAppManifest() {
