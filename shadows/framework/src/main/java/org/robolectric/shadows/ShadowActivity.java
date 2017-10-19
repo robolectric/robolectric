@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.Shadows.shadowOf;
@@ -332,6 +333,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation(minSdk = LOLLIPOP)
   public void finishAndRemoveTask() {
+    finishWasCalled = true;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN)
+  public void finishAffinity() {
     finishWasCalled = true;
   }
 
