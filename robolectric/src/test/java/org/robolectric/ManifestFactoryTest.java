@@ -77,7 +77,7 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getManifestFile()).isEqualTo(Fs.fileFromPath("/path/to/MergedManifest.xml"));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
-    assertThat(manifestIdentifier.getLibraryDirs()).isEmpty();
+    assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
     AndroidManifest androidManifest = manifestFactory.create(manifestIdentifier);
@@ -111,7 +111,7 @@ public class ManifestFactoryTest {
             .isEqualTo(Fs.fromURL(getClass().getClassLoader().getResource("TestAndroidManifest.xml")));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
-    assertThat(manifestIdentifier.getLibraryDirs()).isEmpty();
+    assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isEqualTo("another.package");
   }
 

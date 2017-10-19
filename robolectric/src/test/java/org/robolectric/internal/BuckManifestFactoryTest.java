@@ -52,20 +52,20 @@ public class BuckManifestFactoryTest {
 
   @Test public void multiple_res_dirs() throws Exception {
     System.setProperty("buck.robolectric_res_directories", "buck/res1:buck/res2");
-    System.setProperty("buck.robolectric_assets_directories", "buck/assets");
+    System.setProperty("buck.robolectric_assets_directories", "buck/assets1:buck/assets2");
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
     AndroidManifest manifest = buckManifestFactory.create(manifestIdentifier);
     assertThat(manifest.getResDirectory())
             .isEqualTo(FileFsFile.from("buck/res2"));
     assertThat(manifest.getAssetsDirectory())
-            .isEqualTo(FileFsFile.from("buck/assets"));
+            .isEqualTo(FileFsFile.from("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
     assertThat(resourcePathList.size()).isEqualTo(2);
     assertThat(resourcePathList).containsExactly(
-            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets")),
-            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), FileFsFile.from("buck/assets"))
+            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets2")),
+            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), FileFsFile.from("buck/assets1"))
     );
   }
 
@@ -77,7 +77,7 @@ public class BuckManifestFactoryTest {
 
     String assetDirectoriesFileName = "asset-directories";
     File assetDirectoriesFile = tempFolder.newFile(assetDirectoriesFileName);
-    Files.write("buck/assets", assetDirectoriesFile, Charsets.UTF_8);
+    Files.write("buck/assets1\nbuck/assets2", assetDirectoriesFile, Charsets.UTF_8);
     System.setProperty("buck.robolectric_assets_directories", "@" + assetDirectoriesFile.getAbsolutePath());
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
@@ -85,13 +85,13 @@ public class BuckManifestFactoryTest {
     assertThat(manifest.getResDirectory())
         .isEqualTo(FileFsFile.from("buck/res2"));
     assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(FileFsFile.from("buck/assets"));
+        .isEqualTo(FileFsFile.from("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
     assertThat(resourcePathList.size()).isEqualTo(2);
     assertThat(resourcePathList).containsExactly(
-        new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets")),
-        new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), FileFsFile.from("buck/assets"))
+        new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets2")),
+        new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), FileFsFile.from("buck/assets1"))
     );
   }
 }
