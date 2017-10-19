@@ -681,6 +681,11 @@ public class ShadowApplication extends ShadowContextWrapper {
     latestWakeLock = null;
   }
 
+  /**
+   * @deprecated Use {@link android.content.Context} or {@link android.content.pm.PackageManager}
+   *             instead. This method will be removed in a future version of Robolectric.
+   */
+  @Deprecated
   public AndroidManifest getAppManifest() {
     return appManifest;
   }
