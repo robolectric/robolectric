@@ -122,7 +122,7 @@ public class ShadowAlarmManager {
    * Container object to hold an PendingIntent, together with the alarm
    * parameters used in a call to {@code AlarmManager}
    */
-  public class ScheduledAlarm {
+  public static class ScheduledAlarm {
     public int type;
     public long triggerAtTime;
     public long interval;

@@ -219,7 +219,7 @@ public class ShadowAbstractCursorTest {
     assertThat(cursor.isClosed()).isTrue();
   }
 
-  private class TestCursor extends AbstractCursor {
+  private static class TestCursor extends AbstractCursor {
 
     public List<Object> theTable = new ArrayList<>();
 

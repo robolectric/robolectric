@@ -89,6 +89,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
       return this;
     }
     
+    @Override
     public SingleFileClause and() {
       return this;
     }

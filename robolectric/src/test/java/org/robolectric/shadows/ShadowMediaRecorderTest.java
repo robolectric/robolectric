@@ -218,13 +218,13 @@ public class ShadowMediaRecorderTest {
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_RELEASED);
   }
 
-  private class TestErrorListener implements MediaRecorder.OnErrorListener {
+  private static class TestErrorListener implements MediaRecorder.OnErrorListener {
     @Override
     public void onError(MediaRecorder arg0, int arg1, int arg2) {
     }
   }
 
-  private class TestInfoListener implements MediaRecorder.OnInfoListener {
+  private static class TestInfoListener implements MediaRecorder.OnInfoListener {
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
     }

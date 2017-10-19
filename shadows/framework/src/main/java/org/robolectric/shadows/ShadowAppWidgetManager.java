@@ -257,7 +257,7 @@ public class ShadowAppWidgetManager {
     this.validWidgetProviderComponentName = validWidgetProviderComponentName;
   }
 
-  private class WidgetInfo {
+  private static class WidgetInfo {
     View view;
     int layoutId;
     final AppWidgetProvider appWidgetProvider;

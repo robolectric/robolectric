@@ -103,7 +103,7 @@ public class ShadowSensorManagerTest {
     assertThat(sensorManager.getSensorList(0)).isNotNull();
   }
 
-  private class TestSensorEventListener implements SensorEventListener {
+  private static class TestSensorEventListener implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {

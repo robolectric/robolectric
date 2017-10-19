@@ -6,6 +6,7 @@ import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaFileObjects.forSourceString;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
 import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
 import static org.robolectric.annotation.processing.validator.Utils.ROBO_SOURCE;
@@ -18,9 +19,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
@@ -139,7 +142,9 @@ public class RobolectricProcessorTest {
   @Test
   public void generatedFile_shouldUseSpecifiedPackage() throws IOException {
     StringBuffer expected = new StringBuffer();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(RobolectricProcessorTest.class.getClassLoader().getResourceAsStream("org/robolectric/Robolectric_ClassNameOnly.java")));
+    InputStream in = RobolectricProcessorTest.class.getClassLoader()
+        .getResourceAsStream("org/robolectric/Robolectric_ClassNameOnly.java");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(in, UTF_8));
 
     String line;
     while ((line = reader.readLine()) != null) {
@@ -252,7 +257,7 @@ public class RobolectricProcessorTest {
         .compilesWithoutError();
     JsonParser jsonParser = new JsonParser();
     String jsonFile = "build/docs/json/org.robolectric.Robolectric.DocumentedObject.json";
-    JsonElement json = jsonParser.parse(new BufferedReader(new FileReader(jsonFile)));
+    JsonElement json = jsonParser.parse(Files.newBufferedReader(Paths.get(jsonFile), UTF_8));
     assertThat(((JsonObject) json).get("documentation").getAsString())
         .isEqualTo("Robolectric Javadoc goes here!\n");
 

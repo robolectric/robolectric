@@ -10,7 +10,7 @@ public class Shadow {
   static {
     try {
       SHADOW_IMPL = Class.forName("org.robolectric.internal.bytecode.ShadowImpl")
-          .asSubclass(IShadow.class).newInstance();
+          .asSubclass(IShadow.class).getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
