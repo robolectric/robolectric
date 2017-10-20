@@ -41,13 +41,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         }
 
         def mavenArtifactName = {
-            def projNameParts = project.name.split(/\//) as List
-            if (projNameParts[0] == "shadows") {
-                projNameParts = projNameParts.drop(1)
-                return projNameParts.join("-")
-            } else {
-                return project.name
-            }
+            printf "XXX ${project.path} -> ${project.path.substring(1).split(/:/).join("-")}\n"
+            return project.name.split(/\//).join("-")
         }()
         ext.mavenArtifactName = mavenArtifactName
 

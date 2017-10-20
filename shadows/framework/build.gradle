@@ -39,13 +39,6 @@ jar {
     dependsOn copyNatives
 }
 
-// change local artifact name to match dependencies
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-framework'
-    }
-}
-
 dependencies {
     // Project dependencies
     compile project(":annotations")
