@@ -30,7 +30,7 @@ public class ShadowDateIntervalFormat {
 
   @Implementation
   public static String formatDateInterval(long address, long fromDate, long toDate) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
 
     FieldPosition pos = new FieldPosition(0);
     INTERVAL_CACHE.get(address).format(new com.ibm.icu.util.DateInterval(fromDate, toDate), buffer, pos);
