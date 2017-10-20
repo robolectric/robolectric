@@ -4,7 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
