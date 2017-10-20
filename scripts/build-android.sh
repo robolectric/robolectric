@@ -60,6 +60,8 @@ ANDROID_ALL_SRC=android-all-${ROBOLECTRIC_VERSION}-sources.jar
 ANDROID_ALL_DOC=android-all-${ROBOLECTRIC_VERSION}-javadoc.jar
 ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
 
+TARGET_PRODUCT="generic_x86"
+
 build_platform() {
     NATIVE_ARTIFACTS=()
 
@@ -81,6 +83,7 @@ build_platform() {
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext" "okhttp" "conscrypt")
         SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
         TZDATA_ARCH="generic"
+        TARGET_PRODUCT="generic"
     elif [[ "${ANDROID_VERSION}" == "5.1.1_r9" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext" "okhttp" "conscrypt")
         SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
@@ -159,6 +162,7 @@ build_android_classes() {
         fi
     done
     build_tzdata
+    build_prop
     cd ${OUT}/android-all-classes; jar cf ${OUT}/${ANDROID_CLASSES} .
     rm -rf ${OUT}/android-all-classes
 }
@@ -169,6 +173,10 @@ build_tzdata() {
       mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
       cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
     fi
+}
+
+build_prop() {
+   cp ${ANDROID_SOURCES_BASE}/out/target/product/${TARGET_PRODUCT}/system/build.prop ${OUT}/android-all-classes
 }
 
 build_android_all_jar() {
