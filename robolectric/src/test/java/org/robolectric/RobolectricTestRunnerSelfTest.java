@@ -70,7 +70,7 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(Build.VERSION.SDK_INT)
         .isEqualTo(Build.VERSION_CODES.KITKAT);
     assertThat(Build.VERSION.RELEASE)
-        .isEqualTo("4.4_r1");
+        .isEqualTo("4.4");
   }
 
   @Test public void hamcrestMatchersDontBlowUpDuringLinking() throws Exception {

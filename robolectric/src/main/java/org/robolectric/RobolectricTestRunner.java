@@ -307,12 +307,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     roboMethod.parallelUniverseInterface.setSdkConfig((sdkEnvironment).getSdkConfig());
     roboMethod.parallelUniverseInterface.resetStaticState(config);
 
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
-    Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
-
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 

@@ -110,11 +110,15 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
   @Override
   public URL getResource(String name) {
+    if (config.shouldAcquireResource(name)) {
+      return urls.getResource(name);
+    }
     URL fromParent = super.getResource(name);
     if (fromParent != null) {
       return fromParent;
     }
     return urls.getResource(name);
+
   }
 
   private InputStream getClassBytesAsStreamPreferringLocalUrls(String resName) {

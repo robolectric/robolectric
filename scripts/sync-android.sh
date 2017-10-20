@@ -60,6 +60,7 @@ build_source() {
         tapas core-libart services services.accessibility telephony-common framework ext framework-res
         export PATH=$JAVA_7:$PATH
         ANDROID_COMPILE_WITH_JACK=false make -j$J
+        ANDROID_COMPILE_WITH_JACK=false make -j$J out/target/product/generic/system/build.prop
     elif [[ "${ANDROID_VERSION}" == "5.1.1_r9" ]]; then
         tapas core-libart services services.accessibility telephony-common framework ext framework-res
         export PATH=$JAVA_7:$PATH
