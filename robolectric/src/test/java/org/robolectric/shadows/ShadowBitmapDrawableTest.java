@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -61,7 +62,7 @@ public class ShadowBitmapDrawableTest {
 
   @Test
   public void shouldInheritSourceStringFromDrawableDotCreateFromStream() throws Exception {
-    InputStream emptyInputStream = new ByteArrayInputStream("".getBytes());
+    InputStream emptyInputStream = new ByteArrayInputStream("".getBytes(UTF_8));
     BitmapDrawable drawable = (BitmapDrawable) Drawable.createFromStream(emptyInputStream, "source string value");
     assertThat(shadowOf(drawable).getSource()).isEqualTo("source string value");
   }

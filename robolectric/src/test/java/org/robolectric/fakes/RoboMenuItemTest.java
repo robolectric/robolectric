@@ -162,7 +162,7 @@ public class RoboMenuItemTest {
     assertThat(item.setOnActionExpandListener(listener)).isSameAs(item);
   }
 
-  class TestOnActionExpandListener implements MenuItem.OnActionExpandListener {
+  static class TestOnActionExpandListener implements MenuItem.OnActionExpandListener {
     private boolean expanded = false;
 
     @Override

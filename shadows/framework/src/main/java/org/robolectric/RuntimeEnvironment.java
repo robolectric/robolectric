@@ -151,6 +151,11 @@ public class RuntimeEnvironment {
     RuntimeEnvironment.appManifest = appManifest;
   }
 
+  /**
+   * @deprecated Use {@link android.content.Context} or {@link android.content.pm.PackageManager}
+   *             instead. This method will be removed in a future version of Robolectric.
+   */
+  @Deprecated
   public static AndroidManifest getAppManifest() {
     return RuntimeEnvironment.appManifest;
   }

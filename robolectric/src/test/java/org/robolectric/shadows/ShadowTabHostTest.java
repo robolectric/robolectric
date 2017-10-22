@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.TabActivity;
 import android.view.View;
 import android.widget.TabHost;
-import android.widget.TabHost.TabContentFactory;
 import android.widget.TabWidget;
 import android.widget.TextView;
 import org.junit.Test;
@@ -106,13 +105,11 @@ public class ShadowTabHostTest {
     TabHost tabHost = new TabHost(RuntimeEnvironment.application);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setContent(
-    new TabContentFactory() {
-      public View createTabContent(String tag) {
-        TextView tv = new TextView(RuntimeEnvironment.application);
-        tv.setText("The Text of " + tag);
-        return tv;
-      }
-    });
+        tag -> {
+          TextView tv = new TextView(RuntimeEnvironment.application);
+          tv.setText("The Text of " + tag);
+          return tv;
+        });
 
     tabHost.addTab(foo);
     tabHost.setCurrentTabByTag("Foo");

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.Context;
@@ -12,6 +13,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +95,7 @@ public class ShadowContextTest {
       .endsWith(File.separator + "__test__");
 
     try (FileOutputStream fos = new FileOutputStream(cacheTest)) {
-      fos.write("test".getBytes());
+      fos.write("test".getBytes(UTF_8));
     }
     assertThat(cacheTest).exists();
   }
@@ -106,7 +110,7 @@ public class ShadowContextTest {
       .endsWith(File.separator + "__test__");
 
     try (FileOutputStream fos = new FileOutputStream(cacheTest)) {
-      fos.write("test".getBytes());
+      fos.write("test".getBytes(UTF_8));
     }
 
     assertThat(cacheTest).exists();
@@ -152,14 +156,14 @@ public class ShadowContextTest {
     String fileContents = "blah";
 
     File file = new File(context.getFilesDir(), "__test__");
-    try (FileWriter fileWriter = new FileWriter(file)) {
+    try (Writer fileWriter = Files.newBufferedWriter(file.toPath(), UTF_8)) {
       fileWriter.write(fileContents);
     }
 
     try (FileInputStream fileInputStream = context.openFileInput("__test__")) {
       byte[] bytes = new byte[fileContents.length()];
       fileInputStream.read(bytes);
-      assertThat(bytes).isEqualTo(fileContents.getBytes());
+      assertThat(bytes).isEqualTo(fileContents.getBytes(UTF_8));
     }
   }
 
@@ -173,12 +177,12 @@ public class ShadowContextTest {
     File file = new File("__test__");
     String fileContents = "blah";
     try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", -1)) {
-      fileOutputStream.write(fileContents.getBytes());
+      fileOutputStream.write(fileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {
       byte[] readBuffer = new byte[fileContents.length()];
       fileInputStream.read(readBuffer);
-      assertThat(new String(readBuffer)).isEqualTo(fileContents);
+      assertThat(new String(readBuffer, UTF_8)).isEqualTo(fileContents);
     }
   }
 
@@ -194,15 +198,15 @@ public class ShadowContextTest {
     String appendedFileContents = "bar";
     String finalFileContents = initialFileContents + appendedFileContents;
     try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_APPEND)) {
-      fileOutputStream.write(initialFileContents.getBytes());
+      fileOutputStream.write(initialFileContents.getBytes(UTF_8));
     }
     try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_APPEND)) {
-      fileOutputStream.write(appendedFileContents.getBytes());
+      fileOutputStream.write(appendedFileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {
       byte[] readBuffer = new byte[finalFileContents.length()];
       fileInputStream.read(readBuffer);
-      assertThat(new String(readBuffer)).isEqualTo(finalFileContents);
+      assertThat(new String(readBuffer, UTF_8)).isEqualTo(finalFileContents);
     }
   }
 
@@ -212,15 +216,15 @@ public class ShadowContextTest {
     String initialFileContents = "foo";
     String newFileContents = "bar";
     try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", 0)) {
-      fileOutputStream.write(initialFileContents.getBytes());
+      fileOutputStream.write(initialFileContents.getBytes(UTF_8));
     }
     try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", 0)) {
-      fileOutputStream.write(newFileContents.getBytes());
+      fileOutputStream.write(newFileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {
       byte[] readBuffer = new byte[newFileContents.length()];
       fileInputStream.read(readBuffer);
-      assertThat(new String(readBuffer)).isEqualTo(newFileContents);
+      assertThat(new String(readBuffer, UTF_8)).isEqualTo(newFileContents);
     }
   }
 

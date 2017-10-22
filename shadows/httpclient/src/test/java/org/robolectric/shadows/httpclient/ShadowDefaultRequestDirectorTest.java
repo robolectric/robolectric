@@ -1,5 +1,6 @@
 package org.robolectric.shadows.httpclient;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import junit.framework.Assert;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -31,6 +31,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -151,14 +152,14 @@ public class ShadowDefaultRequestDirectorTest {
 
     HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
     InputStream getResponseStream = getResponse.getEntity().getContent();
-    assertThat(CharStreams.toString(new InputStreamReader(getResponseStream)))
+    assertThat(CharStreams.toString(new InputStreamReader(getResponseStream, UTF_8)))
         .isEqualTo("a cheery response body");
     assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isFalse();
 
     HttpResponse postResponse =
         requestDirector.execute(null, new HttpPost("http://some.uri"), null);
     InputStream postResponseStream = postResponse.getEntity().getContent();
-    assertThat(CharStreams.toString(new InputStreamReader(postResponseStream)))
+    assertThat(CharStreams.toString(new InputStreamReader(postResponseStream, UTF_8)))
         .isEqualTo("a cheery response body");
     assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isFalse();
 
@@ -422,12 +423,12 @@ public class ShadowDefaultRequestDirectorTest {
 
     InputStream content =
         FakeHttp.getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
-    BufferedReader contentReader = new BufferedReader(new InputStreamReader(content));
+    BufferedReader contentReader = new BufferedReader(new InputStreamReader(content, UTF_8));
     String firstLineOfContent = contentReader.readLine();
     assertThat(firstLineOfContent).contains("Google");
 
     BufferedReader cacheReader =
-        new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cachedContent)));
+        new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cachedContent), UTF_8));
     String firstLineOfCachedContent = cacheReader.readLine();
     assertThat(firstLineOfCachedContent).isEqualTo(firstLineOfContent);
   }
@@ -448,7 +449,7 @@ public class ShadowDefaultRequestDirectorTest {
   }
 
   private static String getStringContent(HttpResponse response) throws IOException {
-    return CharStreams.toString(new InputStreamReader(response.getEntity().getContent()));
+    return CharStreams.toString(new InputStreamReader(response.getEntity().getContent(), UTF_8));
   }
 
 }

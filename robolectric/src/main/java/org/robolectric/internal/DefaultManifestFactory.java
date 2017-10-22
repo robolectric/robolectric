@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
@@ -25,7 +24,6 @@ public class DefaultManifestFactory implements ManifestFactory {
     FsFile resourcesDir = getFsFileFromPath(properties.getProperty("android_merged_resources"));
     FsFile assetsDir = getFsFileFromPath(properties.getProperty("android_merged_assets"));
     String packageName = properties.getProperty("android_custom_package");
-    List<FsFile> libraryDirs = emptyList();
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
@@ -44,6 +42,11 @@ public class DefaultManifestFactory implements ManifestFactory {
 
     if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
       packageName = config.packageName();
+    }
+
+    List<FsFile> libraryDirs = emptyList();
+    if (config.libraries().length > 0) {
+      Logger.info("@Config(libraries) specified while using Build System API, ignoring");
     }
 
     return new ManifestIdentifier(manifestFile, resourcesDir, assetsDir, packageName, libraryDirs);
@@ -69,10 +72,5 @@ public class DefaultManifestFactory implements ManifestFactory {
     } else {
       return Fs.fileFromPath(property);
     }
-  }
-
-  @Override
-  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
-    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(), manifestIdentifier.getAssetDir(), manifestIdentifier.getPackageName());
   }
 }

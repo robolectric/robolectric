@@ -300,17 +300,17 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final InputStream open(String fileName) throws IOException {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getPath());
+    File file = new File(getAssetsDirectory().join(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
     }
@@ -361,9 +361,9 @@ public final class ShadowAssetManager {
   public final String[] list(String path) throws IOException {
     FsFile file;
     if (path.isEmpty()) {
-      file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
+      file = getAssetsDirectory();
     } else {
-      file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(path);
+      file = getAssetsDirectory().join(path);
     }
     if (file.isDirectory()) {
       return file.listFileNames();
@@ -892,6 +892,10 @@ public final class ShadowAssetManager {
 
     // else if attr in theme, use its value
     return themeStyleSet.getAttrValue(attrName);
+  }
+
+  private FsFile getAssetsDirectory() {
+    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
   }
 
   @Nonnull private ResName getResName(int id) {
