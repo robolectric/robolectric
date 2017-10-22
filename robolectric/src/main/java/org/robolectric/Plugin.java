@@ -1,7 +1,7 @@
 package org.robolectric;
 
 public interface Plugin {
-  int DEFAULT_PLUGIN_PRIORITY = 0;
+  int DEFAULT_PLUGIN_PRIORITY = -1;
 
   float getPriority();
 
