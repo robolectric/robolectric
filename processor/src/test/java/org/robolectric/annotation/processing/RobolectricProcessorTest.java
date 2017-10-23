@@ -141,7 +141,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedFile_shouldUseSpecifiedPackage() throws IOException {
-    StringBuffer expected = new StringBuffer();
+    StringBuilder expected = new StringBuilder();
     InputStream in = RobolectricProcessorTest.class.getClassLoader()
         .getResourceAsStream("org/robolectric/Robolectric_ClassNameOnly.java");
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, UTF_8));

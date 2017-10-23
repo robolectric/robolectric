@@ -32,9 +32,3 @@ dependencies {
 
     testRuntime AndroidSdk.MAX_SDK.coordinates
 }
-
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-play-services'
-    }
-}

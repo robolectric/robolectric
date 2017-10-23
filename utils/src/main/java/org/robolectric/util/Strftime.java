@@ -20,7 +20,7 @@ public class Strftime {
    * @return The formatted datetime.
    */
   public static String format(String format, final Date date, Locale locale, TimeZone zone) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
 
     class Formatter {
       SimpleDateFormat formatter;
@@ -56,7 +56,7 @@ public class Strftime {
     Boolean upperCase = false;
     Boolean swapCase = false;
 
-    StringBuffer padWidthBuffer = new StringBuffer();
+    StringBuilder padWidthBuffer = new StringBuilder();
 
     for (int i = 0; i < format.length(); i++) {
       Character c = format.charAt(i);
@@ -68,7 +68,7 @@ public class Strftime {
         spacePad = false;
         upperCase = false;
         swapCase = false;
-        padWidthBuffer = new StringBuffer();
+        padWidthBuffer = new StringBuilder();
       } else if(inside) {
         inside = false;
         switch (c) {
@@ -142,7 +142,7 @@ public class Strftime {
                     true,
                     removePad,
                     (padWidthBuffer.length() <= 0
-                        ? new StringBuffer("2")
+                        ? new StringBuilder("2")
                         : padWidthBuffer)));
             break;
 
@@ -203,7 +203,7 @@ public class Strftime {
                     spacePad,
                     removePad,
                     (padWidthBuffer.length() <= 0
-                        ? new StringBuffer("2")
+                        ? new StringBuilder("2")
                         : padWidthBuffer)));
             break;
 
@@ -216,7 +216,7 @@ public class Strftime {
                     spacePad || !zeroPad,
                     removePad,
                     (padWidthBuffer.length() <= 0
-                        ? new StringBuffer("2")
+                        ? new StringBuilder("2")
                         : padWidthBuffer)));
             break;
 
@@ -229,7 +229,7 @@ public class Strftime {
                     spacePad,
                     removePad,
                     (padWidthBuffer.length() <= 0
-                        ? new StringBuffer("2")
+                        ? new StringBuilder("2")
                         : padWidthBuffer)));
             break;
 
@@ -466,7 +466,7 @@ public class Strftime {
     }
 
     // swap case
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     for (int i = 0; i < simple.length(); i++) {
       Character c = simple.charAt(i);
       buffer.append(
@@ -484,7 +484,7 @@ public class Strftime {
       Boolean zeroPad,
       Boolean spacePad,
       Boolean removePad,
-      StringBuffer padWidthBuffer) {
+      StringBuilder padWidthBuffer) {
     String unpadded = simple.replaceFirst("^(0+| +)(?!$)", "");
 
     if (removePad) {
@@ -498,7 +498,7 @@ public class Strftime {
     }
 
     if (spacePad || zeroPad) {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       char padChar = (spacePad ? ' ' : '0');
       for (int i = 0 ; i < padWidth ; i++) {
         buffer.append(padChar);
