@@ -42,6 +42,7 @@ SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
 
 ANDROID_SOURCES_BASE=${buildRoot}
 FRAMEWORKS_BASE_DIR=${ANDROID_SOURCES_BASE}/frameworks/base
+FRAMEWORKS_RAW_RES_DIR=${FRAMEWORKS_BASE_DIR}/core/res/
 ROBOLECTRIC_VERSION=${ANDROID_VERSION}-robolectric-${ROBOLECTRIC_SUB_VERSION}
 
 # Intermediate artifacts
@@ -123,6 +124,8 @@ build_platform() {
 build_android_res() {
     echo "Robolectric: Building android-res..."
     cd ${FRAMEWORKS_BASE_DIR}/core/res; jar cf ${OUT}/${ANDROID_RES} .
+    src=${ANDROID_SOURCES_BASE}/out/target/common/obj/APPS/framework-res_intermediates/package-export.apk
+    cp $src ${OUT}/${ANDROID_RES}
 }
 
 build_android_ext() {
@@ -179,18 +182,26 @@ build_prop() {
 build_android_all_jar() {
     echo "Robolectric: Building android-all..."
     mkdir ${OUT}/android-all
-    cd ${OUT}/android-all; jar xf ${OUT}/${ANDROID_RES}
+    cd ${OUT}/android-all; unzip ${OUT}/${ANDROID_RES}
+    # temporarily add raw resources too
+    cd ${OUT}/android-all; rsync -a ${FRAMEWORKS_RAW_RES_DIR} raw-res
     cd ${OUT}/android-all; jar xf ${OUT}/${ANDROID_EXT}
     cd ${OUT}/android-all; jar xf ${OUT}/${ANDROID_CLASSES}
 
     # Remove unused files
     rm -rf ${OUT}/android-all/Android.mk
+    rm -rf ${OUT}/android-all/raw-res/Android.mk
     rm -rf ${OUT}/android-all/AndroidManifest.xml
+    rm -rf ${OUT}/android-all/raw-resAndroidManifest.xml
     rm -rf ${OUT}/android-all/META-INF
     rm -rf ${OUT}/android-all/MODULE_LICENSE_APACHE2
+    rm -rf ${OUT}/android-all/raw-res/MODULE_LICENSE_APACHE2
     rm -rf ${OUT}/android-all/MakeJavaSymbols.sed
+    rm -rf ${OUT}/android-all/raw-res/MakeJavaSymbols.sed
     rm -rf ${OUT}/android-all/NOTICE
+    rm -rf ${OUT}/android-all/raw-res/NOTICE
     rm -rf ${OUT}/android-all/lint.xml
+    rm -rf ${OUT}/android-all/raw-res/lint.xml
     rm -rf ${OUT}/android-all/java/lang
 
     # Build the new JAR file
