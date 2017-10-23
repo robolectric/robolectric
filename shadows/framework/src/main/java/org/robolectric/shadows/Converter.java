@@ -247,12 +247,12 @@ public class Converter<T> {
     }
   }
 
-  private static class FromFile extends Converter<FsFile> {
+  private static class FromFile extends Converter<Object> {
     @Override
-    public boolean fillTypedValue(FsFile data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(Object data, TypedValue typedValue, boolean throwOnFailure) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
-      typedValue.string = data.getPath();
+      typedValue.string = data instanceof FsFile ? ((FsFile) data).getPath() : (CharSequence) data;
       typedValue.assetCookie = getNextStringCookie();
       return true;
     }

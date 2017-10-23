@@ -2,8 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -218,6 +221,12 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public CharSequence getResourceBagText(int ident, int bagEntryId) {
     throw new UnsupportedOperationException(); // todo
+  }
+
+  @HiddenApi
+  @Implementation
+  public int getStringBlockCount() {
+    return 0;
   }
 
   @HiddenApi @Implementation
@@ -456,12 +465,22 @@ public final class ShadowAssetManager {
     return new String[0]; // todo
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation(maxSdk = N_MR1)
   public void setConfiguration(int mcc, int mnc, String locale,
-                 int orientation, int touchscreen, int density, int keyboard,
-                 int keyboardHidden, int navigation, int screenWidth, int screenHeight,
-                 int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-                 int screenLayout, int uiMode, int majorVersion) {
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int majorVersion) {
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = O)
+  public void setConfiguration(int mcc, int mnc, String locale,
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int colorMode, int sdkVersion) {
   }
 
   @HiddenApi @Implementation

@@ -14,10 +14,8 @@ import android.content.res.AssetManager;
 import android.util.AttributeSet;
 import android.view.View;
 import java.util.ServiceLoader;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.robolectric.android.AttributeSetBuilderImpl;
+import org.robolectric.android.LegacyAttributeSetBuilder;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -28,8 +26,6 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class Robolectric {
   private static ShadowsAdapter shadowsAdapter = null;
@@ -134,22 +130,7 @@ public class Robolectric {
    */
   public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
     if (isLegacyAssetManager(AssetManager.getSystem())) {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
-      factory.setIgnoringComments(true);
-      factory.setIgnoringElementContentWhitespace(true);
-      Document document;
-      try {
-        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-        document = documentBuilder.newDocument();
-        Element dummy = document.createElementNS(
-            "http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(),
-            "dummy");
-        document.appendChild(dummy);
-      } catch (ParserConfigurationException e) {
-        throw new RuntimeException(e);
-      }
-      throw new UnsupportedOperationException(); // todo
+      return new LegacyAttributeSetBuilder(RuntimeEnvironment.application) {};
     } else {
       return new AttributeSetBuilderImpl(RuntimeEnvironment.application) {};
     }

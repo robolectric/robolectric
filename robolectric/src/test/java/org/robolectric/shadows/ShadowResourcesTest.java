@@ -867,15 +867,16 @@ public class ShadowResourcesTest {
 
   @Test
   public void stringWithSpacesWithOldResourceLoader() throws Exception {
-    if (!isLegacyAssetManager(resources.getAssets())) {
-      return;
-    }
+    if (!isLegacyAssetManager(resources.getAssets())) return;
+
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25   USD");
   }
 
   @Test
   public void stringWithSpaces() throws Exception {
+    if (isLegacyAssetManager(resources.getAssets())) return;
+
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25 USD");
   }

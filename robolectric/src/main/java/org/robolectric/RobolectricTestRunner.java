@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import static org.robolectric.shadows.ShadowArscAssetManager.USE_LEGACY;
+
 import android.app.Application;
 import android.os.Build;
 import java.io.File;
@@ -315,8 +317,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
-    boolean isLegacy = false;
-    if (isLegacy) {
+    if (USE_LEGACY) {
+      System.out.println("Using legacy resources!");
       PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
       PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
