@@ -43,11 +43,11 @@ public class BuckManifestFactory implements ManifestFactory {
       libraries = new ArrayList<>();
 
       for (FsFile buckResource: buckResources) {
-        libraries.add(new ManifestIdentifier(null, null, buckResource, null, null));
+        libraries.add(new ManifestIdentifier((String) null, null, buckResource, null, null));
       }
 
       for (FsFile buckAsset: buckAssets) {
-        libraries.add(new ManifestIdentifier(null, null, null, buckAsset, null));
+        libraries.add(new ManifestIdentifier((String) null, null, null, buckAsset, null));
       }
     }
 
