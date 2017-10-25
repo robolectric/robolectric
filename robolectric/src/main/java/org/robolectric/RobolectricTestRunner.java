@@ -318,7 +318,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
     if (USE_LEGACY) {
-      System.out.println("Using legacy resources!");
       PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
       PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 

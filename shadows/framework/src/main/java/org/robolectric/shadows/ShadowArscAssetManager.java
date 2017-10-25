@@ -369,9 +369,7 @@ public class ShadowArscAssetManager {
   }
 
   private static boolean shouldDelegateToLegacyShadow(long themePtr) {
-    // return true;
-    // TODO: implement me
-    return false;
+    return USE_LEGACY;
   }
 
   @Implementation

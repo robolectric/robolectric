@@ -6,19 +6,25 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.ResourcesImpl;
 import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -144,26 +150,46 @@ public class ShadowResources {
     }
   }
 
-//  /**
-//   * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will
-//   * be returned if the resource is found. If the resource cannot be found, {@link Resources.NotFoundException} will
-//   * be thrown.
-//   */
-//  @Implementation
-//  public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-//    InputStream inputStream = openRawResource(id);
-//    if (!(inputStream instanceof FileInputStream)) {
-//      // todo fixme
-//      return null;
-//    }
-//
-//    FileInputStream fis = (FileInputStream) inputStream;
-//    try {
-//      return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-//    } catch (IOException e) {
-//      throw newNotFoundException(id);
-//    }
-//  }
+  @Implementation
+  public InputStream openRawResource(int id) throws Resources.NotFoundException {
+    if (isLegacyAssetManager()) {
+      ResourceTable resourceTable = legacyShadowOf(realResources.getAssets()).getResourceTable();
+      InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+      if (inputStream == null) {
+        throw newNotFoundException(id);
+      } else {
+        return inputStream;
+      }
+    } else {
+      return directlyOn(realResources, Resources.class).openRawResource(id);
+    }
+  }
+
+ /**
+  * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will
+  * be returned if the resource is found. If the resource cannot be found, {@link Resources.NotFoundException} will
+  * be thrown.
+  */
+ @Implementation
+ public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
+   if (isLegacyAssetManager()) {
+     InputStream inputStream = openRawResource(id);
+     if (!(inputStream instanceof FileInputStream)) {
+       // todo fixme
+       return null;
+     }
+
+     FileInputStream fis = (FileInputStream) inputStream;
+     try {
+       return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0,
+           fis.getChannel().size());
+     } catch (IOException e) {
+       throw newNotFoundException(id);
+     }
+   } else {
+     return directlyOn(realResources, Resources.class).openRawResourceFd(id);
+   }
+ }
 
   private Resources.NotFoundException newNotFoundException(int id) {
     ResourceTable resourceTable = legacyShadowOf(realResources.getAssets()).getResourceTable();
@@ -223,16 +249,30 @@ public class ShadowResources {
     return displayMetrics;
   }
 
-//  @HiddenApi @Implementation
-//  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
-//    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-//    return shadowAssetManager.loadXmlResourceParser(resId, type);
-//  }
-//
-//  @HiddenApi @Implementation
-//  public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-//    return loadXmlResourceParser(id, type);
-//  }
+ @HiddenApi @Implementation
+ public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
+   if (isLegacyAssetManager()) {
+     ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+     return shadowAssetManager.loadXmlResourceParser(resId, type);
+   } else {
+     return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
+         ClassParameter.from(int.class, resId),
+         ClassParameter.from(String.class, type));
+   }
+ }
+
+ @HiddenApi @Implementation
+ public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
+   if (isLegacyAssetManager()) {
+     return loadXmlResourceParser(id, type);
+   } else {
+     return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
+         ClassParameter.from(String.class, file),
+         ClassParameter.from(int.class, id),
+         ClassParameter.from(int.class, assetCookie),
+         ClassParameter.from(String.class, type));
+   }
+ }
 
   @Implements(value = Resources.Theme.class)
   public static class ShadowTheme {

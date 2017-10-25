@@ -28,7 +28,7 @@ public class ShadowParcelFileDescriptor {
     return pfd;
   }
 
-  // @Implementation
+  // @Implementation // todo legacy?
   // public FileDescriptor getFileDescriptor() {
   //   try {
   //     return file.getFD();

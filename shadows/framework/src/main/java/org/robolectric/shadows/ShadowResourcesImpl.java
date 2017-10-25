@@ -12,6 +12,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.ResourcesImpl;
 import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -205,17 +207,32 @@ public class ShadowResourcesImpl {
     return displayMetrics;
   }
 
-//  @HiddenApi
-//  @Implementation
-//  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
-//    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
-//    return shadowAssetManager.loadXmlResourceParser(resId, type);
-//  }
-//
-//  @HiddenApi @Implementation
-//  public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-//    return loadXmlResourceParser(id, type);
-//  }
+  @HiddenApi @Implementation
+  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
+    AssetManager assets = realResourcesImpl.getAssets();
+    if (ShadowArscAssetManager.isLegacyAssetManager(assets)) {
+      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
+      return shadowAssetManager.loadXmlResourceParser(resId, type);
+    } else {
+      return directlyOn(realResourcesImpl, ResourcesImpl.class, "loadXmlResourceParser",
+          ClassParameter.from(int.class, resId),
+          ClassParameter.from(String.class, type));
+    }
+  }
+
+  @HiddenApi @Implementation
+  public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
+    AssetManager assets = realResourcesImpl.getAssets();
+    if (ShadowArscAssetManager.isLegacyAssetManager(assets)) {
+      return loadXmlResourceParser(id, type);
+    } else {
+      return directlyOn(realResourcesImpl, ResourcesImpl.class, "loadXmlResourceParser",
+          ClassParameter.from(String.class, file),
+          ClassParameter.from(int.class, id),
+          ClassParameter.from(int.class, assetCookie),
+          ClassParameter.from(String.class, type));
+    }
+  }
 
   @Implements(value = ResourcesImpl.ThemeImpl.class, minSdk = N, isInAndroidSdk = false)
   public static class ShadowThemeImpl {

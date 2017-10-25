@@ -34,6 +34,7 @@ import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadows.Converter;
+import org.robolectric.shadows.Converter2;
 import org.robolectric.shadows.ShadowArscAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -233,7 +234,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           }
 
           AttrData attrData = new AttrData(attrResName.getFullyQualifiedName(), flag.name, pairs);
-          Converter converter = Converter.getConverterFor(attrData, flag.name);
+          Converter2 converter = Converter2.getConverterFor(attrData, flag.name);
           if (converter.fillTypedValue(attribute.value, outValue, true)) {
             break;
           }

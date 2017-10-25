@@ -45,7 +45,7 @@ public class LegacyAttributeSetBuilder implements AttributeSetBuilder {
       ((Element)document.getFirstChild()).setAttribute(resName, value);
     } else {
       ((Element)document.getFirstChild()).setAttributeNS("http://schemas.android.com/apk/res/" + resPkg,
-          resPkg + ":" + resName, value);
+          resName, value);
     }
     return this;
   }
