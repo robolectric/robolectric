@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
+
+import com.google.common.base.Preconditions;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -46,8 +48,8 @@ import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.dependency.DependencyResolverFactory;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -59,6 +61,11 @@ import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+
+import static org.robolectric.internal.dependency.DependencyResolverFactory.createDependencyResolver;
+import static org.robolectric.internal.dependency.FileUtil.validateFile;
+import static org.robolectric.util.ReflectionHelpers.callConstructor;
+import static org.robolectric.util.ReflectionHelpers.loadClass;
 
 /**
  * Installs a {@link SandboxClassLoader} and {@link ResourceTable} in order to
@@ -96,49 +103,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   protected DependencyResolver getJarResolver() {
     if (dependencyResolver == null) {
-      if (Boolean.getBoolean("robolectric.offline")) {
-        String propPath = System.getProperty("robolectric-deps.properties");
-        if (propPath != null) {
-          try {
-            dependencyResolver = new PropertiesDependencyResolver(
-                Fs.newFile(propPath),
-                null);
-          } catch (IOException e) {
-            throw new RuntimeException("couldn't read dependencies" , e);
-          }
-        } else {
-          String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-          dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
-        }
-      } else {
-        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
-
-        Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
-            "org.robolectric.internal.dependency.MavenDependencyResolver");
-        DependencyResolver dependencyResolver = (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
-        if (cacheDir.exists() || cacheDir.mkdir()) {
-          Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
-          this.dependencyResolver = new CachedDependencyResolver(dependencyResolver, cacheDir, 60 * 60 * 24 * 1000);
-        } else {
-          this.dependencyResolver = dependencyResolver;
-        }
-      }
-
-      URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-deps.properties");
-      if (buildPathPropertiesUrl != null) {
-        Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
-
-        FsFile propertiesFile = Fs.fileFromPath(buildPathPropertiesUrl.getFile());
-        try {
-          dependencyResolver = new PropertiesDependencyResolver(propertiesFile, dependencyResolver);
-        } catch (IOException e) {
-          throw new RuntimeException("couldn't read " + buildPathPropertiesUrl, e);
-        }
-      }
+      dependencyResolver = createDependencyResolver();
     }
-
     return dependencyResolver;
   }
+
 
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.

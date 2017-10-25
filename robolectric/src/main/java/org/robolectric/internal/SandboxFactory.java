@@ -31,7 +31,7 @@ public class SandboxFactory {
 
     SdkEnvironment sdkEnvironment = sdkToEnvironment.get(key);
     if (sdkEnvironment == null) {
-      URL url = dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency());
+      URL url = dependencyResolver.getLocalArtifactUrl(sdkConfig.getApiLevel());
 
       ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, url);
       sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);

@@ -13,6 +13,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+
+import android.os.Build;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +34,7 @@ public class CachedDependencyResolverTest {
   private DependencyResolver internalResolver = mock(DependencyResolver.class);
   private CacheNamingStrategy cacheNamingStrategy = new CacheNamingStrategy() {
     @Override
-    public String getName(String prefix, DependencyJar... dependencies) {
+    public String getName(String prefix, String... dependencies) {
       return CACHE_NAME;
     }
   };
@@ -50,25 +53,31 @@ public class CachedDependencyResolverTest {
   private URL url;
   private URL[] urls;
   private Cache cache = new CacheStub();
-  private DependencyJar[] dependencies = new DependencyJar[]{
-      createDependency("group1", "artifact1"),
-      createDependency("group2", "artifact2"),
-  };
-  private DependencyJar dependency = dependencies[0];
+  private DependencyJar[] dependencies;
+  private DependencyJar dependency;
+  private final int apiLevel = Build.VERSION_CODES.N;
+
+  private Properties depsProps;
 
   @Before
   public void setUp() throws InitializationError, MalformedURLException {
     urls = new URL[] { new URL("http://localhost") };
     url = new URL("http://localhost");
+    depsProps = new Properties();
+    dependencies = new DependencyJar[]{
+        createDependency(Build.VERSION_CODES.N, "group1", "artifact1"),
+        createDependency(Build.VERSION_CODES.M, "group2", "artifact2"),
+    };
+    dependency = dependencies[0];
   }
 
   @Test
   public void getLocalArtifactUrl_shouldWriteLocalArtifactUrlWhenCacheMiss() throws Exception{
     DependencyResolver res = createResolver();
 
-    when(internalResolver.getLocalArtifactUrl(dependency)).thenReturn(url);
+    when(internalResolver.getLocalArtifactUrl(apiLevel)).thenReturn(url);
 
-    URL url = res.getLocalArtifactUrl(dependency);
+    URL url = res.getLocalArtifactUrl(apiLevel);
 
     assertEquals(this.url, url);
     assertCacheContents(url);
@@ -79,9 +88,9 @@ public class CachedDependencyResolverTest {
     DependencyResolver res = createResolver();
     cache.write(CACHE_NAME, url);
 
-    URL url = res.getLocalArtifactUrl(dependency);
+    URL url = res.getLocalArtifactUrl(apiLevel);
 
-    verify(internalResolver, never()).getLocalArtifactUrl(dependency);
+    verify(internalResolver, never()).getLocalArtifactUrl(apiLevel);
 
     assertEquals(this.url, url);
   }
@@ -91,12 +100,12 @@ public class CachedDependencyResolverTest {
     CacheValidationStrategy failStrategy = mock(CacheValidationStrategy.class);
     when(failStrategy.isValid(any(URL.class))).thenReturn(false);
 
-    DependencyResolver res = new CachedDependencyResolver(internalResolver, cache, cacheNamingStrategy, failStrategy);
+    DependencyResolver res = new CachedDependencyResolver(new DependencyProperties(depsProps), internalResolver, cache, cacheNamingStrategy, failStrategy);
     cache.write(CACHE_NAME, this.url);
 
-    res.getLocalArtifactUrl(dependency);
+    res.getLocalArtifactUrl(apiLevel);
 
-    verify(internalResolver).getLocalArtifactUrl(dependency);
+    verify(internalResolver).getLocalArtifactUrl(apiLevel);
   }
 
   private void assertCacheContents(URL[] urls) {
@@ -108,11 +117,11 @@ public class CachedDependencyResolverTest {
   }
 
   private DependencyResolver createResolver() {
-    return new CachedDependencyResolver(internalResolver, cache, cacheNamingStrategy, cacheValidationStrategy);
+    return new CachedDependencyResolver(new DependencyProperties(depsProps), internalResolver, cache, cacheNamingStrategy, cacheValidationStrategy);
   }
 
-  private DependencyJar createDependency(final String groupId, final String artifactId) {
-    return new DependencyJar(groupId, artifactId, null, "") {
+  private DependencyJar createDependency(final int apiLevel, final String groupId, final String artifactId) {
+    DependencyJar dependencyJar = new DependencyJar(groupId, artifactId, null, "") {
 
       @Override
       public boolean equals(Object o) {
@@ -123,6 +132,8 @@ public class CachedDependencyResolverTest {
         return this.getArtifactId().equals(d.getArtifactId()) && this.getGroupId().equals(groupId);
       }
     };
+    depsProps.setProperty(Integer.toString(apiLevel), dependencyJar.getShortName());
+    return dependencyJar;
   }
 
   private static class CacheStub implements CachedDependencyResolver.Cache {
