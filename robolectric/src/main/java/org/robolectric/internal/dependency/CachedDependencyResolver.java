@@ -1,5 +1,7 @@
 package org.robolectric.internal.dependency;
 
+import com.google.common.base.Preconditions;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
@@ -11,43 +13,51 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
+import java.util.Properties;
 import java.util.zip.CRC32;
 
 public class CachedDependencyResolver implements DependencyResolver {
   private final static String CACHE_PREFIX = "localArtifactUrl";
 
+  private DependencyProperties depsProp;
   private final DependencyResolver dependencyResolver;
   private final CacheNamingStrategy cacheNamingStrategy;
   private final CacheValidationStrategy cacheValidationStrategy;
   private final Cache cache;
 
-  public CachedDependencyResolver(DependencyResolver dependencyResolver, File cacheDir, long cacheValidTime) {
-    this(dependencyResolver, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy(), new DefaultCacheValidationStrategy());
+  public CachedDependencyResolver(DependencyProperties depsProp, DependencyResolver dependencyResolver, File cacheDir,
+                                  long cacheValidTime) {
+    this(depsProp, dependencyResolver, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy(),
+        new DefaultCacheValidationStrategy());
   }
 
-  public CachedDependencyResolver(DependencyResolver dependencyResolver, Cache cache, CacheNamingStrategy cacheNamingStrategy, CacheValidationStrategy cacheValidationStrategy) {
+  public CachedDependencyResolver(DependencyProperties depsProp, DependencyResolver dependencyResolver, Cache cache,
+                                  CacheNamingStrategy cacheNamingStrategy,
+                                  CacheValidationStrategy cacheValidationStrategy) {
+    this.depsProp = depsProp;
     this.dependencyResolver = dependencyResolver;
     this.cache = cache;
     this.cacheNamingStrategy = cacheNamingStrategy;
     this.cacheValidationStrategy = cacheValidationStrategy;
   }
 
-  @Override
-  public URL getLocalArtifactUrl(DependencyJar dependency) {
-    final String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX, dependency);
+  public URL getLocalArtifactUrl(int apiLevel) {
+    String artifact = depsProp.getDependencyName(apiLevel);
+    final String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX, artifact);
     final URL urlFromCache = cache.load(cacheName, URL.class);
 
     if (urlFromCache != null && cacheValidationStrategy.isValid(urlFromCache)) {
       return urlFromCache;
     }
 
-    final URL url = dependencyResolver.getLocalArtifactUrl(dependency);
+    final URL url = dependencyResolver.getLocalArtifactUrl(apiLevel);
     cache.write(cacheName, url);
     return url;
+
   }
 
   interface CacheNamingStrategy {
-    String getName(String prefix, DependencyJar... dependencies);
+    String getName(String prefix, String... dependencyName);
   }
 
   interface CacheValidationStrategy {
@@ -74,18 +84,14 @@ public class CachedDependencyResolver implements DependencyResolver {
   }
 
   static class DefaultCacheNamingStrategy implements CacheNamingStrategy {
-    @Override public String getName(String prefix, DependencyJar... dependencies) {
+    @Override public String getName(String prefix, String... dependencyNames) {
       StringBuilder sb = new StringBuilder();
 
       sb.append(prefix)
           .append("#");
 
-      for (DependencyJar dependency : dependencies) {
-        sb.append(dependency.getGroupId())
-            .append(":")
-            .append(dependency.getArtifactId())
-            .append(":")
-            .append(dependency.getVersion())
+      for (String dependency : dependencyNames) {
+        sb.append(dependency)
             .append(",");
       }
 

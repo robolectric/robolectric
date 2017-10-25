@@ -28,7 +28,7 @@ public class SdkEnvironment extends Sandbox {
   @Nonnull
   private ResourcePath createRuntimeSdkResourcePath(DependencyResolver dependencyResolver) {
     try {
-      Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getApiLevel()));
       Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
       Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
       return new ResourcePath(androidRClass,

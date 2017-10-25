@@ -290,6 +290,16 @@ public class ReflectionHelpers {
   }
 
   /**
+   * Load a class using default classloader
+   *
+   * @param fullyQualifiedClassName The fully qualified class name.
+   * @return The class object.
+   */
+  public static Class<?> loadClass(String fullyQualifiedClassName) {
+    return loadClass(ReflectionHelpers.class.getClassLoader(), fullyQualifiedClassName);
+  }
+
+  /**
    * Create a new instance of a class
    *
    * @param cl The class object.
