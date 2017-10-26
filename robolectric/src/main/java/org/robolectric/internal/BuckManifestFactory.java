@@ -42,12 +42,12 @@ public class BuckManifestFactory implements ManifestFactory {
     } else {
       libraries = new ArrayList<>();
 
-      for (FsFile buckResource: buckResources) {
-        libraries.add(new ManifestIdentifier((String) null, null, buckResource, null, null));
+      for (int i = 0; i < buckResources.size() - 1; i++) {
+        libraries.add(new ManifestIdentifier((String) null, null, buckResources.get(i), null, null));
       }
 
-      for (FsFile buckAsset: buckAssets) {
-        libraries.add(new ManifestIdentifier((String) null, null, null, buckAsset, null));
+      for (int i = 0; i < buckAssets.size() - 1; i++) {
+        libraries.add(new ManifestIdentifier(null, null, null, buckAssets.get(i), null));
       }
     }
 
