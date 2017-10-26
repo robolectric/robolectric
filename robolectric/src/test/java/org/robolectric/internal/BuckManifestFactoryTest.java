@@ -62,10 +62,11 @@ public class BuckManifestFactoryTest {
             .isEqualTo(FileFsFile.from("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
-    assertThat(resourcePathList.size()).isEqualTo(2);
+    assertThat(resourcePathList.size()).isEqualTo(3);
     assertThat(resourcePathList).containsExactly(
-            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets2")),
-            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), FileFsFile.from("buck/assets1"))
+      new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets2")),
+      new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), null),
+      new ResourcePath(manifest.getRClass(), null, FileFsFile.from("buck/assets1"))
     );
   }
 
@@ -88,10 +89,11 @@ public class BuckManifestFactoryTest {
         .isEqualTo(FileFsFile.from("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
-    assertThat(resourcePathList.size()).isEqualTo(2);
+    assertThat(resourcePathList.size()).isEqualTo(3);
     assertThat(resourcePathList).containsExactly(
-        new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets2")),
-        new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), FileFsFile.from("buck/assets1"))
+            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res2"), FileFsFile.from("buck/assets2")),
+            new ResourcePath(manifest.getRClass(), FileFsFile.from("buck/res1"), null),
+            new ResourcePath(manifest.getRClass(), null, FileFsFile.from("buck/assets1"))
     );
   }
 }
