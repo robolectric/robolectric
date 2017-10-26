@@ -135,6 +135,13 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   }
 
   protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
+    byte[] bytes = instrument(className);
+
+    ensurePackage(className);
+    return defineClass(className, bytes, 0, bytes.length);
+  }
+
+  public byte[] instrument(String className) throws ClassNotFoundException {
     final byte[] origClassBytes = getByteCode(className);
 
     ClassNode classNode = new ClassNode(Opcodes.ASM4) {
@@ -156,22 +163,21 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
     classNode.interfaces.add(Type.getInternalName(ShadowedObject.class));
 
+    byte[] bytes;
     try {
-      byte[] bytes;
       ClassInfo classInfo = new ClassInfo(className, classNode);
       if (config.shouldInstrument(classInfo)) {
         bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
       } else {
         bytes = origClassBytes;
       }
-      ensurePackage(className);
-      return defineClass(className, bytes, 0, bytes.length);
     } catch (Exception e) {
       throw new ClassNotFoundException("couldn't load " + className, e);
     } catch (OutOfMemoryError e) {
       System.err.println("[ERROR] couldn't load " + className + " in " + this);
       throw e;
     }
+    return bytes;
   }
 
   @Override
