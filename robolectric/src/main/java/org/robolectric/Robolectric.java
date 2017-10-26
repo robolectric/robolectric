@@ -15,7 +15,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import java.util.ServiceLoader;
 import org.robolectric.android.AttributeSetBuilderImpl;
-import org.robolectric.android.LegacyAttributeSetBuilder;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -129,11 +128,7 @@ public class Robolectric {
    * Useful for testing {@link View} classes without the need for creating XML snippets.
    */
   public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
-    if (isLegacyAssetManager(AssetManager.getSystem())) {
-      return new LegacyAttributeSetBuilder(RuntimeEnvironment.application) {};
-    } else {
-      return new AttributeSetBuilderImpl(RuntimeEnvironment.application) {};
-    }
+    return new AttributeSetBuilderImpl(RuntimeEnvironment.application) {};
   }
 
   /**

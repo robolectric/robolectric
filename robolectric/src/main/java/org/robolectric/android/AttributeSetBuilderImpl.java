@@ -7,6 +7,7 @@ import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE
 import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
 import static org.robolectric.res.android.ResourceTypes.ResTable_map.ATTR_TYPE;
+import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -21,9 +22,14 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.AttrData;
+import org.robolectric.res.AttrData.Pair;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceTable;
+import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.ResourceTable.flag_entry;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
@@ -33,9 +39,11 @@ import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 import org.robolectric.res.android.ResourceTypes.Res_value;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.Converter2;
 import org.robolectric.shadows.ShadowArscAssetManager;
+import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -100,8 +108,6 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
         null, "dummy") {
       {
         Resources resources = context.getResources();
-        AssetManager assets = resources.getAssets();
-        ShadowArscAssetManager shadowArscAssetManager = shadowOf(assets);
         String packageName = context.getPackageName();
 
         for (Entry<Integer, String> entry : attrToValue.entrySet()) {
@@ -115,7 +121,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
             attrId = null;
             attrName = magicAttr;
           } else {
-            String attrNameStr = shadowArscAssetManager.getResourceName(attrId);
+            String attrNameStr = resources.getResourceName(attrId);
             attrResName = ResName.qualifyResName(attrNameStr, packageName, "attr");
             attrNs = (attrResName.packageName.equals("android")) ? ANDROID_NS : AUTO_NS;
             attrName = attrResName.name;
@@ -127,7 +133,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
           if (attrResName != null) {
             TypedValue outValue = parse(attrId, attrResName, value, resources,
-                shadowArscAssetManager, packageName);
+                packageName);
 
             type = DataType.fromCode(outValue.type);
             value = (String) outValue.string;
@@ -200,7 +206,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
   }
 
   private TypedValue parse(Integer attrId, ResName attrResName, String value, Resources resources,
-      ShadowArscAssetManager shadowArscAssetManager, String packageName) {
+      String packageName) {
     AttributeResource attribute =
         new AttributeResource(attrResName, value, packageName);
     TypedValue outValue = new TypedValue();
@@ -218,29 +224,74 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
       outValue.resourceId = id;
       outValue.string = "@" + id;
     } else {
-      String format = shadowArscAssetManager.getResourceBagText(attrId, ATTR_TYPE)
-          .toString();
-      Map<String, Integer> map = shadowArscAssetManager.getResourceBagValues(attrId);
-      ArrayList<AttrData.Pair> pairs = new ArrayList<>();
-      for (Entry<String, Integer> e : map.entrySet()) {
-        pairs.add(new AttrData.Pair(e.getKey(), Integer.toString(e.getValue())));
+      AssetManager assets = resources.getAssets();
+      if (isLegacyAssetManager(assets)) {
+        ShadowAssetManager shadowAssetManager = Shadow.extract(assets);
+        legacyParse(attribute, outValue, shadowAssetManager);
+      } else {
+        ShadowArscAssetManager shadowArscAssetManager = shadowOf(assets);
+        arscParse(attrId, attrResName, attribute, outValue, shadowArscAssetManager);
       }
-      int formatFlags = Integer.parseInt(format);
-      flag_entry[] flags = org.robolectric.res.android.ResourceTable.gFormatFlags;
-      for (flag_entry flag : flags) {
-        if ((formatFlags & flag.value) != 0) {
-          if ("reference".equals(flag.name)) {
-            continue;
-          }
+    }
+    return outValue;
+  }
 
-          AttrData attrData = new AttrData(attrResName.getFullyQualifiedName(), flag.name, pairs);
-          Converter2 converter = Converter2.getConverterFor(attrData, flag.name);
+  private void legacyParse(AttributeResource attribute, TypedValue outValue,
+      ShadowAssetManager shadowAssetManager) {
+    ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+    TypedResource attrTypeData = resourceTable.getValue(attribute.resName,
+        RuntimeEnvironment.getQualifiers());
+    if (attrTypeData != null) {
+      AttrData attrData = (AttrData) attrTypeData.getData();
+      String format = attrData.getFormat();
+      String[] types = format.split("\\|");
+      for (String type : types) {
+        if ("reference".equals(type)) continue; // already handled above
+        Converter2 converter = Converter2.getConverterFor(attrData, type);
+
+        if (converter != null) {
           if (converter.fillTypedValue(attribute.value, outValue, true)) {
             break;
           }
         }
+
+      }
+      // throw new IllegalArgumentException("wha? " + format);
+    } else {
+      /* In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
+       * KitKat runtine, then infer the attribute type from the value.
+       *
+       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
+       * and replace the NullResourceLoader with simple ResourceProvider that only parses attribute type information.
+       */
+      ResType resType = ResType.inferFromValue(attribute.value);
+      Converter.getConverter(resType).fillTypedValue(attribute.value, outValue);
+    }
+  }
+
+  private void arscParse(Integer attrId, ResName attrResName, AttributeResource attribute,
+      TypedValue outValue, ShadowArscAssetManager shadowArscAssetManager) {
+    String format = shadowArscAssetManager.getResourceBagText(attrId, ATTR_TYPE).toString();
+    Map<String, Integer> map = shadowArscAssetManager.getResourceBagValues(attrId);
+    ArrayList<Pair> pairs = new ArrayList<>();
+    for (Entry<String, Integer> e : map.entrySet()) {
+      pairs.add(new Pair(e.getKey(), Integer.toString(e.getValue())));
+    }
+
+    int formatFlags = Integer.parseInt(format);
+    flag_entry[] flags = org.robolectric.res.android.ResourceTable.gFormatFlags;
+    for (flag_entry flag : flags) {
+      if ((formatFlags & flag.value) != 0) {
+        if ("reference".equals(flag.name)) {
+          continue;
+        }
+
+        AttrData attrData = new AttrData(attrResName.getFullyQualifiedName(), flag.name, pairs);
+        Converter2 converter = Converter2.getConverterFor(attrData, flag.name);
+        if (converter.fillTypedValue(attribute.value, outValue, true)) {
+          break;
+        }
       }
     }
-    return outValue;
   }
 }

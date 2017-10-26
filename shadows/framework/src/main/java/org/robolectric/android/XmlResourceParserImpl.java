@@ -325,9 +325,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public String qualify(String value) {
     if (value == null) return null;
     if (AttributeResource.isResourceReference(value)) {
-      return "@" + ResName.qualifyResourceName(value.substring(1).replace("+", ""), packageName, "attr");
+      return "@" + ResName.qualifyResourceName(value.trim().substring(1).replace("+", ""), packageName, "attr");
     } else if (AttributeResource.isStyleReference(value)) {
-      return "?" + ResName.qualifyResourceName(value.substring(1), packageName, "attr");
+      return "?" + ResName.qualifyResourceName(value.trim().substring(1), packageName, "attr");
     } else {
       return value;
     }
