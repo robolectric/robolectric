@@ -5,7 +5,7 @@ jdk: oraclejdk8
 env:
   matrix: # split into multiple Travis builds:
     - APIs=16,17,18,19,21 # 20 isn't supported
-    - APIs=22,23,24,25,26
+    - APIs=22,23,24,25,26,27
   global:
     - MALLOC_ARENA_MAX=2 # reduce memory usage, maybe avoid some exit 137's?
     - secure: "AnsdYjHIvtLXrDMJmlf5FJhXJOW+aLSvsyXcGFLKse6EcwTSw8XnE4bGv2eSi2YWIwoHHCStIQbI0J02rkmUu9Z5oChxhOyGtCd8U4l1XciH2U7vJOJ/i9Auw5WgLM6x8HxgH6myhNrA9xrB4fcH+8WsDMf+qLqgvJQQjqQZQGM="
@@ -17,7 +17,7 @@ android:
     - platform-tools
     - build-tools-23.0.3
     - android-23
-    - android-26
+    - android-27
     - extra-google-m2repository
     - extra-android-m2repository
     - addon-google_apis-google-23
