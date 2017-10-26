@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.database.sqlite.SQLiteAbortException;
@@ -68,6 +69,12 @@ public class ShadowSQLiteConnection {
   public static Number nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
     SQLiteLibraryLoader.load();
     return castNativePtr(CONNECTIONS.open(path));
+  }
+
+  @Implementation(minSdk = O_MR1)
+  public static long nativeOpen(String path, int openFlags, String label, boolean enableTrace,
+                                boolean enableProfile, int lookasideSlotSize, int lookasideSlotCount) {
+    return nativeOpen(path, openFlags, label, enableTrace, enableProfile).longValue();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)

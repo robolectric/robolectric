@@ -40,11 +40,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             test.compileClasspath += project.configurations.compileOnly
         }
 
-        def mavenArtifactName = {
-            printf "XXX ${project.path} -> ${project.path.substring(1).split(/:/).join("-")}\n"
-            return project.name.split(/\//).join("-")
-        }()
-        ext.mavenArtifactName = mavenArtifactName
+        ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")
 
         task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
             File outDir = project.sourceSets['test'].output.resourcesDir
