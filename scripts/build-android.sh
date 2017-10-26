@@ -12,10 +12,10 @@
 set -ex
 
 function usage() {
-    echo "Usage: ${0} <android repo path> <android-version> <robolectric-sub-version>"
+    echo "Usage: ${0} <android repo path> <android-version> <robolectric-sub-version> <output directory>"
 }
 
-if [[ $# -ne 3 ]]; then
+if [[ $# -ne 4 ]]; then
     usage
     exit 1
 fi
@@ -61,6 +61,8 @@ ANDROID_ALL_SRC=android-all-${ROBOLECTRIC_VERSION}-sources.jar
 ANDROID_ALL_DOC=android-all-${ROBOLECTRIC_VERSION}-javadoc.jar
 ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
 
+TZDATA_ARCH="generic_x86"
+
 build_platform() {
     NATIVE_ARTIFACTS=()
 
@@ -73,11 +75,9 @@ build_platform() {
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
         SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
-        TZDATA_ARCH="generic_x86"
     elif [[ "${ANDROID_VERSION}" == "4.4_r1" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext" "webviewchromium" "okhttp" "conscrypt")
         SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
-        TZDATA_ARCH="generic_x86"
     elif [[ "${ANDROID_VERSION}" == "5.0.2_r3" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext" "okhttp" "conscrypt")
         SOURCES=(core/java graphics/java media/java location/java opengl/java policy/src sax/java services/java telephony/java wifi/java)
@@ -98,7 +98,6 @@ build_platform() {
         SOURCES=(core/java graphics/java media/java location/java opengl/java sax/java services/java telephony/java wifi/java)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
-        TZDATA_ARCH="generic_x86"
     elif [[ "${ANDROID_VERSION}" == "7.1.0_r7" ]]; then
         ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "okhttp" "conscrypt")
         NATIVE_ARTIFACTS=("icu4j-icudata-host-jarjar" "icu4j-icutzdata-host-jarjar")
@@ -168,11 +167,9 @@ build_android_classes() {
 }
 
 build_tzdata() {
-    if [[ ! -z "${TZDATA_ARCH}" ]]; then
-      echo "Robolectric: Building tzdata..."
-      mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
-      cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
-    fi
+  echo "Robolectric: Building tzdata..."
+  mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
+  cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
 }
 
 build_prop() {
@@ -213,7 +210,7 @@ cp_android_all_jar() {
   # function to use for android versions that support building the android all
   # jar directly
   # This will just copy the android all jar to the final name
-  src=${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/robolectric_android-all_intermediates/classes.jar
+  src=${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/robolectric_android-all-stub_intermediates/classes-with-res.jar
   cp $src ${OUT}/${ANDROID_ALL}
 }
 
@@ -278,7 +275,12 @@ mavenize() {
       -Dclassifier=javadoc
 }
 
-OUT=`mktemp --directory`
+if [[ ! -d "${4}" ]]; then
+  echo "$4 is not a directory"
+  exit 1
+fi
+
+OUT=${4}/${ANDROID_VERSION}
 mkdir -p ${OUT}
 
 build_platform
