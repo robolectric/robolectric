@@ -9,12 +9,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-import java.io.File;
+import android.os.Build;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
-
-import android.os.Build;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
@@ -141,13 +139,5 @@ public class MavenDependencyResolverTest {
         return dependenciesTask;
       }
     };
-  }
-
-  @Test
-  public void integrationTest() {
-    MavenDependencyResolver realResolver = new MavenDependencyResolver(DependencyProperties.load());
-    URL artifact = realResolver.getLocalArtifactUrl(19);
-    FileUtil.validateFile(new File(artifact.getFile()));
-
   }
 }

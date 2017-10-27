@@ -60,14 +60,14 @@ public abstract class TestUtil {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
       Fs fs = Fs.fromJar(createDependencyResolver().getLocalArtifactUrl(sdkConfig.getApiLevel()));
-      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("res"), fs.join("assets"));
+      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("raw-res/res"), fs.join("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
     Fs sdkResFs = Fs.fromJar(createDependencyResolver().getLocalArtifactUrl(apiLevel));
-    return new ResourcePath(null, sdkResFs.join("res"), null, null);
+    return new ResourcePath(null, sdkResFs.join("raw-res/res"), null, null);
   }
 
   public static ResourcePath gradleAppResources() {

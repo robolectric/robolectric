@@ -39,6 +39,9 @@ public class SdkConfig implements Comparable<SdkConfig> {
   }
 
   public int getApiLevel() {
+    if (!SUPPORTED_APIS.contains(apiLevel)) {
+      throw new UnsupportedOperationException(String.format("Robolectric does not support API level %d.", apiLevel));
+    }
     return apiLevel;
   }
 
