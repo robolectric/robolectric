@@ -15,7 +15,7 @@ public class ShadowInputMethodManager {
   /**
    * Handler for receiving soft input visibility changed event.
    *
-   * <p>Since Android does not have any API for retrieving soft input status, most application
+   * Since Android does not have any API for retrieving soft input status, most application
    * relies on GUI layout changes to detect the soft input change event. Currently, Robolectric are
    * not able to simulate the GUI change when application changes the soft input through {@code
    * InputMethodManager}, this handler can be used by application to simulate GUI change in response
