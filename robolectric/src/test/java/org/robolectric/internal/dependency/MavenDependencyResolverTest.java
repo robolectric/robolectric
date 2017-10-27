@@ -134,7 +134,7 @@ public class MavenDependencyResolverTest {
   }
 
   private DependencyResolver createResolver() {
-    return new MavenDependencyResolver(depsProp, REPOSITORY_URL, REPOSITORY_ID) {
+    return new MavenDependencyResolver(new DependencyProperties(depsProp), REPOSITORY_URL, REPOSITORY_ID) {
       @Override
       protected DependenciesTask createDependenciesTask() {
         return dependenciesTask;
