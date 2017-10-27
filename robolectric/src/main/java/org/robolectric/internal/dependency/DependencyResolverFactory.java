@@ -21,18 +21,9 @@ public class DependencyResolverFactory {
     if (Boolean.getBoolean("robolectric.offline")) {
       return new LocalDependencyResolver(depsProps);
     } else {
-      File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
-
-      DependencyResolver mavenDependencyResolver = createMavenDependencyResolver(depsProps);
-      if (cacheDir.exists() || cacheDir.mkdir()) {
-        Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
-        return new CachedDependencyResolver(depsProps, mavenDependencyResolver, cacheDir, 60 * 60 * 24 * 1000);
-      }
-      return mavenDependencyResolver;
+      return createMavenDependencyResolver(depsProps);
     }
   }
-
-
 
   private static DependencyResolver createMavenDependencyResolver(DependencyProperties depsProps) {
     Class<?> mavenDependencyResolverClass = loadClass(

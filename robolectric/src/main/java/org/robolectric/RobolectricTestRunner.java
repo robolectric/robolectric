@@ -1,14 +1,13 @@
 package org.robolectric;
 
+import static org.robolectric.internal.dependency.DependencyResolverFactory.createDependencyResolver;
+
 import android.app.Application;
-import android.os.Build;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
-
-import com.google.common.base.Preconditions;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -46,26 +43,15 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.internal.dependency.DependencyResolverFactory;
-import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceMerger;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
-import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-
-import static org.robolectric.internal.dependency.DependencyResolverFactory.createDependencyResolver;
-import static org.robolectric.internal.dependency.FileUtil.validateFile;
-import static org.robolectric.util.ReflectionHelpers.callConstructor;
-import static org.robolectric.util.ReflectionHelpers.loadClass;
 
 /**
  * Installs a {@link SandboxClassLoader} and {@link ResourceTable} in order to
