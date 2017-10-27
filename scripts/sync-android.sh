@@ -33,9 +33,8 @@ SRC_ROOT=$1/aosp-$ANDROID_VERSION
 J=$3
 
 sync_source() {
-    #repo init -q --depth=1 -uhttps://android.googlesource.com/platform/manifest -b android-$ANDROID_VERSION
-    #repo sync -cq -j$J
-    echo "skip"
+    repo init -q --depth=1 -uhttps://android.googlesource.com/platform/manifest -b android-$ANDROID_VERSION
+    repo sync -cq -j$J
 }
 
 build_source() {
@@ -82,8 +81,8 @@ build_source() {
         make -j$J
         make -j$J out/target/common/obj/JAVA_LIBRARIES/services_intermediates/classes.jar out/host/linux-x86/framework/icu4j-icudata-host-jarjar.jar out/host/linux-x86/framework/icu4j-icutzdata-host-jarjar.jar
     elif [[ "${ANDROID_VERSION}" == "8.0.0_r4" ]]; then
-        #cd external/robolectric && git fetch https://android.googlesource.com/platform/external/robolectric refs/changes/22/463722/1 && git cherry-pick FETCH_HEAD
-        #cd ../..
+        cd external/robolectric && git fetch https://android.googlesource.com/platform/external/robolectric refs/changes/22/463722/1 && git cherry-pick FETCH_HEAD
+        cd ../..
         lunch aosp_x86-eng
         make -j$J robolectric_android-all
     else
