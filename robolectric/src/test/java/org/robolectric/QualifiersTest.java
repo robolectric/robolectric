@@ -26,6 +26,11 @@ public class QualifiersTest {
   }
 
   @Test
+  public void sanityCheck() throws Exception {
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-v26-sw320dp-w320dp");
+  }
+
+  @Test
   @Config(qualifiers = "land")
   public void orientation() throws Exception {
     assertThat(resources.getConfiguration().orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);

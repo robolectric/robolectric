@@ -74,7 +74,7 @@ public class ShadowTypedArray {
     for (int index = 0; index < data.length; index+= ShadowAssetManager.STYLE_NUM_ENTRIES) {
       final int type = data[index+ShadowAssetManager.STYLE_TYPE];
       result.append("Index: ").append(index / ShadowAssetManager.STYLE_NUM_ENTRIES).append(System.lineSeparator());
-      result.append(Strings.padEnd("DataType: ", 25, ' ')).append(TYPE_MAP.get(type)).append(System.lineSeparator());
+      result.append(Strings.padEnd("Type: ", 25, ' ')).append(TYPE_MAP.get(type)).append(System.lineSeparator());
       if (type != TypedValue.TYPE_NULL) {
         result.append(Strings.padEnd("Style data: ", 25, ' ')).append(data[index+ ShadowAssetManager.STYLE_DATA]).append(System.lineSeparator());
         result.append(Strings.padEnd("Asset cookie ", 25, ' ')).append(data[index+ShadowAssetManager.STYLE_ASSET_COOKIE]).append(System.lineSeparator());
@@ -90,7 +90,7 @@ public class ShadowTypedArray {
     System.out.println(result.toString());
   }
 
-  private static final Map<Integer, String> TYPE_MAP = ImmutableMap.<Integer, String>builder()
+  private static final ImmutableMap<Integer, String> TYPE_MAP = ImmutableMap.<Integer, String>builder()
           .put(TypedValue.TYPE_NULL, "TYPE_NULL")
           .put(TypedValue.TYPE_REFERENCE, "TYPE_REFERENCE")
           .put(TypedValue.TYPE_ATTRIBUTE, "TYPE_ATTRIBUTE")

@@ -613,7 +613,7 @@ public class ShadowMediaPlayerTest {
       }
     }
 
-    public String toString() {
+    @Override public String toString() {
       return method.toString();
     }
   }
@@ -689,7 +689,7 @@ public class ShadowMediaPlayerTest {
   }
 
   private interface Tester {
-    public void test(MethodSpec method);
+    void test(MethodSpec method);
   }
 
   private class OnErrorTester implements Tester {
@@ -701,6 +701,7 @@ public class ShadowMediaPlayerTest {
       this.extra = extra;
     }
 
+    @Override
     public void test(MethodSpec method) {
       final State state = shadowMediaPlayer.getState();
       final boolean wasPaused = scheduler.isPaused();
@@ -734,6 +735,7 @@ public class ShadowMediaPlayerTest {
       this.eClass = eClass;
     }
 
+    @Override
     public void test(MethodSpec method) {
       final State state = shadowMediaPlayer.getState();
       boolean success = false;
@@ -766,6 +768,7 @@ public class ShadowMediaPlayerTest {
       this.next = next;
     }
 
+    @Override
     public void test(MethodSpec method) {
       testMethodSuccess(method, next);
     }

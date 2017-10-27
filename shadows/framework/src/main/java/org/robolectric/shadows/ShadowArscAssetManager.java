@@ -62,7 +62,10 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = AssetManager.class, looseSignatures = true)
 public class ShadowArscAssetManager {
 
-  private static final boolean USE_LEGACY = false;
+  public static final boolean USE_LEGACY = "legacy".equals(System.getProperty("robolectric.resources"));
+  static {
+    System.out.println("USE_LEGACY = " + USE_LEGACY);
+  }
 
   @RealObject
   private AssetManager realObject;
@@ -369,9 +372,7 @@ public class ShadowArscAssetManager {
   }
 
   private static boolean shouldDelegateToLegacyShadow(long themePtr) {
-    // return true;
-    // TODO: implement me
-    return false;
+    return USE_LEGACY;
   }
 
   @Implementation

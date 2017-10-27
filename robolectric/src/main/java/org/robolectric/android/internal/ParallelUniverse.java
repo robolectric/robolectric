@@ -15,9 +15,7 @@ import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
-import java.io.File;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.security.Security;
 import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -36,7 +34,6 @@ import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.android.ConfigDescription;
-import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
@@ -169,12 +166,23 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (application != null) {
       shadowsAdapter.bind(application, appManifest);
 
-      ApplicationInfo applicationInfo;
+      final ApplicationInfo applicationInfo;
       try {
         applicationInfo = systemContextImpl.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
+
+      final Class<?> appBindDataClass;
+      try {
+        appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+      Object data = ReflectionHelpers.newInstance(appBindDataClass);
+      ReflectionHelpers.setField(data, "processName", "org.robolectric");
+      ReflectionHelpers.setField(data, "appInfo", applicationInfo);
+      ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
       LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
 

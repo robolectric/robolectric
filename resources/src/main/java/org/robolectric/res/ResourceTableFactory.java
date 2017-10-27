@@ -105,6 +105,7 @@ public class ResourceTableFactory {
     }
 
     Logger.debug("Loading resources for %s from %s...", resourceTable.getPackageName(), resourcePath.getResourceBase());
+    System.out.println("Loading resources for " + resourceTable.getPackageName()  + " from " + resourcePath.getResourceBase());
 
     try {
       new StaxDocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase(),

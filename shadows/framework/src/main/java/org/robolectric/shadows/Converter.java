@@ -1,16 +1,12 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.res.AttrData;
-import org.robolectric.res.AttributeResource;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
-import org.robolectric.res.android.DataType;
 import org.robolectric.util.Util;
 
 public class Converter<T> {
@@ -20,7 +16,7 @@ public class Converter<T> {
     return nextStringCookie++;
   }
 
-  public static Converter getConverterFor(AttrData attrData, String type) {
+  static Converter getConverterFor(AttrData attrData, String type) {
     switch (type) {
       case "enum":
         return new EnumConverter(attrData);
@@ -42,7 +38,7 @@ public class Converter<T> {
       case "fraction":
         return new FromFraction();
       default:
-        throw new UnsupportedOperationException("DataType not supported: " + type);
+        throw new UnsupportedOperationException("Type not supported: " + type);
     }
   }
 
@@ -82,46 +78,6 @@ public class Converter<T> {
     }
   }
 
-  public static void convert(ResourceTable resourceTable, AttributeResource attribute,
-      TypedValue outValue, String qualifiers, boolean handleReferences) {
-    TypedResource attrTypeData = resourceTable.getValue(attribute.resName, qualifiers);
-    if (attrTypeData != null) {
-      AttrData attrData = (AttrData) attrTypeData.getData();
-      String format = attrData.getFormat();
-      System.out.println(attribute + " format is " + format);
-      List<String> types = Arrays.asList(format.split("\\|"));
-
-      if (handleReferences && attribute.isResourceReference()) {
-        ResName resourceReference = attribute.getResourceReference();
-        outValue.type = DataType.REFERENCE.code();
-        outValue.data = resourceTable.getResourceId(resourceReference);
-        outValue.string = "@" + outValue.data;
-        return;
-      }
-
-      for (String type : types) {
-        if ("reference".equals(type)) {
-          continue; // references have already been handled
-        }
-
-        Converter converter = getConverterFor(attrData, type);
-        if (converter.fillTypedValue(attribute.value, outValue)) {
-          return;
-        }
-      }
-    } else {
-      /*
-       * In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
-       * KitKat runtine, then infer the attribute type from the value.
-       *
-       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
-       * and replace the NullResourceLoader with simple ResourceProvider that only parses attribute type information.
-       */
-      ResType resType = ResType.inferFromValue(attribute.value);
-      getConverter(resType).fillTypedValue(attribute.value, outValue);
-    }
-  }
-
   public CharSequence asCharSequence(TypedResource typedResource) {
     return typedResource.asString();
   }
@@ -131,14 +87,10 @@ public class Converter<T> {
   }
 
   public List<TypedResource> getItems(TypedResource typedResource) {
-    throw cantDo("getItems");
+    return new ArrayList<>();
   }
 
-  final public boolean fillTypedValue(T data, TypedValue typedValue) {
-    return fillTypedValue(data, typedValue, false);
-  }
-
-  public boolean fillTypedValue(T data, TypedValue typedValue, boolean throwOnFailure) {
+  public boolean fillTypedValue(T data, TypedValue typedValue) {
     return false;
   }
 
@@ -153,7 +105,7 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(AttrData data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(AttrData data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       return false;
     }
@@ -171,7 +123,7 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.assetCookie = getNextStringCookie();
@@ -182,7 +134,7 @@ public class Converter<T> {
 
   public static class FromColor extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
         typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
         typedValue.data = ResourceHelper.getColor(data);
@@ -204,7 +156,7 @@ public class Converter<T> {
 
   public static class FromFilePath extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.string = data;
@@ -222,7 +174,7 @@ public class Converter<T> {
 
   private static class FromInt extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
         typedValue.type = data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
         typedValue.data = convertInt(data);
@@ -242,17 +194,17 @@ public class Converter<T> {
 
   private static class FromFraction extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
-  private static class FromFile extends Converter<FsFile> {
+  private static class FromFile extends Converter<Object> {
     @Override
-    public boolean fillTypedValue(FsFile data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(Object data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
-      typedValue.string = data.getPath();
+      typedValue.string = data instanceof FsFile ? ((FsFile) data).getPath() : (CharSequence) data;
       typedValue.assetCookie = getNextStringCookie();
       return true;
     }
@@ -260,14 +212,14 @@ public class Converter<T> {
 
   private static class FromFloat extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
   private static class FromBoolean extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_BOOLEAN;
       typedValue.assetCookie = 0;
       typedValue.string = null;
@@ -290,8 +242,8 @@ public class Converter<T> {
 
   private static class FromDimen extends Converter<String> {
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
-      return ResourceHelper.parseFloatAttribute(null, data, typedValue, true);
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
@@ -314,20 +266,16 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      try {
       typedValue.type = TypedValue.TYPE_INT_HEX;
-      if (throwOnFailure) {
         typedValue.data = findValueFor(data);
-      } else {
-        try {
-          typedValue.data = findValueFor(data);
-        } catch (Exception e) {
-          return false;
-        }
-      }
       typedValue.assetCookie = 0;
       typedValue.string = null;
       return true;
+      } catch (Exception e) {
+        return false;
+      }
     }
   }
 
@@ -337,18 +285,11 @@ public class Converter<T> {
     }
 
     @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      try {
       int flags = 0;
       for (String key : data.split("\\|")) {
-        if (throwOnFailure) {
           flags |= findValueFor(key);
-        } else {
-          try {
-            flags |= findValueFor(key);
-          } catch (Exception e) {
-            return false;
-          }
-        }
       }
 
       typedValue.type = TypedValue.TYPE_INT_HEX;
@@ -356,6 +297,9 @@ public class Converter<T> {
       typedValue.assetCookie = 0;
       typedValue.string = null;
       return true;
+      } catch (Exception e) {
+        return false;
+      }
     }
   }
 

@@ -25,82 +25,12 @@ import org.robolectric.res.ResName;
 /**
  * Helper class to provide various conversion method used in handling android resources.
  */
-public final class ResourceHelper {
+public final class ResourceHelper2 {
 
   private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
   private final static float[] sFloatOut = new float[1];
 
   private final static TypedValue mValue = new TypedValue();
-
-  private final static Class<?> androidInternalR;
-
-  static {
-    try {
-      androidInternalR = Class.forName("com.android.internal.R$id");
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Returns the color value represented by the given string value
-   * @param value the color value
-   * @return the color as an int
-   * @throws NumberFormatException if the conversion failed.
-   */
-  public static int getColor(String value) {
-    if (value != null) {
-      if (value.startsWith("#") == false) {
-        throw new NumberFormatException(
-            String.format("Color value '%s' must start with #", value));
-      }
-
-      value = value.substring(1);
-
-      // make sure it's not longer than 32bit
-      if (value.length() > 8) {
-        throw new NumberFormatException(String.format(
-            "Color value '%s' is too long. Format is either" +
-            "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
-            value));
-      }
-
-      if (value.length() == 3) { // RGB format
-        char[] color = new char[8];
-        color[0] = color[1] = 'F';
-        color[2] = color[3] = value.charAt(0);
-        color[4] = color[5] = value.charAt(1);
-        color[6] = color[7] = value.charAt(2);
-        value = new String(color);
-      } else if (value.length() == 4) { // ARGB format
-        char[] color = new char[8];
-        color[0] = color[1] = value.charAt(0);
-        color[2] = color[3] = value.charAt(1);
-        color[4] = color[5] = value.charAt(2);
-        color[6] = color[7] = value.charAt(3);
-        value = new String(color);
-      } else if (value.length() == 6) {
-        value = "FF" + value;
-      }
-
-      // this is a RRGGBB or AARRGGBB value
-
-      // Integer.parseInt will fail to inferFromValue strings like "ff191919", so we use
-      // a Long, but cast the result back into an int, since we know that we're only
-      // dealing with 32 bit values.
-      return (int)Long.parseLong(value, 16);
-    }
-
-    throw new NumberFormatException();
-  }
-
-  public static int getInternalResourceId(String idName) {
-    try {
-      return (int) androidInternalR.getField(idName).get(null);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // ------- TypedValue stuff
   // This is taken from //device/libs/utils/ResourceTypes.cpp
@@ -133,7 +63,7 @@ public final class ResourceHelper {
 
   /**
    * Returns the raw value from the given attribute float-type value string.
-   * This object is only valid until the next call on to {@link ResourceHelper}.
+   * This object is only valid until the next call on to {@link ResourceHelper2}.
    *
    * @param attribute Attribute name.
    * @param value Attribute value.
@@ -158,7 +88,7 @@ public final class ResourceHelper {
    */
   public static boolean parseFloatAttribute(String attribute, String value,
       TypedValue outValue, boolean requireUnit) {
-    assert requireUnit == false || attribute != null;
+//    assert requireUnit == false || attribute != null;
 
     // remove the space before and after
     value = value.trim();
@@ -198,7 +128,7 @@ public final class ResourceHelper {
       if (end.length() > 0 && end.charAt(0) != ' ') {
         // Might be a unit...
         if (parseUnit(end, outValue, sFloatOut)) {
-          computeTypedValue(outValue, f, sFloatOut[0]);
+          computeTypedValue(outValue, f, sFloatOut[0], end);
           return true;
         }
         return false;
@@ -218,11 +148,11 @@ public final class ResourceHelper {
           } else {
             // no unit when required? Use dp and out an error.
             applyUnit(sUnitNames[1], outValue, sFloatOut);
-            computeTypedValue(outValue, f, sFloatOut[0]);
+            computeTypedValue(outValue, f, sFloatOut[0], "dp");
 
             System.out.println(String.format(
                 "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
-                    value, attribute));
+                    value, attribute == null ? "(unknown)" : attribute));
           }
           return true;
         }
@@ -232,7 +162,7 @@ public final class ResourceHelper {
     return false;
   }
 
-  private static void computeTypedValue(TypedValue outValue, float value, float scale) {
+  private static void computeTypedValue(TypedValue outValue, float value, float scale, String unit) {
     value *= scale;
     boolean neg = value < 0;
     if (neg) {
@@ -271,6 +201,12 @@ public final class ResourceHelper {
     outValue.data |=
       (radix<<TypedValue.COMPLEX_RADIX_SHIFT)
       | (mantissa<<TypedValue.COMPLEX_MANTISSA_SHIFT);
+
+    if ("%".equals(unit)) {
+      value = value * 100;
+    }
+
+    outValue.string = value + unit;
   }
 
   private static boolean parseUnit(String str, TypedValue outValue, float[] outScale) {

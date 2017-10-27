@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -34,6 +36,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.EmptyStyle;
@@ -163,7 +166,9 @@ public final class ShadowAssetManager {
             return;
           }
         } else {
-          throw new RuntimeException("huh? " + resName);
+          if (outValue.resourceId == 0) {
+            throw new RuntimeException("huh? " + resName);
+          }
         }
       } else {
         if (dereferencedRef.isFile()) {
@@ -191,7 +196,32 @@ public final class ShadowAssetManager {
       return;
     }
 
-    Converter.convert(resourceTable, attribute, outValue, qualifiers, false);
+    TypedResource attrTypeData = resourceTable.getValue(attribute.resName, qualifiers);
+    if (attrTypeData != null) {
+      AttrData attrData = (AttrData) attrTypeData.getData();
+      String format = attrData.getFormat();
+      String[] types = format.split("\\|");
+      for (String type : types) {
+        if ("reference".equals(type)) continue; // already handled above
+        Converter converter = Converter.getConverterFor(attrData, type);
+
+        if (converter != null) {
+          if (converter.fillTypedValue(attribute.value, outValue)) {
+            return;
+          }
+        }
+      }
+    } else {
+      /**
+       * In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
+       * KitKat runtine, then infer the attribute type from the value.
+       *
+       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
+       * and replace the NullResourceLoader with simple ResourceProvider that only parses attribute type information.
+       */
+      ResType resType = ResType.inferFromValue(attribute.value);
+      Converter.getConverter(resType).fillTypedValue(attribute.value, outValue);
+    }
   }
 
   @Implementation
@@ -218,6 +248,12 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public CharSequence getResourceBagText(int ident, int bagEntryId) {
     throw new UnsupportedOperationException(); // todo
+  }
+
+  @HiddenApi
+  @Implementation
+  public int getStringBlockCount() {
+    return 0;
   }
 
   @HiddenApi @Implementation
@@ -300,17 +336,17 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final InputStream open(String fileName) throws IOException {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getPath());
+    File file = new File(getAssetsDirectory().join(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
     }
@@ -361,9 +397,9 @@ public final class ShadowAssetManager {
   public final String[] list(String path) throws IOException {
     FsFile file;
     if (path.isEmpty()) {
-      file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
+      file = getAssetsDirectory();
     } else {
-      file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(path);
+      file = getAssetsDirectory().join(path);
     }
     if (file.isDirectory()) {
       return file.listFileNames();
@@ -456,12 +492,22 @@ public final class ShadowAssetManager {
     return new String[0]; // todo
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation(maxSdk = N_MR1)
   public void setConfiguration(int mcc, int mnc, String locale,
-                 int orientation, int touchscreen, int density, int keyboard,
-                 int keyboardHidden, int navigation, int screenWidth, int screenHeight,
-                 int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-                 int screenLayout, int uiMode, int majorVersion) {
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int majorVersion) {
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = O)
+  public void setConfiguration(int mcc, int mnc, String locale,
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int colorMode, int sdkVersion) {
   }
 
   @HiddenApi @Implementation
@@ -853,14 +899,23 @@ public final class ShadowAssetManager {
   private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @Nonnull Style themeStyleSet) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
-        if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
-          String defaultPackageName = ResourceIds.isFrameworkResource(resId) ? "android" : RuntimeEnvironment.application.getPackageName();
-          ResName resName = ResName.qualifyResName(attributeSet.getAttributeName(i), defaultPackageName, "attr");
-          Integer referenceResId = null;
-          if (AttributeResource.isResourceReference(attributeSet.getAttributeValue(i))) {
-            referenceResId = attributeSet.getAttributeResourceValue(i, -1);
+        if (attributeSet.getAttributeNameResource(i) == resId) {
+          String attributeValue;
+          try {
+            attributeValue = attributeSet.getAttributeValue(i);
+          } catch (IndexOutOfBoundsException e) {
+            // type is TypedValue.TYPE_NULL, ignore...
+            continue;
           }
-          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!", referenceResId);
+          if (attributeValue != null) {
+            String defaultPackageName = ResourceIds.isFrameworkResource(resId) ? "android" : RuntimeEnvironment.application.getPackageName();
+            ResName resName = ResName.qualifyResName(attributeSet.getAttributeName(i), defaultPackageName, "attr");
+            Integer referenceResId = null;
+            if (AttributeResource.isResourceReference(attributeValue)) {
+              referenceResId = attributeSet.getAttributeResourceValue(i, -1);
+            }
+            return new AttributeResource(resName, attributeValue, "fixme!!!", referenceResId);
+          }
         }
       }
     }
@@ -892,6 +947,10 @@ public final class ShadowAssetManager {
 
     // else if attr in theme, use its value
     return themeStyleSet.getAttrValue(attrName);
+  }
+
+  private FsFile getAssetsDirectory() {
+    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
   }
 
   @Nonnull private ResName getResName(int id) {

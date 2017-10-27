@@ -24,7 +24,7 @@ import org.robolectric.Shadows;
 @RunWith(RobolectricTestRunner.class)
 public class ShadowCursorWrapperTest {
 
-  private class ForwardVerifier {
+  private static class ForwardVerifier {
 
     final Cursor mockCursor;
     final CursorWrapper cursorWrapper;

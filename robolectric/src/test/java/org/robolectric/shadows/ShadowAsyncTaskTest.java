@@ -200,7 +200,7 @@ public class ShadowAsyncTaskTest {
     }
   }
 
-  public class ImmediateExecutor implements Executor {
+  public static class ImmediateExecutor implements Executor {
     @Override
     public void execute(Runnable command) {
       command.run();

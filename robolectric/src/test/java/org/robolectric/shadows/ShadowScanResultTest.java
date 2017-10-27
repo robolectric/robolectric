@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.net.wifi.ScanResult;

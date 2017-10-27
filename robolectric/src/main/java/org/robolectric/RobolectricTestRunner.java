@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import static org.robolectric.shadows.ShadowArscAssetManager.USE_LEGACY;
+
 import android.app.Application;
 import android.os.Build;
 import java.io.File;
@@ -315,8 +317,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
-    boolean isLegacy = false;
-    if (isLegacy) {
+    if (USE_LEGACY) {
       PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
       PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
@@ -506,7 +507,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   private static class MethodPassThrough extends Config.Implementation {
-    private FrameworkMethod method;
+    private final FrameworkMethod method;
 
     private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);

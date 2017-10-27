@@ -193,7 +193,7 @@ public class TestHttpResponse extends HttpResponseStub {
     }
 
     @Override public Header getContentType() {
-      return getFirstHeader("Content-DataType");
+      return getFirstHeader("Content-Type");
     }
 
     @Override public Header getContentEncoding() {

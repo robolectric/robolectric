@@ -644,7 +644,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
-    assertEquals(new Float(1.23), metaValue);
+    assertThat(metaValue).isEqualTo(1.23f);
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));
@@ -816,7 +816,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
-    assertEquals(new Float(1.23), metaValue);
+    assertThat(metaValue).isEqualTo(1.23f);
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));
