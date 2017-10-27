@@ -1,16 +1,7 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
-import java.util.Arrays;
-import java.util.List;
 import org.robolectric.res.AttrData;
-import org.robolectric.res.AttributeResource;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceTable;
-import org.robolectric.res.TypedResource;
-import org.robolectric.res.android.DataType;
 import org.robolectric.util.Util;
 
 public class Converter2<T> {
@@ -46,128 +37,11 @@ public class Converter2<T> {
     }
   }
 
-  // TODO: Handle 'anim' resources
-  public static Converter2 getConverter(ResType resType) {
-    switch (resType) {
-      case ATTR_DATA:
-        return new FromAttrData();
-      case BOOLEAN:
-        return new FromBoolean();
-      case CHAR_SEQUENCE:
-        return new FromCharSequence();
-      case COLOR:
-      case DRAWABLE:
-        return new FromColor();
-      case COLOR_STATE_LIST:
-      case LAYOUT:
-        return new FromFilePath();
-      case DIMEN:
-        return new FromDimen();
-      case FILE:
-        return new FromFile();
-      case FLOAT:
-        return new FromFloat();
-      case INTEGER:
-        return new FromInt();
-      case FRACTION:
-        return new FromFraction();
-      case CHAR_SEQUENCE_ARRAY:
-      case INTEGER_ARRAY:
-      case TYPED_ARRAY:
-        return new FromArray();
-      case STYLE:
-        return new Converter2();
-      default:
-        throw new UnsupportedOperationException("can't convert from " + resType.name());
-    }
-  }
-
-  public static void convert(ResourceTable resourceTable, AttributeResource attribute,
-      TypedValue outValue, String qualifiers, boolean handleReferences) {
-    TypedResource attrTypeData = resourceTable.getValue(attribute.resName, qualifiers);
-    if (attrTypeData != null) {
-      AttrData attrData = (AttrData) attrTypeData.getData();
-      String format = attrData.getFormat();
-      List<String> types = Arrays.asList(format.split("\\|"));
-
-      if (handleReferences && attribute.isResourceReference()) {
-        ResName resourceReference = attribute.getResourceReference();
-        outValue.type = DataType.REFERENCE.code();
-        outValue.data = resourceTable.getResourceId(resourceReference);
-        outValue.string = "@" + outValue.data;
-        return;
-      }
-
-      for (String type : types) {
-        if ("reference".equals(type)) {
-          continue; // references have already been handled
-        }
-
-        Converter2 converter = getConverterFor(attrData, type);
-        if (converter.fillTypedValue(attribute.value, outValue)) {
-          return;
-        }
-      }
-    } else {
-      /*
-       * In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
-       * KitKat runtine, then infer the attribute type from the value.
-       *
-       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
-       * and replace the NullResourceLoader with simple ResourceProvider that only parses attribute type information.
-       */
-      ResType resType = ResType.inferFromValue(attribute.value);
-      getConverter(resType).fillTypedValue(attribute.value, outValue);
-    }
-  }
-
-  public CharSequence asCharSequence(TypedResource typedResource) {
-    return typedResource.asString();
-  }
-
-  public int asInt(TypedResource typedResource) {
-    throw cantDo("asInt");
-  }
-
-  public List<TypedResource> getItems(TypedResource typedResource) {
-    throw cantDo("getItems");
-  }
-
-  final public boolean fillTypedValue(T data, TypedValue typedValue) {
-    return fillTypedValue(data, typedValue, false);
-  }
-
   public boolean fillTypedValue(T data, TypedValue typedValue, boolean throwOnFailure) {
     return false;
   }
 
-  private UnsupportedOperationException cantDo(String operation) {
-    return new UnsupportedOperationException(getClass().getName() + " doesn't support " + operation);
-  }
-
-  public static class FromAttrData extends Converter2<AttrData> {
-    @Override
-    public CharSequence asCharSequence(TypedResource typedResource) {
-      return typedResource.asString();
-    }
-
-    @Override
-    public boolean fillTypedValue(AttrData data, TypedValue typedValue, boolean throwOnFailure) {
-      typedValue.type = TypedValue.TYPE_STRING;
-      return false;
-    }
-  }
-
   public static class FromCharSequence extends Converter2<String> {
-    @Override
-    public CharSequence asCharSequence(TypedResource typedResource) {
-      return typedResource.asString().trim();
-    }
-
-    @Override
-    public int asInt(TypedResource typedResource) {
-      return convertInt(typedResource.asString().trim());
-    }
 
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
@@ -193,31 +67,8 @@ public class Converter2<T> {
       }
     }
 
-    @Override
-    public int asInt(TypedResource typedResource) {
-      return ResourceHelper.getColor(typedResource.asString().trim());
-    }
   }
 
-
-
-  public static class FromFilePath extends Converter2<String> {
-    @Override
-    public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
-      typedValue.type = TypedValue.TYPE_STRING;
-      typedValue.data = 0;
-      typedValue.string = data;
-      typedValue.assetCookie = getNextStringCookie();
-      return true;
-    }
-  }
-
-  public static class FromArray extends Converter2 {
-    @Override
-    public List<TypedResource> getItems(TypedResource typedResource) {
-      return (List<TypedResource>) typedResource.getData();
-    }
-  }
 
   private static class FromInt extends Converter2<String> {
     @Override
@@ -233,27 +84,12 @@ public class Converter2<T> {
       }
     }
 
-    @Override
-    public int asInt(TypedResource typedResource) {
-      return convertInt(typedResource.asString().trim());
-    }
   }
 
   private static class FromFraction extends Converter2<String> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       return ResourceHelper2.parseFloatAttribute(null, data, typedValue, false);
-    }
-  }
-
-  private static class FromFile extends Converter2<Object> {
-    @Override
-    public boolean fillTypedValue(Object data, TypedValue typedValue, boolean throwOnFailure) {
-      typedValue.type = TypedValue.TYPE_STRING;
-      typedValue.data = 0;
-      typedValue.string = data instanceof FsFile ? ((FsFile) data).getPath() : (CharSequence) data;
-      typedValue.assetCookie = getNextStringCookie();
-      return true;
     }
   }
 
@@ -308,7 +144,7 @@ public class Converter2<T> {
   }
 
   private static class EnumConverter extends EnumOrFlagConverter {
-    public EnumConverter(AttrData attrData) {
+    EnumConverter(AttrData attrData) {
       super(attrData);
     }
 
@@ -331,7 +167,7 @@ public class Converter2<T> {
   }
 
   private static class FlagConverter extends EnumOrFlagConverter {
-    public FlagConverter(AttrData attrData) {
+    FlagConverter(AttrData attrData) {
       super(attrData);
     }
 
@@ -361,11 +197,11 @@ public class Converter2<T> {
   private static class EnumOrFlagConverter extends Converter2<String> {
     private final AttrData attrData;
 
-    public EnumOrFlagConverter(AttrData attrData) {
+    EnumOrFlagConverter(AttrData attrData) {
       this.attrData = attrData;
     }
 
-    protected int findValueFor(String key) {
+    int findValueFor(String key) {
       String valueFor = attrData.getValueFor(key);
       if (valueFor == null) {
         // Maybe they have passed in the value directly, rather than the name.

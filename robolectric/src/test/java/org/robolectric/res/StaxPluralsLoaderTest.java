@@ -30,9 +30,9 @@ public class StaxPluralsLoaderTest {
   public void testPluralsAreResolved() throws Exception {
     ResName resName = new ResName(TestUtil.TEST_PACKAGE, "plurals", "beer");
     PluralRules pluralRules = (PluralRules) resourceTable.getValue(resName, "");
-    assertThat(pluralRules.find(0).string).isEqualTo("@string/howdy");
-    assertThat(pluralRules.find(1).string).isEqualTo("One beer");
-    assertThat(pluralRules.find(2).string).isEqualTo("Two beers");
-    assertThat(pluralRules.find(3).string).isEqualTo("%d beers, yay!");
+    assertThat(pluralRules.find(0).string).isEqualTo("unused");
+    assertThat(pluralRules.find(1).string).isEqualTo("beer");
+    assertThat(pluralRules.find(2).string).isEqualTo("unused");
+    assertThat(pluralRules.find(3).string).isEqualTo("beers");
   }
 }

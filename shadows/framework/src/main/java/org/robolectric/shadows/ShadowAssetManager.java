@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -167,7 +166,9 @@ public final class ShadowAssetManager {
             return;
           }
         } else {
-          throw new RuntimeException("huh? " + resName);
+          if (outValue.resourceId == 0) {
+            throw new RuntimeException("huh? " + resName);
+          }
         }
       } else {
         if (dereferencedRef.isFile()) {
@@ -898,14 +899,23 @@ public final class ShadowAssetManager {
   private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @Nonnull Style themeStyleSet) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
-        if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
-          String defaultPackageName = ResourceIds.isFrameworkResource(resId) ? "android" : RuntimeEnvironment.application.getPackageName();
-          ResName resName = ResName.qualifyResName(attributeSet.getAttributeName(i), defaultPackageName, "attr");
-          Integer referenceResId = null;
-          if (AttributeResource.isResourceReference(attributeSet.getAttributeValue(i))) {
-            referenceResId = attributeSet.getAttributeResourceValue(i, -1);
+        if (attributeSet.getAttributeNameResource(i) == resId) {
+          String attributeValue;
+          try {
+            attributeValue = attributeSet.getAttributeValue(i);
+          } catch (IndexOutOfBoundsException e) {
+            // type is TypedValue.TYPE_NULL, ignore...
+            continue;
           }
-          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!", referenceResId);
+          if (attributeValue != null) {
+            String defaultPackageName = ResourceIds.isFrameworkResource(resId) ? "android" : RuntimeEnvironment.application.getPackageName();
+            ResName resName = ResName.qualifyResName(attributeSet.getAttributeName(i), defaultPackageName, "attr");
+            Integer referenceResId = null;
+            if (AttributeResource.isResourceReference(attributeValue)) {
+              referenceResId = attributeSet.getAttributeResourceValue(i, -1);
+            }
+            return new AttributeResource(resName, attributeValue, "fixme!!!", referenceResId);
+          }
         }
       }
     }

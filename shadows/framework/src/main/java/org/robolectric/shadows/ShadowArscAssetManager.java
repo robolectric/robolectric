@@ -63,6 +63,9 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowArscAssetManager {
 
   public static final boolean USE_LEGACY = "legacy".equals(System.getProperty("robolectric.resources"));
+  static {
+    System.out.println("USE_LEGACY = " + USE_LEGACY);
+  }
 
   @RealObject
   private AssetManager realObject;

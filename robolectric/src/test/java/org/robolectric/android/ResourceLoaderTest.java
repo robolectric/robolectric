@@ -19,11 +19,11 @@ import org.robolectric.res.ResourceTable;
 public class ResourceLoaderTest {
 
   @Test
-  @Config(qualifiers = "doesnotexist-land-xlarge")
+  @Config(qualifiers = "doesnotexist-land-xlarge") // todo: apply in order specified here: https://developer.android.com/guide/topics/resources/providing-resources.html#table2
   public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
-    assertThat(textView.getText().toString()).isEqualTo("land");
+    assertThat(textView.getText().toString()).isEqualTo("xlarge");
   }
 
   @Test

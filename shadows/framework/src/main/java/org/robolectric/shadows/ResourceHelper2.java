@@ -201,6 +201,11 @@ public final class ResourceHelper2 {
     outValue.data |=
       (radix<<TypedValue.COMPLEX_RADIX_SHIFT)
       | (mantissa<<TypedValue.COMPLEX_MANTISSA_SHIFT);
+
+    if ("%".equals(unit)) {
+      value = value * 100;
+    }
+
     outValue.string = value + unit;
   }
 

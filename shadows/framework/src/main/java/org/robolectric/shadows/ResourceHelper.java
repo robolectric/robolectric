@@ -32,6 +32,16 @@ public final class ResourceHelper {
 
   private final static TypedValue mValue = new TypedValue();
 
+  private final static Class<?> androidInternalR;
+
+  static {
+    try {
+      androidInternalR = Class.forName("com.android.internal.R$id");
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Returns the color value represented by the given string value
    * @param value the color value
@@ -85,7 +95,11 @@ public final class ResourceHelper {
   }
 
   public static int getInternalResourceId(String idName) {
-    return RuntimeEnvironment.getSystemResourceTable().getResourceId(new ResName("android", "id", idName));
+    try {
+      return (int) androidInternalR.getField(idName).get(null);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // ------- TypedValue stuff

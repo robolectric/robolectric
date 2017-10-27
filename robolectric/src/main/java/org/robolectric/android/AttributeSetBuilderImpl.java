@@ -132,8 +132,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           int valueInt = 0;
 
           if (attrResName != null) {
-            TypedValue outValue = parse(attrId, attrResName, value, resources,
-                packageName);
+            TypedValue outValue = parse(attrId, attrResName, value, resources, packageName);
 
             type = DataType.fromCode(outValue.type);
             value = (String) outValue.string;
@@ -146,6 +145,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
             // it's a style, class, or id attribute, so no attr resource id
             if (value == null || AttributeResource.isNull(value)) {
               type = DataType.NULL;
+              valueInt = TypedValue.DATA_NULL_EMPTY;
             } else if (AttributeResource.isResourceReference(value)) {
               ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
               Integer valueResId = resources.getIdentifier(resRef.name, resRef.type, resRef.packageName);
@@ -158,6 +158,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           }
 
           Res_value resValue = new Res_value(type.code(), valueInt);
+          System.out.println(attrName + " resValue = " + resValue + " string: " + value);
 
           int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
           attr(resStringPoolWriter.string(attrNs), attrNameIndex,

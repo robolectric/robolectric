@@ -2,11 +2,11 @@ package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
+import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +67,8 @@ public class ShadowTypedArrayTest {
 
   @Test
   public void getFraction_shouldReturnDefaultValue() throws Exception {
-    assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f)).isEqualTo(-1f);
+    assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f))
+        .isEqualTo(-1f);
   }
 
   @Test
@@ -77,7 +78,8 @@ public class ShadowTypedArrayTest {
             .addAttribute(android.R.attr.width, "50%")
             .build(),
         new int[]{android.R.attr.width});
-    assertThat(typedArray.getFraction(0, 100, 1, -1)).isEqualTo(50f);
+    assertThat(typedArray.getFraction(0, 100, 1, -1))
+        .isEqualTo(50f);
   }
 
   @Test
@@ -112,7 +114,9 @@ public class ShadowTypedArrayTest {
             .addAttribute(android.R.attr.keycode, "@array/greetings")
             .build(),
         new int[]{android.R.attr.absListViewStyle});
-    assertNull(typedArray.getTextArray(0));
+    CharSequence[] textArray = typedArray.getTextArray(0);
+    assertThat(textArray).isInstanceOf(CharSequence[].class);
+    assertThat(textArray).allMatch(Objects::isNull);
   }
 
   @Test

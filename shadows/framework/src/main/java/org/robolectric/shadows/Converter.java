@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
+import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.FsFile;
@@ -86,7 +87,7 @@ public class Converter<T> {
   }
 
   public List<TypedResource> getItems(TypedResource typedResource) {
-    throw cantDo("getItems");
+    return new ArrayList<>();
   }
 
   public boolean fillTypedValue(T data, TypedValue typedValue) {
