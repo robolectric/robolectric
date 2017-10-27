@@ -12,7 +12,8 @@ import static org.robolectric.util.ReflectionHelpers.loadClass;
 /**
  * Creates a DependencyResolver based on system properties.
  *
- * By default a maven resolver is created; if robolectric.offline property is set.
+ * By default a maven resolver is created; LocalDependencyResolver if robolectric.offline property
+ * is set.
  */
 public class DependencyResolverFactory {
 
