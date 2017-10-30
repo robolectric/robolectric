@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
-    import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-    import android.os.Build;
-    import android.os.SharedMemory;
-    import org.junit.Test;
-    import org.junit.runner.RunWith;
-    import org.robolectric.RobolectricTestRunner;
-    import org.robolectric.annotation.Config;
+import android.os.Build;
+import android.os.SharedMemory;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 /**
  * Unit tests for {@link ShadowSharedMemory}.
@@ -36,4 +36,3 @@ public class ShadowSharedMemoryTest {
     assertThat(sharedMemory.mapReadWrite()).isNotNull();
   }
 }
-
