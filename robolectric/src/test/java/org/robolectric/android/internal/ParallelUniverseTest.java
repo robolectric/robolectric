@@ -9,6 +9,8 @@ import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,6 +27,8 @@ import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourcePath;
@@ -41,6 +45,18 @@ public class ParallelUniverseTest {
 
   private static Config getDefaultConfig() {
     return new Config.Builder().build();
+  }
+
+  private static class StubDependencyResolver implements DependencyResolver {
+
+    @Override
+    public URL getLocalArtifactUrl(DependencyJar dependency) {
+      try {
+        return new URL("file://foo.txt");
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Before
@@ -67,7 +83,7 @@ public class ParallelUniverseTest {
         method,
         new DefaultTestLifecycle(),
         appManifest,
-        null,
+        new StubDependencyResolver(),
         defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
