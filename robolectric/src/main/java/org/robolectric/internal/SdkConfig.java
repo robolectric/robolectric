@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.util.Logger;
 
-public class SdkConfig implements Comparable<SdkConfig> {
+public final class SdkConfig implements Comparable<SdkConfig> {
 
   private static final Set<Integer> SUPPORTED_APIS = Collections.unmodifiableSet(new HashSet<Integer>() {
     {
