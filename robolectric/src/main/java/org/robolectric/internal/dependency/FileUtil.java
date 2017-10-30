@@ -7,7 +7,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class FileUtil {
+class FileUtil {
 
   /**
    * Validates {@code file} is an existing file that is readable.

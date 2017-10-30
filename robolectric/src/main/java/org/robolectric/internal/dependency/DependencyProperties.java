@@ -18,11 +18,11 @@ import static org.robolectric.internal.dependency.FileUtil.validateFile;
 public class DependencyProperties {
 
   private final Properties depsProp;
-  private final String directoryPath;
+  private final FsFile propertyFile;
 
-  DependencyProperties(Properties properties, String directoryPath) {
+  DependencyProperties(Properties properties, FsFile propertyFile) {
     this.depsProp = properties;
-    this.directoryPath = directoryPath;
+    this.propertyFile = propertyFile;
   }
 
    DependencyProperties(Properties depsProps) {
@@ -34,8 +34,11 @@ public class DependencyProperties {
          String.format("Could not find entry for api level %d in robolectric-deps.properties", apiLevel));
   }
 
-  public String getDirectoryPath() {
-    return directoryPath;
+  /**
+   * Returns the FsFile of the underlying properties.
+   */
+  public FsFile getPropertyFile() {
+    return propertyFile;
   }
 
   public static DependencyProperties load() {
@@ -45,7 +48,7 @@ public class DependencyProperties {
     if (dependencyDirPath == null) {
       dependencyDirPath = propFile.getParent().getPath();
     }
-    return new DependencyProperties(properties, dependencyDirPath);
+    return new DependencyProperties(properties, propFile);
   }
 
   private static Properties loadProperties(FsFile propertiesFile) {
@@ -61,11 +64,12 @@ public class DependencyProperties {
   private static FsFile getDependencyProperties() {
     // first check if a custom robolectric-deps.properties is being provided
     String propPath = System.getProperty("robolectric-deps.properties");
-    if (propPath == null) {
+    if (propPath != null) {
+      return Fs.newFile(validateFile(new File(propPath)));
+    } else {
       URL buildPathPropertiesUrl = DependencyResolverFactory.class.getClassLoader().getResource("robolectric-deps.properties");
       Preconditions.checkNotNull(buildPathPropertiesUrl, "cannot find robolectric-deps.properties on classpath");
-      propPath = buildPathPropertiesUrl.getPath();
+      return Fs.fromURL(buildPathPropertiesUrl);
     }
-    return Fs.newFile(validateFile(new File(propPath)));
   }
 }
