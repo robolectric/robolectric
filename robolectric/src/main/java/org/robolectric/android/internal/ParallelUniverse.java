@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
@@ -121,10 +122,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     //configuration.
     // end new stuff
 
+    // JDK has a default locale of en_US. A previous test may have changed the default, so reset it
+    // here
+    Locale.setDefault(Locale.US);
     Locale locale = null;
-    if (resTab.languageString() != null && resTab.regionString() != null) {
+    if (!isNullOrEmpty(resTab.languageString()) || !isNullOrEmpty(resTab.regionString())) {
       locale = new Locale(resTab.languageString(), resTab.regionString());
-    } else if (resTab.languageString() != null) {
+    } else if (!isNullOrEmpty(resTab.languageString())) {
       locale = new Locale(resTab.languageString());
     }
     if (locale != null) {
