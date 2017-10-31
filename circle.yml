@@ -44,4 +44,7 @@ jobs:
           destination: reports
       - run:
           name: Upload Snapshot
-          command: SKIP_JAVADOC=true ./gradlew upload --no-rebuild
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ./gradlew upload --no-rebuild
+            fi
