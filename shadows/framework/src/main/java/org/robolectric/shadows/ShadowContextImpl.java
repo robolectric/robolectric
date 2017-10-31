@@ -97,6 +97,7 @@ public class ShadowContextImpl {
     }
     if (getApiLevel() >= KITKAT) {
       SYSTEM_SERVICE_MAP.put(Context.PRINT_SERVICE, "android.print.PrintManager");
+      SYSTEM_SERVICE_MAP.put(Context.APP_OPS_SERVICE, "android.app.AppOpsManager");
     }
     if (getApiLevel() >= LOLLIPOP) {
       SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
