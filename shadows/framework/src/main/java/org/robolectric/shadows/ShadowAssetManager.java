@@ -16,11 +16,16 @@ import android.util.SparseArray;
 import android.util.TypedValue;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
@@ -139,6 +144,8 @@ public final class ShadowAssetManager {
           return;
         } else if (resName.type.equals("raw")) {
           return;
+        } else if (resName.type.equals("font")) {
+          return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           TypedResource drawableResource = resourceTable.getValue(resName, qualifiers);
@@ -208,10 +215,12 @@ public final class ShadowAssetManager {
     }
   }
 
+  @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
   }
 
+  @Implementation
   public void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
   }
@@ -312,24 +321,71 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final InputStream open(String fileName) throws IOException {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getPath());
+    File file = new File(getAssetsDirectory().join(fileName).getPath());
+    if (file.getPath().startsWith("jar")) {
+      file = getFileFromZip(file);
+    }
     ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
   }
 
+  /**
+   * Extract an asset from a zipped up assets provided by the build system, this is required because there is no
+   * way to get a FileDescriptor from a zip entry. This is a temporary measure for Bazel which can be removed
+   * once binary resources are supported.
+   */
+  private static File getFileFromZip(File file) {
+    File fileFromZip = null;
+    String pathString = file.getPath();
+    String zipFile = pathString.substring(pathString.indexOf(":") + 1, pathString.indexOf("!"));
+    String filePathInsideZip = pathString.split("!")[1].substring(1);
+    byte[] buffer = new byte[1024];
+    try {
+      File outputDir = Files.createTempDirectory("robolectric_assets").toFile();
+      ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
+      ZipEntry ze = zis.getNextEntry();
+      while (ze != null) {
+        String currentFilename = ze.getName();
+        if (!currentFilename.equals(filePathInsideZip)) {
+          ze = zis.getNextEntry();
+          continue;
+        }
+        fileFromZip = new File(outputDir + File.separator + currentFilename);
+        new File(fileFromZip.getParent()).mkdirs();
+        FileOutputStream fos = new FileOutputStream(fileFromZip);
+        int len;
+        while ((len = zis.read(buffer)) > 0) {
+          fos.write(buffer, 0, len);
+        }
+        fos.close();
+        break;
+      }
+      zis.closeEntry();
+      zis.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return fileFromZip;
+  }
+
   @Implementation
   public final String[] list(String path) throws IOException {
-    FsFile file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(path);
+    FsFile file;
+    if (path.isEmpty()) {
+      file = getAssetsDirectory();
+    } else {
+      file = getAssetsDirectory().join(path);
+    }
     if (file.isDirectory()) {
       return file.listFileNames();
     }
@@ -355,7 +411,9 @@ public final class ShadowAssetManager {
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {
-    if (fileName.startsWith("jar:")) {
+    // Resources from a jar belong to the "android" namespace, except when they come from "resource_files.zip"
+    // when they are application resources produced by Bazel.
+    if (fileName.startsWith("jar:") && !fileName.contains("resource_files.zip")) {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
@@ -855,6 +913,10 @@ public final class ShadowAssetManager {
 
     // else if attr in theme, use its value
     return themeStyleSet.getAttrValue(attrName);
+  }
+
+  private FsFile getAssetsDirectory() {
+    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
   }
 
   @Nonnull private ResName getResName(int id) {

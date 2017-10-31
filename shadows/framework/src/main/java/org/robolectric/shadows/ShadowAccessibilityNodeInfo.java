@@ -173,6 +173,7 @@ public class ShadowAccessibilityNodeInfo {
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
+  @Implementation
   public void __constructor__() {
     ReflectionHelpers.setStaticField(AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
   }
@@ -919,9 +920,8 @@ public class ShadowAccessibilityNodeInfo {
       performedActionAndArgsList = new LinkedList<>();
     }
 
-    performedActionAndArgsList.add(new Pair<Integer, Bundle>(new Integer(action), arguments));
-    return (actionListener != null) ? actionListener.onPerformAccessibilityAction(action, arguments)
-      : true;
+    performedActionAndArgsList.add(new Pair<>(action, arguments));
+    return actionListener == null || actionListener.onPerformAccessibilityAction(action, arguments);
   }
 
   private boolean childrenEqualityCheck(
@@ -1218,6 +1218,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public boolean equals(Object object) {
       if (object == null) {
         return false;
@@ -1241,6 +1242,7 @@ public class ShadowAccessibilityNodeInfo {
     private int id;
     private CharSequence label;
 
+    @Implementation
     public void __constructor__(int id, CharSequence label) {
       if (((id & (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK")) == 0) && Integer.bitCount(id) != 1) {
         throw new IllegalArgumentException("Invalid standard action id");

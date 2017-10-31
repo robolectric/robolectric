@@ -18,6 +18,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowCursorWrapper implements Cursor {
   private Cursor wrappedCursor;
 
+  @Implementation
   public void __constructor__(Cursor c) {
     wrappedCursor = c;
   }

@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import android.content.Context;
 import android.preference.EditTextPreference;
@@ -10,10 +10,10 @@ import android.widget.EditText;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowEditTextPreferenceTest {
 
   private static final String SOME_TEXT = "some text";

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -23,12 +24,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
     private List<SQLiteDatabase> openDatabases = new ArrayList<>();
@@ -918,7 +919,7 @@ public class SQLiteDatabaseTest {
         Cursor data = database.query("table_name", new String[]{"first_column"}, null, null, null, null, null);
         assertThat(data.getCount()).isEqualTo(1);
         data.moveToFirst();
-        assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes());
+        assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes(UTF_8));
     }
 
     /////////////////////

@@ -52,6 +52,7 @@ public class ShadowAccountManager {
   private Handler mainHandler;
   private RoboAccountManagerFuture pendingAddFuture;
 
+  @Implementation
   public void __constructor__(Context context, IAccountManager service) {
     mainHandler = new Handler(context.getMainLooper());
   }
@@ -436,6 +437,31 @@ public class ShadowAccountManager {
   public AccountManagerFuture<Bundle> getAuthToken(
       final Account account, final String authTokenType, final Bundle options,
       final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
+
+    return start(
+        new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
+          @Override
+          public Bundle doWork()
+              throws OperationCanceledException, IOException, AuthenticatorException {
+            Bundle result = new Bundle();
+
+            String authToken = blockingGetAuthToken(account, authTokenType, false);
+            result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+            result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+            return result;
+          }
+        });
+  }
+
+  @Implementation
+  public AccountManagerFuture<Bundle> getAuthToken(
+      final Account account,
+      final String authTokenType,
+      final Bundle options,
+      final boolean notifyAuthFailure,
+      final AccountManagerCallback<Bundle> callback,
+      Handler handler) {
 
     return start(new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
       @Override

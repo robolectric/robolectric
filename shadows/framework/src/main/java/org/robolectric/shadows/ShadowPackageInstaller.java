@@ -29,7 +29,7 @@ public class ShadowPackageInstaller {
   private Map<Integer, PackageInstaller.Session> sessions = new HashMap<>();
   private Set<CallbackInfo> callbackInfos = new HashSet<>();
 
-  private class CallbackInfo {
+  private static class CallbackInfo {
     PackageInstaller.SessionCallback callback;
     Handler handler;
   }
@@ -156,9 +156,8 @@ public class ShadowPackageInstaller {
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
 
-    public void __constructor__() {
-
-    }
+    @Implementation
+    public void __constructor__() {}
 
     @Implementation
     public @NonNull OutputStream openWrite(@NonNull String name, long offsetBytes, long lengthBytes) throws IOException {

@@ -40,16 +40,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             test.compileClasspath += project.configurations.compileOnly
         }
 
-        def mavenArtifactName = {
-            def projNameParts = project.name.split(/\//) as List
-            if (projNameParts[0] == "shadows") {
-                projNameParts = projNameParts.drop(1)
-                return projNameParts.join("-")
-            } else {
-                return project.name
-            }
-        }()
-        ext.mavenArtifactName = mavenArtifactName
+        ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")
 
         task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
             File outDir = project.sourceSets['test'].output.resourcesDir

@@ -97,8 +97,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected DependencyResolver getJarResolver() {
     if (dependencyResolver == null) {
       if (Boolean.getBoolean("robolectric.offline")) {
-        String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-        dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
+        String propPath = System.getProperty("robolectric-deps.properties");
+        if (propPath != null) {
+          try {
+            dependencyResolver = new PropertiesDependencyResolver(
+                Fs.newFile(propPath),
+                null);
+          } catch (IOException e) {
+            throw new RuntimeException("couldn't read dependencies" , e);
+          }
+        } else {
+          String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
+          dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
+        }
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
 
@@ -479,7 +490,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   private static class MethodPassThrough extends Config.Implementation {
-    private FrameworkMethod method;
+    private final FrameworkMethod method;
 
     private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);

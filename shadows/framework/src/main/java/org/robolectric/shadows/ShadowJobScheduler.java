@@ -2,10 +2,12 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 
 import android.app.JobSchedulerImpl;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
+import android.app.job.JobWorkItem;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +34,9 @@ public abstract class ShadowJobScheduler {
 
   @Implementation(minSdk = N)
   public abstract JobInfo getPendingJob(int jobId);
+
+  @Implementation(minSdk = O)
+  public abstract int enqueue(JobInfo job, JobWorkItem work);
 
   public abstract void failOnJob(int jobId);
 
@@ -69,6 +74,13 @@ public abstract class ShadowJobScheduler {
     @Override @Implementation(minSdk = N)
     public JobInfo getPendingJob(int jobId) {
       return scheduledJobs.get(jobId);
+    }
+
+    @Override
+    @Implementation(minSdk = O)
+    public int enqueue(JobInfo job, JobWorkItem work) {
+      // Shadow-wise, enqueue and schedule are identical.
+      return schedule(job);
     }
 
     @Override

@@ -40,7 +40,16 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
 end
 
 def install(group_id, artifact_id, version, archive)
-  system("mvn -q install:install-file -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dfile='#{archive}' -Dpackaging=jar")
+  run("mvn -q install:install-file -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dfile='#{archive}' -Dpackaging=jar") || exit(1)
+end
+
+def get_dependency(group_id, artifact_id, version, packaging)
+  run("mvn -q dependency:get -DremoteRepositories=https://maven.google.com/ -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dpackaging='#{packaging}' -Dtransitive=false") || exit(1)
+end
+
+def run(args)
+  puts "> #{args}"
+  system args
 end
 
 def install_jar(group_id, artifact_id, version, archive, &block)
@@ -56,13 +65,15 @@ def install_jar(group_id, artifact_id, version, archive, &block)
 end
 
 def install_aar(repo_root_dir, group_id, artifact_id, version, &block)
+  return if already_have?(group_id, artifact_id, version, "jar")
+
   # Don't move further if we have an invalid repo root directory
   unless File.exists?(repo_root_dir)
     puts "Repository #{repo_root_dir} not found!"
     puts "Make sure that the 'ANDROID_HOME' Environment Variable is properly set in your development environment pointing to your SDK installation directory."
     exit 1
   end
-  
+
   archive = concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, "aar")
 
   puts "Installing AAR #{group_id}:#{artifact_id}, version #{version} from \'#{archive}\'."
@@ -73,7 +84,16 @@ def install_aar(repo_root_dir, group_id, artifact_id, version, &block)
   end
 end
 
+def already_have?(group_id, artifact_id, version, extension)
+  jar_file = concat_maven_file_segments(MVN_LOCAL, group_id, artifact_id, version, extension)
+  exists = File.exist?(jar_file)
+  puts "Already have #{jar_file}!" if exists
+  exists
+end
+
 def install_stubs(api)
+  return if already_have?("com.google.android", "android-stubs", "#{api}", "jar")
+
   path  = "#{ANDROID_HOME}/platforms/android-#{api}/android.jar"
   unless File.exists?(path)
     puts "#{path} not found!"
@@ -85,11 +105,19 @@ def install_stubs(api)
   install("com.google.android", "android-stubs", "#{api}", path)
 end
 
+def install_from_gmaven(artifact_id)
+  return if already_have?(ANDROID_SUPPORT_GROUP_ID, artifact_id, SUPPORT_LIBRARY_VERSION, "jar")
+
+  get_dependency(ANDROID_SUPPORT_GROUP_ID, artifact_id, SUPPORT_LIBRARY_VERSION, "aar")
+  install_aar(MVN_LOCAL, ANDROID_SUPPORT_GROUP_ID, artifact_id, SUPPORT_LIBRARY_VERSION)
+end
+
 # Local repository paths
 ANDROID_HOME = ENV['ANDROID_HOME']
 ADDONS = "#{ANDROID_HOME}/add-ons"
 GOOGLE_REPO  = "#{ANDROID_HOME}/extras/google/m2repository"
 ANDROID_REPO = "#{ANDROID_HOME}/extras/android/m2repository"
+MVN_LOCAL = File.expand_path("~/.m2/repository")
 
 # Android Support libraries maven constants
 ANDROID_SUPPORT_GROUP_ID = "com.android.support"
@@ -103,8 +131,8 @@ APPCOMPAT_V7_ARTIFACT_ID = "appcompat-v7"
 INTERNAL_IMPL_ARTIFACT_ID = "internal_impl"
 
 # Android Support library versions (plus trailing version)
-SUPPORT_LIBRARY_TRAILING_VERSION = "23.2.0"
-SUPPORT_LIBRARY_VERSION = "26.0.0-alpha1"
+# SUPPORT_LIBRARY_TRAILING_VERSION = "23.2.0"
+SUPPORT_LIBRARY_VERSION = "26.0.1"
 MULTIDEX_TRAILING_VERSION = "1.0.0"
 MULTIDEX_VERSION = "1.0.1"
 
@@ -129,15 +157,15 @@ PLAY_SERVICES_BASEMENT = "play-services-basement"
 
 # Mavenize all dependencies
 
-install_stubs(26)
+install_stubs(27)
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_TRAILING_VERSION)
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_VERSION)
 
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, APPCOMPAT_V7_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION)
+# install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, APPCOMPAT_V7_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION)
 
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, APPCOMPAT_V7_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION)
+install_from_gmaven(APPCOMPAT_V7_ARTIFACT_ID)
 
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_LEGACY, PLAY_SERVICES_VERSION_6_5_87)
 
@@ -149,14 +177,13 @@ install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASE, PLAY_SERVIC
 
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASE, PLAY_SERVICES_VERSION)
 
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_V4_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION) do |dir|
+# install_aar(MVN_LOCAL, ANDROID_SUPPORT_GROUP_ID, SUPPORT_V4_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION) do |dir|
+  # install_jar(ANDROID_SUPPORT_GROUP_ID, INTERNAL_IMPL_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION, "#{dir}/libs/#{INTERNAL_IMPL_ARTIFACT_ID}-#{SUPPORT_LIBRARY_TRAILING_VERSION}.jar")
+# end
 
-  install_jar(ANDROID_SUPPORT_GROUP_ID, INTERNAL_IMPL_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION, "#{dir}/libs/#{INTERNAL_IMPL_ARTIFACT_ID}-#{SUPPORT_LIBRARY_TRAILING_VERSION}.jar")
-end
-
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_V4_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION)
-
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_COMPAT_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION)
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_CORE_UI_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION)
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_CORE_UTILS_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION)
-install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_FRAGMENT_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION)
+install_from_gmaven(SUPPORT_V4_ARTIFACT_ID)
+install_from_gmaven(SUPPORT_COMPAT_ARTIFACT_ID)
+install_from_gmaven(SUPPORT_CORE_UI_ARTIFACT_ID)
+install_from_gmaven(SUPPORT_CORE_UTILS_ARTIFACT_ID)
+install_from_gmaven(SUPPORT_FRAGMENT_ARTIFACT_ID)
+install_from_gmaven('support-media-compat')

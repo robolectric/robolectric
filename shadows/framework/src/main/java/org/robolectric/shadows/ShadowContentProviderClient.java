@@ -26,7 +26,9 @@ public class ShadowContentProviderClient {
   private boolean released;
   private ContentProvider provider;
 
-  public void __constructor__(ContentResolver contentResolver, IContentProvider contentProvider, boolean stable) {
+  @Implementation
+  public void __constructor__(
+      ContentResolver contentResolver, IContentProvider contentProvider, boolean stable) {
     this.stable = stable;
   }
 

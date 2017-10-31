@@ -301,9 +301,10 @@ public class ShadowResources {
 
     private String message;
 
-    public void __constructor__() {
-    }
+    @Implementation
+    public void __constructor__() {}
 
+    @Implementation
     public void __constructor__(String name) {
       this.message = name;
     }

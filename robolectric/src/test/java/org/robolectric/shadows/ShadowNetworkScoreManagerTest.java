@@ -9,11 +9,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 /** ShadowNetworkScoreManagerTest tests {@link ShadowNetworkScoreManager}. */
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public final class ShadowNetworkScoreManagerTest {
   private NetworkScoreManager networkScoreManager;
 

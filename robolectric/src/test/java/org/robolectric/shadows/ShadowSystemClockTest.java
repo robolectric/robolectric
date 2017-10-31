@@ -8,10 +8,10 @@ import android.os.SystemClock;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSystemClockTest {
   @Test
   public void shouldAllowForFakingOfTime() throws Exception {

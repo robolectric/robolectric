@@ -11,7 +11,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.NEWEST_SDK)
 public class InvokeDynamicTest {
   @Test
   @Config(shadows = {DoNothingShadow.class})

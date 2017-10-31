@@ -8,9 +8,9 @@ import android.widget.SimpleCursorAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSimpleCursorAdapterTest {
 
   @Test

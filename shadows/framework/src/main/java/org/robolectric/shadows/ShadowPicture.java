@@ -12,15 +12,16 @@ public class ShadowPicture {
   private int width;
   private int height;
 
-  public void __constructor__() {
-  }
+  @Implementation
+  public void __constructor__() {}
 
-  public void __constructor__(long nativePicture) {
-  }
+  @Implementation
+  public void __constructor__(long nativePicture) {}
 
-  public void __constructor__(int nativePicture, boolean fromStream) {
-  }
+  @Implementation
+  public void __constructor__(int nativePicture, boolean fromStream) {}
 
+  @Implementation
   public void __constructor__(Picture src) {
     width = src.getWidth();
     height = src.getHeight();

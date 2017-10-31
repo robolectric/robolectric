@@ -40,6 +40,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.VerifierDeviceIdentity;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -403,12 +404,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo) throws PackageManager.NameNotFoundException {
-    if (RuntimeEnvironment.application.getPackageName().equals(applicationInfo.packageName)) {
-      return RuntimeEnvironment.application.getResources();
-    } else if (resources.containsKey(applicationInfo.packageName)) {
-      return resources.get(applicationInfo.packageName);
-    }
-    throw new NameNotFoundException(applicationInfo.packageName);
+    return getResourcesForApplication(applicationInfo.packageName);
   }
 
   @Implementation
@@ -468,6 +464,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
   }
 
@@ -498,14 +495,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(maxSdk = JELLY_BEAN)
   public void getPackageSizeInfo(String packageName, final IPackageStatsObserver observer) {
     final PackageStats packageStats = packageStatsMap.get(packageName);
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-      public void run() {
-        try {
-          observer.onGetStatsCompleted(packageStats, packageStats != null);
-        } catch (RemoteException remoteException) {
-          remoteException.rethrowFromSystemServer();
-        }
+    new Handler(Looper.getMainLooper()).post(() -> {
+      try {
+        observer.onGetStatsCompleted(packageStats, packageStats != null);
+      } catch (RemoteException remoteException) {
+        remoteException.rethrowFromSystemServer();
       }
     });
   }
@@ -513,14 +507,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
   public void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver callback) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-      public void run() {
-        try {
-          callback.onGetStatsCompleted(packageStats, packageStats != null);
-        } catch (RemoteException remoteException) {
-          remoteException.rethrowFromSystemServer();
-        }
+    new Handler(Looper.getMainLooper()).post(() -> {
+      try {
+        callback.onGetStatsCompleted(packageStats, packageStats != null);
+      } catch (RemoteException remoteException) {
+        remoteException.rethrowFromSystemServer();
       }
     });
   }
@@ -528,14 +519,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = N)
   public void getPackageSizeInfoAsUser(String pkgName, int uid, final IPackageStatsObserver callback) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-      public void run() {
-        try {
-          callback.onGetStatsCompleted(packageStats, packageStats != null);
-        } catch (RemoteException remoteException) {
-          remoteException.rethrowFromSystemServer();
-        }
+    new Handler(Looper.getMainLooper()).post(() -> {
+      try {
+        callback.onGetStatsCompleted(packageStats, packageStats != null);
+      } catch (RemoteException remoteException) {
+        remoteException.rethrowFromSystemServer();
       }
     });
   }
@@ -564,6 +552,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   public Drawable getApplicationIcon(String packageName) throws NameNotFoundException {
     return applicationIcons.get(packageName);
   }
@@ -612,11 +601,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return result;
   }
 
+  @Override
   public CharSequence getApplicationLabel(ApplicationInfo info) {
     return info.name;
   }
 
   @Implementation
+  @Override
   public Intent getLaunchIntentForPackage(String packageName) {
     Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
     intentToResolve.addCategory(Intent.CATEGORY_INFO);
@@ -668,7 +659,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public int getPackageUid(String packageName, int flags) throws NameNotFoundException {
-    return 0;
+    Integer uid = uidForPackage.get(packageName);
+    if (uid == null) {
+      throw new NameNotFoundException(packageName);
+    }
+    return uid;
   }
 
   @Implementation
@@ -694,6 +689,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
@@ -832,7 +828,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Override @Nullable
   @Implementation
   public Drawable getDrawable(String packageName, @DrawableRes int resId, @Nullable ApplicationInfo appInfo) {
-    return drawables.get(new Pair(packageName, resId));
+    return drawables.get(new Pair<>(packageName, resId));
   }
 
   @Override @Implementation
@@ -918,8 +914,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public Resources getResourcesForApplication(String appPackageName) throws NameNotFoundException {
     if (RuntimeEnvironment.application.getPackageName().equals(appPackageName)) {
       return RuntimeEnvironment.application.getResources();
-    } else if (resources.containsKey(appPackageName)) {
-      return resources.get(appPackageName);
+    } else if (packageInfos.containsKey(appPackageName)) {
+      Resources appResources = resources.get(appPackageName);
+      if (appResources == null) {
+        appResources = new Resources(new AssetManager(), null, null);
+        resources.put(appPackageName, appResources);
+      }
+      return appResources;
     }
     throw new NameNotFoundException(appPackageName);
   }

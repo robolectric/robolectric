@@ -7,9 +7,9 @@ import android.app.Activity;
 import android.app.ActivityGroup;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowActivityGroupTest {
 
   @Test

@@ -85,7 +85,7 @@ public class RoboCookieManager extends CookieManager {
         return null;
       }
 
-      StringBuffer cookieHeaderValue = new StringBuffer();
+      StringBuilder cookieHeaderValue = new StringBuilder();
       for (int i = 0, n = matchedCookies.size(); i < n; i++) {
         Cookie cookie = matchedCookies.get(i);
 

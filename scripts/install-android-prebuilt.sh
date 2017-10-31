@@ -1,3 +1,4 @@
+@@ -0,0 1,85 @@
 #!/bin/bash
 #
 # This script signs already built AOSP Android jars, and installs them in your local
@@ -39,6 +40,13 @@ ANDROID_ALL_SRC=android-all-${ROBOLECTRIC_VERSION}-sources.jar
 ANDROID_ALL_DOC=android-all-${ROBOLECTRIC_VERSION}-javadoc.jar
 ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
 
+generate_empty_src_javadoc() {
+    TMP=`mktemp --directory`
+    cd ${TMP}
+    jar cf ${JAR_DIR}/${ANDROID_ALL_DOC} .
+    jar cf ${JAR_DIR}/${ANDROID_ALL_SRC} .
+    cd ${JAR_DIR}; rm -rf ${TMP}
+}
 
 build_signed_packages() {
     echo "Robolectric: Building android-all.pom..."
@@ -79,6 +87,7 @@ mavenize() {
       -Dclassifier=javadoc
 }
 
+generate_empty_src_javadoc
 build_signed_packages
 mavenize
 

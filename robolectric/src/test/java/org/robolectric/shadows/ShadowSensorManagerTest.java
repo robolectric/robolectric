@@ -16,11 +16,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSensorManagerTest {
 
   private SensorManager sensorManager;
@@ -103,7 +103,7 @@ public class ShadowSensorManagerTest {
     assertThat(sensorManager.getSensorList(0)).isNotNull();
   }
 
-  private class TestSensorEventListener implements SensorEventListener {
+  private static class TestSensorEventListener implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {

@@ -9,10 +9,10 @@ import static org.mockito.Mockito.verify;
 import android.view.Choreographer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.util.TimeUtils;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowChoreographerTest {
 
   @Test

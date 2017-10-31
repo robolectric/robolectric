@@ -1,9 +1,7 @@
 package org.robolectric;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import java.util.ArrayList;
@@ -51,12 +49,11 @@ public class ManifestFactoryTest {
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
     String baseDir = "./" + TestUtil.resourcesBaseDir().getPath();
-    assertEquals(asList(
-        joinPath(baseDir, "res"),
-        joinPath(baseDir, "lib1", "res"),
-        joinPath(baseDir, "lib1", "..", "lib3", "res"),
-        joinPath(baseDir, "lib1", "..", "lib2", "res")),
-        resourcePaths);
+    assertThat(resourcePaths).contains(
+        baseDir + "/res",
+        baseDir + "/lib1/res",
+        baseDir + "/lib1/../lib3/res",
+        baseDir + "/lib1/../lib2/res");
   }
 
   @Test
@@ -68,7 +65,7 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      Properties getBuildSystemApiProperties() {
+      @Override Properties getBuildSystemApiProperties() {
         return properties;
       }
     };
@@ -80,7 +77,7 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getManifestFile()).isEqualTo(Fs.fileFromPath("/path/to/MergedManifest.xml"));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
-    assertThat(manifestIdentifier.getLibraryDirs()).isEmpty();
+    assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
     AndroidManifest androidManifest = manifestFactory.create(manifestIdentifier);
@@ -98,7 +95,7 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      Properties getBuildSystemApiProperties() {
+      @Override Properties getBuildSystemApiProperties() {
         return properties;
       }
     };
@@ -114,7 +111,7 @@ public class ManifestFactoryTest {
             .isEqualTo(Fs.fromURL(getClass().getClassLoader().getResource("TestAndroidManifest.xml")));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
-    assertThat(manifestIdentifier.getLibraryDirs()).isEmpty();
+    assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isEqualTo("another.package");
   }
 

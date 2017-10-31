@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.view.View;
@@ -9,9 +9,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowBaseAdapterTest {
   @Test
   public void shouldRecordNotifyDataSetChanged() throws Exception {

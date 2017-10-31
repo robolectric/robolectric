@@ -5,25 +5,25 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.SimpleFuture;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
 
   @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
 
-  private final SimpleFuture<Result> future;
+  private final FutureTask<Result> future;
   private final BackgroundWorker worker;
   private AsyncTask.Status status = AsyncTask.Status.PENDING;
 
   public ShadowAsyncTask() {
     worker = new BackgroundWorker();
-    future = new SimpleFuture<Result>(worker) {
+    future = new FutureTask<Result>(worker) {
       @Override
       protected void done() {
         status = AsyncTask.Status.FINISHED;

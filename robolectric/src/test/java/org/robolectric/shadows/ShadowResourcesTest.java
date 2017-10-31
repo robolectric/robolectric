@@ -34,14 +34,14 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowResourcesTest {
   private Resources resources;
 
@@ -109,7 +109,10 @@ public class ShadowResourcesTest {
 
   @Test
   public void getText_withLayoutId() throws Exception {
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith(File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
+    // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a String resource type
+    // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
+    // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith("res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
   }
 
   @Test
@@ -451,7 +454,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
-    assertThat(Resources.getSystem().getIdentifier("copy", "string", TestUtil.TEST_PACKAGE)).isEqualTo(0);
+    assertThat(Resources.getSystem().getIdentifier("copy", "string", RuntimeEnvironment.application.getPackageName())).isEqualTo(0);
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.Shadows.shadowOf;
@@ -76,6 +77,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
   private ComponentName callingActivity;
 
+  @Implementation
   public void __constructor__() {
     invokeConstructor(Activity.class, realActivity);
   }
@@ -187,7 +189,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null),
           ReflectionHelpers.ClassParameter.from(Window.class, null) // ADDED
       );
-    } else if (apiLevel == Build.VERSION_CODES.O) {
+    } else if (apiLevel >= Build.VERSION_CODES.O) {
       ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
           ReflectionHelpers.ClassParameter.from(ActivityThread.class, RuntimeEnvironment.getActivityThread()),
@@ -331,6 +333,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation(minSdk = LOLLIPOP)
   public void finishAndRemoveTask() {
+    finishWasCalled = true;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN)
+  public void finishAffinity() {
     finishWasCalled = true;
   }
 
@@ -516,7 +523,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * Container object to hold an Intent, together with the requestCode used
    * in a call to {@code Activity.startActivityForResult(Intent, int)}
    */
-  public class IntentForResult {
+  public static class IntentForResult {
     public Intent intent;
     public int requestCode;
     public Bundle options;

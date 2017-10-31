@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
+import android.os.Build;
 import java.util.BitSet;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -10,6 +11,7 @@ import org.robolectric.annotation.RealObject;
 public class ShadowWifiConfiguration {
   @RealObject private WifiConfiguration realObject;
 
+  @Implementation
   public void __constructor__() {
     realObject.networkId = -1;
     realObject.SSID = null;
@@ -46,6 +48,12 @@ public class ShadowWifiConfiguration {
     config.allowedGroupCiphers = (BitSet) realObject.allowedGroupCiphers.clone();
     config.wepKeys = new String[4];
     System.arraycopy(realObject.wepKeys, 0, config.wepKeys, 0, config.wepKeys.length);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      config.creatorName = realObject.creatorName;
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      config.creatorUid = realObject.creatorUid;
+    }
     return config;
   }
 
