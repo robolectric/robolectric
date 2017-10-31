@@ -31,22 +31,16 @@ class ShadowsPlugin implements Plugin<Project> {
             }
         }
 
-        project.task('checkAssembly', description: "Check that jars have required contents") {
-            def jars = [:]
-            project.configurations.archives.artifacts.each {
-                if (it.extension == 'jar') {
-                    jars["${it.classifier}.${it.extension}"] = it.file
-                }
-            }
-
-            project.tasks['checkAssembly'].doLast {
-                def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
-                checkForFile(jars['javadoc.jar'], "${shadowPackageNameDir}/Shadows.html")
-                checkForFile(jars['sources.jar'], "${shadowPackageNameDir}/Shadows.java")
-            }
+        // verify that we have the apt-generated files in our javadoc and sources jars
+        project.tasks['javadocJar'].doLast { task ->
+            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.html")
         }
 
-        project.tasks['assemble'].finalizedBy 'checkAssembly'
+        project.tasks['sourcesJar'].doLast { task ->
+            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.java")
+        }
 
         project.idea {
             module {
