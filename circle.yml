@@ -7,12 +7,14 @@ jobs:
     resource_class: large
     environment:
       JVM_OPTS: -Xmx3172m
-      GRADLE_MAX_PARALLEL_FORKS: 3
+      GRADLE_MAX_PARALLEL_FORKS: 2
     steps:
       - checkout
       - run:
           name: Calculate Cache Hash
-          command: find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name circle.yml \) -exec shasum {} \; > .cache-hash
+          command: |
+            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name circle.yml \) -exec shasum {} \; > .cache-hash
+            cat .cache-hash
       - run:
           name: Install Maven
           command: sudo apt-get update; sudo apt-get install maven
