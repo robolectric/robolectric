@@ -39,10 +39,6 @@ task prefetchSdks() {
         sdkConfigurations << configurations.create("sdk${androidSdk.apiLevel}")
         dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
     }
-
-    sdkConfigurations.each { sdkConfiguration ->
-        println sdkConfiguration.files
-    }
 }
 
 task prefetchDependencies(dependsOn: allprojects.collect { p -> "${p.path}:dependencies" }) {
