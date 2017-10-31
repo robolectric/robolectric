@@ -1,7 +1,7 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.util.GFileUtils
+
+import java.util.jar.JarFile
 
 @SuppressWarnings("GroovyUnusedDeclaration")
 class ShadowsPlugin implements Plugin<Project> {
@@ -20,6 +20,33 @@ class ShadowsPlugin implements Plugin<Project> {
         compileJavaTask.doFirst {
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
         }
+
+        def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
+
+        project.sourceSets {
+            generated {
+                java {
+                    srcDirs = [aptGeneratedSrcDir]
+                }
+            }
+        }
+
+        project.task('checkAssembly', description: "Check that jars have required contents") {
+            def jars = [:]
+            project.configurations.archives.artifacts.each {
+                if (it.extension == 'jar') {
+                    jars["${it.classifier}.${it.extension}"] = it.file
+                }
+            }
+
+            project.tasks['checkAssembly'].doLast {
+                def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+                checkForFile(jars['javadoc.jar'], "${shadowPackageNameDir}/Shadows.html")
+                checkForFile(jars['sources.jar'], "${shadowPackageNameDir}/Shadows.java")
+            }
+        }
+
+        project.tasks['assemble'].finalizedBy 'checkAssembly'
 
         project.idea {
             module {
@@ -42,5 +69,13 @@ class ShadowsPlugin implements Plugin<Project> {
 
     static class ShadowsPluginExtension {
         String packageName
+    }
+
+    private void checkForFile(jar, String name) {
+        def files = new JarFile(jar).entries().collect { it.name }.toSet()
+
+        if (!files.contains(name)) {
+            throw new RuntimeException("Missing file ${name} in ${jar}")
+        }
     }
 }

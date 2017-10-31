@@ -37,6 +37,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         // it's weird that compileOnly deps aren't included for test compilation; fix that:
         project.sourceSets {
+            generated
+
             test.compileClasspath += project.configurations.compileOnly
         }
 
@@ -89,10 +91,13 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
             task('sourcesJar', type: Jar, dependsOn: classes) {
                 classifier "sources"
-                from sourceSets.main.allJava
+                from sourceSets.main.allJava + sourceSets.generated.allJava
             }
 
-            javadoc.failOnError = false
+            javadoc {
+                failOnError = false
+                source = sourceSets.main.allJava + sourceSets.generated.allJava
+            }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {
                 classifier "javadoc"
