@@ -63,6 +63,10 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             minHeapSize = "1024m"
             maxHeapSize = "3172m"
 
+            if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
+                maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
+            }
+
             def forwardedSystemProperties = System.properties
                     .findAll { k,v -> k.startsWith("robolectric.") }
                     .collect { k,v -> "-D$k=$v" }
@@ -153,8 +157,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                                 "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                         repository(url: url) {
                             authentication(
-                                    userName: System.properties["sonatype-login"],
-                                    password: System.properties["sonatype-password"]
+                                    userName: System.properties["sonatype-login"] || System.env['sonatypeLogin'],
+                                    password: System.properties["sonatype-password"] || System.env['sonatypePassword']
                             )
                         }
 
