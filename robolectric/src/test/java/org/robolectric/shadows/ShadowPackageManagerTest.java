@@ -24,7 +24,20 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
+
+import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.content.pm.ApplicationInfo.*;
+import static android.content.pm.PackageManager.*;
+import static android.os.Build.VERSION_CODES.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.robolectric.Robolectric.setupActivity;
+import static org.robolectric.Shadows.shadowOf;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -124,23 +137,18 @@ public class ShadowPackageManagerTest {
   @Test
   public void applicationFlags() throws Exception {
     int flags = packageManager.getApplicationInfo("org.robolectric", 0).flags;
-    assertThat(flags).isEqualTo(
-        FLAG_ALLOW_BACKUP
-            | FLAG_ALLOW_CLEAR_USER_DATA
-            | FLAG_ALLOW_TASK_REPARENTING
-            | FLAG_DEBUGGABLE
-            | FLAG_HAS_CODE
-            | FLAG_KILL_AFTER_RESTORE
-            | FLAG_PERSISTENT
-            | FLAG_RESIZEABLE_FOR_SCREENS
-            | FLAG_RESTORE_ANY_VERSION
-            | FLAG_SUPPORTS_LARGE_SCREENS
-            | FLAG_SUPPORTS_NORMAL_SCREENS
-            | FLAG_SUPPORTS_SCREEN_DENSITIES
-            | FLAG_SUPPORTS_SMALL_SCREENS
-            | FLAG_TEST_ONLY
-            | FLAG_VM_SAFE_MODE
-    );
+    assertThat((flags & FLAG_ALLOW_BACKUP)).isEqualTo(FLAG_ALLOW_BACKUP);
+    assertThat((flags & FLAG_ALLOW_CLEAR_USER_DATA)).isEqualTo(FLAG_ALLOW_CLEAR_USER_DATA);
+    assertThat((flags & FLAG_ALLOW_TASK_REPARENTING)).isEqualTo(FLAG_ALLOW_TASK_REPARENTING);
+    assertThat((flags & FLAG_DEBUGGABLE)).isEqualTo(FLAG_DEBUGGABLE);
+    assertThat((flags & FLAG_HAS_CODE)).isEqualTo(FLAG_HAS_CODE);
+    assertThat((flags & FLAG_RESIZEABLE_FOR_SCREENS)).isEqualTo(FLAG_RESIZEABLE_FOR_SCREENS);
+    assertThat((flags & FLAG_SUPPORTS_LARGE_SCREENS)).isEqualTo(FLAG_SUPPORTS_LARGE_SCREENS);
+    assertThat((flags & FLAG_SUPPORTS_NORMAL_SCREENS)).isEqualTo(FLAG_SUPPORTS_NORMAL_SCREENS);
+    assertThat((flags & FLAG_SUPPORTS_SCREEN_DENSITIES)).isEqualTo(FLAG_SUPPORTS_SCREEN_DENSITIES);
+    assertThat((flags & FLAG_SUPPORTS_SMALL_SCREENS)).isEqualTo(FLAG_SUPPORTS_SMALL_SCREENS);
+    assertThat((flags & FLAG_TEST_ONLY)).isEqualTo(FLAG_TEST_ONLY);
+    assertThat((flags & FLAG_VM_SAFE_MODE)).isEqualTo(FLAG_VM_SAFE_MODE);
   }
 
   @Test
@@ -160,9 +168,9 @@ public class ShadowPackageManagerTest {
 
     List<ResolveInfo> receiverInfos = packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
     assertThat(receiverInfos).isNotEmpty();
-    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.get(0).activityInfo.name);
-    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.get(0).activityInfo.permission);
-    assertEquals("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE", receiverInfos.get(0).filter.getAction(0));
+    assertThat(receiverInfos.get(0).activityInfo.name).isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
+    assertThat(receiverInfos.get(0).activityInfo.permission).isEqualTo("org.robolectric.CUSTOM_PERM");
+    assertThat(receiverInfos.get(0).filter.getAction(0)).isEqualTo("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
   }
 
   @Test
@@ -406,7 +414,7 @@ public class ShadowPackageManagerTest {
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
     assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
-    assertThat(activities.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).activityInfo.name).isEqualTo("org.robolectric.shadows.TestActivity");
   }
 
   @Test
@@ -735,62 +743,31 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
-    ShadowApplication app = ShadowApplication.getInstance();
-    String packageName = app.getAppManifest().getPackageName();
-    ApplicationInfo info = packageManager.getApplicationInfo(packageName, 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
     Bundle meta = info.metaData;
 
-    Object metaValue = meta.get("org.robolectric.metaName1");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue1", metaValue);
+    assertThat(meta.getString("org.robolectric.metaName1")).isEqualTo("metaValue1");
+    assertThat(meta.getString("org.robolectric.metaName2")).isEqualTo("metaValue2");
 
-    metaValue = meta.get("org.robolectric.metaName2");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue2", metaValue);
+    assertThat(meta.getString("org.robolectric.metaFalseLiteral")).isEqualTo("false");
+    assertThat(meta.getString("org.robolectric.metaTrueLiteral")).isEqualTo("true");
 
-    metaValue = meta.get("org.robolectric.metaFalse");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(false, metaValue);
+    assertThat(meta.getString("org.robolectric.metaInt")).isEqualTo("123");
+    assertThat(meta.getString("org.robolectric.metaFloat")).isEqualTo("1.23");
 
-    metaValue = meta.get("org.robolectric.metaTrue");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(true, metaValue);
+    assertThat(meta.getString("org.robolectric.metaColor")).isEqualTo("#FFFFFF");
 
-    metaValue = meta.get("org.robolectric.metaInt");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(123, metaValue);
+    assertThat(meta.getBoolean("org.robolectric.metaBooleanFromRes")).isEqualTo(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value));
 
-    metaValue = meta.get("org.robolectric.metaFloat");
-    assertTrue(Float.class.isInstance(metaValue));
-    assertEquals(new Float(1.23), metaValue);
+    assertThat(meta.getInt("org.robolectric.metaIntFromRes")).isEqualTo(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1));
 
-    metaValue = meta.get("org.robolectric.metaColor");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(Color.WHITE, metaValue);
+    assertThat(meta.getInt("org.robolectric.metaColorFromRes")).isEqualTo(RuntimeEnvironment.application.getResources().getColor(R.color.clear));
 
-    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+    assertThat(meta.getString("org.robolectric.metaStringFromRes")).isEqualTo(RuntimeEnvironment.application.getString(R.string.app_name));
 
-    metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
+    assertThat(meta.getString("org.robolectric.metaStringOfIntFromRes")).isEqualTo(RuntimeEnvironment.application.getString(R.string.str_int));
 
-    metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.app_name), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.str_int), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(R.string.app_name, metaValue);
+    assertThat(meta.getInt("org.robolectric.metaStringRes")).isEqualTo(R.string.app_name);
   }
 
   @Test
@@ -889,27 +866,6 @@ public class ShadowPackageManagerTest {
     ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.labelRes).isEqualTo(R.string.app_name);
     assertThat(applicationInfo.nonLocalizedLabel).isNull();
-  }
-
-  @Test
-  public void shouldAssignNonLocalizedLabelFromTheManifest() throws Exception {
-    AndroidManifest androidManifest = new AndroidManifest(null, null, null) {
-
-      @Override
-      public String getPackageName() {
-        return "package.with.label";
-      }
-
-      @Override
-      public String getLabelRef() {
-        return "App Label";
-      }
-    };
-
-    shadowPackageManager.addManifest(androidManifest);
-    ApplicationInfo applicationInfo = packageManager.getApplicationInfo("package.with.label", 0);
-    assertThat(applicationInfo.labelRes).isEqualTo(0);
-    assertThat(applicationInfo.nonLocalizedLabel).isEqualTo("App Label");
   }
 
   @Test

@@ -599,7 +599,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return matchedPermission;
   }
 
-  @Override
   public CharSequence getApplicationLabel(ApplicationInfo info) {
     return info.name;
   }
