@@ -23,7 +23,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 /**
  * Shadow for the {@link AppOpsManager}.
  */
-@Implements(value = AppOpsManager.class, looseSignatures = true)
+@Implements(value = AppOpsManager.class)
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
