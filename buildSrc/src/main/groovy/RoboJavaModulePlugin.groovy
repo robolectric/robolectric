@@ -61,7 +61,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             }
 
             minHeapSize = "1024m"
-            maxHeapSize = "2048m"
+            maxHeapSize = "3172m"
 
             def forwardedSystemProperties = System.properties
                     .findAll { k,v -> k.startsWith("robolectric.") }

@@ -6,7 +6,7 @@ jobs:
       - image: circleci/android:api-26-alpha
     resource_class: large
     environment:
-      JVM_OPTS: -Xmx3200m
+      JVM_OPTS: -Xmx3172m
     steps:
       - checkout
       - run:
