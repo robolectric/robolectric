@@ -4,7 +4,7 @@ jobs:
     working_directory: ~/code
     docker:
       - image: circleci/android:api-26-alpha
-    resource_class: large
+    resource_class: xlarge
     environment:
       JVM_OPTS: -Xmx3172m
       GRADLE_MAX_PARALLEL_FORKS: 2
