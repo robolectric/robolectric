@@ -13,7 +13,7 @@ jobs:
       - run:
           name: Calculate Cache Hash
           command: |
-            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name circle.yml \) -exec shasum {} \; > .cache-hash
+            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name circle.yml \) -exec shasum {} \; | sort > .cache-hash
             cat .cache-hash
       - run:
           name: Install Maven
