@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -39,10 +41,7 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
-import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.PropertiesDependencyResolver;
+import org.robolectric.internal.dependency.*;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -97,17 +96,26 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected DependencyResolver getJarResolver() {
-    dependencyResolverPlugins.invoke(dependencyResolver -> dependencyResolver.)
+    return new DependencyResolver() {
+      @Override
+      public URL getLocalArtifactUrl(DependencyJar dependency) {
+        return dependencyResolverPlugins.invoke(dependencyResolver ->
+            dependencyResolver.getLocalArtifactUrl(dependency));
+      }
+
+      @Override
+      public float getPriority() {
+        return 0;
+      }
+    };
     if (dependencyResolver == null) {
       if (Boolean.getBoolean("robolectric.offline")) {
         String propPath = System.getProperty("robolectric-deps.properties");
         if (propPath != null) {
           try {
-            dependencyResolver = new PropertiesDependencyResolver(
-                Fs.newFile(propPath),
-                null);
+            dependencyResolver = new OfflinePropertiesDependencyResolver(propPath);
           } catch (IOException e) {
-            throw new RuntimeException("couldn't read dependencies" , e);
+            throw new RuntimeException("couldn't read dependencies", e);
           }
         } else {
           String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
@@ -145,13 +153,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
-   *
+   * <p>
    * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdkConfig</tt>.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
-   * @param sandbox the {@link SdkConfig} in effect for this test
+   * @param sandbox   the {@link SdkConfig} in effect for this test
    * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
    * @since 2.3
    */
@@ -163,7 +171,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Create a {@link DefaultConfigMerger} for calculating the {@link Config} tests.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @return an {@link DefaultConfigMerger}.
@@ -176,7 +184,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Create a {@link SdkPicker} for determining which SDKs will be tested.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @return an {@link SdkPicker}.
@@ -195,7 +203,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Create an {@link InstrumentationConfiguration} suitable for the provided {@link Config}.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param config the merged configuration for the test that's about to run -- todo
@@ -215,7 +223,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * {@inheritDoc}
    */
-  @Override @Nonnull
+  @Override
+  @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
     return createClassLoaderConfig(new Config.Builder(((RobolectricFrameworkMethod) method).config) {
       @Override
@@ -227,7 +236,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * An instance of the returned class will be created for each test invocation.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @return a class which implements {@link TestLifecycle}. This implementation returns a {@link DefaultTestLifecycle}.
@@ -282,7 +291,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return method.getAnnotation(Ignore.class) != null;
   }
 
-  @Override protected boolean shouldIgnore(FrameworkMethod method) {
+  @Override
+  protected boolean shouldIgnore(FrameworkMethod method) {
     return shouldIgnore(method, ((RobolectricFrameworkMethod) method).config);
   }
 
@@ -347,7 +357,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     roboMethod.parallelUniverseInterface = null;
   }
 
-  @Override protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+  @Override
+  protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
     try {
       return new HelperTestRunner(bootstrappedTestClass);
     } catch (InitializationError initializationError) {
@@ -357,13 +368,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Detects which build system is in use and returns the appropriate ManifestFactory implementation.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param config Specification of the SDK version, manifest file, package name, etc.
    * @deprecated This method is deprecated and will be removed in a future release of Robolectric.
-   *             Instead of overriding this method, provide your custom {@link ManifestFactory} as
-   *             a Java service (see {@link java.util.ServiceLoader}).
+   * Instead of overriding this method, provide your custom {@link ManifestFactory} as
+   * a Java service (see {@link java.util.ServiceLoader}).
    */
   @Deprecated
   protected ManifestFactory getManifestFactory(Config config) {
@@ -393,10 +404,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Compute the effective Robolectric configuration for a given test method.
-   *
+   * <p>
    * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
    * and {@link Config} annotations on test classes, superclasses, and methods.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param method the test method
@@ -410,13 +421,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Provides the base Robolectric configuration {@link Config} used for all tests.
-   *
+   * <p>
    * Configuration provided for specific packages, test classes, and test method
    * configurations will override values provided here.
-   *
+   * <p>
    * Custom TestRunner subclasses may wish to override this method to provide
    * alternate configuration. Consider using a {@link Config.Builder}.
-   *
+   * <p>
    * The default implementation has appropriate values for most use cases.
    *
    * @return global {@link Config} object
@@ -426,7 +437,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return new Config.Builder().build();
   }
 
-  @Override @Nonnull
+  @Override
+  @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
     Config config = ((RobolectricFrameworkMethod) frameworkMethod).config;
     return config.shadows();
@@ -482,7 +494,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       super(bootstrappedTestClass);
     }
 
-    @Override protected Object createTest() throws Exception {
+    @Override
+    protected Object createTest() throws Exception {
       Object test = super.createTest();
       RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
       roboMethod.testLifecycle.prepareTest(test);
@@ -509,9 +522,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   static class RobolectricFrameworkMethod extends FrameworkMethod {
-    private final @Nonnull AndroidManifest appManifest;
-    final @Nonnull SdkConfig sdkConfig;
-    final @Nonnull Config config;
+    private final @Nonnull
+    AndroidManifest appManifest;
+    final @Nonnull
+    SdkConfig sdkConfig;
+    final @Nonnull
+    Config config;
     private boolean includeApiLevelInName = true;
     TestLifecycle testLifecycle;
     ParallelUniverseInterface parallelUniverseInterface;
@@ -556,6 +572,32 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       int result = super.hashCode();
       result = 31 * result + sdkConfig.hashCode();
       return result;
+    }
+  }
+
+  private static class OfflinePropertiesDependencyResolver {
+    private static final boolean robolectricOffline = Boolean.getBoolean("robolectric.offline");
+    private static final String propPath = System.getProperty("robolectric-deps.properties");
+
+    private final PropertiesDependencyResolver propertiesDependencyResolver;
+
+    public OfflinePropertiesDependencyResolver() {
+      try {
+        propertiesDependencyResolver = new PropertiesDependencyResolver(Fs.newFile(getPropPath()), null);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      super(, null);
+    }
+
+    private static String getPropPath() {
+      if (!robolectricOffline) {
+        throw new Plugin.UnsuitablePluginException();
+      }
+      if (propPath == null) {
+        throw new Plugin.UnsuitablePluginException();
+      }
+      return propPath;
     }
   }
 }
