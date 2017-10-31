@@ -16,6 +16,7 @@ import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
@@ -100,6 +101,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
+    DisplayMetrics displayMetrics = systemResources.getDisplayMetrics();
     configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp != 0 ? resTab.smallestScreenWidthDp : 320;
     configuration.screenWidthDp = resTab.screenWidthDp != 0 ? resTab.screenWidthDp : 320 ;
     configuration.orientation = resTab.orientation;
@@ -119,6 +121,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
     }
+    displayMetrics.density = ((float)resTab.density)/160;
     //configuration.
     // end new stuff
 
@@ -146,7 +149,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           configuration, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
     }
 
-    systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
+    systemResources.updateConfiguration(configuration, displayMetrics);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
@@ -202,7 +205,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
-      appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
+      appResources.updateConfiguration(configuration, displayMetrics);
 
       application.onCreate();
     }

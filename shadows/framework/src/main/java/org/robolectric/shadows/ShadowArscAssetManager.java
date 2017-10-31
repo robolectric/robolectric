@@ -78,6 +78,10 @@ public class ShadowArscAssetManager {
     return Shadow.extract(assets) instanceof ShadowAssetManager;
   }
 
+  public static boolean isLegacyAssetManager() {
+    return isLegacyAssetManager(RuntimeEnvironment.application.getAssets());
+  }
+
   @Implementation
   public void __constructor__() {
     if (USE_LEGACY) {

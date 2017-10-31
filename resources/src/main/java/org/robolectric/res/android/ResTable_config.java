@@ -63,6 +63,7 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_
 import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
 import static org.robolectric.res.android.ResTable.kDebugTableSuperNoisy;
 import static org.robolectric.res.android.Util.ALOGI;
+import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
@@ -680,7 +681,7 @@ public class ResTable_config {
         o.country,
         o.orientation,
         o.touchscreen,
-        dtohs((short) o.density),
+        dtohl(o.density),
         o.keyboard,
         o.navigation,
         o.inputFlags,
