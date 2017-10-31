@@ -8,6 +8,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Trace;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -225,7 +226,14 @@ public class ShadowPackageParser {
 
       final AttributeSet attrs = parser;
 
-      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
+      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O_MR1) {
+        return directlyOn(PackageParser.class, "parseApkLite",
+            ReflectionHelpers.ClassParameter.from(String.class, apkPath),
+            ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
+            ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
+            ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
+            ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
+      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
         return directlyOn(PackageParser.class, "parseApkLite",
             ReflectionHelpers.ClassParameter.from(String.class, apkPath),
             ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
@@ -243,9 +251,8 @@ public class ShadowPackageParser {
             ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
             ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
       }
-
     } catch (Exception e) {
-      throw new RuntimeException("Failed to parse " + apkPath + "Error code: " + INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION);
+      throw new RuntimeException("Failed to parse " + apkPath, e);
     } finally {
       IoUtils.closeQuietly(parser);
       IoUtils.closeQuietly(assets);
