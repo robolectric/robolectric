@@ -1,10 +1,13 @@
 package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
+import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -17,6 +20,11 @@ import org.robolectric.res.ResourceTable;
 
 @RunWith(RobolectricTestRunner.class)
 public class ResourceLoaderTest {
+
+  @Before
+  public void setUp() {
+    assumeTrue(isLegacyAssetManager());
+  }
 
   @Test
   @Config(qualifiers = "doesnotexist-land-xlarge") // todo: apply in order specified here: https://developer.android.com/guide/topics/resources/providing-resources.html#table2

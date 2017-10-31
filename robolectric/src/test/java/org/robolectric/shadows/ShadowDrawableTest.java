@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -147,7 +148,7 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(qualifiers = "hdpi")
+  @Config(qualifiers = "hdpi", sdk = 16) // TODO unpin
   public void drawableShouldLoadImageOfCorrectSizeWithHdpiQualifier() {
     final Drawable anImage = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.robolectric);
 
@@ -158,13 +159,15 @@ public class ShadowDrawableTest {
   @Test
   @Config(minSdk = LOLLIPOP, qualifiers = "anydpi")
   public void testGetBitmapOrVectorDrawableAt21() {
+    // at API 21+ and mdpi, the drawable-anydpi-v21/image_or_vector.xml should be loaded instead
+    // of drawable/image_or_vector.png
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
     assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
   }
 
   @Test
-  @Config(minSdk = KITKAT)
+  @Config(minSdk = KITKAT, maxSdk = KITKAT_WATCH)
   public void testGetBitmapOrVectorDrawableAt19() {
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);

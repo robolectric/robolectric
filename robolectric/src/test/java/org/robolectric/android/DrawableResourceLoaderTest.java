@@ -4,7 +4,9 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -28,6 +30,7 @@ public class DrawableResourceLoaderTest {
 
   @Before
   public void setup() throws Exception {
+    assumeTrue(isLegacyAssetManager());
     resources = RuntimeEnvironment.application.getResources();
   }
 
