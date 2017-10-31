@@ -16,15 +16,22 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.TempDirectory;
 
 /**
- * Shadow for {@link SharedMemory}.
- *
- * <p>This is not a faithful "shared" memory implementation. Since Robolectric tests only operate
- * within a single process, this shadow just allocates an in process memory chunk.
+ * This is not a faithful "shared" memory implementation. Since Robolectric tests only operate
+ * within a single process, this shadow just allocates an in-process memory chunk.
  */
-@Implements(value = SharedMemory.class, minSdk = Build.VERSION_CODES.O_MR1)
+@Implements(value = SharedMemory.class,
+    minSdk = Build.VERSION_CODES.O_MR1,
+    /* not quite true, but this prevents a useless `shadowOf()` accessor showing
+     * up, which would break people compiling against API 26 and earlier.
+    */
+    isInAndroidSdk = false
+)
 public class ShadowSharedMemory {
   private static final Map<FileDescriptor, File> filesByFd = new WeakHashMap<>();
 
+  /**
+   * For tests, returns a {@link ByteBuffer} of the requested size.
+   */
   @Implementation
   public ByteBuffer map(int prot, int offset, int length) throws ErrnoException {
     return ByteBuffer.allocate(length);
