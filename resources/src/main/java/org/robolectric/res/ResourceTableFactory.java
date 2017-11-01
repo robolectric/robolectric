@@ -116,7 +116,6 @@ public class ResourceTableFactory {
                   .addHandler("item[@type='color']", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
                   .addHandler("drawable", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
                   .addHandler("item[@type='drawable']", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
-                  .addHandler("mipmap", new StaxValueLoader(resourceTable, "mipmap", ResType.DRAWABLE))
                   .addHandler("item[@type='mipmap']", new StaxValueLoader(resourceTable, "mipmap", ResType.DRAWABLE))
                   .addHandler("dimen", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
                   .addHandler("item[@type='dimen']", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
