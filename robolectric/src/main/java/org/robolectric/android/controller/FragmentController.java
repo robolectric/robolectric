@@ -123,6 +123,11 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     return this;
   }
 
+  public FragmentController<F> arguments(Bundle bundle) {
+    component.setArguments(bundle);
+    return this;
+  }
+
   public FragmentController<F> saveInstanceState(final Bundle outState) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
