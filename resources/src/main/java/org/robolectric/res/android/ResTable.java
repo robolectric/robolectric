@@ -1180,17 +1180,18 @@ public class ResTable {
       }
       for (ResTable_type resTableType : type.configs) {
         int entryIndex = resTableType.findEntryByResName(ei);
-
-        int resId = Res_MAKEID(group.id - 1, typeIndex, entryIndex);
-        if (outTypeSpecFlags != null) {
-          Entry result = new Entry();
-          if (getEntry(group, typeIndex, entryIndex, null, result) != NO_ERROR) {
-            ALOGW("Failed to find spec flags for 0x%08x", resId);
-            return 0;
+        if (entryIndex >= 0) {
+          int resId = Res_MAKEID(group.id - 1, typeIndex, entryIndex);
+          if (outTypeSpecFlags != null) {
+            Entry result = new Entry();
+            if (getEntry(group, typeIndex, entryIndex, null, result) != NO_ERROR) {
+              ALOGW("Failed to find spec flags for 0x%08x", resId);
+              return 0;
+            }
+            outTypeSpecFlags.set(result.specFlags);
           }
-          outTypeSpecFlags.set(result.specFlags);
+          return resId;
         }
-        return resId;
       }
     }
     return 0;

@@ -1544,8 +1544,6 @@ static class ResTable_typeSpec extends WithOffset
       }
 
       public int findEntryByResName(int stringId) {
-        ByteBuffer buf = myBuf();
-        int offset = myOffset();
         for (int i = 0; i < entryCount; i++) {
           if (entryNameIndex(i) == stringId) {
             return i;
