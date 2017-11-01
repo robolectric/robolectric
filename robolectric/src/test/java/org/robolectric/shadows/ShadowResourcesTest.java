@@ -883,6 +883,21 @@ public class ShadowResourcesTest {
         .isEqualTo("Up to 25   USD");
   }
 
+  @Test
+  public void getResourceTypeName_mipmap() {
+    assertThat(resources.getResourceTypeName(R.mipmap.mipmap_reference)).isEqualTo("mipmap");
+    assertThat(resources.getResourceTypeName(R.mipmap.robolectric)).isEqualTo("mipmap");
+  }
+
+  @Test
+  public void getDrawable_mipmapReferencesResolve() {
+    Drawable reference = resources.getDrawable(R.mipmap.mipmap_reference);
+    Drawable original = resources.getDrawable(R.mipmap.robolectric);
+
+    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
+    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
+  }
+
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {
