@@ -411,20 +411,38 @@ public class ShadowArscAssetManager {
 
   @Implementation
   public String getResourcePackageName(int resid) {
-    return directlyOn(realObject, AssetManager.class, "getResourcePackageName",
-        ClassParameter.from(int.class, resid));
+    CppAssetManager cppAssetManager = assetManagerForJavaObject();
+
+    ResourceName name = new ResourceName();
+    if (!cppAssetManager.getResources().getResourceName(resid, true, name)) {
+      return null;
+    }
+
+    return name.packageName.trim();
   }
 
   @Implementation
   public String getResourceTypeName(int resid) {
-    return directlyOn(realObject, AssetManager.class, "getResourceTypeName",
-        ClassParameter.from(int.class, resid));
+    CppAssetManager cppAssetManager = assetManagerForJavaObject();
+
+    ResourceName name = new ResourceName();
+    if (!cppAssetManager.getResources().getResourceName(resid, true, name)) {
+      return null;
+    }
+
+    return name.type;
   }
 
   @Implementation
   public String getResourceEntryName(int resid) {
-    return directlyOn(realObject, AssetManager.class, "getResourceEntryName",
-        ClassParameter.from(int.class, resid));
+    CppAssetManager cppAssetManager = assetManagerForJavaObject();
+
+    ResourceName name = new ResourceName();
+    if (!cppAssetManager.getResources().getResourceName(resid, true, name)) {
+      return null;
+    }
+
+    return name.name;
   }
 
   private void replaceShadow(ShadowAssetManager shadowAssetManager) {

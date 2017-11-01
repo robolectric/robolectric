@@ -238,6 +238,14 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
+  public void testGetResourceNames() throws Exception {
+    assertThat(resources.getResourceEntryName(R.layout.activity_main)).isEqualTo("activity_main");
+    assertThat(resources.getResourceTypeName(R.layout.activity_main)).isEqualTo("layout");
+    assertThat(resources.getResourcePackageName(R.layout.activity_main)).isEqualTo("org.robolectric");
+    assertThat(resources.getResourceName(R.layout.activity_main)).isEqualTo("org.robolectric:layout/activity_main");
+  }
+
+  @Test
   public void whenPackageIsUnknown_getResourceIdentifier_shouldReturnZero() throws Exception {
     assertThat(resources.getIdentifier("whatever", "id", "some.unknown.package"))
         .isEqualTo(0);

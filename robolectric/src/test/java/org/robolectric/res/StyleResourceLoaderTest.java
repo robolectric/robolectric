@@ -2,6 +2,8 @@ package org.robolectric.res;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
+import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 import static org.robolectric.util.TestUtil.sdkResources;
 
 import org.junit.Before;
@@ -21,6 +23,8 @@ public class StyleResourceLoaderTest {
 
   @Test
   public void testStyleDataIsLoadedCorrectly() throws Exception {
+    assumeTrue(isLegacyAssetManager());
+
     TypedResource typedResource = resourceTable.getValue(new ResName("android", "style", "Theme_Holo"), "");
     StyleData styleData = (StyleData) typedResource.getData();
     assertThat(styleData.getName()).isEqualTo("Theme_Holo");
