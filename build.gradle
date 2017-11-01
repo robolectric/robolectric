@@ -44,6 +44,7 @@ task prefetchSdks() {
     AndroidSdk.ALL_SDKS.each { androidSdk ->
         def config = configurations.create("sdk${androidSdk.apiLevel}")
         dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+        // causes dependencies to be resolved:
         config.files
     }
 }
@@ -55,6 +56,7 @@ task prefetchDependencies() {
         allprojects.each { p ->
             ['compile', 'runtime', 'testCompile', 'testRuntime'].each { configName ->
                 if (p.configurations.findByName(configName)) {
+                    // causes dependencies to be resolved:
                     p.configurations[configName].files
                 }
             }
