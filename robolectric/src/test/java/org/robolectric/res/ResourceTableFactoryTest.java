@@ -38,6 +38,11 @@ public class ResourceTableFactoryTest {
   }
 
   @Test
+  public void shouldHandleMipmapReferences() {
+    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:mipmap/mipmap_reference"))).isEqualTo(R.mipmap.mipmap_reference);
+  }
+
+  @Test
   public void shouldHandleStyleable() throws Exception {
     assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/burritos"))).isEqualTo(R.id.burritos);
     assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:styleable/TitleBar_textStyle"))).isEqualTo(0);

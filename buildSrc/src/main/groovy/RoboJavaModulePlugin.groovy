@@ -37,8 +37,6 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         // it's weird that compileOnly deps aren't included for test compilation; fix that:
         project.sourceSets {
-            generated
-
             test.compileClasspath += project.configurations.compileOnly
         }
 
@@ -91,12 +89,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
             task('sourcesJar', type: Jar, dependsOn: classes) {
                 classifier "sources"
-                from sourceSets.main.allJava + sourceSets.generated.allJava
+                from sourceSets.main.allJava
             }
 
             javadoc {
                 failOnError = false
-                source = sourceSets.main.allJava + sourceSets.generated.allJava
+                source = sourceSets.main.allJava
             }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {
@@ -162,8 +160,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                                 "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                         repository(url: url) {
                             authentication(
-                                    userName: System.properties["sonatype-login"] || System.env['sonatypeLogin'],
-                                    password: System.properties["sonatype-password"] || System.env['sonatypePassword']
+                                    userName: System.properties["sonatype-login"] ?: System.env['sonatypeLogin'],
+                                    password: System.properties["sonatype-password"] ?: System.env['sonatypePassword']
                             )
                         }
 

@@ -1,3 +1,5 @@
+import org.gradle.plugins.ide.idea.model.IdeaModel
+
 buildscript {
     repositories { jcenter() }
 
@@ -22,12 +24,44 @@ allprojects {
 }
 
 apply plugin: 'idea'
-apply plugin: 'net.ltgt.apt-idea'
+apply plugin: 'net.ltgt.apt'
 
-idea {
-    project {
-        // experimental: whether annotation processing will be configured in the IDE; only actually used with the 'idea' task.
-        configureAnnotationProcessing = true
+project.ext.configAnnotationProcessing = []
+project.afterEvaluate {
+    def ideaProject = rootProject.extensions.getByType(IdeaModel).project
+    ideaProject.ipr.withXml { provider ->
+        def compilerConfiguration = provider.asNode().component.find { it.'@name' == 'CompilerConfiguration' }
+
+        // prevent compiler from complaining about duplicate classes...
+        def excludeFromCompile = compilerConfiguration.appendNode 'excludeFromCompile'
+        configAnnotationProcessing.each { Project subProject ->
+            excludeFromCompile.appendNode('directory',
+                    [url: "file://${subProject.buildDir}/classes/java/main/generated", includeSubdirectories: "true"])
+        }
+
+        // replace existing annotationProcessing tag with a new one...
+        compilerConfiguration.annotationProcessing.replaceNode {
+            annotationProcessing {
+                configAnnotationProcessing.each { Project subProject ->
+                    profile(name: "${subProject.name}_main", enabled: "true") {
+                        module(name: "${subProject.name}_main")
+                        option(name: "org.robolectric.annotation.processing.shadowPackage",
+                                value: subProject.shadows.packageName)
+                        processor(name: "org.robolectric.annotation.processing.RobolectricProcessor")
+
+                        processorPath(useClasspath: "false") {
+                            def processorRuntimeCfg = project.project(":processor").configurations['runtime']
+                            processorRuntimeCfg.allArtifacts.each { artifact ->
+                                entry(name: artifact.file)
+                            }
+                            processorRuntimeCfg.files.each { file ->
+                                entry(name: file)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -48,15 +82,27 @@ task aggregateTestReports(type: TestReport) {
 }
 
 task prefetchSdks() {
-    def sdkConfigurations = []
     AndroidSdk.ALL_SDKS.each { androidSdk ->
-        sdkConfigurations << configurations.create("sdk${androidSdk.apiLevel}")
+        def config = configurations.create("sdk${androidSdk.apiLevel}")
         dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+        // causes dependencies to be resolved:
+        config.files
     }
 }
 
-task prefetchDependencies(dependsOn: allprojects.collect { p -> "${p.path}:dependencies" }) {
+task prefetchDependencies() {
     dependsOn "prefetchSdks"
+
+    doLast {
+        allprojects.each { p ->
+            ['compile', 'runtime', 'testCompile', 'testRuntime'].each { configName ->
+                if (p.configurations.findByName(configName)) {
+                    // causes dependencies to be resolved:
+                    p.configurations[configName].files
+                }
+            }
+        }
+    }
 }
 
 // for use of external initialization scripts...

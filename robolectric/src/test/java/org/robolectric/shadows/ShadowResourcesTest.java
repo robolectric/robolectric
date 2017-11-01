@@ -1,35 +1,16 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.res.android.ResTable.Res_GETTYPE;
-import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
-
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
+import android.graphics.drawable.*;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
 import android.view.Display;
-import java.io.File;
-import java.io.InputStream;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +24,16 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
+
+import java.io.File;
+import java.io.InputStream;
+
+import static android.os.Build.VERSION_CODES.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.res.android.ResTable.Res_GETTYPE;
+import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowResourcesTest {
@@ -894,6 +885,21 @@ public class ShadowResourcesTest {
   @Test
   public void getTextArray() {
     assertThat(resources.getTextArray(R.array.more_items)).containsExactly("baz", "bang");
+  }
+
+  @Test
+  public void getResourceTypeName_mipmap() {
+    assertThat(resources.getResourceTypeName(R.mipmap.mipmap_reference)).isEqualTo("mipmap");
+    assertThat(resources.getResourceTypeName(R.mipmap.robolectric)).isEqualTo("mipmap");
+  }
+
+  @Test
+  public void getDrawable_mipmapReferencesResolve() {
+    Drawable reference = resources.getDrawable(R.mipmap.mipmap_reference);
+    Drawable original = resources.getDrawable(R.mipmap.robolectric);
+
+    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
+    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

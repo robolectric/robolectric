@@ -521,6 +521,7 @@ containing a value of this type.
         public static final int test_withorder=0x7f130003;
     }
     public static final class mipmap {
+        public static final int mipmap_reference=0x7f030001;
         public static final int robolectric=0x7f030000;
     }
     public static final class plurals {
