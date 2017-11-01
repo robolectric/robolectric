@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.shadows.ShadowArscAssetManager;
 
 @RunWith(JUnit4.class)
 public class StyleResourceLoaderTest {
@@ -17,14 +18,13 @@ public class StyleResourceLoaderTest {
 
   @Before
   public void setUp() throws Exception {
+    assumeTrue(ShadowArscAssetManager.USE_LEGACY);
     ResourcePath resourcePath = sdkResources(JELLY_BEAN);
     resourceTable = new ResourceTableFactory().newResourceTable("android", resourcePath);
   }
 
   @Test
   public void testStyleDataIsLoadedCorrectly() throws Exception {
-    assumeTrue(isLegacyAssetManager());
-
     TypedResource typedResource = resourceTable.getValue(new ResName("android", "style", "Theme_Holo"), "");
     StyleData styleData = (StyleData) typedResource.getData();
     assertThat(styleData.getName()).isEqualTo("Theme_Holo");
