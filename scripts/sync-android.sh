@@ -57,6 +57,7 @@ build_source() {
         export PATH=$JAVA_6:$PATH
         make -j$J
     elif [[ "${ANDROID_VERSION}" == "5.0.2_r3" ]]; then
+        lunch aosp_x86-eng
         tapas core-libart services services.accessibility telephony-common framework ext framework-res
         export PATH=$JAVA_7:$PATH
         ANDROID_COMPILE_WITH_JACK=false make -j$J
