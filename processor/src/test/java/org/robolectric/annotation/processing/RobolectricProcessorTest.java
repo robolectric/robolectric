@@ -32,21 +32,19 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class RobolectricProcessorTest {
-  private static final Map<String,String> DEFAULT_OPTS = new HashMap<>();
-
-  static {
-    DEFAULT_OPTS.put(PACKAGE_OPT, "org.robolectric");
-  }
+  public static final Map<String,String> DEFAULT_OPTS = new HashMap<String, String>() {{
+    put(PACKAGE_OPT, "org.robolectric");
+  }};
 
   @Test
   public void robolectricProcessor_supportsPackageOption() {
-    assertThat(new RobolectricProcessor().getSupportedOptions()).contains(PACKAGE_OPT);
+    assertThat(new RobolectricProcessor(DEFAULT_OPTS).getSupportedOptions()).contains(PACKAGE_OPT);
   }
 
   @Test
   public void robolectricProcessor_supportsShouldInstrumentPackageOption() {
     assertThat(
-        new RobolectricProcessor().getSupportedOptions()).contains(SHOULD_INSTRUMENT_PKG_OPT);
+        new RobolectricProcessor(DEFAULT_OPTS).getSupportedOptions()).contains(SHOULD_INSTRUMENT_PKG_OPT);
   }
 
   @Test
@@ -57,7 +55,7 @@ public class RobolectricProcessorTest {
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forSourceString("HelloWorld", "final class HelloWorld {}")))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .compilesWithoutError();
     //.and().generatesNoSources(); Should add this assertion onces
     // it becomes available in compile-testing
@@ -190,7 +188,7 @@ public class RobolectricProcessorTest {
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/TestWithUnrecognizedAnnotation.java")))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .compilesWithoutError();
   }
 
@@ -198,7 +196,7 @@ public class RobolectricProcessorTest {
   public void shouldGracefullyHandleNoAnythingClass_withNoRealObject() {
     assertAbout(javaSource())
       .that(forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .failsToCompile();
   }
 
@@ -209,7 +207,7 @@ public class RobolectricProcessorTest {
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectAnything.java")))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .failsToCompile();
   }
 
@@ -253,7 +251,7 @@ public class RobolectricProcessorTest {
         .that(ImmutableList.of(
             ROBO_SOURCE,
             forResource("org/robolectric/annotation/processing/shadows/DocumentedObjectShadow.java")))
-        .processedWith(new RobolectricProcessor())
+        .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
         .compilesWithoutError();
     JsonParser jsonParser = new JsonParser();
     String jsonFile = "build/docs/json/org.robolectric.Robolectric.DocumentedObject.json";
