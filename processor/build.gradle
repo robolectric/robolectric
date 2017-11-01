@@ -6,6 +6,10 @@ new RoboJavaModulePlugin(
         deploy: true
 ).apply(project)
 
+// Disable annotation processor for tests
+compileTestJava {
+    options.compilerArgs.add("-proc:none")
+}
 
 dependencies {
     // Project dependencies
