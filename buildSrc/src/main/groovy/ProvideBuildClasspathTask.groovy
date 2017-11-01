@@ -19,6 +19,12 @@ class ProvideBuildClasspathTask extends DefaultTask {
             }
         }
 
+        AndroidSdk.ALL_SDKS.each { androidSdk ->
+            def config = project.configurations.create("sdk${androidSdk.apiLevel}")
+            project.dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+            paths << "${androidSdk.coordinates.replaceAll(/:/, '\\\\:')}: ${config.files.join(':')}"
+        }
+
         File outDir = outFile.parentFile
         if (!outDir.directory) outDir.mkdirs()
         outFile.withPrintWriter { out ->
