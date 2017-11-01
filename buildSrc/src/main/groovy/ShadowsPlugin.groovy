@@ -23,9 +23,9 @@ class ShadowsPlugin implements Plugin<Project> {
         def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
 
         project.sourceSets {
-            generated {
+            main {
                 java {
-                    srcDirs = [aptGeneratedSrcDir]
+                    srcDirs += [aptGeneratedSrcDir]
                 }
             }
         }
@@ -40,6 +40,8 @@ class ShadowsPlugin implements Plugin<Project> {
             def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
             checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.java")
         }
+
+        project.rootProject.configAnnotationProcessing += project
     }
 
     static class ShadowsPluginExtension {
