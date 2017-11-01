@@ -121,7 +121,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
     }
-    displayMetrics.density = ((float)resTab.density)/160;
+    // TODO: handle the else case aka API 16
+    //displayMetrics.density = ((float)resTab.density)/160;
     //configuration.
     // end new stuff
 
