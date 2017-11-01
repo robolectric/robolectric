@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -10,10 +12,12 @@ import java.lang.reflect.Constructor;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(ParcelFileDescriptor.class)
 public class ShadowParcelFileDescriptor {
   private RandomAccessFile file;
+  @RealObject ParcelFileDescriptor realParcelFd;
 
   @Implementation
   public static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
@@ -30,10 +34,14 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   public FileDescriptor getFileDescriptor() {
-    try {
-      return file.getFD();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    if (ShadowArscAssetManager.USE_LEGACY) {
+      try {
+        return file.getFD();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      return directlyOn(realParcelFd, ParcelFileDescriptor.class, "getFileDescriptor");
     }
   }
 
