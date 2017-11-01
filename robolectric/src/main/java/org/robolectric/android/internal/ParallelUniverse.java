@@ -90,9 +90,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    String qualifiers = Qualifiers.addPlatformVersion(config.qualifiers(), sdkConfig.getApiLevel());
+    String qualifiers = config.qualifiers();
     qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
     qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
+    qualifiers = Qualifiers.addPlatformVersion(qualifiers, sdkConfig.getApiLevel());
     RuntimeEnvironment.setQualifiers(qualifiers);
 
     ConfigDescription configDescription = new ConfigDescription();
@@ -102,8 +103,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
     DisplayMetrics displayMetrics = systemResources.getDisplayMetrics();
-    configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp != 0 ? resTab.smallestScreenWidthDp : 320;
-    configuration.screenWidthDp = resTab.screenWidthDp != 0 ? resTab.screenWidthDp : 320 ;
+    configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp;
+    configuration.screenWidthDp = resTab.screenWidthDp;
     configuration.orientation = resTab.orientation;
 
     // begin new stuff
