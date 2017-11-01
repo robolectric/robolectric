@@ -16,6 +16,7 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.NameNotFoundException;
 import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
@@ -308,6 +309,16 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
+  }
+
+  @Test
+  public void getApplicationInfo_disabledApplication_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(
+        RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -710,6 +721,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getPackageInfo_disabledPackage_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    PackageInfo info = packageManager.getPackageInfo(
+        RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test
   public void getInstalledPackages_uninstalledPackage_includeUninstalled() throws Exception {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
@@ -722,6 +743,16 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getInstalledPackages(0)).isEmpty();
+  }
+
+  @Test
+  public void getInstalledPackages_disabledPackage_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS)).isNotEmpty();
+    assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS).get(0).packageName)
+        .isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test
@@ -1035,7 +1066,7 @@ public class ShadowPackageManagerTest {
       assertThat(e.getMessage()).contains("a_name");
       throw e;
     }
-    
+
   }
 
   @Test
