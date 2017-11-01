@@ -28,7 +28,7 @@ public class QualifiersTest {
   @Test
   @Config(sdk = 26)
   public void sanityCheck() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-v26-sw320dp-w320dp");
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-sw320dp-w320dp-v26");
   }
 
   @Test
