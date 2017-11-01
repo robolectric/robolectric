@@ -1,9 +1,10 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 class ProvideBuildClasspathTask extends DefaultTask {
-    File outFile
+    @OutputFile File outFile
 
     @TaskAction
     public void writeProperties() throws Exception {
