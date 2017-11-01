@@ -39,8 +39,7 @@ public class ResourceTableFactoryTest {
 
   @Test
   public void shouldHandleMipmapReferences() {
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:mipmap/mipmap_reference_item"))).isEqualTo(R.mipmap.mipmap_reference_item);
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:mipmap/mipmap_reference_element"))).isEqualTo(R.mipmap.mipmap_reference_element);
+    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:mipmap/mipmap_reference"))).isEqualTo(R.mipmap.mipmap_reference);
   }
 
   @Test
