@@ -1,3 +1,16 @@
+buildscript {
+    repositories { jcenter() }
+
+    dependencies {
+        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
+        classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+    }
+}
+
+plugins {
+    id "net.ltgt.apt" version "0.12" // automatic annotation processing
+}
+
 allprojects {
     repositories {
         mavenLocal()
@@ -8,12 +21,13 @@ allprojects {
     version = thisVersion
 }
 
-buildscript {
-    repositories { jcenter() }
+apply plugin: 'idea'
+apply plugin: 'net.ltgt.apt-idea'
 
-    dependencies {
-        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
-        classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+idea {
+    project {
+        // experimental: whether annotation processing will be configured in the IDE; only actually used with the 'idea' task.
+        configureAnnotationProcessing = true
     }
 }
 
@@ -31,6 +45,18 @@ task aggregateTestReports(type: TestReport) {
     } else {
         destinationDir = file("$buildDir/reports/allTests/$jobNumber")
     }
+}
+
+task prefetchSdks() {
+    def sdkConfigurations = []
+    AndroidSdk.ALL_SDKS.each { androidSdk ->
+        sdkConfigurations << configurations.create("sdk${androidSdk.apiLevel}")
+        dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+    }
+}
+
+task prefetchDependencies(dependsOn: allprojects.collect { p -> "${p.path}:dependencies" }) {
+    dependsOn "prefetchSdks"
 }
 
 // for use of external initialization scripts...

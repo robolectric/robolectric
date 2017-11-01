@@ -161,6 +161,7 @@ build_android_classes() {
         fi
     done
     build_tzdata
+    build_prop
     cd ${OUT}/android-all-classes; jar cf ${OUT}/${ANDROID_CLASSES} .
     rm -rf ${OUT}/android-all-classes
 }
@@ -171,6 +172,10 @@ build_tzdata() {
       mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
       cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
     fi
+}
+
+build_prop() {
+  cp ${ANDROID_SOURCES_BASE}/out/target/product/generic_x86/system/build.prop ${OUT}/android-all-classes
 }
 
 build_android_all_jar() {

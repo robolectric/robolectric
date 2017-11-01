@@ -110,7 +110,7 @@ public class ShadowChoreographer {
    * AnimationHandler would result in endless looping (the execution of the task results in a new
    * animation task created and scheduled to the front of the event loop queue).
    *
-   * <p>To prevent endless looping, a test may call {@link #setPostFrameCallbackDelay(int)} to
+   * To prevent endless looping, a test may call {@link #setPostFrameCallbackDelay(int)} to
    * specify a small delay when animation is scheduled.
    *
    * @see #setPostCallbackDelay(int)

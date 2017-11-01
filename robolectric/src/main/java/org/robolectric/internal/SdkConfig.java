@@ -26,6 +26,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
       addSdk(Build.VERSION_CODES.N, "7.0.0_r1", "r1", "1.8", "REL");
       addSdk(Build.VERSION_CODES.N_MR1, "7.1.0_r7", "r1", "1.8", "REL");
       addSdk(Build.VERSION_CODES.O, "8.0.0_r4", "r1", "1.8", "REL");
+      addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "r4402310", "1.8", "OMR1");
     }
 
     private void addSdk(int sdkVersion, String androidVersion, String frameworkSdkBuildVersion, String minJdkVersion, String codeName) {

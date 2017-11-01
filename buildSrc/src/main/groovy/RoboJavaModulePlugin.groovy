@@ -37,6 +37,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         // it's weird that compileOnly deps aren't included for test compilation; fix that:
         project.sourceSets {
+            generated
+
             test.compileClasspath += project.configurations.compileOnly
         }
 
@@ -60,8 +62,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 events = ["failed", "skipped"]
             }
 
-            minHeapSize = "2048m"
-            maxHeapSize = "4096m"
+            minHeapSize = "1024m"
+            maxHeapSize = "3172m"
+
+            if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
+                maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
+            }
 
             def forwardedSystemProperties = System.properties
                     .findAll { k,v -> k.startsWith("robolectric.") }
@@ -85,10 +91,13 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
             task('sourcesJar', type: Jar, dependsOn: classes) {
                 classifier "sources"
-                from sourceSets.main.allJava
+                from sourceSets.main.allJava + sourceSets.generated.allJava
             }
 
-            javadoc.failOnError = false
+            javadoc {
+                failOnError = false
+                source = sourceSets.main.allJava + sourceSets.generated.allJava
+            }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {
                 classifier "javadoc"
@@ -153,8 +162,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                                 "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                         repository(url: url) {
                             authentication(
-                                    userName: System.properties["sonatype-login"],
-                                    password: System.properties["sonatype-password"]
+                                    userName: System.properties["sonatype-login"] || System.env['sonatypeLogin'],
+                                    password: System.properties["sonatype-password"] || System.env['sonatypePassword']
                             )
                         }
 

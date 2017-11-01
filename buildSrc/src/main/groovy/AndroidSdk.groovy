@@ -9,10 +9,11 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final N = new AndroidSdk(24, "7.0.0_r1", 0)
     static final N_MR1 = new AndroidSdk(25, "7.1.0_r7", 0)
     static final O = new AndroidSdk(26, "8.0.0_r4", 0)
+    static final O_MR1 = new AndroidSdk(27, "8.1.0", 4402310)
 
     static final List<AndroidSdk> ALL_SDKS = [
             JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT,
-            LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O
+            LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1
     ]
 
     static final MAX_SDK = Collections.max(ALL_SDKS)
@@ -27,8 +28,20 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         this.frameworkSdkBuildVersion = frameworkSdkBuildVersion
     }
 
+    String getGroupId() {
+        return "org.robolectric"
+    }
+
+    String getArtifactId() {
+        return "android-all"
+    }
+
+    String getVersion() {
+        return "${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
+    }
+
     String getCoordinates() {
-        return "org.robolectric:android-all:${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
+        return "${groupId}:${artifactId}:${version}"
     }
 
     String getJarFileName() {
