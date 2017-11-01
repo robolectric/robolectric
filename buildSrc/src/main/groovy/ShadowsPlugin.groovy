@@ -1,59 +1,75 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.util.GFileUtils
+
+import java.util.jar.JarFile
 
 @SuppressWarnings("GroovyUnusedDeclaration")
 class ShadowsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
+        project.apply plugin: "idea"
+        project.apply plugin: "net.ltgt.apt-idea"
+
         project.extensions.create("shadows", ShadowsPluginExtension)
 
-        project.configurations {
-            robolectricProcessor
-        }
-
         project.dependencies {
-            robolectricProcessor project.project(":processor")
-        }
-
-        def generatedSourcesDir = "${project.buildDir}/generated-shadows"
-
-        project.sourceSets.main.java.srcDirs += project.file(generatedSourcesDir)
-
-        project.task("generateShadowProvider", type: JavaCompile, description: "Generate Shadows.shadowOf()s class") { task ->
-            classpath = project.configurations.robolectricProcessor
-            source = project.sourceSets.main.java
-            destinationDir = project.file(generatedSourcesDir)
-
-            doFirst {
-                logger.info "Generating Shadows.java for ${project.name}…"
-
-                // reset our classpath at the last minute, since other plugins might mutate
-                //   compileJava's classpath and we want to pick up any changes…
-                classpath = project.tasks['compileJava'].classpath + project.configurations.robolectricProcessor
-
-                options.compilerArgs.addAll(
-                        "-proc:only",
-                        "-processor", "org.robolectric.annotation.processing.RobolectricProcessor",
-                        "-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}"
-                )
-            }
-
-            doLast {
-                def src = project.file("$generatedSourcesDir/META-INF/services/org.robolectric.internal.ShadowProvider")
-                def dest = project.file("${project.buildDir}/resources/main/META-INF/services/org.robolectric.internal.ShadowProvider")
-
-                GFileUtils.mkdirs(dest.getParentFile());
-                GFileUtils.copyFile(src, dest);
-            }
+            apt project.project(":processor")
         }
 
         def compileJavaTask = project.tasks["compileJava"]
-        compileJavaTask.dependsOn("generateShadowProvider")
+        compileJavaTask.doFirst {
+            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
+        }
+
+        def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
+
+        project.sourceSets {
+            generated {
+                java {
+                    srcDirs = [aptGeneratedSrcDir]
+                }
+            }
+        }
+
+        // verify that we have the apt-generated files in our javadoc and sources jars
+        project.tasks['javadocJar'].doLast { task ->
+            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.html")
+        }
+
+        project.tasks['sourcesJar'].doLast { task ->
+            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.java")
+        }
+
+        project.idea {
+            module {
+                apt {
+                    // whether generated sources dirs are added as generated sources root
+                    addGeneratedSourcesDirs = true
+                    // whether the apt and testApt dependencies are added as module dependencies
+                    addAptDependencies = true
+
+                    // The following are mostly internal details; you shouldn't ever need to configure them.
+                    // whether the compileOnly and testCompileOnly dependencies are added as module dependencies
+                    addCompileOnlyDependencies = false // defaults to true in Gradle < 2.12
+                    // the dependency scope used for apt and/or compileOnly dependencies (when enabled above)
+                    mainDependenciesScope = "PROVIDED" // defaults to "COMPILE" in Gradle < 3.4, or when using the Gradle integration in IntelliJ IDEA
+                }
+            }
+
+        }
     }
 
     static class ShadowsPluginExtension {
         String packageName
+    }
+
+    private void checkForFile(jar, String name) {
+        def files = new JarFile(jar).entries().collect { it.name }.toSet()
+
+        if (!files.contains(name)) {
+            throw new RuntimeException("Missing file ${name} in ${jar}")
+        }
     }
 }
