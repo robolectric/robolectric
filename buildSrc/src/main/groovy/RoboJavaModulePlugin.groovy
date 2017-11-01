@@ -162,8 +162,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                                 "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                         repository(url: url) {
                             authentication(
-                                    userName: System.properties["sonatype-login"] || System.env['sonatypeLogin'],
-                                    password: System.properties["sonatype-password"] || System.env['sonatypePassword']
+                                    userName: System.properties["sonatype-login"] ?: System.env['sonatypeLogin'],
+                                    password: System.properties["sonatype-password"] ?: System.env['sonatypePassword']
                             )
                         }
 

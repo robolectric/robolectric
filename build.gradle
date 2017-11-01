@@ -41,15 +41,27 @@ task aggregateTestReports(type: TestReport) {
 }
 
 task prefetchSdks() {
-    def sdkConfigurations = []
     AndroidSdk.ALL_SDKS.each { androidSdk ->
-        sdkConfigurations << configurations.create("sdk${androidSdk.apiLevel}")
+        def config = configurations.create("sdk${androidSdk.apiLevel}")
         dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+        // causes dependencies to be resolved:
+        config.files
     }
 }
 
-task prefetchDependencies(dependsOn: allprojects.collect { p -> "${p.path}:dependencies" }) {
+task prefetchDependencies() {
     dependsOn "prefetchSdks"
+
+    doLast {
+        allprojects.each { p ->
+            ['compile', 'runtime', 'testCompile', 'testRuntime'].each { configName ->
+                if (p.configurations.findByName(configName)) {
+                    // causes dependencies to be resolved:
+                    p.configurations[configName].files
+                }
+            }
+        }
+    }
 }
 
 // for use of external initialization scripts...
