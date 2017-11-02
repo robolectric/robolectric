@@ -397,7 +397,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
       if (attr == null) {
         return NAME_NOT_FOUND;
       }
-        final int N = getAttributeCount();
+      final int N = getAttributeCount();
       if (mTree.mStrings.isUTF8()) {
         String8 ns8 = null, attr8;
         if (ns != null) {
@@ -410,8 +410,8 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
         }
         for (int i=0; i<N; i++) {
           Ref<Integer> curNsLen = new Ref<>(0), curAttrLen = new Ref<>(0);
-                final String curNs = getAttributeNamespace8(i, curNsLen);
-                final String curAttr = getAttributeName8(i, curAttrLen);
+          final String curNs = getAttributeNamespace8(i, curNsLen);
+          final String curAttr = getAttributeName8(i, curAttrLen);
           if (kDebugStringPoolNoisy) {
             ALOGI("  curNs=%s (0x%x), curAttr=%s (0x%x)", curNs, curNsLen, curAttr, curAttrLen);
           }
