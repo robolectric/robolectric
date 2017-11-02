@@ -360,7 +360,7 @@ containing a value of this type.
         public static final int an_image_or_vector=0x7f020001;
         public static final int an_other_image=0x7f020002;
         public static final int drawable_with_nine_patch=0x7f020003;
-        public static final int example_item_drawable=0x7f020014;
+        public static final int example_item_drawable=0x7f020015;
         public static final int fourth_image=0x7f020004;
         public static final int image_background=0x7f020005;
         public static final int l0_red=0x7f020006;
@@ -374,9 +374,10 @@ containing a value of this type.
         public static final int nine_patch_drawable=0x7f02000e;
         public static final int rainbow=0x7f02000f;
         public static final int robolectric=0x7f020010;
-        public static final int state_drawable=0x7f020011;
-        public static final int third_image=0x7f020012;
-        public static final int vector=0x7f020013;
+        public static final int square=0x7f020011;
+        public static final int state_drawable=0x7f020012;
+        public static final int third_image=0x7f020013;
+        public static final int vector=0x7f020014;
     }
     public static final class fraction {
         public static final int fifth=0x7f0c0004;

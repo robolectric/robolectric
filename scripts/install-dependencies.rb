@@ -182,6 +182,7 @@ install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASE, PLAY_SERVIC
 # end
 
 install_from_gmaven(SUPPORT_V4_ARTIFACT_ID)
+install_from_gmaven("support-vector-drawable")
 install_from_gmaven(SUPPORT_COMPAT_ARTIFACT_ID)
 install_from_gmaven(SUPPORT_CORE_UI_ARTIFACT_ID)
 install_from_gmaven(SUPPORT_CORE_UTILS_ARTIFACT_ID)
