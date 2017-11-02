@@ -1,9 +1,5 @@
 package org.robolectric.android.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
@@ -17,6 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
 public class FragmentControllerTest {
@@ -140,7 +140,7 @@ public class FragmentControllerTest {
 
     Bundle arguments = new Bundle();
     arguments.putString("test_argument", "test_value");
-    FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class).arguments(arguments).create();
+    FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class, arguments).create();
 
     Bundle argumentsInFragment = controller.get().getArguments();
     assertThat(argumentsInFragment.getString("test_argument")).isEqualTo("test_value");
