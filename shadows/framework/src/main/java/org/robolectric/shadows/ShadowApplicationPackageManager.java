@@ -218,11 +218,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ProviderInfo resolveContentProvider(String name, int flags) {
+    if (name == null) {
+      return null;
+    }
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (packageInfo.providers == null) continue;
 
       for (ProviderInfo providerInfo : packageInfo.providers) {
-        if (name.equals(providerInfo.authority)) { // todo: support multiple authorities
+        if (name != null && name.equals(providerInfo.authority)) { // todo: support multiple authorities
           return providerInfo;
         }
       }

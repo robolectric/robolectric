@@ -425,5 +425,7 @@ public final class R {
   public static final class mipmap {
     public static final int robolectric = 0x7f140000;
     public static final int mipmap_reference = 0x7f140001;
+    public static final int robolectric_xml = 0x7f140002;
+    public static final int mipmap_reference_xml = 0x7f140003;
   }
 }
