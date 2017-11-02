@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.robolectric.annotation.Config;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
@@ -20,6 +21,7 @@ import org.robolectric.res.FsFile;
 import org.robolectric.util.TestUtil;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(qualifiers = "hdpi")
 public class ShadowBitmapRegionDecoderTest {
 
   private static final FsFile IMAGE_FILE = TestUtil.resourcesBaseDir().join("res/drawable-hdpi/robolectric.png");
