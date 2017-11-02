@@ -31,6 +31,7 @@ import java.io.InputStream;
 import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.res.android.ResTable.Res_GETTYPE;
 import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
@@ -643,7 +644,6 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  @Config
   public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() throws Exception {
     // android:id/mask was introduced in API 21, but it's still possible for apps built against API 21 to refer to it
     // in older runtimes because referenced resource ids are compiled (by aapt) into the binary XML format.
@@ -744,7 +744,7 @@ public class ShadowResourcesTest {
   @Test
   public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() throws Exception {
     // TODO: investigate failure with binary resources
-    if (!isLegacyAssetManager(resources.getAssets())) return;
+    assumeTrue(isLegacyAssetManager());
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
