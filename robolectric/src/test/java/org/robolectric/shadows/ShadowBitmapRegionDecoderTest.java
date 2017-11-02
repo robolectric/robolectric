@@ -39,6 +39,7 @@ public class ShadowBitmapRegionDecoderTest {
   }
 
   @Test
+  @Config(sdk = 16) // todo unpin
   public void getWidthAndGetHeight_shouldReturnCorrectValuesForImage() throws Exception {
     BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(getImageInputStream(), true);
     assertThat(decoder.getWidth()).isEqualTo(297);

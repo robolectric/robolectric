@@ -444,7 +444,7 @@ public class ResTable_config {
   }
 
   public final int navigationHidden() {
-    return inputFlags & NAVIGATIONHIDDEN_MASK;
+    return (inputFlags & NAVIGATIONHIDDEN_MASK) >> 2;
   }
 
   public int screenWidth;
