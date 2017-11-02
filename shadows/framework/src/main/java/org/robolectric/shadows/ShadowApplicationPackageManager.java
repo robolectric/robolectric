@@ -225,7 +225,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (packageInfo.providers == null) continue;
 
       for (ProviderInfo providerInfo : packageInfo.providers) {
-        if (name != null && name.equals(providerInfo.authority)) { // todo: support multiple authorities
+        if (name.equals(providerInfo.authority)) { // todo: support multiple authorities
           return providerInfo;
         }
       }
