@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.view.View;
 import android.widget.TextView;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -13,6 +15,12 @@ import org.robolectric.annotation.Config;
 @Config(qualifiers = "en")
 @RunWith(RobolectricTestRunner.class)
 public class QualifiersTest {
+
+  @Test
+  @Config(sdk = 26)
+  public void testDefaultQualifiers() throws Exception {
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-ldltr-sw320dp-w320dp-v26");
+  }
 
   @Test
   @Config(qualifiers = "land")
