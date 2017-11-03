@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import android.app.Activity;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.view.View;
 import android.widget.TextView;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;

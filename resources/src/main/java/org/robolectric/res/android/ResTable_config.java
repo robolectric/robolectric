@@ -61,7 +61,6 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_TELEVISION;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_WATCH;
 import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
-import static org.robolectric.res.android.ResTable.kDebugTableSuperNoisy;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
@@ -84,6 +83,7 @@ import java.util.Map;
  * <p>frameworks/base/include/androidfw/ResourceTypes.h (struct ResTable_config)
  */
 public class ResTable_config {
+  public static final boolean kDebugTableSuperNoisy = false;
 
   // The most specific locale can consist of:
   //
