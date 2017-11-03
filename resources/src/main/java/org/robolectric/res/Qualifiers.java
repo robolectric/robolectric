@@ -134,35 +134,6 @@ public class Qualifiers {
     return -1;
   }
 
-  /*
-   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.sdk()).
-   */
-  public static String addPlatformVersion(String qualifiers, int apiLevel) {
-    int versionQualifierApiLevel = Qualifiers.getPlatformVersion(qualifiers);
-    if (versionQualifierApiLevel == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "v" + apiLevel;
-    }
-    return qualifiers;
-  }
-
-  /*
-   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.sdk()).
-   */
-  public static String addSmallestScreenWidth(String qualifiers, int smallestScreenWidth) {
-    int qualifiersSmallestScreenWidth = Qualifiers.getSmallestScreenWidth(qualifiers);
-    if (qualifiersSmallestScreenWidth == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "sw" + smallestScreenWidth + "dp";
-    }
-    return qualifiers;
-  }
 
   public static int getScreenWidth(String qualifiers) {
     for (String qualifier : qualifiers.split("-")) {
@@ -173,17 +144,6 @@ public class Qualifiers {
     }
 
     return -1;
-  }
-
-  public static String addScreenWidth(String qualifiers, int screenWidth) {
-    int qualifiersScreenWidth = Qualifiers.getScreenWidth(qualifiers);
-    if (qualifiersScreenWidth == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "w" + screenWidth + "dp";
-    }
-    return qualifiers;
   }
 
   public static String getOrientation(String qualifiers) {
