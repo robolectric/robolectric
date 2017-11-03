@@ -165,6 +165,7 @@ public class Qualifiers {
     return qualifiers;
   }
 
+
   public static int getScreenWidth(String qualifiers) {
     for (String qualifier : qualifiers.split("-")) {
       Matcher matcher = SCREEN_WIDTH_PATTERN.matcher(qualifier);
@@ -174,17 +175,6 @@ public class Qualifiers {
     }
 
     return -1;
-  }
-
-  public static String addScreenWidth(String qualifiers, int screenWidth) {
-    int qualifiersScreenWidth = Qualifiers.getScreenWidth(qualifiers);
-    if (qualifiersScreenWidth == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "w" + screenWidth + "dp";
-    }
-    return qualifiers;
   }
 
   public static String getOrientation(String qualifiers) {

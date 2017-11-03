@@ -42,11 +42,9 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.android.ConfigDescription;
-import org.robolectric.res.android.ResTable_config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowResourcesManager;
 import org.robolectric.util.ReflectionHelpers;
@@ -103,7 +101,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = systemResources.getConfiguration();
     DisplayMetrics displayMetrics = systemResources.getDisplayMetrics();
 
-    String newQualifiers = applySystemConfiguration(configuration, displayMetrics, config.qualifiers());
+    String newQualifiers = Bootstrap.applySystemConfiguration(config.qualifiers(),
+        sdkConfig.getApiLevel(), configuration, displayMetrics);
     RuntimeEnvironment.setQualifiers(newQualifiers);
 
     if (sdkConfig.getApiLevel() >= VERSION_CODES.KITKAT) {

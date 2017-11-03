@@ -10,6 +10,7 @@ import static android.content.res.Configuration.NAVIGATION_DPAD;
 import static android.content.res.Configuration.NAVIGATION_UNDEFINED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_MASK;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_YES;
@@ -36,6 +37,7 @@ import android.app.Application;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -65,6 +67,7 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -124,115 +127,115 @@ public class ParallelUniverseTest {
     return new AndroidManifest(null, null, null, "package");
   }
 
-  // @Test
-  // public void setUpApplicationState_configuresGlobalScheduler() {
-  //   RuntimeEnvironment.setMasterScheduler(null);
-  //   setUpApplicationState(getDefaultConfig(), dummyManifest());
-  //   assertThat(RuntimeEnvironment.getMasterScheduler())
-  //       .isNotNull()
-  //       .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
-  //       .isSameAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
-  // }
-  //
-  // @Test
-  // public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
-  //   RoboSettings.setUseGlobalScheduler(true);
-  //   try {
-  //     setUpApplicationState(getDefaultConfig(), dummyManifest());
-  //     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
-  //     assertThat(shadowApplication.getBackgroundThreadScheduler())
-  //         .isSameAs(shadowApplication.getForegroundThreadScheduler())
-  //         .isSameAs(RuntimeEnvironment.getMasterScheduler());
-  //   } finally {
-  //     RoboSettings.setUseGlobalScheduler(false);
-  //   }
-  // }
-  //
-  // @Test
-  // public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
-  //   setUpApplicationState(getDefaultConfig(), dummyManifest());
-  //   final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
-  //   assertThat(shadowApplication.getBackgroundThreadScheduler())
-  //       .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
-  // }
-  //
-  // @Test
-  // public void setUpApplicationState_setsMainThread() {
-  //   RuntimeEnvironment.setMainThread(new Thread());
-  //   setUpApplicationState(getDefaultConfig(), dummyManifest());
-  //   assertThat(RuntimeEnvironment.isMainThread()).isTrue();
-  // }
-  //
-  // @Test
-  // public void resetStaticStatic_setsMainThread(){
-  //   RuntimeEnvironment.setMainThread(new Thread());
-  //   pu.resetStaticState(getDefaultConfig());
-  //   assertThat(RuntimeEnvironment.isMainThread()).isTrue();
-  // }
-  //
-  // @Test
-  // public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
-  //   final AtomicBoolean res = new AtomicBoolean();
-  //   Thread t =
-  //       new Thread() {
-  //         @Override
-  //         public void run() {
-  //           setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
-  //           res.set(RuntimeEnvironment.isMainThread());
-  //         }
-  //       };
-  //   t.start();
-  //   t.join(1000);
-  //   assertThat(res.get()).isTrue();
-  // }
-  //
-  // @Test
-  // public void ensureBouncyCastleInstalled() throws CertificateException {
-  //   CertificateFactory factory = CertificateFactory.getInstance("X.509");
-  //   assertThat(factory.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
-  // }
-  //
-  // @Test
-  // public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
-  //   String givenQualifiers = "";
-  //   Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-  //   setUpApplicationState(c, dummyManifest());
-  //   assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.SDK_INT);
-  // }
-  //
-  // @Test
-  // public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
-  //   String givenQualifiers = "land-v17";
-  //   Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-  //   setUpApplicationState(c, dummyManifest());
-  //   assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
-  // }
-  //
-  // @Test
-  // public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
-  //   String givenQualifiers = "large-land";
-  //   Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-  //   setUpApplicationState(c, dummyManifest());
-  //   assertThat(RuntimeEnvironment.getQualifiers()).endsWith("-v" + Build.VERSION.SDK_INT);
-  //   assertThat(RuntimeEnvironment.getQualifiers()).contains(givenQualifiers);
-  // }
-  //
-  // @Test
-  // public void tearDownApplication_invokesOnTerminate() {
-  //   RuntimeEnvironment.application = mock(Application.class);
-  //   pu.tearDownApplication();
-  //   verify(RuntimeEnvironment.application).onTerminate();
-  // }
-  //
-  // @Test
-  // public void testResourceNotFound() {
-  //   try {
-  //     setUpApplicationState(getDefaultConfig(), new ThrowingManifest());
-  //     fail("Expected to throw");
-  //   } catch (Resources.NotFoundException expected) {
-  //     // expected
-  //   }
-  // }
+  @Test
+  public void setUpApplicationState_configuresGlobalScheduler() {
+    RuntimeEnvironment.setMasterScheduler(null);
+    setUpApplicationState(getDefaultConfig(), dummyManifest());
+    assertThat(RuntimeEnvironment.getMasterScheduler())
+        .isNotNull()
+        .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
+        .isSameAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
+    RoboSettings.setUseGlobalScheduler(true);
+    try {
+      setUpApplicationState(getDefaultConfig(), dummyManifest());
+      final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+      assertThat(shadowApplication.getBackgroundThreadScheduler())
+          .isSameAs(shadowApplication.getForegroundThreadScheduler())
+          .isSameAs(RuntimeEnvironment.getMasterScheduler());
+    } finally {
+      RoboSettings.setUseGlobalScheduler(false);
+    }
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
+    setUpApplicationState(getDefaultConfig(), dummyManifest());
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler())
+        .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
+  }
+
+  @Test
+  public void setUpApplicationState_setsMainThread() {
+    RuntimeEnvironment.setMainThread(new Thread());
+    setUpApplicationState(getDefaultConfig(), dummyManifest());
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+  @Test
+  public void resetStaticStatic_setsMainThread(){
+    RuntimeEnvironment.setMainThread(new Thread());
+    pu.resetStaticState(getDefaultConfig());
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+  @Test
+  public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
+    final AtomicBoolean res = new AtomicBoolean();
+    Thread t =
+        new Thread() {
+          @Override
+          public void run() {
+            setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
+            res.set(RuntimeEnvironment.isMainThread());
+          }
+        };
+    t.start();
+    t.join(1000);
+    assertThat(res.get()).isTrue();
+  }
+
+  @Test
+  public void ensureBouncyCastleInstalled() throws CertificateException {
+    CertificateFactory factory = CertificateFactory.getInstance("X.509");
+    assertThat(factory.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+  }
+
+  @Test
+  public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
+    String givenQualifiers = "";
+    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
+    setUpApplicationState(c, dummyManifest());
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.SDK_INT);
+  }
+
+  @Test
+  public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
+    String givenQualifiers = "land-v17";
+    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
+    setUpApplicationState(c, dummyManifest());
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
+  }
+
+  @Test
+  public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
+    String givenQualifiers = "large-land";
+    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
+    setUpApplicationState(c, dummyManifest());
+    assertThat(RuntimeEnvironment.getQualifiers()).endsWith("-v" + Build.VERSION.SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains(givenQualifiers);
+  }
+
+  @Test
+  public void tearDownApplication_invokesOnTerminate() {
+    RuntimeEnvironment.application = mock(Application.class);
+    pu.tearDownApplication();
+    verify(RuntimeEnvironment.application).onTerminate();
+  }
+
+  @Test
+  public void testResourceNotFound() {
+    try {
+      setUpApplicationState(getDefaultConfig(), new ThrowingManifest());
+      fail("Expected to throw");
+    } catch (Resources.NotFoundException expected) {
+      // expected
+    }
+  }
 
   @Test
   public void applySystemConfiguration_shouldAddDefaults() {
