@@ -69,6 +69,7 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -236,132 +237,6 @@ public class ParallelUniverseTest {
     } catch (Resources.NotFoundException expected) {
       // expected
     }
-  }
-
-  @Test
-  public void applySystemConfiguration_shouldAddDefaults() {
-    Configuration configuration = new Configuration();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = parallelUniverse
-        .applySystemConfiguration(configuration, displayMetrics, "");
-
-    assertThat(outQualifiers).isEqualTo("sw320dp-w320dp-v" + RuntimeEnvironment.getApiLevel());
-
-    assertThat(configuration.mcc).isEqualTo(0);
-    assertThat(configuration.mnc).isEqualTo(0);
-    assertThat(configuration.locale).isNull();
-    assertThat(configuration.smallestScreenWidthDp).isEqualTo(320);
-    assertThat(configuration.screenWidthDp).isEqualTo(320);
-    assertThat(configuration.screenHeightDp).isEqualTo(0);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK).isEqualTo(SCREENLAYOUT_SIZE_UNDEFINED);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_UNDEFINED);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_UNDEFINED);
-    assertThat(configuration.orientation).isEqualTo(ORIENTATION_UNDEFINED);
-    assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_UNDEFINED);
-    assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_UNDEFINED);
-
-    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      assertThat(configuration.densityDpi).isEqualTo(0);
-    }
-
-    assertThat(configuration.touchscreen).isEqualTo(TOUCHSCREEN_UNDEFINED);
-    assertThat(configuration.keyboardHidden).isEqualTo(KEYBOARDHIDDEN_UNDEFINED);
-    assertThat(configuration.keyboard).isEqualTo(KEYBOARD_UNDEFINED);
-    assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_UNDEFINED);
-    assertThat(configuration.navigation).isEqualTo(NAVIGATION_UNDEFINED);
-  }
-
-  @Test
-  public void applySystemConfiguration_shouldHonorSpecifiedQualifiers() {
-    Configuration configuration = new Configuration();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = parallelUniverse.applySystemConfiguration(configuration, displayMetrics,
-        "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge-long-round-land-"
-            + "appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad");
-
-    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
-          + RuntimeEnvironment.getApiLevel());
-    } else {
-      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-notouch-keyshidden-12key-navhidden-dpad-v"
-          + RuntimeEnvironment.getApiLevel());
-    }
-
-    assertThat(configuration.mcc).isEqualTo(310);
-    assertThat(configuration.mnc).isEqualTo(4);
-    assertThat(configuration.locale).isEqualTo(new Locale("fr", "FR"));
-    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      // note that locale overrides ltr/rtl
-      assertThat(configuration.screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK)
-          .isEqualTo(SCREENLAYOUT_LAYOUTDIR_LTR);
-    } else {
-      // but not on Jelly Bean...
-      assertThat(configuration.screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK)
-          .isEqualTo(SCREENLAYOUT_LAYOUTDIR_RTL);
-    }
-    assertThat(configuration.smallestScreenWidthDp).isEqualTo(400);
-    assertThat(configuration.screenWidthDp).isEqualTo(480);
-    assertThat(configuration.screenHeightDp).isEqualTo(456);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK).isEqualTo(SCREENLAYOUT_SIZE_XLARGE);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_YES);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_YES);
-    assertThat(configuration.orientation).isEqualTo(ORIENTATION_LANDSCAPE);
-    assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_APPLIANCE);
-    assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_YES);
-    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      assertThat(configuration.densityDpi).isEqualTo(240);
-    }
-    assertThat(configuration.touchscreen).isEqualTo(TOUCHSCREEN_NOTOUCH);
-    assertThat(configuration.keyboardHidden).isEqualTo(KEYBOARDHIDDEN_YES);
-    assertThat(configuration.keyboard).isEqualTo(KEYBOARD_12KEY);
-    assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_YES);
-    assertThat(configuration.navigation).isEqualTo(NAVIGATION_DPAD);
-  }
-
-  @Test
-  public void applySystemConfiguration_shouldRejectUnknownQualifiers() {
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    try {
-      parallelUniverse.applySystemConfiguration(new Configuration(), new DisplayMetrics(),
-          "notareal-qualifier-sw400dp-w480dp-more-wrong-stuff");
-      fail("should have thrown");
-    } catch (IllegalArgumentException e) {
-      // expected
-      assertThat(e.getMessage()).contains("notareal");
-    }
-  }
-
-  @Test
-  public void applySystemConfiguration_shouldRejectSdkVersion() {
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    try {
-      parallelUniverse.applySystemConfiguration(new Configuration(), new DisplayMetrics(),
-          "sw400dp-w480dp-v7");
-      fail("should have thrown");
-    } catch (IllegalArgumentException e) {
-      // expected
-      assertThat(e.getMessage()).contains("Cannot specify platform version");
-    }
-  }
-
-  @Test
-  @Config(sdk = 16)
-  public void applySystemConfiguration_densityOnAPI16() {
-    Configuration configuration = new Configuration();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = parallelUniverse
-        .applySystemConfiguration(configuration, displayMetrics, "hdpi");
-    fail("todo"); // todo: finish
   }
 
   /** Can't use Mockito for classloader issues */

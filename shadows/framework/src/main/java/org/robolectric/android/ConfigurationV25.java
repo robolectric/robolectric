@@ -1,4 +1,4 @@
-package org.robolectric.android.internal;
+package org.robolectric.android;
 
 import static android.content.res.Configuration.DENSITY_DPI_ANY;
 import static android.content.res.Configuration.DENSITY_DPI_NONE;
@@ -15,13 +15,9 @@ import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
 
 // adapted from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/core/java/android/content/res/Configuration.java
-public class ConfigurationV25 {
+class ConfigurationV25 {
 
-  /**
-   *
-   * @hide
-   */
-  public static String localesToResourceQualifier(List<Locale> locs) {
+  private static String localesToResourceQualifier(List<Locale> locs) {
     final StringBuilder sb = new StringBuilder();
     for (int i = 0; i < locs.size(); i++) {
       final Locale loc = locs.get(i);
@@ -70,7 +66,7 @@ public class ConfigurationV25 {
    *
    * @hide
    */
-  public static String resourceQualifierString(Configuration config) {
+  static String resourceQualifierString(Configuration config) {
     ArrayList<String> parts = new ArrayList<String>();
 
     if (config.mcc != 0) {
