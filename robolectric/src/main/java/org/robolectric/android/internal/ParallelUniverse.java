@@ -17,6 +17,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
+import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
@@ -90,59 +91,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    String qualifiers = config.qualifiers();
-    qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
-    qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
-    qualifiers = Qualifiers.addPlatformVersion(qualifiers, sdkConfig.getApiLevel());
-    RuntimeEnvironment.setQualifiers(qualifiers);
-
-    ConfigDescription configDescription = new ConfigDescription();
-    ResTable_config resTab = new ResTable_config();
-    configDescription.parse(qualifiers, resTab);
-
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
     DisplayMetrics displayMetrics = systemResources.getDisplayMetrics();
-    configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp;
-    configuration.screenWidthDp = resTab.screenWidthDp;
-    configuration.orientation = resTab.orientation;
 
-    // begin new stuff
-    configuration.mcc = resTab.mcc;
-    configuration.mnc = resTab.mnc;
-    configuration.screenLayout = resTab.screenLayout;
-    configuration.touchscreen = resTab.touchscreen;
-    configuration.keyboard = resTab.keyboard;
-    configuration.keyboardHidden = resTab.keyboardHidden();
-    configuration.navigation = resTab.navigation;
-    configuration.navigationHidden = resTab.navigationHidden();
-    configuration.orientation = resTab.orientation;
-    configuration.uiMode = resTab.uiMode;
-    configuration.screenHeightDp = resTab.screenHeightDp;
-    if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
-      configuration.densityDpi = resTab.density;
-    }
-    // TODO: handle the else case aka API 16
-    //displayMetrics.density = ((float)resTab.density)/160;
-    //configuration.
-    // end new stuff
-
-    // JDK has a default locale of en_US. A previous test may have changed the default, so reset it
-    // here
-    Locale.setDefault(Locale.US);
-    Locale locale = null;
-    if (!isNullOrEmpty(resTab.languageString()) || !isNullOrEmpty(resTab.regionString())) {
-      locale = new Locale(resTab.languageString(), resTab.regionString());
-    } else if (!isNullOrEmpty(resTab.languageString())) {
-      locale = new Locale(resTab.languageString());
-    }
-    if (locale != null) {
-      if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
-        configuration.setLocale(locale);
-      } else {
-        configuration.locale = locale;
-      }
-    }
+    String newQualifiers = applySystemConfiguration(configuration, displayMetrics, config.qualifiers());
+    RuntimeEnvironment.setQualifiers(newQualifiers);
 
     if (sdkConfig.getApiLevel() >= VERSION_CODES.KITKAT) {
       ResourcesManager resourcesManager = ResourcesManager.getInstance();
@@ -211,6 +165,72 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
+  }
+
+  @VisibleForTesting
+  String applySystemConfiguration(Configuration configuration,
+      DisplayMetrics displayMetrics, String qualifiers) {
+    ConfigDescription configDescription = new ConfigDescription();
+    ResTable_config resTab = new ResTable_config();
+
+    if (Qualifiers.getPlatformVersion(qualifiers) != -1) {
+      throw new IllegalArgumentException("Cannot specify platform version in qualifiers: \"" + qualifiers + "\"");
+    }
+
+    if (!qualifiers.isEmpty() && !configDescription.parse(qualifiers, resTab)) {
+      throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiers + "\"");
+    }
+
+    if (resTab.smallestScreenWidthDp == 0) {
+      resTab.smallestScreenWidthDp = 320;
+    }
+
+    if (resTab.screenWidthDp == 0) {
+      resTab.screenWidthDp = 320;
+    }
+
+    configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp;
+    configuration.screenWidthDp = resTab.screenWidthDp;
+    configuration.orientation = resTab.orientation;
+
+    // begin new stuff
+    configuration.mcc = resTab.mcc;
+    configuration.mnc = resTab.mnc;
+    configuration.screenLayout = resTab.screenLayout | (resTab.screenLayout2 << 8);
+    configuration.touchscreen = resTab.touchscreen;
+    configuration.keyboard = resTab.keyboard;
+    configuration.keyboardHidden = resTab.keyboardHidden();
+    configuration.navigation = resTab.navigation;
+    configuration.navigationHidden = resTab.navigationHidden();
+    configuration.orientation = resTab.orientation;
+    configuration.uiMode = resTab.uiMode;
+    configuration.screenHeightDp = resTab.screenHeightDp;
+    if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
+      configuration.densityDpi = resTab.density;
+    } else {
+      //displayMetrics.density = ((float) resTab.density) / 160;
+    }
+    //configuration.
+    // end new stuff
+
+    // JDK has a default locale of en_US. A previous test may have changed the default, so reset it
+    // here
+    Locale.setDefault(Locale.US);
+    Locale locale = null;
+    if (!isNullOrEmpty(resTab.languageString()) || !isNullOrEmpty(resTab.regionString())) {
+      locale = new Locale(resTab.languageString(), resTab.regionString());
+    } else if (!isNullOrEmpty(resTab.languageString())) {
+      locale = new Locale(resTab.languageString());
+    }
+    if (locale != null) {
+      if (sdkConfig.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
+        configuration.setLocale(locale);
+      } else {
+        configuration.locale = locale;
+      }
+    }
+
+    return ConfigurationV25.resourceQualifierString(configuration);
   }
 
   /**
