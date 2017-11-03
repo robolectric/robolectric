@@ -22,6 +22,7 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.os.Build.VERSION;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -397,7 +398,11 @@ public class ShadowAssetManagerTest {
     assumeTrue(!isLegacyAssetManager());
     ShadowArscAssetManager shadowAssetManager = shadowOf(assetManager);
     ResTable_config config = shadowAssetManager.getConfiguration();
-    assertThat(config.density).isEqualTo(0);
+    if (VERSION.SDK_INT > 16) {
+      assertThat(config.density).isEqualTo(0);
+    } else {
+      assertThat(config.density).isEqualTo(160);
+    }
   }
 
   @Test

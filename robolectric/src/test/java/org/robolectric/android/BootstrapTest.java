@@ -31,18 +31,21 @@ import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_UNDEFINED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import java.util.Locale;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 
+@RunWith(RobolectricTestRunner.class)
 public class BootstrapTest {
   @Test
   public void applySystemConfiguration_shouldAddDefaults() {
@@ -169,7 +172,8 @@ public class BootstrapTest {
     ParallelUniverse parallelUniverse = new ParallelUniverse();
     parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
     String outQualifiers = Bootstrap.applySystemConfiguration("hdpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
-    fail("todo"); // todo: finish
+    assertThat(displayMetrics.density).isEqualTo(1.5f);
+    assertThat(displayMetrics.densityDpi).isEqualTo(240);
   }
 
 }

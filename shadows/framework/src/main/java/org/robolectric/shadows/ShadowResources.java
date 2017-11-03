@@ -235,19 +235,19 @@ public class ShadowResources {
     displayMetrics = null;
   }
 
-//  @Implementation
-//  public DisplayMetrics getDisplayMetrics() {
-//    if (displayMetrics == null) {
-//      if (display == null) {
-//        display = ReflectionHelpers.callConstructor(Display.class);
-//      }
-//
-//      displayMetrics = new DisplayMetrics();
-//      display.getMetrics(displayMetrics);
-//    }
-//    displayMetrics.density = this.density;
-//    return displayMetrics;
-//  }
+ @Implementation
+ public DisplayMetrics getDisplayMetrics() {
+   if (displayMetrics == null) {
+     if (display == null) {
+       display = ReflectionHelpers.callConstructor(Display.class);
+     }
+
+     displayMetrics = new DisplayMetrics();
+     display.getMetrics(displayMetrics);
+   }
+   displayMetrics.density = this.density;
+   return displayMetrics;
+ }
 
  @HiddenApi @Implementation
  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
