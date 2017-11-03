@@ -55,7 +55,7 @@ public class Bootstrap {
     if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
     } else {
-      //displayMetrics.density = ((float) resTab.density) / 160;
+      displayMetrics.density = ((float) resTab.density) / 160;
     }
     //configuration.
     // end new stuff

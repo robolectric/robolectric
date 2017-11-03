@@ -216,7 +216,10 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  //@Config(sdk = 16) // todo: unpin
   public void getDimension() throws Exception {
+    DisplayMetrics dm = RuntimeEnvironment.application.getResources().getDisplayMetrics();
+    assertThat(dm.density).isEqualTo(1.0f);
     assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
     assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
     assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 240);

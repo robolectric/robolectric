@@ -204,14 +204,6 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
-    String givenQualifiers = "land-v17";
-    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
-  }
-
-  @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
@@ -238,6 +230,7 @@ public class ParallelUniverseTest {
   }
 
   @Test
+<<<<<<< HEAD
   public void applySystemConfiguration_shouldAddDefaults() {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -327,18 +320,6 @@ public class ParallelUniverseTest {
       // expected
       assertThat(e.getMessage()).contains("Cannot specify platform version");
     }
-  }
-
-  @Test
-  @Config(sdk = 16)
-  public void applySystemConfiguration_densityOnAPI16() {
-    Configuration configuration = new Configuration();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = parallelUniverse
-        .applySystemConfiguration(configuration, displayMetrics, "hdpi");
-
   }
 
   /** Can't use Mockito for classloader issues */
