@@ -898,6 +898,16 @@ public class ShadowResourcesTest {
     assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
   }
 
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getDrawable_mipmapReferencesResolveXml() {
+    Drawable reference = resources.getDrawable(R.mipmap.robolectric_xml);
+    Drawable original = resources.getDrawable(R.mipmap.mipmap_reference_xml);
+
+    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
+    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
+  }
+
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {
