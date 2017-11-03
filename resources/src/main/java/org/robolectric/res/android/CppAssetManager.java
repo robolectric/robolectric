@@ -10,6 +10,7 @@ import static org.robolectric.res.android.Util.ATRACE_CALL;
 import static org.robolectric.res.android.Util.LOG_FATAL_IF;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
@@ -419,7 +420,8 @@ public class CppAssetManager {
     }
   }
 
-  void getConfiguration(Ref<ResTable_config> outConfig)
+  @VisibleForTesting
+  public void getConfiguration(Ref<ResTable_config> outConfig)
   {
     synchronized (mLock) {
       outConfig.set(mConfig);
