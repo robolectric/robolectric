@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -85,6 +86,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
+
+    // JDK has a default locale of en_US. A previous test may have changed the default, so reset it
+    // here
+    Locale.setDefault(Locale.US);
 
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();

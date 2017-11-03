@@ -65,9 +65,6 @@ public class Bootstrap {
     //configuration.
     // end new stuff
 
-    // JDK has a default locale of en_US. A previous test may have changed the default, so reset it
-    // here
-    Locale.setDefault(Locale.US);
     Locale locale = null;
     if (!isNullOrEmpty(resTab.languageString()) || !isNullOrEmpty(resTab.regionString())) {
       locale = new Locale(resTab.languageString(), resTab.regionString());
