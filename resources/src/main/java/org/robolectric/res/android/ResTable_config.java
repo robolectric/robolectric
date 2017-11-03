@@ -1151,7 +1151,7 @@ public class ResTable_config {
   }
 */
 
-  boolean match(final ResTable_config settings) {
+  public boolean match(final ResTable_config settings) {
     if (imsi() != 0) {
       if (mcc != 0 && mcc != settings.mcc) {
         return false;

@@ -2,23 +2,38 @@ package org.robolectric.res;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.robolectric.res.android.ConfigDescription;
+import org.robolectric.res.android.ResTable_config;
 
 public class XmlContext {
   private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
 
   private final String packageName;
   private final FsFile xmlFile;
+  private final String qualifiers;
+  private final ResTable_config config;
 
   public XmlContext(String packageName, FsFile xmlFile) {
     this.packageName = packageName;
     this.xmlFile = xmlFile;
+    config = new ResTable_config();
+    this.qualifiers = determineQualifiers();
+    new ConfigDescription().parse(qualifiers, config);
   }
 
   public String getPackageName() {
     return packageName;
   }
 
+  public ResTable_config getConfig() {
+    return config;
+  }
+
   public String getQualifiers() {
+    return qualifiers;
+  }
+
+  private String determineQualifiers() {
     FsFile parentDir = xmlFile.getParent();
     if (parentDir == null) {
       return "";
@@ -26,7 +41,8 @@ public class XmlContext {
       String parentDirName = parentDir.getName();
       Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDirName);
       if (!matcher.find()) throw new IllegalStateException(parentDirName);
-      return matcher.group(1);
+      String qualifiers = matcher.group(1);
+      return qualifiers != null ? qualifiers : "";
     }
   }
 
