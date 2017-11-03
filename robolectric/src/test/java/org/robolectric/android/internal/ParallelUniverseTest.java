@@ -206,14 +206,6 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
-    String givenQualifiers = "land-v17";
-    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
-  }
-
-  @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
@@ -237,6 +229,12 @@ public class ParallelUniverseTest {
     } catch (Resources.NotFoundException expected) {
       // expected
     }
+  }
+
+  @Test
+  public void setUpApplicationState_displayMetrics() {
+    DisplayMetrics dm = RuntimeEnvironment.application.getResources().getDisplayMetrics();
+    assertThat(dm.density).isEqualTo(1.0f);
   }
 
   /** Can't use Mockito for classloader issues */
