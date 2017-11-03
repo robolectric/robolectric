@@ -20,6 +20,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import dalvik.system.VMRuntime;
@@ -2022,6 +2023,13 @@ public class ShadowArscAssetManager {
 
     ALOGV("Created AssetManager %s for Java object %s\n", cppAssetManager,
         ShadowArscAssetManager.class);
+  }
+
+  @VisibleForTesting
+  ResTable_config getConfiguration() {
+    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
+    assetManagerForJavaObject().getConfiguration(config);
+    return config.get();
   }
 
 //  private native final void destroy();

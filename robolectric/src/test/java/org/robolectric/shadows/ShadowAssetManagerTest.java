@@ -4,6 +4,7 @@ import static android.R.string.ok;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.R.bool.true_as_item;
@@ -41,6 +42,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.android.DataType;
+import org.robolectric.res.android.ResTable_config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
@@ -382,11 +384,29 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void getResourceValue_fromSystem() {
+    assumeTrue(!isLegacyAssetManager());
     TypedValue outValue = new TypedValue();
     ShadowArscAssetManager systemShadowAssetManager = shadowOf(AssetManager.getSystem());
     assertThat(systemShadowAssetManager.getResourceValue(android.R.string.ok, 0, outValue, false)).isTrue();
     assertThat(outValue.type).isEqualTo(DataType.STRING.code());
     assertThat(outValue.string).isEqualTo("OK");
+  }
+
+  @Test
+  public void configuration_default() {
+    assumeTrue(!isLegacyAssetManager());
+    ShadowArscAssetManager shadowAssetManager = shadowOf(assetManager);
+    ResTable_config config = shadowAssetManager.getConfiguration();
+    assertThat(config.density).isEqualTo(0);
+  }
+
+  @Test
+  @Config(qualifiers = "hdpi")
+  public void configuration_density() {
+    assumeTrue(!isLegacyAssetManager());
+    ShadowArscAssetManager shadowAssetManager = shadowOf(assetManager);
+    ResTable_config config = shadowAssetManager.getConfiguration();
+    assertThat(config.density).isEqualTo(240);
   }
 
   ///////////////////////////////
