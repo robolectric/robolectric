@@ -453,7 +453,7 @@ public class ShadowLocationManager {
 
     int meterConversion = 1609;
 
-    return new Float(dist * meterConversion);
+    return (float) (dist * meterConversion);
   }
 
   public Map<PendingIntent, Criteria> getRequestLocationUdpateCriteriaPendingIntents() {

@@ -301,7 +301,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       return;
     }
 
-    if (type == Type.VOID_TYPE) {
+    if (Type.VOID_TYPE.equals(type)) {
       instructions.add(new InsnNode(ACONST_NULL));
     } else {
       Type boxed = getBoxedType(type);
@@ -316,7 +316,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
         instructions.add(new InsnNode(DUP_X1));
         instructions.add(new InsnNode(SWAP));
       }
-      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V"));
+      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V", false));
     }
   }
 
@@ -425,7 +425,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
         MethodNode defaultConstructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", "()V", null);
         RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(defaultConstructor);
         generator.loadThis();
-        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
         generator.loadThis();
         generator.invokeVirtual(classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
         generator.returnValue();
@@ -540,7 +540,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
         RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
         generator.loadThis();
-        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
         generator.returnValue();
         generator.endMethod();
       }
@@ -957,11 +957,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     private void invokeMethod(String internalClassName, String methodName, String methodDesc) {
       if (isStatic()) {
         loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc);
+        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc, false);
       } else {
         loadThisOrNull();                                       // this
         loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc);
+        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc, false);
       }
     }
 
@@ -1017,11 +1017,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
       generator.loadThis();
       if (classNode.superName.equals("java/lang/Object")) {
-        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
       } else {
         generator.loadArgs();
         generator.visitMethodInsn(INVOKESPECIAL, classNode.superName,
-            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V");
+            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V", false);
       }
       generator.loadThis();
       generator.loadArg(1);
@@ -1064,7 +1064,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
         generator.checkCast(classType);                               // __robo_data__ but cast to my class
         generator.loadArgs();                                         // __robo_data__ instance, [args]
 
-        generator.visitMethodInsn(INVOKESPECIAL, internalClassName, originalMethod.name, originalMethod.desc);
+        generator.visitMethodInsn(INVOKESPECIAL, internalClassName, originalMethod.name, originalMethod.desc, false);
         tryCatchForProxyCall.end();
 
         generator.returnValue();
@@ -1220,7 +1220,8 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       instructions.add(new LdcInsnNode(classType)); // signature instance [] class
       instructions.add(new MethodInsnNode(INVOKESTATIC,
           Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
-          "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;"));
+          "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;",
+          false));
 
       final Type returnType = Type.getReturnType(targetMethod.desc);
       switch (returnType.getSort()) {

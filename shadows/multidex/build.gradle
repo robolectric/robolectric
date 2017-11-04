@@ -21,10 +21,3 @@ dependencies {
 
     testCompile project(":robolectric")
 }
-
-// change local artifact name to match dependencies
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-multidex'
-    }
-}

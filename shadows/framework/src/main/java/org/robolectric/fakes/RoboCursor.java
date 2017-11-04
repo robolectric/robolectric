@@ -186,6 +186,7 @@ public class RoboCursor extends BaseCursor {
     return extras;
   }
 
+  @Override
   public void setExtras(Bundle extras) {
     this.extras = extras;
   }

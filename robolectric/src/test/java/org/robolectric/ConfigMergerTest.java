@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.collect.ImmutableMap.of;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
 
@@ -175,7 +176,7 @@ public class ConfigMergerTest {
       @Override
       InputStream getResourceAsStream(String resourceName) {
         String properties = configProperties.get(resourceName);
-        return properties == null ? null : new ByteArrayInputStream(properties.getBytes());
+        return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
       }
     }.getConfig(testClass, info, globalConfig);
   }

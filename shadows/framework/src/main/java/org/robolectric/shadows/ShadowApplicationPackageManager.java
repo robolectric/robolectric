@@ -452,6 +452,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
   }
 
@@ -482,14 +483,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(maxSdk = JELLY_BEAN)
   public void getPackageSizeInfo(String packageName, final IPackageStatsObserver observer) {
     final PackageStats packageStats = packageStatsMap.get(packageName);
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-      public void run() {
-        try {
-          observer.onGetStatsCompleted(packageStats, packageStats != null);
-        } catch (RemoteException remoteException) {
-          remoteException.rethrowFromSystemServer();
-        }
+    new Handler(Looper.getMainLooper()).post(() -> {
+      try {
+        observer.onGetStatsCompleted(packageStats, packageStats != null);
+      } catch (RemoteException remoteException) {
+        remoteException.rethrowFromSystemServer();
       }
     });
   }
@@ -497,14 +495,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
   public void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver callback) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-      public void run() {
-        try {
-          callback.onGetStatsCompleted(packageStats, packageStats != null);
-        } catch (RemoteException remoteException) {
-          remoteException.rethrowFromSystemServer();
-        }
+    new Handler(Looper.getMainLooper()).post(() -> {
+      try {
+        callback.onGetStatsCompleted(packageStats, packageStats != null);
+      } catch (RemoteException remoteException) {
+        remoteException.rethrowFromSystemServer();
       }
     });
   }
@@ -512,14 +507,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = N)
   public void getPackageSizeInfoAsUser(String pkgName, int uid, final IPackageStatsObserver callback) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-      public void run() {
-        try {
-          callback.onGetStatsCompleted(packageStats, packageStats != null);
-        } catch (RemoteException remoteException) {
-          remoteException.rethrowFromSystemServer();
-        }
+    new Handler(Looper.getMainLooper()).post(() -> {
+      try {
+        callback.onGetStatsCompleted(packageStats, packageStats != null);
+      } catch (RemoteException remoteException) {
+        remoteException.rethrowFromSystemServer();
       }
     });
   }
@@ -548,6 +540,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   public Drawable getApplicationIcon(String packageName) throws NameNotFoundException {
     return applicationIcons.get(packageName);
   }
@@ -611,6 +604,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   public Intent getLaunchIntentForPackage(String packageName) {
     Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
     intentToResolve.addCategory(Intent.CATEGORY_INFO);
@@ -692,6 +686,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
@@ -830,7 +825,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Override @Nullable
   @Implementation
   public Drawable getDrawable(String packageName, @DrawableRes int resId, @Nullable ApplicationInfo appInfo) {
-    return drawables.get(new Pair(packageName, resId));
+    return drawables.get(new Pair<>(packageName, resId));
   }
 
   @Override @Implementation

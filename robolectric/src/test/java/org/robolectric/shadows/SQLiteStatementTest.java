@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -150,6 +151,7 @@ public class SQLiteStatementTest {
     insertStatement.close();
     try {
       insertStatement.executeInsert();
+      fail();
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalStateException.class);
     }

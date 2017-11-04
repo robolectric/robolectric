@@ -681,6 +681,11 @@ public class ShadowApplication extends ShadowContextWrapper {
     latestWakeLock = null;
   }
 
+  /**
+   * @deprecated Use {@link android.content.Context} or {@link android.content.pm.PackageManager}
+   *             instead. This method will be removed in a future version of Robolectric.
+   */
+  @Deprecated
   public AndroidManifest getAppManifest() {
     return appManifest;
   }
@@ -736,7 +741,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     this.latestListPopupWindow = latestListPopupWindow;
   }
 
-  public class Wrapper {
+  public static class Wrapper {
     public BroadcastReceiver broadcastReceiver;
     public IntentFilter intentFilter;
     public Context context;

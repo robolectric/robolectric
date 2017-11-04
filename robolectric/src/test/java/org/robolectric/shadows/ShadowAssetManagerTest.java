@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -93,22 +95,21 @@ public class ShadowAssetManagerTest {
   @Test
   public void open_shouldOpenFile() throws IOException {
     final String contents =
-        CharStreams.toString(new InputStreamReader(assetManager.open("assetsHome.txt")));
+        CharStreams.toString(new InputStreamReader(assetManager.open("assetsHome.txt"), UTF_8));
     assertThat(contents).isEqualTo("assetsHome!");
   }
 
   @Test
   public void open_withAccessMode_shouldOpenFile() throws IOException {
-    final String contents =
-        CharStreams.toString(
-            new InputStreamReader(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER)));
+    final String contents = CharStreams.toString(
+        new InputStreamReader(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER), UTF_8));
     assertThat(contents).isEqualTo("assetsHome!");
   }
 
   @Test
   public void openFd_shouldProvideFileDescriptorForAsset() throws Exception {
     AssetFileDescriptor assetFileDescriptor = assetManager.openFd("assetsHome.txt");
-    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream())))
+    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
         .isEqualTo("assetsHome!");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
   }

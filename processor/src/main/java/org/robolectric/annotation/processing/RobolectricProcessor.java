@@ -62,7 +62,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   }
 
   @Override
-  public void init(ProcessingEnvironment environment) {
+  public synchronized void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
     model = new RobolectricModel(environment.getElementUtils(), environment.getTypeUtils());

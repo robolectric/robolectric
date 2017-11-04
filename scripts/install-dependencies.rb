@@ -85,9 +85,10 @@ def install_aar(repo_root_dir, group_id, artifact_id, version, &block)
 end
 
 def already_have?(group_id, artifact_id, version, extension)
-  exists = File.exist?(concat_maven_file_segments(MVN_LOCAL, group_id, artifact_id, version, extension))
-  puts "Already have #{concat_maven_file_segments(MVN_LOCAL, group_id, artifact_id, version, extension)}!" if exists
-  return exists
+  jar_file = concat_maven_file_segments(MVN_LOCAL, group_id, artifact_id, version, extension)
+  exists = File.exist?(jar_file)
+  puts "Already have #{jar_file}!" if exists
+  exists
 end
 
 def install_stubs(api)
@@ -156,7 +157,7 @@ PLAY_SERVICES_BASEMENT = "play-services-basement"
 
 # Mavenize all dependencies
 
-install_stubs(26)
+install_stubs(27)
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_TRAILING_VERSION)
 
@@ -185,3 +186,4 @@ install_from_gmaven(SUPPORT_COMPAT_ARTIFACT_ID)
 install_from_gmaven(SUPPORT_CORE_UI_ARTIFACT_ID)
 install_from_gmaven(SUPPORT_CORE_UTILS_ARTIFACT_ID)
 install_from_gmaven(SUPPORT_FRAGMENT_ARTIFACT_ID)
+install_from_gmaven('support-media-compat')

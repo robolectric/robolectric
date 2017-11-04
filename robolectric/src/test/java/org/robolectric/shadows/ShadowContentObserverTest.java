@@ -46,7 +46,7 @@ public class ShadowContentObserverTest {
     assertThat(observer.selfChange).isTrue();
   }
 
-  private class TestContentObserver extends ContentObserver {
+  private static class TestContentObserver extends ContentObserver {
 
     public TestContentObserver(Handler handler) {
       super(handler);

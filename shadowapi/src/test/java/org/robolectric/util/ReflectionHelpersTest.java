@@ -279,7 +279,7 @@ public class ReflectionHelpersTest {
     private int notOverridden;
     protected int overridden;
 
-    private static final int BASE = new Integer(8);
+    private static final int BASE = 8;
 
     public int getNotOverridden() {
       return notOverridden;
