@@ -130,23 +130,7 @@ public final class ShadowAssetManager {
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
 
-        if (resName.type.equals("id")) {
-          return;
-        } else if (resName.type.equals("layout")) {
-          return; // resourceId is good enough, right?
-        } else if (resName.type.equals("dimen")) {
-          return;
-        } else if (resName.type.equals("transition")) {
-          return;
-        } else if (resName.type.equals("interpolator")) {
-          return;
-        } else if (resName.type.equals("menu")) {
-          return;
-        } else if (resName.type.equals("raw")) {
-          return;
-        } else if (resName.type.equals("font")) {
-          return;
-        } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
+        if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           TypedResource drawableResource = resourceTable.getValue(resName, qualifiers);
           if (drawableResource == null) {
@@ -159,7 +143,7 @@ public final class ShadowAssetManager {
             return;
           }
         } else {
-          throw new RuntimeException("huh? " + resName);
+          return;
         }
       } else {
         if (dereferencedRef.isFile()) {

@@ -303,6 +303,7 @@ public final class R {
   public static final class xml {
     public static final int preferences = 0x7f0d0000;
     public static final int dialog_preferences = 0x7f0d0001;
+    public static final int shortcuts = 0x7f0d0002;
   }
 
   public static final class styleable {
