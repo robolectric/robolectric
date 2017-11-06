@@ -166,6 +166,9 @@ public final class R {
     public static final int list_separator = 0x7f05000c;
     public static final int custom_state_view_text_color = 0x7f05000d;
     public static final int typed_array_orange = 0x7f05000e;
+    public static final int test_ARGB8=0x7f05000f;
+    public static final int test_RGB4=0x7f050010;
+    public static final int test_RGB8=0x7f050011;
   }
 
   public static final class drawable {
