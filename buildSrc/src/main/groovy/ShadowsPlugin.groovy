@@ -1,5 +1,6 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.compile.JavaCompile
 
 import java.util.jar.JarFile
 
@@ -8,6 +9,7 @@ class ShadowsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.apply plugin: "net.ltgt.apt"
+        project.apply plugin: 'idea'
 
         project.extensions.create("shadows", ShadowsPluginExtension)
 
@@ -20,15 +22,9 @@ class ShadowsPlugin implements Plugin<Project> {
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
         }
 
+        // this doesn't seem to have any effect in IDEA yet, unfortunately...
         def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
-
-        project.sourceSets {
-            main {
-                java {
-                    srcDirs += [aptGeneratedSrcDir]
-                }
-            }
-        }
+        project.idea.module.generatedSourceDirs << aptGeneratedSrcDir
 
         // verify that we have the apt-generated files in our javadoc and sources jars
         project.tasks['javadocJar'].doLast { task ->
@@ -42,13 +38,22 @@ class ShadowsPlugin implements Plugin<Project> {
         }
 
         project.rootProject.configAnnotationProcessing += project
-    }
+
+        /* Prevents sporadic compilation error:
+         * 'Bad service configuration file, or exception thrown while constructing
+         *  Processor object: javax.annotation.processing.Processor: Error reading
+         *  configuration file'
+         *
+         * See https://discuss.gradle.org/t/gradle-not-compiles-with-solder-tooling-jar/7583/20
+         */
+        project.tasks.withType(JavaCompile) { options.fork = true }
+}
 
     static class ShadowsPluginExtension {
         String packageName
     }
 
-    private void checkForFile(jar, String name) {
+    private static void checkForFile(jar, String name) {
         def files = new JarFile(jar).entries().collect { it.name }.toSet()
 
         if (!files.contains(name)) {
