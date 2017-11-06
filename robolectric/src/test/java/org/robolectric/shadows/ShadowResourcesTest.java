@@ -649,6 +649,15 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void obtainAttributes() {
+    TypedArray typedArray = resources.obtainAttributes(Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.styleReference, "@xml/shortcuts")
+        .build(), new int[]{R.attr.styleReference});
+    assertThat(typedArray).isNotNull();
+    assertThat(typedArray.peekValue(0).resourceId).isEqualTo(R.xml.shortcuts);
+  }
+
+  @Test
   public void obtainStyledAttributesShouldDereferenceValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
