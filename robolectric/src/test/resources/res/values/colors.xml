@@ -17,4 +17,9 @@
   <color name="list_separator">#111111</color>
 
   <color name="typed_array_orange">#FF5C00</color>
+
+  <color name="test_ARGB4">#0001</color>
+  <color name="test_ARGB8">#00000002</color>
+  <color name="test_RGB4">#00f</color>
+  <color name="test_RGB8">#000004</color>
 </resources>
