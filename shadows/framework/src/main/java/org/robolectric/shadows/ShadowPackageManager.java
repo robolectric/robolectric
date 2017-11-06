@@ -305,8 +305,10 @@ public class ShadowPackageManager {
       info.serviceInfo.packageName = packageName;
       info.serviceInfo.applicationInfo = new ApplicationInfo();
       info.filter = new IntentFilter();
-      for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
-        info.filter.addDataType(it.next());
+      if (intentFilter.typesIterator() != null) {
+        for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
+          info.filter.addDataType(it.next());
+        }
       }
       return info;
     } catch (IntentFilter.MalformedMimeTypeException e) {
