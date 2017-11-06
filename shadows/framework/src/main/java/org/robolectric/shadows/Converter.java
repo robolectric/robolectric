@@ -136,7 +136,7 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
+        typedValue.type =  ResourceHelper.getColorType(data);
         typedValue.data = ResourceHelper.getColor(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -151,8 +151,6 @@ public class Converter<T> {
       return ResourceHelper.getColor(typedResource.asString().trim());
     }
   }
-
-
 
   public static class FromFilePath extends Converter<String> {
     @Override

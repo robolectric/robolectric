@@ -10,6 +10,7 @@ import android.app.Service;
 import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
 import java.util.ServiceLoader;
@@ -103,7 +104,13 @@ public class Robolectric {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass));
   }
 
-  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass) {
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), arguments);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass) {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass);
   }
 
@@ -111,8 +118,29 @@ public class Robolectric {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), intent);
   }
 
-  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass, Intent intent) {
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Intent intent,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), intent, arguments);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass,
+                                                                         Intent intent) {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, arguments);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass,
+                                                                         Intent intent,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent, arguments);
   }
 
   public static <T extends BackupAgent> BackupAgentController<T> buildBackupAgent(Class<T> backupAgentClass) {

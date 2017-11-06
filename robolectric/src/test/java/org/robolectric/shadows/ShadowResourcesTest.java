@@ -668,6 +668,15 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void obtainAttributes() {
+    TypedArray typedArray = resources.obtainAttributes(Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.styleReference, "@xml/shortcuts")
+        .build(), new int[]{R.attr.styleReference});
+    assertThat(typedArray).isNotNull();
+    assertThat(typedArray.peekValue(0).resourceId).isEqualTo(R.xml.shortcuts);
+  }
+
+  @Test
   public void obtainStyledAttributesShouldDereferenceValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
@@ -817,7 +826,7 @@ public class ShadowResourcesTest {
     assertThat(outValue.assetCookie).isNotEqualTo(0);
 
     resources.getValue(R.color.blue, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
     assertThat(outValue.data).isEqualTo(ResourceHelper.getColor("#0000ff"));
     assertThat(outValue.string).isNull();
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
@@ -920,6 +929,16 @@ public class ShadowResourcesTest {
   public void getDrawable_mipmapReferencesResolve() {
     Drawable reference = resources.getDrawable(R.mipmap.mipmap_reference);
     Drawable original = resources.getDrawable(R.mipmap.robolectric);
+
+    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
+    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getDrawable_mipmapReferencesResolveXml() {
+    Drawable reference = resources.getDrawable(R.mipmap.robolectric_xml);
+    Drawable original = resources.getDrawable(R.mipmap.mipmap_reference_xml);
 
     assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
     assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());

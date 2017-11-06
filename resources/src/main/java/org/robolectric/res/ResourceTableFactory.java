@@ -143,6 +143,7 @@ public class ResourceTableFactory {
       loadOpaque(resourcePath, resourceTable, "layout", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "menu", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "drawable", ResType.DRAWABLE);
+      loadOpaque(resourcePath, resourceTable, "mipmap", ResType.DRAWABLE);
       loadOpaque(resourcePath, resourceTable, "anim", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "animator", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "color", ResType.COLOR_STATE_LIST);

@@ -521,8 +521,10 @@ containing a value of this type.
         public static final int test_withorder=0x7f130003;
     }
     public static final class mipmap {
-        public static final int mipmap_reference=0x7f030001;
+        public static final int mipmap_reference=0x7f030002;
+        public static final int mipmap_reference_xml=0x7f030003;
         public static final int robolectric=0x7f030000;
+        public static final int robolectric_xml=0x7f030001;
     }
     public static final class plurals {
         public static final int beer=0x7f110000;
@@ -615,7 +617,8 @@ containing a value of this type.
     public static final class xml {
         public static final int dialog_preferences=0x7f070000;
         public static final int preferences=0x7f070001;
-        public static final int xml_attrs=0x7f070002;
+        public static final int shortcuts=0x7f070002;
+        public static final int xml_attrs=0x7f070003;
     }
     public static final class styleable {
         /** Attributes that can be used with a CustomStateView.
