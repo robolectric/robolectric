@@ -60,7 +60,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
   private final ResourceResolver resourceResolver;
   private Map<Integer, String> attrToValue = new TreeMap<>();
 
-  interface ResourceResolver {
+  public interface ResourceResolver {
 
     String getPackageName();
 

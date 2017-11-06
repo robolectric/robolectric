@@ -94,12 +94,13 @@ public class BootstrapTest {
     );
 
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
+      // Setting Locale in > JB results in forcing layout direction to match locale
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
           + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
           + RuntimeEnvironment.getApiLevel());
     } else {
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-notouch-keyshidden-12key-navhidden-dpad-v"
+          + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
           + RuntimeEnvironment.getApiLevel());
     }
 

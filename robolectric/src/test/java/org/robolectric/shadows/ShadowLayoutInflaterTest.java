@@ -7,11 +7,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 import static org.robolectric.R.layout;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
 import android.app.Activity;
 import android.content.Context;
@@ -66,26 +64,14 @@ public class ShadowLayoutInflaterTest {
   public void testChoosesLayoutBasedOnDefaultScreenSize() throws Exception {
     ViewGroup view = inflate(R.layout.different_screen_sizes);
     TextView textView = view.findViewById(android.R.id.text1);
-    if (isLegacyAssetManager()) {
-      assertThat(textView.getText().toString()).isEqualTo("default");
-    } else {
-      // the real framework doesn't select layouts strictly based on screen size
+
+      // TODO: rename this test - the real framework doesn't select layouts strictly based on
+      // screen size
       assertThat(textView.getText().toString()).isEqualTo("xlarge");
-    }
   }
 
-  @Test @Config(qualifiers = "xlarge-land")
-  public void testChoosesLayoutBasedOnSearchPath_choosesFirstFileFoundOnPath() throws Exception {
-    ViewGroup view = inflate(R.layout.different_screen_sizes);
-    TextView textView = view.findViewById(android.R.id.text1);
-    assertThat(textView.getText().toString()).isEqualTo("xlarge");
-  }
-
-  @Test @Config(qualifiers = "doesnotexist-land-xlarge")
-  public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-    // the real framework doesn't select layouts based on path order. The above qualifier format
-    // is actually invalid
-    assumeTrue(isLegacyAssetManager());
+  @Test @Config(qualifiers = "land")
+  public void testChoosesLayoutBasedOnQualifiers() throws Exception {
     ViewGroup view = inflate(R.layout.different_screen_sizes);
     TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("land");
