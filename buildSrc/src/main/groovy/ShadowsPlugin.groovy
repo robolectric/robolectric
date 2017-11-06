@@ -26,6 +26,10 @@ class ShadowsPlugin implements Plugin<Project> {
         def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
         project.idea.module.generatedSourceDirs << aptGeneratedSrcDir
 
+        // include generated sources in javadoc and source jars
+        project.tasks['javadoc'].source(aptGeneratedSrcDir)
+        project.tasks['sourcesJar'].from(project.fileTree(aptGeneratedSrcDir))
+
         // verify that we have the apt-generated files in our javadoc and sources jars
         project.tasks['javadocJar'].doLast { task ->
             def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
