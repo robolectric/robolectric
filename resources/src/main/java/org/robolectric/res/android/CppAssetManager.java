@@ -15,7 +15,6 @@ import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,8 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
@@ -673,7 +675,7 @@ public Asset open(final String fileName, AccessMode mode) {
     // Iterate through all asset packages, collecting resources from each.
 
     synchronized (mLock) {
-      long startedAt = System.currentTimeMillis();
+      long startedAt = System.nanoTime();
       if (mResources != null) {
         return mResources;
       }
@@ -698,7 +700,7 @@ public Asset open(final String fileName, AccessMode mode) {
         mResources = null;
       }
 
-      System.out.println("Loading resources took " + (System.currentTimeMillis() - startedAt) + "ms - " + mAssetPaths);
+      System.out.println("Loading resources took " + ((System.nanoTime() - startedAt) / 1000000.0) + "ms - " + mAssetPaths);
       return mResources;
     }
   }
@@ -1749,6 +1751,24 @@ public Asset open(final String fileName, AccessMode mode) {
       return Files.getLastModifiedTime(Paths.get(path)).toMillis();
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public static class AssetPath {
+    public final FsFile file;
+    public final boolean isSystem;
+
+    public AssetPath(FsFile file, boolean isSystem) {
+      this.file = file;
+      this.isSystem = isSystem;
+    }
+  }
+
+  public List<AssetPath> getAssetPaths() {
+    synchronized (mLock) {
+      return mAssetPaths.stream()
+          .map(asset_path -> new AssetPath(Fs.newFile(asset_path.path.string()), asset_path.isSystemAsset))
+          .collect(Collectors.toList());
     }
   }
 }

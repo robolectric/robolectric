@@ -27,14 +27,6 @@ public class ResourceLoaderTest {
   }
 
   @Test
-  @Config(qualifiers = "doesnotexist-land-xlarge") // todo: apply in order specified here: https://developer.android.com/guide/topics/resources/providing-resources.html#table2
-  public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
-    TextView textView = (TextView) view.findViewById(android.R.id.text1);
-    assertThat(textView.getText().toString()).isEqualTo("xlarge");
-  }
-
-  @Test
   @Config(qualifiers="w0dp")
   public void checkDefaultBooleanValue() throws Exception {
 	  assertThat(RuntimeEnvironment.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(false);
@@ -58,8 +50,8 @@ public class ResourceLoaderTest {
 
   private void checkForPollutionHelper() {
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
-    TextView textView = (TextView) view.findViewById(android.R.id.text1);
-    assertThat(textView.getText().toString()).isEqualTo("default");
+    TextView textView = view.findViewById(android.R.id.text1);
+    assertThat(textView.getText().toString()).isEqualTo("xlarge");
     RuntimeEnvironment.setQualifiers("land"); // testing if this pollutes the other test
   }
 

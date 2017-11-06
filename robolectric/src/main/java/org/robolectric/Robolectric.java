@@ -10,11 +10,12 @@ import android.app.Service;
 import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.util.AttributeSet;
 import android.view.View;
 import java.util.ServiceLoader;
 import org.robolectric.android.AttributeSetBuilderImpl;
+import org.robolectric.android.AttributeSetBuilderImpl.ArscResourceResolver;
+import org.robolectric.android.AttributeSetBuilderImpl.LegacyResourceResolver;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -128,7 +129,14 @@ public class Robolectric {
    * Useful for testing {@link View} classes without the need for creating XML snippets.
    */
   public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
-    return new AttributeSetBuilderImpl(RuntimeEnvironment.application) {};
+    if (isLegacyAssetManager()) {
+      return new AttributeSetBuilderImpl(
+          new LegacyResourceResolver(RuntimeEnvironment.application,
+              RuntimeEnvironment.getCompileTimeResourceTable())) {};
+    } else {
+      return new AttributeSetBuilderImpl(
+          new ArscResourceResolver(RuntimeEnvironment.application)) {};
+    }
   }
 
   /**

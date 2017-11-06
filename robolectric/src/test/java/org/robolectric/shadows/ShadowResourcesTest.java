@@ -113,8 +113,13 @@ public class ShadowResourcesTest {
     // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a String resource type
     // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
     // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value"))
-        .endsWith("res" + File.separator + "layout-xlarge-v4" + File.separator + "different_screen_sizes.xml");
+    if (isLegacyAssetManager()) {
+      assertThat(resources.getText(R.layout.different_screen_sizes, "value"))
+          .endsWith("res" + File.separator + "layout-xlarge" + File.separator + "different_screen_sizes.xml");
+    } else {
+      assertThat(resources.getText(R.layout.different_screen_sizes, "value"))
+          .endsWith("res" + File.separator + "layout-xlarge-v4" + File.separator + "different_screen_sizes.xml");
+    }
   }
 
   @Test
@@ -174,9 +179,15 @@ public class ShadowResourcesTest {
     }
 
     assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.typed_array_values);
-    assertThat(refsTypedArray.getTextArray(8))
-        .containsExactly("abcdefg", null, null, null, null, null,
-            null, null, null, null, null, null);
+    if (isLegacyAssetManager()) {
+      assertThat(refsTypedArray.getTextArray(8))
+          .containsExactly("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
+              "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
+    } else {
+      assertThat(refsTypedArray.getTextArray(8))
+          .containsExactly("abcdefg", null, null, null, null, null,
+              null, null, null, null, null, null);
+    }
 
     assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
   }
@@ -812,7 +823,12 @@ public class ShadowResourcesTest {
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
 
     resources.getValue(R.integer.loneliest_number, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+    if (isLegacyAssetManager()) {
+      assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
+    } else {
+      // wtf?
+      assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+    }
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
@@ -853,9 +869,13 @@ public class ShadowResourcesTest {
       resources.getXml(R.id.ungulate);
       fail();
     } catch (Resources.NotFoundException e) {
-      assertThat(e.getMessage()).contains("Resource ID #0x"
-          + Integer.toString(R.id.ungulate, 16) + " type #0x"
-          + Res_GETTYPE(R.id.ungulate) + " is not valid");
+      if (isLegacyAssetManager()) {
+        assertThat(e.getMessage()).contains("ungulate");
+      } else {
+        assertThat(e.getMessage()).contains("Resource ID #0x"
+            + Integer.toString(R.id.ungulate, 16) + " type #0x"
+            + Res_GETTYPE(R.id.ungulate) + " is not valid");
+      }
     }
   }
 

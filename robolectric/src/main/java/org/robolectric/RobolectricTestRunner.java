@@ -325,14 +325,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           roboMethod.testLifecycle, appManifest, getJarResolver(), config,
           new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable),
           new RoutingResourceTable(systemResourceTable, appResourceTable),
-          new RoutingResourceTable(systemResourceTable));
+          new RoutingResourceTable(systemResourceTable),
+          null);
     } else {
       ResourceTable nullResourceTable = new NullResourceTable();
 
       roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod,
           roboMethod.testLifecycle, appManifest, getJarResolver(), config,
           nullResourceTable, nullResourceTable,
-          nullResourceTable);
+          nullResourceTable, sdkEnvironment.getCompileTimeSystemResourcesFile(getJarResolver()));
     }
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }

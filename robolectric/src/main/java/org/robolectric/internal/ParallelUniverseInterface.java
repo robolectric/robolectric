@@ -5,6 +5,7 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 
 public interface ParallelUniverseInterface {
@@ -14,7 +15,7 @@ public interface ParallelUniverseInterface {
       AndroidManifest appManifest,
       DependencyResolver jarResolver, Config config,
       ResourceTable compiletimeResourceTable, ResourceTable appResourceTable,
-      ResourceTable systemResourceTable);
+      ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile);
 
   Thread getMainThread();
 

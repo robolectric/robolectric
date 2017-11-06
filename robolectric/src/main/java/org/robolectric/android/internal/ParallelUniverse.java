@@ -33,6 +33,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
@@ -59,10 +60,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, AndroidManifest appManifest,
+  public void setUpApplicationState(Method method, TestLifecycle testLifecycle,
+      AndroidManifest appManifest,
       DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
-                                    ResourceTable appResourceTable,
-                                    ResourceTable systemResourceTable) {
+      ResourceTable appResourceTable,
+      ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -73,6 +75,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
+    RuntimeEnvironment.compileTimeSystemResourcesFile = compileTimeSystemResourcesFile;
     RuntimeEnvironment.setAndroidFrameworkJarPath(
         jarResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
 

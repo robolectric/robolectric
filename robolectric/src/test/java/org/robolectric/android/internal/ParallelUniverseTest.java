@@ -1,50 +1,18 @@
 package org.robolectric.android.internal;
 
-import static android.content.res.Configuration.KEYBOARDHIDDEN_UNDEFINED;
-import static android.content.res.Configuration.KEYBOARDHIDDEN_YES;
-import static android.content.res.Configuration.KEYBOARD_12KEY;
-import static android.content.res.Configuration.KEYBOARD_UNDEFINED;
-import static android.content.res.Configuration.NAVIGATIONHIDDEN_UNDEFINED;
-import static android.content.res.Configuration.NAVIGATIONHIDDEN_YES;
-import static android.content.res.Configuration.NAVIGATION_DPAD;
-import static android.content.res.Configuration.NAVIGATION_UNDEFINED;
-import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
-
-import static android.content.res.Configuration.SCREENLAYOUT_LONG_MASK;
-import static android.content.res.Configuration.SCREENLAYOUT_LONG_UNDEFINED;
-import static android.content.res.Configuration.SCREENLAYOUT_LONG_YES;
-import static android.content.res.Configuration.SCREENLAYOUT_ROUND_MASK;
-import static android.content.res.Configuration.SCREENLAYOUT_ROUND_UNDEFINED;
-import static android.content.res.Configuration.SCREENLAYOUT_ROUND_YES;
-import static android.content.res.Configuration.SCREENLAYOUT_SIZE_MASK;
-import static android.content.res.Configuration.SCREENLAYOUT_SIZE_UNDEFINED;
-import static android.content.res.Configuration.SCREENLAYOUT_SIZE_XLARGE;
-import static android.content.res.Configuration.TOUCHSCREEN_NOTOUCH;
-import static android.content.res.Configuration.TOUCHSCREEN_UNDEFINED;
-import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-import static android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED;
-import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
-import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
-import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
-import static android.content.res.Configuration.UI_MODE_TYPE_UNDEFINED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.app.Application;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
-import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
@@ -67,7 +35,6 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
-import org.robolectric.android.Bootstrap;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -120,7 +87,8 @@ public class ParallelUniverseTest {
         defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
-        RuntimeEnvironment.getSystemResourceTable());
+        RuntimeEnvironment.getSystemResourceTable(),
+        null);
   }
 
   private AndroidManifest dummyManifest() {

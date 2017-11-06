@@ -79,6 +79,6 @@ public class Bootstrap {
       }
     }
 
-    return ConfigurationV25.resourceQualifierString(configuration);
+    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
   }
 }

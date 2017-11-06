@@ -148,7 +148,7 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(qualifiers = "hdpi", sdk = 16) // TODO unpin
+  @Config(qualifiers = "hdpi")
   public void drawableShouldLoadImageOfCorrectSizeWithHdpiQualifier() {
     final Drawable anImage = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.robolectric);
 

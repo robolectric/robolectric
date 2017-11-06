@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.app.Application;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
@@ -23,6 +24,7 @@ public class RuntimeEnvironment {
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static AndroidManifest appManifest;
   private static String androidFrameworkJar;
+  public static FsFile compileTimeSystemResourcesFile;
 
   /**
    * Tests if the given thread is currently set as the main thread.

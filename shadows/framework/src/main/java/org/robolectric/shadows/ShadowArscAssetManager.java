@@ -41,6 +41,7 @@ import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir;
 import org.robolectric.res.android.BagAttributeFinder;
 import org.robolectric.res.android.CppAssetManager;
+import org.robolectric.res.android.CppAssetManager.AssetPath;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.DynamicRefTable;
 import org.robolectric.res.android.Ref;
@@ -68,12 +69,13 @@ public class ShadowArscAssetManager {
     System.out.println("USE_LEGACY = " + USE_LEGACY);
   }
 
+  private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
+  private static final NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
+
   @RealObject
   private AssetManager realObject;
   private CppAssetManager cppAssetManager;
-
-  private static NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
-  private static NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
+  private ResTable compileTimeResTable;
 
   public static boolean isLegacyAssetManager(AssetManager assets) {
     return Shadow.extract(assets) instanceof ShadowAssetManager;
@@ -2007,18 +2009,20 @@ public class ShadowArscAssetManager {
     //    verifySystemIdmaps();
     //  }
 
-    Preconditions.checkNotNull(RuntimeEnvironment.getAndroidFrameworkJarPath());
+    String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
+    Preconditions.checkNotNull(androidFrameworkJarPath);
+
     if (isSystem) {
       synchronized (ShadowArscAssetManager.class) {
         if (systemCppAssetManager == null) {
           systemCppAssetManager = new CppAssetManager();
-          systemCppAssetManager.addDefaultAssets(RuntimeEnvironment.getAndroidFrameworkJarPath());
+          systemCppAssetManager.addDefaultAssets(androidFrameworkJarPath);
         }
       }
       this.cppAssetManager = systemCppAssetManager;
     } else {
       this.cppAssetManager = new CppAssetManager();
-      cppAssetManager.addDefaultAssets(RuntimeEnvironment.getAndroidFrameworkJarPath());
+      cppAssetManager.addDefaultAssets(androidFrameworkJarPath);
     }
 
     ALOGV("Created AssetManager %s for Java object %s\n", cppAssetManager,
@@ -2095,5 +2099,22 @@ public class ShadowArscAssetManager {
 
    // return newParcelFileDescriptor(fileDesc);
     return new ParcelFileDescriptor(fd);
+  }
+
+  synchronized public ResTable getCompileTimeResTable() {
+    if (compileTimeResTable == null) {
+      CppAssetManager compileTimeCppAssetManager = new CppAssetManager();
+      for (AssetPath assetPath : assetManagerForJavaObject().getAssetPaths()) {
+        if (assetPath.isSystem) {
+          compileTimeCppAssetManager.addDefaultAssets(
+              RuntimeEnvironment.compileTimeSystemResourcesFile.getPath());
+        } else {
+          compileTimeCppAssetManager.addAssetPath(new String8(assetPath.file.getPath()), null, false);
+        }
+      }
+      compileTimeResTable = compileTimeCppAssetManager.getResources();
+    }
+
+    return compileTimeResTable;
   }
 }
