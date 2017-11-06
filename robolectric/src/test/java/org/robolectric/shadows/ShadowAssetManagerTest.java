@@ -75,7 +75,11 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void assetsPathListing() throws IOException {
-    assertThat(assetManager.list("")).contains("assetsHome.txt", "deflatedAsset.xml", "docs", "myFont.ttf", "images", "webkit");
+    if (isLegacyAssetManager()) {
+      assertThat(assetManager.list("")).contains("assetsHome.txt", "deflatedAsset.xml", "docs", "myFont.ttf");
+    } else {
+      assertThat(assetManager.list("")).contains("assetsHome.txt", "deflatedAsset.xml", "docs", "myFont.ttf", "images", "webkit");
+    }
 
     assertThat(assetManager.list("docs")).containsExactlyInAnyOrder("extra");
 
