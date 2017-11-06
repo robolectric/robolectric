@@ -33,7 +33,7 @@ dependencies {
     compile project(":shadows:framework")
 
     // Compile dependencies
-    compile "org.bouncycastle:bcprov-jdk15on:1.52"
+    compile "org.bouncycastle:bcprov-jdk15on:1.58"
     compile "com.thoughtworks.xstream:xstream:1.4.8"
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
