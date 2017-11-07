@@ -1,7 +1,8 @@
 package org.robolectric.res;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
@@ -18,25 +19,23 @@ public class ResBundle {
   }
 
   public void receive(ResourceTable.Visitor visitor) {
-    for (final Map.Entry<ResName, Map<String, TypedResource>> entry : valuesMap.map.entrySet()) {
-      visitor.visit(entry.getKey(), entry.getValue().values());
+    for (final Map.Entry<ResName, List<TypedResource>> entry : valuesMap.map.entrySet()) {
+      visitor.visit(entry.getKey(), entry.getValue());
     }
   }
 
   static class ResMap {
-    private final Map<ResName, Map<String, TypedResource>> map = new HashMap<>();
+    private final Map<ResName, List<TypedResource>> map = new HashMap<>();
 
     public TypedResource pick(ResName resName, String qualifiersStr) {
-      Map<String, TypedResource> values = map.get(resName);
+      List<TypedResource> values = map.get(resName);
       if (values == null || values.size() == 0) return null;
-
-      Collection<TypedResource> typedResources = values.values();
 
       ResTable_config toMatch = new ResTable_config();
       new ConfigDescription().parse(qualifiersStr == null ? "" : qualifiersStr, toMatch);
 
       TypedResource bestMatchSoFar = null;
-      for (TypedResource candidate : typedResources) {
+      for (TypedResource candidate : values) {
         ResTable_config candidateConfig = candidate.getConfig();
         if (candidateConfig.match(toMatch)) {
           if (bestMatchSoFar == null || candidateConfig.isBetterThan(bestMatchSoFar.getConfig(), toMatch)) {
@@ -49,11 +48,9 @@ public class ResBundle {
     }
 
     public void put(ResName resName, TypedResource value) {
-      Map<String, TypedResource> values = map.get(resName);
-      if (values == null) map.put(resName, values = new HashMap<>());
-      if (!values.containsKey(value.getXmlContext().getQualifiers())) {
-        values.put(value.getXmlContext().getQualifiers(), value);
-      }
+      List<TypedResource> values = map.get(resName);
+      if (values == null) map.put(resName, values = new ArrayList<>());
+      values.add(value);
     }
 
     public int size() {
