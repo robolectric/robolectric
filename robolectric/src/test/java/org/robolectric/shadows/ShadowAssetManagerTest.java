@@ -116,6 +116,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws Exception {
+    assumeTrue(!isLegacyAssetManager());
     expectedException.expect(FileNotFoundException.class);
     expectedException.expectMessage("This file can not be opened as a file descriptor; it is probably compressed");
 
@@ -126,25 +127,29 @@ public class ShadowAssetManagerTest {
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/an_image.png", 0);
 
-    // TODO: different sizes in binary vs file resources
-    // assertThat(countBytes(inputStream)).isEqualTo(6559);
-    assertThat(countBytes(inputStream)).isEqualTo(5138);
+    // expect different sizes in binary vs file resources
+    int expectedFileSize = isLegacyAssetManager() ? 6559 : 5138;
+    assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
   @Test
+  @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
-    if (!isLegacyAssetManager(assetManager)) return;
+    String fileName = "res/drawable-hdpi-v4/bottom_bar.png";
+    int expectedFileSize = 231;
+    if (isLegacyAssetManager()) {
+      // retrieves the uncompressed, un-version-qualified file from raw-res/...
+      fileName = "jar:res/drawable-hdpi/bottom_bar.png";
+      expectedFileSize = 389;
+    }
 
-    // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name
-    final String jarFile = "jar:/android-all-5.0.0_r2-robolectric-0.jar!/res/drawable-hdpi/bottom_bar.png";
-
-    InputStream inputStream = assetManager.openNonAsset(0, jarFile, 0);
-    assertThat(countBytes(inputStream)).isEqualTo(389);
+    InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
+    assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
   @Test
   public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
-    if (!isLegacyAssetManager(assetManager)) return;
+    assumeTrue(isLegacyAssetManager());
 
     expectedException.expect(FileNotFoundException.class);
     expectedException.expectMessage(
@@ -155,7 +160,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
-    if (!isLegacyAssetManager(assetManager)) return;
+    assumeTrue(isLegacyAssetManager());
 
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage(
