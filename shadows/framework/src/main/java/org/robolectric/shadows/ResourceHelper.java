@@ -34,6 +34,7 @@ public final class ResourceHelper {
 
   /**
    * Returns the color value represented by the given string value
+   *
    * @param value the color value
    * @return the color as an int
    * @throws NumberFormatException if the conversion failed.
@@ -82,6 +83,29 @@ public final class ResourceHelper {
     }
 
     throw new NumberFormatException();
+  }
+
+  /**
+   * Returns the TypedValue color type represented by the given string value
+   *
+   * @param value the color value
+   * @return the color as an int. For backwards compatibility, will return a default of ARGB8 if
+   *   value format is unrecognized.
+   */
+  public static int getColorType(String value) {
+    if (value != null && value.startsWith("#")) {
+      switch (value.length()) {
+        case 4:
+          return TypedValue.TYPE_INT_COLOR_RGB4;
+        case 5:
+          return TypedValue.TYPE_INT_COLOR_ARGB4;
+        case 7:
+          return TypedValue.TYPE_INT_COLOR_RGB8;
+        case 9:
+          return TypedValue.TYPE_INT_COLOR_ARGB8;
+      }
+    }
+    return TypedValue.TYPE_INT_COLOR_ARGB8;
   }
 
   public static int getInternalResourceId(String idName) {

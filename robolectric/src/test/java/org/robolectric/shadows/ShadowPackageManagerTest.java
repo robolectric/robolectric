@@ -1,5 +1,48 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
+import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
+import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
+import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
+import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
+import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
+import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
+import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
+import static android.content.pm.PackageManager.NameNotFoundException;
+import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_MATCH;
+import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
+import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
+import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.robolectric.Robolectric.setupActivity;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
@@ -272,6 +315,16 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
+  }
+
+  @Test
+  public void getApplicationInfo_disabledApplication_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(
+        RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -637,6 +690,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getPackageInfo_disabledPackage_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    PackageInfo info = packageManager.getPackageInfo(
+        RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test
   public void getInstalledPackages_uninstalledPackage_includeUninstalled() throws Exception {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
@@ -649,6 +712,16 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getInstalledPackages(0)).isEmpty();
+  }
+
+  @Test
+  public void getInstalledPackages_disabledPackage_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS)).isNotEmpty();
+    assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS).get(0).packageName)
+        .isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test
@@ -917,7 +990,7 @@ public class ShadowPackageManagerTest {
       assertThat(e.getMessage()).contains("a_name");
       throw e;
     }
-    
+
   }
 
   @Test

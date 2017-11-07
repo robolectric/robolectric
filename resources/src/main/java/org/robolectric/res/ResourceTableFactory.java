@@ -113,9 +113,10 @@ public class ResourceTableFactory {
                   .addHandler("bool", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
                   .addHandler("item[@type='bool']", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
                   .addHandler("color", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
-                  .addHandler("drawable", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
                   .addHandler("item[@type='color']", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
+                  .addHandler("drawable", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
                   .addHandler("item[@type='drawable']", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
+                  .addHandler("item[@type='mipmap']", new StaxValueLoader(resourceTable, "mipmap", ResType.DRAWABLE))
                   .addHandler("dimen", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
                   .addHandler("item[@type='dimen']", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
                   .addHandler("integer", new StaxValueLoader(resourceTable, "integer", ResType.INTEGER))
@@ -141,6 +142,7 @@ public class ResourceTableFactory {
       loadOpaque(resourcePath, resourceTable, "layout", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "menu", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "drawable", ResType.DRAWABLE);
+      loadOpaque(resourcePath, resourceTable, "mipmap", ResType.DRAWABLE);
       loadOpaque(resourcePath, resourceTable, "anim", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "animator", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "color", ResType.COLOR_STATE_LIST);

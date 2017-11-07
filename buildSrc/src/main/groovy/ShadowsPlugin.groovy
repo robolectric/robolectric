@@ -1,59 +1,67 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.util.GFileUtils
+
+import java.util.jar.JarFile
 
 @SuppressWarnings("GroovyUnusedDeclaration")
 class ShadowsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
+        project.apply plugin: "net.ltgt.apt"
+        project.apply plugin: 'idea'
+
         project.extensions.create("shadows", ShadowsPluginExtension)
 
-        project.configurations {
-            robolectricProcessor
-        }
-
         project.dependencies {
-            robolectricProcessor project.project(":processor")
-        }
-
-        def generatedSourcesDir = "${project.buildDir}/generated-shadows"
-
-        project.sourceSets.main.java.srcDirs += project.file(generatedSourcesDir)
-
-        project.task("generateShadowProvider", type: JavaCompile, description: "Generate Shadows.shadowOf()s class") { task ->
-            classpath = project.configurations.robolectricProcessor
-            source = project.sourceSets.main.java
-            destinationDir = project.file(generatedSourcesDir)
-
-            doFirst {
-                logger.info "Generating Shadows.java for ${project.name}…"
-
-                // reset our classpath at the last minute, since other plugins might mutate
-                //   compileJava's classpath and we want to pick up any changes…
-                classpath = project.tasks['compileJava'].classpath + project.configurations.robolectricProcessor
-
-                options.compilerArgs.addAll(
-                        "-proc:only",
-                        "-processor", "org.robolectric.annotation.processing.RobolectricProcessor",
-                        "-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}"
-                )
-            }
-
-            doLast {
-                def src = project.file("$generatedSourcesDir/META-INF/services/org.robolectric.internal.ShadowProvider")
-                def dest = project.file("${project.buildDir}/resources/main/META-INF/services/org.robolectric.internal.ShadowProvider")
-
-                GFileUtils.mkdirs(dest.getParentFile());
-                GFileUtils.copyFile(src, dest);
-            }
+            apt project.project(":processor")
         }
 
         def compileJavaTask = project.tasks["compileJava"]
-        compileJavaTask.dependsOn("generateShadowProvider")
-    }
+        compileJavaTask.doFirst {
+            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
+        }
+
+        // this doesn't seem to have any effect in IDEA yet, unfortunately...
+        def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
+        project.idea.module.generatedSourceDirs << aptGeneratedSrcDir
+
+        // include generated sources in javadoc and source jars
+        project.tasks['javadoc'].source(aptGeneratedSrcDir)
+        project.tasks['sourcesJar'].from(project.fileTree(aptGeneratedSrcDir))
+
+        // verify that we have the apt-generated files in our javadoc and sources jars
+        project.tasks['javadocJar'].doLast { task ->
+            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.html")
+        }
+
+        project.tasks['sourcesJar'].doLast { task ->
+            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.java")
+        }
+
+        project.rootProject.configAnnotationProcessing += project
+
+        /* Prevents sporadic compilation error:
+         * 'Bad service configuration file, or exception thrown while constructing
+         *  Processor object: javax.annotation.processing.Processor: Error reading
+         *  configuration file'
+         *
+         * See https://discuss.gradle.org/t/gradle-not-compiles-with-solder-tooling-jar/7583/20
+         */
+        project.tasks.withType(JavaCompile) { options.fork = true }
+}
 
     static class ShadowsPluginExtension {
         String packageName
+    }
+
+    private static void checkForFile(jar, String name) {
+        def files = new JarFile(jar).entries().collect { it.name }.toSet()
+
+        if (!files.contains(name)) {
+            throw new RuntimeException("Missing file ${name} in ${jar}")
+        }
     }
 }

@@ -6,10 +6,6 @@ package org.robolectric.res;
 public class DrawableResourceLoader {
   private final PackageResourceTable resourceTable;
 
-  public static boolean isStillHandledHere(String type) {
-    return "drawable".equals(type) || "anim".equals(type) || "mipmap".equals(type);
-  }
-
   DrawableResourceLoader(PackageResourceTable resourceTable) {
     this.resourceTable = resourceTable;
   }
