@@ -2,15 +2,18 @@ package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+import java.util.Locale;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
@@ -22,7 +25,7 @@ public class ResourceLoaderTest {
   @Config(qualifiers = "doesnotexist-land-xlarge")
   public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
-    TextView textView = (TextView) view.findViewById(android.R.id.text1);
+    TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
 
@@ -49,10 +52,16 @@ public class ResourceLoaderTest {
   }
 
   private void checkForPollutionHelper() {
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("");
+
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
-    TextView textView = (TextView) view.findViewById(android.R.id.text1);
+    TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
-    RuntimeEnvironment.setQualifiers("land"); // testing if this pollutes the other test
+    RuntimeEnvironment.setQualifiers("fr-land"); // testing if this pollutes the other test
+    Configuration configuration = Resources.getSystem().getConfiguration();
+    configuration.setLocale(new Locale("fr", "FR"));
+    configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+    Resources.getSystem().updateConfiguration(configuration, null);
   }
 
   @Test

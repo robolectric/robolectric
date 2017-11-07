@@ -615,37 +615,30 @@ public class ResTable_config {
     return new String(value, US_ASCII);
   }
 
-  /* static */ void packLanguageOrRegion(final byte[] in, final byte base,
-      final byte out[]) {
-    if (in.length < 3 || in[2] == 0 || in[2] == '-') {
-      out[0] = in[0];
-      out[1] = in[1];
+  /* static */ void packLanguageOrRegion(final String in, final byte base,
+      final byte[] out) {
+    if (in == null) {
+      out[0] = 0;
+      out[1] = 0;
+    } else if (in.length() < 3 || in.charAt(2) == 0 || in.charAt(2) == '-') {
+      out[0] = (byte) in.charAt(0);
+      out[1] = (byte) in.charAt(1);
     } else {
-      byte first = (byte) ((in[0] - base) & 0x007f);
-      byte second = (byte) ((in[1] - base) & 0x007f);
-      byte third = (byte) ((in[2] - base) & 0x007f);
+      byte first = (byte) ((in.charAt(0) - base) & 0x007f);
+      byte second = (byte) ((in.charAt(1) - base) & 0x007f);
+      byte third = (byte) ((in.charAt(2) - base) & 0x007f);
 
       out[0] = (byte) (0x80 | (third << 2) | (second >> 3));
       out[1] = (byte) ((second << 5) | first);
     }
   }
 
-  void packLanguage(final byte[] language) {
+  void packLanguage(final String language) {
     packLanguageOrRegion(language, (byte) 'a', this.language);
   }
 
-  void packLanguage(final String language) {
-    byte[] bytes = language == null ? new byte[2] : language.getBytes();
-    packLanguageOrRegion(bytes, (byte) 'a', this.language);
-  }
-
-  void packRegion(final byte[] region) {
-    packLanguageOrRegion(region, (byte) '0', this.country);
-  }
-
   void packRegion(final String region) {
-    byte[] bytes = region == null ? new byte[2] : region.getBytes();
-    packLanguageOrRegion(bytes, (byte) '0', this.country);
+    packLanguageOrRegion(region, (byte) '0', this.country);
   }
 
   private String unpackLanguage() {

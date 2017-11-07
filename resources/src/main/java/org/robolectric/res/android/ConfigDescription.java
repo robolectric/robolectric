@@ -93,10 +93,10 @@ public class ConfigDescription {
     int initFromParts(PeekingIterator<String> iter) {
 
       String part = iter.peek();
-      if (part.indexOf(0) == 'b' && part.indexOf(1) == '+') {
+      if (part.startsWith("b+")) {
         // This is a "modified" BCP 47 language tag. Same semantics as BCP 47 tags,
         // except that the separator is "+" and not "-".
-        String[] subtags = part.toLowerCase().split("\\+");
+        String[] subtags = part.substring(2).toLowerCase().split("\\+");
         if (subtags.length == 1) {
           set_language(subtags[0]);
         } else if (subtags.length == 2) {
@@ -689,6 +689,7 @@ public class ConfigDescription {
       return true;
     }
 
+    // check that we have 'dpi' after the last digit.
     Matcher matcher = DENSITY_PATTERN.matcher(name);
     if (matcher.matches()) {
       out.density = Integer.parseInt(matcher.group(1));
