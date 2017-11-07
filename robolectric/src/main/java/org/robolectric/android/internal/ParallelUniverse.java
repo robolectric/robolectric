@@ -79,12 +79,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
 
     Resources systemResources = Resources.getSystem();
-    Configuration configuration = systemResources.getConfiguration();
+    Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
-    String qualifiers = Bootstrap.applySystemConfiguration(config.qualifiers(),
+    String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
 
-    systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
+    systemResources.updateConfiguration(configuration, displayMetrics);
     RuntimeEnvironment.setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
