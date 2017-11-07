@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import java.util.Locale;
@@ -92,7 +93,16 @@ public class ShadowLocaleData {
       ReflectionHelpers.setField(localeData, "percent", '%');
     }
 
-    localeData.perMill = 0x2030;
+    // BEGIN-INTERNAL
+    if (getApiLevel() >= P) {
+      // P uses a String
+      localeData.perMill = "‰";
+    } else {
+      // Upto P was a char
+      ReflectionHelpers.setField(localeData, "perMill", '‰');
+    }
+    // END-INTERNAL
+
     localeData.monetarySeparator = '.';
 
     if (getApiLevel() >= LOLLIPOP) {

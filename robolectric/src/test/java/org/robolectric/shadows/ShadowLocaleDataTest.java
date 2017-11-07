@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Locale;
@@ -53,7 +54,6 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.groupingSeparator).isEqualTo(',');
     assertThat(localeData.patternSeparator).isEqualTo(';');
 
-    assertThat(localeData.perMill).isEqualTo('‰');
     assertThat(localeData.monetarySeparator).isEqualTo('.');
 
     assertThat(localeData.exponentSeparator).isEqualTo("E");
@@ -68,6 +68,15 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.currencyPattern).isEqualTo("¤#,##0.00;(¤#,##0.00)");
     assertThat(localeData.percentPattern).isEqualTo("#,##0%");
   }
+
+  // BEGIN-INTERNAL
+  @Test
+  @Config(minSdk = P)
+  public void shouldSupportLocaleEn_US_perMillPost28() throws Exception {
+    LocaleData localeData = LocaleData.get(Locale.US);
+    assertThat(localeData.perMill).isEqualTo("‰");
+  }
+  // END-INTERNAL
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
