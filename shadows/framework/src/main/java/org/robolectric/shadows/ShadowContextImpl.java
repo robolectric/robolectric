@@ -221,6 +221,11 @@ public class ShadowContextImpl {
     return ShadowApplication.getInstance().startService(service);
   }
 
+  @Implementation(minSdk = O)
+  public ComponentName startForegroundService(Intent service) {
+    return ShadowApplication.getInstance().startService(service);
+  }
+
   @Implementation
   public void startActivity(Intent intent) {
     ShadowApplication.getInstance().startActivity(intent);
