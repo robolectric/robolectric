@@ -8,13 +8,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.robolectric.R.color.test_ARGB8;
+import static org.robolectric.R.color.test_RGB8;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import com.google.common.io.CharStreams;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -326,5 +330,21 @@ public class ShadowAssetManagerTest {
     assertThat(
             shadowOf(assetManager).getResourceIdentifier("raw_resource", "raw", "org.robolectric"))
         .isEqualTo(R.raw.raw_resource);
+  }
+
+  @Test
+  public void getResourceValue_colorARGB8() {
+    TypedValue outValue = new TypedValue();
+    resources.getValue(test_ARGB8, outValue, false);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+    assertThat(Color.blue(outValue.data)).isEqualTo(2);
+  }
+
+  @Test
+  public void getResourceValue_colorRGB8() {
+    TypedValue outValue = new TypedValue();
+    resources.getValue(test_RGB8, outValue, false);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
+    assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
 }

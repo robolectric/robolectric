@@ -44,7 +44,7 @@ def install(group_id, artifact_id, version, archive)
 end
 
 def get_dependency(group_id, artifact_id, version, packaging)
-  run("mvn -q dependency:get -DremoteRepositories=https://maven.google.com/ -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dpackaging='#{packaging}' -Dtransitive=false") || exit(1)
+  run("mvn -q dependency:get -DrepoUrl=http://maven.google.com -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dpackaging='#{packaging}' -Dtransitive=false") || exit(1)
 end
 
 def run(args)

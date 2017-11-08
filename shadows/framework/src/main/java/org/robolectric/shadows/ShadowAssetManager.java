@@ -36,7 +36,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
-import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.EmptyStyle;
 import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.Fs;
@@ -126,41 +125,9 @@ public final class ShadowAssetManager {
       outValue.resourceId = resourceId;
 
       TypedResource dereferencedRef = resourceTable.getValue(resName, qualifiers);
-
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
-
-        if (resName.type.equals("id")) {
-          return;
-        } else if (resName.type.equals("layout")) {
-          return; // resourceId is good enough, right?
-        } else if (resName.type.equals("dimen")) {
-          return;
-        } else if (resName.type.equals("transition")) {
-          return;
-        } else if (resName.type.equals("interpolator")) {
-          return;
-        } else if (resName.type.equals("menu")) {
-          return;
-        } else if (resName.type.equals("raw")) {
-          return;
-        } else if (resName.type.equals("font")) {
-          return;
-        } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
-          // wtf. color and drawable references reference are all kinds of stupid.
-          TypedResource drawableResource = resourceTable.getValue(resName, qualifiers);
-          if (drawableResource == null) {
-            throw new Resources.NotFoundException("can't find file for " + resName);
-          } else {
-            outValue.type = TypedValue.TYPE_STRING;
-            outValue.data = 0;
-            outValue.assetCookie = Converter.getNextStringCookie();
-            outValue.string = (CharSequence) drawableResource.getData();
-            return;
-          }
-        } else {
-          throw new RuntimeException("huh? " + resName);
-        }
+        return;
       } else {
         if (dereferencedRef.isFile()) {
           outValue.type = TypedValue.TYPE_STRING;
