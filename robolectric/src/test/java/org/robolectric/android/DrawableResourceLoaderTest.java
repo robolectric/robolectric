@@ -1,5 +1,6 @@
 package org.robolectric.android;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -18,8 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class) // todo: @Config(sdk=ALL_SDKS) or something
@@ -52,10 +53,14 @@ public class DrawableResourceLoaderTest {
     assertThat(resources.getDrawable(R.drawable.l0_red)).isInstanceOf(BitmapDrawable.class);
     assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
     assertThat(resources.getDrawable(R.drawable.rainbow)).isInstanceOf(LayerDrawable.class);
+  }
+
+  @Test @Config(maxSdk = KITKAT)
+  public void testVectorDrawableType_preVectors() {
     assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(BitmapDrawable.class);
   }
 
-  @Test @Config(qualifiers = "anydpi", minSdk = LOLLIPOP)
+  @Test @Config(minSdk = LOLLIPOP)
   public void testVectorDrawableType() {
     assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(VectorDrawable.class);
   }
