@@ -1,5 +1,6 @@
 package org.robolectric.android;
 
+import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import android.content.res.Configuration;
@@ -21,7 +22,8 @@ public class Bootstrap {
     ResTable_config resTab = new ResTable_config();
 
     if (Qualifiers.getPlatformVersion(qualifiers) != -1) {
-      throw new IllegalArgumentException("Cannot specify platform version in qualifiers: \"" + qualifiers + "\"");
+      throw new IllegalArgumentException(
+          "Cannot specify platform version in qualifiers: \"" + qualifiers + "\"");
     }
 
     if (!qualifiers.isEmpty() && !configDescription.parse(qualifiers, resTab)) {
@@ -34,6 +36,15 @@ public class Bootstrap {
 
     if (resTab.screenWidthDp == 0) {
       resTab.screenWidthDp = 320;
+    }
+
+    switch (resTab.density) {
+      case Configuration.DENSITY_DPI_ANY:
+        throw new IllegalArgumentException("'anydpi' isn't actually a dpi");
+      case Configuration.DENSITY_DPI_NONE:
+        throw new IllegalArgumentException("'nodpi' isn't actually a dpi");
+      case Configuration.DENSITY_DPI_UNDEFINED:
+        resTab.density = DisplayMetrics.DENSITY_DEFAULT;
     }
 
     configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp;
@@ -55,15 +66,10 @@ public class Bootstrap {
     if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
     } else {
-      if (resTab.density != Configuration.DENSITY_DPI_UNDEFINED) {
-        displayMetrics.densityDpi = resTab.density;
-        displayMetrics.density =
-            displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-      }
+      displayMetrics.densityDpi = resTab.density;
+      displayMetrics.density =
+          displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
     }
-
-    //configuration.
-    // end new stuff
 
     Locale locale = null;
     if (!isNullOrEmpty(resTab.languageString()) || !isNullOrEmpty(resTab.regionString())) {
@@ -79,6 +85,6 @@ public class Bootstrap {
       }
     }
 
-    return ConfigurationV25.resourceQualifierString(configuration);
+    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
   }
 }

@@ -37,6 +37,7 @@ import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import java.util.Locale;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -47,15 +48,22 @@ import org.robolectric.internal.SdkConfig;
 
 @RunWith(RobolectricTestRunner.class)
 public class BootstrapTest {
+
+  private Configuration configuration;
+  private DisplayMetrics displayMetrics;
+
+  @Before
+  public void setUp() throws Exception {
+    configuration = new Configuration();
+    displayMetrics = new DisplayMetrics();
+  }
+
   @Test
   public void applySystemConfiguration_shouldAddDefaults() {
-    Configuration configuration = new Configuration();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    String outQualifiers = Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(),
+        configuration, displayMetrics);
 
-    assertThat(outQualifiers).isEqualTo("sw320dp-w320dp-v" + RuntimeEnvironment.getApiLevel());
+    assertThat(outQualifiers).isEqualTo("sw320dp-w320dp-mdpi-v" + RuntimeEnvironment.getApiLevel());
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
@@ -71,7 +79,10 @@ public class BootstrapTest {
     assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_UNDEFINED);
 
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      assertThat(configuration.densityDpi).isEqualTo(0);
+      assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_DEFAULT);
+    } else {
+      assertThat(displayMetrics.densityDpi).isEqualTo(DisplayMetrics.DENSITY_DEFAULT);
+      assertThat(displayMetrics.density).isEqualTo(1.0f);
     }
 
     assertThat(configuration.touchscreen).isEqualTo(TOUCHSCREEN_UNDEFINED);
@@ -83,10 +94,6 @@ public class BootstrapTest {
 
   @Test
   public void applySystemConfiguration_shouldHonorSpecifiedQualifiers() {
-    Configuration configuration = new Configuration();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
     String outQualifiers = Bootstrap.applyQualifiers(
         "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge-long-round-land-"
             + "appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad",
@@ -99,7 +106,7 @@ public class BootstrapTest {
           + RuntimeEnvironment.getApiLevel());
     } else {
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-notouch-keyshidden-12key-navhidden-dpad-v"
+          + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
           + RuntimeEnvironment.getApiLevel());
     }
 
@@ -125,7 +132,10 @@ public class BootstrapTest {
     assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_APPLIANCE);
     assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_YES);
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      assertThat(configuration.densityDpi).isEqualTo(240);
+      assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_HIGH);
+    } else {
+      assertThat(displayMetrics.densityDpi).isEqualTo(DisplayMetrics.DENSITY_HIGH);
+      assertThat(displayMetrics.density).isEqualTo(1.5f);
     }
     assertThat(configuration.touchscreen).isEqualTo(TOUCHSCREEN_NOTOUCH);
     assertThat(configuration.keyboardHidden).isEqualTo(KEYBOARDHIDDEN_YES);
@@ -136,12 +146,9 @@ public class BootstrapTest {
 
   @Test
   public void applySystemConfiguration_shouldRejectUnknownQualifiers() {
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
     try {
       Bootstrap.applyQualifiers("notareal-qualifier-sw400dp-w480dp-more-wrong-stuff",
-          RuntimeEnvironment.getApiLevel(), new Configuration(), new DisplayMetrics()
-      );
+          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
       fail("should have thrown");
     } catch (IllegalArgumentException e) {
       // expected
@@ -151,12 +158,9 @@ public class BootstrapTest {
 
   @Test
   public void applySystemConfiguration_shouldRejectSdkVersion() {
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
     try {
       Bootstrap.applyQualifiers("sw400dp-w480dp-v7",
-          RuntimeEnvironment.getApiLevel(), new Configuration(), new DisplayMetrics()
-      );
+          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
       fail("should have thrown");
     } catch (IllegalArgumentException e) {
       // expected
@@ -165,13 +169,33 @@ public class BootstrapTest {
   }
 
   @Test
+  public void applySystemConfiguration_shouldRejectAnydpi() {
+    try {
+      Bootstrap.applyQualifiers("anydpi",
+          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+      fail("should have thrown");
+    } catch (IllegalArgumentException e) {
+      // expected
+      assertThat(e.getMessage()).contains("'anydpi' isn't actually a dpi");
+    }
+  }
+
+  @Test
+  public void applySystemConfiguration_shouldRejectNodpi() {
+    try {
+      Bootstrap.applyQualifiers("nodpi",
+          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+      fail("should have thrown");
+    } catch (IllegalArgumentException e) {
+      // expected
+      assertThat(e.getMessage()).contains("'nodpi' isn't actually a dpi");
+    }
+  }
+
+  @Test
   @Config(sdk = 16)
   public void applySystemConfiguration_densityOnAPI16() {
-    Configuration configuration = new Configuration();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ParallelUniverse parallelUniverse = new ParallelUniverse();
-    parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = Bootstrap.applyQualifiers("hdpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    Bootstrap.applyQualifiers("hdpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     assertThat(displayMetrics.density).isEqualTo(1.5f);
     assertThat(displayMetrics.densityDpi).isEqualTo(240);
   }

@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,10 @@ public class ResBundle {
       if (values == null || values.size() == 0) return null;
 
       ResTable_config toMatch = new ResTable_config();
-      new ConfigDescription().parse(qualifiersStr == null ? "" : qualifiersStr, toMatch);
+      if (!Strings.isNullOrEmpty(qualifiersStr) && !new ConfigDescription()
+          .parse(qualifiersStr, toMatch)) {
+        throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiersStr + "\"");
+      }
 
       TypedResource bestMatchSoFar = null;
       for (TypedResource candidate : values) {

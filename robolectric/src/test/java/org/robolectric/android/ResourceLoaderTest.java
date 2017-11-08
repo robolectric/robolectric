@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -20,14 +21,6 @@ import org.robolectric.res.ResourceTable;
 
 @RunWith(RobolectricTestRunner.class)
 public class ResourceLoaderTest {
-
-  @Test
-  @Config(qualifiers = "doesnotexist-land-xlarge")
-  public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
-    TextView textView = view.findViewById(android.R.id.text1);
-    assertThat(textView.getText().toString()).isEqualTo("land");
-  }
 
   @Test
   @Config(qualifiers="w0dp")
@@ -52,14 +45,18 @@ public class ResourceLoaderTest {
   }
 
   private void checkForPollutionHelper() {
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("");
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("sw320dp-w320dp-mdpi-v" + RuntimeEnvironment.getApiLevel());
 
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
     RuntimeEnvironment.setQualifiers("fr-land"); // testing if this pollutes the other test
     Configuration configuration = Resources.getSystem().getConfiguration();
-    configuration.setLocale(new Locale("fr", "FR"));
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
+      configuration.locale = new Locale("fr", "FR");
+    } else {
+      configuration.setLocale(new Locale("fr", "FR"));
+    }
     configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
     Resources.getSystem().updateConfiguration(configuration, null);
   }

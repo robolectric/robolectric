@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -66,7 +67,7 @@ class ConfigurationV25 {
    *
    * @hide
    */
-  static String resourceQualifierString(Configuration config) {
+  static String resourceQualifierString(Configuration config, DisplayMetrics displayMetrics) {
     ArrayList<String> parts = new ArrayList<String>();
 
     if (config.mcc != 0) {
@@ -188,41 +189,46 @@ class ConfigurationV25 {
         break;
     }
 
+    int densityDpi;
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      switch (config.densityDpi) {
-        case DENSITY_DPI_UNDEFINED:
-          break;
-        case 120:
-          parts.add("ldpi");
-          break;
-        case 160:
-          parts.add("mdpi");
-          break;
-        case 213:
-          parts.add("tvdpi");
-          break;
-        case 240:
-          parts.add("hdpi");
-          break;
-        case 320:
-          parts.add("xhdpi");
-          break;
-        case 480:
-          parts.add("xxhdpi");
-          break;
-        case 640:
-          parts.add("xxxhdpi");
-          break;
-        case DENSITY_DPI_ANY:
-          parts.add("anydpi");
-          break;
-        case DENSITY_DPI_NONE:
-          parts.add("nodpi");
-          break;
-        default:
-          parts.add(config.densityDpi + "dpi");
-          break;
-      }
+      densityDpi = config.densityDpi;
+    } else {
+      densityDpi = displayMetrics.densityDpi;
+    }
+
+    switch (densityDpi) {
+      case DENSITY_DPI_UNDEFINED:
+        break;
+      case 120:
+        parts.add("ldpi");
+        break;
+      case 160:
+        parts.add("mdpi");
+        break;
+      case 213:
+        parts.add("tvdpi");
+        break;
+      case 240:
+        parts.add("hdpi");
+        break;
+      case 320:
+        parts.add("xhdpi");
+        break;
+      case 480:
+        parts.add("xxhdpi");
+        break;
+      case 640:
+        parts.add("xxxhdpi");
+        break;
+      case DENSITY_DPI_ANY:
+        parts.add("anydpi");
+        break;
+      case DENSITY_DPI_NONE:
+        parts.add("nodpi");
+        break;
+      default:
+        parts.add(config.densityDpi + "dpi");
+        break;
     }
 
     switch (config.touchscreen) {

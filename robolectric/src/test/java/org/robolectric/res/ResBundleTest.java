@@ -11,6 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.res.android.ConfigDescription;
+import org.robolectric.res.android.ResTable_config;
 
 @RunWith(JUnit4.class)
 public class ResBundleTest {
@@ -40,40 +42,29 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("fr");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "v18");
+    TypedResource v = resMap.pick(resName, "en-v18");
     assertThat(v).isEqualTo(val1);
   }
 
   @Test
-  public void firstValIsPickedWhenNoQualifiersGiven() {
+  public void bestValIsPickedForSdkVersion() {
     TypedResource<String> val1 = createStringTypedResource("v16");
     resMap.put(resName, val1);
     TypedResource<String> val2 = createStringTypedResource("v17");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "");
-    assertThat(v).isEqualTo(val1);
-  }
-
-  @Test
-  public void firstValIsPickedWhenNoVersionQualifiersGiven() {
-    TypedResource<String> val1 = createStringTypedResource("v16");
-    resMap.put(resName, val1);
-    TypedResource<String> val2 = createStringTypedResource("v17");
-    resMap.put(resName, val2);
-
-    TypedResource v = resMap.pick(resName, "en");
-    assertThat(v).isEqualTo(val1);
+    TypedResource v = resMap.pick(resName, "v26");
+    assertThat(v).isEqualTo(val2);
   }
 
   @Test
   public void eliminatedValuesAreNotPickedForVersion() {
-    TypedResource<String> val1 = createStringTypedResource("en-v16");
+    TypedResource<String> val1 = createStringTypedResource("land-v16");
     resMap.put(resName, val1);
     TypedResource<String> val2 = createStringTypedResource("v17");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "en-v18");
+    TypedResource v = resMap.pick(resName, "land-v18");
     assertThat(v).isEqualTo(val1);
   }
 
@@ -125,14 +116,14 @@ public class ResBundleTest {
 
   @Test
   public void illegalResourceQualifierThrowsException() {
-    TypedResource<String> val1 = createStringTypedResource("v11-en-v12");
+    TypedResource<String> val1 = createStringTypedResource("en-v12");
     resMap.put(resName, val1);
 
     try {
-      resMap.pick(resName, "v18");
+      resMap.pick(resName, "nosuchqualifier");
       fail("Expected exception to be caught");
-    } catch (IllegalStateException e) {
-      assertThat(e).hasMessageStartingWith("A resource file was found that had two API level qualifiers: ");
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageStartingWith("Invalid qualifiers \"nosuchqualifier\"");
     }
   }
 
@@ -145,8 +136,8 @@ public class ResBundleTest {
         "en-port",
         "en-notouch-12key",
         "port-ldpi",
-        "port-notouch-12key").pick(resName,
-        "en-GB-port-hdpi-notouch-12key").asString());
+        "land-notouch-12key").pick(resName,
+        "en-rGB-port-hdpi-notouch-12key").asString());
   }
 
   @Test
@@ -162,13 +153,13 @@ public class ResBundleTest {
 
   @Test
   public void shouldPreferWidthOverHeight() throws Exception {
-    assertEquals("sw300dp-sh200dp", asResMap(
+    assertEquals("sw300dp-w200dp", asResMap(
         "",
         "sw200dp",
-        "sw200dp-sh300dp",
-        "sw300dp-sh200dp",
-        "sh300dp").pick(resName,
-        "sw320dp-sh320dp").asString());
+        "sw200dp-w300dp",
+        "sw300dp-w200dp",
+        "w300dp").pick(resName,
+        "sw320dp-w320dp").asString());
   }
 
   @Test
@@ -176,6 +167,7 @@ public class ResBundleTest {
     ResBundle bundle = new ResBundle();
     XmlContext xmlContext = mock(XmlContext.class);
     when(xmlContext.getQualifiers()).thenReturn("--");
+    when(xmlContext.getConfig()).thenReturn(new ResTable_config());
     when(xmlContext.getPackageName()).thenReturn("org.robolectric");
 
     TypedResource firstValue = new TypedResource<>("first_value", ResType.CHAR_SEQUENCE, xmlContext);
@@ -202,6 +194,11 @@ public class ResBundleTest {
   private static TypedResource<String> createStringTypedResource(String str, String qualifiers) {
     XmlContext mockXmlContext = mock(XmlContext.class);
     when(mockXmlContext.getQualifiers()).thenReturn(qualifiers);
+    ResTable_config config = new ResTable_config();
+    if (!qualifiers.isEmpty() && !new ConfigDescription().parse(qualifiers, config)) {
+      throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiers + "\"");
+    }
+    when(mockXmlContext.getConfig()).thenReturn(config);
     return new TypedResource<>(str, ResType.CHAR_SEQUENCE, mockXmlContext);
   }
 }
