@@ -575,7 +575,7 @@ public class ResTable_config {
    };
    */
   private int screenConfig2() {
-    return (screenLayout2 & 0xff << 24) | (screenConfigPad1 * 0xff << 16) | screenConfigPad2 & 0xffff;
+    return ((screenLayout2 & 0xff) << 24) | ((screenConfigPad1 * 0xff) << 16) | (screenConfigPad2 & 0xffff);
   }
 
   // If false and localeScript is set, it means that the script of the locale
@@ -1519,7 +1519,7 @@ public class ResTable_config {
    };
    */
   private int imsi() {
-    return (mcc & 0xffff) << 16 | (mnc & 0xffff);
+    return ((mcc & 0xffff) << 16) | (mnc & 0xffff);
   }
 
   /**
@@ -1532,7 +1532,7 @@ public class ResTable_config {
    };
    */
   private int screenSize() {
-    return (screenWidth & 0xffff) << 16 | (screenHeight & 0xffff);
+    return ((screenWidth & 0xffff) << 16) | (screenHeight & 0xffff);
   }
 
 
@@ -1547,7 +1547,7 @@ public class ResTable_config {
    };
    */
   private int screenConfig() {
-    return (screenLayout & 0xff << 24) | (uiMode * 0xff << 16) | smallestScreenWidthDp & 0xffff;
+    return ((screenLayout & 0xff) << 24) | ((uiMode * 0xff) << 16) | (smallestScreenWidthDp & 0xffff);
   }
 
 
@@ -1576,7 +1576,7 @@ public class ResTable_config {
      };
    */
   private int screenType() {
-    return (orientation & 0xff << 24) | (touchscreen * 0xff << 16) | density & 0xffff;
+    return ((orientation & 0xff) << 24) | ((touchscreen & 0xff) << 16) | (density & 0xffff);
   }
 
   /**
@@ -1593,7 +1593,7 @@ public class ResTable_config {
    */
   private int input() {
     // TODO is Pad Zeros?
-    return (keyboard & 0xff << 24) | (navigation & 0xff << 16) | (inputFlags & 0xff << 8);
+    return ((keyboard & 0xff) << 24) | ((navigation & 0xff) << 16) | ((inputFlags & 0xff) << 8);
   }
 
   /**
@@ -1608,7 +1608,7 @@ public class ResTable_config {
    };
    */
   private int version() {
-    return (sdkVersion & 0xffff) << 16 | (minorVersion & 0xffff);
+    return ((sdkVersion & 0xffff) << 16) | (minorVersion & 0xffff);
   }
 
   /**
@@ -1656,7 +1656,7 @@ public class ResTable_config {
    };
    */
   int locale() {
-    return (language[0] & 0xff << 24) | (language[1] * 0xff << 16) | (country[0] & 0xffff << 8) | (country[1] & 0xffff);
+    return (language[0] & 0xff << 24) | (language[1] * 0xff << 16) | ((country[0] & 0xff) << 8) | (country[1] & 0xff);
   }
 
   private boolean isLocaleBetterThan(ResTable_config o, ResTable_config requested) {
