@@ -14,7 +14,7 @@ import org.robolectric.res.android.ResTable_config;
 public class Bootstrap {
 
   @VisibleForTesting
-  public static String applySystemConfiguration(String qualifiers, int apiLevel,
+  public static String applyQualifiers(String qualifiers, int apiLevel,
       Configuration configuration,
       DisplayMetrics displayMetrics) {
     ConfigDescription configDescription = new ConfigDescription();

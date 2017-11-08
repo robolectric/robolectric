@@ -95,10 +95,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Locale.setDefault(Locale.US);
 
     Resources systemResources = Resources.getSystem();
-    Configuration configuration = systemResources.getConfiguration();
-    DisplayMetrics displayMetrics = systemResources.getDisplayMetrics();
+    Configuration configuration = new Configuration();
+    DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    String newQualifiers = Bootstrap.applySystemConfiguration(config.qualifiers(),
+    String newQualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
     RuntimeEnvironment.setQualifiers(newQualifiers);
 

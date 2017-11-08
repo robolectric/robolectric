@@ -53,7 +53,7 @@ public class BootstrapTest {
     DisplayMetrics displayMetrics = new DisplayMetrics();
     ParallelUniverse parallelUniverse = new ParallelUniverse();
     parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = Bootstrap.applySystemConfiguration("", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    String outQualifiers = Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
 
     assertThat(outQualifiers).isEqualTo("sw320dp-w320dp-v" + RuntimeEnvironment.getApiLevel());
 
@@ -87,7 +87,7 @@ public class BootstrapTest {
     DisplayMetrics displayMetrics = new DisplayMetrics();
     ParallelUniverse parallelUniverse = new ParallelUniverse();
     parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = Bootstrap.applySystemConfiguration(
+    String outQualifiers = Bootstrap.applyQualifiers(
         "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge-long-round-land-"
             + "appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad",
         RuntimeEnvironment.getApiLevel(), configuration, displayMetrics
@@ -140,7 +140,7 @@ public class BootstrapTest {
     ParallelUniverse parallelUniverse = new ParallelUniverse();
     parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
     try {
-      Bootstrap.applySystemConfiguration("notareal-qualifier-sw400dp-w480dp-more-wrong-stuff",
+      Bootstrap.applyQualifiers("notareal-qualifier-sw400dp-w480dp-more-wrong-stuff",
           RuntimeEnvironment.getApiLevel(), new Configuration(), new DisplayMetrics()
       );
       fail("should have thrown");
@@ -155,7 +155,7 @@ public class BootstrapTest {
     ParallelUniverse parallelUniverse = new ParallelUniverse();
     parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
     try {
-      Bootstrap.applySystemConfiguration("sw400dp-w480dp-v7",
+      Bootstrap.applyQualifiers("sw400dp-w480dp-v7",
           RuntimeEnvironment.getApiLevel(), new Configuration(), new DisplayMetrics()
       );
       fail("should have thrown");
@@ -172,7 +172,7 @@ public class BootstrapTest {
     DisplayMetrics displayMetrics = new DisplayMetrics();
     ParallelUniverse parallelUniverse = new ParallelUniverse();
     parallelUniverse.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-    String outQualifiers = Bootstrap.applySystemConfiguration("hdpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    String outQualifiers = Bootstrap.applyQualifiers("hdpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     assertThat(displayMetrics.density).isEqualTo(1.5f);
     assertThat(displayMetrics.densityDpi).isEqualTo(240);
   }
