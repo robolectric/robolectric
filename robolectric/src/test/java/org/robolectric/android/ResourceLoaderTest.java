@@ -22,6 +22,7 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = 27) // todo unpin
 public class ResourceLoaderTest {
 
   @Before
@@ -52,11 +53,11 @@ public class ResourceLoaderTest {
   }
 
   private void checkForPollutionHelper() {
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("");
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo(getDefaultQualifiers());
 
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = view.findViewById(android.R.id.text1);
-    assertThat(textView.getText().toString()).isEqualTo("xlarge");
+    assertThat(textView.getText().toString()).isEqualTo("default");
     RuntimeEnvironment.setQualifiers("fr-land"); // testing if this pollutes the other test
     Configuration configuration = Resources.getSystem().getConfiguration();
     configuration.setLocale(new Locale("fr", "FR"));
@@ -78,5 +79,9 @@ public class ResourceLoaderTest {
     assertThat(resId).isEqualTo(internalResourceId);
 
     assertThat(RuntimeEnvironment.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
+  }
+
+  private static String getDefaultQualifiers() {
+    return "sw320dp-w320dp-v" + Integer.toString(RuntimeEnvironment.getApiLevel());
   }
 }

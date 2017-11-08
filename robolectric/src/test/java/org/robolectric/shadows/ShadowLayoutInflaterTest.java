@@ -64,10 +64,15 @@ public class ShadowLayoutInflaterTest {
   public void testChoosesLayoutBasedOnDefaultScreenSize() throws Exception {
     ViewGroup view = inflate(R.layout.different_screen_sizes);
     TextView textView = view.findViewById(android.R.id.text1);
+    assertThat(textView.getText().toString()).isEqualTo("default");
+  }
 
-      // TODO: rename this test - the real framework doesn't select layouts strictly based on
-      // screen size
-      assertThat(textView.getText().toString()).isEqualTo("xlarge");
+  @Test
+  @Config(qualifiers = "xlarge")
+  public void testChoosesLayoutBasedOnScreenSize() throws Exception {
+    ViewGroup view = inflate(R.layout.different_screen_sizes);
+    TextView textView = view.findViewById(android.R.id.text1);
+    assertThat(textView.getText().toString()).isEqualTo("xlarge");
   }
 
   @Test @Config(qualifiers = "land")
