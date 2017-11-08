@@ -65,11 +65,18 @@ public class Bootstrap {
     //configuration.
     // end new stuff
 
-    Locale locale = null;
-    if (!isNullOrEmpty(resTab.languageString()) || !isNullOrEmpty(resTab.regionString())) {
-      locale = new Locale(resTab.languageString(), resTab.regionString());
-    } else if (!isNullOrEmpty(resTab.languageString())) {
-      locale = new Locale(resTab.languageString());
+    Locale locale;
+    String lang = resTab.languageString();
+    String region = resTab.regionString();
+    String script = resTab.scriptString();
+    if (isNullOrEmpty(lang) && isNullOrEmpty(region) && isNullOrEmpty(script)) {
+      locale = null;
+    } else {
+      locale = new Locale.Builder()
+          .setLanguage(lang == null ? "" : lang)
+          .setRegion(region == null ? "" : region)
+          .setScript(script == null ? "" : script)
+          .build();
     }
     if (locale != null) {
       if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
