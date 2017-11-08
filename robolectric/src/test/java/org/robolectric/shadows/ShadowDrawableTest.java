@@ -157,21 +157,21 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP, qualifiers = "anydpi")
-  public void testGetBitmapOrVectorDrawableAt21() {
+  @Config(maxSdk = KITKAT_WATCH)
+  public void testGetBitmapOrVectorDrawableAt19() {
     // at API 21+ and mdpi, the drawable-anydpi-v21/image_or_vector.xml should be loaded instead
     // of drawable/image_or_vector.png
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
-    assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
+    assertThat(aDrawable).isInstanceOf(BitmapDrawable.class);
   }
 
   @Test
-  @Config(minSdk = KITKAT, maxSdk = KITKAT_WATCH)
-  public void testGetBitmapOrVectorDrawableAt19() {
+  @Config(minSdk = LOLLIPOP)
+  public void testGetBitmapOrVectorDrawableAt21() {
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
-    assertThat(aDrawable).isInstanceOf(BitmapDrawable.class);
+    assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
   }
 
   private static class TestDrawable extends Drawable {

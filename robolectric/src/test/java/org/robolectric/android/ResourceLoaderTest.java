@@ -6,6 +6,7 @@ import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManage
 
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -22,7 +23,6 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 27) // todo unpin
 public class ResourceLoaderTest {
 
   @Before
@@ -60,7 +60,11 @@ public class ResourceLoaderTest {
     assertThat(textView.getText().toString()).isEqualTo("default");
     RuntimeEnvironment.setQualifiers("fr-land"); // testing if this pollutes the other test
     Configuration configuration = Resources.getSystem().getConfiguration();
-    configuration.setLocale(new Locale("fr", "FR"));
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
+      configuration.locale = new Locale("fr", "FR");
+    } else {
+      configuration.setLocale(new Locale("fr", "FR"));
+    }
     configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
     Resources.getSystem().updateConfiguration(configuration, null);
   }
@@ -82,6 +86,6 @@ public class ResourceLoaderTest {
   }
 
   private static String getDefaultQualifiers() {
-    return "sw320dp-w320dp-v" + Integer.toString(RuntimeEnvironment.getApiLevel());
+    return "sw320dp-w320dp-mdpi-v" + Integer.toString(RuntimeEnvironment.getApiLevel());
   }
 }

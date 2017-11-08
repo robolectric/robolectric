@@ -132,12 +132,12 @@ public class ShadowAssetManagerTest {
     assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
-  @Test
-  @Config(qualifiers = "hdpi")
+  @Test@Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
     String fileName = "res/drawable-hdpi-v4/bottom_bar.png";
     int expectedFileSize = 231;
     if (isLegacyAssetManager()) {
+      // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name;
       // retrieves the uncompressed, un-version-qualified file from raw-res/...
       fileName = "jar:res/drawable-hdpi/bottom_bar.png";
       expectedFileSize = 389;
