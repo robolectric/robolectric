@@ -177,7 +177,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).endsWith("-v" + Build.VERSION.SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).endsWith("-mdpi-v" + Build.VERSION.SDK_INT);
     assertThat(RuntimeEnvironment.getQualifiers()).contains(givenQualifiers);
   }
 

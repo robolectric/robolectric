@@ -27,7 +27,7 @@ public class QualifiersTest {
   @Test
   @Config(sdk = 26)
   public void testDefaultQualifiers() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-ldltr-sw320dp-w320dp-v26");
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-ldltr-sw320dp-w320dp-mdpi-v26");
   }
 
   @Test
