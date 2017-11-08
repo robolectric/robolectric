@@ -115,7 +115,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (appManifest.getAndroidManifestFile() != null && appManifest.getAndroidManifestFile().exists()) {
       packageInfo = ShadowPackageParser.callParsePackage(appManifest.getAndroidManifestFile());
     } else {
-      packageInfo = new PackageParser.Package(config.packageName());
+      packageInfo = new PackageParser.Package("org.robolectric.default");
     }
 
     // Support overriding the package name specified in the Manifest.

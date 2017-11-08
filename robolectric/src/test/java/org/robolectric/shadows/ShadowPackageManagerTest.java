@@ -292,14 +292,15 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
   }
 
   @Test
   public void getApplicationInfo_ThisApplication() throws Exception {
     ApplicationInfo info = packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
     assertThat(info).isNotNull();
-    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+    assertThat(info.processName).isEqualTo("org.robolectric");
+    assertThat(info.packageName).isEqualTo("org.robolectric");
+    assertThat(info.name).isEqualTo("org.robolectric.TestApplication");
   }
 
   @Test

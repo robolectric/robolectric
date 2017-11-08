@@ -51,14 +51,15 @@ public class ShadowPackageParser {
     PackageParser packageParser = new PackageParser();
 
     try {
+      int flags = PackageParser.PARSE_IGNORE_PROCESSES;
       if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
-        return packageParser.parsePackage(new File(manifestFile.getPath()), 0);
+        return packageParser.parsePackage(new File(manifestFile.getPath()), flags);
       } else { // JB -> KK
         return ReflectionHelpers.callInstanceMethod(PackageParser.class, packageParser, "parsePackage",
             from(File.class, new File(manifestFile.getPath())),
             from(String.class, manifestFile.getPath()),
             from(DisplayMetrics.class, new DisplayMetrics()),
-            from(int.class, 0));
+            from(int.class, flags));
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
