@@ -432,6 +432,14 @@ public class ResTable_config {
     return unpackRegion();
   }
 
+  public final String scriptString() {
+    if (localeScript[0] != '\0') {
+      return new String(localeScript);
+    } else {
+      return null;
+    }
+  }
+
   public int orientation;
   public int touchscreen;
   public int density;

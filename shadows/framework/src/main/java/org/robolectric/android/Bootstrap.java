@@ -1,10 +1,8 @@
 package org.robolectric.android;
 
-import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
@@ -109,11 +107,18 @@ public class Bootstrap {
           displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
     }
 
-    Locale locale = null;
-    if (!isNullOrEmpty(resTab.languageString()) || !isNullOrEmpty(resTab.regionString())) {
-      locale = new Locale(resTab.languageString(), resTab.regionString());
-    } else if (!isNullOrEmpty(resTab.languageString())) {
-      locale = new Locale(resTab.languageString());
+    Locale locale;
+    String lang = resTab.languageString();
+    String region = resTab.regionString();
+    String script = resTab.scriptString();
+    if (isNullOrEmpty(lang) && isNullOrEmpty(region) && isNullOrEmpty(script)) {
+      locale = null;
+    } else {
+      locale = new Locale.Builder()
+          .setLanguage(lang == null ? "" : lang)
+          .setRegion(region == null ? "" : region)
+          .setScript(script == null ? "" : script)
+          .build();
     }
     if (locale != null) {
       if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
