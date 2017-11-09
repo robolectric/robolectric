@@ -38,6 +38,26 @@ public class Bootstrap {
       resTab.screenWidthDp = 320;
     }
 
+    if (resTab.screenLayoutSize() == ResTable_config.SCREENSIZE_ANY) {
+      resTab.screenLayoutSize(ResTable_config.SCREENSIZE_NORMAL);
+    }
+
+    if (resTab.screenLayoutLong() == ResTable_config.SCREENLONG_ANY) {
+      resTab.screenLayoutLong(ResTable_config.SCREENLONG_NO);
+    }
+
+    if (resTab.screenLayoutRound() == ResTable_config.SCREENROUND_ANY) {
+      resTab.screenLayoutRound(ResTable_config.SCREENROUND_NO);
+    }
+
+    if (resTab.orientation == ResTable_config.ORIENTATION_ANY) {
+      resTab.orientation = ResTable_config.ORIENTATION_PORT;
+    }
+
+    if (resTab.uiModeNight() == ResTable_config.UI_MODE_NIGHT_ANY) {
+      resTab.uiModeNight(ResTable_config.UI_MODE_NIGHT_NO);
+    }
+
     switch (resTab.density) {
       case Configuration.DENSITY_DPI_ANY:
         throw new IllegalArgumentException("'anydpi' isn't actually a dpi");
@@ -45,6 +65,10 @@ public class Bootstrap {
         throw new IllegalArgumentException("'nodpi' isn't actually a dpi");
       case Configuration.DENSITY_DPI_UNDEFINED:
         resTab.density = DisplayMetrics.DENSITY_DEFAULT;
+    }
+
+    if (resTab.touchscreen == ResTable_config.TOUCHSCREEN_ANY) {
+      resTab.touchscreen = ResTable_config.TOUCHSCREEN_FINGER;
     }
 
     configuration.smallestScreenWidthDp = resTab.smallestScreenWidthDp;

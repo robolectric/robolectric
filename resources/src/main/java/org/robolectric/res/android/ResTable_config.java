@@ -218,7 +218,7 @@ public class ResTable_config {
 //  public static final int MASK_SCREENSIZE = 0x0f;
   public static final int SCREENSIZE_ANY = ACONFIGURATION_SCREENSIZE_ANY;
   public static final int SCREENSIZE_SMALL = ACONFIGURATION_SCREENSIZE_SMALL;
-//  public static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
+  public static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
   public static final int SCREENSIZE_LARGE = ACONFIGURATION_SCREENSIZE_LARGE;
   public static final int SCREENSIZE_XLARGE = ACONFIGURATION_SCREENSIZE_XLARGE;
 
@@ -517,16 +517,32 @@ public class ResTable_config {
     return screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK;
   }
 
+  public final void screenLayoutDirection(int value) {
+    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | value);
+  }
+
   public final int screenLayoutSize() {
     return screenLayout & SCREENLAYOUT_SIZE_MASK;
+  }
+
+  public final void screenLayoutSize(int value) {
+    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_SIZE_MASK) | value);
   }
 
   public final int screenLayoutLong() {
     return screenLayout & SCREENLAYOUT_LONG_MASK;
   }
 
+  public final void screenLayoutLong(int value) {
+    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LONG_MASK) | value);
+  }
+
   public final int screenLayoutRound() {
-    return screenLayout & SCREENLAYOUT_ROUND_MASK;
+    return screenLayout2 & MASK_SCREENROUND;
+  }
+
+  public final void screenLayoutRound(int value) {
+    screenLayout2 = (byte) ((screenLayout2 & ~MASK_SCREENROUND) | value);
   }
 
   public int colorMode;
@@ -537,8 +553,16 @@ public class ResTable_config {
     return uiMode & UI_MODE_TYPE_MASK;
   }
 
+  public final void uiModeType(int value) {
+    uiMode = (uiMode & ~UI_MODE_TYPE_MASK) | value;
+  }
+
   public final int uiModeNight() {
     return uiMode & UI_MODE_NIGHT_MASK;
+  }
+
+  public final void uiModeNight(int value) {
+    uiMode = (uiMode & ~UI_MODE_NIGHT_MASK) | value;
   }
 
   public int smallestScreenWidthDp;
@@ -865,7 +889,6 @@ public class ResTable_config {
   // constants for isBetterThan...
   public static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
-  static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
 
 
 

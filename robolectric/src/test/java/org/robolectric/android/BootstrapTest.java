@@ -9,22 +9,28 @@ import static android.content.res.Configuration.NAVIGATIONHIDDEN_YES;
 import static android.content.res.Configuration.NAVIGATION_DPAD;
 import static android.content.res.Configuration.NAVIGATION_UNDEFINED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_LAYOUTDIR_LTR;
 import static android.content.res.Configuration.SCREENLAYOUT_LAYOUTDIR_MASK;
 import static android.content.res.Configuration.SCREENLAYOUT_LAYOUTDIR_RTL;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_MASK;
+import static android.content.res.Configuration.SCREENLAYOUT_LONG_NO;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_YES;
 import static android.content.res.Configuration.SCREENLAYOUT_ROUND_MASK;
+import static android.content.res.Configuration.SCREENLAYOUT_ROUND_NO;
 import static android.content.res.Configuration.SCREENLAYOUT_ROUND_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_ROUND_YES;
 import static android.content.res.Configuration.SCREENLAYOUT_SIZE_MASK;
+import static android.content.res.Configuration.SCREENLAYOUT_SIZE_NORMAL;
 import static android.content.res.Configuration.SCREENLAYOUT_SIZE_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_SIZE_XLARGE;
+import static android.content.res.Configuration.TOUCHSCREEN_FINGER;
 import static android.content.res.Configuration.TOUCHSCREEN_NOTOUCH;
 import static android.content.res.Configuration.TOUCHSCREEN_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+import static android.content.res.Configuration.UI_MODE_NIGHT_NO;
 import static android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
@@ -63,7 +69,7 @@ public class BootstrapTest {
     String outQualifiers = Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(),
         configuration, displayMetrics);
 
-    assertThat(outQualifiers).isEqualTo("sw320dp-w320dp-mdpi-v" + RuntimeEnvironment.getApiLevel());
+    assertThat(outQualifiers).isEqualTo("sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + RuntimeEnvironment.getApiLevel());
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
@@ -71,12 +77,12 @@ public class BootstrapTest {
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(320);
     assertThat(configuration.screenWidthDp).isEqualTo(320);
     assertThat(configuration.screenHeightDp).isEqualTo(0);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK).isEqualTo(SCREENLAYOUT_SIZE_UNDEFINED);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_UNDEFINED);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_UNDEFINED);
-    assertThat(configuration.orientation).isEqualTo(ORIENTATION_UNDEFINED);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK).isEqualTo(SCREENLAYOUT_SIZE_NORMAL);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_NO);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_NO);
+    assertThat(configuration.orientation).isEqualTo(ORIENTATION_PORTRAIT);
     assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_UNDEFINED);
-    assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_UNDEFINED);
+    assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_NO);
 
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
       assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_DEFAULT);
@@ -85,7 +91,7 @@ public class BootstrapTest {
       assertThat(displayMetrics.density).isEqualTo(1.0f);
     }
 
-    assertThat(configuration.touchscreen).isEqualTo(TOUCHSCREEN_UNDEFINED);
+    assertThat(configuration.touchscreen).isEqualTo(TOUCHSCREEN_FINGER);
     assertThat(configuration.keyboardHidden).isEqualTo(KEYBOARDHIDDEN_UNDEFINED);
     assertThat(configuration.keyboard).isEqualTo(KEYBOARD_UNDEFINED);
     assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_UNDEFINED);
