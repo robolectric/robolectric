@@ -137,7 +137,7 @@ public class ResBundleTest {
         "en-notouch-12key",
         "port-ldpi",
         "land-notouch-12key").pick(resName,
-        "en-rGB-port-hdpi-notouch-12key").asString());
+        "en-rGB-port-hdpi-notouch-12key-v25").asString());
   }
 
   @Test
@@ -148,7 +148,7 @@ public class ResBundleTest {
         "sw350dp-port",
         "sw300dp-port",
         "sw300dp").pick(resName,
-        "sw320dp-port").asString());
+        "sw320dp-port-v25").asString());
   }
 
   @Test
@@ -159,7 +159,7 @@ public class ResBundleTest {
         "sw200dp-w300dp",
         "sw300dp-w200dp",
         "w300dp").pick(resName,
-        "sw320dp-w320dp").asString());
+        "sw320dp-w320dp-v25").asString());
   }
 
   @Test
