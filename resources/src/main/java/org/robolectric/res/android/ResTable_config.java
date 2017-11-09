@@ -507,7 +507,7 @@ public class ResTable_config {
     this.language = new byte[2];
     this.country = new byte[2];
     this.localeScript = new byte[LocaleData.SCRIPT_LENGTH];
-    this.localeVariant = new byte[2];
+    this.localeVariant = new byte[8];
   }
 
   public int minorVersion;
