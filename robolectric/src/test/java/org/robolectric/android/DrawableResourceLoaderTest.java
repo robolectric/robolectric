@@ -41,7 +41,7 @@ public class DrawableResourceLoaderTest {
   }
 
   @Test
-  public void testGetDrawable_shouldWorkWithSystem() throws Exception {
+  public void testGetDrawableBundle_shouldWorkWithSystem() throws Exception {
     assertNotNull(resources.getDrawable(android.R.drawable.ic_popup_sync));
   }
 

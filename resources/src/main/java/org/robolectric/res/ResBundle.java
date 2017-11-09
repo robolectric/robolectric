@@ -33,8 +33,8 @@ public class ResBundle {
       if (values == null || values.size() == 0) return null;
 
       ResTable_config toMatch = new ResTable_config();
-      if (!Strings.isNullOrEmpty(qualifiersStr) && !new ConfigDescription()
-          .parse(qualifiersStr, toMatch)) {
+      if (!Strings.isNullOrEmpty(qualifiersStr) &&
+          !new ConfigDescription().parse(qualifiersStr, toMatch, false)) {
         throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiersStr + "\"");
       };
 

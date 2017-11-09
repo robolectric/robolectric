@@ -191,6 +191,10 @@ public class ConfigDescription {
   }
 
   public boolean parse(final String str, ResTable_config out) {
+    return parse(str, out, true);
+  }
+
+  public boolean parse(final String str, ResTable_config out, boolean applyVersionForCompat) {
     PeekingIterator<String> part_iter = Iterators
         .peekingIterator(Arrays.asList(str.toLowerCase().split("-")).iterator());
 
@@ -356,7 +360,7 @@ public class ConfigDescription {
       return false;
     }
 
-    if (out != null) {
+    if (out != null && applyVersionForCompat) {
       applyVersionForCompatibility(out);
     }
     return true;
