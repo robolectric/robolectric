@@ -75,11 +75,6 @@ public class QualifiersTest {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Zdravo");
   }
 
-  @Test @Config(qualifiers = "b+sr+Latn+arevela")
-  public void supportsBcp47WithVariant() throws Exception {
-    assertThat(resources.getString(R.string.hello)).isEqualTo("Zdravo");
-  }
-
   @Test
   public void defaultScreenWidth() {
     assertThat(resources.getBoolean(R.bool.value_only_present_in_w320dp)).isTrue();

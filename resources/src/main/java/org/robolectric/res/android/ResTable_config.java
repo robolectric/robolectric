@@ -657,11 +657,11 @@ public class ResTable_config {
     }
   }
 
-  void packLanguage(final String language) {
+  public void packLanguage(final String language) {
     packLanguageOrRegion(language, (byte) 'a', this.language);
   }
 
-  void packRegion(final String region) {
+  public void packRegion(final String region) {
     packLanguageOrRegion(region, (byte) '0', this.country);
   }
 
