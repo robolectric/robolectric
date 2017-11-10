@@ -37,6 +37,19 @@ public class Logger {
   }
 
   /**
+   * Log a warning message.
+   *
+   * @param message Message text.
+   * @param args    Message arguments.
+   */
+  public static void warn(String message, Object... args) {
+    if (loggingEnabled()) {
+      System.out.print("WARN: ");
+      System.out.println(String.format(message, args));
+    }
+  }
+
+  /**
    * Log an error message.
    *
    * @param message Message text.
