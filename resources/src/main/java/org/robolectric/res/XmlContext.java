@@ -20,7 +20,7 @@ public class XmlContext {
     this.xmlFile = xmlFile;
     config = new ResTable_config();
     this.qualifiers = determineQualifiers();
-    if (!new ConfigDescription().parse(qualifiers, config)) {
+    if (!qualifiers.isEmpty() && !new ConfigDescription().parse(qualifiers, config)) {
       Logger.warn("failed to parse %s", qualifiers);
       Matcher matcher = VERSION_QUALIFIER_PATTERN.matcher(qualifiers);
       if (matcher.find()) {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
+import org.robolectric.util.Logger;
 
 public class ResBundle {
   private final ResMap valuesMap = new ResMap();
@@ -48,12 +49,18 @@ public class ResBundle {
         }
       }
 
+      if (Logger.loggingEnabled()) {
+        Logger.debug("Picked '%s' for %s for qualifiers '%s' (%d candidates)",
+            bestMatchSoFar == null ? "<none>" : bestMatchSoFar.getXmlContext().getQualifiers(),
+            resName.getFullyQualifiedName(),
+            qualifiersStr,
+            values.size());
+      }
       return bestMatchSoFar;
     }
 
     public void put(ResName resName, TypedResource value) {
-      List<TypedResource> values = map.get(resName);
-      if (values == null) map.put(resName, values = new ArrayList<>());
+      List<TypedResource> values = map.computeIfAbsent(resName, k -> new ArrayList<>());
       values.add(value);
     }
 
