@@ -10,28 +10,22 @@ import static android.content.res.Configuration.NAVIGATION_DPAD;
 import static android.content.res.Configuration.NAVIGATION_UNDEFINED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
-import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_LAYOUTDIR_LTR;
 import static android.content.res.Configuration.SCREENLAYOUT_LAYOUTDIR_MASK;
 import static android.content.res.Configuration.SCREENLAYOUT_LAYOUTDIR_RTL;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_MASK;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_NO;
-import static android.content.res.Configuration.SCREENLAYOUT_LONG_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_LONG_YES;
 import static android.content.res.Configuration.SCREENLAYOUT_ROUND_MASK;
 import static android.content.res.Configuration.SCREENLAYOUT_ROUND_NO;
-import static android.content.res.Configuration.SCREENLAYOUT_ROUND_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_ROUND_YES;
 import static android.content.res.Configuration.SCREENLAYOUT_SIZE_MASK;
 import static android.content.res.Configuration.SCREENLAYOUT_SIZE_NORMAL;
-import static android.content.res.Configuration.SCREENLAYOUT_SIZE_UNDEFINED;
 import static android.content.res.Configuration.SCREENLAYOUT_SIZE_XLARGE;
 import static android.content.res.Configuration.TOUCHSCREEN_FINGER;
 import static android.content.res.Configuration.TOUCHSCREEN_NOTOUCH;
-import static android.content.res.Configuration.TOUCHSCREEN_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.content.res.Configuration.UI_MODE_NIGHT_NO;
-import static android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
@@ -48,9 +42,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.SdkConfig;
 
 @RunWith(RobolectricTestRunner.class)
 public class BootstrapTest {
@@ -69,14 +61,15 @@ public class BootstrapTest {
     String outQualifiers = Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(),
         configuration, displayMetrics);
 
-    assertThat(outQualifiers).isEqualTo("sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + RuntimeEnvironment.getApiLevel());
+    assertThat(outQualifiers).isEqualTo("en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + RuntimeEnvironment.getApiLevel());
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
-    assertThat(configuration.locale).isNull();
+    assertThat(configuration.locale).isEqualTo(new Locale("en", "US"));
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(320);
     assertThat(configuration.screenWidthDp).isEqualTo(320);
     assertThat(configuration.screenHeightDp).isEqualTo(0);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK).isEqualTo(SCREENLAYOUT_LAYOUTDIR_LTR);
     assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK).isEqualTo(SCREENLAYOUT_SIZE_NORMAL);
     assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_NO);
     assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_NO);

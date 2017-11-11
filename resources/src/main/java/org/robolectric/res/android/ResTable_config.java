@@ -515,7 +515,7 @@ public class ResTable_config {
     this.language = new byte[2];
     this.country = new byte[2];
     this.localeScript = new byte[LocaleData.SCRIPT_LENGTH];
-    this.localeVariant = new byte[2];
+    this.localeVariant = new byte[8];
   }
 
   public int minorVersion;
@@ -665,11 +665,11 @@ public class ResTable_config {
     }
   }
 
-  void packLanguage(final String language) {
+  public void packLanguage(final String language) {
     packLanguageOrRegion(language, (byte) 'a', this.language);
   }
 
-  void packRegion(final String region) {
+  public void packRegion(final String region) {
     packLanguageOrRegion(region, (byte) '0', this.country);
   }
 

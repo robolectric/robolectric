@@ -4,9 +4,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
+import org.robolectric.util.Logger;
 
 public class XmlContext {
   private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
+  private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("v(\\d+)$");
 
   private final String packageName;
   private final FsFile xmlFile;
@@ -18,7 +20,13 @@ public class XmlContext {
     this.xmlFile = xmlFile;
     config = new ResTable_config();
     this.qualifiers = determineQualifiers();
-    new ConfigDescription().parse(qualifiers, config);
+    if (!new ConfigDescription().parse(qualifiers, config)) {
+      Logger.warn("failed to parse %s", qualifiers);
+      Matcher matcher = VERSION_QUALIFIER_PATTERN.matcher(qualifiers);
+      if (matcher.find()) {
+        config.sdkVersion = Integer.parseInt(matcher.group(1));
+      }
+    }
   }
 
   public String getPackageName() {

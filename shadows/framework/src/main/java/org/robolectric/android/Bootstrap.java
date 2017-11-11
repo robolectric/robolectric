@@ -4,6 +4,7 @@ import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
@@ -28,6 +29,19 @@ public class Bootstrap {
 
     if (!qualifiers.isEmpty() && !configDescription.parse(qualifiers, resTab)) {
       throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiers + "\"");
+    }
+
+    if (resTab.languageString().isEmpty()) {
+      resTab.packLanguage("en");
+
+      if (resTab.regionString().isEmpty()) {
+        resTab.packRegion("us");
+      }
+    }
+
+    if (apiLevel <= VERSION_CODES.JELLY_BEAN
+        && resTab.screenLayoutDirection() == ResTable_config.LAYOUTDIR_ANY) {
+      resTab.screenLayoutDirection(ResTable_config.LAYOUTDIR_LTR);
     }
 
     if (resTab.smallestScreenWidthDp == 0) {

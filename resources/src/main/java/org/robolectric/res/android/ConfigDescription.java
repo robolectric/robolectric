@@ -185,7 +185,7 @@ public class ConfigDescription {
       System.arraycopy(scriptBytes, 0, out.localeScript, 0, scriptBytes.length);
 
       Arrays.fill(out.localeVariant, (byte) 0);
-      byte[] variantBytes = variant == null ? new byte[2] : variant.getBytes();
+      byte[] variantBytes = variant == null ? new byte[8] : variant.getBytes();
       System.arraycopy(variantBytes, 0, out.localeVariant, 0, variantBytes.length);
     }
   }
