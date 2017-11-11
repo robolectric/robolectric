@@ -86,6 +86,6 @@ public class ResourceLoaderTest {
   }
 
   private static String getDefaultQualifiers() {
-    return "sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + Integer.toString(RuntimeEnvironment.getApiLevel());
+    return "en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + Integer.toString(RuntimeEnvironment.getApiLevel());
   }
 }

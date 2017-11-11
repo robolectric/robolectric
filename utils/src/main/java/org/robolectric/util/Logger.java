@@ -73,7 +73,7 @@ public class Logger {
     }
   }
 
-  private static boolean loggingEnabled() {
+  public static boolean loggingEnabled() {
     return Boolean.getBoolean(LOGGING_ENABLED);
   }
 }
