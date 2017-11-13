@@ -19,7 +19,7 @@ public class QualifiersTest {
   public void testWhenQualifiersFailToParse() throws Exception {
     assertThatThrownBy(() -> configFrom("values-unknown-v23"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("failed to parse qualifiers 'values-unknown-v23");
+        .hasMessageContaining("failed to parse qualifiers 'unknown-v23");
   }
 
   private String configFrom(String path) {
