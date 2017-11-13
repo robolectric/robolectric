@@ -21,13 +21,15 @@ public class NullResourceTable implements ResourceTable {
   @Override
   public TypedResource getValue(int resId, String qualifiers) {
     System.out.println("getValue(" + resId + ", \"" + qualifiers + "\")");
-    return new TypedResource(null, ResType.NULL, new XmlContext("", Fs.newFile(".")));
+    return new TypedResource<>(null, ResType.NULL,
+        new XmlContext("", Fs.newFile("."), Qualifiers.parse("")));
   }
 
   @Override
   public TypedResource getValue(@Nonnull ResName resName, String qualifiers) {
     System.out.println("getValue(" + resName + ", \"" + qualifiers + "\")");
-    return new TypedResource(null, ResType.NULL, new XmlContext("", Fs.newFile(".")));
+    return new TypedResource<>(null, ResType.NULL,
+        new XmlContext("", Fs.newFile("."), Qualifiers.parse("")));
   }
 
   @Override

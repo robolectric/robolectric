@@ -200,4 +200,12 @@ public class BootstrapTest {
     assertThat(displayMetrics.densityDpi).isEqualTo(240);
   }
 
+  @Test
+  public void applySystemConfiguration_shouldSetLocaleScript() throws Exception {
+    String outQualifiers = Bootstrap.applyQualifiers("b+sr+Latn",
+        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+
+    assertThat(configuration.locale.getScript()).isEqualTo("Latn");
+    assertThat(outQualifiers).contains("b+sr+Latn");
+  }
 }

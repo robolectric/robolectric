@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 import javax.annotation.Nonnull;
+import org.robolectric.util.Logger;
 
 public abstract class DocumentLoader {
   private static final FsFile.Filter ENDS_WITH_XML = new FsFile.Filter() {
@@ -35,8 +36,16 @@ public abstract class DocumentLoader {
       return;
     }
 
+    Qualifiers qualifiers;
+    try {
+      qualifiers = Qualifiers.fromParentDir(dir);
+    } catch (IllegalArgumentException e) {
+      Logger.warn(dir + ": " + e.getMessage());
+      return;
+    }
+
     for (FsFile file : dir.listFiles(ENDS_WITH_XML)) {
-      loadResourceXmlFile(new XmlContext(packageName, file));
+      loadResourceXmlFile(new XmlContext(packageName, file, qualifiers));
     }
   }
 

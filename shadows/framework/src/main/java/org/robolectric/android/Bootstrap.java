@@ -1,10 +1,8 @@
 package org.robolectric.android;
 
-import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;

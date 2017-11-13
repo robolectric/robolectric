@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import org.robolectric.util.Logger;
+
 /**
  * DrawableResourceLoader
  */
@@ -35,6 +37,14 @@ public class DrawableResourceLoader {
   private void listDrawableResources(FsFile dir, String type) {
     FsFile[] files = dir.listFiles();
     if (files != null) {
+      Qualifiers qualifiers = null;
+      try {
+        qualifiers = Qualifiers.fromParentDir(dir);
+      } catch (IllegalArgumentException e) {
+        Logger.warn(dir + ": " + e.getMessage());
+        return;
+      }
+
       for (FsFile f : files) {
         String name = f.getName();
         if (name.startsWith(".")) continue;
@@ -53,7 +63,7 @@ public class DrawableResourceLoader {
           isNinePatch = false;
         }
 
-        XmlContext fakeXmlContext = new XmlContext(resourceTable.getPackageName(), f);
+        XmlContext fakeXmlContext = new XmlContext(resourceTable.getPackageName(), f, qualifiers);
         resourceTable.addResource(type, shortName, new FileTypedResource.Image(f, isNinePatch, fakeXmlContext));
       }
     }
