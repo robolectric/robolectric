@@ -51,7 +51,7 @@ public class ResBundle {
 
       if (Logger.loggingEnabled()) {
         Logger.debug("Picked '%s' for %s for qualifiers '%s' (%d candidates)",
-            bestMatchSoFar == null ? "<none>" : bestMatchSoFar.getXmlContext().getQualifiers(),
+            bestMatchSoFar == null ? "<none>" : bestMatchSoFar.getXmlContext().getQualifiers().toString(),
             resName.getFullyQualifiedName(),
             qualifiersStr,
             values.size());

@@ -166,7 +166,7 @@ public class ResBundleTest {
   public void shouldNotOverwriteValuesWithMatchingQualifiers() {
     ResBundle bundle = new ResBundle();
     XmlContext xmlContext = mock(XmlContext.class);
-    when(xmlContext.getQualifiers()).thenReturn("--");
+    when(xmlContext.getQualifiers()).thenReturn(Qualifiers.parse("--"));
     when(xmlContext.getConfig()).thenReturn(new ResTable_config());
     when(xmlContext.getPackageName()).thenReturn("org.robolectric");
 
@@ -191,14 +191,11 @@ public class ResBundleTest {
   }
 
   @Nonnull
-  private static TypedResource<String> createStringTypedResource(String str, String qualifiers) {
+  private static TypedResource<String> createStringTypedResource(String str, String qualifiersStr) {
     XmlContext mockXmlContext = mock(XmlContext.class);
+    Qualifiers qualifiers = Qualifiers.parse(qualifiersStr);
     when(mockXmlContext.getQualifiers()).thenReturn(qualifiers);
-    ResTable_config config = new ResTable_config();
-    if (!qualifiers.isEmpty() && !new ConfigDescription().parse(qualifiers, config)) {
-      throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiers + "\"");
-    }
-    when(mockXmlContext.getConfig()).thenReturn(config);
+    when(mockXmlContext.getConfig()).thenReturn(qualifiers.getConfig());
     return new TypedResource<>(str, ResType.CHAR_SEQUENCE, mockXmlContext);
   }
 }

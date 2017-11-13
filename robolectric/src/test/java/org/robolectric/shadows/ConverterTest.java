@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.XmlContext;
@@ -19,7 +21,10 @@ public class ConverterTest {
 
   @Before
   public void setUp() throws Exception {
-    xmlContext = new XmlContext("", Fs.newFile(new File("res/values/foo.xml")));
+    FsFile xmlFile = Fs.newFile(new File("res/values/foo.xml"));
+    Qualifiers qualifiers = Qualifiers.fromParentDir(xmlFile.getParent());
+
+    xmlContext = new XmlContext("", xmlFile, qualifiers);
   }
 
   @Test
