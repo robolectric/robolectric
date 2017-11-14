@@ -92,6 +92,10 @@ public class InstrumentationConfiguration {
       return true;
     }
 
+    if (name.equals("java.util.jar.StrictJarFile")) {
+      return true;
+    }
+
     // android.R and com.android.internal.R classes must be loaded from the framework jar
     if (name.matches("(android|com\\.android\\.internal)\\.R(\\$.+)?")) {
       return true;

@@ -118,7 +118,7 @@ public class AndroidManifest {
       String rClassName = getRClassName();
       return Class.forName(rClassName);
     } catch (Exception e) {
-        return null;
+      return null;
     }
   }
 
@@ -169,7 +169,7 @@ public class AndroidManifest {
         minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
 
         String targetSdkText = getTagAttributeText(manifestDocument, "uses-sdk",
-            "android:targetSdkVersion");
+                "android:targetSdkVersion");
         if (targetSdkText != null) {
           // Support Android O Preview. This can be removed once Android O is officially launched.
           targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
@@ -227,14 +227,14 @@ public class AndroidManifest {
       final MetaData metaData = new MetaData(getChildrenTags(permissionNode, "meta-data"));
       String name = getAttributeValue(permissionNode, "android:name");
       permissions.put(name,
-          new PermissionItemData(
-              name,
-              getAttributeValue(permissionNode, "android:label"),
-              getAttributeValue(permissionNode, "android:description"),
-              getAttributeValue(permissionNode, "android:permissionGroup"),
-              getAttributeValue(permissionNode, "android:protectionLevel"),
-              metaData
-          ));
+              new PermissionItemData(
+                      name,
+                      getAttributeValue(permissionNode, "android:label"),
+                      getAttributeValue(permissionNode, "android:description"),
+                      getAttributeValue(permissionNode, "android:permissionGroup"),
+                      getAttributeValue(permissionNode, "android:protectionLevel"),
+                      metaData
+              ));
     }
   }
 
@@ -294,7 +294,7 @@ public class AndroidManifest {
 
       final List<IntentFilterData> intentFilterData = parseIntentFilters(receiverNode);
       BroadcastReceiverData receiver =
-          new BroadcastReceiverData(receiverAttrs, metaData, intentFilterData);
+              new BroadcastReceiverData(receiverAttrs, metaData, intentFilterData);
       List<Node> intentFilters = getChildrenTags(receiverNode, "intent-filter");
       for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {

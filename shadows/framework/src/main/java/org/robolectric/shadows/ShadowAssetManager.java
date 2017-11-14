@@ -97,6 +97,7 @@ public final class ShadowAssetManager {
 
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = Converter.getNextStringCookie();
+    outValue.changingConfigurations = 0;
 
     // TODO: Handle resource and style references
     if (attribute.isStyleReference()) {
@@ -395,11 +396,11 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), "fixme");
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
-    return getXmlResourceParser(null, xmlBlock, "fixme");
+    return getXmlResourceParser(resourceTable, xmlBlock, resourceTable.getPackageName());
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
@@ -420,7 +421,7 @@ public final class ShadowAssetManager {
     return getXmlResourceParser(resourceProvider, block, resName.packageName);
   }
 
-  private XmlResourceParser getXmlResourceParser(ResourceTable resourceProvider, XmlBlock block, String packageName) {
+  static XmlResourceParser getXmlResourceParser(ResourceTable resourceProvider, XmlBlock block, String packageName) {
     return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
         packageName, resourceProvider);
   }

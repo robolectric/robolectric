@@ -1,4 +1,4 @@
-package org.robolectric.manifest;
+package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -18,11 +18,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.PermissionItemData;
+import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.Fs;
 
-@RunWith(JUnit4.class)
+@RunWith(RobolectricTestRunner.class) @Config(sdk = Config.NEWEST_SDK)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -489,10 +495,13 @@ public class AndroidManifestTest {
         "</manifest>\n";
     File f = temporaryFolder.newFile(fileName);
     Files.write(contents, f, Charsets.UTF_8);
-    return new AndroidManifest(Fs.newFile(f), null, null);
+    AndroidManifest androidManifest = new AndroidManifest(Fs.newFile(f), null, null);
+    return androidManifest;
   }
 
   private static AndroidManifest newConfig(String androidManifestFile) {
-    return new AndroidManifest(resourceFile(androidManifestFile), null, null);
+    AndroidManifest androidManifest = new AndroidManifest(resourceFile(androidManifestFile), null,
+        null);
+    return androidManifest;
   }
 }

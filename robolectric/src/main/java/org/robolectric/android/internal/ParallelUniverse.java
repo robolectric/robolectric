@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
@@ -8,12 +9,16 @@ import android.app.LoadedApk;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageParser;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+
 import java.lang.reflect.Method;
 import java.security.Security;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -28,6 +33,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowPackageParser;
+import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -96,8 +103,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
-
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
@@ -105,6 +110,28 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ShadowLooper.getShadowMainLooper().resetScheduler();
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
+
+    PackageParser.Package packageInfo;
+    if (appManifest.getAndroidManifestFile() != null && appManifest.getAndroidManifestFile().exists()) {
+      packageInfo = ShadowPackageParser.callParsePackage(appManifest.getAndroidManifestFile());
+    } else {
+      packageInfo = new PackageParser.Package("org.robolectric.default");
+    }
+
+    // Support overriding the package name specified in the Manifest.
+    if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
+      packageInfo.packageName = config.packageName();
+      packageInfo.applicationInfo.packageName = config.packageName();
+    }
+    setUpPackageStorage(packageInfo.applicationInfo);
+
+    // Bit of a hack... Context.createPackageContext() is called before the application is created. It calls through
+    // to ActivityThread for the package which in turn calls the PackageManagerService directly. This works for now
+    // but it might be nicer to have ShadowPackageManager implementation move into the service as there is also lots of
+    // code in there that can be reusable, e.g: the XxxxIntentResolver code.
+    ShadowActivityThread.setApplicationPackage(packageInfo);
+
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
@@ -118,12 +145,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (application != null) {
       shadowsAdapter.bind(application, appManifest);
 
-      final ApplicationInfo applicationInfo;
-      try {
-        applicationInfo = systemContextImpl.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
-      } catch (PackageManager.NameNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+      final ApplicationInfo applicationInfo = packageInfo.applicationInfo;
 
       final Class<?> appBindDataClass;
       try {
@@ -145,6 +167,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
+
+      shadowOf(application.getPackageManager()).addPackage(packageInfo);
 
       Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
@@ -189,5 +213,17 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   public void setSdkConfig(SdkConfig sdkConfig) {
     this.sdkConfig = sdkConfig;
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+  }
+
+  private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.publicSourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-publicSourceDir").toAbsolutePath().toString();
+    applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
+
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+    }
   }
 }

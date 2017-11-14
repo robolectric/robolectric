@@ -150,8 +150,7 @@ public class RuntimeEnvironment {
   }
 
   /**
-   * @deprecated Use {@link android.content.Context} or {@link android.content.pm.PackageManager}
-   *             instead. This method will be removed in a future version of Robolectric.
+   * @deprecated Prefer to access manifest elements through @{link {@link android.content.pm.PackageManager}}
    */
   @Deprecated
   public static AndroidManifest getAppManifest() {
