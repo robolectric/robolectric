@@ -98,6 +98,7 @@ public class ShadowContextImpl {
     if (getApiLevel() >= KITKAT) {
       SYSTEM_SERVICE_MAP.put(Context.PRINT_SERVICE, "android.print.PrintManager");
       SYSTEM_SERVICE_MAP.put(Context.APP_OPS_SERVICE, "android.app.AppOpsManager");
+      SYSTEM_SERVICE_MAP.put(Context.CAPTIONING_SERVICE, "android.view.accessibility.CaptioningManager");
     }
     if (getApiLevel() >= LOLLIPOP) {
       SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
@@ -194,6 +195,9 @@ public class ShadowContextImpl {
           service =
               ReflectionHelpers.callConstructor(
                   clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
+        } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.view.accessibility.CaptioningManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else {
           service = newInstanceOf(clazz);
         }
