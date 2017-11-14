@@ -44,12 +44,8 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)
 public class ShadowResourcesImpl {
-  private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
 
-  private float density = 1.0f;
-  private DisplayMetrics displayMetrics;
-  private Display display;
   @RealObject
   ResourcesImpl realResourcesImpl;
 
@@ -61,7 +57,6 @@ public class ShadowResourcesImpl {
     for (LongSparseArray<?> sparseArray : resettableArrays) {
       sparseArray.clear();
     }
-    system = null;
   }
 
   private static List<LongSparseArray<?>> obtainResettableArrays() {
@@ -81,17 +76,6 @@ public class ShadowResourcesImpl {
       }
     }
     return resettableArrays;
-  }
-
-  @Implementation
-  public static Resources getSystem() {
-    if (system == null) {
-      AssetManager assetManager = AssetManager.getSystem();
-      DisplayMetrics metrics = new DisplayMetrics();
-      Configuration config = new Configuration();
-      system = new Resources(assetManager, metrics, config);
-    }
-    return system;
   }
 
   @Implementation
@@ -161,38 +145,6 @@ public class ShadowResourcesImpl {
     } else {
       return new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
-  }
-
-  public void setDensity(float density) {
-    this.density = density;
-    if (displayMetrics != null) {
-      displayMetrics.density = density;
-    }
-  }
-
-  public void setScaledDensity(float scaledDensity) {
-    if (displayMetrics != null) {
-      displayMetrics.scaledDensity = scaledDensity;
-    }
-  }
-
-  public void setDisplay(Display display) {
-    this.display = display;
-    displayMetrics = null;
-  }
-
-  @Implementation
-  public DisplayMetrics getDisplayMetrics() {
-    if (displayMetrics == null) {
-      if (display == null) {
-        display = ReflectionHelpers.callConstructor(Display.class);
-      }
-
-      displayMetrics = new DisplayMetrics();
-      display.getMetrics(displayMetrics);
-    }
-    displayMetrics.density = this.density;
-    return displayMetrics;
   }
 
   @HiddenApi

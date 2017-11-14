@@ -31,6 +31,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -83,6 +84,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Resources systemResources = Resources.getSystem();
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
+    setDisplayMetricsDimens(displayMetrics);
+
     String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
 
@@ -148,10 +151,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
-      appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
+      appResources.updateConfiguration(configuration, displayMetrics);
 
       application.onCreate();
     }
+  }
+
+  // todo: kill this, use DisplayInfo to initialize instead
+  private void setDisplayMetricsDimens(DisplayMetrics displayMetrics) {
+    displayMetrics.widthPixels = new ShadowDisplay().getWidth();
+    displayMetrics.noncompatWidthPixels = new ShadowDisplay().getWidth();
+    displayMetrics.heightPixels = new ShadowDisplay().getHeight();
+    displayMetrics.noncompatHeightPixels = new ShadowDisplay().getHeight();
   }
 
   /**

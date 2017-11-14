@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -50,9 +51,6 @@ public class ShadowResources {
   private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
 
-  private float density = 1.0f;
-  private DisplayMetrics displayMetrics;
-  private Display display;
   @RealObject Resources realResources;
 
   @Resetter
@@ -183,36 +181,29 @@ public class ShadowResources {
     }
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setDensity(float density) {
-    this.density = density;
-    if (displayMetrics != null) {
-      displayMetrics.density = density;
-    }
+    realResources.getDisplayMetrics().density = density;
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setScaledDensity(float scaledDensity) {
-    if (displayMetrics != null) {
-      displayMetrics.scaledDensity = scaledDensity;
-    }
+    realResources.getDisplayMetrics().scaledDensity = scaledDensity;
   }
 
+  /**
+   * @deprecated Set up display using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setDisplay(Display display) {
-    this.display = display;
-    displayMetrics = null;
-  }
-
-  @Implementation
-  public DisplayMetrics getDisplayMetrics() {
-    if (displayMetrics == null) {
-      if (display == null) {
-        display = ReflectionHelpers.callConstructor(Display.class);
-      }
-
-      displayMetrics = new DisplayMetrics();
-      display.getMetrics(displayMetrics);
-    }
-    displayMetrics.density = this.density;
-    return displayMetrics;
+    DisplayMetrics displayMetrics = realResources.getDisplayMetrics();
+    display.getMetrics(displayMetrics);
   }
 
   @HiddenApi @Implementation
