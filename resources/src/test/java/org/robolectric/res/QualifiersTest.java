@@ -1,13 +1,38 @@
 package org.robolectric.res;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.res.android.ResTable_config;
 
 @RunWith(JUnit4.class)
 public class QualifiersTest {
+  @Test
+  public void testQualifiers() throws Exception {
+    assertThat(configFrom("values-land-finger")).isEqualTo("land-finger");
+  }
+
+  @Test
+  public void testWhenQualifiersFailToParse() throws Exception {
+    assertThatThrownBy(() -> configFrom("values-unknown-v23"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("failed to parse qualifiers 'unknown-v23");
+  }
+
+  private String configFrom(String path) {
+    FsFile xmlFile = Fs.newFile(path + "/whatever.xml");
+    Qualifiers qualifiers = Qualifiers.fromParentDir(xmlFile.getParent());
+
+    ResTable_config config = new XmlContext("package", xmlFile, qualifiers)
+        .getConfig();
+    return config.toString();
+  }
+
+  ///////// deprecated stuff...
+
   @Test public void addPlatformVersion() throws Exception {
     assertThat(Qualifiers.addPlatformVersion("", 21)).isEqualTo("v21");
     assertThat(Qualifiers.addPlatformVersion("v23", 21)).isEqualTo("v23");
