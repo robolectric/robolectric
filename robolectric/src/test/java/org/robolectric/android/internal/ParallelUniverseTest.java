@@ -11,6 +11,7 @@ import android.os.Build;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
@@ -188,5 +189,12 @@ public class ParallelUniverseTest {
     public void initMetaData(ResourceTable resourceTable) throws RoboNotFoundException {
       throw new RoboNotFoundException("This is just a test");
     }
+  }
+
+  @Test @Config(qualifiers = "b+fr+Cyrl+UK")
+  public void localeIsSet() throws Exception {
+    assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
+    assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
+    assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
   }
 }
