@@ -218,6 +218,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ProviderInfo resolveContentProvider(String name, int flags) {
+    if (name == null) {
+      return null;
+    }
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (packageInfo.providers == null) continue;
 

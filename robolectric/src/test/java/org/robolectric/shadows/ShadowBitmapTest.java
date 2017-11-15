@@ -320,6 +320,10 @@ public class ShadowBitmapTest {
 
     bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
     bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+    // subset of pixels:
+    bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
+    bitmap.getPixels(pixels, 0, width, 2, 2, 3, 3);
   }
 
   @Test
