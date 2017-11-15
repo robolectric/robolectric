@@ -29,8 +29,20 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         this.frameworkSdkBuildVersion = frameworkSdkBuildVersion
     }
 
+    String getGroupId() {
+        return "org.robolectric"
+    }
+
+    String getArtifactId() {
+        return "android-all"
+    }
+
+    String getVersion() {
+        return "${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
+    }
+
     String getCoordinates() {
-        return "org.robolectric:android-all:${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
+        return "${groupId}:${artifactId}:${version}"
     }
 
     String getJarFileName() {

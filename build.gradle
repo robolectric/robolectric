@@ -1,3 +1,18 @@
+import org.gradle.plugins.ide.idea.model.IdeaModel
+
+buildscript {
+    repositories { jcenter() }
+
+    dependencies {
+        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
+        classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+    }
+}
+
+plugins {
+    id "net.ltgt.apt" version "0.13" // automatic annotation processing
+}
+
 allprojects {
     repositories {
         mavenLocal()
@@ -8,12 +23,45 @@ allprojects {
     version = thisVersion
 }
 
-buildscript {
-    repositories { jcenter() }
+apply plugin: 'idea'
+apply plugin: 'net.ltgt.apt'
 
-    dependencies {
-        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
-        classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+project.ext.configAnnotationProcessing = []
+project.afterEvaluate {
+    def ideaProject = rootProject.extensions.getByType(IdeaModel).project
+    ideaProject.ipr.withXml { provider ->
+        def compilerConfiguration = provider.asNode().component.find { it.'@name' == 'CompilerConfiguration' }
+
+        // prevent compiler from complaining about duplicate classes...
+        def excludeFromCompile = compilerConfiguration.appendNode 'excludeFromCompile'
+        configAnnotationProcessing.each { Project subProject ->
+            excludeFromCompile.appendNode('directory',
+                    [url: "file://${subProject.buildDir}/classes/java/main/generated", includeSubdirectories: "true"])
+        }
+
+        // replace existing annotationProcessing tag with a new one...
+        compilerConfiguration.annotationProcessing.replaceNode {
+            annotationProcessing {
+                configAnnotationProcessing.each { Project subProject ->
+                    profile(name: "${subProject.name}_main", enabled: "true") {
+                        module(name: "${subProject.name}_main")
+                        option(name: "org.robolectric.annotation.processing.shadowPackage",
+                                value: subProject.shadows.packageName)
+                        processor(name: "org.robolectric.annotation.processing.RobolectricProcessor")
+
+                        processorPath(useClasspath: "false") {
+                            def processorRuntimeCfg = project.project(":processor").configurations['runtime']
+                            processorRuntimeCfg.allArtifacts.each { artifact ->
+                                entry(name: artifact.file)
+                            }
+                            processorRuntimeCfg.files.each { file ->
+                                entry(name: file)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -30,6 +78,30 @@ task aggregateTestReports(type: TestReport) {
         destinationDir = file("$buildDir/reports/allTests")
     } else {
         destinationDir = file("$buildDir/reports/allTests/$jobNumber")
+    }
+}
+
+task prefetchSdks() {
+    AndroidSdk.ALL_SDKS.each { androidSdk ->
+        def config = configurations.create("sdk${androidSdk.apiLevel}")
+        dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+        // causes dependencies to be resolved:
+        config.files
+    }
+}
+
+task prefetchDependencies() {
+    dependsOn "prefetchSdks"
+
+    doLast {
+        allprojects.each { p ->
+            ['compile', 'runtime', 'testCompile', 'testRuntime'].each { configName ->
+                if (p.configurations.findByName(configName)) {
+                    // causes dependencies to be resolved:
+                    p.configurations[configName].files
+                }
+            }
+        }
     }
 }
 

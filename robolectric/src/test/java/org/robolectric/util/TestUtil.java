@@ -1,11 +1,14 @@
 package org.robolectric.util;
 
+import org.junit.Test;
+import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
+
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
@@ -89,5 +92,27 @@ public abstract class TestUtil {
     return writer.toString();
   }
 
+  private static DependencyResolver getDependencyResolver() {
+    try {
+      return new MyRobolectricTestRunner().getJarResolver();
+    } catch (InitializationError initializationError) {
+      throw new RuntimeException(initializationError);
+    }
+  }
 
+  private static class MyRobolectricTestRunner extends RobolectricTestRunner {
+    MyRobolectricTestRunner() throws InitializationError {
+      super(FakeTest.class);
+    }
+
+    @Override
+    protected DependencyResolver getJarResolver() {
+      return super.getJarResolver();
+    }
+
+    public static class FakeTest {
+      @Test public void fakeTest() {
+      }
+    }
+  }
 }
