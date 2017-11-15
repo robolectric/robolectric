@@ -4,7 +4,6 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := Robolectric_all
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
-  Robolectric_shadows_playservices \
   Robolectric_shadows_httpclient \
   Robolectric_shadows_framework \
   Robolectric_shadows_supportv4 \
