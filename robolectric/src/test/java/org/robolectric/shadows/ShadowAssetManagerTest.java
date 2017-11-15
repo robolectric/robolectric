@@ -126,13 +126,14 @@ public class ShadowAssetManagerTest {
     assertThat(byteArrayInputStream.available()).isEqualTo(6559);
   }
 
-  @Test
+  @Test @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
     // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name
-    final String jarFile = "jar:/android-all-5.0.0_r2-robolectric-0.jar!/res/drawable-hdpi/bottom_bar.png";
+    String fileName = "jar:res/drawable-hdpi/bottom_bar.png";
+    int expectedFileSize = 389;
 
-    InputStream inputStream = assetManager.openNonAsset(0, jarFile, 0);
-    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(389);
+    InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
+    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(expectedFileSize);
   }
 
   @Test
