@@ -305,9 +305,10 @@ public class ShadowPackageManager {
       info.serviceInfo.packageName = packageName;
       info.serviceInfo.applicationInfo = new ApplicationInfo();
       info.filter = new IntentFilter();
-      if (intentFilter.typesIterator() != null) {
-        for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
-          info.filter.addDataType(it.next());
+      Iterator<String> iterator = intentFilter.typesIterator();
+      if (iterator != null) {
+        while (iterator.hasNext()) {
+          info.filter.addDataType(iterator.next());
         }
       }
       return info;
