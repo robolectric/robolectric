@@ -5,17 +5,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +44,14 @@ public class ShadowContextTest {
   @Config(minSdk = JELLY_BEAN_MR1)
   public void createConfigurationContext() {
     assertThat(RuntimeEnvironment.application.createConfigurationContext(new Configuration())).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void startForegroundService() {
+    Intent intent = new Intent();
+    RuntimeEnvironment.application.startForegroundService(intent);
+    assertThat(ShadowApplication.getInstance().getNextStartedService()).isEqualTo(intent);
   }
 
   @Test

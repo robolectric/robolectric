@@ -31,6 +31,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserManager;
 import android.print.PrintManager;
+import android.view.accessibility.CaptioningManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
@@ -107,6 +108,7 @@ public class ShadowApplicationTest {
   @Config(minSdk = KITKAT)
   public void shouldProvideServicesIntroducedInKitKat() throws Exception {
     checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
+    checkSystemService(Context.CAPTIONING_SERVICE, CaptioningManager.class);
   }
 
   @Test
