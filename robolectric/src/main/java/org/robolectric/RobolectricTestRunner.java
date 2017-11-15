@@ -1,14 +1,13 @@
 package org.robolectric;
 
+import static org.robolectric.internal.dependency.DependencyResolverFactory.createDependencyResolver;
+
 import android.app.Application;
-import android.os.Build;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,20 +43,14 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceMerger;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
-import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -96,49 +89,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   protected DependencyResolver getJarResolver() {
     if (dependencyResolver == null) {
-      if (Boolean.getBoolean("robolectric.offline")) {
-        String propPath = System.getProperty("robolectric-deps.properties");
-        if (propPath != null) {
-          try {
-            dependencyResolver = new PropertiesDependencyResolver(
-                Fs.newFile(propPath),
-                null);
-          } catch (IOException e) {
-            throw new RuntimeException("couldn't read dependencies" , e);
-          }
-        } else {
-          String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-          dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
-        }
-      } else {
-        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
-
-        Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
-            "org.robolectric.internal.dependency.MavenDependencyResolver");
-        DependencyResolver dependencyResolver = (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
-        if (cacheDir.exists() || cacheDir.mkdir()) {
-          Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
-          this.dependencyResolver = new CachedDependencyResolver(dependencyResolver, cacheDir, 60 * 60 * 24 * 1000);
-        } else {
-          this.dependencyResolver = dependencyResolver;
-        }
-      }
-
-      URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-deps.properties");
-      if (buildPathPropertiesUrl != null) {
-        Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
-
-        FsFile propertiesFile = Fs.fileFromPath(buildPathPropertiesUrl.getFile());
-        try {
-          dependencyResolver = new PropertiesDependencyResolver(propertiesFile, dependencyResolver);
-        } catch (IOException e) {
-          throw new RuntimeException("couldn't read " + buildPathPropertiesUrl, e);
-        }
-      }
+      dependencyResolver = createDependencyResolver();
     }
-
     return dependencyResolver;
   }
+
 
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
@@ -306,13 +261,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     roboMethod.parallelUniverseInterface.setSdkConfig((sdkEnvironment).getSdkConfig());
     roboMethod.parallelUniverseInterface.resetStaticState(config);
-
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
-    Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RESOURCES_SDK_INT", sdkConfig.getApiLevel());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);

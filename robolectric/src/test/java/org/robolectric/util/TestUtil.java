@@ -6,11 +6,16 @@ import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.dependency.LocalDependencyResolver;
+import org.robolectric.manifest.AndroidManifest;
+
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 
 import java.io.*;
+
+import static org.robolectric.internal.dependency.DependencyResolverFactory.createDependencyResolver;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
@@ -57,15 +62,15 @@ public abstract class TestUtil {
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
-      Fs fs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("res"), fs.join("assets"));
+      Fs fs = Fs.fromJar(createDependencyResolver().getLocalArtifactUrl(sdkConfig.getApiLevel()));
+      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("raw-res/res"), fs.join("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
-    Fs sdkResFs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
-    return new ResourcePath(null, sdkResFs.join("res"), null, null);
+    Fs sdkResFs = Fs.fromJar(createDependencyResolver().getLocalArtifactUrl(apiLevel));
+    return new ResourcePath(null, sdkResFs.join("raw-res/res"), null, null);
   }
 
   public static ResourcePath gradleAppResources() {

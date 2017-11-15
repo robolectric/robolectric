@@ -2,14 +2,17 @@ package org.robolectric.internal.dependency;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import android.os.Build;
 import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
@@ -25,12 +28,15 @@ import org.mockito.stubbing.Answer;
 public class MavenDependencyResolverTest {
 
   private static final String REPOSITORY_URL = "https://default-repo";
-
   private static final String REPOSITORY_ID = "remote";
+  private static final int API_LEVEL = Build.VERSION_CODES.N;
+  private static final String API_LEVEL_STR = Integer.toString(API_LEVEL);
 
   private DependenciesTask dependenciesTask;
 
   private Project project;
+
+  private Properties depsProp;
 
   @Before
   public void setUp() {
@@ -48,14 +54,16 @@ public class MavenDependencyResolverTest {
         return null;
       }
     }).when(dependenciesTask).setProject(any(Project.class));
+    depsProp = new Properties();
   }
 
   @Test
   public void getLocalArtifactUrl_shouldAddConfiguredRemoteRepository() {
     DependencyResolver dependencyResolver = createResolver();
     DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
+    depsProp.setProperty(API_LEVEL_STR, dependencyJar.getShortName());
 
-    dependencyResolver.getLocalArtifactUrl(dependencyJar);
+    dependencyResolver.getLocalArtifactUrl(API_LEVEL);
 
     List<RemoteRepository> repositories = dependenciesTask.getRemoteRepositories();
 
@@ -69,8 +77,8 @@ public class MavenDependencyResolverTest {
   public void getLocalArtifactUrl_shouldAddDependencyToDependenciesTask() {
     DependencyResolver dependencyResolver = createResolver();
     DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "3", null);
-
-    dependencyResolver.getLocalArtifactUrl(dependencyJar);
+    depsProp.setProperty(API_LEVEL_STR, dependencyJar.getShortName());
+    dependencyResolver.getLocalArtifactUrl(API_LEVEL);
 
     List<Dependency> dependencies = dependenciesTask.getDependencies();
 
@@ -87,8 +95,8 @@ public class MavenDependencyResolverTest {
   public void getLocalArtifactUrl_shouldExecuteDependenciesTask() {
     DependencyResolver dependencyResolver = createResolver();
     DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
-
-    dependencyResolver.getLocalArtifactUrl(dependencyJar);
+    depsProp.setProperty(API_LEVEL_STR, dependencyJar.getShortName());
+    dependencyResolver.getLocalArtifactUrl(API_LEVEL);
 
     verify(dependenciesTask).execute();
   }
@@ -97,8 +105,8 @@ public class MavenDependencyResolverTest {
   public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKey() {
     DependencyResolver dependencyResolver = createResolver();
     DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
-
-    URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
+    depsProp.setProperty(API_LEVEL_STR, dependencyJar.getShortName());
+    URL url = dependencyResolver.getLocalArtifactUrl(API_LEVEL);
 
     assertEquals("file:/path1", url.toExternalForm());
   }
@@ -107,14 +115,25 @@ public class MavenDependencyResolverTest {
   public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKeyWithClassifier() {
     DependencyResolver dependencyResolver = createResolver();
     DependencyJar dependencyJar = new DependencyJar("group3", "artifact3", "", "classifier3");
-
-    URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
+    depsProp.setProperty(API_LEVEL_STR, dependencyJar.getShortName());
+    URL url = dependencyResolver.getLocalArtifactUrl(API_LEVEL);
 
     assertEquals("file:/path3", url.toExternalForm());
   }
 
+  @Test
+  public void apiNotFound() {
+    DependencyResolver dependencyResolver = createResolver();
+    try {
+      dependencyResolver.getLocalArtifactUrl(Build.VERSION_CODES.JELLY_BEAN_MR2);
+      fail();
+    } catch (NullPointerException e) {
+      // expected
+    }
+  }
+
   private DependencyResolver createResolver() {
-    return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID) {
+    return new MavenDependencyResolver(new DependencyProperties(depsProp), REPOSITORY_URL, REPOSITORY_ID) {
       @Override
       protected DependenciesTask createDependenciesTask() {
         return dependenciesTask;

@@ -3,6 +3,9 @@ package org.robolectric.internal.dependency;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.Properties;
+
+import com.google.common.base.Preconditions;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
@@ -14,12 +17,14 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final Project project = new Project();
   private final String repositoryUrl;
   private final String repositoryId;
+  private final DependencyProperties depsProp;
 
-  public MavenDependencyResolver() {
-    this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId());
+  public MavenDependencyResolver(DependencyProperties depsProps) {
+    this(depsProps, RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId());
   }
 
-  public MavenDependencyResolver(String repositoryUrl, String repositoryId) {
+  public MavenDependencyResolver(DependencyProperties depsProp, String repositoryUrl, String repositoryId) {
+    this.depsProp = depsProp;
     this.repositoryUrl = repositoryUrl;
     this.repositoryId = repositoryId;
   }
@@ -63,6 +68,11 @@ public class MavenDependencyResolver implements DependencyResolver {
   }
 
   @Override
+  public URL getLocalArtifactUrl(int apiLevel) {
+    String artifact = depsProp.getDependencyName(apiLevel);
+    return getLocalArtifactUrl(DependencyJar.fromShortName(artifact));
+  }
+
   public URL getLocalArtifactUrl(DependencyJar dependency) {
     URL[] urls = getLocalArtifactUrls(dependency);
     if (urls.length > 0) {
