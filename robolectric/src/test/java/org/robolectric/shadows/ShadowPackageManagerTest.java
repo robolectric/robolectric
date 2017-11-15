@@ -160,7 +160,7 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
+    assertThat(applicationInfo.publicSourceDir).isEqualTo(TEST_APP_PATH);
   }
 
   @Test
@@ -286,6 +286,7 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
+    assertThat(applicationInfo.publicSourceDir).isEqualTo(TEST_APP_PATH);
 
   }
 
