@@ -305,8 +305,10 @@ public class ShadowPackageManager {
       info.serviceInfo.packageName = packageName;
       info.serviceInfo.applicationInfo = new ApplicationInfo();
       info.filter = new IntentFilter();
-      for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
-        info.filter.addDataType(it.next());
+      if (intentFilter.typesIterator() != null) {
+        for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
+          info.filter.addDataType(it.next());
+        }
       }
       return info;
     } catch (IntentFilter.MalformedMimeTypeException e) {
@@ -378,6 +380,7 @@ public class ShadowPackageManager {
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.publicSourceDir = applicationInfo.sourceDir;
     applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
