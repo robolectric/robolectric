@@ -1,15 +1,11 @@
 package org.robolectric.res;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
-import org.robolectric.util.Logger;
 
 /**
  * Android qualifers as defined by https://developer.android.com/guide/topics/resources/providing-resources.html
