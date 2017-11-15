@@ -8,7 +8,6 @@ import android.os.Build;
 import android.util.TypedValue;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;

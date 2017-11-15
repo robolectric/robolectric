@@ -10,8 +10,8 @@ import static org.robolectric.Shadows.shadowOf;
 import android.webkit.MimeTypeMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowMimeTypeMapTest {
