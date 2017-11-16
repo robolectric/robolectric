@@ -70,7 +70,7 @@ public final class ShadowAssetManager {
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
   private ResourceTable resourceTable;
 
-  ResTable_config config;
+  ResTable_config config = new ResTable_config();
 
   class NativeTheme {
     private ThemeStyleSet themeStyleSet;

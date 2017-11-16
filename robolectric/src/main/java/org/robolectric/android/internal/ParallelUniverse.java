@@ -78,14 +78,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    Resources systemResources = Resources.getSystem();
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
     String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
 
+    Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
-    RuntimeEnvironment.setQualifiers(qualifiers);
+    RuntimeEnvironment._setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
