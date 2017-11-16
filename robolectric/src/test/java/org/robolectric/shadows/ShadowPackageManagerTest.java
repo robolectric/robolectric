@@ -72,6 +72,7 @@ import android.os.Bundle;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -160,7 +161,6 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
   }
 
   @Test
@@ -286,7 +286,6 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
   }
 
   @Test
@@ -1440,6 +1439,17 @@ public class ShadowPackageManagerTest {
 
     // Shouldn't throw exception
     shadowPackageManager.addPackage("test.package");
+  }
+
+  @Test
+  public void addPackageSetsStorage() throws Exception {
+    shadowPackageManager.addPackage("test.package");
+
+    PackageInfo packageInfo = packageManager.getPackageInfo("test.package", 0);
+    assertThat(packageInfo.applicationInfo.sourceDir).isNotNull();
+    assertThat(new File(packageInfo.applicationInfo.sourceDir).exists()).isTrue();
+    assertThat(packageInfo.applicationInfo.publicSourceDir)
+        .isEqualTo(packageInfo.applicationInfo.sourceDir);
   }
 
   @Test
