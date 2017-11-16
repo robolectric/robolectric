@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.res.android.ResTable_config;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(JUnit4.class)
@@ -70,7 +71,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
-    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();
+    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), new ResTable_config()).isFile()).isTrue();
   }
 
   @Test
@@ -93,7 +94,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
-    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();
+    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), new ResTable_config()).isFile()).isTrue();
   }
 
   @Test
@@ -116,7 +117,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
-    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();
+    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), new ResTable_config()).isFile()).isTrue();
   }
 
   @Test
@@ -139,7 +140,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
-    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), "").isFile()).isTrue();
+    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), new ResTable_config()).isFile()).isTrue();
   }
 
   private void setFileSeparator(String separator) throws Exception {
