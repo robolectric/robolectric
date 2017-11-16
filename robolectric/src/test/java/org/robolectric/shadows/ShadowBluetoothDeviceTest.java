@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.bluetooth.BluetoothDevice;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowBluetoothDeviceTest {
 
   private static final String MOCK_MAC_ADDRESS = "00:11:22:33:AA:BB";

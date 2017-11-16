@@ -16,9 +16,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowArrayAdapterTest {
   private ArrayAdapter<Integer> arrayAdapter;
 
@@ -37,6 +37,7 @@ public class ShadowArrayAdapterTest {
   }
 
   @Test
+  @SuppressWarnings("BoxedPrimitiveConstructor")
   public void verifyListContent() {
     assertEquals(3, arrayAdapter.getCount());
     assertEquals(new Integer(1), arrayAdapter.getItem(0));
@@ -49,7 +50,7 @@ public class ShadowArrayAdapterTest {
     ListView parent = new ListView(RuntimeEnvironment.application);
     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(RuntimeEnvironment.application, R.layout.main, R.id.title, new String[] { "first value" });
     View listItemView = arrayAdapter.getView(0, null, parent);
-    TextView titleTextView = (TextView) listItemView.findViewById(R.id.title);
+    TextView titleTextView = listItemView.findViewById(R.id.title);
     assertEquals("first value", titleTextView.getText().toString());
   }
 
@@ -87,6 +88,7 @@ public class ShadowArrayAdapterTest {
   }
 
   @Test
+  @SuppressWarnings("BoxedPrimitiveConstructor")
   public void test_remove() throws Exception {
     Integer firstItem = arrayAdapter.getItem(0);
     assertEquals(3, arrayAdapter.getCount());

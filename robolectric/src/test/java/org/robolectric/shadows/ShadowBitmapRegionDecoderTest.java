@@ -15,11 +15,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.TestUtil;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(qualifiers = "hdpi")
 public class ShadowBitmapRegionDecoderTest {
 
   private static final FsFile IMAGE_FILE = TestUtil.resourcesBaseDir().join("res/drawable-hdpi/robolectric.png");

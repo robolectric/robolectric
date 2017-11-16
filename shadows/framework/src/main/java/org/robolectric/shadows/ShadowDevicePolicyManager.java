@@ -35,9 +35,12 @@ public class ShadowDevicePolicyManager {
   private ComponentName deviceOwner;
   private ComponentName profileOwner;
   private List<ComponentName> deviceAdmins = new ArrayList<>();
+  private List<String> permittedAccessibilityServices = new ArrayList<>();
+  private List<String> permittedInputMethods = new ArrayList<>();
   private Map<String, Bundle> applicationRestrictionsMap = new HashMap<>();
   private CharSequence organizationName;
   private int organizationColor;
+  private boolean isAutoTimeRequired;
 
   private final Set<String> hiddenPackages = new HashSet<>();
   private final Set<String> wasHiddenPackages = new HashSet<>();
@@ -177,7 +180,7 @@ public class ShadowDevicePolicyManager {
   /**
    * Sets the application restrictions of the {@code packageName}.
    *
-   * <p>The new {@code applicationRestrictions} always completely overwrites any existing ones.
+   * The new {@code applicationRestrictions} always completely overwrites any existing ones.
    */
   public void setApplicationRestrictions(String packageName, Bundle applicationRestrictions) {
     applicationRestrictionsMap.put(packageName, applicationRestrictions);
@@ -226,7 +229,7 @@ public class ShadowDevicePolicyManager {
   /**
    * Sets organization name.
    *
-   * <p>The API can only be called by profile owner since Android N and can be called by both of
+   * The API can only be called by profile owner since Android N and can be called by both of
    * profile owner and device owner since Android O.
    */
   @Implementation(minSdk = N)
@@ -253,8 +256,12 @@ public class ShadowDevicePolicyManager {
   /**
    * Returns organization name.
    *
-   * <p>The API can only be called by profile owner since Android N and can be called by both of
-   * profile owner and device owner since Android O.
+   * The API can only be called by profile owner since Android N.
+   *
+   * Android framework has a hidden API for getting the organization name for device owner since
+   * Android O. This method, however, is extended to return the organization name for device owners
+   * too to make testing of {@link #setOrganizationName(ComponentName, CharSequence)} easier for
+   * device owner cases.
    */
   @Implementation(minSdk = N)
   @Nullable
@@ -272,5 +279,60 @@ public class ShadowDevicePolicyManager {
   public int getOrganizationColor(ComponentName admin) {
     enforceProfileOwner(admin);
     return organizationColor;
+  }
+
+  @Implementation
+  public void setAutoTimeRequired(ComponentName admin, boolean required) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    isAutoTimeRequired = required;
+  }
+
+  @Implementation
+  public boolean getAutoTimeRequired() {
+    return isAutoTimeRequired;
+  }
+
+  /**
+   * Sets permitted accessibility services.
+   *
+   * The API can be called by either a profile or device owner.
+   *
+   * This method does not check already enabled non-system accessibility services, so will always
+   * set the restriction and return true.
+   */
+  @Implementation
+  public boolean setPermittedAccessibilityServices(ComponentName admin, List<String> packageNames) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    permittedAccessibilityServices = packageNames;
+    return true;
+  }
+
+  @Implementation
+  @Nullable
+  public List<String> getPermittedAccessibilityServices(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return permittedAccessibilityServices;
+  }
+
+  /**
+   * Sets permitted input methods.
+   *
+   * The API can be called by either a profile or device owner.
+   *
+   * This method does not check already enabled non-system input methods, so will always set the
+   * restriction and return true.
+   */
+  @Implementation
+  public boolean setPermittedInputMethods(ComponentName admin, List<String> packageNames) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    permittedInputMethods = packageNames;
+    return true;
+  }
+
+  @Implementation
+  @Nullable
+  public List<String> getPermittedInputMethods(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return permittedInputMethods;
   }
 }

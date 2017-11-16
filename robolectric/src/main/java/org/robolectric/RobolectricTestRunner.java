@@ -310,6 +310,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     SdkConfig sdkConfig = roboMethod.sdkConfig;
     Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
+    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RESOURCES_SDK_INT", sdkConfig.getApiLevel());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
@@ -490,7 +491,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   private static class MethodPassThrough extends Config.Implementation {
-    private FrameworkMethod method;
+    private final FrameworkMethod method;
 
     private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);

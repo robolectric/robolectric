@@ -20,11 +20,11 @@ import java.nio.ShortBuffer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowBitmapTest {
   @Test
   public void shouldCreateScaledBitmap() throws Exception {
@@ -320,6 +320,10 @@ public class ShadowBitmapTest {
 
     bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
     bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+    // subset of pixels:
+    bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
+    bitmap.getPixels(pixels, 0, width, 2, 2, 3, 3);
   }
 
   @Test

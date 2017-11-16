@@ -73,7 +73,7 @@ public class ResName {
       name = possiblyQualifiedResourceName.substring(indexOfSlash + 1);
     }
 
-    if ((type == null && defaultType == null) || packageName == null && defaultPackageName == null) {
+    if ((type == null && defaultType == null) || (packageName == null && defaultPackageName == null)) {
       return null;
     }
 

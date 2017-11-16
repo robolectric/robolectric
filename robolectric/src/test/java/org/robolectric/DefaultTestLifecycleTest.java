@@ -1,13 +1,9 @@
 package org.robolectric;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
 
 import android.app.Application;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
@@ -22,7 +18,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class DefaultTestLifecycleTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -56,13 +52,20 @@ public class DefaultTestLifecycleTest {
 
   @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
+    AndroidManifest appManifest = newConfigWith(
+        "<application>"
+            + "    <receiver android:name=\"org.robolectric.fakes.ConfigTestReceiver\">"
+            + "      <intent-filter>\n"
+            + "        <action android:name=\"org.robolectric.ACTION_SUPERSET_PACKAGE\"/>\n"
+            + "      </intent-filter>"
+            + "    </receiver>"
+            + "</application>");
     Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
     shadowOf(application).bind(appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
-    assertThat(receivers.size()).isEqualTo(5);
-    assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
+    assertThat(receivers).hasSize(1);
+    assertThat(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION_SUPERSET_PACKAGE")).isTrue();
   }
 
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {

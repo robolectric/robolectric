@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.11"
+    id "net.ltgt.errorprone" version "0.0.13"
 }
 
 new RoboJavaModulePlugin(
@@ -23,11 +23,11 @@ dependencies {
 
     // Compile dependencies
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compileOnly "com.android.support:support-v4:26.0.0-alpha1"
-    compileOnly "com.android.support:support-compat:26.0.0-alpha1"
-    compileOnly "com.android.support:support-core-ui:26.0.0-alpha1"
-    compileOnly "com.android.support:support-core-utils:26.0.0-alpha1"
-    compileOnly "com.android.support:support-fragment:26.0.0-alpha1"
+    compileOnly "com.android.support:support-v4:26.0.1"
+    compileOnly "com.android.support:support-compat:26.0.1"
+    compileOnly "com.android.support:support-core-ui:26.0.1"
+    compileOnly "com.android.support:support-core-utils:26.0.1"
+    compileOnly "com.android.support:support-fragment:26.0.1"
 
     // Testing dependencies
     testCompile project(":robolectric")
@@ -37,19 +37,12 @@ dependencies {
     testCompile "org.mockito:mockito-core:2.5.4"
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
-    testRuntime "com.android.support:support-v4:26.0.0-alpha1"
-    testRuntime "com.android.support:support-compat:26.0.0-alpha1"
-    testRuntime "com.android.support:support-core-ui:26.0.0-alpha1"
-    testRuntime "com.android.support:support-core-utils:26.0.0-alpha1"
-    testRuntime "com.android.support:support-fragment:26.0.0-alpha1"
-}
-
-// change local artifact name to match dependencies
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-support-v4'
-    }
+    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testRuntime "com.android.support:support-v4:26.0.1"
+    testRuntime "com.android.support:support-compat:26.0.1"
+    testRuntime "com.android.support:support-core-ui:26.0.1"
+    testRuntime "com.android.support:support-core-utils:26.0.1"
+    testRuntime "com.android.support:support-fragment:26.0.1"
 }
 
 // hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin

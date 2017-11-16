@@ -48,7 +48,7 @@ public class ProxyMakerTest {
     assertThat(proxy1.getClass()).isSameAs(proxy2.getClass());
   }
 
-  public class Thing {
+  public static class Thing {
     public Thing() {
       throw new UnsupportedOperationException();
     }

@@ -8,12 +8,12 @@ import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
 /**
  * Tests for {@link ShadowContentProviderOperation}.
  */
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContentProviderOperationTest {
 
   @Test

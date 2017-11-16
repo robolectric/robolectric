@@ -1,18 +1,20 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import java.nio.charset.StandardCharsets;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteCursorTest {
 
   private SQLiteDatabase database;
@@ -201,7 +203,7 @@ public class SQLiteCursorTest {
   @Test
   public void testGetBlob() throws Exception {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
-    byte[] byteData = sql.getBytes();
+    byte[] byteData = sql.getBytes(UTF_8);
 
     database.execSQL(sql, new Object[]{byteData});
 
@@ -271,7 +273,7 @@ public class SQLiteCursorTest {
   @Test(expected = SQLiteException.class)
   public void testGetStringWhenBlob() throws Exception {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
-    byte[] byteData = sql.getBytes();
+    byte[] byteData = sql.getBytes(UTF_8);
 
     database.execSQL(sql, new Object[]{byteData});
 
@@ -283,7 +285,7 @@ public class SQLiteCursorTest {
   @Test(expected = SQLiteException.class)
   public void testGetIntWhenBlob() throws Exception {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
-    byte[] byteData = sql.getBytes();
+    byte[] byteData = sql.getBytes(UTF_8);
 
     database.execSQL(sql, new Object[]{byteData});
 
@@ -427,7 +429,7 @@ public class SQLiteCursorTest {
   @Test
   public void testGetTypeWhenBlob() throws Exception {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
-    byte[] byteData = sql.getBytes();
+    byte[] byteData = sql.getBytes(UTF_8);
 
     database.execSQL(sql, new Object[]{byteData});
 

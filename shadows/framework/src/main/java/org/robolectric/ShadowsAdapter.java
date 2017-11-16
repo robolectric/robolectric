@@ -5,7 +5,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.Scheduler;
 
 /**
- * Interface between robolectric and shadows-core modules.
+ * Interface between robolectric and shadows-framework modules.
  */
 public interface ShadowsAdapter {
   Scheduler getBackgroundScheduler();

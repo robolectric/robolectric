@@ -1,5 +1,6 @@
 package org.robolectric.res.builder;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
@@ -75,7 +76,7 @@ public class XmlResourceParserImplTest {
       factory.setIgnoringElementContentWhitespace(true);
       DocumentBuilder documentBuilder = factory.newDocumentBuilder();
       Document document = documentBuilder.parse(
-          new ByteArrayInputStream(xmlValue.getBytes()));
+          new ByteArrayInputStream(xmlValue.getBytes(UTF_8)));
 
       parser = new XmlResourceParserImpl(document, "file", R.class.getPackage().getName(),
           TEST_PACKAGE, resourceTable);

@@ -6,13 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.NEWEST_SDK)
 public class AndroidTranslatorClassInstrumentedTest {
 
   @Test

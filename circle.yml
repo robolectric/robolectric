@@ -1,7 +1,54 @@
-machine:
-  environment:
-    GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx3072m -XX:+HeapDumpOnOutOfMemoryError"'
-test:
-  post:
-    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-    - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+version: 2
+jobs:
+  build:
+    working_directory: ~/code
+    docker:
+      - image: circleci/android:api-26-alpha
+    resource_class: xlarge
+    environment:
+      JVM_OPTS: -Xmx3172m
+      GRADLE_MAX_PARALLEL_FORKS: 2
+    steps:
+      - checkout
+      - run:
+          name: Calculate Cache Hash
+          command: |
+            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name circle.yml \) -exec shasum {} \; | sort > .cache-hash
+            cat .cache-hash
+      - run:
+          name: Install Maven
+          command: sudo apt-get update; sudo apt-get install maven
+      - restore_cache:
+          key: cache-{{ checksum ".cache-hash" }}
+      - run:
+          name: Download Dependencies
+          command: |
+            sdkmanager --install 'platforms;android-27'
+            ./scripts/install-dependencies.rb
+            ./gradlew prefetchDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+            - ~/.m2
+            - /opt/android/sdk/platforms/android-27
+          key: cache-{{ checksum ".cache-hash" }}
+      - run:
+          name: Build and Test
+          command: SKIP_JAVADOC=true ./gradlew clean assemble test --info --stacktrace --continue
+      - run:
+          name: Collect Test Results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: build/reports
+          destination: reports
+      - run:
+          name: Upload Snapshot
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ./gradlew upload --no-rebuild
+            fi
