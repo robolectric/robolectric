@@ -11,6 +11,7 @@ import android.os.Build;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
@@ -20,9 +21,9 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
 import org.robolectric.RoboSettings;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -154,19 +155,11 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
-    String givenQualifiers = "land-v17";
-    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
-  }
-
-  @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v" + Build.VERSION.SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("notlong-notround-land-notnight-mdpi-finger-v" + Build.VERSION.SDK_INT);
   }
 
   @Test
@@ -196,5 +189,12 @@ public class ParallelUniverseTest {
     public void initMetaData(ResourceTable resourceTable) throws RoboNotFoundException {
       throw new RoboNotFoundException("This is just a test");
     }
+  }
+
+  @Test @Config(qualifiers = "b+fr+Cyrl+UK")
+  public void localeIsSet() throws Exception {
+    assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
+    assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
+    assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
   }
 }

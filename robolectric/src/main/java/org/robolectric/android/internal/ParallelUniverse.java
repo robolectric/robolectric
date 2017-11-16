@@ -10,23 +10,26 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.ApplicationTestUtil;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
@@ -77,23 +80,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    String qualifiers = Qualifiers.addPlatformVersion(config.qualifiers(), sdkConfig.getApiLevel());
-    qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
-    qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
     Resources systemResources = Resources.getSystem();
-    Configuration configuration = systemResources.getConfiguration();
-    configuration.smallestScreenWidthDp = Qualifiers.getSmallestScreenWidth(qualifiers);
-    configuration.screenWidthDp = Qualifiers.getScreenWidth(qualifiers);
-    String orientation = Qualifiers.getOrientation(qualifiers);
-    if ("land".equals(orientation)) {
-      configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
-    } else if ("port".equals(orientation)) {
-      configuration.orientation = Configuration.ORIENTATION_PORTRAIT;
-    } else {
-      configuration.orientation = Configuration.ORIENTATION_UNDEFINED;
-    }
+    Configuration configuration = new Configuration();
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
+        sdkConfig.getApiLevel(), configuration, displayMetrics);
 
-    systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
+    Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
+        ? configuration.getLocales().get(0)
+        : configuration.locale;
+    Locale.setDefault(locale);
+
+    systemResources.updateConfiguration(configuration, displayMetrics);
     RuntimeEnvironment.setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());

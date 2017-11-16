@@ -57,6 +57,9 @@ public class StaxValueLoaderTest {
   private void parse(String xml) throws XMLStreamException {
     XMLInputFactory factory = XMLInputFactory.newFactory();
     XMLStreamReader xmlStreamReader = factory.createXMLStreamReader(new StringReader(xml));
-    staxDocumentLoader.doParse(xmlStreamReader, new XmlContext("pkg", Fs.fileFromPath("/tmp/fake.txt")));
+    FsFile fsFile = Fs.fileFromPath("/tmp/fake.txt");
+    Qualifiers qualifiers = Qualifiers.fromParentDir(fsFile.getParent());
+    staxDocumentLoader.doParse(xmlStreamReader, new XmlContext("pkg",
+        fsFile, qualifiers));
   }
 }
