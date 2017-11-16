@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.res.android.ResTable_config;
 
 @RunWith(JUnit4.class)
 public class StyleResourceLoaderTest {
@@ -21,7 +22,7 @@ public class StyleResourceLoaderTest {
 
   @Test
   public void testStyleDataIsLoadedCorrectly() throws Exception {
-    TypedResource typedResource = resourceTable.getValue(new ResName("android", "style", "Theme_Holo"), "");
+    TypedResource typedResource = resourceTable.getValue(new ResName("android", "style", "Theme_Holo"), new ResTable_config());
     StyleData styleData = (StyleData) typedResource.getData();
     assertThat(styleData.getName()).isEqualTo("Theme_Holo");
     assertThat(styleData.getParent()).isEqualTo("Theme");

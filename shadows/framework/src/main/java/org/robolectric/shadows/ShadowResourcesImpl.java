@@ -88,7 +88,7 @@ public class ShadowResourcesImpl {
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
 
-    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
+    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, shadowAssetManager.config);
     if (typedResource != null && typedResource instanceof PluralRules) {
       PluralRules pluralRules = (PluralRules) typedResource;
       Plural plural = pluralRules.find(quantity);
@@ -98,7 +98,7 @@ public class ShadowResourcesImpl {
       }
 
       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()), RuntimeEnvironment.getQualifiers(), resId);
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()), shadowAssetManager.config, resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
       return null;
@@ -107,8 +107,9 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ResourceTable resourceTable = shadowOf(realResourcesImpl.getAssets()).getResourceTable();
-    InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+    ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
+    ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+    InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
     if (inputStream == null) {
       throw newNotFoundException(id);
     } else {
