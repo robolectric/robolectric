@@ -48,12 +48,9 @@ include $(CLEAR_VARS)
 # robolectric-host-android_all:prebuilts/misc/common/robolectric/android-all/android-all-o-preview-4-robolectric-0.jar
 
 LOCAL_PREBUILT_JAVA_LIBRARIES := \
-  robolectric-host-android_all:$(call java-lib-files, robolectric_android-all) \
+  robolectric-host-android_all:$(TARGET_OUT_COMMON_INTERMEDIATES)/JAVA_LIBRARIES/robolectric_android-all-stub_intermediates/classes-with-res.jar \
   robolectric-host-android-support-v4:$(call java-lib-files, android-support-v4) \
   robolectric-host-android-support-multidex:$(call java-lib-files, android-support-multidex) \
-  robolectric-host-org_apache_http_legacy:$(call java-lib-files, org.apache.http.legacy) \
-  robolectric-host-play-services-v9-base:$(call java-lib-files, prebuilt-google-play-services-v9-base-1p) \
-  robolectric-host-play-services-v9-basement:$(call java-lib-files, prebuilt-google-play-services-v9-basement-1p) \
-  robolectric-host-play-services-v9-auth-base:$(call java-lib-files, prebuilt-google-play-services-v9-auth-base-1p)
+  robolectric-host-org_apache_http_legacy:$(call java-lib-files, org.apache.http.legacy)
 
 include $(BUILD_HOST_PREBUILT)

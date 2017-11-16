@@ -1,7 +1,6 @@
 # This service list is used when creating the Robolectric_all artifact.
 # It must be updated as new ShadowProvider implementations are added.
 org.robolectric.Shadows
-org.robolectric.shadows.gms.Shadows
 org.robolectric.shadows.httpclient.Shadows
 org.robolectric.shadows.multidex.Shadows
 org.robolectric.shadows.support.v4.Shadows

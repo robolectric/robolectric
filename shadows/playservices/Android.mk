@@ -7,9 +7,6 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_shadows_framework \
   Robolectric_annotations \
   Robolectric_shadowapi \
-  robolectric-host-play-services-v9-auth-base \
-  robolectric-host-play-services-v9-basement \
-  robolectric-host-play-services-v9-base \
   robolectric-host-android-support-v4 \
   robolectric-host-android_all \
   robolectric-guava-20.0
@@ -26,4 +23,4 @@ LOCAL_JAVACFLAGS := -Aorg.robolectric.annotation.processing.shadowPackage=org.ro
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src/main/java)
 
-include $(BUILD_HOST_JAVA_LIBRARY)
+#include $(BUILD_HOST_JAVA_LIBRARY)
