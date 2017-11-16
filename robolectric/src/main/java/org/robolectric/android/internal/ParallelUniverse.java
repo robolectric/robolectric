@@ -10,11 +10,13 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -83,6 +85,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     DisplayMetrics displayMetrics = new DisplayMetrics();
     String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
+
+    Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
+        ? configuration.getLocales().get(0)
+        : configuration.locale;
+    Locale.setDefault(locale);
 
     systemResources.updateConfiguration(configuration, displayMetrics);
     RuntimeEnvironment.setQualifiers(qualifiers);
