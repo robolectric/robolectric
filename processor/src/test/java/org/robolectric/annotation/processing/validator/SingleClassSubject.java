@@ -5,9 +5,8 @@ import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static org.robolectric.annotation.processing.RobolectricProcessorTest.DEFAULT_OPTS;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.truth.FailureStrategy;
+import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
-import com.google.common.truth.SubjectFactory;
 import com.google.testing.compile.CompileTester;
 import com.google.testing.compile.CompileTester.LineClause;
 import com.google.testing.compile.CompileTester.SuccessfulCompilationClause;
@@ -18,23 +17,17 @@ import org.robolectric.annotation.processing.RobolectricProcessor;
 
 public final class SingleClassSubject extends Subject<SingleClassSubject, String> {
 
-  public static SubjectFactory<SingleClassSubject, String> singleClass() {
+  public static Subject.Factory<SingleClassSubject, String> singleClass() {
 
-    return new SubjectFactory<SingleClassSubject, String>() {
-
-      @Override
-      public SingleClassSubject getSubject(FailureStrategy failureStrategy, String source) {
-        return new SingleClassSubject(failureStrategy, source);
-      }
-    };
+    return SingleClassSubject::new;
   }
 
 
   JavaFileObject source;
   CompileTester tester;
   
-  public SingleClassSubject(FailureStrategy failureStrategy, String subject) {
-    super(failureStrategy, subject);
+  public SingleClassSubject(FailureMetadata failureMetadata, String subject) {
+    super(failureMetadata, subject);
     source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
     tester = assertAbout(javaSources())
       .that(ImmutableList.of(source, Utils.ROBO_SOURCE, Utils.SHADOW_EXTRACTOR_SOURCE))
