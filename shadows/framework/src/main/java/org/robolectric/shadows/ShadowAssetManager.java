@@ -10,6 +10,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -447,12 +448,25 @@ public final class ShadowAssetManager {
     return new String[0]; // todo
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = VERSION_CODES.N_MR1)
   public void setConfiguration(int mcc, int mnc, String locale,
-                 int orientation, int touchscreen, int density, int keyboard,
-                 int keyboardHidden, int navigation, int screenWidth, int screenHeight,
-                 int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-                 int screenLayout, int uiMode, int majorVersion) {
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int majorVersion) {
+    setConfiguration(mcc, mnc, locale,
+        orientation, touchscreen, density, keyboard,
+        keyboardHidden, navigation, screenWidth, screenHeight,
+        smallestScreenWidthDp, screenWidthDp, screenHeightDp,
+        screenLayout, uiMode, 0, majorVersion);
+  }
+
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.O)
+  public void setConfiguration(int mcc, int mnc, String locale,
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int colorMode, int majorVersion) {
     // AssetManager* am = assetManagerForJavaObject(env, clazz);
 
     ResTable_config config = new ResTable_config();
@@ -476,6 +490,7 @@ public final class ShadowAssetManager {
     config.screenHeightDp = screenHeightDp;
     config.screenLayout = screenLayout;
     config.uiMode = uiMode;
+    // config.colorMode = colorMode; // todo
     config.sdkVersion = majorVersion;
     config.minorVersion = 0;
 
