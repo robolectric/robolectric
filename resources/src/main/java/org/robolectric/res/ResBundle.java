@@ -1,11 +1,9 @@
 package org.robolectric.res;
 
-import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.util.Logger;
 

@@ -20,7 +20,8 @@ public class Bootstrap {
     ConfigDescription configDescription = new ConfigDescription();
     ResTable_config resTab = new ResTable_config();
 
-    if (Qualifiers.getPlatformVersion(qualifiers) != -1) {
+    int platformVersion = Qualifiers.getPlatformVersion(qualifiers);
+    if (platformVersion != -1 && platformVersion != apiLevel) {
       throw new IllegalArgumentException(
           "Cannot specify platform version in qualifiers: \"" + qualifiers + "\"");
     }

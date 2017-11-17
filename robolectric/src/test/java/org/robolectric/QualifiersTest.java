@@ -1,10 +1,13 @@
 package org.robolectric;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
 import org.junit.Before;
@@ -70,7 +73,7 @@ public class QualifiersTest {
     assertThat(resources.getConfiguration().smallestScreenWidthDp).isEqualTo(720);
   }
 
-  @Test @Config(qualifiers = "b+sr+Latn")
+  @Test @Config(qualifiers = "b+sr+Latn", minSdk = VERSION_CODES.LOLLIPOP)
   public void supportsBcp47() throws Exception {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Zdravo");
   }
@@ -79,5 +82,20 @@ public class QualifiersTest {
   public void defaultScreenWidth() {
     assertThat(resources.getBoolean(R.bool.value_only_present_in_w320dp)).isTrue();
     assertThat(resources.getConfiguration().screenWidthDp).isEqualTo(320);
+  }
+
+  @Test
+  public void setQualifiers_allowsSameSdkVersion() throws Exception {
+    RuntimeEnvironment.setQualifiers(RuntimeEnvironment.getQualifiers());
+  }
+
+  @Test
+  public void setQualifiers_disallowsOtherSdkVersions() throws Exception {
+    try {
+      RuntimeEnvironment.setQualifiers("v13");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage()).contains("Cannot specify platform version in qualifiers");
+    }
   }
 }
