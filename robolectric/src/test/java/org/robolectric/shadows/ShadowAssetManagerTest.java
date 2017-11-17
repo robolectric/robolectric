@@ -16,6 +16,7 @@ import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -181,6 +182,36 @@ public class ShadowAssetManagerTest {
 
     ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
     assertThat(byteArrayInputStream.available()).isEqualTo(23447);
+  }
+
+  @Test
+  public void multiFormatAttributes_integerValue() {
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+            .addAttribute(R.attr.multiformat, "16").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+  }
+
+  @Test
+  public void multiFormatAttributes_stringValue() {
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+            .addAttribute(R.attr.multiformat, "Hello World").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
+  }
+
+  @Test
+  public void multiFormatAttributes_booleanValue() {
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+            .addAttribute(R.attr.multiformat, "true").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
   }
 
   @Test

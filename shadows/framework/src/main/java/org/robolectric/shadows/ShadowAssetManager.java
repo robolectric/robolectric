@@ -21,12 +21,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
+
+import com.google.common.collect.Ordering;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.HiddenApi;
@@ -55,6 +58,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(AssetManager.class)
 public final class ShadowAssetManager {
+
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
   public static final int STYLE_DATA = 1;
@@ -62,6 +66,10 @@ public final class ShadowAssetManager {
   public static final int STYLE_RESOURCE_ID = 3;
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
+
+  public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE = Ordering
+          .explicit( "reference", "color", "boolean",  "integer", "fraction", "dimension", "float", "enum", "flag", "string");
+
 
   boolean strictErrors = false;
 
@@ -159,6 +167,7 @@ public final class ShadowAssetManager {
       AttrData attrData = (AttrData) attrTypeData.getData();
       String format = attrData.getFormat();
       String[] types = format.split("\\|");
+      Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE);
       for (String type : types) {
         if ("reference".equals(type)) continue; // already handled above
         Converter converter = Converter.getConverterFor(attrData, type);

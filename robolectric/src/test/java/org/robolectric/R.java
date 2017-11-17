@@ -294,6 +294,7 @@ public final class R {
     public static final int offsetY = 0x7f0b0021;
     public static final int textStyle2 = 0x7f0b0022;
     public static final int textStyle3 = 0x7f0b0023;
+    public static final int multiformat = 0x7f0b0024;
   }
 
   public static final class menu {
