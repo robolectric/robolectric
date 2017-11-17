@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
@@ -10,9 +11,11 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.hardware.display.DisplayManagerGlobal;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
+import android.view.DisplayInfo;
 import java.lang.reflect.Method;
 import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -29,6 +32,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -82,6 +86,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     DisplayMetrics displayMetrics = new DisplayMetrics();
     String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
+
+    DisplayInfo displayInfo = new DisplayInfo();
+    float scale = configuration.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
+    displayInfo.logicalDensityDpi = configuration.densityDpi;
+    displayInfo.physicalXDpi = configuration.densityDpi;
+    displayInfo.physicalYDpi = configuration.densityDpi;
+    displayInfo.logicalWidth = (int) (configuration.screenWidthDp * scale);
+    displayInfo.appWidth = displayInfo.logicalWidth;
+    displayInfo.logicalHeight = (int) (configuration.screenHeightDp * scale);
+    displayInfo.appHeight = displayInfo.logicalHeight;
+    ShadowDisplayManagerGlobal.getShadowInstance().addDisplay(displayInfo);
+    displayInfo.getAppMetrics(displayMetrics);
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
