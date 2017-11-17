@@ -162,13 +162,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+        shadowOf(application.getPackageManager()).addPackage(packageInfo);
         ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
         ApplicationTestUtil.attach(application, contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
-
-      shadowOf(application.getPackageManager()).addPackage(packageInfo);
 
       Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
