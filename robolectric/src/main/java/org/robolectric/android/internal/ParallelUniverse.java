@@ -83,10 +83,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
-    setDisplayMetricsDimens(displayMetrics);
 
     String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
+    setDisplayMetricsDimens(displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
@@ -159,10 +159,17 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   // todo: kill this, use DisplayInfo to initialize instead
   private void setDisplayMetricsDimens(DisplayMetrics displayMetrics) {
-    displayMetrics.widthPixels = new ShadowDisplay().getWidth();
-    displayMetrics.noncompatWidthPixels = new ShadowDisplay().getWidth();
-    displayMetrics.heightPixels = new ShadowDisplay().getHeight();
-    displayMetrics.noncompatHeightPixels = new ShadowDisplay().getHeight();
+    displayMetrics.scaledDensity = displayMetrics.density;
+
+    displayMetrics.widthPixels = 480;
+    displayMetrics.heightPixels = 800;
+    displayMetrics.xdpi = displayMetrics.densityDpi;
+    displayMetrics.ydpi = displayMetrics.densityDpi;
+
+    displayMetrics.noncompatWidthPixels = displayMetrics.widthPixels;
+    displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
+    displayMetrics.noncompatXdpi = displayMetrics.xdpi;
+    displayMetrics.noncompatYdpi = displayMetrics.ydpi;
   }
 
   /**
