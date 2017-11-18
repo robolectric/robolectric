@@ -102,11 +102,9 @@ public class Bootstrap {
     configuration.screenHeightDp = resTab.screenHeightDp;
     if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
-    } else {
-      displayMetrics.densityDpi = resTab.density;
-      displayMetrics.density =
-          displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
     }
+    displayMetrics.densityDpi = resTab.density;
+    displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
 
     Locale locale;
     String lang = resTab.languageString();
