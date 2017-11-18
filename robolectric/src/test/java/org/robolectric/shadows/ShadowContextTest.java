@@ -29,17 +29,6 @@ import org.robolectric.annotation.Config;
 public class ShadowContextTest {
   private final Context context = RuntimeEnvironment.application;
 
-  @Before
-  public void setUp() throws Exception {
-    File dataDir = new File(context.getPackageManager()
-        .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir);
-
-    File[] files = dataDir.listFiles();
-    assertThat(files)
-      .isNotNull()
-      .isEmpty();
-  }
-
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void createConfigurationContext() {
