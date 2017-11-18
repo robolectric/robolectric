@@ -3,6 +3,7 @@ package org.robolectric.res;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.robolectric.res.android.ResTable_config;
 
 public class ResBunch {
   private final Map<String, ResBundle> types = new LinkedHashMap<>();
@@ -21,9 +22,9 @@ public class ResBunch {
     return bundle;
   }
 
-  public TypedResource get(@Nonnull ResName resName, String qualifiers) {
+  public TypedResource get(@Nonnull ResName resName, ResTable_config config) {
     ResBundle bundle = getBundle(resName.type);
-    return bundle.get(resName, qualifiers);
+    return bundle.get(resName, config);
   }
 
   void receive(ResourceTable.Visitor visitor) {
