@@ -50,9 +50,6 @@ public class ShadowResources {
   private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
 
-  private float density = 1.0f;
-  private DisplayMetrics displayMetrics;
-  private Display display;
   @RealObject Resources realResources;
 
   @Resetter
@@ -183,36 +180,27 @@ public class ShadowResources {
     }
   }
 
+  /**
+   * @deprecated
+   */
+  @Deprecated
   public void setDensity(float density) {
-    this.density = density;
-    if (displayMetrics != null) {
-      displayMetrics.density = density;
-    }
+    realResources.getDisplayMetrics().density = density;
   }
 
+  /**
+   * @deprecated
+   */
+  @Deprecated
   public void setScaledDensity(float scaledDensity) {
-    if (displayMetrics != null) {
-      displayMetrics.scaledDensity = scaledDensity;
-    }
+    realResources.getDisplayMetrics().scaledDensity = scaledDensity;
   }
 
+  /**
+   * @deprecated
+   */
+  @Deprecated
   public void setDisplay(Display display) {
-    this.display = display;
-    displayMetrics = null;
-  }
-
-  @Implementation
-  public DisplayMetrics getDisplayMetrics() {
-    if (displayMetrics == null) {
-      if (display == null) {
-        display = ReflectionHelpers.callConstructor(Display.class);
-      }
-
-      displayMetrics = new DisplayMetrics();
-      display.getMetrics(displayMetrics);
-    }
-    displayMetrics.density = this.density;
-    return displayMetrics;
   }
 
   @HiddenApi @Implementation
