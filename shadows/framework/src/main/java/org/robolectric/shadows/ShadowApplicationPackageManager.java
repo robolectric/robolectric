@@ -25,7 +25,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
-import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
@@ -45,12 +44,25 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
 import android.util.Pair;
+
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.manifest.PackageItemData;
+import org.robolectric.manifest.PermissionItemData;
+import org.robolectric.manifest.ServiceData;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -60,15 +72,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.manifest.ActivityData;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.manifest.PackageItemData;
-import org.robolectric.manifest.PermissionItemData;
-import org.robolectric.manifest.ServiceData;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
@@ -948,7 +951,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  public void installPackage(Uri packageURI, IPackageInstallObserver observer, int flags, String installerPackageName) {
+  @Config(maxSdk = Build.VERSION_CODES.O_MR1)
+  public void installPackage(Uri packageURI, Object observer, int flags, String installerPackageName) {
   }
 
   @Implementation
