@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
@@ -84,9 +83,26 @@ public class QualifiersTest {
     assertThat(resources.getConfiguration().screenWidthDp).isEqualTo(320);
   }
 
+  @Test @Config(qualifiers = "land")
+  public void setQualifiers_updatesSystemAndAppResources() throws Exception {
+    Resources systemResources = Resources.getSystem();
+    Resources appResources = RuntimeEnvironment.application.getResources();
+
+    assertThat(systemResources.getConfiguration().orientation).isEqualTo(
+        Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(appResources.getConfiguration().orientation).isEqualTo(
+        Configuration.ORIENTATION_LANDSCAPE);
+
+    RuntimeEnvironment.setQualifiers("port");
+    assertThat(systemResources.getConfiguration().orientation).isEqualTo(
+        Configuration.ORIENTATION_PORTRAIT);
+    assertThat(appResources.getConfiguration().orientation).isEqualTo(
+        Configuration.ORIENTATION_PORTRAIT);
+  }
+
   @Test
   public void setQualifiers_allowsSameSdkVersion() throws Exception {
-    RuntimeEnvironment.setQualifiers(RuntimeEnvironment.getQualifiers());
+    RuntimeEnvironment.setQualifiers("v" + RuntimeEnvironment.getApiLevel());
   }
 
   @Test
@@ -95,7 +111,7 @@ public class QualifiersTest {
       RuntimeEnvironment.setQualifiers("v13");
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("Cannot specify platform version in qualifiers");
+      assertThat(e.getMessage()).contains("Cannot specify conflicting platform version in qualifiers");
     }
   }
 }
