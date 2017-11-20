@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -69,6 +70,7 @@ public class ShadowContentResolver {
   private final List<UriPermission> uriPermissions = new ArrayList<>();
 
   private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<>();
+  private final Set<ContentObserver> descendantsObservers = new CopyOnWriteArraySet<>();
 
   private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
   private static final Map<String, ContentProvider> providers = new HashMap<>();
@@ -352,20 +354,30 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+  synchronized public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
 
-    CopyOnWriteArraySet<ContentObserver> observers;
-    synchronized (this) {
-      observers = contentObservers.get(uri);
-    }
-    if (observers != null) {
-      for (ContentObserver obs : observers) {
-        if (obs != null && obs != observer) {
-          obs.dispatchChange(false, uri);
+    CopyOnWriteArraySet<ContentObserver> observers = new CopyOnWriteArraySet<>();
+    Set<Uri> uris = contentObservers.keySet();
+    for (Uri registeredUri : uris) {
+      CopyOnWriteArraySet<ContentObserver> registeredObservers = contentObservers.get(registeredUri);
+
+      if (uri.equals(registeredUri)) {
+        observers.addAll(registeredObservers);
+      } else if (uri.toString().startsWith(registeredUri.toString())) {
+        for (ContentObserver registeredObserver : registeredObservers) {
+          if (descendantsObservers.contains(registeredObserver)) {
+            observers.add(registeredObserver);
+          }
         }
       }
     }
+    for (ContentObserver obs : observers) {
+      if (obs != null && obs != observer) {
+        obs.dispatchChange(false, uri);
+      }
+    }
+
     if (observer != null && observer.deliverSelfNotifications()) {
       observer.dispatchChange(true, uri);
     }
@@ -711,6 +723,10 @@ public class ShadowContentResolver {
     return notifiedUris;
   }
 
+  public Set<ContentObserver> getDescendantsObservers() {
+    return descendantsObservers;
+  }
+
   public List<ContentProviderOperation> getContentProviderOperations(String authority) {
     List<ContentProviderOperation> operations = contentProviderOperations.get(authority);
     if (operations == null)
@@ -730,6 +746,10 @@ public class ShadowContentResolver {
       contentObservers.put(uri, observers);
     }
     observers.add(observer);
+
+    if (notifyForDescendents) {
+      descendantsObservers.add(observer);
+    }
   }
 
   @Implementation
@@ -747,6 +767,7 @@ public class ShadowContentResolver {
       for (CopyOnWriteArraySet<ContentObserver> observers : observerSets) {
         observers.remove(observer);
       }
+      descendantsObservers.remove(observer);
     }
   }
 
@@ -759,6 +780,7 @@ public class ShadowContentResolver {
   @SuppressWarnings({"unused", "WeakerAccess"})
   synchronized public void clearContentObservers() {
     contentObservers.clear();
+    descendantsObservers.clear();
   }
 
   /**
