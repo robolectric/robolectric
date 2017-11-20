@@ -12,6 +12,7 @@ import org.robolectric.util.Scheduler;
 
 @RunWith(JUnit4.class)
 public class RuntimeEnvironmentTest {
+
   @Test
   public void setMainThread_forCurrentThread() {
     RuntimeEnvironment.setMainThread(Thread.currentThread());
