@@ -2,6 +2,8 @@ package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -10,10 +12,14 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import android.os.Build;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -22,6 +28,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
@@ -30,6 +37,9 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.PerfStatsCollector.Metric;
+import org.robolectric.util.PerfStatsReporter;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
@@ -54,7 +64,8 @@ public class RobolectricTestRunnerTest {
     });
   }
 
-  @Test public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
+  @Test
+  public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
     RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
     assertThat(events).containsOnly(
@@ -68,7 +79,8 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
       @Override
       ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-        Class<? extends ParallelUniverseInterface> clazz = sdkEnvironment.bootstrappedClass(MyParallelUniverse.class);
+        Class<? extends ParallelUniverseInterface> clazz = sdkEnvironment
+            .bootstrappedClass(MyParallelUniverse.class);
         return callConstructor(clazz);
       }
     };
@@ -82,9 +94,12 @@ public class RobolectricTestRunnerTest {
   @Test
   public void equalityOfRobolectricFrameworkMethod() throws Exception {
     Method method = TestWithTwoMethods.class.getMethod("first");
-    RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method, mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
-    RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method, mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class));
-    RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method, mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
+    RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
+    RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class));
+    RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
 
     assertThat(rfm16).isEqualTo(rfm16);
     assertThat(rfm16).isNotEqualTo(rfm17);
@@ -93,9 +108,34 @@ public class RobolectricTestRunnerTest {
     assertThat(rfm16.hashCode()).isEqualTo((rfm16b.hashCode()));
   }
 
+  @Test
+  public void shouldReportPerfStats() throws Exception {
+    List<PerfStatsCollector> collectors = new ArrayList<>();
+    PerfStatsReporter reporter = collectors::add;
+
+    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
+      @Nonnull
+      @Override
+      protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
+        return singletonList(reporter);
+      }
+    };
+
+    runner.run(notifier);
+
+    assertThat(collectors).hasSize(2);
+    PerfStatsCollector perfStatsCollector = collectors.get(0);
+    assertThat(perfStatsCollector.getDescription())
+        .isEqualTo("first(" + TestWithTwoMethods.class.getName() + ")");
+    Collection<Metric> metrics = perfStatsCollector.getMetrics();
+    Set<String> metricNames = metrics.stream().map(Metric::getName).collect(toSet());
+    assertThat(metricNames).contains("initialization");
+  }
+
   /////////////////////////////
 
   public static class MyParallelUniverse extends ParallelUniverse {
+
     @Override
     public void resetStaticState(Config config) {
       throw new RuntimeException("fake error in resetStaticState");
@@ -104,6 +144,7 @@ public class RobolectricTestRunnerTest {
 
   @Ignore
   public static class TestWithOldSdk {
+
     @Config(sdk = Build.VERSION_CODES.HONEYCOMB)
     @Test
     public void oldSdkMethod() throws Exception {
@@ -118,8 +159,9 @@ public class RobolectricTestRunnerTest {
     }
   }
 
-  @Ignore
+  @Ignore @FixMethodOrder(MethodSorters.NAME_ASCENDING)
   public static class TestWithTwoMethods {
+
     @Test
     public void first() throws Exception {
     }
@@ -130,6 +172,7 @@ public class RobolectricTestRunnerTest {
   }
 
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
+
     public MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
       super(testClass);
     }
