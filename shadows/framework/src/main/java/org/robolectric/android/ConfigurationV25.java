@@ -16,7 +16,7 @@ import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
 
 // adapted from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/core/java/android/content/res/Configuration.java
-class ConfigurationV25 {
+public class ConfigurationV25 {
 
   private static String localesToResourceQualifier(List<Locale> locs) {
     final StringBuilder sb = new StringBuilder();
@@ -67,7 +67,7 @@ class ConfigurationV25 {
    *
    * @hide
    */
-  static String resourceQualifierString(Configuration config, DisplayMetrics displayMetrics) {
+  public static String resourceQualifierString(Configuration config, DisplayMetrics displayMetrics) {
     ArrayList<String> parts = new ArrayList<String>();
 
     if (config.mcc != 0) {
