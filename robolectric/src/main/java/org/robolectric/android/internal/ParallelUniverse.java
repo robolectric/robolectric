@@ -110,6 +110,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
+    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
