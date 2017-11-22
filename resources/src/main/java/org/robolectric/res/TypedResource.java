@@ -1,18 +1,16 @@
 package org.robolectric.res;
 
+import org.robolectric.res.android.ResTable_config;
+
 public class TypedResource<T> {
   private final T data;
   private final ResType resType;
-  private final String qualifiers;
   private final XmlContext xmlContext;
 
   public TypedResource(T data, ResType resType, XmlContext xmlContext) {
     this.data = data;
     this.resType = resType;
     this.xmlContext = xmlContext;
-
-    String qualifiers = xmlContext.getQualifiers();
-    this.qualifiers = qualifiers == null ? "--" : "-" + qualifiers + "-";
   }
 
   public T getData() {
@@ -23,8 +21,8 @@ public class TypedResource<T> {
     return resType;
   }
 
-  public String getQualifiers() {
-    return qualifiers;
+  public ResTable_config getConfig() {
+    return xmlContext.getConfig();
   }
 
   public XmlContext getXmlContext() {

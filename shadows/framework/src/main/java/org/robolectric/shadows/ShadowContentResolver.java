@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
+import android.annotation.NonNull;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -10,8 +12,10 @@ import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.IContentProvider;
+import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
@@ -25,11 +29,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -40,6 +45,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.NamedStream;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
@@ -56,13 +63,14 @@ public class ShadowContentResolver {
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
-  private final Map<String, List<android.content.ContentProviderOperation>> contentProviderOperations = new HashMap<>();
+  private final Map<String, List<ContentProviderOperation>> contentProviderOperations = new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
+  private final List<UriPermission> uriPermissions = new ArrayList<>();
 
-  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<>();
+  private final CopyOnWriteArrayList<ContentObserverEntry> contentObservers =
+      new CopyOnWriteArrayList<>();
 
-  private static final Map<String, Map<Account, Status>>  syncableAccounts =
-      new HashMap<>();
+  private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
   private static final Map<String, ContentProvider> providers = new HashMap<>();
   private static boolean masterSyncAutomatically;
 
@@ -71,6 +79,37 @@ public class ShadowContentResolver {
     syncableAccounts.clear();
     providers.clear();
     masterSyncAutomatically = false;
+  }
+
+  private static class ContentObserverEntry {
+    public final Uri uri;
+    public final boolean notifyForDescendents;
+    public final ContentObserver observer;
+
+    private ContentObserverEntry(Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+      this.uri = uri;
+      this.notifyForDescendents = notifyForDescendents;
+      this.observer = observer;
+
+      if (uri == null || observer == null) {
+        throw new NullPointerException();
+      }
+    }
+
+    public boolean matches(Uri test) {
+      if (!Objects.equals(uri.getScheme(), test.getScheme())) {
+        return false;
+      }
+      if (!Objects.equals(uri.getAuthority(), test.getAuthority())) {
+        return false;
+      }
+
+      String uriPath = uri.getPath();
+      String testPath = test.getPath();
+
+      return Objects.equals(uriPath, testPath)
+          || notifyForDescendents && testPath != null && testPath.startsWith(uriPath);
+    }
   }
 
   public static class NotifiedUri {
@@ -343,29 +382,17 @@ public class ShadowContentResolver {
     }
   }
 
-  /**
-   *
-   * @param uri
-   * @param observer
-   * @param syncToNetwork
-   */
   @Implementation
   public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
 
-    CopyOnWriteArraySet<ContentObserver> observers;
-    synchronized (this) {
-      observers = contentObservers.get(uri);
-    }
-    if (observers != null) {
-      for (ContentObserver obs : observers) {
-        if ( obs != null && obs != observer  ) {
-          obs.dispatchChange( false, uri );
-        }
+    for (ContentObserverEntry entry : contentObservers) {
+      if (entry.matches(uri) && entry.observer != observer) {
+        entry.observer.dispatchChange(false, uri);
       }
     }
-    if ( observer != null && observer.deliverSelfNotifications() ) {
-      observer.dispatchChange( true, uri );
+    if (observer != null && observer.deliverSelfNotifications()) {
+      observer.dispatchChange(true, uri);
     }
   }
 
@@ -392,7 +419,7 @@ public class ShadowContentResolver {
     status.syncRequests++;
     status.syncExtras = extras;
   }
-  
+
   @Implementation
   public static void cancelSync(Account account, String authority) {
     Status status = getStatus(account, authority);
@@ -473,20 +500,92 @@ public class ShadowContentResolver {
       if (value instanceof Double) continue;
       if (value instanceof String) continue;
       if (value instanceof Account) continue;
-      throw new IllegalArgumentException("unexpected value type: "
-          + value.getClass().getName());
+      throw new IllegalArgumentException("unexpected value type: " + value.getClass().getName());
     }
   }
 
   @Implementation
   public static void setMasterSyncAutomatically(boolean sync) {
     masterSyncAutomatically = sync;
-
   }
 
   @Implementation
   public static boolean getMasterSyncAutomatically() {
     return masterSyncAutomatically;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public void takePersistableUriPermission(@NonNull Uri uri, int modeFlags) {
+    Objects.requireNonNull(uri, "uri may not be null");
+    modeFlags &= (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+    // If neither read nor write permission is specified there is nothing to do.
+    if (modeFlags == 0) {
+      return;
+    }
+
+    // Attempt to locate an existing record for the uri.
+    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext();) {
+      UriPermission perm = i.next();
+      if (uri.equals(perm.getUri())) {
+        if (perm.isReadPermission()) {
+          modeFlags |= Intent.FLAG_GRANT_READ_URI_PERMISSION;
+        }
+        if (perm.isWritePermission()) {
+          modeFlags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+        }
+        i.remove();
+        break;
+      }
+    }
+
+    addUriPermission(uri, modeFlags);
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public void releasePersistableUriPermission(@NonNull Uri uri, int modeFlags) {
+    Objects.requireNonNull(uri, "uri may not be null");
+    modeFlags &= (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+    // If neither read nor write permission is specified there is nothing to do.
+    if (modeFlags == 0) {
+      return;
+    }
+
+    // Attempt to locate an existing record for the uri.
+    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext();) {
+      UriPermission perm = i.next();
+      if (uri.equals(perm.getUri())) {
+        // Reconstruct the current mode flags.
+        int oldModeFlags = (perm.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0)
+            | (perm.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0);
+
+        // Apply the requested permission change.
+        int newModeFlags = oldModeFlags & ~modeFlags;
+
+        // Update the permission record if a change occurred.
+        if (newModeFlags != oldModeFlags) {
+          i.remove();
+          if (newModeFlags != 0) {
+            addUriPermission(uri, newModeFlags);
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public @NonNull List<UriPermission> getPersistedUriPermissions() {
+    return uriPermissions;
+  }
+
+  private void addUriPermission(@NonNull Uri uri, int modeFlags) {
+    ClassParameter<Uri> p1 = new ClassParameter<>(Uri.class, uri);
+    ClassParameter<Integer> p2 = new ClassParameter<>(int.class, modeFlags);
+    ClassParameter<Long> p3 = new ClassParameter<>(long.class, System.currentTimeMillis());
+    UriPermission perm = ReflectionHelpers.callConstructor(UriPermission.class, p1, p2, p3);
+    uriPermissions.add(perm);
   }
 
   public static ContentProvider getProvider(Uri uri) {
@@ -649,55 +748,53 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  synchronized public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
-    if (observers == null) {
-      observers = new CopyOnWriteArraySet<>();
-      contentObservers.put(uri, observers);
+  public void registerContentObserver(
+      Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+    if (uri == null || observer == null) {
+      throw new NullPointerException();
     }
-    observers.add(observer);
+    contentObservers.add(new ContentObserverEntry(uri, notifyForDescendents, observer));
   }
 
   @Implementation
-  public void registerContentObserver(Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
+  public void registerContentObserver(
+      Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
     registerContentObserver(uri, notifyForDescendents, observer);
   }
 
   @Implementation
-  public void unregisterContentObserver( ContentObserver observer ) {
-    if ( observer != null ) {
-      Collection<CopyOnWriteArraySet<ContentObserver>> observerSets;
-      synchronized (this) {
-        observerSets = contentObservers.values();
-      }
-      for (CopyOnWriteArraySet<ContentObserver> observers : observerSets) {
-        observers.remove(observer);
+  public void unregisterContentObserver(ContentObserver observer) {
+    synchronized (contentObservers) {
+      for (ContentObserverEntry entry : contentObservers) {
+        if (entry.observer == observer) {
+          contentObservers.remove(entry);
+        }
       }
     }
   }
 
-  /**
-   * Clears the list of registered {@link ContentObserver}s.
-   *
-   * Since a new {@link ContentResolver} is created for each test case,
-   * this method generally need not be called explicitly.
-   */
-  @SuppressWarnings({"unused", "WeakerAccess"})
-  synchronized public void clearContentObservers() {
+  /** @deprecated Do not use this method. */
+  @Deprecated
+  public void clearContentObservers() {
     contentObservers.clear();
   }
 
   /**
-   * Returns the content observers registered with the given URI.
+   * Returns the content observers registered for updates under the given URI.
    *
-   * Will be empty if no observer is registered.
+   * <p>Will be empty if no observer is registered.
    *
    * @param uri Given URI
    * @return The content observers, or null.
    */
-  synchronized public Collection<ContentObserver> getContentObservers( Uri uri ) {
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
-    return (observers == null) ? Collections.<ContentObserver>emptyList() : observers;
+  public Collection<ContentObserver> getContentObservers(Uri uri) {
+    ArrayList<ContentObserver> observers = new ArrayList<>(1);
+    for (ContentObserverEntry entry : contentObservers) {
+      if (entry.matches(uri)) {
+        observers.add(entry.observer);
+      }
+    }
+    return observers;
   }
 
   @Implementation

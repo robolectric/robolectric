@@ -13,16 +13,13 @@ public class ShadowPicture {
   private int height;
 
   @Implementation
-  public void __constructor__() {
-  }
+  public void __constructor__() {}
 
   @Implementation
-  public void __constructor__(long nativePicture) {
-  }
+  public void __constructor__(long nativePicture) {}
 
   @Implementation
-  public void __constructor__(int nativePicture, boolean fromStream) {
-  }
+  public void __constructor__(int nativePicture, boolean fromStream) {}
 
   @Implementation
   public void __constructor__(Picture src) {

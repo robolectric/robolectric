@@ -1,6 +1,5 @@
 package org.robolectric.manifest;
 
-import com.google.common.base.Preconditions;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,6 +30,7 @@ public class AndroidManifest {
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
   private final String overridePackageName;
+  private final List<AndroidManifest> libraryManifests;
 
   private boolean manifestIsParsed;
 
@@ -53,7 +54,6 @@ public class AndroidManifest {
   private final List<String> usedPermissions = new ArrayList<>();
   private final Map<String, String> applicationAttributes = new HashMap<>();
   private MetaData applicationMetaData;
-  private List<AndroidManifest> libraryManifests = new ArrayList<>();
 
   /**
    * Creates a Robolectric configuration using specified locations.
@@ -74,11 +74,27 @@ public class AndroidManifest {
    * @param assetsDirectory     Location of the assets directory.
    * @param overridePackageName Application package name.
    */
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String overridePackageName) {
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
+      String overridePackageName) {
+    this(androidManifestFile, resDirectory, assetsDirectory, Collections.emptyList(), overridePackageName);
+  }
+
+  /**
+   * Creates a Robolectric configuration using specified values.
+   *
+   * @param androidManifestFile Location of the AndroidManifest.xml file.
+   * @param resDirectory        Location of the res directory.
+   * @param assetsDirectory     Location of the assets directory.
+   * @param libraryManifests    List of dependency library manifests.
+   * @param overridePackageName Application package name.
+   */
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
+      @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
     this.overridePackageName = overridePackageName;
+    this.libraryManifests = libraryManifests;
 
     this.packageName = overridePackageName;
   }
@@ -170,7 +186,17 @@ public class AndroidManifest {
         ignored.printStackTrace();
       }
     } else {
-      rClassName = (packageName != null && !packageName.equals("")) ? packageName + ".R" : null;
+      if (androidManifestFile != null) {
+        System.out.println("WARNING: No manifest file found at " + androidManifestFile.getPath() + ".");
+        System.out.println("Falling back to the Android OS resources only.");
+        System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
+      }
+
+      if (packageName == null || packageName.equals("")) {
+        packageName = "org.robolectric.default";
+      }
+
+      rClassName = packageName + ".R";
 
       if (androidManifestFile != null) {
         System.err.println("No such manifest file: " + androidManifestFile);
@@ -243,15 +269,32 @@ public class AndroidManifest {
     return attributeNode == null ? null : attributeNode.getTextContent();
   }
 
+  private static HashMap<String, String> parseNodeAttributes(Node node) {
+    final NamedNodeMap attributes = node.getAttributes();
+    final int attrCount = attributes.getLength();
+    final HashMap<String, String> receiverAttrs = new HashMap<>(attributes.getLength());
+    for (int i = 0; i < attrCount; i++) {
+      Node attribute = attributes.item(i);
+      String value = attribute.getNodeValue();
+      if (value != null) {
+        receiverAttrs.put(attribute.getNodeName(), value);
+      }
+    }
+    return receiverAttrs;
+  }
+
   private void parseReceivers(Node applicationNode) {
     for (Node receiverNode : getChildrenTags(applicationNode, "receiver")) {
-      Node namedItem = receiverNode.getAttributes().getNamedItem("android:name");
-      if (namedItem == null) continue;
+      final HashMap<String, String> receiverAttrs = parseNodeAttributes(receiverNode);
 
-      String receiverName = resolveClassRef(namedItem.getTextContent());
+      String receiverName = resolveClassRef(receiverAttrs.get("android:name"));
+      receiverAttrs.put("android:name", receiverName);
+
       MetaData metaData = new MetaData(getChildrenTags(receiverNode, "meta-data"));
 
-      BroadcastReceiverData receiver = new BroadcastReceiverData(receiverName, metaData);
+      final List<IntentFilterData> intentFilterData = parseIntentFilters(receiverNode);
+      BroadcastReceiverData receiver =
+          new BroadcastReceiverData(receiverAttrs, metaData, intentFilterData);
       List<Node> intentFilters = getChildrenTags(receiverNode, "intent-filter");
       for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -261,26 +304,22 @@ public class AndroidManifest {
           }
         }
       }
-      
-      Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
-      if (permissionItem != null) {
-        receiver.setPermission(permissionItem.getTextContent());
-      }
-      
+
       receivers.add(receiver);
     }
   }
 
   private void parseServices(Node applicationNode) {
     for (Node serviceNode : getChildrenTags(applicationNode, "service")) {
-      Node namedItem = serviceNode.getAttributes().getNamedItem("android:name");
-      if (namedItem == null) continue;
+      final HashMap<String, String> serviceAttrs = parseNodeAttributes(serviceNode);
 
-      String serviceName = resolveClassRef(namedItem.getTextContent());
+      String serviceName = resolveClassRef(serviceAttrs.get("android:name"));
+      serviceAttrs.put("android:name", serviceName);
+
       MetaData metaData = new MetaData(getChildrenTags(serviceNode, "meta-data"));
 
       final List<IntentFilterData> intentFilterData = parseIntentFilters(serviceNode);
-      ServiceData service = new ServiceData(serviceName, metaData, intentFilterData);
+      ServiceData service = new ServiceData(serviceAttrs, metaData, intentFilterData);
       List<Node> intentFilters = getChildrenTags(serviceNode, "intent-filter");
       for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -291,10 +330,6 @@ public class AndroidManifest {
         }
       }
 
-      Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
-      if (permissionItem != null) {
-        service.setPermission(permissionItem.getTextContent());
-      }
       serviceDatas.put(serviceName, service);
     }
   }
@@ -318,18 +353,9 @@ public class AndroidManifest {
   }
 
   private void parseActivity(Node activityNode, boolean isAlias) {
-    final NamedNodeMap attributes = activityNode.getAttributes();
-    final int attrCount = attributes.getLength();
     final List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
     final MetaData metaData = new MetaData(getChildrenTags(activityNode, "meta-data"));
-    final HashMap<String, String> activityAttrs = new HashMap<>(attrCount);
-    for(int i = 0; i < attrCount; i++) {
-      Node attr = attributes.item(i);
-      String v = attr.getNodeValue();
-      if( v != null) {
-        activityAttrs.put(attr.getNodeName(), v);
-      }
-    }
+    final HashMap<String, String> activityAttrs = parseNodeAttributes(activityNode);
 
     String activityName = resolveClassRef(activityAttrs.get(ActivityData.getNameAttr("android")));
     if (activityName == null) {
@@ -490,11 +516,6 @@ public class AndroidManifest {
     return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
   }
 
-  @Deprecated
-  public void setPackageName(String packageName) {
-    this.packageName = packageName;
-  }
-
   public String getPackageName() {
     parseAndroidManifest();
     return packageName;
@@ -563,11 +584,6 @@ public class AndroidManifest {
     return providers;
   }
 
-  public void setLibraryManifests(List<AndroidManifest> libraryManifests) {
-    Preconditions.checkNotNull(libraryManifests);
-    this.libraryManifests = libraryManifests;
-  }
-
   public List<AndroidManifest> getLibraryManifests() {
     assert(libraryManifests != null);
     return Collections.unmodifiableList(libraryManifests);
@@ -596,6 +612,7 @@ public class AndroidManifest {
   }
 
   public ServiceData getServiceData(String serviceClassName) {
+    parseAndroidManifest();
     return serviceDatas.get(serviceClassName);
   }
 
@@ -658,5 +675,22 @@ public class AndroidManifest {
   public Map<String, PermissionItemData> getPermissions() {
     parseAndroidManifest();
     return permissions;
+  }
+
+  /**
+   * Returns data for the broadcast receiver with the provided name from this manifest. If no
+   * receiver with the class name can be found, returns null.
+   *
+   * @param className the fully resolved class name of the receiver
+   * @return data for the receiver or null if it cannot be found
+   */
+  public @Nullable BroadcastReceiverData getBroadcastReceiver(String className) {
+    parseAndroidManifest();
+    for (BroadcastReceiverData receiver : receivers) {
+      if (receiver.getClassName().equals(className)) {
+        return receiver;
+      }
+    }
+    return null;
   }
 }

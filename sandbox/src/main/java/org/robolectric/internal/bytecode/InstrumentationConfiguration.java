@@ -19,6 +19,7 @@ import org.robolectric.shadow.api.Shadow;
  * Configuration rules for {@link SandboxClassLoader}.
  */
 public class InstrumentationConfiguration {
+
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -40,9 +41,18 @@ public class InstrumentationConfiguration {
   private final Set<MethodRef> interceptedMethods;
   private final Set<String> classesToNotAcquire;
   private final Set<String> packagesToNotAcquire;
+  private final Set<String> packagesToNotInstrument;
   private int cachedHashCode;
 
-  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAcquire, Collection<String> packagesToNotAquire, Collection<String> classesToNotInstrument) {
+  private InstrumentationConfiguration(
+      Map<String, String> classNameTranslations,
+      Collection<MethodRef> interceptedMethods,
+      Collection<String> instrumentedPackages,
+      Collection<String> instrumentedClasses,
+      Collection<String> classesToNotAcquire,
+      Collection<String> packagesToNotAquire,
+      Collection<String> classesToNotInstrument,
+      Collection<String> packagesToNotInstrument) {
     this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
     this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
     this.instrumentedPackages = ImmutableList.copyOf(instrumentedPackages);
@@ -50,6 +60,7 @@ public class InstrumentationConfiguration {
     this.classesToNotAcquire = ImmutableSet.copyOf(classesToNotAcquire);
     this.packagesToNotAcquire = ImmutableSet.copyOf(packagesToNotAquire);
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
+    this.packagesToNotInstrument = ImmutableSet.copyOf(packagesToNotInstrument);
     this.cachedHashCode = 0;
   }
 
@@ -61,12 +72,13 @@ public class InstrumentationConfiguration {
    */
   public boolean shouldInstrument(ClassInfo classInfo) {
     return !(classInfo.isInterface()
-              || classInfo.isAnnotation()
-              || classInfo.hasAnnotation(DoNotInstrument.class))
-          && (isInInstrumentedPackage(classInfo)
-              || instrumentedClasses.contains(classInfo.getName())
-              || classInfo.hasAnnotation(Instrument.class))
-          && !(classesToNotInstrument.contains(classInfo.getName()));
+            || classInfo.isAnnotation()
+            || classInfo.hasAnnotation(DoNotInstrument.class))
+        && (isInInstrumentedPackage(classInfo)
+            || instrumentedClasses.contains(classInfo.getName())
+            || classInfo.hasAnnotation(Instrument.class))
+        && !(classesToNotInstrument.contains(classInfo.getName()))
+        && !(isInPackagesToNotInstrument(classInfo));
   }
 
   /**
@@ -127,6 +139,16 @@ public class InstrumentationConfiguration {
     return false;
   }
 
+  private boolean isInPackagesToNotInstrument(ClassInfo classInfo) {
+    final String className = classInfo.getName();
+    for (String notInstrumentedPackage : packagesToNotInstrument) {
+      if (className.startsWith(notInstrumentedPackage)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -167,6 +189,7 @@ public class InstrumentationConfiguration {
     private final Collection<String> packagesToNotAcquire = new HashSet<>();
     private final Collection<String> instrumentedClasses = new HashSet<>();
     private final Collection<String> classesToNotInstrument = new HashSet<>();
+    private final Collection<String> packagesToNotInstrument = new HashSet<>();
 
     public Builder() {
     }
@@ -179,6 +202,7 @@ public class InstrumentationConfiguration {
       packagesToNotAcquire.addAll(classLoaderConfig.packagesToNotAcquire);
       instrumentedClasses.addAll(classLoaderConfig.instrumentedClasses);
       classesToNotInstrument.addAll(classLoaderConfig.classesToNotInstrument);
+      packagesToNotInstrument.addAll(classLoaderConfig.packagesToNotInstrument);
     }
 
     public Builder doNotAcquireClass(Class<?> clazz) {
@@ -221,10 +245,21 @@ public class InstrumentationConfiguration {
       return this;
     }
 
+    public Builder doNotInstrumentPackage(String packageName) {
+      this.packagesToNotInstrument.add(packageName);
+      return this;
+    }
+
     public InstrumentationConfiguration build() {
       return new InstrumentationConfiguration(
-          classNameTranslations, interceptedMethods, instrumentedPackages,
-          instrumentedClasses, classesToNotAcquire, packagesToNotAcquire, classesToNotInstrument);
+          classNameTranslations,
+          interceptedMethods,
+          instrumentedPackages,
+          instrumentedClasses,
+          classesToNotAcquire,
+          packagesToNotAcquire,
+          classesToNotInstrument,
+          packagesToNotInstrument);
     }
   }
 }

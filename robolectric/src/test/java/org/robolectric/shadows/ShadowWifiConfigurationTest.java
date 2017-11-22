@@ -1,15 +1,17 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.net.wifi.WifiConfiguration;
+import android.os.Build;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowWifiConfigurationTest {
   @Test
   public void shouldSetTheBitSetsAndWepKeyArrays() throws Exception {
@@ -58,6 +60,40 @@ public class ShadowWifiConfigurationTest {
     assertThat(copy.wepKeys[1]).isEqualTo("1");
     assertThat(copy.wepKeys[2]).isEqualTo("2");
     assertThat(copy.wepKeys[3]).isEqualTo("3");
+  }
+
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Test
+  public void shouldCopy_sdk21() throws Exception {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+
+    wifiConfiguration.networkId = 1;
+    wifiConfiguration.SSID = "SSID";
+    wifiConfiguration.creatorUid = 888;
+
+    WifiConfiguration copy = shadowOf(wifiConfiguration).copy();
+
+    assertThat(copy.networkId).isEqualTo(1);
+    assertThat(copy.SSID).isEqualTo("SSID");
+    assertThat(copy.creatorUid).isEqualTo(888);
+  }
+
+  @Config(minSdk = Build.VERSION_CODES.M)
+  @Test
+  public void shouldCopy_sdk23() throws Exception {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+
+    wifiConfiguration.networkId = 1;
+    wifiConfiguration.SSID = "SSID";
+    wifiConfiguration.creatorName = "creatorName";
+    wifiConfiguration.creatorUid = 888;
+
+    WifiConfiguration copy = shadowOf(wifiConfiguration).copy();
+
+    assertThat(copy.networkId).isEqualTo(1);
+    assertThat(copy.SSID).isEqualTo("SSID");
+    assertThat(copy.creatorName).isEqualTo("creatorName");
+    assertThat(copy.creatorUid).isEqualTo(888);
   }
 
   @Test

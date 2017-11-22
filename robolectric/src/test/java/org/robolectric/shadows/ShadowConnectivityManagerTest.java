@@ -16,12 +16,11 @@ import android.telephony.TelephonyManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowConnectivityManagerTest {
   private ConnectivityManager connectivityManager;
   private ShadowNetworkInfo shadowOfActiveNetworkInfo;
@@ -29,7 +28,9 @@ public class ShadowConnectivityManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    connectivityManager = (ConnectivityManager) RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE);
+    connectivityManager =
+        (ConnectivityManager)
+            RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE);
     shadowConnectivityManager = shadowOf(connectivityManager);
     shadowOfActiveNetworkInfo = shadowOf(connectivityManager.getActiveNetworkInfo());
   }
@@ -195,7 +196,7 @@ public class ShadowConnectivityManagerTest {
     assertThat(networks).hasSize(1);
 
     Network returnedNetwork = networks[0];
-    ShadowNetwork shadowReturnedNetwork = Shadows.shadowOf(returnedNetwork);
+    ShadowNetwork shadowReturnedNetwork = shadowOf(returnedNetwork);
     assertThat(shadowReturnedNetwork.getNetId()).isNotEqualTo(ShadowConnectivityManager.NET_ID_WIFI);
   }
 
@@ -263,13 +264,15 @@ public class ShadowConnectivityManagerTest {
 
   @Test
   public void isActiveNetworkMetered_mobileIsMetered() {
-    shadowConnectivityManager.setActiveNetworkInfo(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE));
+    shadowConnectivityManager.setActiveNetworkInfo(
+        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE));
     assertThat(connectivityManager.isActiveNetworkMetered()).isTrue();
   }
 
   @Test
   public void isActiveNetworkMetered_nonMobileIsUnmetered() {
-    shadowConnectivityManager.setActiveNetworkInfo(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI));
+    shadowConnectivityManager.setActiveNetworkInfo(
+        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI));
     assertThat(connectivityManager.isActiveNetworkMetered()).isFalse();
   }
 
@@ -277,5 +280,12 @@ public class ShadowConnectivityManagerTest {
   public void isActiveNetworkMetered_noActiveNetwork() {
     shadowConnectivityManager.setActiveNetworkInfo(null);
     assertThat(connectivityManager.isActiveNetworkMetered()).isFalse();
+  }
+
+  @Test
+  public void bindProcessToNetwork_should() {
+    Network network = ShadowNetwork.newInstance(789);
+    shadowConnectivityManager.bindProcessToNetwork(network);
+    assertThat(shadowConnectivityManager.getBoundNetworkForProcess()).isSameAs(network);
   }
 }

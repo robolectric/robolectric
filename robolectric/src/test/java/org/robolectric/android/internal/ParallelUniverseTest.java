@@ -11,6 +11,7 @@ import android.os.Build;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
@@ -20,9 +21,9 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
 import org.robolectric.RoboSettings;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -34,7 +35,7 @@ import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ParallelUniverseTest {
 
   private ParallelUniverse pu;
@@ -63,8 +64,11 @@ public class ParallelUniverseTest {
     ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     Method method = getDummyMethodForTest();
-    pu.setUpApplicationState(method, new DefaultTestLifecycle(),
-            appManifest, defaultConfig,
+    pu.setUpApplicationState(
+        method,
+        new DefaultTestLifecycle(),
+        appManifest,
+        defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
         RuntimeEnvironment.getSystemResourceTable());
@@ -123,13 +127,14 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
-    Thread t = new Thread() {
-      @Override
-      public void run() {
-        setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
-        res.set(RuntimeEnvironment.isMainThread());
-      }
-    };
+    Thread t =
+        new Thread() {
+          @Override
+          public void run() {
+            setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
+            res.set(RuntimeEnvironment.isMainThread());
+          }
+        };
     t.start();
     t.join(1000);
     assertThat(res.get()).isTrue();
@@ -150,19 +155,11 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
-    String givenQualifiers = "land-v17";
-    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
-  }
-
-  @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v" + Build.VERSION.SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("notlong-notround-land-notnight-mdpi-finger-v" + Build.VERSION.SDK_INT);
   }
 
   @Test
@@ -182,10 +179,8 @@ public class ParallelUniverseTest {
     }
   }
 
-  /**
-   * Can't use Mockito for classloader issues
-   */
-  class ThrowingManifest extends AndroidManifest {
+  /** Can't use Mockito for classloader issues */
+  static class ThrowingManifest extends AndroidManifest {
     public ThrowingManifest() {
       super(null, null, null);
     }
@@ -194,5 +189,12 @@ public class ParallelUniverseTest {
     public void initMetaData(ResourceTable resourceTable) throws RoboNotFoundException {
       throw new RoboNotFoundException("This is just a test");
     }
+  }
+
+  @Test @Config(qualifiers = "b+fr+Cyrl+UK")
+  public void localeIsSet() throws Exception {
+    assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
+    assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
+    assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
   }
 }

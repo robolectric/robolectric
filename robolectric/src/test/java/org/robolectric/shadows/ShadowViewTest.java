@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -48,17 +48,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.android.TestOnClickListener;
-import org.robolectric.android.TestOnLongClickListener;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;
@@ -187,21 +185,22 @@ public class ShadowViewTest {
 
   @Test
   public void performLongClick_shouldClickOnView() throws Exception {
-    TestOnLongClickListener clickListener = new TestOnLongClickListener();
+    OnLongClickListener clickListener = mock(OnLongClickListener.class);
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnLongClickListener(clickListener);
     view.performLongClick();
 
-    assertTrue(clickListener.clicked);
+    verify(clickListener).onLongClick(view);
   }
 
   @Test
   public void checkedClick_shouldClickOnView() throws Exception {
-    TestOnClickListener clickListener = new TestOnClickListener();
+    OnClickListener clickListener = mock(OnClickListener.class);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnClickListener(clickListener);
     shadowOf(view).checkedPerformClick();
 
-    assertTrue(clickListener.clicked);
+    verify(clickListener).onClick(view);
   }
 
   @Test(expected = RuntimeException.class)

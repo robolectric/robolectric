@@ -6,9 +6,9 @@ import static org.robolectric.Shadows.shadowOf;
 import android.graphics.drawable.GradientDrawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowGradientDrawableTest {
   @Test
   public void testGetColor_returnsColor() throws Exception {

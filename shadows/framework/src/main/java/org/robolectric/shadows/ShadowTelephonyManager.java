@@ -39,7 +39,7 @@ public class ShadowTelephonyManager {
   private String simOperatorName;
   private boolean readPhoneStatePermission = true;
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
-  private String simCountryIso;
+  private String simCountryIso = "";
   private int simState = TelephonyManager.SIM_STATE_READY;
   private String line1Number;
   private int networkType;

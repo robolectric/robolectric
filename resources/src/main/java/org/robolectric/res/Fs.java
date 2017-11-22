@@ -69,6 +69,10 @@ abstract public class Fs {
     return new FileFsFile(file);
   }
 
+  public static FsFile newFile(String filePath) {
+    return new FileFsFile(filePath);
+  }
+
   public static FsFile currentDirectory() {
     return newFile(new File("."));
   }

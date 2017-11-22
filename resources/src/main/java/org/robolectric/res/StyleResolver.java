@@ -3,8 +3,7 @@ package org.robolectric.res;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import com.google.common.base.Strings;
+import org.robolectric.res.android.ResTable_config;
 
 public class StyleResolver implements Style {
   private final List<StyleData> styles = new ArrayList<>();
@@ -12,15 +11,15 @@ public class StyleResolver implements Style {
   private final ResourceTable systemResourceTable;
   private final Style theme;
   private final ResName myResName;
-  private final String qualifiers;
+  private final ResTable_config config;
 
   public StyleResolver(ResourceTable appResourceTable, ResourceTable systemResourceTable, StyleData styleData,
-                       Style theme, ResName myResName, String qualifiers) {
+                       Style theme, ResName myResName, ResTable_config config) {
     this.appResourceTable = appResourceTable;
     this.systemResourceTable = systemResourceTable;
     this.theme = theme;
     this.myResName = myResName;
-    this.qualifiers = qualifiers;
+    this.config = config;
     styles.add(styleData);
   }
 
@@ -90,7 +89,7 @@ public class StyleResolver implements Style {
 
     // TODO: Refactor this to a ResourceLoaderChooser
     ResourceTable resourceProvider = "android".equals(styleRef.packageName) ? systemResourceTable : appResourceTable;
-    TypedResource typedResource = resourceProvider.getValue(styleRef, qualifiers);
+    TypedResource typedResource = resourceProvider.getValue(styleRef, config);
 
     if (typedResource == null) {
       StringBuilder builder = new StringBuilder("Could not find any resource")
@@ -154,10 +153,10 @@ public class StyleResolver implements Style {
     }
     StyleResolver other = (StyleResolver) obj;
 
-      return ((theme == null && other.theme == null) || (theme != null && theme.equals(other.theme)))
+    return ((theme == null && other.theme == null) || (theme != null && theme.equals(other.theme)))
         && ((myResName == null && other.myResName == null)
-        || (myResName != null && myResName.equals(other.myResName)))
-        && Objects.equals(qualifiers, other.qualifiers);
+            || (myResName != null && myResName.equals(other.myResName)))
+        && Objects.equals(config, other.config);
   }
 
   @Override
@@ -165,7 +164,7 @@ public class StyleResolver implements Style {
     int hashCode = 0;
     hashCode = 31 * hashCode + (theme != null ? theme.hashCode() : 0);
     hashCode = 31 * hashCode + (myResName != null ? myResName.hashCode() : 0);
-    hashCode = 31 * hashCode + Strings.nullToEmpty(qualifiers).hashCode();
+    hashCode = 31 * hashCode + (config != null ? config.hashCode() : 0);
     return hashCode;
   }
 

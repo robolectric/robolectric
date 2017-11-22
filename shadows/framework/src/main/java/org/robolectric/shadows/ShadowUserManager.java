@@ -15,12 +15,16 @@ import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Robolectric implementation of {@link android.os.UserManager}.
+ */
 @Implements(value = UserManager.class, minSdk = JELLY_BEAN_MR1)
 public class ShadowUserManager {
 
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
+  private Map<UserHandle, Long> serialNumbers = new HashMap<>();
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public Bundle getApplicationRestrictions(String packageName) {
@@ -88,5 +92,15 @@ public class ShadowUserManager {
       userRestrictions.put(userHandle, bundle);
     }
     return bundle;
+  }
+
+  @Implementation
+  public long getSerialNumberForUser(UserHandle userHandle) {
+    Long result = serialNumbers.get(userHandle);
+    return result == null ? -1L : result;
+  }
+
+  public void setSerialNumberForUser(UserHandle userHandle, long serialNumber) {
+    serialNumbers.put(userHandle, serialNumber);
   }
 }

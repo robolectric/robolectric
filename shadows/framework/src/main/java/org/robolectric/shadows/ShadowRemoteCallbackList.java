@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implements;
 
 @Implements(RemoteCallbackList.class)
 public class ShadowRemoteCallbackList<E extends IInterface> {
-  private HashMap<IBinder, Callback> callbacks = new HashMap<>();
+  private final HashMap<IBinder, Callback> callbacks = new HashMap<>();
   private Object[] activeBroadcast;
   private int broadcastCount = -1;
   private boolean killed = false;

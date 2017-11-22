@@ -7,9 +7,9 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowResultReceiverTest {
   @Test
   public void callingSend_shouldCallOverridenOnReceiveResultWithTheSameArguments() throws Exception {

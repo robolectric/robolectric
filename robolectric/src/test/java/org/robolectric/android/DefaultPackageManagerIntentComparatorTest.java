@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.content.Intent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowPackageManager.IntentComparator;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class DefaultPackageManagerIntentComparatorTest {
 
   @Test

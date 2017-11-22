@@ -16,7 +16,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.processing.DocumentedMethod;
@@ -140,9 +139,11 @@ public class ImplementsValidator extends Validator {
       Implementation implementation = memberElement.getAnnotation(Implementation.class);
 
       String methodName = methodElement.getSimpleName().toString();
-      if (methodName.equals(CONSTRUCTOR_METHOD_NAME) || methodName.equals(STATIC_INITIALIZER_METHOD_NAME)) {
+      if (methodName.equals(CONSTRUCTOR_METHOD_NAME)
+          || methodName.equals(STATIC_INITIALIZER_METHOD_NAME)) {
         if (implementation == null) {
-          messager.printMessage(Kind.ERROR, "Shadow methods must be annotated @Implementation", methodElement);
+          messager.printMessage(
+              Kind.ERROR, "Shadow methods must be annotated @Implementation", methodElement);
         }
       }
     }

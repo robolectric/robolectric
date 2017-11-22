@@ -13,10 +13,9 @@ public class ShadowNetworkInfo {
   private int connectionType;
   private int connectionSubType;
   private NetworkInfo.DetailedState detailedState;
-
+  
   @Implementation
-  public static void __staticInitializer__() {
-  }
+  public static void __staticInitializer__() {}
 
   public static NetworkInfo newInstance(NetworkInfo.DetailedState detailedState, int type, int subType, boolean isAvailable, boolean isConnected) {
     NetworkInfo networkInfo = Shadow.newInstanceOf(NetworkInfo.class);

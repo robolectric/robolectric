@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static junit.framework.Assert.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -22,11 +23,11 @@ import java.io.InputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowDrawableTest {
   @Test
   public void createFromStream__shouldReturnNullWhenAskedToCreateADrawableFromACorruptedSourceStream() throws Exception {
@@ -156,19 +157,19 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP, qualifiers = "anydpi")
-  public void testGetBitmapOrVectorDrawableAt21() {
-    final Drawable aDrawable = RuntimeEnvironment.application.getResources()
-        .getDrawable(R.drawable.an_image_or_vector);
-    assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
-  }
-
-  @Test
-  @Config(minSdk = KITKAT)
+  @Config(maxSdk = KITKAT_WATCH)
   public void testGetBitmapOrVectorDrawableAt19() {
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
     assertThat(aDrawable).isInstanceOf(BitmapDrawable.class);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testGetBitmapOrVectorDrawableAt21() {
+    final Drawable aDrawable = RuntimeEnvironment.application.getResources()
+        .getDrawable(R.drawable.an_image_or_vector);
+    assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
   }
 
   private static class TestDrawable extends Drawable {

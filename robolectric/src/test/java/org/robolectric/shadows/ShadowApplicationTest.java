@@ -31,6 +31,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserManager;
 import android.print.PrintManager;
+import android.view.accessibility.CaptioningManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
@@ -48,15 +49,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
-import org.robolectric.android.TestBroadcastReceiver;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.util.Scheduler;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -108,6 +108,7 @@ public class ShadowApplicationTest {
   @Config(minSdk = KITKAT)
   public void shouldProvideServicesIntroducedInKitKat() throws Exception {
     checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
+    checkSystemService(Context.CAPTIONING_SERVICE, CaptioningManager.class);
   }
 
   @Test
@@ -577,5 +578,16 @@ public class ShadowApplicationTest {
 
     @Override
     public void onServiceDisconnected(ComponentName name) {}
+  }
+
+  public static class TestBroadcastReceiver extends BroadcastReceiver {
+    public Context context;
+    public Intent intent;
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      this.context = context;
+      this.intent = intent;
+    }
   }
 }

@@ -112,6 +112,13 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannels(List<Object /*NotificationChannel*/> channelList) {
+    for (Object channel : channelList) {
+      createNotificationChannel(channel);
+    }
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
   public List<Object /*NotificationChannel*/> getNotificationChannels() {
     return ImmutableList.copyOf(notificationChannels.values());
   }
@@ -121,6 +128,28 @@ public class ShadowNotificationManager {
     if (getNotificationChannel(channelId) != null) {
       Object /*NotificationChannel*/ channel = notificationChannels.remove(channelId);
       deletedNotificationChannels.put(channelId, channel);
+    }
+  }
+
+  /**
+   * Delete a notification channel group and all notification channels associated with the group.
+   * This method will not notify any NotificationListenerService of resulting changes to
+   * notification channel groups nor to notification channels.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  public void deleteNotificationChannelGroup(String channelGroupId) {
+    if (getNotificationChannelGroup(channelGroupId) != null) {
+      // Deleting a channel group also deleted all associated channels. See
+      // https://developer.android.com/reference/android/app/NotificationManager.html#deleteNotificationChannelGroup%28java.lang.String%29
+      // for more info.
+      for (/* NotificationChannel */ Object channel : getNotificationChannels()) {
+        String groupId = ReflectionHelpers.callInstanceMethod(channel, "getGroup");
+        if (channelGroupId.equals(groupId)) {
+          String channelId = ReflectionHelpers.callInstanceMethod(channel, "getId");
+          deleteNotificationChannel(channelId);
+        }
+      }
+      notificationChannelGroups.remove(channelGroupId);
     }
   }
 

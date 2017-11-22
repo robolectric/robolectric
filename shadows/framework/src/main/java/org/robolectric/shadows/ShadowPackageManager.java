@@ -47,13 +47,13 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.PatternMatcher;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Pair;
@@ -130,6 +130,7 @@ public class ShadowPackageManager {
   final Map<String, PackageStats> packageStatsMap = new HashMap<>();
   final Map<String, String> packageInstallerMap = new HashMap<>();
   final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  final Map<String, Integer> uidForPackage = new HashMap<>();
   final Map<Integer, String> namesForUid = new HashMap<>();
   final Map<Integer, Integer> verificationResults = new HashMap<>();
   final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
@@ -304,8 +305,11 @@ public class ShadowPackageManager {
       info.serviceInfo.packageName = packageName;
       info.serviceInfo.applicationInfo = new ApplicationInfo();
       info.filter = new IntentFilter();
-      for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
-        info.filter.addDataType(it.next());
+      Iterator<String> iterator = intentFilter.typesIterator();
+      if (iterator != null) {
+        while (iterator.hasNext()) {
+          info.filter.addDataType(iterator.next());
+        }
       }
       return info;
     } catch (IntentFilter.MalformedMimeTypeException e) {
@@ -377,6 +381,7 @@ public class ShadowPackageManager {
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.publicSourceDir = applicationInfo.sourceDir;
     applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
@@ -623,36 +628,6 @@ public class ShadowPackageManager {
     return state != null ? state.flags : 0;
   }
 
-  public void addPackage(PackageInfo packageInfo) {
-    PackageStats packageStats = new PackageStats(packageInfo.packageName);
-    Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
-
-    packageInfos.put(packageInfo.packageName, packageInfo);
-    packageStatsMap.put(packageInfo.packageName, packageStats);
-    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
-    if (packageInfo.applicationInfo != null) {
-      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
-    }
-  }
-
-  public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
-    Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
-
-    packageInfos.put(packageInfo.packageName, packageInfo);
-    packageStatsMap.put(packageInfo.packageName, packageStats);
-    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
-    if (packageInfo.applicationInfo != null) {
-      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
-    }
-  }
-
-  public void addPermissionInfo(PermissionInfo permissionInfo) {
-    extraPermissions.put(permissionInfo.name, permissionInfo);
-  }
 
   public void addPackage(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
@@ -661,20 +636,28 @@ public class ShadowPackageManager {
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
     setUpPackageStorage(applicationInfo);
-
     packageInfo.applicationInfo = applicationInfo;
+    addPackage(packageInfo);
+  }
 
+  public void addPackage(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
+    addPackage(packageInfo, packageStats);
+  }
+
+  public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
+  }
+
+  public void addPermissionInfo(PermissionInfo permissionInfo) {
+    extraPermissions.put(permissionInfo.name, permissionInfo);
   }
 
   public void addManifest(AndroidManifest androidManifest) {
@@ -763,6 +746,7 @@ public class ShadowPackageManager {
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+    applicationInfo.uid = Process.myUid();
     setUpPackageStorage(applicationInfo);
 
     int labelRes = 0;
@@ -780,17 +764,7 @@ public class ShadowPackageManager {
     }
 
     packageInfo.applicationInfo = applicationInfo;
-    PackageStats packageStats = new PackageStats(packageInfo.packageName);
-    Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
-
-    packageInfos.put(packageInfo.packageName, packageInfo);
-    packageStatsMap.put(packageInfo.packageName, packageStats);
-    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    Resources r = new Resources(new AssetManager(), null, null);
-    resources.put(packageInfo.packageName, r);
-    if (packageInfo.applicationInfo != null) {
-      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
-    }
+    addPackage(packageInfo);
   }
 
   public void removePackage(String packageName) {
@@ -839,10 +813,16 @@ public class ShadowPackageManager {
 
   public void setPackagesForCallingUid(String... packagesForCallingUid) {
     packagesForUid.put(Binder.getCallingUid(), packagesForCallingUid);
+    for (String packageName : packagesForCallingUid) {
+      uidForPackage.put(packageName, Binder.getCallingUid());
+    }
   }
 
   public void setPackagesForUid(int uid, String... packagesForCallingUid) {
     packagesForUid.put(uid, packagesForCallingUid);
+    for (String packageName : packagesForCallingUid) {
+      uidForPackage.put(packageName, uid);
+    }
   }
 
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
@@ -1065,7 +1045,7 @@ public class ShadowPackageManager {
    * @deprecated Use {@link android.app.ApplicationPackageManager#getComponentEnabledSetting(ComponentName)} instead. This class will be made private in Robolectric 3.5.
    */
   @Deprecated
-  public class ComponentState {
+  public static class ComponentState {
     public int newState;
     public int flags;
 
