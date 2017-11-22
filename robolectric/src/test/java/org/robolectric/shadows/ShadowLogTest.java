@@ -5,15 +5,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.shadows.ShadowLog.LogItem;
 
 import android.util.Log;
+import com.google.common.collect.Iterables;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.ShadowLog.LogItem;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowLogTest {
@@ -167,6 +168,7 @@ public class ShadowLogTest {
 
   @Test
   public void shouldLogAccordingToTag() throws Exception {
+    ShadowLog.reset();
     Log.d( "tag1", "1" );
     Log.i( "tag2", "2" );
     Log.e( "tag3", "3" );
@@ -226,7 +228,7 @@ public class ShadowLogTest {
   }
 
   private void assertLogged(int type, String tag, String msg, Throwable throwable) {
-    LogItem lastLog = ShadowLog.getLogs().get(0);
+    LogItem lastLog = Iterables.getLast(ShadowLog.getLogs());
     assertEquals(type, lastLog.type);
     assertEquals(msg, lastLog.msg);
     assertEquals(tag, lastLog.tag);
@@ -260,5 +262,10 @@ public class ShadowLogTest {
   public void getLogs_shouldReturnCopy() {
     assertThat(ShadowLog.getLogs()).isNotSameAs(ShadowLog.getLogs());
     assertThat(ShadowLog.getLogs()).isEqualTo(ShadowLog.getLogs());
+  }
+
+  @Test
+  public void getLogsForTag_empty() {
+    assertThat(ShadowLog.getLogsForTag("non_existent")).isEmpty();
   }
 }
