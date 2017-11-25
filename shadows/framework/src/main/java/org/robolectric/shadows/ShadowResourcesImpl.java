@@ -44,12 +44,8 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)
 public class ShadowResourcesImpl {
-  private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
 
-  private float density = 1.0f;
-  private DisplayMetrics displayMetrics;
-  private Display display;
   @RealObject
   ResourcesImpl realResourcesImpl;
 
@@ -61,7 +57,6 @@ public class ShadowResourcesImpl {
     for (LongSparseArray<?> sparseArray : resettableArrays) {
       sparseArray.clear();
     }
-    system = null;
   }
 
   private static List<LongSparseArray<?>> obtainResettableArrays() {
@@ -84,17 +79,6 @@ public class ShadowResourcesImpl {
   }
 
   @Implementation
-  public static Resources getSystem() {
-    if (system == null) {
-      AssetManager assetManager = AssetManager.getSystem();
-      DisplayMetrics metrics = new DisplayMetrics();
-      Configuration config = new Configuration();
-      system = new Resources(assetManager, metrics, config);
-    }
-    return system;
-  }
-
-  @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
     String raw = getQuantityString(id, quantity);
     return String.format(Locale.ENGLISH, raw, formatArgs);
@@ -104,7 +88,7 @@ public class ShadowResourcesImpl {
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
 
-    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
+    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, shadowAssetManager.config);
     if (typedResource != null && typedResource instanceof PluralRules) {
       PluralRules pluralRules = (PluralRules) typedResource;
       Plural plural = pluralRules.find(quantity);
@@ -114,7 +98,7 @@ public class ShadowResourcesImpl {
       }
 
       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()), RuntimeEnvironment.getQualifiers(), resId);
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()), shadowAssetManager.config, resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
       return null;
@@ -123,8 +107,9 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ResourceTable resourceTable = shadowOf(realResourcesImpl.getAssets()).getResourceTable();
-    InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+    ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
+    ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+    InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
     if (inputStream == null) {
       throw newNotFoundException(id);
     } else {
@@ -161,38 +146,6 @@ public class ShadowResourcesImpl {
     } else {
       return new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
-  }
-
-  public void setDensity(float density) {
-    this.density = density;
-    if (displayMetrics != null) {
-      displayMetrics.density = density;
-    }
-  }
-
-  public void setScaledDensity(float scaledDensity) {
-    if (displayMetrics != null) {
-      displayMetrics.scaledDensity = scaledDensity;
-    }
-  }
-
-  public void setDisplay(Display display) {
-    this.display = display;
-    displayMetrics = null;
-  }
-
-  @Implementation
-  public DisplayMetrics getDisplayMetrics() {
-    if (displayMetrics == null) {
-      if (display == null) {
-        display = ReflectionHelpers.callConstructor(Display.class);
-      }
-
-      displayMetrics = new DisplayMetrics();
-      display.getMetrics(displayMetrics);
-    }
-    displayMetrics.density = this.density;
-    return displayMetrics;
   }
 
   @HiddenApi

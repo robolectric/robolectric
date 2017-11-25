@@ -20,7 +20,8 @@ public class Bootstrap {
     ConfigDescription configDescription = new ConfigDescription();
     ResTable_config resTab = new ResTable_config();
 
-    if (Qualifiers.getPlatformVersion(qualifiers) != -1) {
+    int platformVersion = Qualifiers.getPlatformVersion(qualifiers);
+    if (platformVersion != -1 && platformVersion != apiLevel) {
       throw new IllegalArgumentException(
           "Cannot specify platform version in qualifiers: \"" + qualifiers + "\"");
     }
@@ -101,11 +102,9 @@ public class Bootstrap {
     configuration.screenHeightDp = resTab.screenHeightDp;
     if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
-    } else {
-      displayMetrics.densityDpi = resTab.density;
-      displayMetrics.density =
-          displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
     }
+    displayMetrics.densityDpi = resTab.density;
+    displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
 
     Locale locale;
     String lang = resTab.languageString();
