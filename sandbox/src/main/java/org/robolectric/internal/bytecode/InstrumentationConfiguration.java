@@ -71,7 +71,7 @@ public class InstrumentationConfiguration {
    * @return  True if the class should be instrumented.
    */
   public boolean shouldInstrument(ClassInfo classInfo) {
-    return !(classInfo.isInterface()
+    return !offLineInstrumentation() && !(classInfo.isInterface()
             || classInfo.isAnnotation()
             || classInfo.hasAnnotation(DoNotInstrument.class))
         && (isInInstrumentedPackage(classInfo)
@@ -79,6 +79,11 @@ public class InstrumentationConfiguration {
             || classInfo.hasAnnotation(Instrument.class))
         && !(classesToNotInstrument.contains(classInfo.getName()))
         && !(isInPackagesToNotInstrument(classInfo));
+  }
+
+  private boolean offLineInstrumentation() {
+    String offline_instrumentation = System.getProperty("offline_instrumentation", null);
+    return offline_instrumentation != null;
   }
 
   /**

@@ -32,22 +32,23 @@ public class InstrumentJar {
       while (entries.hasMoreElements()) {
         JarEntry jarEntry = entries.nextElement();
 
-        byte[] bytes;
+        byte[] bytes = new byte[0];
         if (jarEntry.getName().endsWith(".class")) {
           long startTime = System.currentTimeMillis();
           try {
+            System.out.println("Instrumenting = " + jarEntry.getName());
             bytes = sandboxClassLoader.instrument(jarEntry.getName().replaceAll("\\.class$", "").replaceAll("/", "."));
-          } catch (Exception e) {
-            System.out.println("Could not instrument: " + jarEntry.getName() + " Exception: " + e.toString());
+          } catch (Throwable e) {
+            System.out.println("Could not instrument: " + jarEntry.getName() + " Exception: " + e.getMessage() + " copying instead");
             bytes = ByteStreams.toByteArray(jarFile.getInputStream(jarEntry));
           }
           long endTime = System.currentTimeMillis();
           long timeTaken = endTime - startTime;
-//          System.out.println("Instrumented " + jarEntry.getName() + " in " + timeTaken);
+          System.out.println("Instrumented " + jarEntry.getName() + " in " + timeTaken);
           totalMs += timeTaken;
           totalClassesInstrumented++;
         } else {
-//          System.out.println("Copying " + jarEntry.getName());
+          System.out.println("Copying " + jarEntry.getName());
           bytes = ByteStreams.toByteArray(jarFile.getInputStream(jarEntry));
         }
 
