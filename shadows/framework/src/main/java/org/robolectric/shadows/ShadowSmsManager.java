@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
@@ -13,15 +15,29 @@ import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = SmsManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManager {
-  private static SmsManager realManager = Shadow.newInstanceOf(SmsManager.class);
-  private TextSmsParams lastTextSmsParams;
-  private TextMultipartParams lastTextMultipartParams;
-  private DataMessageParams lastDataParams;
+
+  private static final SmsManager realManager = Shadow.newInstanceOf(SmsManager.class);
+  private static final SparseArray<SmsManager> subSmsManagers = new SparseArray<>(1);
 
   @Implementation
   public static SmsManager getDefault() {
     return realManager;
   }
+
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  public static SmsManager getSmsManagerForSubscriptionId(int subId) {
+    SmsManager smsManager = subSmsManagers.get(subId);
+    if (smsManager == null) {
+      smsManager =
+          Shadow.newInstance(SmsManager.class, new Class[] {int.class}, new Object[] {subId});
+      subSmsManagers.put(subId, smsManager);
+    }
+    return smsManager;
+  }
+
+  private TextSmsParams lastTextSmsParams;
+  private TextMultipartParams lastTextMultipartParams;
+  private DataMessageParams lastDataParams;
 
   @Implementation
   public void sendDataMessage(String destinationAddress, String scAddress, short destinationPort, byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
