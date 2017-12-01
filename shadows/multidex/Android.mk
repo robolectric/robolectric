@@ -1,3 +1,6 @@
+##############################################
+# Compile Robolectric shadows multidex
+##############################################
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
