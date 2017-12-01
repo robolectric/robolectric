@@ -172,7 +172,11 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        typedValue.type = TypedValue.TYPE_INT_HEX;
+        if (data.startsWith("0x")) {
+          typedValue.type = TypedValue.TYPE_INT_HEX;
+        } else {
+          typedValue.type = TypedValue.TYPE_INT_DEC;
+        }
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;

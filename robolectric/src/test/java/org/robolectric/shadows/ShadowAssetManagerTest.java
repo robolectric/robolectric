@@ -185,9 +185,19 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void multiFormatAttributes_integerValue() {
+  public void multiFormatAttributes_integerDecimalValue() {
     AttributeSet attributeSet = Robolectric.buildAttributeSet()
             .addAttribute(R.attr.multiformat, "16").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
+  }
+
+  @Test
+  public void multiFormatAttributes_integerHexValue() {
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.multiformat, "0x10").build();
     TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
     TypedValue outValue = new TypedValue();
     typedArray.getValue(0, outValue);
