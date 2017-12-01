@@ -175,6 +175,14 @@ public class ShadowLog {
     return logs == null ? Collections.emptyList() : new ArrayList<>(logs);
   }
 
+  /**
+   * Clear any accummulated logs
+   *
+   */
+  public static void clear() {
+    reset();
+  }
+
   @Resetter
   public static void reset() {
     logs.clear();
