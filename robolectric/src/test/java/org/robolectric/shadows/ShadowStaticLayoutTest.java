@@ -5,9 +5,9 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowStaticLayoutTest {
 
   @Test

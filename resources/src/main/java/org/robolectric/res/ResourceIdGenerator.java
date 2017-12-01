@@ -11,7 +11,7 @@ public class ResourceIdGenerator {
   private final Map<String, TypeTracker> typeInfo = new HashMap<>();
   private int packageIdentifier;
 
-  private class TypeTracker {
+  private static class TypeTracker {
     private int typeIdentifier;
     private int currentMaxEntry;
 

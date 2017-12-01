@@ -22,7 +22,7 @@ public class RealObjectValidator extends FoundOnImplementsValidator {
   }
 
   public static String join(List<?> params) {
-    StringBuffer retval = new StringBuffer();
+    StringBuilder retval = new StringBuilder();
     boolean comma = false;
     for (Object p : params) {
       if (comma) {

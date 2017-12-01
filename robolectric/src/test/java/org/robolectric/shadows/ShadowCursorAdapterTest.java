@@ -15,9 +15,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowCursorAdapterTest {
 
   private Cursor curs;
@@ -103,7 +103,7 @@ public class ShadowCursorAdapterTest {
     assertThat(adapter.getCursor()).isNotSameAs(curs);
   }
 
-  private class TestAdapter extends CursorAdapter {
+  private static class TestAdapter extends CursorAdapter {
 
     public TestAdapter(Cursor curs) {
       super(RuntimeEnvironment.application, curs, false);
@@ -119,7 +119,7 @@ public class ShadowCursorAdapterTest {
     }
   }
 
-  private class TestAdapterWithFlags extends CursorAdapter {
+  private static class TestAdapterWithFlags extends CursorAdapter {
     public TestAdapterWithFlags(Cursor c, int flags) {
       super(RuntimeEnvironment.application, c, flags);
     }

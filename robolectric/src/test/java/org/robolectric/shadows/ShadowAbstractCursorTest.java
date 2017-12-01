@@ -11,9 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAbstractCursorTest {
 
   private TestCursor cursor;
@@ -219,7 +219,7 @@ public class ShadowAbstractCursorTest {
     assertThat(cursor.isClosed()).isTrue();
   }
 
-  private class TestCursor extends AbstractCursor {
+  private static class TestCursor extends AbstractCursor {
 
     public List<Object> theTable = new ArrayList<>();
 

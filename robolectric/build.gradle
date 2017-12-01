@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.11"
+    id "net.ltgt.errorprone" version "0.0.13"
 }
 
 new RoboJavaModulePlugin(
@@ -28,12 +28,12 @@ dependencies {
     compile project(":sandbox")
     compile project(":utils")
 
-    // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
+    // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
     compile project(":shadows:framework")
 
     // Compile dependencies
-    compile "org.bouncycastle:bcprov-jdk16:1.46"
+    compile "org.bouncycastle:bcprov-jdk15on:1.52"
     compile "com.thoughtworks.xstream:xstream:1.4.8"
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
@@ -49,7 +49,14 @@ dependencies {
     testCompile "org.assertj:assertj-core:3.8.0"
     testCompile "org.mockito:mockito-core:2.5.4"
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates // run against whatever this JDK supports
+    testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
+}
+
+test {
+    if (project.hasProperty('maxParallelForks'))
+        maxParallelForks = project.maxParallelForks as int
+    if (project.hasProperty('forkEvery'))
+        forkEvery = project.forkEvery as int
 }
 
 project.apply plugin: CheckApiChangesPlugin
@@ -63,7 +70,7 @@ checkApiChanges {
             "org.robolectric:sandbox:${apiCompatVersion}@jar",
             "org.robolectric:utils:${apiCompatVersion}@jar",
             "org.robolectric:shadowapi:${apiCompatVersion}@jar",
-            "org.robolectric:shadows-core:${apiCompatVersion}@jar",
+            "org.robolectric:framework:${apiCompatVersion}@jar",
     ]
 
     to = [

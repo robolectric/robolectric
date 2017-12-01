@@ -1,17 +1,16 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.11"
+    id "net.ltgt.errorprone" version "0.0.13"
 }
 
 apply plugin: RoboJavaModulePlugin
 
 dependencies {
     compile project(":robolectric")
-    compile "junit:junit:4.12"
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     // Testing dependencies
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
-    testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
+    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:3.8.0"
 
     testCompile "org.powermock:powermock-module-junit4:1.6.2"

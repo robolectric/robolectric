@@ -6,9 +6,9 @@ import android.app.Activity;
 import android.webkit.CookieSyncManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowCookieSyncManagerTest {
 
   @Test

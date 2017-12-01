@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
@@ -17,9 +18,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowBitmapFactoryTest {
   @Test
   public void decodeResource_shouldSetDescriptionAndCreatedFrom() throws Exception {
@@ -177,7 +178,7 @@ public class ShadowBitmapFactoryTest {
     String data = "arbitrary bytes";
     ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse(data), 123, 456);
 
-    byte[] bytes = data.getBytes();
+    byte[] bytes = data.getBytes(UTF_8);
     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     assertEquals("Bitmap for " + data, shadowOf(bitmap).getDescription());
     assertEquals(123, bitmap.getWidth());
@@ -189,7 +190,7 @@ public class ShadowBitmapFactoryTest {
     String data = "arbitrary bytes";
     ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse(data), 123, 456);
 
-    byte[] bytes = data.getBytes();
+    byte[] bytes = data.getBytes(UTF_8);
     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 1, bytes.length - 2);
     assertEquals("Bitmap for " + data + " bytes 1..13", shadowOf(bitmap).getDescription());
   }

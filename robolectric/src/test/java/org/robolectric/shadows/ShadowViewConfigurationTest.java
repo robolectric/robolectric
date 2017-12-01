@@ -1,16 +1,16 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.view.ViewConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowViewConfigurationTest {
 
   @Test
@@ -34,9 +34,10 @@ public class ShadowViewConfigurationTest {
     assertEquals(320 * 480 * 4, ViewConfiguration.getMaximumDrawingCacheSize());
     assertEquals(3000, ViewConfiguration.getZoomControlsTimeout());
     assertEquals(500, ViewConfiguration.getGlobalActionKeyTimeout());
-    assertEquals(0.015f, ViewConfiguration.getScrollFriction());
+    assertThat(ViewConfiguration.getScrollFriction()).isEqualTo(0.015f);
 
-    assertEquals(1f, RuntimeEnvironment.application.getResources().getDisplayMetrics().density);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density)
+        .isEqualTo(1f);
 
     assertEquals(10, viewConfiguration.getScaledScrollBarSize());
     assertEquals(12, viewConfiguration.getScaledFadingEdgeLength());

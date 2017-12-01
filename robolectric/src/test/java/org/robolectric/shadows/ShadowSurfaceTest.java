@@ -7,9 +7,9 @@ import android.graphics.SurfaceTexture;
 import android.view.Surface;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSurfaceTest {
   private final SurfaceTexture texture = new SurfaceTexture(0);
   private final Surface surface = new Surface(texture);

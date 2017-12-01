@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.11"
+    id "net.ltgt.errorprone" version "0.0.13"
 }
 
 new RoboJavaModulePlugin(
@@ -15,7 +15,7 @@ shadows {
 dependencies {
     compileOnly project(":shadows:framework")
 
-    compileOnly "com.android.support:support-fragment:26.0.0-alpha1"
+    compileOnly "com.android.support:support-fragment:26.0.1"
     compileOnly "com.google.android.gms:play-services-base:8.4.0"
     compileOnly "com.google.android.gms:play-services-basement:8.4.0"
 
@@ -26,15 +26,9 @@ dependencies {
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:3.8.0"
     testCompile "org.mockito:mockito-core:2.5.4"
-    testRuntime "com.android.support:support-fragment:26.0.0-alpha1"
+    testRuntime "com.android.support:support-fragment:26.0.1"
     testRuntime "com.google.android.gms:play-services-base:8.4.0"
     testRuntime "com.google.android.gms:play-services-basement:8.4.0"
 
-    testRuntime AndroidSdk.MAX_SDK_FOR_THIS_JDK.coordinates
-}
-
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-play-services'
-    }
+    testRuntime AndroidSdk.MAX_SDK.coordinates
 }

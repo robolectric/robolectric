@@ -1,9 +1,5 @@
 package org.robolectric.android.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
@@ -16,9 +12,13 @@ import android.widget.TextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.SelfTest.class)
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+@RunWith(RobolectricTestRunner.class)
 public class FragmentControllerTest {
 
   private static final int VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY = 123;
@@ -132,6 +132,18 @@ public class FragmentControllerTest {
     Intent intentInFragment = controller.get().getActivity().getIntent();
     assertThat(intentInFragment.getAction()).isEqualTo("test_action");
     assertThat(intentInFragment.getExtras().getString("test_key")).isEqualTo("test_value");
+  }
+
+  @Test
+  public void withArguments() {
+    final LoginFragment fragment = new LoginFragment();
+
+    Bundle arguments = new Bundle();
+    arguments.putString("test_argument", "test_value");
+    FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class, arguments).create();
+
+    Bundle argumentsInFragment = controller.get().getArguments();
+    assertThat(argumentsInFragment.getString("test_argument")).isEqualTo("test_value");
   }
 
   @Test

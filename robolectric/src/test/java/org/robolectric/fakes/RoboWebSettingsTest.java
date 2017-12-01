@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.webkit.WebSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 @DoNotInstrument
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class RoboWebSettingsTest {
   private final RoboWebSettings webSettings = new RoboWebSettings();
   private static final boolean[] TRUE_AND_FALSE = {true, false};

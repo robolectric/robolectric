@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -10,10 +11,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteLibraryLoaderTest {
   /** Saved system properties. */
   private String savedOs, savedArch;
@@ -68,7 +70,7 @@ public class SQLiteLibraryLoaderTest {
     loader.getNativeLibraryPath().getParentFile().mkdirs();
 
     SQLiteLibraryLoader.copy(
-        new ByteArrayInputStream("changed".getBytes()),
+        new ByteArrayInputStream("changed".getBytes(UTF_8)),
         new FileOutputStream(loader.getNativeLibraryPath()));
     long firstSize = loader.getNativeLibraryPath().length();
 

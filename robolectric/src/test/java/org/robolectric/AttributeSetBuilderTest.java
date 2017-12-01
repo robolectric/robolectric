@@ -13,7 +13,7 @@ import org.robolectric.res.AttributeResource;
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}
  */
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class AttributeSetBuilderTest {
 
   private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";

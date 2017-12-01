@@ -19,6 +19,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -67,7 +68,9 @@ public class ShadowTypeface {
     }
 
     for (String assetPath : paths) {
-      if (new File(assetPath).exists()) {
+      // check if in zip file too?
+      FsFile[] files = appManifest.getAssetsDirectory().listFiles(new StartsWith(path));
+      if (new File(assetPath).exists() || files.length != 0) {
         return createUnderlyingTypeface(path, Typeface.NORMAL);
       }
     }
@@ -174,6 +177,19 @@ public class ShadowTypeface {
 
     public int getStyle() {
       return style;
+    }
+  }
+
+  private static class StartsWith implements FsFile.Filter {
+    private final String contains;
+
+    public StartsWith(String contains) {
+      this.contains = contains;
+    }
+
+    @Override
+    public boolean accept(FsFile file) {
+      return file.getName().startsWith(contains);
     }
   }
 }

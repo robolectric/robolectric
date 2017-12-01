@@ -53,6 +53,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.PatternMatcher;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Pair;
@@ -741,6 +742,7 @@ public class ShadowPackageManager {
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+    applicationInfo.uid = Process.myUid();
     setUpPackageStorage(applicationInfo);
 
     int labelRes = 0;

@@ -7,10 +7,10 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.ContentProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContentProviderTest {
   @Config(minSdk = KITKAT)
   @Test public void testSetCallingPackage() throws Exception {

@@ -71,6 +71,7 @@ public class ShadowMap {
     return new ShadowInfo(className, new ShadowConfig(clazz.getName(), annotation));
   }
 
+  @SuppressWarnings("ReferenceEquality")
   public Set<String> getInvalidatedClasses(ShadowMap previous) {
     if (this == previous) return Collections.emptySet();
 

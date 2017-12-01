@@ -379,9 +379,14 @@ public class ShadowBitmap {
         width != getWidth() ||
         height != getHeight() ||
         pixels.length != colors.length) {
-      throw new RuntimeException("Not implemented.");
+      for (int y0 = y; y0 < y + height; y0++) {
+        for (int x0 = x; x0 < x + width; x0++) {
+          pixels[offset + y0 * stride + x0] = colors[(y0 - y) * this.width + (x0 - x)];
+        }
+      }
+    } else {
+      System.arraycopy(colors, 0, pixels, 0, colors.length);
     }
-    System.arraycopy(colors, 0, pixels, 0, colors.length);
   }
 
   @Implementation

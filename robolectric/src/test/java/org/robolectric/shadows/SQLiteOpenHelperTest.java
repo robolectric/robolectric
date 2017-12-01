@@ -12,9 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteOpenHelperTest {
 
   private TestOpenHelper helper;
@@ -221,7 +221,7 @@ public class SQLiteOpenHelperTest {
     assertThat(helper.onUpgradeCalled).isFalse();
   }
 
-  private class TestOpenHelper extends SQLiteOpenHelper {
+  private static class TestOpenHelper extends SQLiteOpenHelper {
     public boolean onCreateCalled;
     public boolean onUpgradeCalled;
     public boolean onOpenCalled;
