@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.res.ColorStateList;
@@ -23,7 +22,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
-import android.view.Display;
 import java.io.File;
 import java.io.InputStream;
 import org.assertj.core.data.Offset;
@@ -33,12 +31,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -842,7 +839,7 @@ public class ShadowResourcesTest {
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
 
     resources.getValue(R.integer.loneliest_number, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
