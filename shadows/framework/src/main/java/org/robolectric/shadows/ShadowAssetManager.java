@@ -15,6 +15,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,8 +30,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
-
-import com.google.common.collect.Ordering;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.HiddenApi;
@@ -69,9 +68,18 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE = Ordering
-          .explicit( "reference", "color", "boolean",  "integer", "fraction", "dimension", "float", "enum", "flag", "string");
-
+  public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
+      Ordering.explicit(
+          "reference",
+          "color",
+          "boolean",
+          "integer",
+          "fraction",
+          "dimension",
+          "float",
+          "enum",
+          "flag",
+          "string");
 
   boolean strictErrors = false;
 

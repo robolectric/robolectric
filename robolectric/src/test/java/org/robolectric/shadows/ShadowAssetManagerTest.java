@@ -25,7 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -36,8 +35,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -186,9 +185,10 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void multiFormatAttributes_integerDecimalValue() {
-    AttributeSet attributeSet = Robolectric.buildAttributeSet()
-            .addAttribute(R.attr.multiformat, "16").build();
-    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "16").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
     TypedValue outValue = new TypedValue();
     typedArray.getValue(0, outValue);
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
@@ -196,9 +196,10 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void multiFormatAttributes_integerHexValue() {
-    AttributeSet attributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(R.attr.multiformat, "0x10").build();
-    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "0x10").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
     TypedValue outValue = new TypedValue();
     typedArray.getValue(0, outValue);
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
@@ -206,9 +207,10 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void multiFormatAttributes_stringValue() {
-    AttributeSet attributeSet = Robolectric.buildAttributeSet()
-            .addAttribute(R.attr.multiformat, "Hello World").build();
-    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "Hello World").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
     TypedValue outValue = new TypedValue();
     typedArray.getValue(0, outValue);
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
@@ -216,9 +218,10 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void multiFormatAttributes_booleanValue() {
-    AttributeSet attributeSet = Robolectric.buildAttributeSet()
-            .addAttribute(R.attr.multiformat, "true").build();
-    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "true").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
     TypedValue outValue = new TypedValue();
     typedArray.getValue(0, outValue);
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
