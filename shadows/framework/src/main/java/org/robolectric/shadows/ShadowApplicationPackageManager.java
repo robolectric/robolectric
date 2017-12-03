@@ -26,7 +26,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
-import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
@@ -45,7 +44,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -948,10 +946,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public CharSequence getText(String packageName, @StringRes int resid, ApplicationInfo appInfo) {
     return null;
-  }
-
-  @Implementation
-  public void installPackage(Uri packageURI, IPackageInstallObserver observer, int flags, String installerPackageName) {
   }
 
   @Implementation
