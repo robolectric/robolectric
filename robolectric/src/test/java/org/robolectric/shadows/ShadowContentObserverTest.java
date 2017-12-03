@@ -8,9 +8,9 @@ import android.os.Handler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContentObserverTest {
 
   private TestContentObserver observer;
@@ -46,7 +46,7 @@ public class ShadowContentObserverTest {
     assertThat(observer.selfChange).isTrue();
   }
 
-  private class TestContentObserver extends ContentObserver {
+  private static class TestContentObserver extends ContentObserver {
 
     public TestContentObserver(Handler handler) {
       super(handler);

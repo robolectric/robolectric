@@ -16,7 +16,7 @@ enum RoboType {
     this.type = type;
   }
 
-  private Class type;
+  private final Class type;
 
   public static Class findPrimitiveClass(String name) {
     for (RoboType type : RoboType.values()) {

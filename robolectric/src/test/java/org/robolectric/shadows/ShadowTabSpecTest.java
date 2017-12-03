@@ -16,9 +16,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowTabSpecTest {
   Drawable icon1;
 
@@ -67,12 +67,10 @@ public class ShadowTabSpecTest {
   @Test
   public void shouldSetTheContentView() throws Exception {
     TabHost.TabSpec foo = new TabHost(RuntimeEnvironment.application).newTabSpec("Foo").setContent(
-        new TabContentFactory() {
-          public View createTabContent(String tag) {
-            TextView tv = new TextView(RuntimeEnvironment.application);
-            tv.setText("The Text of " + tag);
-            return tv;
-          }
+        tag -> {
+          TextView tv = new TextView(RuntimeEnvironment.application);
+          tv.setText("The Text of " + tag);
+          return tv;
         });
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
@@ -93,7 +91,7 @@ public class ShadowTabSpecTest {
     assertThat(viewId).isEqualTo(R.id.title);
   }
 
-  private class TestIcon extends Drawable {
+  private static class TestIcon extends Drawable {
 
     @Override
     public void draw(Canvas canvas) {

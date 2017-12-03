@@ -1,11 +1,11 @@
 package org.robolectric.android;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -19,11 +19,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.SelfTest.class) // todo: @Config(sdk=ALL_SDKS) or something
+@RunWith(RobolectricTestRunner.class) // todo: @Config(sdk=ALL_SDKS) or something
 public class DrawableResourceLoaderTest {
   private Resources resources;
 
@@ -38,7 +38,7 @@ public class DrawableResourceLoaderTest {
   }
 
   @Test
-  public void testGetDrawable_shouldWorkWithSystem() throws Exception {
+  public void testGetDrawableBundle_shouldWorkWithSystem() throws Exception {
     assertNotNull(resources.getDrawable(android.R.drawable.ic_popup_sync));
   }
 
@@ -53,10 +53,14 @@ public class DrawableResourceLoaderTest {
     assertThat(resources.getDrawable(R.drawable.l0_red)).isInstanceOf(BitmapDrawable.class);
     assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
     assertThat(resources.getDrawable(R.drawable.rainbow)).isInstanceOf(LayerDrawable.class);
+  }
+
+  @Test @Config(maxSdk = KITKAT)
+  public void testVectorDrawableType_preVectors() {
     assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(BitmapDrawable.class);
   }
 
-  @Test @Config(qualifiers = "anydpi", minSdk = LOLLIPOP)
+  @Test @Config(minSdk = LOLLIPOP)
   public void testVectorDrawableType() {
     assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(VectorDrawable.class);
   }
@@ -75,11 +79,11 @@ public class DrawableResourceLoaderTest {
   @Test
   public void shouldCreateAnimators() throws Exception {
     Animator animator = AnimatorInflater.loadAnimator(application, R.animator.spinning);
-    assertInstanceOf(Animator.class, animator);
+    assertThat(animator).isInstanceOf((Class<? extends Animator>) Animator.class);
   }
 
   @Test
   public void shouldCreateAnimsAndColors() throws Exception {
-    assertInstanceOf(ColorDrawable.class, resources.getDrawable(R.color.grey42));
+    assertThat(resources.getDrawable(R.color.grey42)).isInstanceOf((Class<? extends android.graphics.drawable.Drawable>) ColorDrawable.class);
   }
 }

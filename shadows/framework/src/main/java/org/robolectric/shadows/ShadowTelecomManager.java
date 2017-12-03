@@ -290,7 +290,7 @@ public class ShadowTelecomManager {
     this.simCallManager = simCallManager;
   }
 
-  public class CallRecord {
+  public static class CallRecord {
     public final PhoneAccountHandle phoneAccount;
     public final Bundle bundle;
 

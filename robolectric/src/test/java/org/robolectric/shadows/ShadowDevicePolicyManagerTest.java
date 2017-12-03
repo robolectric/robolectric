@@ -13,15 +13,18 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.UserManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowDevicePolicyManager}. */
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public final class ShadowDevicePolicyManagerTest {
 
   private DevicePolicyManager devicePolicyManager;
@@ -576,5 +579,134 @@ public final class ShadowDevicePolicyManagerTest {
       fail("expected SecurityException");
     } catch (SecurityException expected) {
     }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getAutoTimeRequiredShouldWorkAsIntendedForDeviceOwner() {
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setAutoTimeRequired is called with true
+    devicePolicyManager.setAutoTimeRequired(testComponent, true);
+
+    // THEN getAutoTimeRequired should return true
+    assertThat(devicePolicyManager.getAutoTimeRequired()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getAutoTimeRequiredShouldWorkAsIntendedForProfileOwner() {
+    // GIVEN the caller is the profile owner
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // WHEN setAutoTimeRequired is called with false
+    devicePolicyManager.setAutoTimeRequired(testComponent, false);
+
+    // THEN getAutoTimeRequired should return false
+    assertThat(devicePolicyManager.getAutoTimeRequired()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getAutoTimeRequiredShouldReturnFalseIfNotSet() {
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setAutoTimeRequired has not been called
+    // THEN getAutoTimeRequired should return false
+    assertThat(devicePolicyManager.getAutoTimeRequired()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getPermittedAccessibilityServicesShouldWorkAsIntendedForDeviceOwner() {
+    List<String> accessibilityServices =
+        Arrays.asList("com.example.accessibility1", "com.example.accessibility2");
+
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setPermittedAccessibilityServices is called with a valid list
+    devicePolicyManager.setPermittedAccessibilityServices(testComponent, accessibilityServices);
+
+    // THEN getAutoTimeRequired should return the list
+    assertThat(devicePolicyManager.getPermittedAccessibilityServices(testComponent))
+        .isEqualTo(accessibilityServices);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getPermittedAccessibilityServicesShouldWorkAsIntendedForProfileOwner() {
+    List<String> accessibilityServices = new ArrayList<>();
+
+    // GIVEN the caller is the profile owner
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // WHEN setPermittedAccessibilityServices is called with an empty list
+    devicePolicyManager.setPermittedAccessibilityServices(testComponent, accessibilityServices);
+
+    // THEN getAutoTimeRequired should return an empty list
+    assertThat(devicePolicyManager.getPermittedAccessibilityServices(testComponent)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getPermittedAccessibilityServicesShouldReturnNullIfNullIsSet() {
+    List<String> accessibilityServices = null;
+
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setPermittedAccessibilityServices is called with a null list
+    devicePolicyManager.setPermittedAccessibilityServices(testComponent, accessibilityServices);
+
+    // THEN getAutoTimeRequired should return null
+    assertThat(devicePolicyManager.getPermittedAccessibilityServices(testComponent)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getPermittedInputMethodsShouldWorkAsIntendedForDeviceOwner() {
+    List<String> inputMethods = Arrays.asList("com.example.input1", "com.example.input2");
+
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setPermittedInputMethods is called with a valid list
+    devicePolicyManager.setPermittedInputMethods(testComponent, inputMethods);
+
+    // THEN getAutoTimeRequired should return the list
+    assertThat(devicePolicyManager.getPermittedInputMethods(testComponent)).isEqualTo(inputMethods);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getPermittedInputMethodsShouldWorkAsIntendedForProfileOwner() {
+    List<String> inputMethods = new ArrayList<>();
+
+    // GIVEN the caller is the profile owner
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // WHEN setPermittedInputMethods is called with an empty list
+    devicePolicyManager.setPermittedInputMethods(testComponent, inputMethods);
+
+    // THEN getAutoTimeRequired should return an empty list
+    assertThat(devicePolicyManager.getPermittedInputMethods(testComponent)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getPermittedInputMethodsShouldReturnNullIfNullIsSet() {
+    List<String> inputMethods = null;
+
+    // GIVEN the caller is the device owner
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN setPermittedInputMethods is called with a null list
+    devicePolicyManager.setPermittedInputMethods(testComponent, inputMethods);
+
+    // THEN getAutoTimeRequired should return null
+    assertThat(devicePolicyManager.getPermittedInputMethods(testComponent)).isNull();
   }
 }

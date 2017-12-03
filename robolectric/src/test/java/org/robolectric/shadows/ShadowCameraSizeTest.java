@@ -6,10 +6,10 @@ import android.hardware.Camera;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowCameraSizeTest {
 
   private Camera.Size cameraSize;

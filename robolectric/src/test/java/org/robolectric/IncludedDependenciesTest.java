@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class IncludedDependenciesTest {
   @Test
   public void jsonShouldWork() throws Exception {

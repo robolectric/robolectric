@@ -10,9 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowVideoViewTest {
 
   private VideoView view;
@@ -144,19 +144,19 @@ public class ShadowVideoViewTest {
     assertThat(view.getCurrentPosition()).isEqualTo(10000);
   }
 
-  private class TestPreparedListener implements MediaPlayer.OnPreparedListener {
+  private static class TestPreparedListener implements MediaPlayer.OnPreparedListener {
     @Override
     public void onPrepared(MediaPlayer mp) {}
   }
 
-  private class TestErrorListener implements MediaPlayer.OnErrorListener  {
+  private static class TestErrorListener implements MediaPlayer.OnErrorListener  {
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
       return false;
     }
   }
 
-  private class TestCompletionListener implements MediaPlayer.OnCompletionListener {
+  private static class TestCompletionListener implements MediaPlayer.OnCompletionListener {
     @Override
     public void onCompletion(MediaPlayer mp) {}
   }

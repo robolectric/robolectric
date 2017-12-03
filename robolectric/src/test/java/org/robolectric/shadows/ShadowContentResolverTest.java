@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doReturn;
@@ -50,14 +51,14 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowContentResolverTest {
   private static final String AUTHORITY = "org.robolectric";
 
@@ -307,11 +308,11 @@ public class ShadowContentResolverTest {
 
   @Test
   public void openInputStream_returnsPreRegisteredStream() throws Exception {
-    shadowContentResolver.registerInputStream(uri21, new ByteArrayInputStream("ourStream".getBytes()));
+    shadowContentResolver.registerInputStream(uri21, new ByteArrayInputStream("ourStream".getBytes(UTF_8)));
     InputStream inputStream = contentResolver.openInputStream(uri21);
     byte[] data = new byte[9];
     inputStream.read(data);
-    assertThat(new String(data)).isEqualTo("ourStream");
+    assertThat(new String(data, UTF_8)).isEqualTo("ourStream");
   }
 
   @Test
@@ -857,7 +858,7 @@ public class ShadowContentResolverTest {
     }
   }
 
-  private class TestContentObserver extends ContentObserver {
+  private static class TestContentObserver extends ContentObserver {
     public TestContentObserver(Handler handler) {
       super(handler);
     }

@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.11"
+    id "net.ltgt.errorprone" version "0.0.13"
 }
 
 apply plugin: RoboJavaModulePlugin
@@ -9,7 +9,7 @@ apply plugin: RoboJavaModulePlugin
 dependencies {
     compile project(":robolectric")
     compile "junit:junit:4.12"
-    testCompile "com.google.android:android-stubs:26"
+    testCompile "com.google.android:android-stubs:27"
 
     // Testing dependencies
     testCompile "org.assertj:assertj-core:3.8.0"

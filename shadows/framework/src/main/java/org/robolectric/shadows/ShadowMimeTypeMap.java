@@ -13,7 +13,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowMimeTypeMap {
   private final Map<String, String> extensionToMimeTypeMap = new HashMap<>();
   private final Map<String, String> mimeTypeToExtensionMap = new HashMap<>();
-  private static MimeTypeMap singleton = null;
+  private static volatile MimeTypeMap singleton = null;
   private static final Object singletonLock = new Object();
 
   @Implementation

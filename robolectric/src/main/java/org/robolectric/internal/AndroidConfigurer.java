@@ -88,6 +88,7 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
+    builder.doNotInstrumentPackage("android.support.test");
 
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
       for (String packagePrefix : provider.getProvidedPackageNames()) {

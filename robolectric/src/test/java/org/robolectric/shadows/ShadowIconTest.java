@@ -10,10 +10,10 @@ import android.net.Uri;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(minSdk = M)
 public class ShadowIconTest {
   public static final int TYPE_BITMAP = 1;

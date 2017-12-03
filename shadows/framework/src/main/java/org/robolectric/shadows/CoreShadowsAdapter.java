@@ -10,7 +10,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.Scheduler;
 
 /**
- * Interface between the Robolectric runtime and the shadows-core module.
+ * Interface between the Robolectric runtime and the shadows-framework module.
  */
 public class CoreShadowsAdapter implements ShadowsAdapter {
   @Override
