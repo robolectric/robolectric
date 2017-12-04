@@ -172,7 +172,11 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        typedValue.type = TypedValue.TYPE_INT_HEX;
+        if (data.startsWith("0x")) {
+          typedValue.type = TypedValue.TYPE_INT_HEX;
+        } else {
+          typedValue.type = TypedValue.TYPE_INT_DEC;
+        }
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -222,17 +226,12 @@ public class Converter<T> {
 
       if ("true".equalsIgnoreCase(data)) {
         typedValue.data = 1;
+        return true;
       } else if ("false".equalsIgnoreCase(data)) {
         typedValue.data = 0;
-      } else {
-        try {
-          int intValue = Integer.parseInt(data);
-          typedValue.data = intValue == 0 ? 0 : 1;
-        } catch (NumberFormatException e) {
-          return false;
-        }
+        return true;
       }
-      return true;
+      return false;
     }
   }
 
