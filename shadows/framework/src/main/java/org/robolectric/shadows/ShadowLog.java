@@ -176,8 +176,7 @@ public class ShadowLog {
   }
 
   /**
-   * Clear any accummulated logs
-   *
+   * Clear all accummulated logs.
    */
   public static void clear() {
     reset();
