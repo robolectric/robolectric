@@ -5,12 +5,14 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.LoadedApk;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
@@ -107,7 +109,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
+    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
@@ -153,6 +156,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       appResources.updateConfiguration(configuration, displayMetrics);
 
+      initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
+
       application.onCreate();
     }
   }
@@ -170,6 +175,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
     displayMetrics.noncompatXdpi = displayMetrics.xdpi;
     displayMetrics.noncompatYdpi = displayMetrics.ydpi;
+  }
+
+  private void initInstrumentation(
+      ActivityThread activityThread,
+      RoboInstrumentation androidInstrumentation,
+      ApplicationInfo applicationInfo) {
+    final ComponentName component =
+        new ComponentName(
+            applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
+    androidInstrumentation.init(
+        ActivityThread.class, activityThread, RuntimeEnvironment.application, component);
+    androidInstrumentation.onCreate(new Bundle());
   }
 
   /**
