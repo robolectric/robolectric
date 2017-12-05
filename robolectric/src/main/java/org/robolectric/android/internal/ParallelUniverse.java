@@ -10,11 +10,13 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -29,6 +31,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -78,14 +81,21 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    Resources systemResources = Resources.getSystem();
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
+
     String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
         sdkConfig.getApiLevel(), configuration, displayMetrics);
+    setDisplayMetricsDimens(displayMetrics);
 
+    Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
+        ? configuration.getLocales().get(0)
+        : configuration.locale;
+    Locale.setDefault(locale);
+
+    Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
-    RuntimeEnvironment.setQualifiers(qualifiers);
+    RuntimeEnvironment._setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
@@ -141,10 +151,25 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
-      appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
+      appResources.updateConfiguration(configuration, displayMetrics);
 
       application.onCreate();
     }
+  }
+
+  // todo: kill this, use DisplayInfo to initialize instead
+  private void setDisplayMetricsDimens(DisplayMetrics displayMetrics) {
+    displayMetrics.scaledDensity = displayMetrics.density;
+
+    displayMetrics.widthPixels = 480;
+    displayMetrics.heightPixels = 800;
+    displayMetrics.xdpi = displayMetrics.densityDpi;
+    displayMetrics.ydpi = displayMetrics.densityDpi;
+
+    displayMetrics.noncompatWidthPixels = displayMetrics.widthPixels;
+    displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
+    displayMetrics.noncompatXdpi = displayMetrics.xdpi;
+    displayMetrics.noncompatYdpi = displayMetrics.ydpi;
   }
 
   /**

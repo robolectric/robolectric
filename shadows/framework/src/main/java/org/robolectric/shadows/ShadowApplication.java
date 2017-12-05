@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -105,10 +106,18 @@ public class ShadowApplication extends ShadowContextWrapper {
     getInstance().getBackgroundThreadScheduler().advanceBy(0);
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public static void setDisplayMetricsDensity(float densityMultiplier) {
     shadowOf(RuntimeEnvironment.application.getResources()).setDensity(densityMultiplier);
   }
 
+  /**
+   * @deprecated Set up display using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public static void setDefaultDisplay(Display display) {
     shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
   }

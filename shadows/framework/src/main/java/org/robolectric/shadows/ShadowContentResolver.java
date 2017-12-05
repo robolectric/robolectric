@@ -29,13 +29,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -68,7 +67,8 @@ public class ShadowContentResolver {
   private ContentProviderResult[] contentProviderResults;
   private final List<UriPermission> uriPermissions = new ArrayList<>();
 
-  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<>();
+  private final CopyOnWriteArrayList<ContentObserverEntry> contentObservers =
+      new CopyOnWriteArrayList<>();
 
   private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
   private static final Map<String, ContentProvider> providers = new HashMap<>();
@@ -79,6 +79,37 @@ public class ShadowContentResolver {
     syncableAccounts.clear();
     providers.clear();
     masterSyncAutomatically = false;
+  }
+
+  private static class ContentObserverEntry {
+    public final Uri uri;
+    public final boolean notifyForDescendents;
+    public final ContentObserver observer;
+
+    private ContentObserverEntry(Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+      this.uri = uri;
+      this.notifyForDescendents = notifyForDescendents;
+      this.observer = observer;
+
+      if (uri == null || observer == null) {
+        throw new NullPointerException();
+      }
+    }
+
+    public boolean matches(Uri test) {
+      if (!Objects.equals(uri.getScheme(), test.getScheme())) {
+        return false;
+      }
+      if (!Objects.equals(uri.getAuthority(), test.getAuthority())) {
+        return false;
+      }
+
+      String uriPath = uri.getPath();
+      String testPath = test.getPath();
+
+      return Objects.equals(uriPath, testPath)
+          || notifyForDescendents && testPath != null && testPath.startsWith(uriPath);
+    }
   }
 
   public static class NotifiedUri {
@@ -355,15 +386,9 @@ public class ShadowContentResolver {
   public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
 
-    CopyOnWriteArraySet<ContentObserver> observers;
-    synchronized (this) {
-      observers = contentObservers.get(uri);
-    }
-    if (observers != null) {
-      for (ContentObserver obs : observers) {
-        if (obs != null && obs != observer) {
-          obs.dispatchChange(false, uri);
-        }
+    for (ContentObserverEntry entry : contentObservers) {
+      if (entry.matches(uri) && entry.observer != observer) {
+        entry.observer.dispatchChange(false, uri);
       }
     }
     if (observer != null && observer.deliverSelfNotifications()) {
@@ -723,55 +748,53 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  synchronized public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
-    if (observers == null) {
-      observers = new CopyOnWriteArraySet<>();
-      contentObservers.put(uri, observers);
+  public void registerContentObserver(
+      Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+    if (uri == null || observer == null) {
+      throw new NullPointerException();
     }
-    observers.add(observer);
+    contentObservers.add(new ContentObserverEntry(uri, notifyForDescendents, observer));
   }
 
   @Implementation
-  public void registerContentObserver(Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
+  public void registerContentObserver(
+      Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
     registerContentObserver(uri, notifyForDescendents, observer);
   }
 
   @Implementation
-  public void unregisterContentObserver( ContentObserver observer ) {
-    if ( observer != null ) {
-      Collection<CopyOnWriteArraySet<ContentObserver>> observerSets;
-      synchronized (this) {
-        observerSets = contentObservers.values();
-      }
-      for (CopyOnWriteArraySet<ContentObserver> observers : observerSets) {
-        observers.remove(observer);
+  public void unregisterContentObserver(ContentObserver observer) {
+    synchronized (contentObservers) {
+      for (ContentObserverEntry entry : contentObservers) {
+        if (entry.observer == observer) {
+          contentObservers.remove(entry);
+        }
       }
     }
   }
 
-  /**
-   * Clears the list of registered {@link ContentObserver}s.
-   *
-   * Since a new {@link ContentResolver} is created for each test case,
-   * this method generally need not be called explicitly.
-   */
-  @SuppressWarnings({"unused", "WeakerAccess"})
-  synchronized public void clearContentObservers() {
+  /** @deprecated Do not use this method. */
+  @Deprecated
+  public void clearContentObservers() {
     contentObservers.clear();
   }
 
   /**
-   * Returns the content observers registered with the given URI.
+   * Returns the content observers registered for updates under the given URI.
    *
-   * Will be empty if no observer is registered.
+   * <p>Will be empty if no observer is registered.
    *
    * @param uri Given URI
    * @return The content observers, or null.
    */
-  synchronized public Collection<ContentObserver> getContentObservers( Uri uri ) {
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
-    return (observers == null) ? Collections.<ContentObserver>emptyList() : observers;
+  public Collection<ContentObserver> getContentObservers(Uri uri) {
+    ArrayList<ContentObserver> observers = new ArrayList<>(1);
+    for (ContentObserverEntry entry : contentObservers) {
+      if (entry.matches(uri)) {
+        observers.add(entry.observer);
+      }
+    }
+    return observers;
   }
 
   @Implementation
