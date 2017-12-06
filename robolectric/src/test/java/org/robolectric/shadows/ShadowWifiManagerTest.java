@@ -37,7 +37,7 @@ public class ShadowWifiManagerTest {
     assertThat(wifiManager.getConnectionInfo()).isSameAs(wifiInfo);
   }
 
-  @Test
+  @Test(expected = SecurityException.class)
   public void setWifiEnabled_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted() throws Exception {
     shadowWifiManager.setAccessWifiStatePermission(false);
     wifiManager.setWifiEnabled(true);
