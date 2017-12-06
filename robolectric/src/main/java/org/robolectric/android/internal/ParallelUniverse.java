@@ -33,7 +33,6 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -86,8 +85,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
-        sdkConfig.getApiLevel(), configuration, displayMetrics);
+    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
+        displayMetrics);
     setDisplayMetricsDimens(displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
@@ -97,7 +96,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
-    RuntimeEnvironment._setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
@@ -115,6 +113,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
+    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
