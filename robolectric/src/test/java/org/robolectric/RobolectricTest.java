@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
@@ -95,14 +96,18 @@ public class RobolectricTest {
   @Test
   public void shouldUseSetDensityForContexts() throws Exception {
     assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.0f);
+    assertThat(Resources.getSystem().getDisplayMetrics().density).isEqualTo(1.0f);
     ShadowApplication.setDisplayMetricsDensity(1.5f);
     assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
+    assertThat(Resources.getSystem().getDisplayMetrics().density).isEqualTo(1.0f); // wrong: TODO fix
   }
 
   @Test
   public void shouldUseSetDisplayForContexts() throws Exception {
     assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
     assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
+    assertThat(Resources.getSystem().getDisplayMetrics().widthPixels).isEqualTo(480);
+    assertThat(Resources.getSystem().getDisplayMetrics().heightPixels).isEqualTo(800);
 
     Display display = Shadow.newInstanceOf(Display.class);
     ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
@@ -112,6 +117,8 @@ public class RobolectricTest {
 
     assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(100);
     assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(200);
+    assertThat(Resources.getSystem().getDisplayMetrics().widthPixels).isEqualTo(100);
+    assertThat(Resources.getSystem().getDisplayMetrics().heightPixels).isEqualTo(200);
   }
 
   @Test
