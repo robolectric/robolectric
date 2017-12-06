@@ -91,8 +91,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
-        displayMetrics);
+    String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
+        -        sdkConfig.getApiLevel(), configuration, displayMetrics);
     setDisplayMetricsDimens(displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
@@ -102,6 +102,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
+    RuntimeEnvironment._setQualifiers(qualifiers);
+
 
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
@@ -111,8 +113,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
     PackageParser.Package parsedPackage = null;
 
     ApplicationInfo applicationInfo = null;
@@ -156,7 +157,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
-    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
@@ -192,8 +192,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       appResources.updateConfiguration(configuration, displayMetrics);
 
-      initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
-
       application.onCreate();
     }
   }
@@ -211,12 +209,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
     displayMetrics.noncompatXdpi = displayMetrics.xdpi;
     displayMetrics.noncompatYdpi = displayMetrics.ydpi;
-  }
-
-  private void initInstrumentation(
-      ActivityThread activityThread,
-      RoboInstrumentation androidInstrumentation,
-      ApplicationInfo applicationInfo) {
   }
 
   /**
