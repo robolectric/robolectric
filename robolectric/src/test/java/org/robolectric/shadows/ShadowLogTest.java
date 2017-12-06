@@ -18,6 +18,7 @@ import org.robolectric.shadows.ShadowLog.LogItem;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowLogTest {
+
   @Test
   public void d_shouldLogAppropriately() {
     Log.d("tag", "msg");
@@ -156,8 +157,8 @@ public class ShadowLogTest {
     try {
       ShadowLog.stream = new PrintStream(bos);
       Log.d("tag", "msg");
-      assertThat(new String(bos.toByteArray(), UTF_8)).isEqualTo("D/tag: msg" + System.getProperty("line.separator"));
-
+      assertThat(new String(bos.toByteArray(), UTF_8))
+          .isEqualTo("D/tag: msg" + System.getProperty("line.separator"));
 
       Log.w("tag", new RuntimeException());
       assertTrue(new String(bos.toByteArray(), UTF_8).contains("RuntimeException"));
@@ -169,27 +170,27 @@ public class ShadowLogTest {
   @Test
   public void shouldLogAccordingToTag() throws Exception {
     ShadowLog.reset();
-    Log.d( "tag1", "1" );
-    Log.i( "tag2", "2" );
-    Log.e( "tag3", "3" );
-    Log.w( "tag1", "4" );
-    Log.i( "tag1", "5" );
-    Log.d( "tag2", "6" );
+    Log.d("tag1", "1");
+    Log.i("tag2", "2");
+    Log.e("tag3", "3");
+    Log.w("tag1", "4");
+    Log.i("tag1", "5");
+    Log.d("tag2", "6");
 
     List<LogItem> allItems = ShadowLog.getLogs();
     assertThat(allItems.size()).isEqualTo(6);
     int i = 1;
-    for ( LogItem item : allItems ) {
+    for (LogItem item : allItems) {
       assertThat(item.msg).isEqualTo(Integer.toString(i));
       i++;
     }
-    assertUniformLogsForTag( "tag1", 3 );
-    assertUniformLogsForTag( "tag2", 2 );
-    assertUniformLogsForTag( "tag3", 1 );
+    assertUniformLogsForTag("tag1", 3);
+    assertUniformLogsForTag("tag2", 2);
+    assertUniformLogsForTag("tag3", 1);
   }
 
-  private void assertUniformLogsForTag( String tag, int count ) {
-    List<LogItem> tag1Items = ShadowLog.getLogsForTag( tag );
+  private void assertUniformLogsForTag(String tag, int count) {
+    List<LogItem> tag1Items = ShadowLog.getLogsForTag(tag);
     assertThat(tag1Items.size()).isEqualTo(count);
     int last = -1;
     for (LogItem item : tag1Items) {
@@ -267,5 +268,15 @@ public class ShadowLogTest {
   @Test
   public void getLogsForTag_empty() {
     assertThat(ShadowLog.getLogsForTag("non_existent")).isEmpty();
+  }
+
+  @Test
+  public void clear() {
+    assertThat(ShadowLog.getLogsForTag("tag1")).isEmpty();
+    Log.d("tag1", "1");
+    assertThat(ShadowLog.getLogsForTag("tag1")).isNotEmpty();
+    ShadowLog.clear();
+    assertThat(ShadowLog.getLogsForTag("tag1")).isEmpty();
+    assertThat(ShadowLog.getLogs()).isEmpty();
   }
 }
