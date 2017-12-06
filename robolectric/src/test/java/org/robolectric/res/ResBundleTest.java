@@ -200,7 +200,7 @@ public class ResBundleTest {
     return new TypedResource<>(str, ResType.CHAR_SEQUENCE, mockXmlContext);
   }
 
-  private ResTable_config from(String qualifiers) {
+  private static ResTable_config from(String qualifiers) {
     ResTable_config config = new ResTable_config();
     if (!Strings.isNullOrEmpty(qualifiers) &&
         !new ConfigDescription().parse(qualifiers, config, false)) {

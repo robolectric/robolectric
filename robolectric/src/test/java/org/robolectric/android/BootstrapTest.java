@@ -58,8 +58,9 @@ public class BootstrapTest {
 
   @Test
   public void applySystemConfiguration_shouldAddDefaults() {
-    String outQualifiers = Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(),
-        configuration, displayMetrics);
+    Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(), configuration,
+        displayMetrics);
+    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(outQualifiers).isEqualTo("en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + RuntimeEnvironment.getApiLevel());
 
@@ -93,11 +94,11 @@ public class BootstrapTest {
 
   @Test
   public void applySystemConfiguration_shouldHonorSpecifiedQualifiers() {
-    String outQualifiers = Bootstrap.applyQualifiers(
+    Bootstrap.applyQualifiers(
         "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge-long-round-land-"
             + "appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad",
-        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics
-    );
+        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
@@ -163,7 +164,7 @@ public class BootstrapTest {
       fail("should have thrown");
     } catch (IllegalArgumentException e) {
       // expected
-      assertThat(e.getMessage()).contains("Cannot specify platform version");
+      assertThat(e.getMessage()).contains("Cannot specify conflicting platform version");
     }
   }
 
@@ -194,15 +195,17 @@ public class BootstrapTest {
   @Test
   @Config(sdk = 16)
   public void applySystemConfiguration_densityOnAPI16() {
-    Bootstrap.applyQualifiers("hdpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    Bootstrap.applyQualifiers("hdpi", RuntimeEnvironment.getApiLevel(), configuration,
+        displayMetrics);
     assertThat(displayMetrics.density).isEqualTo(1.5f);
     assertThat(displayMetrics.densityDpi).isEqualTo(240);
   }
 
   @Test
   public void applySystemConfiguration_shouldSetLocaleScript() throws Exception {
-    String outQualifiers = Bootstrap.applyQualifiers("b+sr+Latn",
-        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    Bootstrap.applyQualifiers("b+sr+Latn", RuntimeEnvironment.getApiLevel(),
+        configuration, displayMetrics);
+    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(configuration.locale.getScript()).isEqualTo("Latn");
     assertThat(outQualifiers).contains("b+sr+Latn");
