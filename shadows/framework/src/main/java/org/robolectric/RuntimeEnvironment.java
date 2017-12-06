@@ -78,6 +78,11 @@ public class RuntimeEnvironment {
     activityThread = newActivityThread;
   }
 
+  /**
+   * Returns a qualifier string describing the current {@link Configuration} of the system resources.
+   *
+   * @return a qualifier string as described (https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules)[here].
+   */
   public static String getQualifiers() {
     return qualifiers;
   }
