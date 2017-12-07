@@ -34,9 +34,7 @@ public class InstrumentationConfiguration {
       "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity"
   );
 
-  static final Set<String> RESOURCES_TO_ALWAYS_ACQUIRE = Sets.newHashSet(
-      "build.prop"
-  );
+  static final Set<String> RESOURCES_TO_ALWAYS_ACQUIRE = Sets.newHashSet("build.prop");
 
   private final List<String> instrumentedPackages;
   private final Set<String> instrumentedClasses;
@@ -119,8 +117,8 @@ public class InstrumentationConfiguration {
   /**
    * Determine if {@link SandboxClassLoader} should load a given resource.
    *
-   * @param   name The fully-qualified resource name.
-   * @return  True if the resource should be loaded.
+   * @param name The fully-qualified resource name.
+   * @return True if the resource should be loaded.
    */
   public boolean shouldAcquireResource(String name) {
     return RESOURCES_TO_ALWAYS_ACQUIRE.contains(name);

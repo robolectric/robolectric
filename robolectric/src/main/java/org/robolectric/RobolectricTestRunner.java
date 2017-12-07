@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.os.Build;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

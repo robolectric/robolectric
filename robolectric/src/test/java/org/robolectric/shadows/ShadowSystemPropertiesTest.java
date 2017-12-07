@@ -1,5 +1,25 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import android.os.SystemProperties;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
+public class ShadowSystemPropertiesTest {
+
+  @Test
+  public void get() {
+    assertThat(SystemProperties.get("ro.product.device")).isEqualTo("robolectric");
+  }
+
+  @Test
+  public void getWithDefault() {
+    assertThat(SystemProperties.get("foo", "bar")).isEqualTo("bar");
+  }
 
   // separately test loading the sdk int level for, to ensure the correct build.prop is loaded
 
@@ -62,16 +82,13 @@ package org.robolectric.shadows;
   public void getInt26() {
     assertThat(SystemProperties.getInt("ro.build.version.sdk", 0)).isEqualTo(26);
   }
-}
-
 
   @Test
-  public void removeProperty() {
-    assertThat(SystemProperties.get("foo")).isEqualTo("");
-    ShadowSystemProperties.setProperty("foo", "bar");
-    assertThat(SystemProperties.get("foo")).isEqualTo("bar");
-    ShadowSystemProperties.removeProperty("foo");
-    assertThat(SystemProperties.get("foo")).isEqualTo("");
+  public void set() {
+    assertThat(SystemProperties.get("newkey")).isEqualTo("");
+    SystemProperties.set("newkey", "val");
+    assertThat(SystemProperties.get("newkey")).isEqualTo("val");
+    SystemProperties.set("newkey", null);
+    assertThat(SystemProperties.get("newkey")).isEqualTo("");
   }
 }
-

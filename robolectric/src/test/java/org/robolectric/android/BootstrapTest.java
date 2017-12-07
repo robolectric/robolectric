@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import java.util.Locale;
@@ -58,11 +59,13 @@ public class BootstrapTest {
 
   @Test
   public void applySystemConfiguration_shouldAddDefaults() {
-    Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(), configuration,
-        displayMetrics);
+    Bootstrap.applyQualifiers("", Build.VERSION.RESOURCES_SDK_INT, configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
-    assertThat(outQualifiers).isEqualTo("en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + RuntimeEnvironment.getApiLevel());
+    assertThat(outQualifiers)
+        .isEqualTo(
+            "en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v"
+                + Build.VERSION.RESOURCES_SDK_INT);
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
@@ -97,17 +100,23 @@ public class BootstrapTest {
     Bootstrap.applyQualifiers(
         "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge-long-round-land-"
             + "appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad",
-        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+        Build.VERSION.RESOURCES_SDK_INT,
+        configuration,
+        displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
-          + RuntimeEnvironment.getApiLevel());
+      assertThat(outQualifiers)
+          .isEqualTo(
+              "mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
+                  + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
+                  + Build.VERSION.RESOURCES_SDK_INT);
     } else {
-      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
-          + RuntimeEnvironment.getApiLevel());
+      assertThat(outQualifiers)
+          .isEqualTo(
+              "mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge"
+                  + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
+                  + Build.VERSION.RESOURCES_SDK_INT);
     }
 
     assertThat(configuration.mcc).isEqualTo(310);
