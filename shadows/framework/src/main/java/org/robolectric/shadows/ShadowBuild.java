@@ -14,63 +14,81 @@ public class ShadowBuild {
   private static String radioVersionOverride = null;
 
   /**
-   * Sets the value of the Build.FINGERPRINT field.
+   * Sets the value of the {@link Build#DEVICE} field.
    *
-   * <p>It will be reset for the next test.
+   * It will be reset for the next test.
+   */
+  public static void setDevice(String device) {
+    ReflectionHelpers.setStaticField(Build.class, "DEVICE", device);
+  }
+
+  /**
+   * Sets the value of the {@link Build#FINGERPRINT} field.
+   *
+   * It will be reset for the next test.
    */
   public static void setFingerprint(String fingerprint) {
     ReflectionHelpers.setStaticField(Build.class, "FINGERPRINT", fingerprint);
   }
 
   /**
-   * Sets the value of the Build.ID field.
+   * Sets the value of the {@link Build#ID} field.
    *
-   * <p>It will be reset for the next test.
+   * It will be reset for the next test.
    */
   public static void setId(String id) {
     ReflectionHelpers.setStaticField(Build.class, "ID", id);
   }
 
   /**
-   * Sets the value of the Build.MODEL field.
+   * Sets the value of the {@link Build#MODEL} field.
    *
-   * <p>It will be reset for the next test.
+   * It will be reset for the next test.
    */
   public static void setModel(String model) {
     ReflectionHelpers.setStaticField(Build.class, "MODEL", model);
   }
 
   /**
-   * Sets the value of the Build.VERSION.CODENAME field.
+   * Sets the value of the {@link Build#MANUFACTURER} field.
    *
-   * <p>It will be reset for the next test.
+   * It will be reset for the next test.
+   */
+  public static void setManufacturer(String manufacturer) {
+    ReflectionHelpers.setStaticField(Build.class, "MANUFACTURER", manufacturer);
+  }
+
+  /**
+   * Sets the value of the {@link Build.VERSION#CODENAME} field.
+   *
+   * It will be reset for the next test.
    */
   public static void setVersionCodename(String versionCodename) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "CODENAME", versionCodename);
   }
 
   /**
-   * Sets the value of the Build.VERSION.INCREMENTAL field.
+   * Sets the value of the {@link Build.VERSION#INCREMENTAL} field.
    *
-   * <p>It will be reset for the next test.
+   * It will be reset for the next test.
    */
   public static void setVersionIncremental(String versionIncremental) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "INCREMENTAL", versionIncremental);
   }
 
   /**
-   * Sets the value of the Build.VERSION.RELEASE field.
+   * Sets the value of the {@link Build.VERSION#RELEASE} field.
    *
-   * <p>It will be reset for the next test.
+   * It will be reset for the next test.
    */
   public static void setVersionRelease(String release) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "RELEASE", release);
   }
 
   /**
-   * Sets the value of the Build.TAGS field.
+   * Sets the value of the {@link Build#TAGS} field.
    *
-   * <p>It will be reset for the next test.
+   * It will be reset for the next test.
    */
   public static void setTags(String tags) {
     ReflectionHelpers.setStaticField(Build.class, "TAGS", tags);

@@ -12,6 +12,12 @@ import org.robolectric.RobolectricTestRunner;
 public class ShadowBuildTest {
 
   @Test
+  public void setDevice() {
+    ShadowBuild.setDevice("test_device");
+    assertThat(Build.DEVICE).isEqualTo("test_device");
+  }
+
+  @Test
   public void setFingerprint() {
     ShadowBuild.setFingerprint("test_fingerprint");
     assertThat(Build.FINGERPRINT).isEqualTo("test_fingerprint");
@@ -45,6 +51,12 @@ public class ShadowBuildTest {
   public void setModel() {
     ShadowBuild.setModel("robo_model");
     assertThat(Build.MODEL).isEqualTo("robo_model");
+  }
+
+  @Test
+  public void setManufacturer() {
+    ShadowBuild.setManufacturer("robo_manufacturer");
+    assertThat(Build.MANUFACTURER).isEqualTo("robo_manufacturer");
   }
 
   @Test
