@@ -36,12 +36,20 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         return "android-all"
     }
 
+    int getApiLevel() {
+        return apiLevel
+    }
+
     String getVersion() {
         return "${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
     }
 
     String getCoordinates() {
         return "${groupId}:${artifactId}:${version}"
+    }
+
+    String getStubsCoordinates() {
+        return "com.google.android:android-stubs:${apiLevel}"
     }
 
     String getJarFileName() {
