@@ -65,6 +65,13 @@ public class ShadowWifiManager {
     return wifiInfo;
   }
 
+  /**
+   * Sets the connection info as the provided {@link WifiInfo}.
+   */
+  public void setConnectionInfo(WifiInfo wifiInfo) {
+    this.wifiInfo = wifiInfo;
+  }
+
   @Implementation
   public List<ScanResult> getScanResults() {
     return scanResults;

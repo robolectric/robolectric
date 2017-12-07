@@ -1,26 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.robolectric.annotation.Config;
-import android.os.SystemProperties;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-
-@RunWith(RobolectricTestRunner.class)
-public class ShadowSystemPropertiesTest {
-
-  @Test
-  public void get() {
-    assertThat(SystemProperties.get("ro.product.device")).isEqualTo("generic_x86");
-  }
-
-  @Test
-  public void getWithDefault() {
-    assertThat(SystemProperties.get("foo", "bar")).isEqualTo("bar");
-  }
 
   // separately test loading the sdk int level for, to ensure the correct build.prop is loaded
 
@@ -82,6 +61,17 @@ public class ShadowSystemPropertiesTest {
   @Config(sdk = 26)
   public void getInt26() {
     assertThat(SystemProperties.getInt("ro.build.version.sdk", 0)).isEqualTo(26);
+  }
+}
+
+
+  @Test
+  public void removeProperty() {
+    assertThat(SystemProperties.get("foo")).isEqualTo("");
+    ShadowSystemProperties.setProperty("foo", "bar");
+    assertThat(SystemProperties.get("foo")).isEqualTo("bar");
+    ShadowSystemProperties.removeProperty("foo");
+    assertThat(SystemProperties.get("foo")).isEqualTo("");
   }
 }
 

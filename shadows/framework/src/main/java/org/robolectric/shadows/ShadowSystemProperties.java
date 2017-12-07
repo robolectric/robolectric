@@ -17,6 +17,7 @@ public class ShadowSystemProperties {
   private static Properties buildProperties = null;
   private static final Set<String> alreadyWarned = new HashSet<>();
 
+
   @Implementation
   public static String native_get(String key) {
     return native_get(key, "");
@@ -71,6 +72,25 @@ public class ShadowSystemProperties {
       } catch (IOException e) {
         throw new RuntimeException("failed to load build.prop", e);
       }
+  /**
+   * Set the value of a system property.
+   *
+   * <p>For setting android.os.Build.X values, its recommended to use {@link ShadowBuild} instead.
+   * Most Build values are loaded statically at initialization, so calling setProperty to set a
+   * Build flag (like Build.ID) from your test may have no effect.
+   */
+  public static void setProperty(String key, String value) {
+    VALUES.put(key, value);
+  }
+
+  /** Removes a system property */
+  public static void removeProperty(String key) {
+    VALUES.remove(key);
+  }
+
+  synchronized private static void warnUnknown(String key) {
+    if (alreadyWarned.add(key)) {
+      System.err.println("WARNING: no system properties value for " + key);
     }
     return buildProperties;
   }
@@ -78,5 +98,10 @@ public class ShadowSystemProperties {
   @Resetter
   public static void reset() {
     buildProperties = null;
+  }
+
+  @Resetter
+  public static void reset() {
+    setDefaults();
   }
 }
