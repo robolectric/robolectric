@@ -7,9 +7,9 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build;
 import android.view.Display;
 import android.view.DisplayInfo;
-import java.util.function.Consumer;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Consumer;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
