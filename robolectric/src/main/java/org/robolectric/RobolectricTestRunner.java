@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.os.Build;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -306,13 +305,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     roboMethod.parallelUniverseInterface.setSdkConfig((sdkEnvironment).getSdkConfig());
     roboMethod.parallelUniverseInterface.resetStaticState(config);
-
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
-    Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RESOURCES_SDK_INT", sdkConfig.getApiLevel());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
