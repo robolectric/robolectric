@@ -87,15 +87,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
         displayMetrics);
-    setDisplayMetricsDimens(displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
         : configuration.locale;
     Locale.setDefault(locale);
-
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(configuration, displayMetrics);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
@@ -112,8 +108,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
+    Bootstrap.setUpDisplay(configuration, displayMetrics);
+
+    Resources systemResources = Resources.getSystem();
+    systemResources.updateConfiguration(configuration, displayMetrics);
+
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
-    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
+    RuntimeEnvironment.systemContext = systemContextImpl;
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
@@ -159,21 +160,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
-  }
-
-  // todo: kill this, use DisplayInfo to initialize instead
-  private void setDisplayMetricsDimens(DisplayMetrics displayMetrics) {
-    displayMetrics.scaledDensity = displayMetrics.density;
-
-    displayMetrics.widthPixels = 480;
-    displayMetrics.heightPixels = 800;
-    displayMetrics.xdpi = displayMetrics.densityDpi;
-    displayMetrics.ydpi = displayMetrics.densityDpi;
-
-    displayMetrics.noncompatWidthPixels = displayMetrics.widthPixels;
-    displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
-    displayMetrics.noncompatXdpi = displayMetrics.xdpi;
-    displayMetrics.noncompatYdpi = displayMetrics.ydpi;
   }
 
   private void initInstrumentation(
@@ -222,4 +208,5 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     this.sdkConfig = sdkConfig;
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
   }
+
 }

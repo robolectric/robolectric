@@ -64,7 +64,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
@@ -601,10 +600,9 @@ public class ShadowActivityTest {
     assertThat(root).isNotEqualTo(null);
     assertThat(decorView.getWidth()).isNotEqualTo(0);
     assertThat(decorView.getHeight()).isNotEqualTo(0);
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
-    assertThat(decorView.getWidth()).isEqualTo(shadowDisplay.getWidth());
-    assertThat(decorView.getHeight()).isEqualTo(shadowDisplay.getHeight());
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(decorView.getWidth()).isEqualTo(display.getWidth());
+    assertThat(decorView.getHeight()).isEqualTo(display.getHeight());
   }
 
   @Test

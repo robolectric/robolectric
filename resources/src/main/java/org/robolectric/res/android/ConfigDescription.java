@@ -39,7 +39,7 @@ public class ConfigDescription {
   public static int SDK_O = 26;
 
   /**
-   * finalant used to to represent MNC (Mobile Network Code) zero.
+   * Constant used to to represent MNC (Mobile Network Code) zero.
    * 0 cannot be used, since it is used to represent an undefined MNC.
    */
   private static final int ACONFIGURATION_MNC_ZERO = 0xffff;
@@ -190,11 +190,11 @@ public class ConfigDescription {
     }
   }
 
-  public boolean parse(final String str, ResTable_config out) {
+  public static boolean parse(final String str, ResTable_config out) {
     return parse(str, out, true);
   }
 
-  public boolean parse(final String str, ResTable_config out, boolean applyVersionForCompat) {
+  public static boolean parse(final String str, ResTable_config out, boolean applyVersionForCompat) {
     PeekingIterator<String> part_iter = Iterators
         .peekingIterator(Arrays.asList(str.toLowerCase().split("-")).iterator());
 
@@ -366,7 +366,7 @@ public class ConfigDescription {
     return true;
   }
 
-  private boolean parseLayoutDirection(String name, ResTable_config out) {
+  private static boolean parseLayoutDirection(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout =
@@ -393,7 +393,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseSmallestScreenWidthDp(String name, ResTable_config out) {
+  private static boolean parseSmallestScreenWidthDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.smallestScreenWidthDp = ResTable_config.SCREENWIDTH_ANY;
@@ -409,7 +409,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenWidthDp(String name, ResTable_config out) {
+  private static boolean parseScreenWidthDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenWidthDp = ResTable_config.SCREENWIDTH_ANY;
@@ -425,7 +425,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenHeightDp(String name, ResTable_config out) {
+  private static boolean parseScreenHeightDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenHeightDp = ResTable_config.SCREENWIDTH_ANY;
@@ -441,7 +441,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenLayoutSize(String name, ResTable_config out) {
+  private static boolean parseScreenLayoutSize(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout =
@@ -504,7 +504,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenRound(String name, ResTable_config out) {
+  private static boolean parseScreenRound(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout2 =
@@ -530,7 +530,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseOrientation(String name, ResTable_config out) {
+  private static boolean parseOrientation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.orientation = out.ORIENTATION_ANY;
@@ -556,7 +556,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseUiModeType(String name, ResTable_config out) {
+  private static boolean parseUiModeType(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
@@ -598,7 +598,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseUiModeNight(String name, ResTable_config out) {
+  private static boolean parseUiModeNight(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_NIGHT) |
@@ -622,7 +622,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseDensity(String name, ResTable_config out) {
+  private static boolean parseDensity(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.density = ResTable_config.DENSITY_DEFAULT;
@@ -702,7 +702,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseTouchscreen(String name, ResTable_config out) {
+  private static boolean parseTouchscreen(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.touchscreen = out.TOUCHSCREEN_ANY;
@@ -728,7 +728,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseKeysHidden(String name, ResTable_config out) {
+  private static boolean parseKeysHidden(String name, ResTable_config out) {
     byte mask = 0;
     byte value = 0;
     if (Objects.equals(name, kWildcardName)) {
@@ -755,7 +755,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseKeyboard(String name, ResTable_config out) {
+  private static boolean parseKeyboard(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.keyboard = out.KEYBOARD_ANY;
@@ -781,7 +781,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseNavHidden(String name, ResTable_config out) {
+  private static boolean parseNavHidden(String name, ResTable_config out) {
     byte mask = 0;
     byte value = 0;
     if (Objects.equals(name, kWildcardName)) {
@@ -805,7 +805,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseNavigation(String name, ResTable_config out) {
+  private static boolean parseNavigation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.navigation = out.NAVIGATION_ANY;
@@ -836,7 +836,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenSize(String name, ResTable_config out) {
+  private static boolean parseScreenSize(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenWidth = out.SCREENWIDTH_ANY;
@@ -859,7 +859,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseVersion(String name, ResTable_config out) {
+  private static boolean parseVersion(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.sdkVersion = out.SDKVERSION_ANY;
@@ -877,7 +877,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseMnc(String name, ResTable_config out) {
+  private static boolean parseMnc(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.mnc = 0;
@@ -913,7 +913,7 @@ public class ConfigDescription {
   }
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/tools/aapt/AaptConfig.cpp
-  private void applyVersionForCompatibility(ResTable_config config) {
+  private static void applyVersionForCompatibility(ResTable_config config) {
     if (config == null) {
       return;
     }

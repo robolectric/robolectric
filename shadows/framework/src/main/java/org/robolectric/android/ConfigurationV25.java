@@ -68,6 +68,10 @@ public class ConfigurationV25 {
    * @hide
    */
   public static String resourceQualifierString(Configuration config, DisplayMetrics displayMetrics) {
+    return resourceQualifierString(config, displayMetrics, true);
+  }
+
+  public static String resourceQualifierString(Configuration config, DisplayMetrics displayMetrics, boolean includeSdk) {
     ArrayList<String> parts = new ArrayList<String>();
 
     if (config.mcc != 0) {
@@ -298,7 +302,10 @@ public class ConfigurationV25 {
         break;
     }
 
-    parts.add("v" + Build.VERSION.RESOURCES_SDK_INT);
+    if (includeSdk) {
+      parts.add("v" + Build.VERSION.RESOURCES_SDK_INT);
+    }
+
     return TextUtils.join("-", parts);
   }
 

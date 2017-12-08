@@ -76,6 +76,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 /**
  * Describes a particular resource configuration.
@@ -284,16 +285,16 @@ public class ResTable_config {
   public static final int MINORVERSION_ANY = 0;
 
   /** The below constants are from android.content.res.Configuration. */
-  private static final int DENSITY_DPI_UNDEFINED = 0;
+  public static final int DENSITY_DPI_UNDEFINED = 0;
   private static final int DENSITY_DPI_LDPI = 120;
-  private static final int DENSITY_DPI_MDPI = 160;
+  public static final int DENSITY_DPI_MDPI = 160;
   private static final int DENSITY_DPI_TVDPI = 213;
   private static final int DENSITY_DPI_HDPI = 240;
   private static final int DENSITY_DPI_XHDPI = 320;
   private static final int DENSITY_DPI_XXHDPI = 480;
   private static final int DENSITY_DPI_XXXHDPI = 640;
-  private static final int DENSITY_DPI_ANY  = 0xFFFE;
-  private static final int DENSITY_DPI_NONE = 0xFFFF;
+  public static final int DENSITY_DPI_ANY  = 0xFFFE;
+  public static final int DENSITY_DPI_NONE = 0xFFFF;
   private static final Map<Integer, String> DENSITY_DPI_VALUES =
       ImmutableMap.<Integer, String>builder()
           .put(DENSITY_DPI_UNDEFINED, "")
@@ -419,6 +420,7 @@ public class ResTable_config {
   public final byte[] language;
 
   /** Returns {@link #language} as an unpacked string representation. */
+  @Nonnull
   public final String languageString() {
     return unpackLanguage();
   }
@@ -428,6 +430,7 @@ public class ResTable_config {
   public final byte[] country;
 
   /** Returns {@link #country} as an unpacked string representation. */
+  @Nonnull
   public final String regionString() {
     return unpackRegion();
   }
@@ -451,8 +454,16 @@ public class ResTable_config {
     return inputFlags & KEYBOARDHIDDEN_MASK;
   }
 
+  public final void keyboardHidden(int value) {
+    inputFlags = (inputFlags & ~KEYBOARDHIDDEN_MASK) | value;
+  }
+
   public final int navigationHidden() {
     return (inputFlags & NAVIGATIONHIDDEN_MASK) >> 2;
+  }
+
+  public final void navigationHidden(int value) {
+    inputFlags = (inputFlags & ~NAVIGATIONHIDDEN_MASK) | value;
   }
 
   public int screenWidth;
@@ -526,7 +537,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutDirection(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | value;
   }
 
   public final int screenLayoutSize() {
@@ -534,7 +545,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutSize(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_SIZE_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_SIZE_MASK) | value;
   }
 
   public final int screenLayoutLong() {
@@ -542,7 +553,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutLong(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LONG_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_LONG_MASK) | value;
   }
 
   public final int screenLayoutRound() {
@@ -632,6 +643,7 @@ public class ResTable_config {
 //    }
 //  }
 
+  @Nonnull
   private String unpackLanguageOrRegion(byte[] value, int base) {
     Preconditions.checkState(value.length == 2, "Language or country value must be 2 bytes.");
     if (value[0] == 0 && value[1] == 0) {
@@ -673,6 +685,7 @@ public class ResTable_config {
     packLanguageOrRegion(region, (byte) '0', this.country);
   }
 
+  @Nonnull
   private String unpackLanguage() {
     return unpackLanguageOrRegion(language, 0x61);
   }
