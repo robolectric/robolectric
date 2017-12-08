@@ -2,7 +2,7 @@ package org.robolectric.android.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -262,7 +262,11 @@ public class ActivityControllerTest {
 
     ActivityController<InvalidStateActivity> configController =
         Robolectric.buildActivity(InvalidStateActivity.class).setup();
-    assertThrows(RuntimeException.class, () -> configController.configurationChange(config));
+    try {
+      configController.configurationChange(config);
+      fail("Expected Exception");
+    } catch (RuntimeException expected) {
+    }
   }
 
   @Test
