@@ -10,7 +10,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nonnull;
 import org.junit.Assert;
 import org.junit.runner.Runner;
 import org.junit.runners.Parameterized;
@@ -18,9 +17,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
-import org.robolectric.internal.DeepCloner;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.SdkEnvironment;
 
 /**
  * A Parameterized test runner for Robolectric. Copied from the {@link Parameterized} class, then modified the custom
@@ -99,17 +96,6 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       validateOnlyOneConstructor(errors);
     }
 
-    @Nonnull
-    @Override
-    protected SdkEnvironment getSandbox(FrameworkMethod method) {
-      SdkEnvironment sandbox = super.getSandbox(method);
-
-      DeepCloner deepCloner = new DeepCloner(sandbox.getRobolectricClassLoader());
-      parameters = deepCloner.clone(parameters);
-
-      return sandbox;
-    }
-
     @Override
     public String toString() {
       return "TestClassRunnerForParameters " + name;
@@ -126,7 +112,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
 
           @Override
           protected Object createTest() throws Exception {
-            return TestClassRunnerForParameters.this.createTestInstance(getTestClass().getJavaClass());
+            return TestClassRunnerForParameters.this.createTestInstance(bootstrappedTestClass);
           }
 
           @Override
