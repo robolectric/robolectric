@@ -105,11 +105,15 @@ def install_stubs(api)
   install("com.google.android", "android-stubs", "#{api}", path)
 end
 
-def install_from_gmaven(artifact_id)
-  return if already_have?(ANDROID_SUPPORT_GROUP_ID, artifact_id, SUPPORT_LIBRARY_VERSION, "jar")
+def install_supportlib_from_gmaven(artifact_id)
+  install_from_gmaven(ANDROID_SUPPORT_GROUP_ID, artifact_id, SUPPORT_LIBRARY_VERSION)
+end
 
-  get_dependency(ANDROID_SUPPORT_GROUP_ID, artifact_id, SUPPORT_LIBRARY_VERSION, "aar")
-  install_aar(MVN_LOCAL, ANDROID_SUPPORT_GROUP_ID, artifact_id, SUPPORT_LIBRARY_VERSION)
+def install_from_gmaven(group_id, artifact_id, version)
+  return if already_have?(group_id, artifact_id, version, "jar")
+
+  get_dependency(group_id, artifact_id, version, "aar")
+  install_aar(MVN_LOCAL, group_id, artifact_id, version)
 end
 
 # Local repository paths
@@ -135,6 +139,13 @@ INTERNAL_IMPL_ARTIFACT_ID = "internal_impl"
 SUPPORT_LIBRARY_VERSION = "26.0.1"
 MULTIDEX_TRAILING_VERSION = "1.0.0"
 MULTIDEX_VERSION = "1.0.1"
+
+# Android Support test versions
+ANDROID_SUPPORT_TEST_GROUP_ID = "com.android.support.test"
+RUNNER_ARTIFACT_ID = "runner"
+RULES_ARTIFACT_ID = "rules"
+MONITOR_ARTIFACT_ID = "monitor"
+ANDROID_SUPPORT_TEST_VERSION = "1.0.2-alpha1"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"
@@ -165,7 +176,7 @@ install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTID
 
 # install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, APPCOMPAT_V7_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION)
 
-install_from_gmaven(APPCOMPAT_V7_ARTIFACT_ID)
+install_supportlib_from_gmaven(APPCOMPAT_V7_ARTIFACT_ID)
 
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_LEGACY, PLAY_SERVICES_VERSION_6_5_87)
 
@@ -181,9 +192,13 @@ install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASE, PLAY_SERVIC
   # install_jar(ANDROID_SUPPORT_GROUP_ID, INTERNAL_IMPL_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION, "#{dir}/libs/#{INTERNAL_IMPL_ARTIFACT_ID}-#{SUPPORT_LIBRARY_TRAILING_VERSION}.jar")
 # end
 
-install_from_gmaven(SUPPORT_V4_ARTIFACT_ID)
-install_from_gmaven(SUPPORT_COMPAT_ARTIFACT_ID)
-install_from_gmaven(SUPPORT_CORE_UI_ARTIFACT_ID)
-install_from_gmaven(SUPPORT_CORE_UTILS_ARTIFACT_ID)
-install_from_gmaven(SUPPORT_FRAGMENT_ARTIFACT_ID)
-install_from_gmaven('support-media-compat')
+install_supportlib_from_gmaven(SUPPORT_V4_ARTIFACT_ID)
+install_supportlib_from_gmaven(SUPPORT_COMPAT_ARTIFACT_ID)
+install_supportlib_from_gmaven(SUPPORT_CORE_UI_ARTIFACT_ID)
+install_supportlib_from_gmaven(SUPPORT_CORE_UTILS_ARTIFACT_ID)
+install_supportlib_from_gmaven(SUPPORT_FRAGMENT_ARTIFACT_ID)
+install_supportlib_from_gmaven('support-media-compat')
+
+install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, MONITOR_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)
+install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, RUNNER_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)
+install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, RULES_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)

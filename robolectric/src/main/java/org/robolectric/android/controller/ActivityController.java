@@ -13,9 +13,14 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.Parcelable.Creator;
+import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
+import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -182,7 +187,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     final Configuration currentConfig = component.getResources().getConfiguration();
     final int changedBits = currentConfig.diff(newConfiguration);
     currentConfig.setTo(newConfiguration);
-    
+
     // Can the activity handle itself ALL configuration changes?
     if ((getActivityInfo(component.getApplication()).configChanges & changedBits) == changedBits) {
       shadowMainLooper.runPaused(new Runnable() {
@@ -206,11 +211,13 @@ public class ActivityController<T extends Activity> extends ComponentController<
           ReflectionHelpers.setField(Activity.class, component, "mConfigChangeFlags", changedBits);
           
           // Perform activity destruction
-          final Bundle outState = new Bundle();
-    
+          Bundle outState = new Bundle();
+
+          // The order of onPause/onStop/onSaveInstanceState is undefined, but is usually:
+          // onPause -> onSaveInstanceState -> onStop
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onPause");
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onSaveInstanceState",
               from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onPause");
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onStop");
     
           final Object nonConfigInstance = ReflectionHelpers.callInstanceMethod(
@@ -218,15 +225,27 @@ public class ActivityController<T extends Activity> extends ComponentController<
     
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onDestroy");
 
+          // Make sure parcels properly serialize/restore state.
+          outState = forceParcel(outState, Bundle.CREATOR);
+
+          // Restore theme in case it was set in the test manually.
+          // This is not technically what happens but is purely to make this easier to use in
+          // Robolectric.
+          int theme = shadowOf((ContextThemeWrapper) component).callGetThemeResId();
+
           // Setup controller for the new activity
           attached = false;
           component = recreatedActivity;
           attach();
-          
+
+          if (theme != 0) {
+            recreatedActivity.setTheme(theme);
+          }
+
           // Set saved non config instance
           shadowOf(recreatedActivity).setLastNonConfigurationInstance(nonConfigInstance);
           
-            // Create lifecycle
+          // Create lifecycle
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
               "onCreate", from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onStart");
@@ -235,10 +254,20 @@ public class ActivityController<T extends Activity> extends ComponentController<
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
               "onPostCreate", from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onResume");
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onPostResume");
+          // TODO: Call visible() too.
         }
       });
     }
-    
+
     return this;
+  }
+
+  // TODO: Consider exposing this as a util method somewhere in Robolectric
+  private static <T extends Parcelable> T forceParcel(T parcelable, Creator<T> creator) {
+    Parcel parcel = Parcel.obtain();
+    parcelable.writeToParcel(parcel, 0);
+    parcel.setDataPosition(0);
+    return creator.createFromParcel(parcel);
   }
 }

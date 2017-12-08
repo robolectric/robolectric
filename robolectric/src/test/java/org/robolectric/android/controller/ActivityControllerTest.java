@@ -2,6 +2,7 @@ package org.robolectric.android.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.ContextThemeWrapper;
 import android.view.Window;
 import android.widget.LinearLayout;
 import java.util.ArrayList;
@@ -216,9 +218,11 @@ public class ActivityControllerTest {
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
-    
+
+    controller.setup();
+    transcript.clear();
     controller.configurationChange(config);
-    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume");
+    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
   
@@ -227,7 +231,9 @@ public class ActivityControllerTest {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     
-    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
     configController.configurationChange(config);
     assertThat(transcript).contains("onConfigurationChanged");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
@@ -238,12 +244,43 @@ public class ActivityControllerTest {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     final int newOrientation = config.orientation = (config.orientation + 1) % 3;
-    
-    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
     configController.configurationChange(config);
     assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
     assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
+  }
+
+  @Test
+  public void configurationChange_failsOnInvalidState() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
+
+    ActivityController<InvalidStateActivity> configController =
+        Robolectric.buildActivity(InvalidStateActivity.class).setup();
+    try {
+      configController.configurationChange(config);
+      fail("Expected Exception");
+    } catch (RuntimeException expected) {
+    }
+  }
+
+  @Test
+  public void configurationChange_restoresTheme() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
+
+    controller.get().setTheme(android.R.style.Theme_Black);
+    controller.setup();
+    transcript.clear();
+    controller.configurationChange(config);
+    int restoredTheme = shadowOf((ContextThemeWrapper) controller.get()).callGetThemeResId();
+    assertThat(restoredTheme).isEqualTo(android.R.style.Theme_Black);
   }
 
   public static class MyActivity extends Activity {
@@ -350,6 +387,20 @@ public class ActivityControllerTest {
   }
   
   public static class ConfigAwareActivity extends MyActivity {
-	  
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      outState.putSerializable("test", new Exception()); // This will successfully parcel.
+    }
+  }
+
+  public static class InvalidStateActivity extends MyActivity {
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      outState.putSerializable("test", new Exception() {
+          Activity activity = new Activity(); // This will fail to parcel/serialize.
+        });
+    }
   }
 }

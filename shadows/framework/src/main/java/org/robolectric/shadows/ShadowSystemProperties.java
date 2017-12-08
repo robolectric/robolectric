@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
@@ -14,6 +15,11 @@ public class ShadowSystemProperties {
   private static final Set<String> alreadyWarned = new HashSet<>();
 
   static {
+    setDefaults();
+  }
+
+  private static void setDefaults() {
+    VALUES.clear();
     VALUES.put("ro.build.version.release", "2.2");
     VALUES.put("ro.build.version.incremental", "0");
     VALUES.put("ro.build.version.sdk", 8);
@@ -63,9 +69,30 @@ public class ShadowSystemProperties {
     return value == null ? def : (Boolean) value;
   }
 
+  /**
+   * Set the value of a system property.
+   *
+   * <p>For setting android.os.Build.X values, its recommended to use {@link ShadowBuild} instead.
+   * Most Build values are loaded statically at initialization, so calling setProperty to set a
+   * Build flag (like Build.ID) from your test may have no effect.
+   */
+  public static void setProperty(String key, String value) {
+    VALUES.put(key, value);
+  }
+
+  /** Removes a system property */
+  public static void removeProperty(String key) {
+    VALUES.remove(key);
+  }
+
   synchronized private static void warnUnknown(String key) {
     if (alreadyWarned.add(key)) {
       System.err.println("WARNING: no system properties value for " + key);
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    setDefaults();
   }
 }
