@@ -1491,7 +1491,7 @@ public class ResTable_config {
     return true;
   }
 
-  void setBcp47Locale(final String in) {
+  public void setBcp47Locale(final String in) {
 //    locale = 0;
     clear(language);
     clear(country);

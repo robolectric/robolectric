@@ -3,6 +3,11 @@ package org.robolectric;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.app.Application;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.util.DisplayMetrics;
+import org.robolectric.android.Bootstrap;
+import org.robolectric.android.ConfigurationV25;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Scheduler;
@@ -12,7 +17,6 @@ public class RuntimeEnvironment {
   public static Application application;
 
   private volatile static Thread mainThread = Thread.currentThread();
-  private static String qualifiers;
   private static Object activityThread;
   private static int apiLevel;
   private static Scheduler masterScheduler;
@@ -74,12 +78,38 @@ public class RuntimeEnvironment {
     activityThread = newActivityThread;
   }
 
+  /**
+   * Returns a qualifier string describing the current {@link Configuration} of the system resources.
+   *
+   * @return a qualifier string as described (https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules)[here].
+   */
   public static String getQualifiers() {
-    return qualifiers;
+    Resources systemResources = Resources.getSystem();
+    return getQualifiers(systemResources.getConfiguration(), systemResources.getDisplayMetrics());
+  }
+
+  /**
+   * Returns a qualifier string describing the given configuration and display metrics.
+   *
+   * @param configuration the configuration.
+   * @param displayMetrics the display metrics.
+   * @return a qualifier string as described (https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules)[here].
+   */
+  public static String getQualifiers(Configuration configuration, DisplayMetrics displayMetrics) {
+    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
   }
 
   public static void setQualifiers(String newQualifiers) {
-    qualifiers = newQualifiers;
+    Configuration configuration = new Configuration();
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    Bootstrap.applyQualifiers(newQualifiers, getApiLevel(), configuration, displayMetrics);
+
+    Resources systemResources = Resources.getSystem();
+    systemResources.updateConfiguration(configuration, displayMetrics);
+
+    if (application != null) {
+      application.getResources().updateConfiguration(configuration, displayMetrics);
+    }
   }
 
   public static int getApiLevel() {

@@ -972,7 +972,8 @@ public class ShadowAccessibilityNodeInfo {
       if (parent == null) {
         areEqual &= (otherShadow.parent == null);
       } else if (!shadowOf(parent).visitedWhenCheckingChildren){
-        areEqual &= (shadowOf(parent).equals(shadowOf(otherShadow.parent)));
+        areEqual &=
+            ((otherShadow.parent != null) && shadowOf(parent).equals(shadowOf(otherShadow.parent)));
       }
 
       while (!visitedNodes.isEmpty()) {

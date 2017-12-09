@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -10,6 +13,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.Surface;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -26,14 +30,26 @@ public class ShadowDisplay {
   private int height = 800;
   private int realWidth = 480;
   private int realHeight = 854;
-  private float density = 1.5f;
-  private int densityDpi = DisplayMetrics.DENSITY_HIGH;
+  private float density;
+  private int densityDpi;
   private float xdpi = 240.0f;
   private float ydpi = 240.0f;
   private float scaledDensity = 1.0f;
   private float refreshRate = 60.0f;
   private int rotation = Surface.ROTATION_0;
   private int pixelFormat = PixelFormat.RGBA_4444;
+
+  {
+    Configuration configuration = Resources.getSystem().getConfiguration();
+    if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
+      densityDpi = configuration.densityDpi;
+    } else {
+      DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+      densityDpi = displayMetrics.densityDpi;
+    }
+    density = densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
+    scaledDensity = density;
+  }
 
   @Implementation
   public int getHeight() {

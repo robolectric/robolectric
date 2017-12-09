@@ -14,15 +14,15 @@ import org.robolectric.res.android.ResTable_config;
 public class Bootstrap {
 
   @VisibleForTesting
-  public static String applyQualifiers(String qualifiers, int apiLevel,
-      Configuration configuration,
-      DisplayMetrics displayMetrics) {
+  public static void applyQualifiers(String qualifiers, int apiLevel,
+      Configuration configuration, DisplayMetrics displayMetrics) {
     ConfigDescription configDescription = new ConfigDescription();
     ResTable_config resTab = new ResTable_config();
 
-    if (Qualifiers.getPlatformVersion(qualifiers) != -1) {
+    int platformVersion = Qualifiers.getPlatformVersion(qualifiers);
+    if (platformVersion != -1 && platformVersion != apiLevel) {
       throw new IllegalArgumentException(
-          "Cannot specify platform version in qualifiers: \"" + qualifiers + "\"");
+          "Cannot specify conflicting platform version in qualifiers: \"" + qualifiers + "\"");
     }
 
     if (!qualifiers.isEmpty() && !configDescription.parse(qualifiers, resTab)) {
@@ -101,11 +101,9 @@ public class Bootstrap {
     configuration.screenHeightDp = resTab.screenHeightDp;
     if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
       configuration.densityDpi = resTab.density;
-    } else {
-      displayMetrics.densityDpi = resTab.density;
-      displayMetrics.density =
-          displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
     }
+    displayMetrics.densityDpi = resTab.density;
+    displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
 
     Locale locale;
     String lang = resTab.languageString();
@@ -127,7 +125,5 @@ public class Bootstrap {
         configuration.locale = locale;
       }
     }
-
-    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
   }
 }

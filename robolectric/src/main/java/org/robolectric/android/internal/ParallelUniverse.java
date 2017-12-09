@@ -6,16 +6,20 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.LoadedApk;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -80,14 +84,20 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    Resources systemResources = Resources.getSystem();
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
-    String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
-        sdkConfig.getApiLevel(), configuration, displayMetrics);
 
+    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
+        displayMetrics);
+    setDisplayMetricsDimens(displayMetrics);
+
+    Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
+        ? configuration.getLocales().get(0)
+        : configuration.locale;
+    Locale.setDefault(locale);
+
+    Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
-    RuntimeEnvironment.setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
@@ -99,11 +109,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
+    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
+    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
@@ -143,10 +155,39 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
-      appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
+      appResources.updateConfiguration(configuration, displayMetrics);
+
+      initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
 
       application.onCreate();
     }
+  }
+
+  // todo: kill this, use DisplayInfo to initialize instead
+  private void setDisplayMetricsDimens(DisplayMetrics displayMetrics) {
+    displayMetrics.scaledDensity = displayMetrics.density;
+
+    displayMetrics.widthPixels = 480;
+    displayMetrics.heightPixels = 800;
+    displayMetrics.xdpi = displayMetrics.densityDpi;
+    displayMetrics.ydpi = displayMetrics.densityDpi;
+
+    displayMetrics.noncompatWidthPixels = displayMetrics.widthPixels;
+    displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
+    displayMetrics.noncompatXdpi = displayMetrics.xdpi;
+    displayMetrics.noncompatYdpi = displayMetrics.ydpi;
+  }
+
+  private void initInstrumentation(
+      ActivityThread activityThread,
+      RoboInstrumentation androidInstrumentation,
+      ApplicationInfo applicationInfo) {
+    final ComponentName component =
+        new ComponentName(
+            applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
+    androidInstrumentation.init(
+        ActivityThread.class, activityThread, RuntimeEnvironment.application, component);
+    androidInstrumentation.onCreate(new Bundle());
   }
 
   /**

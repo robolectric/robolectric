@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Strings;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("v17");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "v18");
+    TypedResource v = resMap.pick(resName, from("v18"));
     assertThat(v).isEqualTo(val2);
   }
 
@@ -42,7 +43,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("fr");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "en-v18");
+    TypedResource v = resMap.pick(resName, from("en-v18"));
     assertThat(v).isEqualTo(val1);
   }
 
@@ -53,7 +54,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("v17");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "v26");
+    TypedResource v = resMap.pick(resName, from("v26"));
     assertThat(v).isEqualTo(val2);
   }
 
@@ -64,7 +65,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("v17");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "land-v18");
+    TypedResource v = resMap.pick(resName, from("land-v18"));
     assertThat(v).isEqualTo(val1);
   }
 
@@ -75,7 +76,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("v19");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "v18");
+    TypedResource v = resMap.pick(resName, from("v18"));
     assertThat(v).isEqualTo(val1);
   }
 
@@ -86,7 +87,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("v11");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "v18");
+    TypedResource v = resMap.pick(resName, from("v18"));
     assertThat(v).isEqualTo(val2);
   }
 
@@ -99,7 +100,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("xhdpi-v9");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "v18");
+    TypedResource v = resMap.pick(resName, from("v18"));
     assertThat(v).isEqualTo(val2);
   }
 
@@ -110,7 +111,7 @@ public class ResBundleTest {
     TypedResource<String> val2 = createStringTypedResource("sw600dp-v17");
     resMap.put(resName, val2);
 
-    TypedResource v = resMap.pick(resName, "v18");
+    TypedResource v = resMap.pick(resName, from("v18"));
     assertThat(v).isEqualTo(val1);
   }
 
@@ -120,7 +121,7 @@ public class ResBundleTest {
     resMap.put(resName, val1);
 
     try {
-      resMap.pick(resName, "nosuchqualifier");
+      resMap.pick(resName, from("nosuchqualifier"));
       fail("Expected exception to be caught");
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageStartingWith("Invalid qualifiers \"nosuchqualifier\"");
@@ -137,7 +138,7 @@ public class ResBundleTest {
         "en-notouch-12key",
         "port-ldpi",
         "land-notouch-12key").pick(resName,
-        "en-rGB-port-hdpi-notouch-12key-v25").asString());
+        from("en-rGB-port-hdpi-notouch-12key-v25")).asString());
   }
 
   @Test
@@ -148,7 +149,7 @@ public class ResBundleTest {
         "sw350dp-port",
         "sw300dp-port",
         "sw300dp").pick(resName,
-        "sw320dp-port-v25").asString());
+        from("sw320dp-port-v25")).asString());
   }
 
   @Test
@@ -159,7 +160,7 @@ public class ResBundleTest {
         "sw200dp-w300dp",
         "sw300dp-w200dp",
         "w300dp").pick(resName,
-        "sw320dp-w320dp-v25").asString());
+        from("sw320dp-w320dp-v25")).asString());
   }
 
   @Test
@@ -175,7 +176,7 @@ public class ResBundleTest {
     bundle.put(new ResName("org.robolectric", "string", "resource_name"), firstValue);
     bundle.put(new ResName("org.robolectric", "string", "resource_name"), secondValue);
 
-    assertThat(bundle.get(new ResName("org.robolectric", "string", "resource_name"), "").getData()).isEqualTo("first_value");
+    assertThat(bundle.get(new ResName("org.robolectric", "string", "resource_name"), from("")).getData()).isEqualTo("first_value");
   }
 
   private ResBundle.ResMap asResMap(String... qualifierses) {
@@ -197,5 +198,14 @@ public class ResBundleTest {
     when(mockXmlContext.getQualifiers()).thenReturn(qualifiers);
     when(mockXmlContext.getConfig()).thenReturn(qualifiers.getConfig());
     return new TypedResource<>(str, ResType.CHAR_SEQUENCE, mockXmlContext);
+  }
+
+  private static ResTable_config from(String qualifiers) {
+    ResTable_config config = new ResTable_config();
+    if (!Strings.isNullOrEmpty(qualifiers) &&
+        !new ConfigDescription().parse(qualifiers, config, false)) {
+      throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiers + "\"");
+    }
+    return config;
   }
 }
