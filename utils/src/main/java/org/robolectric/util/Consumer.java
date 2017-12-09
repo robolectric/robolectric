@@ -11,7 +11,6 @@ import java.util.Objects;
  *
  * @param <T> the type of the input to the operation
  */
-@FunctionalInterface
 public interface Consumer<T> {
 
   /**
@@ -32,7 +31,7 @@ public interface Consumer<T> {
    * {@code after} operation
    * @throws NullPointerException if {@code after} is null
    */
-  default java.util.function.Consumer<T> andThen(java.util.function.Consumer<? super T> after) {
+  default Consumer<T> andThen(Consumer<? super T> after) {
     Objects.requireNonNull(after);
     return (T t) -> {
       accept(t);
