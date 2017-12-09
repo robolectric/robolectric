@@ -46,6 +46,10 @@ public class Robolectric {
     RuntimeEnvironment.setActivityThread(null);
   }
 
+  /**
+   * @deprecated Prefer to access Shadow classes directly.
+   */
+  @Deprecated
   public static ShadowsAdapter getShadowsAdapter() {
     synchronized (ShadowsAdapter.class) {
       if (shadowsAdapter == null) {
