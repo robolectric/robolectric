@@ -1,13 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.createDisplayInfo;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.view.Display;
@@ -40,7 +41,7 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void getDisplayInfo_shouldReturnCopy() throws Exception {
     DisplayInfo displayInfo = getGlobal().getDisplayInfo(Display.DEFAULT_DISPLAY);
     int origAppWidth = displayInfo.appWidth;
@@ -49,7 +50,7 @@ public class ShadowDisplayManagerTest {
         .isEqualTo(origAppWidth);
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR2)
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
   public void addDisplay() throws Exception {
     DisplayInfo displayInfo = createDisplayInfo(100, 200);
     int displayId = ShadowDisplayManager.addDisplay(displayInfo);
@@ -63,7 +64,7 @@ public class ShadowDisplayManagerTest {
     assertThat(display.getDisplayId()).isEqualTo(displayId);
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR2)
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
   public void addDisplay_shouldNotifyListeners() throws Exception {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
@@ -72,7 +73,26 @@ public class ShadowDisplayManagerTest {
     assertThat(events).containsExactly("Added " + displayId);
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR2)
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
+  public void changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() throws Exception {
+    Point smallest = new Point();
+    Point largest = new Point();
+
+    ShadowDisplay.getDefaultDisplay().getCurrentSizeRange(smallest, largest);
+    assertThat(smallest).isEqualTo(new Point(320, 320));
+    assertThat(largest).isEqualTo(new Point(470, 470));
+
+    ShadowDisplayManager.changeDefaultDisplay(displayInfo -> {
+      displayInfo.appWidth = displayInfo.appWidth - 10;
+      displayInfo.appHeight = displayInfo.appHeight - 10;
+    });
+
+    ShadowDisplay.getDefaultDisplay().getCurrentSizeRange(smallest, largest);
+    assertThat(smallest).isEqualTo(new Point(310, 310));
+    assertThat(largest).isEqualTo(new Point(460, 460));
+  }
+
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
   public void changeAndRemoveDisplay_shouldNotifyListeners() throws Exception {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);

@@ -8,7 +8,6 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.util.DisplayMetrics;
 import android.view.Display;
-import android.view.DisplayInfo;
 import android.view.Surface;
 import android.view.WindowManager;
 import org.robolectric.RuntimeEnvironment;
@@ -41,9 +40,11 @@ public class ShadowDisplay {
 
   @RealObject Display realObject;
 
+  private Float refreshRate;
+
+  // the following fields are used only for Jelly Bean...
   private String name;
   private Integer displayId;
-  private Integer flags;
   private Integer width;
   private Integer height;
   private Integer realWidth;
@@ -52,25 +53,8 @@ public class ShadowDisplay {
   private Float xdpi;
   private Float ydpi;
   private Float scaledDensity;
-  private Float refreshRate;
   private Integer rotation;
   private Integer pixelFormat;
-
-  /**
-   * Injects modified values into Display's private DisplayInfo.
-   *
-   * This behavior is deprecated and will be removed in Robolectric 3.7.
-   */
-  @Implementation
-  public void updateDisplayInfoLocked() {
-    directlyOn(realObject, Display.class, "updateDisplayInfoLocked");
-    DisplayInfo displayInfo = ReflectionHelpers.getField(realObject, "mDisplayInfo");
-    displayInfo = new DisplayInfo(displayInfo);
-
-    overrideDisplayInfo(displayInfo);
-
-    ReflectionHelpers.setField(realObject, "mDisplayInfo", displayInfo);
-  }
 
   /**
    * If {@link #setScaledDensity(float)} has been called, {@link DisplayMetrics#scaledDensity}
@@ -132,19 +116,6 @@ public class ShadowDisplay {
   }
 
   /**
-   * If {@link #setFlags(int)} has been called, this method will return the specified value.
-   *
-   * @deprecated This behavior is deprecated and will be removed in Robolectric 3.7.
-   */
-  @Deprecated
-  @Implementation
-  public int getFlags() {
-    return flags == null
-        ? directlyOn(realObject, Display.class).getFlags()
-        : flags;
-  }
-
-  /**
    * If {@link #setRefreshRate(float)} has been called, this method will return the specified value.
    *
    * @deprecated This behavior is deprecated and will be removed in Robolectric 3.7.
@@ -190,47 +161,62 @@ public class ShadowDisplay {
   }
 
   /**
-   * Overrides the density for this display.
+   * Changes the density for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    */
-  @Deprecated
   public void setDensity(float density) {
-    this.densityDpi = ((int) (density * DisplayMetrics.DENSITY_DEFAULT));
+    setDensityDpi((int) (density * DisplayMetrics.DENSITY_DEFAULT));
   }
 
   /**
-   * Overrides the density for this display.
+   * Changes the density for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    */
-  @Deprecated
   public void setDensityDpi(int densityDpi) {
-    this.densityDpi = densityDpi;
+    if (isJB()) {
+      this.densityDpi = densityDpi;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.logicalDensityDpi = densityDpi);
+    }
   }
 
   /**
-   * Overrides the horizontal DPI for this display.
+   * Changes the horizontal DPI for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    */
-  @Deprecated
   public void setXdpi(float xdpi) {
-    this.xdpi = xdpi;
+    if (isJB()) {
+      this.xdpi = xdpi;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.physicalXDpi = xdpi);
+    }
   }
 
   /**
-   * Overrides the vertical DPI for this display.
+   * Changes the vertical DPI for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    */
-  @Deprecated
   public void setYdpi(float ydpi) {
-    this.ydpi = ydpi;
+    if (isJB()) {
+      this.ydpi = ydpi;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.physicalYDpi = ydpi);
+    }
   }
 
   /**
-   * Overrides the scaled density for this display.
+   * Changes the scaled density for this display.
    *
    * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
    */
@@ -240,7 +226,10 @@ public class ShadowDisplay {
   }
 
   /**
-   * Overrides the ID for this display.
+   * Changes the ID for this display.
+   *
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    *
    * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
    */
@@ -250,144 +239,140 @@ public class ShadowDisplay {
   }
 
   /**
-   * Overrides the name for this display.
+   * Changes the name for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    */
-  @Deprecated
   public void setName(String name) {
-    this.name = name;
+    if (isJB()) {
+      this.name = name;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.name = name);
+    }
   }
 
   /**
-   * Overrides the flags for this display.
+   * Changes the flags for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    */
-  @Deprecated
   public void setFlags(int flags) {
-    this.flags = flags;
+    ReflectionHelpers.setField(realObject, "mFlags", flags);
+
+    if (!isJB()) {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.flags = flags);
+    }
   }
 
   /**
-   * Overrides the width for this display.
+   * Changes the width available to the application for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
+   *
+   * @param width the new width in pixels
    */
-  @Deprecated
   public void setWidth(int width) {
-    this.width = width;
+    if (isJB()) {
+      this.width = width;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.appWidth = width);
+    }
   }
 
   /**
-   * Overrides the height for this display.
+   * Changes the height available to the application for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
+   *
+   * @param height new height in pixels
    */
-  @Deprecated
   public void setHeight(int height) {
-    this.height = height;
+    if (isJB()) {
+      this.height = height;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.appHeight = height);
+    }
   }
 
   /**
-   * Overrides the logical width for this display.
+   * Changes the simulated physical width for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
+   *
+   * @param width the new width in pixels
    */
-  @Deprecated
-  public void setRealWidth(int realWidth) {
-    this.realWidth = realWidth;
+  public void setRealWidth(int width) {
+    if (isJB()) {
+      this.realWidth = width;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.logicalWidth = width);
+    }
   }
 
   /**
-   * Overrides the logical height for this display.
+   * Changes the simulated physical height for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
+   *
+   * @param height the new height in pixels
    */
-  @Deprecated
-  public void setRealHeight(int realHeight) {
-    this.realHeight = realHeight;
+  public void setRealHeight(int height) {
+    if (isJB()) {
+      this.realHeight = height;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.logicalHeight = height);
+    }
   }
 
   /**
-   * Overrides the refresh rate for this display.
+   * Changes the refresh rate for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
    */
-  @Deprecated
   public void setRefreshRate(float refreshRate) {
     this.refreshRate = refreshRate;
   }
 
   /**
-   * Overrides the rotation for this display.
+   * Changes the rotation for this display.
    *
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
+   *
+   * @param rotation one of {@link Surface#ROTATION_0}, {@link Surface#ROTATION_90},
+   *                 {@link Surface#ROTATION_180}, {@link Surface#ROTATION_270}
+
    */
-  @Deprecated
   public void setRotation(int rotation) {
-    this.rotation = rotation;
+    if (isJB()) {
+      this.rotation = rotation;
+    } else {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.rotation = rotation);
+    }
   }
 
   /**
-   * Overrides the density for this display.
+   * Changes the pixel format for this display.
    *
    * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
    */
   @Deprecated
   public void setPixelFormat(int pixelFormat) {
     this.pixelFormat = pixelFormat;
-  }
-
-  private void overrideDisplayInfo(DisplayInfo displayInfo) {
-    if (name != null) {
-      displayInfo.name = name;
-    }
-
-    if (flags != null) {
-      displayInfo.flags = flags;
-    }
-
-    if (densityDpi != null) {
-      displayInfo.logicalDensityDpi = densityDpi;
-    }
-
-    if (xdpi != null) {
-      displayInfo.physicalXDpi = xdpi;
-    }
-
-    if (ydpi != null) {
-      displayInfo.physicalYDpi = ydpi;
-    }
-
-    if (width != null) {
-      displayInfo.appWidth = width;
-    }
-
-    if (height != null) {
-      displayInfo.appHeight = height;
-    }
-
-    if (width != null || height != null) {
-      int effectiveWidth = width == null ? displayInfo.appWidth : width;
-      int effectiveHeight = height == null ? displayInfo.appHeight : height;
-      int min = Math.min(effectiveWidth, effectiveHeight);
-      int max = Math.max(effectiveWidth, effectiveHeight);
-      displayInfo.smallestNominalAppHeight = displayInfo.smallestNominalAppWidth = min;
-      displayInfo.largestNominalAppHeight = displayInfo.largestNominalAppWidth = max;
-    }
-
-    if (realWidth != null) {
-      displayInfo.logicalWidth = realWidth;
-    }
-
-    if (realHeight != null) {
-      displayInfo.logicalHeight = realHeight;
-    }
-
-    if (rotation != null) {
-      displayInfo.rotation = rotation;
-    }
   }
 
   private boolean isJB() {
@@ -400,7 +385,6 @@ public class ShadowDisplay {
 
     name = "Built-in screen";
     displayId = 0;
-    flags = 0;
     width = widthPx;
     height = heightPx;
     realWidth = widthPx;

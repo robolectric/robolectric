@@ -69,6 +69,18 @@ public class ShadowDisplayTest {
   }
 
   @Test
+  public void changedStateShouldApplyToOtherInstancesOfSameDisplay() throws Exception {
+    shadow.setName("another name");
+    shadow.setWidth(1024);
+    shadow.setHeight(600);
+
+    display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertEquals(1024, display.getWidth());
+    assertEquals(600, display.getHeight());
+    assertEquals("another name", display.getName());
+  }
+
+  @Test
   public void shouldProvideDisplaySize() throws Exception {
     Point outSmallestSize = new Point();
     Point outLargestSize = new Point();
@@ -100,14 +112,15 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  public void shouldProvideDisplayInformation() {
-    shadow.setDisplayId(42);
+  public void shouldProvideWeirdDisplayInformation() {
     shadow.setName("foo");
-    shadow.setFlags(8);
+    shadow.setFlags(123);
 
-    assertEquals(42, display.getDisplayId());
     assertEquals("foo", display.getName());
-    assertEquals(8, display.getFlags());
+    assertEquals(123, display.getFlags());
+
+    display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertEquals(123, display.getFlags());
   }
 
   /**

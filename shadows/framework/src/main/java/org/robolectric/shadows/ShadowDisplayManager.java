@@ -47,6 +47,7 @@ public class ShadowDisplayManager {
    * @param consumer a function which modifies the display properties
    */
   public static void changeDisplay(int displayId, Consumer<DisplayInfo> consumer) {
+    checkSdk();
     DisplayInfo displayInfo =
         new DisplayInfo(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId));
     consumer.accept(displayInfo);
@@ -75,10 +76,14 @@ public class ShadowDisplayManager {
   }
 
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {
+    checkSdk();
+
+    return Shadow.extract(DisplayManagerGlobal.getInstance());
+  }
+
+  private static void checkSdk() {
     if (Build.VERSION.SDK_INT < JELLY_BEAN_MR1) {
       throw new UnsupportedOperationException("multiple displays not supported in Jelly Bean");
     }
-
-    return Shadow.extract(DisplayManagerGlobal.getInstance());
   }
 }

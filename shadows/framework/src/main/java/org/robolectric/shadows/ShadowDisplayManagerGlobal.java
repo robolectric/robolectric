@@ -46,7 +46,16 @@ public class ShadowDisplayManagerGlobal {
   }
 
   void changeDisplay(int displayId, DisplayInfo displayInfo) {
+    fixNominalDimens(displayInfo);
+
     mDm.changeDisplay(displayId, displayInfo);
+  }
+
+  private void fixNominalDimens(DisplayInfo displayInfo) {
+    int min = Math.min(displayInfo.appWidth, displayInfo.appHeight);
+    int max = Math.max(displayInfo.appWidth, displayInfo.appHeight);
+    displayInfo.smallestNominalAppHeight = displayInfo.smallestNominalAppWidth = min;
+    displayInfo.largestNominalAppHeight = displayInfo.largestNominalAppWidth = max;
   }
 
   void removeDisplay(int displayId) {
