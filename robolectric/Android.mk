@@ -18,13 +18,13 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-host-android_all \
   robolectric-maven-ant-tasks-2.1.3 \
   robolectric-bouncycastle-1.46 \
-  robolectric-asm-commons-5.0.1 \
-  robolectric-asm-tree-5.0.1 \
+  robolectric-asm-commons-6.0 \
   robolectric-xstream-1.4.8 \
+  robolectric-asm-tree-6.0 \
   robolectric-junit-4.12 \
   robolectric-guava-20.0 \
-  robolectric-asm-5.0.1 \
   robolectric-ant-1.8.0 \
+  robolectric-asm-6.0 \
   jsr305lib
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src/main/java)
