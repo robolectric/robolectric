@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.createDisplayInfo;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
 import android.content.Context;
@@ -13,6 +12,7 @@ import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.view.Display;
 import android.view.DisplayInfo;
+import android.view.Surface;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowDisplayManagerTest {
@@ -80,10 +81,10 @@ public class ShadowDisplayManagerTest {
     assertThat(smallest).isEqualTo(new Point(320, 320));
     assertThat(largest).isEqualTo(new Point(470, 470));
 
-    ShadowDisplayManager.changeDefaultDisplay(displayInfo -> {
-      displayInfo.appWidth = displayInfo.appWidth - 10;
-      displayInfo.appHeight = displayInfo.appHeight - 10;
-    });
+    Display display = ShadowDisplay.getDefaultDisplay();
+    ShadowDisplay shadowDisplay = Shadow.extract(display);
+    shadowDisplay.setWidth(display.getWidth() - 10);
+    shadowDisplay.setHeight(display.getHeight() - 10);
 
     ShadowDisplay.getDefaultDisplay().getCurrentSizeRange(smallest, largest);
     assertThat(smallest).isEqualTo(new Point(310, 310));
@@ -98,7 +99,10 @@ public class ShadowDisplayManagerTest {
 
     ShadowDisplayManager.changeDisplay(displayId, "w300dp-h400dp");
 
-    assertThat(getGlobal().getRealDisplay(displayId).getWidth()).isEqualTo(300);
+    Display display = getGlobal().getRealDisplay(displayId);
+    assertThat(display.getWidth()).isEqualTo(300);
+    assertThat(display.getHeight()).isEqualTo(400);
+    assertThat(display.getOrientation()).isEqualTo(Surface.ROTATION_0);
 
     ShadowDisplayManager.removeDisplay(displayId);
 
@@ -106,6 +110,24 @@ public class ShadowDisplayManagerTest {
         "Added " + displayId,
         "Changed " + displayId,
         "Removed " + displayId);
+  }
+
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
+  public void changeDisplay_shouldAllowPartialChanges() throws Exception {
+    List<String> events = new ArrayList<>();
+    instance.registerDisplayListener(new MyDisplayListener(events), null);
+    int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
+
+    ShadowDisplayManager.changeDisplay(displayId, "+h201dp-land");
+
+    Display display = getGlobal().getRealDisplay(displayId);
+    assertThat(display.getWidth()).isEqualTo(201);
+    assertThat(display.getHeight()).isEqualTo(100);
+    assertThat(display.getOrientation()).isEqualTo(Surface.ROTATION_90);
+
+    assertThat(events).containsExactly(
+        "Added " + displayId,
+        "Changed " + displayId);
   }
 
   // because DisplayInfo and DisplayManagerGlobal don't exist in Jelly Bean,

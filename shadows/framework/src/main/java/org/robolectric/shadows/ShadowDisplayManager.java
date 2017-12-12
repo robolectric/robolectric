@@ -15,6 +15,7 @@ import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Consumer;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -31,7 +32,7 @@ public class ShadowDisplayManager {
    * @return the new display's ID
    */
   public static int addDisplay(String qualifiersStr) {
-    return getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr));
+    return getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr, null));
   }
 
   /** internal only */
@@ -56,10 +57,7 @@ public class ShadowDisplayManager {
     }
     displayInfo.appWidth = widthPx;
     displayInfo.appHeight = heightPx;
-    displayInfo.smallestNominalAppWidth = Math.min(widthPx, heightPx);
-    displayInfo.smallestNominalAppHeight = Math.min(widthPx, heightPx);
-    displayInfo.largestNominalAppWidth = Math.max(widthPx, heightPx);
-    displayInfo.largestNominalAppHeight = Math.max(widthPx, heightPx);
+    fixNominalDimens(displayInfo);
     displayInfo.logicalWidth = widthPx;
     displayInfo.logicalHeight = heightPx;
     displayInfo.rotation = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -86,23 +84,72 @@ public class ShadowDisplayManager {
     return displayInfo;
   }
 
-  private static DisplayInfo createDisplayInfo(String qualifiersStr) {
+  private static void fixNominalDimens(DisplayInfo displayInfo) {
+    int smallest = Math.min(displayInfo.appWidth, displayInfo.appHeight);
+    int largest = Math.max(displayInfo.appWidth, displayInfo.appHeight);
+
+    displayInfo.smallestNominalAppWidth = smallest;
+    displayInfo.smallestNominalAppHeight = smallest;
+    displayInfo.largestNominalAppWidth = largest;
+    displayInfo.largestNominalAppHeight = largest;
+  }
+
+  private static DisplayInfo createDisplayInfo(String qualifiersStr, DisplayInfo baseDisplayInfo) {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
+
+    if (qualifiersStr.startsWith("+") && baseDisplayInfo != null) {
+      configuration.orientation =
+          (baseDisplayInfo.rotation == Surface.ROTATION_0
+              || baseDisplayInfo.rotation == Surface.ROTATION_180)
+              ? Configuration.ORIENTATION_PORTRAIT
+              : Configuration.ORIENTATION_LANDSCAPE;
+      configuration.screenWidthDp = baseDisplayInfo.logicalWidth * DisplayMetrics.DENSITY_DEFAULT
+          / baseDisplayInfo.logicalDensityDpi;
+      configuration.screenHeightDp = baseDisplayInfo.logicalHeight * DisplayMetrics.DENSITY_DEFAULT
+          / baseDisplayInfo.logicalDensityDpi;
+      configuration.densityDpi = baseDisplayInfo.logicalDensityDpi;
+      displayMetrics.densityDpi = baseDisplayInfo.logicalDensityDpi;
+      displayMetrics.density =
+          baseDisplayInfo.logicalDensityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
+    }
+
     Bootstrap.applyQualifiers(qualifiersStr, RuntimeEnvironment.getApiLevel(), configuration,
         displayMetrics);
+
     return createDisplayInfo(configuration, displayMetrics);
   }
 
   /**
-   * Changes properties of a simulated display.
+   * Changes properties of a simulated display. If `qualifiersStr` starts with a plus (`+`) sign,
+   * the display's previous configuration is modified with the given qualifiers; otherwise defaults
+   * are applied as described [here](http://robolectric.org/device-configuration/).
+   *
    *
    * @param displayId the display id to change
    * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
-   *     display.
+   *     display
    */
   public static void changeDisplay(int displayId, String qualifiersStr) {
-    getShadowDisplayManagerGlobal().changeDisplay(displayId, createDisplayInfo(qualifiersStr));
+    getShadowDisplayManagerGlobal().changeDisplay(displayId, createDisplayInfo(qualifiersStr,
+        new DisplayInfo(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId))));
+  }
+
+  /**
+   * Changes properties of a simulated display. The original properties will be passed to the
+   * `consumer`, which may modify them in place. The display will be updated with the new
+   * properties.
+   *
+   * @param displayId the display id to change
+   * @param consumer a function which modifies the display properties
+   */
+  static void changeDisplay(int displayId, Consumer<DisplayInfo> consumer) {
+    DisplayInfo displayInfo =
+        new DisplayInfo(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId));
+    consumer.accept(displayInfo);
+    fixNominalDimens(displayInfo);
+
+    getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
   }
 
   /**

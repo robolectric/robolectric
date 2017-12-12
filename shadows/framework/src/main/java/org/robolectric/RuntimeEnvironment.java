@@ -2,12 +2,8 @@ package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-import android.app.Activity;
 import android.app.Application;
-import android.content.ComponentCallbacks;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
