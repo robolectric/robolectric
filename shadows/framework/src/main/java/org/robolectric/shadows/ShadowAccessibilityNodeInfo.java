@@ -927,7 +927,9 @@ public class ShadowAccessibilityNodeInfo {
   private boolean childrenEqualityCheck(
       ShadowAccessibilityNodeInfo otherShadow,
       LinkedList<ShadowAccessibilityNodeInfo> visitedNodes) {
-    if (children.size() != otherShadow.children.size()) {
+    if (children == null) {
+      return otherShadow.getChildCount() == 0;
+    } else if (getChildCount() != otherShadow.getChildCount()) {
       return false;
     }
     boolean childrenEquality = true;
