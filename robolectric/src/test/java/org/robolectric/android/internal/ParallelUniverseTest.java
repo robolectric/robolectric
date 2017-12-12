@@ -33,6 +33,7 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(RobolectricTestRunner.class)
@@ -61,6 +62,9 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationState(Config defaultConfig, AndroidManifest appManifest) {
+    // this is kinda nasty but needed to prevent double initialization from ParallelUniverse and RTR:
+    ShadowDisplayManagerGlobal.reset();
+
     ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     Method method = getDummyMethodForTest();
@@ -128,13 +132,10 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
-        new Thread() {
-          @Override
-          public void run() {
-            setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
-            res.set(RuntimeEnvironment.isMainThread());
-          }
-        };
+        new Thread(() -> {
+          setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
+          res.set(RuntimeEnvironment.isMainThread());
+        });
     t.start();
     t.join(1000);
     assertThat(res.get()).isTrue();

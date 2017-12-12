@@ -4,10 +4,8 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
-import android.view.Display;
-import android.view.DisplayInfo;
-import android.view.Surface;
 import com.google.common.annotations.VisibleForTesting;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
@@ -51,13 +49,13 @@ public class Bootstrap {
       DeviceConfig.applyToConfiguration(qualifiers, apiLevel, configuration, displayMetrics);
     }
 
-    fixJellyBean(configuration, displayMetrics);
-
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
+
+    fixJellyBean(configuration, displayMetrics);
   }
 
   private static void fixJellyBean(Configuration configuration, DisplayMetrics displayMetrics) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.KITKAT) {
       int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
       int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
       displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;

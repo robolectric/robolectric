@@ -42,8 +42,7 @@ public class ShadowDisplayManager {
       throw new IllegalStateException("this method should only be called by Robolectric");
     }
 
-    shadowDisplayManagerGlobal.addDisplay(createDisplayInfo(configuration,
-        displayMetrics));
+    shadowDisplayManagerGlobal.addDisplay(createDisplayInfo(configuration, displayMetrics));
   }
 
   private static DisplayInfo createDisplayInfo(Configuration configuration, DisplayMetrics displayMetrics) {
