@@ -25,6 +25,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   private static Display defaultDisplayJB;
 
+  /** internal only */
   public static void configureDefaultDisplayForJBOnly(
       Configuration configuration, DisplayMetrics displayMetrics) {
     Class<?> arg2Type = ReflectionHelpers.loadClass(ShadowWindowManagerImpl.class.getClassLoader(),

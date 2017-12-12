@@ -2,14 +2,19 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
+import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
+import android.view.Surface;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Implements;
+import org.robolectric.res.Qualifiers;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.Consumer;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -21,49 +26,83 @@ public class ShadowDisplayManager {
   /**
    * Adds a simulated display.
    *
-   * @param displayInfo properties for the new display
+   * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
+   *     display.
    * @return the new display's ID
    */
-  public static int addDisplay(DisplayInfo displayInfo) {
-    return getShadowDisplayManagerGlobal().addDisplay(displayInfo);
+  public static int addDisplay(String qualifiersStr) {
+    return getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr));
+  }
+
+  /** internal only */
+  public static void configureDefaultDisplay(Configuration configuration, DisplayMetrics displayMetrics) {
+    ShadowDisplayManagerGlobal shadowDisplayManagerGlobal = getShadowDisplayManagerGlobal();
+    if (DisplayManagerGlobal.getInstance().getDisplayIds().length != 0) {
+      throw new IllegalStateException("this method should only be called by Robolectric");
+    }
+
+    shadowDisplayManagerGlobal.addDisplay(createDisplayInfo(configuration,
+        displayMetrics));
+  }
+
+  private static DisplayInfo createDisplayInfo(Configuration configuration, DisplayMetrics displayMetrics) {
+    int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
+    int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
+
+    DisplayInfo displayInfo = new DisplayInfo();
+    displayInfo.name = "Built-in screen";
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      displayInfo.uniqueId = "screen0";
+    }
+    displayInfo.appWidth = widthPx;
+    displayInfo.appHeight = heightPx;
+    displayInfo.smallestNominalAppWidth = Math.min(widthPx, heightPx);
+    displayInfo.smallestNominalAppHeight = Math.min(widthPx, heightPx);
+    displayInfo.largestNominalAppWidth = Math.max(widthPx, heightPx);
+    displayInfo.largestNominalAppHeight = Math.max(widthPx, heightPx);
+    displayInfo.logicalWidth = widthPx;
+    displayInfo.logicalHeight = heightPx;
+    displayInfo.rotation = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        ? Surface.ROTATION_0
+        : Surface.ROTATION_90;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      displayInfo.modeId = 0;
+      displayInfo.defaultModeId = 0;
+      displayInfo.supportedModes = new Display.Mode[] {
+          new Display.Mode(0, widthPx, heightPx, 60)
+      };
+    }
+    displayInfo.logicalDensityDpi = displayMetrics.densityDpi;
+    displayInfo.physicalXDpi = displayMetrics.densityDpi;
+    displayInfo.physicalYDpi = displayMetrics.densityDpi;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      displayInfo.state = Display.STATE_ON;
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+      displayInfo.getAppMetrics(displayMetrics);
+    }
+
+    return displayInfo;
+  }
+
+  private static DisplayInfo createDisplayInfo(String qualifiersStr) {
+    Configuration configuration = new Configuration();
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    Bootstrap.applyQualifiers(qualifiersStr, RuntimeEnvironment.getApiLevel(), configuration,
+        displayMetrics);
+    return createDisplayInfo(configuration, displayMetrics);
   }
 
   /**
    * Changes properties of a simulated display.
    *
    * @param displayId the display id to change
-   * @param displayInfo new properties for the display
+   * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
+   *     display.
    */
-  public static void changeDisplay(int displayId, DisplayInfo displayInfo) {
-    getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
-  }
-
-  /**
-   * Changes properties of a simulated display. The original properties will be passed to the
-   * `consumer`, which may modify them in place. The display will be updated with the new
-   * properties.
-   *
-   * @param displayId the display id to change
-   * @param consumer a function which modifies the display properties
-   */
-  public static void changeDisplay(int displayId, Consumer<DisplayInfo> consumer) {
-    checkSdk();
-    DisplayInfo displayInfo =
-        new DisplayInfo(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId));
-    consumer.accept(displayInfo);
-    getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
-  }
-
-  /**
-   * Changes properties of the default display. The original properties will be passed to the
-   * `consumer`, which may modify them in place. The display will be updated with the new
-   * properties.
-   *
-   * @param consumer a function which modifies the display properties
-   */
-  public static void changeDefaultDisplay(Consumer<DisplayInfo> consumer) {
-    int displayId = Display.DEFAULT_DISPLAY;
-    changeDisplay(displayId, consumer);
+  public static void changeDisplay(int displayId, String qualifiersStr) {
+    getShadowDisplayManagerGlobal().changeDisplay(displayId, createDisplayInfo(qualifiersStr));
   }
 
   /**
@@ -76,14 +115,10 @@ public class ShadowDisplayManager {
   }
 
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {
-    checkSdk();
-
-    return Shadow.extract(DisplayManagerGlobal.getInstance());
-  }
-
-  private static void checkSdk() {
     if (Build.VERSION.SDK_INT < JELLY_BEAN_MR1) {
       throw new UnsupportedOperationException("multiple displays not supported in Jelly Bean");
     }
+
+    return Shadow.extract(DisplayManagerGlobal.getInstance());
   }
 }

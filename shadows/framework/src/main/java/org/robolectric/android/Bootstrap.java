@@ -15,60 +15,11 @@ import org.robolectric.shadows.ShadowWindowManagerImpl;
 public class Bootstrap {
 
   public static void setUpDisplay(Configuration configuration, DisplayMetrics displayMetrics) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-      int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
-      int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
-      displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;
-      displayMetrics.heightPixels = displayMetrics.noncompatHeightPixels = heightPx;
-      displayMetrics.xdpi = displayMetrics.noncompatXdpi = displayMetrics.densityDpi;
-      displayMetrics.ydpi = displayMetrics.noncompatYdpi = displayMetrics.densityDpi;
-    }
-
     if (Build.VERSION.SDK_INT == VERSION_CODES.JELLY_BEAN) {
       ShadowWindowManagerImpl.configureDefaultDisplayForJBOnly(configuration, displayMetrics);
     } else {
-      DisplayInfo displayInfo = createDisplayInfo(configuration, displayMetrics);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        displayInfo.getAppMetrics(displayMetrics);
-      }
-      ShadowDisplayManager.addDisplay(displayInfo);
+      ShadowDisplayManager.configureDefaultDisplay(configuration, displayMetrics);
     }
-  }
-
-  private static DisplayInfo createDisplayInfo(Configuration configuration, DisplayMetrics displayMetrics) {
-    int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
-    int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
-
-    DisplayInfo displayInfo = new DisplayInfo();
-    displayInfo.name = "Built-in screen";
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      displayInfo.uniqueId = "screen0";
-    }
-    displayInfo.appWidth = widthPx;
-    displayInfo.appHeight = heightPx;
-    displayInfo.smallestNominalAppWidth = Math.min(widthPx, heightPx);
-    displayInfo.smallestNominalAppHeight = Math.min(widthPx, heightPx);
-    displayInfo.largestNominalAppWidth = Math.max(widthPx, heightPx);
-    displayInfo.largestNominalAppHeight = Math.max(widthPx, heightPx);
-    displayInfo.logicalWidth = widthPx;
-    displayInfo.logicalHeight = heightPx;
-    displayInfo.rotation = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-        ? Surface.ROTATION_0
-        : Surface.ROTATION_90;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      displayInfo.modeId = 0;
-      displayInfo.defaultModeId = 0;
-      displayInfo.supportedModes = new Display.Mode[] {
-          new Display.Mode(0, widthPx, heightPx, 60)
-      };
-    }
-    displayInfo.logicalDensityDpi = displayMetrics.densityDpi;
-    displayInfo.physicalXDpi = displayMetrics.densityDpi;
-    displayInfo.physicalYDpi = displayMetrics.densityDpi;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      displayInfo.state = Display.STATE_ON;
-    }
-    return displayInfo;
   }
 
   @VisibleForTesting
@@ -100,8 +51,20 @@ public class Bootstrap {
       DeviceConfig.applyToConfiguration(qualifiers, apiLevel, configuration, displayMetrics);
     }
 
+    fixJellyBean(configuration, displayMetrics);
 
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
+  }
+
+  private static void fixJellyBean(Configuration configuration, DisplayMetrics displayMetrics) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+      int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
+      int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
+      displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;
+      displayMetrics.heightPixels = displayMetrics.noncompatHeightPixels = heightPx;
+      displayMetrics.xdpi = displayMetrics.noncompatXdpi = displayMetrics.densityDpi;
+      displayMetrics.ydpi = displayMetrics.noncompatYdpi = displayMetrics.densityDpi;
+    }
   }
 
 }

@@ -52,8 +52,7 @@ public class ShadowDisplayManagerTest {
 
   @Test @Config(minSdk = JELLY_BEAN_MR1)
   public void addDisplay() throws Exception {
-    DisplayInfo displayInfo = createDisplayInfo(100, 200);
-    int displayId = ShadowDisplayManager.addDisplay(displayInfo);
+    int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
     assertThat(displayId).isGreaterThan(0);
 
     DisplayInfo di = getGlobal().getDisplayInfo(displayId);
@@ -68,8 +67,7 @@ public class ShadowDisplayManagerTest {
   public void addDisplay_shouldNotifyListeners() throws Exception {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
-    DisplayInfo displayInfo = createDisplayInfo(100, 200);
-    int displayId = ShadowDisplayManager.addDisplay(displayInfo);
+    int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
     assertThat(events).containsExactly("Added " + displayId);
   }
 
@@ -96,10 +94,9 @@ public class ShadowDisplayManagerTest {
   public void changeAndRemoveDisplay_shouldNotifyListeners() throws Exception {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
-    DisplayInfo displayInfo = createDisplayInfo(100, 200);
-    int displayId = ShadowDisplayManager.addDisplay(displayInfo);
+    int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
 
-    ShadowDisplayManager.changeDisplay(displayId, createDisplayInfo(300, 400));
+    ShadowDisplayManager.changeDisplay(displayId, "w300dp-h400dp");
 
     assertThat(getGlobal().getRealDisplay(displayId).getWidth()).isEqualTo(300);
 
