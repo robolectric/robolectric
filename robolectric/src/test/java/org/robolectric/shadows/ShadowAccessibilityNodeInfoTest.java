@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowAccessibilityNodeInfoTest {
@@ -161,13 +160,24 @@ public class ShadowAccessibilityNodeInfoTest {
     AccessibilityNodeInfo grandparentInfo = AccessibilityNodeInfo.obtain();
     AccessibilityNodeInfo childInfo = AccessibilityNodeInfo.obtain();
     AccessibilityNodeInfo parentInfo = AccessibilityNodeInfo.obtain();
-    ((ShadowAccessibilityNodeInfo) Shadow.extract(grandparentInfo)).addChild(parentInfo);
-    ((ShadowAccessibilityNodeInfo) Shadow.extract(parentInfo)).addChild(childInfo);
+    shadowOf(grandparentInfo).addChild(parentInfo);
+    shadowOf(parentInfo).addChild(childInfo);
 
     assertThat(parentInfo.equals(childInfo)).isFalse();
     assertThat(childInfo.equals(parentInfo)).isFalse();
     assertThat(grandparentInfo.equals(parentInfo)).isFalse();
     assertThat(parentInfo.equals(grandparentInfo)).isFalse();
+  }
+
+  @Test
+  public void equalsTest_avoidsNullPointerDuringChildrenComparison() {
+    node.setVisibleToUser(true);
+    AccessibilityNodeInfo child1 = AccessibilityNodeInfo.obtain();
+    AccessibilityNodeInfo child2 = AccessibilityNodeInfo.obtain();
+    shadowOf(node).addChild(child1);
+    shadowOf(node).addChild(child2);
+
+    assertThat(node).isEqualTo(node);
   }
 
   @After
