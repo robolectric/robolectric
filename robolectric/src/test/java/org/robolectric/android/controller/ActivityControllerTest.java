@@ -2,10 +2,10 @@ package org.robolectric.android.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -22,8 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
@@ -255,25 +255,10 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void configurationChange_failsOnInvalidState() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
-    final float newFontScale = config.fontScale *= 2;
-    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
-
-    ActivityController<InvalidStateActivity> configController =
-        Robolectric.buildActivity(InvalidStateActivity.class).setup();
-    try {
-      configController.configurationChange(config);
-      fail("Expected Exception");
-    } catch (RuntimeException expected) {
-    }
-  }
-
-  @Test
+  @Config(qualifiers = "land")
   public void configurationChange_restoresTheme() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
-    final float newFontScale = config.fontScale *= 2;
-    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
+    config.orientation = Configuration.ORIENTATION_PORTRAIT;
 
     controller.get().setTheme(android.R.style.Theme_Black);
     controller.setup();
@@ -281,6 +266,26 @@ public class ActivityControllerTest {
     controller.configurationChange(config);
     int restoredTheme = shadowOf((ContextThemeWrapper) controller.get()).callGetThemeResId();
     assertThat(restoredTheme).isEqualTo(android.R.style.Theme_Black);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void configurationChange_reattachesRetainedFragments() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    config.orientation = Configuration.ORIENTATION_PORTRAIT;
+
+    ActivityController<NonConfigStateActivity> configController =
+        Robolectric.buildActivity(NonConfigStateActivity.class).setup();
+    NonConfigStateActivity activity = configController.get();
+    Fragment retainedFragment = activity.retainedFragment;
+    Fragment otherFragment = activity.nonRetainedFragment;
+    configController.configurationChange(config);
+    activity = configController.get();
+
+    assertThat(activity.retainedFragment).isNotNull();
+    assertThat(activity.retainedFragment).isSameAs(retainedFragment);
+    assertThat(activity.nonRetainedFragment).isNotNull();
+    assertThat(activity.nonRetainedFragment).isNotSameAs(otherFragment);
   }
 
   public static class MyActivity extends Activity {
@@ -387,20 +392,41 @@ public class ActivityControllerTest {
   }
   
   public static class ConfigAwareActivity extends MyActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState != null) {
+        assertThat(savedInstanceState.getSerializable("test")).isNotNull();
+      }
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
       super.onSaveInstanceState(outState);
-      outState.putSerializable("test", new Exception()); // This will successfully parcel.
+      outState.putSerializable("test", new Exception());
     }
   }
 
-  public static class InvalidStateActivity extends MyActivity {
+  public static final class NonConfigStateActivity extends Activity {
+    Fragment retainedFragment;
+    Fragment nonRetainedFragment;
+
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-      super.onSaveInstanceState(outState);
-      outState.putSerializable("test", new Exception() {
-          Activity activity = new Activity(); // This will fail to parcel/serialize.
-        });
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState == null) {
+        retainedFragment = new Fragment();
+        retainedFragment.setRetainInstance(true);
+        nonRetainedFragment = new Fragment();
+        getFragmentManager().beginTransaction()
+            .add(android.R.id.content, retainedFragment, "retained")
+            .add(android.R.id.content, nonRetainedFragment, "non-retained")
+            .commit();
+      } else {
+        retainedFragment = getFragmentManager().findFragmentByTag("retained");
+        nonRetainedFragment = getFragmentManager().findFragmentByTag("non-retained");
+      }
     }
   }
 }
