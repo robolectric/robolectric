@@ -375,6 +375,23 @@ public class ShadowDisplay {
     this.pixelFormat = pixelFormat;
   }
 
+  /**
+   * Changes the simulated state for this display, such as whether it is on or off
+   *
+   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * notified of the change.
+   *
+   * @param state the new state: one of {@link Display#STATE_OFF}, {@link Display#STATE_ON},
+   *        {@link Display#STATE_DOZE}, {@link Display#STATE_DOZE_SUSPEND}, or
+   *        {@link Display#STATE_UNKNOWN}.
+   */
+  public void setState(int state) {
+    if (!isJB()) {
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
+          di -> di.state = state);
+    }
+  }
+
   private boolean isJB() {
     return RuntimeEnvironment.getApiLevel() == JELLY_BEAN;
   }

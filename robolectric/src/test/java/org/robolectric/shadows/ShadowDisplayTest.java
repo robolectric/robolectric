@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.junit.Assert.assertEquals;
 
 import android.graphics.Point;
@@ -78,6 +79,14 @@ public class ShadowDisplayTest {
     assertEquals(1024, display.getWidth());
     assertEquals(600, display.getHeight());
     assertEquals("another name", display.getName());
+  }
+
+  @Test @Config(minSdk = LOLLIPOP)
+  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay_postKitKatFields() throws Exception {
+    shadow.setState(Display.STATE_DOZE_SUSPEND);
+
+    display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertEquals(Display.STATE_DOZE_SUSPEND, display.getState());
   }
 
   @Test
