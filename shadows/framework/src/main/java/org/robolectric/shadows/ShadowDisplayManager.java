@@ -130,8 +130,8 @@ public class ShadowDisplayManager {
    *     display
    */
   public static void changeDisplay(int displayId, String qualifiersStr) {
-    DisplayInfo displayInfo = createDisplayInfo(qualifiersStr,
-        DisplayManagerGlobal.getInstance().getDisplayInfo(displayId));
+    DisplayInfo baseDisplayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    DisplayInfo displayInfo = createDisplayInfo(qualifiersStr, baseDisplayInfo);
     getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
   }
 
@@ -145,8 +145,10 @@ public class ShadowDisplayManager {
    */
   static void changeDisplay(int displayId, Consumer<DisplayInfo> consumer) {
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
-    consumer.accept(displayInfo);
-    fixNominalDimens(displayInfo);
+    if (displayInfo != null) {
+      consumer.accept(displayInfo);
+      fixNominalDimens(displayInfo);
+    }
 
     getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
   }
