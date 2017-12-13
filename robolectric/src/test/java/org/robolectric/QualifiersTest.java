@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -113,5 +114,13 @@ public class QualifiersTest {
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage()).contains("Cannot specify conflicting platform version in qualifiers");
     }
+  }
+
+  @Test
+  @Config(minSdk = O, qualifiers = "widecg-highdr-vrheadset")
+  public void testQualifiersNewIn26() throws Exception {
+    assertThat(RuntimeEnvironment.getQualifiers())
+        .contains("-widecg-highdr-")
+        .contains("-vrheadset-");
   }
 }

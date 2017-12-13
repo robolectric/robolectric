@@ -1,6 +1,6 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/native/+/android-7.1.1_r13/include/android/configuration.h
+// transliterated from https://android.googlesource.com/platform/frameworks/native/+/android-8.0.0_r4/include/android/configuration.h
 public class AConfiguration {
 /** Orientation: not specified. */
   public static final int ACONFIGURATION_ORIENTATION_ANY  = 0x0000;
@@ -211,6 +211,37 @@ public class AConfiguration {
   public static final int ACONFIGURATION_SCREENROUND_ANY = 0x00;
   public static final int ACONFIGURATION_SCREENROUND_NO = 0x1;
   public static final int ACONFIGURATION_SCREENROUND_YES = 0x2;
+
+  /** Wide color gamut: not specified. */
+  public static final int ACONFIGURATION_WIDE_COLOR_GAMUT_ANY = 0x00;
+  /**
+   * Wide color gamut: value that corresponds to
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#WideColorGamutQualifier">no
+   * nowidecg</a> resource qualifier specified.
+   */
+  public static final int ACONFIGURATION_WIDE_COLOR_GAMUT_NO = 0x1;
+  /**
+   * Wide color gamut: value that corresponds to
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#WideColorGamutQualifier">
+   * widecg</a> resource qualifier specified.
+   */
+  public static final int ACONFIGURATION_WIDE_COLOR_GAMUT_YES = 0x2;
+
+  /** HDR: not specified. */
+  public static final int ACONFIGURATION_HDR_ANY = 0x00;
+  /**
+   * HDR: value that corresponds to
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#HDRQualifier">
+   * lowdr</a> resource qualifier specified.
+   */
+  public static final int ACONFIGURATION_HDR_NO = 0x1;
+  /**
+   * HDR: value that corresponds to
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#HDRQualifier">
+   * highdr</a> resource qualifier specified.
+   */
+  public static final int ACONFIGURATION_HDR_YES = 0x2;
+
   /** UI mode: not specified. */
   public static final int ACONFIGURATION_UI_MODE_TYPE_ANY = 0x00;
   /**
@@ -244,6 +275,11 @@ public class AConfiguration {
    * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">watch</a> resource qualifier specified.
    */
   public static final int ACONFIGURATION_UI_MODE_TYPE_WATCH = 0x06;
+   /**
+  * UI mode: value that corresponds to
+  * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">vr</a> resource qualifier specified.
+  */
+  public static final int ACONFIGURATION_UI_MODE_TYPE_VR_HEADSET = 0x07;
   /** UI night mode: not specified.*/
   public static final int ACONFIGURATION_UI_MODE_NIGHT_ANY = 0x00;
   /**
@@ -363,6 +399,12 @@ public class AConfiguration {
    */
   public static final int ACONFIGURATION_LAYOUTDIR = 0x4000;
   public static final int ACONFIGURATION_SCREEN_ROUND = 0x8000;
+  /**
+   * Bit mask for
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#WideColorGamutQualifier">wide color gamut</a>
+   * and <a href="@dacRoot/guide/topics/resources/providing-resources.html#HDRQualifier">HDR</a> configurations.
+   */
+  public static final int ACONFIGURATION_COLOR_MODE = 0x10000;
   /**
    * Constant used to to represent MNC (Mobile Network Code) zero.
    * 0 cannot be used, since it is used to represent an undefined MNC.

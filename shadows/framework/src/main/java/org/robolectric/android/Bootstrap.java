@@ -104,6 +104,9 @@ public class Bootstrap {
     }
     displayMetrics.densityDpi = resTab.density;
     displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
+    if (apiLevel >= VERSION_CODES.O) {
+      configuration.colorMode = resTab.colorMode;
+    }
 
     Locale locale;
     String lang = resTab.languageString();
