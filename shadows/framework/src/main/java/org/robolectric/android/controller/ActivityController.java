@@ -21,16 +21,32 @@ import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
-  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
-    return new ActivityController<>(shadowsAdapter, activity, intent).attach();
+  /**
+   * @deprecated use {@link #of(Activity, Intent)} instead.
+   */
+  @Deprecated
+  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter unused, T activity, Intent intent) {
+    return of(activity, intent);
   }
 
-  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity) {
-    return new ActivityController<>(shadowsAdapter, activity, null).attach();
+  /**
+   * @deprecated use {@link #of(Activity)} instead.
+   */
+  @Deprecated
+  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter unused, T activity) {
+    return of(activity);
   }
 
-  private ActivityController(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
-    super(shadowsAdapter, activity, intent);
+  public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
+    return new ActivityController<>(activity, intent).attach();
+  }
+
+  public static <T extends Activity> ActivityController<T> of(T activity) {
+    return new ActivityController<>(activity, null).attach();
+  }
+
+  private ActivityController(T activity, Intent intent) {
+    super(activity, intent);
   }
 
   private ActivityController<T> attach() {
