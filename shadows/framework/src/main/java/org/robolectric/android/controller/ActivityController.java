@@ -13,19 +13,14 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.os.Parcelable.Creator;
 import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
-
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     return new ActivityController<>(shadowsAdapter, activity, intent).attach();
   }
@@ -70,6 +65,16 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return create(null);
   }
 
+  public ActivityController<T> restart() {
+    invokeWhilePaused("performRestart");
+    return this;
+  }
+
+  public ActivityController<T> start() {
+    invokeWhilePaused("performStart");
+    return this;
+  }
+
   public ActivityController<T> restoreInstanceState(Bundle bundle) {
     invokeWhilePaused("performRestoreInstanceState", from(Bundle.class, bundle));
     return this;
@@ -80,16 +85,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return this;
   }
 
-  public ActivityController<T> start() {
-    invokeWhilePaused("performStart");
-    return this;
-  }
-
-  public ActivityController<T> restart() {
-    invokeWhilePaused("performRestart");
-    return this;
-  }
-
   public ActivityController<T> resume() {
     invokeWhilePaused("performResume");
     return this;
@@ -97,16 +92,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
   public ActivityController<T> postResume() {
     invokeWhilePaused("onPostResume");
-    return this;
-  }
-
-  public ActivityController<T> newIntent(Intent intent) {
-    invokeWhilePaused("onNewIntent", from(Intent.class, intent));
-    return this;
-  }
-
-  public ActivityController<T> saveInstanceState(Bundle outState) {
-    invokeWhilePaused("performSaveInstanceState", from(Bundle.class, outState));
     return this;
   }
 
@@ -129,13 +114,18 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return this;
   }
 
+  public ActivityController<T> userLeaving() {
+    invokeWhilePaused("performUserLeaving");
+    return this;
+  }
+
   public ActivityController<T> pause() {
     invokeWhilePaused("performPause");
     return this;
   }
 
-  public ActivityController<T> userLeaving() {
-    invokeWhilePaused("performUserLeaving");
+  public ActivityController<T> saveInstanceState(Bundle outState) {
+    invokeWhilePaused("performSaveInstanceState", from(Bundle.class, outState));
     return this;
   }
 
@@ -176,10 +166,15 @@ public class ActivityController<T extends Activity> extends ComponentController<
         .resume()
         .visible();
   }
-  
+
+  public ActivityController<T> newIntent(Intent intent) {
+    invokeWhilePaused("onNewIntent", from(Intent.class, intent));
+    return this;
+  }
+
   /**
    * Performs a configuration change on the Activity.
-   *  
+   *
    * @param newConfiguration The new configuration to be set.
    * @return Activity controller instance.
    */
@@ -187,6 +182,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
     final Configuration currentConfig = component.getResources().getConfiguration();
     final int changedBits = currentConfig.diff(newConfiguration);
     currentConfig.setTo(newConfiguration);
+
+    // TODO: throw on changedBits == 0 since it non-intuitively calls onConfigurationChanged
 
     // Can the activity handle itself ALL configuration changes?
     if ((getActivityInfo(component.getApplication()).configChanges & changedBits) == changedBits) {
@@ -202,31 +199,44 @@ public class ActivityController<T extends Activity> extends ComponentController<
     } else {
       @SuppressWarnings("unchecked")
       final T recreatedActivity = (T) ReflectionHelpers.callConstructor(component.getClass());
-      
+
       shadowMainLooper.runPaused(new Runnable() {
         @Override
         public void run() {
           // Set flags
           ReflectionHelpers.setField(Activity.class, component, "mChangingConfigurations", true);
           ReflectionHelpers.setField(Activity.class, component, "mConfigChangeFlags", changedBits);
-          
+
           // Perform activity destruction
-          Bundle outState = new Bundle();
+          final Bundle outState = new Bundle();
 
           // The order of onPause/onStop/onSaveInstanceState is undefined, but is usually:
           // onPause -> onSaveInstanceState -> onStop
-          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onPause");
-          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onSaveInstanceState",
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "performPause");
+          ReflectionHelpers.callInstanceMethod(
+              Activity.class,
+              component,
+              "performSaveInstanceState",
               from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onStop");
-    
-          final Object nonConfigInstance = ReflectionHelpers.callInstanceMethod(
-              Activity.class, component, "onRetainNonConfigurationInstance");
-    
-          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onDestroy");
+          if (RuntimeEnvironment.getApiLevel() <= M) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
+          } else {
+            ReflectionHelpers.callInstanceMethod(
+                Activity.class, component, "performStop", from(boolean.class, true));
+          }
 
-          // Make sure parcels properly serialize/restore state.
-          outState = forceParcel(outState, Bundle.CREATOR);
+          // This is the true and complete retained state, including loaders and retained
+          // fragments.
+          final Object nonConfigInstance =
+              ReflectionHelpers.callInstanceMethod(
+                  Activity.class, component, "retainNonConfigurationInstances");
+          // This is the activity's "user" state
+          final Object activityConfigInstance =
+              nonConfigInstance == null
+                  ? null // No framework or user state.
+                  : ReflectionHelpers.getField(nonConfigInstance, "activity");
+
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "performDestroy");
 
           // Restore theme in case it was set in the test manually.
           // This is not technically what happens but is purely to make this easier to use in
@@ -243,17 +253,22 @@ public class ActivityController<T extends Activity> extends ComponentController<
           }
 
           // Set saved non config instance
-          shadowOf(recreatedActivity).setLastNonConfigurationInstance(nonConfigInstance);
-          
+          ReflectionHelpers.setField(
+              recreatedActivity, "mLastNonConfigurationInstances", nonConfigInstance);
+          shadowOf(recreatedActivity).setLastNonConfigurationInstance(activityConfigInstance);
+
           // Create lifecycle
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
-              "onCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onStart");
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
-              "onRestoreInstanceState", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
-              "onPostCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onResume");
+          ReflectionHelpers.callInstanceMethod(
+              Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
+          ReflectionHelpers.callInstanceMethod(
+              Activity.class,
+              recreatedActivity,
+              "performRestoreInstanceState",
+              from(Bundle.class, outState));
+          ReflectionHelpers.callInstanceMethod(
+              Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onPostResume");
           // TODO: Call visible() too.
         }
@@ -261,13 +276,5 @@ public class ActivityController<T extends Activity> extends ComponentController<
     }
 
     return this;
-  }
-
-  // TODO: Consider exposing this as a util method somewhere in Robolectric
-  private static <T extends Parcelable> T forceParcel(T parcelable, Creator<T> creator) {
-    Parcel parcel = Parcel.obtain();
-    parcelable.writeToParcel(parcel, 0);
-    parcel.setDataPosition(0);
-    return creator.createFromParcel(parcel);
   }
 }
