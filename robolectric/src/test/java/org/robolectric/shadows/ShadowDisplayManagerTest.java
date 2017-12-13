@@ -51,6 +51,26 @@ public class ShadowDisplayManagerTest {
         .isEqualTo(origAppWidth);
   }
 
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void forNonexistentDisplay_getDisplayInfo_shouldReturnNull() throws Exception {
+    assertThat(getGlobal().getDisplayInfo(3)).isEqualTo(null);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void forNonexistentDisplay_changeDisplay_shouldThrow() throws Exception {
+    assertThatThrownBy(() -> ShadowDisplayManager.changeDisplay(3, ""))
+        .hasMessageContaining("no display 3");
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void forNonexistentDisplay_removeDisplay_shouldThrow() throws Exception {
+    assertThatThrownBy(() -> ShadowDisplayManager.removeDisplay(3))
+        .hasMessageContaining("no display 3");
+  }
+
   @Test @Config(minSdk = JELLY_BEAN_MR1)
   public void addDisplay() throws Exception {
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
@@ -87,6 +107,23 @@ public class ShadowDisplayManagerTest {
     shadowDisplay.setHeight(display.getHeight() - 10);
 
     ShadowDisplay.getDefaultDisplay().getCurrentSizeRange(smallest, largest);
+    assertThat(smallest).isEqualTo(new Point(310, 310));
+    assertThat(largest).isEqualTo(new Point(460, 460));
+  }
+
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
+  public void withQualifiers_changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() throws Exception {
+    Point smallest = new Point();
+    Point largest = new Point();
+
+    Display display = ShadowDisplay.getDefaultDisplay();
+    display.getCurrentSizeRange(smallest, largest);
+    assertThat(smallest).isEqualTo(new Point(320, 320));
+    assertThat(largest).isEqualTo(new Point(470, 470));
+
+    ShadowDisplayManager.changeDisplay(display.getDisplayId(), "w310dp-h460dp");
+
+    display.getCurrentSizeRange(smallest, largest);
     assertThat(smallest).isEqualTo(new Point(310, 310));
     assertThat(largest).isEqualTo(new Point(460, 460));
   }

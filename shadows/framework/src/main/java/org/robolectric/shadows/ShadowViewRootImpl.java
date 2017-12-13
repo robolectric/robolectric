@@ -118,7 +118,7 @@ public class ShadowViewRootImpl {
   }
 
   private Display getDisplay() {
-    if (Build.VERSION.SDK_INT > JELLY_BEAN_MR1) {
+    if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN_MR1) {
       return realObject.getView().getDisplay();
     } else {
       WindowManager windowManager = (WindowManager) realObject.getView().getContext()

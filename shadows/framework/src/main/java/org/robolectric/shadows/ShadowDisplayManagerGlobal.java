@@ -69,10 +69,11 @@ public class ShadowDisplayManagerGlobal {
 
     // @Override
     public DisplayInfo getDisplayInfo(int i) throws RemoteException {
-      return new DisplayInfo(displayInfos.get(i));
+      DisplayInfo displayInfo = displayInfos.get(i);
+      return displayInfo == null ? null : new DisplayInfo(displayInfo);
     }
 
-    // @Override
+    // @Override // todo: use @Implements/@Implementation for signature checking
     public int[] getDisplayIds() throws RemoteException {
       int[] ids = new int[displayInfos.size()];
       int i = 0;
@@ -95,11 +96,19 @@ public class ShadowDisplayManagerGlobal {
     }
 
     synchronized private void changeDisplay(int displayId, DisplayInfo displayInfo) {
+      if (!displayInfos.containsKey(displayId)) {
+        throw new IllegalStateException("no display " + displayId);
+      }
+
       displayInfos.put(displayId, displayInfo);
       notifyListeners(displayId, DisplayManagerGlobal.EVENT_DISPLAY_CHANGED);
     }
 
     synchronized private void removeDisplay(int displayId) {
+      if (!displayInfos.containsKey(displayId)) {
+        throw new IllegalStateException("no display " + displayId);
+      }
+
       displayInfos.remove(displayId);
       notifyListeners(displayId, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
     }
