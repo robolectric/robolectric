@@ -25,47 +25,47 @@ public class FragmentController<F extends Fragment> extends ComponentController<
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Intent intent) {
-    return new FragmentController<>(null, fragment, FragmentControllerActivity.class, intent);
+    return new FragmentController<>(fragment, FragmentControllerActivity.class, intent);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Bundle arguments) {
-    return new FragmentController<>(null, fragment, FragmentControllerActivity.class, arguments);
+    return new FragmentController<>(fragment, FragmentControllerActivity.class, arguments);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Intent intent, Bundle arguments) {
-    return new FragmentController<>(null, fragment, FragmentControllerActivity.class, intent,
+    return new FragmentController<>(fragment, FragmentControllerActivity.class, intent,
             arguments);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Intent intent) {
-    return new FragmentController<>(null, fragment, activityClass, intent);
+    return new FragmentController<>(fragment, activityClass, intent);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
-    return new FragmentController<>(null, fragment, activityClass, arguments);
+    return new FragmentController<>(fragment, activityClass, arguments);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass,
                                                               Intent intent, Bundle arguments) {
-    return new FragmentController<>(null, fragment, activityClass, intent, arguments);
+    return new FragmentController<>(fragment, activityClass, intent, arguments);
   }
 
-  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass, Intent intent) {
-    this(shadowsAdapter, fragment, activityClass, intent, null);
+  private FragmentController(F fragment, Class<? extends Activity> activityClass, Intent intent) {
+    this(fragment, activityClass, intent, null);
   }
 
-  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
-    this(shadowsAdapter, fragment, activityClass, null, arguments);
+  private FragmentController(F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
+    this(fragment, activityClass, null, arguments);
   }
 
-  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass,
+  private FragmentController(F fragment, Class<? extends Activity> activityClass,
                              Intent intent, Bundle arguments) {
-    super(shadowsAdapter, fragment, intent);
+    super(fragment, intent);
     this.fragment = fragment;
     if (arguments != null) {
       this.fragment.setArguments(arguments);
     }
-    this.activityController = ActivityController.of(shadowsAdapter, ReflectionHelpers.callConstructor(activityClass), intent);
+    this.activityController = ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
   /**

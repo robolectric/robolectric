@@ -2,6 +2,7 @@ package org.robolectric.android.controller;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
@@ -13,17 +14,22 @@ import org.robolectric.util.ReflectionHelpers;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T> {
 
-  private String shadowActivityThreadClassName;
+  /**
+   * @deprecated Use {@link #of(Service, Intent)} instead.
+   */
+  @Deprecated
+  public static <T extends Service> ServiceController<T> of(ShadowsAdapter unused, T service, Intent intent) {
+    return of(service, intent);
+  }
 
-  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
-    ServiceController<T> controller = new ServiceController<>(shadowsAdapter, service, intent);
+  public static <T extends Service> ServiceController<T> of(T service, Intent intent) {
+    ServiceController<T> controller = new ServiceController<>(service, intent);
     controller.attach();
     return controller;
   }
 
-  protected ServiceController(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
-    super(shadowsAdapter, service, intent);
-    shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
+  private ServiceController(T service, Intent intent) {
+    super(service, intent);
   }
 
   private ServiceController<T> attach() {
@@ -31,20 +37,9 @@ public class ServiceController<T extends Service> extends ComponentController<Se
       return this;
     }
 
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
-
-    ClassLoader cl = baseContext.getClassLoader();
-    Class<?> activityThreadClass;
-    try {
-      activityThreadClass = cl.loadClass(shadowActivityThreadClassName);
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-    }
-
     ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
-        from(Context.class, baseContext),
-        from(activityThreadClass, null),
+        from(Context.class, RuntimeEnvironment.application.getBaseContext()),
+        from(ActivityThread.class, null),
         from(String.class, component.getClass().getSimpleName()),
         from(IBinder.class, null),
         from(Application.class, RuntimeEnvironment.application),
