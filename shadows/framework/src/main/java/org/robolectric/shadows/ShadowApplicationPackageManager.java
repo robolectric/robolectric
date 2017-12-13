@@ -497,11 +497,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
-  public void getPackageSizeInfo(String packageName, final IPackageStatsObserver observer) {
-    final PackageStats packageStats = packageStatsMap.get(packageName);
+  public void getPackageSizeInfo(Object pkgName, Object observer) {
+    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper()).post(() -> {
       try {
-        observer.onGetStatsCompleted(packageStats, packageStats != null);
+        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
       } catch (RemoteException remoteException) {
         remoteException.rethrowFromSystemServer();
       }
@@ -509,11 +509,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
-  public void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver callback) {
-    final PackageStats packageStats = packageStatsMap.get(pkgName);
+  public void getPackageSizeInfo(Object pkgName, Object uid, final Object observer) {
+    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper()).post(() -> {
       try {
-        callback.onGetStatsCompleted(packageStats, packageStats != null);
+        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
       } catch (RemoteException remoteException) {
         remoteException.rethrowFromSystemServer();
       }
@@ -521,11 +521,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = N)
-  public void getPackageSizeInfoAsUser(String pkgName, int uid, final IPackageStatsObserver callback) {
-    final PackageStats packageStats = packageStatsMap.get(pkgName);
+  public void getPackageSizeInfoAsUser(Object pkgName, Object uid, final Object observer) {
+    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper()).post(() -> {
       try {
-        callback.onGetStatsCompleted(packageStats, packageStats != null);
+        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
       } catch (RemoteException remoteException) {
         remoteException.rethrowFromSystemServer();
       }
