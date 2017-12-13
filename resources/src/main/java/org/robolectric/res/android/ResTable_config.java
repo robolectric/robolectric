@@ -60,7 +60,9 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_NORMAL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_TELEVISION;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_WATCH;
+import static org.robolectric.res.android.LocaleData.localeDataCompareRegions;
 import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
+import static org.robolectric.res.android.LocaleData.localeDataIsCloseToUsEnglish;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
@@ -1691,8 +1693,7 @@ public class ResTable_config {
     return (language[0] & 0xff << 24) | (language[1] * 0xff << 16) | ((country[0] & 0xff) << 8) | (country[1] & 0xff);
   }
 
-  private boolean isLocaleBetterThan(
-      org.robolectric.res.android.ResTable_config o, org.robolectric.res.android.ResTable_config requested) {
+  private boolean isLocaleBetterThan(ResTable_config o, ResTable_config requested) {
     if (requested.locale() == 0) {
       // The request doesn't have a locale, so no resource is better
       // than the other.
@@ -1737,11 +1738,11 @@ public class ResTable_config {
           } else {
             return !(o.country[0] == '\0' || areIdentical(o.country, kUnitedStates));
           }
-        } else if (LocaleData.localeDataIsCloseToUsEnglish(requested.country)) {
+        } else if (localeDataIsCloseToUsEnglish(requested.country)) {
           if (language[0] != '\0') {
-            return LocaleData.localeDataIsCloseToUsEnglish(country);
+            return localeDataIsCloseToUsEnglish(country);
           } else {
-            return !LocaleData.localeDataIsCloseToUsEnglish(o.country);
+            return !localeDataIsCloseToUsEnglish(o.country);
           }
         }
       }
@@ -1758,7 +1759,7 @@ public class ResTable_config {
     // check the country and variant.
 
     // See if any of the regions is better than the other.
-    final int region_comparison = LocaleData.localeDataCompareRegions(
+    final int region_comparison = localeDataCompareRegions(
         country, o.country,
         requested.language, str(requested.localeScript), requested.country);
     if (region_comparison != 0) {
@@ -1798,10 +1799,150 @@ public class ResTable_config {
     return code1[0] == code2[0] && code1[1] == code2[1];
   }
 
-  // TODO Convert from C
-  private boolean isMoreSpecificThan(org.robolectric.res.android.ResTable_config o) {
-    return false;
+  int isLocaleMoreSpecificThan(ResTable_config o) {
+    if (isTruthy(locale()) || isTruthy(o.locale())) {
+      if (language[0] != o.language[0]) {
+        if (!isTruthy(language[0])) return -1;
+        if (!isTruthy(o.language[0])) return 1;
+      }
+      if (country[0] != o.country[0]) {
+        if (!isTruthy(country[0])) return -1;
+        if (!isTruthy(o.country[0])) return 1;
+      }
+    }
+    // There isn't a well specified "importance" order between variants and
+    // scripts. We can't easily tell whether, say "en-Latn-US" is more or less
+    // specific than "en-US-POSIX".
+    //
+    // We therefore arbitrarily decide to give priority to variants over
+    // scripts since it seems more useful to do so. We will consider
+    // "en-US-POSIX" to be more specific than "en-Latn-US".
+    int score = ((localeScript[0] != '\0' && !localeScriptWasComputed) ? 1 : 0) +
+        ((localeVariant[0] != '\0') ? 2 : 0);
+    int oScore = (o.localeScript[0] != '\0' && !o.localeScriptWasComputed ? 1 : 0) +
+        ((o.localeVariant[0] != '\0') ? 2 : 0);
+    return score - oScore;
   }
 
+  private boolean isMoreSpecificThan(org.robolectric.res.android.ResTable_config o) {
+    // The order of the following tests defines the importance of one
+    // configuration parameter over another.  Those tests first are more
+    // important, trumping any values in those following them.
+    if (isTruthy(imsi()) || isTruthy(o.imsi())) {
+      if (mcc != o.mcc) {
+        if (!isTruthy(mcc)) return false;
+        if (!isTruthy(o.mcc)) return true;
+      }
+      if (mnc != o.mnc) {
+        if (!isTruthy(mnc)) return false;
+        if (!isTruthy(o.mnc)) return true;
+      }
+    }
+    if (isTruthy(locale()) || isTruthy(o.locale())) {
+      int diff = isLocaleMoreSpecificThan(o);
+      if (diff < 0) {
+        return false;
+      }
+      if (diff > 0) {
+        return true;
+      }
+    }
+    if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
+      if (((screenLayout^o.screenLayout) & MASK_LAYOUTDIR) != 0) {
+        if (!isTruthy((screenLayout & MASK_LAYOUTDIR))) return false;
+        if (!isTruthy((o.screenLayout & MASK_LAYOUTDIR))) return true;
+      }
+    }
+    if (isTruthy(smallestScreenWidthDp) || isTruthy(o.smallestScreenWidthDp)) {
+      if (smallestScreenWidthDp != o.smallestScreenWidthDp) {
+        if (!isTruthy(smallestScreenWidthDp)) return false;
+        if (!isTruthy(o.smallestScreenWidthDp)) return true;
+      }
+    }
+    if (isTruthy(screenSizeDp()) || isTruthy(o.screenSizeDp())) {
+      if (screenWidthDp != o.screenWidthDp) {
+        if (!isTruthy(screenWidthDp)) return false;
+        if (!isTruthy(o.screenWidthDp)) return true;
+      }
+      if (screenHeightDp != o.screenHeightDp) {
+        if (!isTruthy(screenHeightDp)) return false;
+        if (!isTruthy(o.screenHeightDp)) return true;
+      }
+    }
+    if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
+      if (((screenLayout^o.screenLayout) & MASK_SCREENSIZE) != 0) {
+        if (!isTruthy((screenLayout & MASK_SCREENSIZE))) return false;
+        if (!isTruthy((o.screenLayout & MASK_SCREENSIZE))) return true;
+      }
+      if (((screenLayout^o.screenLayout) & MASK_SCREENLONG) != 0) {
+        if (!isTruthy((screenLayout & MASK_SCREENLONG))) return false;
+        if (!isTruthy((o.screenLayout & MASK_SCREENLONG))) return true;
+      }
+    }
+    if (isTruthy(screenLayout2) || isTruthy(o.screenLayout2)) {
+      if (((screenLayout2^o.screenLayout2) & MASK_SCREENROUND) != 0) {
+        if (!isTruthy((screenLayout2 & MASK_SCREENROUND))) return false;
+        if (!isTruthy((o.screenLayout2 & MASK_SCREENROUND))) return true;
+      }
+    }
+    if (orientation != o.orientation) {
+      if (!isTruthy(orientation)) return false;
+      if (!isTruthy(o.orientation)) return true;
+    }
+    if (isTruthy(uiMode) || isTruthy(o.uiMode)) {
+      if (((uiMode^o.uiMode) & MASK_UI_MODE_TYPE) != 0) {
+        if (!isTruthy((uiMode & MASK_UI_MODE_TYPE))) return false;
+        if (!isTruthy((o.uiMode & MASK_UI_MODE_TYPE))) return true;
+      }
+      if (((uiMode^o.uiMode) & MASK_UI_MODE_NIGHT) != 0) {
+        if (!isTruthy((uiMode & MASK_UI_MODE_NIGHT))) return false;
+        if (!isTruthy((o.uiMode & MASK_UI_MODE_NIGHT))) return true;
+      }
+    }
+    // density is never 'more specific'
+    // as the default just equals 160
+    if (touchscreen != o.touchscreen) {
+      if (!isTruthy(touchscreen)) return false;
+      if (!isTruthy(o.touchscreen)) return true;
+    }
+    if (isTruthy(input()) || isTruthy(o.input())) {
+      if (((inputFlags^o.inputFlags) & MASK_KEYSHIDDEN) != 0) {
+        if (!isTruthy((inputFlags & MASK_KEYSHIDDEN))) return false;
+        if (!isTruthy((o.inputFlags & MASK_KEYSHIDDEN))) return true;
+      }
+      if (((inputFlags^o.inputFlags) & MASK_NAVHIDDEN) != 0) {
+        if (!isTruthy((inputFlags & MASK_NAVHIDDEN))) return false;
+        if (!isTruthy((o.inputFlags & MASK_NAVHIDDEN))) return true;
+      }
+      if (keyboard != o.keyboard) {
+        if (!isTruthy(keyboard)) return false;
+        if (!isTruthy(o.keyboard)) return true;
+      }
+      if (navigation != o.navigation) {
+        if (!isTruthy(navigation)) return false;
+        if (!isTruthy(o.navigation)) return true;
+      }
+    }
+    if (isTruthy(screenSize()) || isTruthy(o.screenSize())) {
+      if (screenWidth != o.screenWidth) {
+        if (!isTruthy(screenWidth)) return false;
+        if (!isTruthy(o.screenWidth)) return true;
+      }
+      if (screenHeight != o.screenHeight) {
+        if (!isTruthy(screenHeight)) return false;
+        if (!isTruthy(o.screenHeight)) return true;
+      }
+    }
+    if (isTruthy(version()) || isTruthy(o.version())) {
+      if (sdkVersion != o.sdkVersion) {
+        if (!isTruthy(sdkVersion)) return false;
+        if (!isTruthy(o.sdkVersion)) return true;
+      }
+      if (minorVersion != o.minorVersion) {
+        if (!isTruthy(minorVersion)) return false;
+        if (!isTruthy(o.minorVersion)) return true;
+      }
+    }
+    return false;
+  }
 }
-
