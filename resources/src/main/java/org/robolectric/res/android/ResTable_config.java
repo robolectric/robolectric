@@ -82,7 +82,9 @@ import java.util.Map;
 /**
  * Describes a particular resource configuration.
  *
- * <p>frameworks/base/include/androidfw/ResourceTypes.h (struct ResTable_config)
+ * Transliterated from:
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h (struct ResTable_config)
  */
 public class ResTable_config {
   public static final boolean kDebugTableSuperNoisy = false;
@@ -853,7 +855,7 @@ public class ResTable_config {
   /**
    * Returns a map of the configuration parts for {@link #toString}.
    *
-   * <p>If a configuration part is not defined for this {@link org.robolectric.res.android.ResTable_config}, its value
+   * If a configuration part is not defined for this {@link org.robolectric.res.android.ResTable_config}, its value
    * will be the empty string.
    */
   public final Map<Type, String> toStringParts() {

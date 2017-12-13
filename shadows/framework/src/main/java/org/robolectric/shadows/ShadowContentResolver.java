@@ -782,10 +782,10 @@ public class ShadowContentResolver {
   /**
    * Returns the content observers registered for updates under the given URI.
    *
-   * <p>Will be empty if no observer is registered.
+   * Will be empty if no observer is registered.
    *
    * @param uri Given URI
-   * @return The content observers, or null.
+   * @return The content observers, or null
    */
   public Collection<ContentObserver> getContentObservers(Uri uri) {
     ArrayList<ContentObserver> observers = new ArrayList<>(1);
