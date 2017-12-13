@@ -495,6 +495,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void queryIntentServicesAsUser() {
+    Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+    i.setType("image/jpeg");
+    List<ResolveInfo> services = packageManager.queryIntentServicesAsUser(i, 0, 0);
+    assertThat(services).isNotEmpty();
+  }
+
+  @Test
   public void queryBroadcastReceivers_EmptyResult() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);

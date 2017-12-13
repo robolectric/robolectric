@@ -44,6 +44,8 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -273,6 +275,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     return resolveInfos;
+  }
+
+  /**
+   * Behaves as {@link #queryIntentServices(Intent, int)} and currently ignores userId.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  public List<ResolveInfo> queryIntentServicesAsUser(Intent intent, int flags, int userId) {
+    return queryIntentServices(intent, flags);
   }
 
   @Implementation
@@ -807,11 +817,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
-    return null;
-  }
-
-  @Implementation
-  public List<ResolveInfo> queryIntentServicesAsUser(Intent intent, int flags, int userId) {
     return null;
   }
 
