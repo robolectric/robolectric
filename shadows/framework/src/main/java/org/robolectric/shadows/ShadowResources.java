@@ -273,11 +273,11 @@ public class ShadowResources {
 
   static void setCreatedFromResId(Resources resources, int id, Drawable drawable) {
     // todo: this kinda sucks, find some better way...
-    if (drawable != null) {
+    if (drawable != null && Shadow.extract(drawable) instanceof ShadowDrawable) {
       shadowOf(drawable).createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        if (bitmap != null) {
+        if (bitmap != null  && Shadow.extract(bitmap) instanceof ShadowBitmap) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
             shadowBitmap.setCreatedFromResId(id, shadowOf(resources.getAssets()).getResourceName(id));
