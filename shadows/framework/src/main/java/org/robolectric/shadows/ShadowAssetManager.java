@@ -331,15 +331,10 @@ public final class ShadowAssetManager {
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
   }
 
-  private final FsFile findAssetFile(String fileName) throws IOException {
-    if (getAssetsDirectory().join(fileName).exists()) {
-      return getAssetsDirectory().join(fileName);
-    }
-
-    // otherwise look through the library assets
-    for (FsFile libraryAsset : getLibraryAssetsDirectory()) {
-      if (libraryAsset.join(fileName).exists()) {
-        return libraryAsset.join(fileName);
+  private FsFile findAssetFile(String fileName) throws IOException {
+    for (FsFile assetDir : getAllAssetsDirectories()) {
+      if (assetDir.join(fileName).exists()) {
+        return assetDir.join(fileName);
       }
     }
 
@@ -388,19 +383,19 @@ public final class ShadowAssetManager {
   @Implementation
   public final String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
-    List<FsFile> assets = new ArrayList<>();
-    if (path.isEmpty()) {
-      assets.addAll(getLibraryAssetsDirectory());
-    } else {
-      assets.add(findAssetFile(path));
-    }
 
-    for (FsFile asset : assets) {
-      if (asset.isDirectory()) {
-        Collections.addAll(assetFiles, asset.listFileNames());
+    for (FsFile assetsDir : getAllAssetsDirectories()) {
+      FsFile file;
+      if (path.isEmpty()) {
+        file = assetsDir;
+      } else {
+        file = assetsDir.join(path);
+      }
+
+      if (file.isDirectory()) {
+        Collections.addAll(assetFiles, file.listFileNames());
       }
     }
-
     return assetFiles.toArray(new String[assetFiles.size()]);
   }
 
@@ -980,11 +975,18 @@ public final class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
+  private List<FsFile> getAllAssetsDirectories() {
+    List<FsFile> assetsDirs = new ArrayList<>();
+    assetsDirs.add(getAssetsDirectory());
+    assetsDirs.addAll(getLibraryAssetsDirectories());
+    return assetsDirs;
+  }
+
   private FsFile getAssetsDirectory() {
     return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
   }
 
-  private List<FsFile> getLibraryAssetsDirectory() {
+  private List<FsFile> getLibraryAssetsDirectories() {
     List<FsFile> libraryAssetsDirectory = new ArrayList<>();
     for (AndroidManifest manifest : ShadowApplication.getInstance().getAppManifest().getLibraryManifests()) {
       if (manifest.getAssetsDirectory() != null) {
