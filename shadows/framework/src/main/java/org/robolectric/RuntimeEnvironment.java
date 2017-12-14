@@ -102,8 +102,14 @@ public class RuntimeEnvironment {
   }
 
   public static void setQualifiers(String newQualifiers) {
-    Configuration configuration = new Configuration();
+    Configuration configuration;
     DisplayMetrics displayMetrics = new DisplayMetrics();
+    if (newQualifiers.startsWith("+")) {
+      configuration = new Configuration(Resources.getSystem().getConfiguration());
+      displayMetrics.setTo(Resources.getSystem().getDisplayMetrics());
+    } else {
+      configuration = new Configuration();
+    }
     Bootstrap.applyQualifiers(newQualifiers, getApiLevel(), configuration, displayMetrics);
 
     Resources systemResources = Resources.getSystem();

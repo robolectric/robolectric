@@ -199,4 +199,16 @@ public class ParallelUniverseTest {
     assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
     assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
   }
+
+  @Test @Config(qualifiers = "w123dp-h456dp")
+  public void whenNogtPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
+    RuntimeEnvironment.setQualifiers("land");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp").contains("-land-");
+  }
+
+  @Test @Config(qualifiers = "w123dp-h456dp")
+  public void whenPrefixedWithPlus_setQualifiers_shouldBeBasedOnPreviousConfig() throws Exception {
+    RuntimeEnvironment.setQualifiers("+w124dp");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
+  }
 }
