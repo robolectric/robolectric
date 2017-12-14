@@ -111,6 +111,14 @@ public class DeviceConfig {
     int resTabSize = resTab.screenLayoutSize();
     if (resTabSize != ResTable_config.SCREENSIZE_ANY) {
       screenLayoutSize = resTabSize;
+
+      if (resTab.screenWidthDp == 0) {
+        configuration.screenWidthDp = 0;
+      }
+
+      if (resTab.screenHeightDp == 0) {
+        configuration.screenHeightDp = 0;
+      }
     }
 
     int screenLayoutLong = getScreenLayoutLong(configuration);
@@ -238,7 +246,7 @@ public class DeviceConfig {
       setScreenLayoutLayoutDir(configuration, Configuration.SCREENLAYOUT_LAYOUTDIR_LTR);
     }
 
-    ScreenSize requestedScreenSize = ScreenSize.find(getScreenLayoutSize(configuration));
+    ScreenSize requestedScreenSize = getScreenSize(configuration);
     if (requestedScreenSize == null) {
       requestedScreenSize = DEFAULT_SCREEN_SIZE;
     }
@@ -332,6 +340,10 @@ public class DeviceConfig {
     if (configuration.navigation == Configuration.NAVIGATION_UNDEFINED) {
       configuration.navigation = Configuration.NAVIGATION_NONAV;
     }
+  }
+
+  public static ScreenSize getScreenSize(Configuration configuration) {
+    return ScreenSize.find(getScreenLayoutSize(configuration));
   }
 
   private static void swapXY(Configuration configuration) {

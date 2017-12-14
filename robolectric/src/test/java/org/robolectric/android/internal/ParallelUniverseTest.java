@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.app.Application;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import java.lang.reflect.Method;
@@ -24,6 +25,8 @@ import org.robolectric.RoboSettings;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.android.DeviceConfig;
+import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -201,9 +204,18 @@ public class ParallelUniverseTest {
   }
 
   @Test @Config(qualifiers = "w123dp-h456dp")
-  public void whenNogtPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
+  public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
     RuntimeEnvironment.setQualifiers("land");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp").contains("-land-");
+  }
+
+  @Test @Config(qualifiers = "w100dp-h125dp")
+  public void whenDimensAndSizeSpecified_setQualifiers_should() throws Exception {
+    RuntimeEnvironment.setQualifiers("+xlarge");
+    Configuration configuration = Resources.getSystem().getConfiguration();
+    assertThat(configuration.screenWidthDp).isEqualTo(ScreenSize.xlarge.width);
+    assertThat(configuration.screenHeightDp).isEqualTo(ScreenSize.xlarge.height);
+    assertThat(DeviceConfig.getScreenSize(configuration)).isEqualTo(ScreenSize.xlarge);
   }
 
   @Test @Config(qualifiers = "w123dp-h456dp")
