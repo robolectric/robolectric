@@ -256,6 +256,17 @@ public class ActivityControllerTest {
 
   @Test
   @Config(qualifiers = "land")
+  public void noArgsConfigurationChange_appliesChangedSystemConfiguration() throws Exception {
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    RuntimeEnvironment.setQualifiers("port");
+    configController.configurationChange();
+    assertThat(configController.get().newConfig.orientation)
+        .isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
   public void configurationChange_restoresTheme() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     config.orientation = Configuration.ORIENTATION_PORTRAIT;
@@ -393,6 +404,8 @@ public class ActivityControllerTest {
   
   public static class ConfigAwareActivity extends MyActivity {
 
+    Configuration newConfig;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -405,6 +418,12 @@ public class ActivityControllerTest {
     public void onSaveInstanceState(Bundle outState) {
       super.onSaveInstanceState(outState);
       outState.putSerializable("test", new Exception());
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      this.newConfig = new Configuration(newConfig);
+      super.onConfigurationChanged(newConfig);
     }
   }
 
