@@ -322,7 +322,7 @@ public class DeviceConfig {
     }
 
     if (configuration.keyboard == Configuration.KEYBOARD_UNDEFINED) {
-      configuration.keyboard = Configuration.KEYBOARD_QWERTY;
+      configuration.keyboard = Configuration.KEYBOARD_NOKEYS;
     }
 
     if (configuration.navigationHidden == Configuration.NAVIGATIONHIDDEN_UNDEFINED) {

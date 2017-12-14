@@ -46,7 +46,7 @@ public class ResourceLoaderTest {
 
   private void checkForPollutionHelper() {
     assertThat(RuntimeEnvironment.getQualifiers())
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav-v" + RuntimeEnvironment.getApiLevel());
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + RuntimeEnvironment.getApiLevel());
 
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = view.findViewById(android.R.id.text1);

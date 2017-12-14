@@ -36,25 +36,25 @@ public class DeviceConfigTest {
 
   @Test
   public void applyToConfiguration_isCumulative() throws Exception {
-    applyQualifiers("en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+    applyQualifiers("en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
 
     applyQualifiers("fr-land");
     assertThat(asQualifierString())
-        .isEqualTo("fr-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-land-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("fr-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
 
     applyQualifiers("w500dp-large-television-night-xxhdpi-notouch-keyshidden");
     assertThat(asQualifierString())
-        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-notlong-notround-land-television-night-xxhdpi-notouch-keyshidden-qwerty-navhidden-nonav");
+        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-notlong-notround-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
 
     applyQualifiers("long");
     assertThat(asQualifierString())
-        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-long-notround-land-television-night-xxhdpi-notouch-keyshidden-qwerty-navhidden-nonav");
+        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-long-notround-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
 
     applyQualifiers("round");
     assertThat(asQualifierString())
-        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-long-round-land-television-night-xxhdpi-notouch-keyshidden-qwerty-navhidden-nonav");
+        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-long-round-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -62,7 +62,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -71,7 +71,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("iw-ldrtl-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("iw-ldrtl-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -80,7 +80,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw400dp-w800dp-h400dp-normal-long-notround-land-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw400dp-w800dp-h400dp-normal-long-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -89,7 +89,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-long-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-long-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -98,7 +98,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw480dp-w640dp-h480dp-large-notlong-notround-land-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw480dp-w640dp-h480dp-large-notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -107,7 +107,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw640dp-w800dp-h640dp-large-notlong-notround-land-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw640dp-w800dp-h640dp-large-notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -116,7 +116,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h587dp-normal-long-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h587dp-normal-long-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -125,7 +125,7 @@ public class DeviceConfigTest {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h590dp-normal-long-notround-port-notnight-mdpi-finger-keyssoft-qwerty-navhidden-nonav");
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h590dp-normal-long-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   //////////////////////////

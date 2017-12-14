@@ -3,7 +3,7 @@ package org.robolectric.android;
 import static android.content.res.Configuration.KEYBOARDHIDDEN_SOFT;
 import static android.content.res.Configuration.KEYBOARDHIDDEN_YES;
 import static android.content.res.Configuration.KEYBOARD_12KEY;
-import static android.content.res.Configuration.KEYBOARD_QWERTY;
+import static android.content.res.Configuration.KEYBOARD_NOKEYS;
 import static android.content.res.Configuration.NAVIGATIONHIDDEN_YES;
 import static android.content.res.Configuration.NAVIGATION_DPAD;
 import static android.content.res.Configuration.NAVIGATION_NONAV;
@@ -138,7 +138,7 @@ public class BootstrapTest {
 
     assertThat(outQualifiers)
         .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi" +
-            "-finger-keyssoft-qwerty-navhidden-nonav-v" + RuntimeEnvironment.getApiLevel());
+            "-finger-keyssoft-nokeys-navhidden-nonav-v" + RuntimeEnvironment.getApiLevel());
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
@@ -163,7 +163,7 @@ public class BootstrapTest {
 
     assertThat(configuration.touchscreen).isEqualTo(TOUCHSCREEN_FINGER);
     assertThat(configuration.keyboardHidden).isEqualTo(KEYBOARDHIDDEN_SOFT);
-    assertThat(configuration.keyboard).isEqualTo(KEYBOARD_QWERTY);
+    assertThat(configuration.keyboard).isEqualTo(KEYBOARD_NOKEYS);
     assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_YES);
     assertThat(configuration.navigation).isEqualTo(NAVIGATION_NONAV);
   }
