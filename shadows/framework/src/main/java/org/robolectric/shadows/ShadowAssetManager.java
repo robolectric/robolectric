@@ -19,13 +19,17 @@ import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -37,6 +41,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
@@ -309,22 +314,37 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final InputStream open(String fileName) throws IOException {
-    return getAssetsDirectory().join(fileName).getInputStream();
+    return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
-    return getAssetsDirectory().join(fileName).getInputStream();
+    return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(getAssetsDirectory().join(fileName).getPath());
+    File file = new File(findAssetFile(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
     }
     ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
+  }
+
+  private final FsFile findAssetFile(String fileName) throws IOException {
+    if (getAssetsDirectory().join(fileName).exists()) {
+      return getAssetsDirectory().join(fileName);
+    }
+
+    // otherwise look through the library assets
+    for (FsFile libraryAsset : getLibraryAssetsDirectory()) {
+      if (libraryAsset.join(fileName).exists()) {
+        return libraryAsset.join(fileName);
+      }
+    }
+
+    throw new FileNotFoundException("Asset file " + fileName + " not found");
   }
 
   /**
@@ -368,16 +388,21 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final String[] list(String path) throws IOException {
-    FsFile file;
+    List<String> assetFiles = new ArrayList<>();
+    List<FsFile> assets = new ArrayList<>();
     if (path.isEmpty()) {
-      file = getAssetsDirectory();
+      assets.addAll(getLibraryAssetsDirectory());
     } else {
-      file = getAssetsDirectory().join(path);
+      assets.add(findAssetFile(path));
     }
-    if (file.isDirectory()) {
-      return file.listFileNames();
+
+    for (FsFile asset : assets) {
+      if (asset.isDirectory()) {
+        Collections.addAll(assetFiles, asset.listFileNames());
+      }
     }
-    return new String[0];
+
+    return assetFiles.toArray(new String[assetFiles.size()]);
   }
 
   @HiddenApi @Implementation
@@ -958,6 +983,17 @@ public final class ShadowAssetManager {
 
   private FsFile getAssetsDirectory() {
     return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
+  }
+
+  private List<FsFile> getLibraryAssetsDirectory() {
+    List<FsFile> libraryAssetsDirectory = new ArrayList<>();
+    for (AndroidManifest manifest : ShadowApplication.getInstance().getAppManifest().getLibraryManifests()) {
+      if (manifest.getAssetsDirectory() != null) {
+        libraryAssetsDirectory.add(manifest.getAssetsDirectory());
+      }
+    }
+
+    return libraryAssetsDirectory;
   }
 
   @Nonnull private ResName getResName(int id) {
