@@ -21,11 +21,29 @@ task copyNatives(type: Copy) {
 
     project.afterEvaluate {
         configurations.jni.files.each { File file ->
-            def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
+            println "file.name: " + file.name
+            println "file.path: " + file.path
+            def nativeJarMatch = file.name =~ /.*sqlite4java-(.*)\.so/
+            println "match: " + nativeJarMatch
             if (nativeJarMatch) {
+                println "NATIVE JAR MATCH: " + file.name
                 inputs.file file
 
                 def platformName = nativeJarMatch[0][1]
+                println "match[0][0]: " + nativeJarMatch[0][0]
+                println "platformName: " + platformName
+
+
+                println "parent path:" + file.parent
+
+                def nativeJar = "$file.parent/$platformName" + ".jar"
+
+                println "nativeJar: " + nativeJar
+                zipTree(nativeJar)
+
+
+
+                zipTree()
                 from(zipTree(file)) { rename { f -> "$platformName/$f" } }
             }
 
@@ -46,15 +64,28 @@ dependencies {
     compile project(":utils")
 
     // Compile dependencies
+//    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
+//    compile "com.almworks.sqlite4java:sqlite4java:0.282"
+//    compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
+//    compile "com.ibm.icu:icu4j:53.1"
+//    compile "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
+//
+//    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
+//    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
+//    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
+//    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
+//    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
-    compile "com.almworks.sqlite4java:sqlite4java:0.282"
+    compile "com.almworks.sqlite4java:sqlite4java:1.0.392"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     compile "com.ibm.icu:icu4j:53.1"
     compile "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+    jni "com.almworks.sqlite4java:libsqlite4java-osx:1.0.392"
+    jni "com.almworks.sqlite4java:libsqlite4java-linux-i386:1.0.392"
+    jni "com.almworks.sqlite4java:libsqlite4java-linux-amd64:1.0.392"
+    jni "com.almworks.sqlite4java:sqlite4java-win32-x86:1.0.392"
+    jni "com.almworks.sqlite4java:sqlite4java-win32-x64:1.0.392"
+
 }
