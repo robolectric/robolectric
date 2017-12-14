@@ -109,7 +109,7 @@ public class ConfigTest {
 
     config = overlay(config, new Config.Builder().setQualifiers("+w102dp").build());
     config = overlay(config, new Config.Builder().setQualifiers("+w103dp").build());
-    assertThat(config.qualifiers()).isEqualTo("w101dp w102dp w103dp");
+    assertThat(config.qualifiers()).isEqualTo("w101dp +w102dp +w103dp");
 
     config = overlay(config, new Config.Builder().setQualifiers("+w104dp").build());
     config = overlay(config, new Config.Builder().setQualifiers("w105dp").build());

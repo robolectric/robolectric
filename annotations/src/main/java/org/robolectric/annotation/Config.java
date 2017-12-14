@@ -533,7 +533,7 @@ public @interface Config {
       String qualifiersOverlayValue = overlayConfig.qualifiers();
       if (qualifiersOverlayValue != null && !qualifiersOverlayValue.equals("")) {
         if (qualifiersOverlayValue.startsWith("+")) {
-          this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue.substring(1);
+          this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue;
         } else {
           this.qualifiers = qualifiersOverlayValue;
         }
