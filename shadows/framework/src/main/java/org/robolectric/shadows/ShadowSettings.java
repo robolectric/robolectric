@@ -152,6 +152,6 @@ public class ShadowSettings {
    * @param use24HourTimeFormat new status for the time setting
    */
   public static void set24HourTimeFormat(boolean use24HourTimeFormat) {
-    Settings.System.putInt(RuntimeEnvironment.application.getContentResolver(), Settings.System.TIME_12_24, use24HourTimeFormat ? 24 : 12);
+    Settings.System.putString(RuntimeEnvironment.application.getContentResolver(), Settings.System.TIME_12_24, use24HourTimeFormat ? "24" : "12");
   }
 }
