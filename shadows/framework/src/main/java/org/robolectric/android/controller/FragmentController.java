@@ -5,8 +5,9 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Controller class for driving fragment lifecycles, similar to {@link ActivityController}.
@@ -24,29 +25,29 @@ public class FragmentController<F extends Fragment> extends ComponentController<
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Intent intent) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, FragmentControllerActivity.class, intent);
+    return new FragmentController<>(null, fragment, FragmentControllerActivity.class, intent);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Bundle arguments) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, FragmentControllerActivity.class, arguments);
+    return new FragmentController<>(null, fragment, FragmentControllerActivity.class, arguments);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Intent intent, Bundle arguments) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, FragmentControllerActivity.class, intent,
+    return new FragmentController<>(null, fragment, FragmentControllerActivity.class, intent,
             arguments);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Intent intent) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass, intent);
+    return new FragmentController<>(null, fragment, activityClass, intent);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass, arguments);
+    return new FragmentController<>(null, fragment, activityClass, arguments);
   }
 
   public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass,
                                                               Intent intent, Bundle arguments) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass, intent, arguments);
+    return new FragmentController<>(null, fragment, activityClass, intent, arguments);
   }
 
   private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass, Intent intent) {
@@ -64,7 +65,7 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     if (arguments != null) {
       this.fragment.setArguments(arguments);
     }
-    this.activityController = Robolectric.buildActivity(activityClass, intent);
+    this.activityController = ActivityController.of(shadowsAdapter, ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
   /**

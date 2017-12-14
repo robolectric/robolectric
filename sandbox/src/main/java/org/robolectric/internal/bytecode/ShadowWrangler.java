@@ -425,7 +425,10 @@ public class ShadowWrangler implements ClassHandler {
 
   private MetaShadow getMetaShadow(Class<?> shadowClass) {
     synchronized (metaShadowMap) {
-      return metaShadowMap.computeIfAbsent(shadowClass, MetaShadow::new);
+      if (!metaShadowMap.containsKey(shadowClass)) {
+        metaShadowMap.put(shadowClass, new MetaShadow(shadowClass));
+      }
+      return metaShadowMap.get(shadowClass);
     }
   }
 
