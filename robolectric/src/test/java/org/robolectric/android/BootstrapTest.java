@@ -323,7 +323,7 @@ public class BootstrapTest {
         configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
-    assertThat(outQualifiers).startsWith("fr-ldltr-sw123dp-w321dp-h123dp-small");
+    assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small");
   }
 
   @Test
@@ -332,7 +332,7 @@ public class BootstrapTest {
         configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
-    assertThat(outQualifiers).startsWith("fr-ldltr-sw123dp-w321dp-h123dp-small")
+    assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small")
         .contains("-xxhdpi-");
   }
 }

@@ -46,15 +46,15 @@ public class DeviceConfigTest {
 
     applyQualifiers("w500dp-large-television-night-xxhdpi-notouch-keyshidden");
     assertThat(asQualifierString())
-        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-notlong-notround-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+        .isEqualTo("fr-ldltr-sw400dp-w500dp-large-notlong-notround-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
 
     applyQualifiers("long");
     assertThat(asQualifierString())
-        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-long-notround-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+        .isEqualTo("fr-ldltr-sw400dp-w500dp-large-long-notround-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
 
     applyQualifiers("round");
     assertThat(asQualifierString())
-        .isEqualTo("fr-ldltr-sw400dp-w500dp-h800dp-large-long-round-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+        .isEqualTo("fr-ldltr-sw400dp-w500dp-large-long-round-land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -131,8 +131,7 @@ public class DeviceConfigTest {
   //////////////////////////
 
   private void applyQualifiers(String qualifiers) {
-    DeviceConfig.applyToConfiguration(Qualifiers.parse(
-        qualifiers),
+    DeviceConfig.applyToConfiguration(Qualifiers.parse(qualifiers),
         apiLevel, configuration, displayMetrics);
   }
 
