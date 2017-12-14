@@ -4,7 +4,7 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import java.util.Optional;
+import com.google.common.base.Optional;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,13 +21,12 @@ public class ShadowInputMethodManager {
    * InputMethodManager}, this handler can be used by application to simulate GUI change in response
    * of the soft input change.
    */
-  @FunctionalInterface
   public interface SoftInputVisibilityChangeHandler {
     void handleSoftInputVisibilityChange(boolean softInputVisible);
   }
 
   private boolean softInputVisible;
-  private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.empty();
+  private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.absent();
 
   @HiddenApi @Implementation
   static public InputMethodManager peekInstance() {

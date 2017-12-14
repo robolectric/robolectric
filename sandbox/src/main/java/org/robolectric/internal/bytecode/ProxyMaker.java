@@ -18,10 +18,6 @@ import sun.misc.Unsafe;
 
 public class ProxyMaker {
   private static final String TARGET_FIELD = "__proxy__";
-  private static final String PROXY_NAME =
-      Type.getInternalName(ProxyMaker.class) + "$GeneratedProxy";
-  private static final Type PROXY_TYPE = Type.getType(PROXY_NAME);
-
   private static final Unsafe UNSAFE;
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 
@@ -54,8 +50,10 @@ public class ProxyMaker {
   <T> Factory createProxyFactory(Class<T> targetClass) {
     Type targetType = Type.getType(targetClass);
     String targetName = targetType.getInternalName();
+    String proxyName = targetName + "$GeneratedProxy";
+    Type proxyType = Type.getType(proxyName);
     ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES| ClassWriter.COMPUTE_MAXS);
-    writer.visit(V1_7, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, PROXY_NAME, null, targetName, null);
+    writer.visit(V1_7, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, proxyName, null, targetName, null);
 
     writer.visitField(ACC_PUBLIC, TARGET_FIELD, targetType.getDescriptor(), null, null);
 
@@ -65,7 +63,7 @@ public class ProxyMaker {
       Method proxyMethod = Method.getMethod(method);
       GeneratorAdapter m = new GeneratorAdapter(ACC_PUBLIC, Method.getMethod(method), null, null, writer);
       m.loadThis();
-      m.getField(PROXY_TYPE, TARGET_FIELD, targetType);
+      m.getField(proxyType, TARGET_FIELD, targetType);
       m.loadArgs();
       String targetMethod = methodMapper.getName(targetClass.getName(), method.getName());
       // In Java 8 we could use invokespecial here but not in 7, from jvm spec:

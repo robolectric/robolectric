@@ -17,6 +17,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -120,6 +121,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Deprecated
   public static void setDefaultDisplay(Display display) {
     shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
+    display.getMetrics(RuntimeEnvironment.application.getResources().getDisplayMetrics());
+    display.getMetrics(Resources.getSystem().getDisplayMetrics());
   }
 
   public void bind(AndroidManifest appManifest) {

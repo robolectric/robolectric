@@ -52,8 +52,11 @@ public class ResBundle {
     }
 
     public void put(ResName resName, TypedResource value) {
-      List<TypedResource> values = map.computeIfAbsent(resName, k -> new ArrayList<>());
-      values.add(value);
+      if (!map.containsKey(resName)) {
+        map.put(resName, new ArrayList<>());
+      }
+
+      map.get(resName).add(value);
     }
 
     public int size() {

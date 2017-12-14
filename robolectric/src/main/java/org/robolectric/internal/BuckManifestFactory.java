@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
@@ -77,6 +76,10 @@ public class BuckManifestFactory implements ManifestFactory {
       dirs = Arrays.asList(property.split(File.pathSeparator));
     }
 
-    return dirs.stream().map(Fs::fileFromPath).collect(Collectors.toList());
+    List<FsFile> files = new ArrayList<>();
+    for (String dir : dirs) {
+      files.add(Fs.fileFromPath(dir));
+    }
+    return files;
   }
 }

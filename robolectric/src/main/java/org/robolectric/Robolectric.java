@@ -46,6 +46,10 @@ public class Robolectric {
     RuntimeEnvironment.setActivityThread(null);
   }
 
+  /**
+   * @deprecated Prefer to access Shadow classes directly.
+   */
+  @Deprecated
   public static ShadowsAdapter getShadowsAdapter() {
     synchronized (ShadowsAdapter.class) {
       if (shadowsAdapter == null) {
@@ -60,7 +64,7 @@ public class Robolectric {
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass, Intent intent) {
-    return ServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass), intent);
+    return ServiceController.of(ReflectionHelpers.callConstructor(serviceClass), intent);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
@@ -72,7 +76,7 @@ public class Robolectric {
   }
 
   public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
-    return IntentServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
   }
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
@@ -96,7 +100,7 @@ public class Robolectric {
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass, Intent intent) {
-    return ActivityController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(activityClass), intent);
+    return ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {

@@ -17,11 +17,23 @@ public class ShadowICU {
 
   @Implementation(minSdk = LOLLIPOP)
   public static String getBestDateTimePattern(String skeleton, Locale locale) {
-    return skeleton;
+    switch (skeleton) {
+      case "jmm":
+        return getjmmPattern(locale);
+      default:
+        return skeleton;
+    }
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
   public static String getBestDateTimePattern(String skeleton, String locale) {
     return skeleton;
+  }
+
+  private static String getjmmPattern(Locale locale) {
+    if (locale.equals(new Locale("pt", "BR")) || locale.equals(Locale.UK)) {
+      return "H:mm";
+    }
+    return "h:mm a";
   }
 }

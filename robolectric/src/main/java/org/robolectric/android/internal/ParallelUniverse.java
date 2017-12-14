@@ -1,16 +1,19 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.LoadedApk;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
@@ -31,14 +34,14 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.shadows.ShadowDisplay;
+import org.robolectric.shadows.ShadowContextImpl;
+import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
@@ -49,7 +52,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Robolectric.reset();
 
     if (!loggingInitialized) {
-      shadowsAdapter.setupLogging();
+      ShadowLog.setupLogging();
       loggingInitialized = true;
     }
   }
@@ -84,8 +87,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    String qualifiers = Bootstrap.applyQualifiers(config.qualifiers(),
-        sdkConfig.getApiLevel(), configuration, displayMetrics);
+    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
+        displayMetrics);
     setDisplayMetricsDimens(displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
@@ -95,9 +98,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
-    RuntimeEnvironment._setQualifiers(qualifiers);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
@@ -107,17 +109,19 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
+    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
+    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
 
     if (application != null) {
-      shadowsAdapter.bind(application, appManifest);
+      shadowOf(application).bind(appManifest);
 
       final ApplicationInfo applicationInfo;
       try {
@@ -153,6 +157,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       appResources.updateConfiguration(configuration, displayMetrics);
 
+      initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
+
       application.onCreate();
     }
   }
@@ -170,6 +176,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
     displayMetrics.noncompatXdpi = displayMetrics.xdpi;
     displayMetrics.noncompatYdpi = displayMetrics.ydpi;
+  }
+
+  private void initInstrumentation(
+      ActivityThread activityThread,
+      RoboInstrumentation androidInstrumentation,
+      ApplicationInfo applicationInfo) {
+    final ComponentName component =
+        new ComponentName(
+            applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
+    androidInstrumentation.init(
+        ActivityThread.class, activityThread, RuntimeEnvironment.application, component);
+    androidInstrumentation.onCreate(new Bundle());
   }
 
   /**
