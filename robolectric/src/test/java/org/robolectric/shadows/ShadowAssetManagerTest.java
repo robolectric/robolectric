@@ -67,33 +67,20 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void assetsPathListing() throws IOException {
-    List<String> files;
-    String testPath;
+    assertThat(assetManager.list(""))
+        .containsExactlyInAnyOrder(
+            "assetsHome.txt", "docs", "myFont.ttf", "libFont.ttf", "file-in-lib2.txt");
 
-    testPath = "";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("docs"));
-    assertTrue(files.contains("assetsHome.txt"));
+    assertThat(assetManager.list("docs"))
+        .contains("extra");
 
-    testPath = "docs";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("extra"));
+    assertThat(assetManager.list("docs/extra"))
+        .contains("testing");
 
-    testPath ="docs/extra";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("testing"));
+    assertThat(assetManager.list("docs/extra/testing"))
+        .contains("hello.txt");
 
-    testPath = "docs/extra/testing";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("hello.txt"));
-
-    testPath = "assetsHome.txt";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertFalse(files.contains(testPath));
-
-    testPath = "bogus.file";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertEquals(0, files.size());
+    assertThat(assetManager.list("bogus-dir")).isEmpty();
   }
 
   @Test
@@ -101,6 +88,13 @@ public class ShadowAssetManagerTest {
     final String contents =
         CharStreams.toString(new InputStreamReader(assetManager.open("assetsHome.txt"), UTF_8));
     assertThat(contents).isEqualTo("assetsHome!");
+  }
+
+  @Test
+  public void open_shouldOpenFileInLib() throws IOException {
+    final String contents =
+        CharStreams.toString(new InputStreamReader(assetManager.open("file-in-lib2.txt"), UTF_8));
+    assertThat(contents).isEqualTo("asset in lib 2");
   }
 
   @Test
@@ -116,6 +110,14 @@ public class ShadowAssetManagerTest {
     assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
         .isEqualTo("assetsHome!");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
+  }
+
+  @Test
+  public void openFd_shouldProvideFileDescriptorForAssetInLib() throws Exception {
+    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("file-in-lib2.txt");
+    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
+        .isEqualTo("asset in lib 2");
+    assertThat(assetFileDescriptor.getLength()).isEqualTo(14);
   }
 
   @Test
