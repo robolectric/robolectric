@@ -10,7 +10,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * From android/frameworks/base/tools/aapt2/ConfigDescription.cpp
+ * transliterated from
+ * https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/tools/aapt2/ConfigDescription.cpp
  */
 public class ConfigDescription {
   public static int SDK_CUPCAKE = 3;
@@ -278,6 +279,20 @@ public class ConfigDescription {
       }
     }
 
+    if (part_iter.hasNext() && parseWideColorGamut(part_iter.peek(), out)) {
+      part_iter.next();
+      if (!part_iter.hasNext()) {
+        success = !part_iter.hasNext();
+      }
+    }
+
+    if (part_iter.hasNext() && parseHdr(part_iter.peek(), out)) {
+      part_iter.next();
+      if (!part_iter.hasNext()) {
+        success = !part_iter.hasNext();
+      }
+    }
+
     if (part_iter.hasNext() && parseOrientation(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
@@ -530,6 +545,52 @@ public class ConfigDescription {
     return false;
   }
 
+  private static boolean parseWideColorGamut(String name, ResTable_config out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
+                            ResTable_config.WIDE_COLOR_GAMUT_ANY);
+      return true;
+    } else if (Objects.equals(name, "widecg")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
+                            ResTable_config.WIDE_COLOR_GAMUT_YES);
+      return true;
+    } else if (Objects.equals(name, "nowidecg")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
+                            ResTable_config.WIDE_COLOR_GAMUT_NO);
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean parseHdr(String name, ResTable_config out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
+                            ResTable_config.HDR_ANY);
+      return true;
+    } else if (Objects.equals(name, "highdr")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
+                            ResTable_config.HDR_YES);
+      return true;
+    } else if (Objects.equals(name, "lowdr")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
+                            ResTable_config.HDR_NO);
+      return true;
+    }
+    return false;
+  }
+
   private static boolean parseOrientation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
@@ -591,6 +652,12 @@ public class ConfigDescription {
       if (out != null) {
         out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
             ResTable_config.UI_MODE_TYPE_WATCH;
+      }
+      return true;
+    } else if (Objects.equals(name, "vrheadset")) {
+      if (out != null) {
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_VR_HEADSET;
       }
       return true;
     }
@@ -917,29 +984,34 @@ public class ConfigDescription {
     if (config == null) {
       return;
     }
-    int minSdk = 0;
-    if (isTruthy(config.screenLayout2 & ResTable_config.MASK_SCREENROUND)) {
-      minSdk = SDK_MNC;
+    int min_sdk = 0;
+    if (((config.uiMode & ResTable_config.MASK_UI_MODE_TYPE)
+        == ResTable_config.UI_MODE_TYPE_VR_HEADSET) ||
+        (config.colorMode & ResTable_config.MASK_WIDE_COLOR_GAMUT) != 0 ||
+            (config.colorMode & ResTable_config.MASK_HDR) != 0) {
+      min_sdk = SDK_O;
+    } else if (isTruthy(config.screenLayout2 & ResTable_config.MASK_SCREENROUND)) {
+      min_sdk = SDK_MNC;
     } else if (config.density == ResTable_config.DENSITY_ANY) {
-      minSdk = SDK_LOLLIPOP;
+      min_sdk = SDK_LOLLIPOP;
     } else if (config.smallestScreenWidthDp != ResTable_config.SCREENWIDTH_ANY
         || config.screenWidthDp != ResTable_config.SCREENWIDTH_ANY
         || config.screenHeightDp != ResTable_config.SCREENHEIGHT_ANY) {
-      minSdk = SDK_HONEYCOMB_MR2;
+      min_sdk = SDK_HONEYCOMB_MR2;
     } else if ((config.uiMode & ResTable_config.MASK_UI_MODE_TYPE)
         != ResTable_config.UI_MODE_TYPE_ANY
         ||  (config.uiMode & ResTable_config.MASK_UI_MODE_NIGHT)
         != ResTable_config.UI_MODE_NIGHT_ANY) {
-      minSdk = SDK_FROYO;
+      min_sdk = SDK_FROYO;
     } else if ((config.screenLayout & ResTable_config.MASK_SCREENSIZE)
         != ResTable_config.SCREENSIZE_ANY
         ||  (config.screenLayout & ResTable_config.MASK_SCREENLONG)
         != ResTable_config.SCREENLONG_ANY
         || config.density != ResTable_config.DENSITY_DEFAULT) {
-      minSdk = SDK_DONUT;
+      min_sdk = SDK_DONUT;
     }
-    if (minSdk > config.sdkVersion) {
-      config.sdkVersion = minSdk;
+    if (min_sdk > config.sdkVersion) {
+      config.sdkVersion = min_sdk;
     }
   }
 }

@@ -214,6 +214,16 @@ public class DeviceConfig {
     if (resTab.navigationHidden() != ResTable_config.NAVHIDDEN_ANY) {
       configuration.navigationHidden = resTab.navigationHidden();
     }
+
+    if (apiLevel >= VERSION_CODES.O) {
+      if (resTab.colorModeWideColorGamut() != ResTable_config.WIDE_COLOR_GAMUT_ANY) {
+        setColorModeGamut(configuration, resTab.colorMode & ResTable_config.MASK_WIDE_COLOR_GAMUT);
+      }
+
+      if (resTab.colorModeHdr() != ResTable_config.HDR_ANY) {
+        setColorModeHdr(configuration, resTab.colorMode & ResTable_config.MASK_HDR);
+      }
+    }
   }
 
   private static void setDensity(int densityDpi, int apiLevel, Configuration configuration,
@@ -426,5 +436,21 @@ public class DeviceConfig {
 
   private static void setUiModeNight(Configuration configuration, int value) {
     configuration.uiMode = (configuration.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) | value;
+  }
+
+  private static int getColorModeGamut(Configuration configuration) {
+    return configuration.colorMode & Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK;
+  }
+
+  private static void setColorModeGamut(Configuration configuration, int value) {
+    configuration.colorMode = (configuration.colorMode & ~Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK) | value;
+  }
+
+  private static int getColorModeHdr(Configuration configuration) {
+    return configuration.colorMode & Configuration.COLOR_MODE_HDR_MASK;
+  }
+
+  private static void setColorModeHdr(Configuration configuration, int value) {
+    configuration.colorMode = (configuration.colorMode & ~Configuration.COLOR_MODE_HDR_MASK) | value;
   }
 }

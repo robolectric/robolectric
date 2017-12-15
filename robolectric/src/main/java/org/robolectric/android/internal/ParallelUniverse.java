@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
@@ -22,7 +23,6 @@ import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.Bootstrap;
@@ -33,13 +33,14 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowContextImpl;
+import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
@@ -50,7 +51,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Robolectric.reset();
 
     if (!loggingInitialized) {
-      shadowsAdapter.setupLogging();
+      ShadowLog.setupLogging();
       loggingInitialized = true;
     }
   }
@@ -93,7 +94,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         : configuration.locale;
     Locale.setDefault(locale);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
@@ -120,7 +121,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.application = application;
 
     if (application != null) {
-      shadowsAdapter.bind(application, appManifest);
+      shadowOf(application).bind(appManifest);
 
       final ApplicationInfo applicationInfo;
       try {
@@ -208,5 +209,4 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     this.sdkConfig = sdkConfig;
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
   }
-
 }
