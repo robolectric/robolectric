@@ -99,6 +99,15 @@ public class RuntimeEnvironment {
     return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
   }
 
+  /**
+   * Overrides the current device configuration.
+   *
+   * If `newQualifiers` starts with a plus (`+`), the prior configuration is used as the base
+   * configuration, with the given changes applied additively. Otherwise, default values are used
+   * for unspecified properties, as described [here](http://robolectric.org/device-configuration/).
+   *
+   * @param newQualifiers the qualifiers to apply
+   */
   public static void setQualifiers(String newQualifiers) {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
