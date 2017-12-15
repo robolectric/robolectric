@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -27,13 +28,15 @@ public class QualifiersTest {
   @Test
   @Config(sdk = 26)
   public void testDefaultQualifiers() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v26");
+    assertThat(RuntimeEnvironment.getQualifiers())
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
   }
 
   @Test
   @Config(qualifiers = "en", sdk = 26)
   public void testDefaultQualifiers_withoutRegion() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v26");
+    assertThat(RuntimeEnvironment.getQualifiers())
+        .isEqualTo("en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
   }
 
   @Test
@@ -113,5 +116,13 @@ public class QualifiersTest {
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage()).contains("Cannot specify conflicting platform version in qualifiers");
     }
+  }
+
+  @Test
+  @Config(minSdk = O, qualifiers = "widecg-highdr-vrheadset")
+  public void testQualifiersNewIn26() throws Exception {
+    assertThat(RuntimeEnvironment.getQualifiers())
+        .contains("-widecg-highdr-")
+        .contains("-vrheadset-");
   }
 }

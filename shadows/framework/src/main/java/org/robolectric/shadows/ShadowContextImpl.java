@@ -167,7 +167,7 @@ public class ShadowContextImpl {
             service = ReflectionHelpers.callConstructor(windowMgrImplClass,
                 ClassParameter.from(Context.class, realObject));
           } else {
-            Display display = newInstanceOf(Display.class);
+            Display display = ShadowDisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
             service = ReflectionHelpers.callConstructor(windowMgrImplClass,
                 ClassParameter.from(Display.class, display));
           }

@@ -53,6 +53,18 @@ public class Logger {
    * Log an error message.
    *
    * @param message Message text.
+   * @param e       The exception.
+   */
+  public static void error(String message, Throwable e) {
+    System.err.print("ERROR: ");
+    System.err.println(message);
+    e.printStackTrace();
+  }
+
+  /**
+   * Log an error message.
+   *
+   * @param message Message text.
    * @param args    Message arguments.
    */
   public static void error(String message, Object... args) {

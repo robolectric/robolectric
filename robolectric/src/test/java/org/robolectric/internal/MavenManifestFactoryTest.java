@@ -18,34 +18,34 @@ public class MavenManifestFactoryTest {
 
   @Before
   public void setUp() throws Exception {
-    configBuilder = Config.Builder.defaults();
+    configBuilder = Config.Builder.defaults().setManifest("DifferentManifest.xml");
     myMavenManifestFactory = new MyMavenManifestFactory();
   }
 
   @Test public void identify() throws Exception {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/AndroidManifest.xml"));
+        .isEqualTo(FileFsFile.from(":fakefs:path/to/DifferentManifest.xml"));
     assertThat(manifestIdentifier.getResDir())
         .isEqualTo(FileFsFile.from(":fakefs:path/to/res"));
   }
 
   @Test public void withDotSlashManifest_identify() throws Exception {
-    configBuilder.setManifest("./AndroidManifest.xml");
+    configBuilder.setManifest("./DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/AndroidManifest.xml"));
+        .isEqualTo(FileFsFile.from(":fakefs:path/to/DifferentManifest.xml"));
     assertThat(manifestIdentifier.getResDir())
         .isEqualTo(FileFsFile.from(":fakefs:path/to/res"));
   }
 
   @Test public void withDotDotSlashManifest_identify() throws Exception {
-    configBuilder.setManifest("../AndroidManifest.xml");
+    configBuilder.setManifest("../DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/../AndroidManifest.xml"));
+        .isEqualTo(FileFsFile.from(":fakefs:path/to/../DifferentManifest.xml"));
     assertThat(manifestIdentifier.getResDir())
         .isEqualTo(FileFsFile.from(":fakefs:path/to/../res"));
   }
