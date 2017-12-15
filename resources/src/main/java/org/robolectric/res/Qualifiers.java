@@ -1,15 +1,9 @@
 package org.robolectric.res;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
-import org.robolectric.util.Logger;
 
 /**
  * Android qualifers as defined by https://developer.android.com/guide/topics/resources/providing-resources.html
@@ -24,15 +18,17 @@ public class Qualifiers {
   private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("(v)([0-9]+)$");
   private static final Pattern ORIENTATION_QUALIFIER_PATTERN = Pattern.compile("(land|port)");
 
-  // Various size qualifies, in increasing order of importance.
-  private static final List<String> INT_QUALIFIERS = Arrays.asList("v", "h", "w", "sh", "sw");
-
   private final String qualifiers;
   private final ResTable_config config;
 
   public static Qualifiers parse(String qualifiers) {
+    return parse(qualifiers, true);
+  }
+
+  public static Qualifiers parse(String qualifiers, boolean applyVersionForCompat) {
     final ResTable_config config = new ResTable_config();
-    if (!qualifiers.isEmpty() && !new ConfigDescription().parse(qualifiers, config)) {
+    if (!qualifiers.isEmpty()
+        && !ConfigDescription.parse(qualifiers, config, applyVersionForCompat)) {
       throw new IllegalArgumentException("failed to parse qualifiers '" + qualifiers + "'");
     }
 

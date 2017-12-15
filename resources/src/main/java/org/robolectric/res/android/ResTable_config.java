@@ -69,6 +69,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 /**
  * Describes a particular resource configuration.
@@ -280,7 +281,7 @@ public class ResTable_config {
   public static final int WIDE_COLOR_GAMUT_ANY = ACONFIGURATION_WIDE_COLOR_GAMUT_ANY;
   public static final int WIDE_COLOR_GAMUT_NO = ACONFIGURATION_WIDE_COLOR_GAMUT_NO;
   public static final int WIDE_COLOR_GAMUT_YES = ACONFIGURATION_WIDE_COLOR_GAMUT_YES;
-  static final int MASK_WIDE_COLOR_GAMUT = 0x03;
+  public static final int MASK_WIDE_COLOR_GAMUT = 0x03;
   static final int COLOR_MODE_WIDE_COLOR_GAMUT_UNDEFINED = 0;
   static final int COLOR_MODE_WIDE_COLOR_GAMUT_NO = 0x01;
   static final int COLOR_MODE_WIDE_COLOR_GAMUT_YES = 0x02;
@@ -314,16 +315,16 @@ public class ResTable_config {
     COLOR_MODE_HDR_VALUES = Collections.unmodifiableMap(map);
   }
 
-  static final int DENSITY_DPI_UNDEFINED = 0;
+  public static final int DENSITY_DPI_UNDEFINED = 0;
   static final int DENSITY_DPI_LDPI = 120;
-  static final int DENSITY_DPI_MDPI = 160;
+  public static final int DENSITY_DPI_MDPI = 160;
   static final int DENSITY_DPI_TVDPI = 213;
   static final int DENSITY_DPI_HDPI = 240;
   static final int DENSITY_DPI_XHDPI = 320;
   static final int DENSITY_DPI_XXHDPI = 480;
   static final int DENSITY_DPI_XXXHDPI = 640;
-  static final int DENSITY_DPI_ANY  = 0xFFFE;
-  static final int DENSITY_DPI_NONE = 0xFFFF;
+  public static final int DENSITY_DPI_ANY  = 0xFFFE;
+  public static final int DENSITY_DPI_NONE = 0xFFFF;
 
   private static final Map<Integer, String> DENSITY_DPI_VALUES;
 
@@ -542,6 +543,7 @@ public class ResTable_config {
   public final byte[] language;
 
   /** Returns {@link #language} as an unpacked string representation. */
+  @Nonnull
   public final String languageString() {
     return unpackLanguage();
   }
@@ -576,6 +578,7 @@ public class ResTable_config {
   public final byte[] country;
 
   /** Returns {@link #country} as an unpacked string representation. */
+  @Nonnull
   public final String regionString() {
     return unpackRegion();
   }
@@ -599,8 +602,16 @@ public class ResTable_config {
     return inputFlags & KEYBOARDHIDDEN_MASK;
   }
 
+  public final void keyboardHidden(int value) {
+    inputFlags = (inputFlags & ~KEYBOARDHIDDEN_MASK) | value;
+  }
+
   public final int navigationHidden() {
     return (inputFlags & NAVIGATIONHIDDEN_MASK) >> 2;
+  }
+
+  public final void navigationHidden(int value) {
+    inputFlags = (inputFlags & ~NAVIGATIONHIDDEN_MASK) | value;
   }
 
   public int screenWidth;
@@ -674,7 +685,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutDirection(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | value;
   }
 
   public final int screenLayoutSize() {
@@ -682,7 +693,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutSize(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_SIZE_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_SIZE_MASK) | value;
   }
 
   public final int screenLayoutLong() {
@@ -690,7 +701,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutLong(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LONG_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_LONG_MASK) | value;
   }
 
   public final int screenLayoutRound() {
@@ -778,6 +789,7 @@ public class ResTable_config {
 //    }
 //  }
 
+  @Nonnull
   private String unpackLanguageOrRegion(byte[] value, int base) {
     Preconditions.checkState(value.length == 2, "Language or country value must be 2 bytes.");
     if (value[0] == 0 && value[1] == 0) {
@@ -819,6 +831,7 @@ public class ResTable_config {
     packLanguageOrRegion(region, (byte) '0', this.country);
   }
 
+  @Nonnull
   private String unpackLanguage() {
     return unpackLanguageOrRegion(language, 0x61);
   }

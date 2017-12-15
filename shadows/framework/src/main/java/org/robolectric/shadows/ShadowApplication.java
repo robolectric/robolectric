@@ -112,6 +112,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public static void setDisplayMetricsDensity(float densityMultiplier) {
+    shadowOf(Resources.getSystem()).setDensity(densityMultiplier);
     shadowOf(RuntimeEnvironment.application.getResources()).setDensity(densityMultiplier);
   }
 
@@ -120,8 +121,10 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public static void setDefaultDisplay(Display display) {
-    shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
+    shadowOf(Resources.getSystem()).setDisplay(display);
     display.getMetrics(RuntimeEnvironment.application.getResources().getDisplayMetrics());
+
+    shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
     display.getMetrics(Resources.getSystem().getDisplayMetrics());
   }
 

@@ -6,12 +6,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.content.ContentResolver;
 import android.provider.Settings;
 import android.text.format.DateFormat;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)

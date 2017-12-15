@@ -3,6 +3,7 @@ package org.robolectric;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
@@ -14,6 +15,7 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 public class RuntimeEnvironment {
+  public static Context systemContext;
   public static Application application;
 
   private volatile static Thread mainThread = Thread.currentThread();
@@ -109,8 +111,14 @@ public class RuntimeEnvironment {
    * @param newQualifiers the qualifiers to apply
    */
   public static void setQualifiers(String newQualifiers) {
-    Configuration configuration = new Configuration();
+    Configuration configuration;
     DisplayMetrics displayMetrics = new DisplayMetrics();
+    if (newQualifiers.startsWith("+")) {
+      configuration = new Configuration(Resources.getSystem().getConfiguration());
+      displayMetrics.setTo(Resources.getSystem().getDisplayMetrics());
+    } else {
+      configuration = new Configuration();
+    }
     Bootstrap.applyQualifiers(newQualifiers, getApiLevel(), configuration, displayMetrics);
 
     Resources systemResources = Resources.getSystem();

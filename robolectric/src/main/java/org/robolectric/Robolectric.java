@@ -10,6 +10,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
+import java.util.ServiceLoader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
@@ -25,11 +29,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.ServiceLoader;
 
 public class Robolectric {
   private static ShadowsAdapter shadowsAdapter = null;
