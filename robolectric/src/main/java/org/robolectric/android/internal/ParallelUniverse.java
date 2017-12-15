@@ -1,7 +1,6 @@
 package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
 import android.app.Application;
@@ -23,7 +22,6 @@ import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.Bootstrap;
@@ -37,7 +35,9 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -159,7 +159,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
 
-      application.onCreate();
+      PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
+        application.onCreate();
+      });
     }
   }
 
