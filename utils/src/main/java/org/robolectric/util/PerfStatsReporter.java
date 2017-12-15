@@ -1,12 +1,17 @@
 package org.robolectric.util;
 
+import java.util.Collection;
+import org.robolectric.util.PerfStatsCollector.Metadata;
+import org.robolectric.util.PerfStatsCollector.Metric;
+
 public interface PerfStatsReporter {
 
   /**
    * Report performance stats.
    *
-   * @param perfStatsCollector the performance stats collector.
+   * @param metadata metadata about this set of metrics.
+   * @param metrics the metrics.
    */
-  void report(PerfStatsCollector perfStatsCollector);
+  void report(Metadata metadata, Collection<Metric> metrics);
 
 }

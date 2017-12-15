@@ -35,6 +35,8 @@ import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
+import org.robolectric.util.PerfStatsCollector.Metadata;
+import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
@@ -42,7 +44,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final Interceptors interceptors;
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
-  private ThreadLocal<PerfStatsCollector> perfStatsCollector = new InheritableThreadLocal<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     super(klass);
@@ -204,8 +205,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        PerfStatsCollector perfStatsCollector = createPerfStatsCollector(method);
-        SandboxTestRunner.this.perfStatsCollector.set(perfStatsCollector);
+        PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
+        perfStatsCollector.reset();
+        perfStatsCollector.setEnabled(!perfStatsReporters.isEmpty());
 
         Event initialization = perfStatsCollector.startEvent("initialization");
 
@@ -253,24 +255,27 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           finallyAfterTest(method);
 
           reportPerfStats(perfStatsCollector);
-          SandboxTestRunner.this.perfStatsCollector.set(null);
+          perfStatsCollector.reset();
         }
       }
     };
   }
 
   private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
+    if (perfStatsReporters.isEmpty()) {
+      return;
+    }
+
+    Metadata metadata = perfStatsCollector.getMetadata();
+    Collection<Metric> metrics = perfStatsCollector.getMetrics();
+
     for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
       try {
-        perfStatsReporter.report(perfStatsCollector);
+        perfStatsReporter.report(metadata, metrics);
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
-  }
-
-  protected PerfStatsCollector createPerfStatsCollector(FrameworkMethod method) {
-    return new PerfStatsCollector(describeChild(method).toString());
   }
 
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {

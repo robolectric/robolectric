@@ -12,11 +12,9 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import android.os.Build;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -37,7 +35,6 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 
@@ -110,8 +107,8 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void shouldReportPerfStats() throws Exception {
-    List<PerfStatsCollector> collectors = new ArrayList<>();
-    PerfStatsReporter reporter = collectors::add;
+    List<Metric> metrics = new ArrayList<>();
+    PerfStatsReporter reporter = (metadata, metrics1) -> metrics.addAll(metrics1);
 
     RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
       @Nonnull
@@ -123,11 +120,6 @@ public class RobolectricTestRunnerTest {
 
     runner.run(notifier);
 
-    assertThat(collectors).hasSize(2);
-    PerfStatsCollector perfStatsCollector = collectors.get(0);
-    assertThat(perfStatsCollector.getDescription())
-        .isEqualTo("first(" + TestWithTwoMethods.class.getName() + ")");
-    Collection<Metric> metrics = perfStatsCollector.getMetrics();
     Set<String> metricNames = metrics.stream().map(Metric::getName).collect(toSet());
     assertThat(metricNames).contains("initialization");
   }
@@ -135,7 +127,6 @@ public class RobolectricTestRunnerTest {
   /////////////////////////////
 
   public static class MyParallelUniverse extends ParallelUniverse {
-
     @Override
     public void resetStaticState(Config config) {
       throw new RuntimeException("fake error in resetStaticState");
@@ -144,7 +135,6 @@ public class RobolectricTestRunnerTest {
 
   @Ignore
   public static class TestWithOldSdk {
-
     @Config(sdk = Build.VERSION_CODES.HONEYCOMB)
     @Test
     public void oldSdkMethod() throws Exception {
@@ -159,9 +149,9 @@ public class RobolectricTestRunnerTest {
     }
   }
 
-  @Ignore @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
   public static class TestWithTwoMethods {
-
     @Test
     public void first() throws Exception {
     }
@@ -172,7 +162,6 @@ public class RobolectricTestRunnerTest {
   }
 
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
-
     public MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
       super(testClass);
     }
