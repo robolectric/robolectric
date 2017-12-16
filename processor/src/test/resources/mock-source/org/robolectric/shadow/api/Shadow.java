@@ -2,7 +2,7 @@ package org.robolectric.shadow.api;
 
 public class Shadow {
 
-  public static Object extract(Object source) {
+  public static <T> T extract(Object source) {
     return null;
   }
 }

@@ -10,7 +10,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * From android/frameworks/base/tools/aapt2/ConfigDescription.cpp
+ * transliterated from
+ * https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/tools/aapt2/ConfigDescription.cpp
  */
 public class ConfigDescription {
   public static int SDK_CUPCAKE = 3;
@@ -39,7 +40,7 @@ public class ConfigDescription {
   public static int SDK_O = 26;
 
   /**
-   * finalant used to to represent MNC (Mobile Network Code) zero.
+   * Constant used to to represent MNC (Mobile Network Code) zero.
    * 0 cannot be used, since it is used to represent an undefined MNC.
    */
   private static final int ACONFIGURATION_MNC_ZERO = 0xffff;
@@ -190,11 +191,11 @@ public class ConfigDescription {
     }
   }
 
-  public boolean parse(final String str, ResTable_config out) {
+  public static boolean parse(final String str, ResTable_config out) {
     return parse(str, out, true);
   }
 
-  public boolean parse(final String str, ResTable_config out, boolean applyVersionForCompat) {
+  public static boolean parse(final String str, ResTable_config out, boolean applyVersionForCompat) {
     PeekingIterator<String> part_iter = Iterators
         .peekingIterator(Arrays.asList(str.toLowerCase().split("-")).iterator());
 
@@ -272,6 +273,20 @@ public class ConfigDescription {
     }
 
     if (part_iter.hasNext() && parseScreenRound(part_iter.peek(), out)) {
+      part_iter.next();
+      if (!part_iter.hasNext()) {
+        success = !part_iter.hasNext();
+      }
+    }
+
+    if (part_iter.hasNext() && parseWideColorGamut(part_iter.peek(), out)) {
+      part_iter.next();
+      if (!part_iter.hasNext()) {
+        success = !part_iter.hasNext();
+      }
+    }
+
+    if (part_iter.hasNext() && parseHdr(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
         success = !part_iter.hasNext();
@@ -366,7 +381,7 @@ public class ConfigDescription {
     return true;
   }
 
-  private boolean parseLayoutDirection(String name, ResTable_config out) {
+  private static boolean parseLayoutDirection(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout =
@@ -393,7 +408,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseSmallestScreenWidthDp(String name, ResTable_config out) {
+  private static boolean parseSmallestScreenWidthDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.smallestScreenWidthDp = ResTable_config.SCREENWIDTH_ANY;
@@ -409,7 +424,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenWidthDp(String name, ResTable_config out) {
+  private static boolean parseScreenWidthDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenWidthDp = ResTable_config.SCREENWIDTH_ANY;
@@ -425,7 +440,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenHeightDp(String name, ResTable_config out) {
+  private static boolean parseScreenHeightDp(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenHeightDp = ResTable_config.SCREENWIDTH_ANY;
@@ -441,7 +456,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenLayoutSize(String name, ResTable_config out) {
+  private static boolean parseScreenLayoutSize(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout =
@@ -504,7 +519,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenRound(String name, ResTable_config out) {
+  private static boolean parseScreenRound(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenLayout2 =
@@ -530,7 +545,53 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseOrientation(String name, ResTable_config out) {
+  private static boolean parseWideColorGamut(String name, ResTable_config out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
+                            ResTable_config.WIDE_COLOR_GAMUT_ANY);
+      return true;
+    } else if (Objects.equals(name, "widecg")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
+                            ResTable_config.WIDE_COLOR_GAMUT_YES);
+      return true;
+    } else if (Objects.equals(name, "nowidecg")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
+                            ResTable_config.WIDE_COLOR_GAMUT_NO);
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean parseHdr(String name, ResTable_config out) {
+    if (Objects.equals(name, kWildcardName)) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
+                            ResTable_config.HDR_ANY);
+      return true;
+    } else if (Objects.equals(name, "highdr")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
+                            ResTable_config.HDR_YES);
+      return true;
+    } else if (Objects.equals(name, "lowdr")) {
+      if (out != null)
+        out.colorMode =
+            (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
+                            ResTable_config.HDR_NO);
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean parseOrientation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.orientation = out.ORIENTATION_ANY;
@@ -556,7 +617,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseUiModeType(String name, ResTable_config out) {
+  private static boolean parseUiModeType(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
@@ -593,12 +654,18 @@ public class ConfigDescription {
             ResTable_config.UI_MODE_TYPE_WATCH;
       }
       return true;
+    } else if (Objects.equals(name, "vrheadset")) {
+      if (out != null) {
+        out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_TYPE) |
+            ResTable_config.UI_MODE_TYPE_VR_HEADSET;
+      }
+      return true;
     }
 
     return false;
   }
 
-  private boolean parseUiModeNight(String name, ResTable_config out) {
+  private static boolean parseUiModeNight(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.uiMode = (out.uiMode & ~ResTable_config.MASK_UI_MODE_NIGHT) |
@@ -622,7 +689,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseDensity(String name, ResTable_config out) {
+  private static boolean parseDensity(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.density = ResTable_config.DENSITY_DEFAULT;
@@ -702,7 +769,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseTouchscreen(String name, ResTable_config out) {
+  private static boolean parseTouchscreen(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.touchscreen = out.TOUCHSCREEN_ANY;
@@ -728,7 +795,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseKeysHidden(String name, ResTable_config out) {
+  private static boolean parseKeysHidden(String name, ResTable_config out) {
     byte mask = 0;
     byte value = 0;
     if (Objects.equals(name, kWildcardName)) {
@@ -755,7 +822,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseKeyboard(String name, ResTable_config out) {
+  private static boolean parseKeyboard(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.keyboard = out.KEYBOARD_ANY;
@@ -781,7 +848,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseNavHidden(String name, ResTable_config out) {
+  private static boolean parseNavHidden(String name, ResTable_config out) {
     byte mask = 0;
     byte value = 0;
     if (Objects.equals(name, kWildcardName)) {
@@ -805,7 +872,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseNavigation(String name, ResTable_config out) {
+  private static boolean parseNavigation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.navigation = out.NAVIGATION_ANY;
@@ -836,7 +903,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseScreenSize(String name, ResTable_config out) {
+  private static boolean parseScreenSize(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.screenWidth = out.SCREENWIDTH_ANY;
@@ -859,7 +926,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseVersion(String name, ResTable_config out) {
+  private static boolean parseVersion(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.sdkVersion = out.SDKVERSION_ANY;
@@ -877,7 +944,7 @@ public class ConfigDescription {
     return false;
   }
 
-  private boolean parseMnc(String name, ResTable_config out) {
+  private static boolean parseMnc(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
         out.mnc = 0;
@@ -913,33 +980,38 @@ public class ConfigDescription {
   }
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/tools/aapt/AaptConfig.cpp
-  private void applyVersionForCompatibility(ResTable_config config) {
+  private static void applyVersionForCompatibility(ResTable_config config) {
     if (config == null) {
       return;
     }
-    int minSdk = 0;
-    if (isTruthy(config.screenLayout2 & ResTable_config.MASK_SCREENROUND)) {
-      minSdk = SDK_MNC;
+    int min_sdk = 0;
+    if (((config.uiMode & ResTable_config.MASK_UI_MODE_TYPE)
+        == ResTable_config.UI_MODE_TYPE_VR_HEADSET) ||
+        (config.colorMode & ResTable_config.MASK_WIDE_COLOR_GAMUT) != 0 ||
+            (config.colorMode & ResTable_config.MASK_HDR) != 0) {
+      min_sdk = SDK_O;
+    } else if (isTruthy(config.screenLayout2 & ResTable_config.MASK_SCREENROUND)) {
+      min_sdk = SDK_MNC;
     } else if (config.density == ResTable_config.DENSITY_ANY) {
-      minSdk = SDK_LOLLIPOP;
+      min_sdk = SDK_LOLLIPOP;
     } else if (config.smallestScreenWidthDp != ResTable_config.SCREENWIDTH_ANY
         || config.screenWidthDp != ResTable_config.SCREENWIDTH_ANY
         || config.screenHeightDp != ResTable_config.SCREENHEIGHT_ANY) {
-      minSdk = SDK_HONEYCOMB_MR2;
+      min_sdk = SDK_HONEYCOMB_MR2;
     } else if ((config.uiMode & ResTable_config.MASK_UI_MODE_TYPE)
         != ResTable_config.UI_MODE_TYPE_ANY
         ||  (config.uiMode & ResTable_config.MASK_UI_MODE_NIGHT)
         != ResTable_config.UI_MODE_NIGHT_ANY) {
-      minSdk = SDK_FROYO;
+      min_sdk = SDK_FROYO;
     } else if ((config.screenLayout & ResTable_config.MASK_SCREENSIZE)
         != ResTable_config.SCREENSIZE_ANY
         ||  (config.screenLayout & ResTable_config.MASK_SCREENLONG)
         != ResTable_config.SCREENLONG_ANY
         || config.density != ResTable_config.DENSITY_DEFAULT) {
-      minSdk = SDK_DONUT;
+      min_sdk = SDK_DONUT;
     }
-    if (minSdk > config.sdkVersion) {
-      config.sdkVersion = minSdk;
+    if (min_sdk > config.sdkVersion) {
+      config.sdkVersion = min_sdk;
     }
   }
 }
