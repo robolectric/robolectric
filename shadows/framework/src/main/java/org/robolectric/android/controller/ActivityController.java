@@ -189,10 +189,30 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   /**
+   * Applies the current system configuration to the Activity.
+   *
+   * This can be used in conjunction with {@link RuntimeEnvironment#setQualifiers(String)} to
+   * simulate configuration changes.
+   *
+   * If the activity is configured to handle changes without being recreated,
+   * {@link Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity
+   * is recreated as described [here](https://developer.android.com/guide/topics/resources/runtime-changes.html).
+   *
+   * @return ActivityController instance
+   */
+  public ActivityController<T> configurationChange() {
+    return configurationChange(component.getApplicationContext().getResources().getConfiguration());
+  }
+
+  /**
    * Performs a configuration change on the Activity.
    *
+   * If the activity is configured to handle changes without being recreated,
+   * {@link Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity
+   * is recreated as described [here](https://developer.android.com/guide/topics/resources/runtime-changes.html).
+   *
    * @param newConfiguration The new configuration to be set.
-   * @return Activity controller instance.
+   * @return ActivityController instance
    */
   public ActivityController<T> configurationChange(final Configuration newConfiguration) {
     final Configuration currentConfig = component.getResources().getConfiguration();

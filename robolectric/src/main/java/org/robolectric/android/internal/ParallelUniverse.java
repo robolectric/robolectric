@@ -1,7 +1,6 @@
 package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
 import android.app.Application;
@@ -23,7 +22,6 @@ import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.Bootstrap;
@@ -37,7 +35,9 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -89,15 +89,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
         displayMetrics);
-    setDisplayMetricsDimens(displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
         : configuration.locale;
     Locale.setDefault(locale);
-
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(configuration, displayMetrics);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
@@ -114,8 +110,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
+    Bootstrap.setUpDisplay(configuration, displayMetrics);
+
+    Resources systemResources = Resources.getSystem();
+    systemResources.updateConfiguration(configuration, displayMetrics);
+
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
-    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
+    RuntimeEnvironment.systemContext = systemContextImpl;
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
@@ -159,23 +160,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
 
-      application.onCreate();
+      PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
+        application.onCreate();
+      });
     }
-  }
-
-  // todo: kill this, use DisplayInfo to initialize instead
-  private void setDisplayMetricsDimens(DisplayMetrics displayMetrics) {
-    displayMetrics.scaledDensity = displayMetrics.density;
-
-    displayMetrics.widthPixels = 480;
-    displayMetrics.heightPixels = 800;
-    displayMetrics.xdpi = displayMetrics.densityDpi;
-    displayMetrics.ydpi = displayMetrics.densityDpi;
-
-    displayMetrics.noncompatWidthPixels = displayMetrics.widthPixels;
-    displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
-    displayMetrics.noncompatXdpi = displayMetrics.xdpi;
-    displayMetrics.noncompatYdpi = displayMetrics.ydpi;
   }
 
   private void initInstrumentation(

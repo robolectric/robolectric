@@ -7,10 +7,10 @@ import com.example.objects.UniqueDummy;
 public class ShadowUniqueDummy {
 
   @Implements(UniqueDummy.InnerDummy.class)
-  public class ShadowInnerDummy {
+  public static class ShadowInnerDummy {
   }
   
   @Implements(UniqueDummy.UniqueInnerDummy.class)
-  public class ShadowUniqueInnerDummy {
+  public static class ShadowUniqueInnerDummy {
   }
 }

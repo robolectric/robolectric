@@ -530,6 +530,7 @@ public class ShadowAccountManagerTest {
     } catch(AuthenticatorException e) {
       // Expected
     }
+    assertThat(future.isDone()).isTrue();
   }
 
   @Test

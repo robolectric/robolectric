@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
 
-// adapted from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/core/java/android/content/res/Configuration.java
+// adapted from https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/core/java/android/content/res/Configuration.java
 public class ConfigurationV25 {
 
   private static String localesToResourceQualifier(List<Locale> locs) {
@@ -68,6 +68,10 @@ public class ConfigurationV25 {
    * @hide
    */
   public static String resourceQualifierString(Configuration config, DisplayMetrics displayMetrics) {
+    return resourceQualifierString(config, displayMetrics, true);
+  }
+
+  public static String resourceQualifierString(Configuration config, DisplayMetrics displayMetrics, boolean includeSdk) {
     ArrayList<String> parts = new ArrayList<String>();
 
     if (config.mcc != 0) {
@@ -147,6 +151,30 @@ public class ConfigurationV25 {
         break;
     }
 
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.O) {
+      switch (config.colorMode & Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK) {
+        case Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_YES:
+          parts.add("widecg");
+          break;
+        case Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_NO:
+          parts.add("nowidecg");
+          break;
+        default:
+          break;
+      }
+
+      switch (config.colorMode & Configuration.COLOR_MODE_HDR_MASK) {
+        case Configuration.COLOR_MODE_HDR_YES:
+          parts.add("highdr");
+          break;
+        case Configuration.COLOR_MODE_HDR_NO:
+          parts.add("lowdr");
+          break;
+        default:
+          break;
+      }
+    }
+
     switch (config.orientation) {
       case Configuration.ORIENTATION_LANDSCAPE:
         parts.add("land");
@@ -173,6 +201,9 @@ public class ConfigurationV25 {
         break;
       case Configuration.UI_MODE_TYPE_WATCH:
         parts.add("watch");
+        break;
+      case Configuration.UI_MODE_TYPE_VR_HEADSET:
+        parts.add("vrheadset");
         break;
       default:
         break;
@@ -298,7 +329,10 @@ public class ConfigurationV25 {
         break;
     }
 
-    parts.add("v" + Build.VERSION.RESOURCES_SDK_INT);
+    if (includeSdk) {
+      parts.add("v" + Build.VERSION.RESOURCES_SDK_INT);
+    }
+
     return TextUtils.join("-", parts);
   }
 

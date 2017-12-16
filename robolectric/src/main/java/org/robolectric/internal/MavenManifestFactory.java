@@ -2,6 +2,8 @@ package org.robolectric.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -13,14 +15,28 @@ public class MavenManifestFactory implements ManifestFactory {
 
   @Override
   public ManifestIdentifier identify(Config config) {
-    if (config.manifest().equals(Config.NONE)) {
+    final String manifestPath = config.manifest();
+    if (manifestPath.equals(Config.NONE)) {
       return new ManifestIdentifier((String) null, null, null, null, null);
     }
 
-    FsFile manifestFile = getBaseDir().join(config.manifest());
-    FsFile baseDir = manifestFile.getParent();
-    FsFile resDir = baseDir.join(config.resourceDir());
-    FsFile assetDir = baseDir.join(config.assetDir());
+    // Try to locate the manifest file as a classpath resource; fallback to using the base dir.
+    final FsFile manifestFile;
+    final String resourceName = manifestPath.startsWith("/") ? manifestPath : ("/" + manifestPath);
+    final URL resourceUrl = getClass().getResource(resourceName);
+    if (resourceUrl != null && "file".equals(resourceUrl.getProtocol())) {
+      // Construct a path to the manifest file relative to the current working directory.
+      final URI workingDirectory = URI.create(System.getProperty("user.dir"));
+      final URI absolutePath = URI.create(resourceUrl.getPath());
+      final URI relativePath = workingDirectory.relativize(absolutePath);
+      manifestFile = Fs.newFile(relativePath.toString());
+    } else {
+      manifestFile = getBaseDir().join(manifestPath);
+    }
+
+    final FsFile baseDir = manifestFile.getParent();
+    final FsFile resDir = baseDir.join(config.resourceDir());
+    final FsFile assetDir = baseDir.join(config.assetDir());
 
     List<ManifestIdentifier> libraries;
     if (config.libraries().length == 0) {

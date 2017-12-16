@@ -203,7 +203,7 @@ public class ResBundleTest {
   private static ResTable_config from(String qualifiers) {
     ResTable_config config = new ResTable_config();
     if (!Strings.isNullOrEmpty(qualifiers) &&
-        !new ConfigDescription().parse(qualifiers, config, false)) {
+        !ConfigDescription.parse(qualifiers, config, false)) {
       throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiers + "\"");
     }
     return config;

@@ -581,7 +581,7 @@ public class ShadowAccountManager {
 
     @Override
     public boolean isDone() {
-      return result != null;
+      return result != null || exception != null || isCancelled();
     }
 
     @Override
