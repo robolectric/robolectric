@@ -1,60 +1,59 @@
 package org.robolectric;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
 import java.lang.reflect.Method;
-import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.internal.ClassNameResolver;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.util.ReflectionHelpers;
 
-public class DefaultTestLifecycle implements TestLifecycle {
+public class DefaultTestLifecycle implements TestLifecycle<Application> {
 
   /**
    * Override this method if you want to provide your own implementation of Application.
    *
-   * This method attempts to instantiate an application instance as follows:-
+   * This method attempts to instantiate an application instance as follows:
    *
-   * 1. If specified loads the application specified in the Config annotation
-   * 1. Attempt to load a test application as documented <a href="http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html">here</a>
-   * 1. Use the application as specified in the AndroidManifest.xml
-   * 1. Instantiate a standard {@link android.app.Application}
+   * 1. Loads the application specified in the Config annotation, if present
+   * 1. Attempts to load a test application as documented <a href="http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html">here</a>
+   * 1. Uses the application as specified in the `AndroidManifest.xml`
+   * 1. Instantiates a standard {@link android.app.Application}
    *
-   * @param method The currently-running test method.
-   * @param appManifest The application manifest.
-   * @param config The configuration annotation from the test if present.
-   * @return An instance of the Application class specified by the ApplicationManifest.xml or an instance of
+   * @param method the test method that's being run (in the sandbox classloader)
+   * @param applicationInfo application info for the package
+   * @param config the merged config for this test method
+   * @return An instance of the Application class specified by the application info, or an instance of
    *         Application if not specified.
    */
-  @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
-
+  @Override public Application createApplication(Method method, ApplicationInfo applicationInfo, Config config) {
     Application application = null;
     if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
       if (config.application().getCanonicalName() != null) {
         Class<? extends Application> applicationClass;
         try {
-          applicationClass = new ClassNameResolver<Application>(null, config.application().getName()).resolve();
+          applicationClass = ClassNameResolver.resolve(null, config.application().getName());
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
-        application = ApplicationTestUtil.newApplication(applicationClass);
+        application = ReflectionHelpers.callConstructor((applicationClass));
       }
-    } else if (appManifest != null && appManifest.getApplicationName() != null) {
+    } else if (applicationInfo != null && applicationInfo.className != null) {
       Class<? extends Application> applicationClass = null;
       try {
-        applicationClass = new ClassNameResolver<Application>(appManifest.getPackageName(), getTestApplicationName(appManifest.getApplicationName())).resolve();
+        applicationClass = ClassNameResolver.resolve(applicationInfo.packageName, getTestApplicationName(applicationInfo.className));
       } catch (ClassNotFoundException e) {
         // no problem
       }
 
       if (applicationClass == null) {
         try {
-          applicationClass = new ClassNameResolver<Application>(appManifest.getPackageName(), appManifest.getApplicationName()).resolve();
+          applicationClass = ClassNameResolver.resolve(applicationInfo.packageName, applicationInfo.className);
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
       }
 
-      application = ApplicationTestUtil.newApplication(applicationClass);
+      application = ReflectionHelpers.callConstructor(applicationClass);
     } else {
       application = new Application();
     }

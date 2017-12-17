@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
 import android.content.UriPermission;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
@@ -50,8 +51,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.manifest.AndroidManifest;
@@ -708,7 +709,7 @@ public class ShadowContentResolverTest {
 
   @Test
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    Application application = new DefaultTestLifecycle().createApplication(null, null, null);
+    Application application = new DefaultTestLifecycle().createApplication(null, (ApplicationInfo) null, null);
     ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }

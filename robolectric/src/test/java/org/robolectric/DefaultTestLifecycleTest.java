@@ -1,14 +1,13 @@
 package org.robolectric;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -16,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
-import org.robolectric.shadows.ShadowApplication;
 
 @RunWith(RobolectricTestRunner.class)
 public class DefaultTestLifecycleTest {
@@ -26,20 +24,25 @@ public class DefaultTestLifecycleTest {
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
-    defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"), null);
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "org.robolectric";
+    applicationInfo.className = "org.robolectric.BogusTestApplication";
+
+    defaultTestLifecycle.createApplication(null, applicationInfo, null);
   }
 
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, newConfigWith(""), null))
+    assertThat(defaultTestLifecycle.createApplication(null, new ApplicationInfo(), null))
         .isExactlyInstanceOf(Application.class);
   }
 
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"), null))
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "xxx";
+    applicationInfo.className = "org.robolectric.TestApplication";
+    assertThat(defaultTestLifecycle.createApplication(null, applicationInfo, null))
         .isExactlyInstanceOf(TestApplication.class);
   }
 
@@ -50,24 +53,6 @@ public class DefaultTestLifecycleTest {
     assertThat(application).isExactlyInstanceOf(TestApplication.class);
   }
 
-  @Test
-  public void shouldRegisterReceiversFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfigWith(
-        "<application>"
-            + "    <receiver android:name=\"org.robolectric.fakes.ConfigTestReceiver\">"
-            + "      <intent-filter>\n"
-            + "        <action android:name=\"org.robolectric.ACTION_SUPERSET_PACKAGE\"/>\n"
-            + "      </intent-filter>"
-            + "    </receiver>"
-            + "</application>");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
-    shadowOf(application).bind(appManifest);
-
-    List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
-    assertThat(receivers).hasSize(1);
-    assertThat(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION_SUPERSET_PACKAGE")).isTrue();
-  }
-
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {
     assertThat(defaultTestLifecycle.getTestApplicationName(".Applicationz")).isEqualTo(".TestApplicationz");
     assertThat(defaultTestLifecycle.getTestApplicationName("Applicationz")).isEqualTo("TestApplicationz");
@@ -75,25 +60,33 @@ public class DefaultTestLifecycleTest {
   }
 
   @Test public void shouldLoadConfigApplicationIfSpecified() throws Exception {
-    Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Builder().setApplication(TestFakeApp.class).build());
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "org.robolectric";
+    applicationInfo.className = "ClassNameToIgnore";
+    Application application = defaultTestLifecycle.createApplication(null, applicationInfo,
+        new Config.Builder().setApplication(TestFakeApp.class).build());
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
-    Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Builder().setApplication(TestFakeAppInner.class).build());
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "org.robolectric";
+    applicationInfo.className = "ClassNameToIgnore";
+    Application application = defaultTestLifecycle.createApplication(null, applicationInfo,
+        new Config.Builder().setApplication(TestFakeAppInner.class).build());
     assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
   }
 
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
-    Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null);
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "org.robolectric";
+    applicationInfo.className = FakeApp.class.getName();
+    Application application = defaultTestLifecycle.createApplication(null, applicationInfo, null);
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, null, null)).isExactlyInstanceOf(Application.class);
+    assertThat(defaultTestLifecycle.createApplication(null, (ApplicationInfo) null, null)).isExactlyInstanceOf(Application.class);
   }
 
   /////////////////////////////

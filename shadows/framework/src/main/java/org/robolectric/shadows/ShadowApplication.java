@@ -54,6 +54,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 @Implements(Application.class)
@@ -832,4 +833,13 @@ public class ShadowApplication extends ShadowContextWrapper {
     shadowContext.setSystemService(key, service);
   }
 
+  /**
+   * Attaches an application to a base context.
+   * @param context The context with which to initialize the application, whose base context will
+   *                be attached to the application
+   */
+  public void callAttach(Context context) {
+    ReflectionHelpers.callInstanceMethod(Application.class, realApplication, "attach",
+        ReflectionHelpers.ClassParameter.from(Context.class, context));
+  }
 }
