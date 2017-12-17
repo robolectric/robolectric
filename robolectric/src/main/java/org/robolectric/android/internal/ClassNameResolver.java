@@ -1,8 +1,12 @@
 package org.robolectric.android.internal;
 
 public class ClassNameResolver<T> {
-  private String packageName;
-  private String className;
+  private final String packageName;
+  private final String className;
+
+  public static <T> Class<T> resolve(String packageName, String className) throws ClassNotFoundException {
+    return (Class<T>) new ClassNameResolver<>(packageName, className).resolve();
+  }
 
   public ClassNameResolver(String packageName, String className) {
     this.packageName = packageName;
