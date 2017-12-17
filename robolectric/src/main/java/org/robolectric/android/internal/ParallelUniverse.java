@@ -127,7 +127,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(data, "appInfo", applicationInfo);
       ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
-      LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+      LoadedApk loadedApk = activityThread.getLoadedApk(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
