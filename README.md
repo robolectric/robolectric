@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/robolectric/robolectric.svg?branch=master)](https://travis-ci.org/robolectric/robolectric)
 [![GitHub release](https://img.shields.io/github/release/robolectric/robolectric.svg?maxAge=60)](https://github.com/robolectric/robolectric/releases)
 
-Robolectric is the industry-standard unit testing framework for Android.
+Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment, without the overhead of an emulator.
 
 ## Usage
 
