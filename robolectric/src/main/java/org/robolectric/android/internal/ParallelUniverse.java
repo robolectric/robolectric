@@ -19,7 +19,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
-import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
@@ -27,6 +26,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestLifecycle;
+import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
@@ -160,15 +160,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
-    Application app;
-    try {
-      app = (Application) testLifecycle.createApplication(method, appManifest, config);
-      System.out.println("*** TestLifecycle.createApplication() is a deprecated interface and will be removed in Robolectric 3.7;" +
-          "*** please refactor your tests and remove " + testLifecycle.getClass().getName() + ".");
-    } catch (Exception e) {
-      app = createApplication(appManifest, config);
-    }
-    Application application = app;
+    final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     RuntimeEnvironment.application = application;
 
     if (application != null) {
@@ -191,7 +183,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
         shadowOf(contextImpl.getPackageManager()).addPackage(parsedPackage);
         ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
-        shadowOf(application).callAttach(contextImpl);
+        ApplicationTestUtil.attach(application, contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -254,6 +246,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       return applicationName.substring(0, lastDot) + ".Test" + applicationName.substring(lastDot + 1);
     } else {
       return "Test" + applicationName;
+
     }
   }
 
