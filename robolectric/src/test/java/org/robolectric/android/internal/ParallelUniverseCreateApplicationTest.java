@@ -33,19 +33,19 @@ public class ParallelUniverseCreateApplicationTest {
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
-    defaultTestLifecycle.createApplication(null,
+    ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"), null);
   }
 
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, newConfigWith(""), null))
+    assertThat(ParallelUniverse.createApplication(newConfigWith(""), null))
         .isExactlyInstanceOf(Application.class);
   }
 
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null,
+    assertThat(ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"), null))
         .isExactlyInstanceOf(TestApplication.class);
   }
@@ -67,7 +67,7 @@ public class ParallelUniverseCreateApplicationTest {
             + "      </intent-filter>"
             + "    </receiver>"
             + "</application>");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
+    Application application = ParallelUniverse.createApplication(appManifest, null);
     shadowOf(application).bind(appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
@@ -102,7 +102,7 @@ public class ParallelUniverseCreateApplicationTest {
   }
 
   @Test public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, null, null)).isExactlyInstanceOf(Application.class);
+    assertThat(ParallelUniverse.createApplication(null, null)).isExactlyInstanceOf(Application.class);
   }
 
   /////////////////////////////
