@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
+import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
@@ -23,7 +24,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestLifecycle;
-import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
@@ -32,6 +32,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
@@ -118,7 +119,15 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
-    final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
+    Application app;
+    try {
+      app = (Application) testLifecycle.createApplication(method, appManifest, config);
+      System.out.println("*** TestLifecycle.createApplication() is a deprecated interface and will be removed in Robolectric 3.7;" +
+          "*** please refactor your tests and remove " + testLifecycle.getClass().getName() + ".");
+    } catch (Exception e) {
+      app = createApplication(appManifest, config);
+    }
+    Application application = app;
     RuntimeEnvironment.application = application;
 
     if (application != null) {
@@ -147,7 +156,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
         ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
-        ApplicationTestUtil.attach(application, contextImpl);
+        shadowOf(application).callAttach(contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -163,6 +172,55 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
         application.onCreate();
       });
+    }
+  }
+
+  @VisibleForTesting
+  static Application createApplication(AndroidManifest appManifest, Config config) {
+    Application application = null;
+    if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
+      if (config.application().getCanonicalName() != null) {
+        Class<? extends Application> applicationClass;
+        try {
+          applicationClass = ClassNameResolver.resolve(null, config.application().getName());
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+        application = ReflectionHelpers.callConstructor(applicationClass);
+      }
+    } else if (appManifest != null && appManifest.getApplicationName() != null) {
+      Class<? extends Application> applicationClass = null;
+      try {
+        applicationClass = ClassNameResolver.resolve(appManifest.getPackageName(),
+            getTestApplicationName(appManifest.getApplicationName()));
+      } catch (ClassNotFoundException e) {
+        // no problem
+      }
+
+      if (applicationClass == null) {
+        try {
+          applicationClass = ClassNameResolver.resolve(appManifest.getPackageName(),
+              appManifest.getApplicationName());
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      application = ReflectionHelpers.callConstructor(applicationClass);
+    } else {
+      application = new Application();
+    }
+
+    return application;
+  }
+
+  @VisibleForTesting
+  static String getTestApplicationName(String applicationName) {
+    int lastDot = applicationName.lastIndexOf('.');
+    if (lastDot > -1) {
+      return applicationName.substring(0, lastDot) + ".Test" + applicationName.substring(lastDot + 1);
+    } else {
+      return "Test" + applicationName;
     }
   }
 
