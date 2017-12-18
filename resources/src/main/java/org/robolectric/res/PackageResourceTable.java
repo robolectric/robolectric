@@ -25,6 +25,7 @@ public class PackageResourceTable implements ResourceTable {
     this.packageName = packageName;
   }
 
+  @Override
   public String getPackageName() {
     return packageName;
   }

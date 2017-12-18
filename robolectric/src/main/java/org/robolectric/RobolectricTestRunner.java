@@ -2,7 +2,6 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
-import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +58,6 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.util.Logger;
-import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -243,6 +241,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       try {
         Config config = getConfig(frameworkMethod.getMethod());
         AndroidManifest appManifest = getAppManifest(config);
+
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
@@ -299,12 +298,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     SdkEnvironment sdkEnvironment = (SdkEnvironment) sandbox;
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
-    PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
-    perfStatsCollector.putMetadata(AndroidMetadata.class,
-        new AndroidMetadata(
-            ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel())));
-
     roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
     Class<TestLifecycle> cl = sdkEnvironment.bootstrappedClass(getTestLifecycleClass());
     roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
@@ -312,10 +305,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final Config config = roboMethod.config;
     final AndroidManifest appManifest = roboMethod.getAppManifest();
 
-    roboMethod.parallelUniverseInterface.setSdkConfig(sdkConfig);
-    perfStatsCollector.measure("reset Android state (before test)",
-        () -> roboMethod.parallelUniverseInterface.resetStaticState(config));
+    roboMethod.parallelUniverseInterface.setSdkConfig((sdkEnvironment).getSdkConfig());
+    roboMethod.parallelUniverseInterface.resetStaticState(config);
 
+    SdkConfig sdkConfig = roboMethod.sdkConfig;
     Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RESOURCES_SDK_INT", sdkConfig.getApiLevel());
@@ -325,7 +318,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
-    roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, roboMethod.testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
+    roboMethod.parallelUniverseInterface.setUpApplicationState(
+        bootstrappedMethod,
+        roboMethod.testLifecycle,
+        appManifest,
+        config,
+        new RoutingResourceTable(appResourceTable, getCompiletimeSdkResourceTable()),
+        new RoutingResourceTable(appResourceTable, systemResourceTable),
+        new RoutingResourceTable(systemResourceTable));
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
 
@@ -340,10 +340,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         internalAfterTest(method, bootstrappedMethod);
       } finally {
         Config config = ((RobolectricFrameworkMethod) method).config;
-
-        // reset static state afterward too, so statics don't defeat GC?
-        PerfStatsCollector.getInstance().measure("reset Android state (after test)",
-            () -> roboMethod.parallelUniverseInterface.resetStaticState(config));
+        roboMethod.parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
       }
     }
   }

@@ -54,7 +54,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 @Implements(Application.class)
@@ -137,25 +136,13 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
   }
 
-  /**
-   * Attaches an application to a base context.
-   *
-   * @param application The application to attach.
-   * @param context The context with which to initialize the application, whose base context will
-   *                be attached to the application
-   */
-  public void callAttach(Context context) {
-    ReflectionHelpers.callInstanceMethod(Application.class, realApplication, "attach",
-        ReflectionHelpers.ClassParameter.from(Context.class, context));
-  }
-
   private void registerBroadcastReceivers(AndroidManifest androidManifest) {
     for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
       IntentFilter filter = new IntentFilter();
       for (String action : receiver.getActions()) {
         filter.addAction(action);
       }
-      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getClassName());
+      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
       registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
     }
   }
