@@ -8,6 +8,7 @@ public interface TestLifecycle<T> {
   /**
    * @deprecated This method is deprecated and will be removed in Robolectric 3.7
    */
+  @Deprecated
   T createApplication(Method method, AndroidManifest appManifest, Config config);
 
   /**
