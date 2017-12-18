@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.11"
+    id "net.ltgt.errorprone" version "0.0.13"
 }
 
 new RoboJavaModulePlugin(
@@ -33,7 +33,7 @@ dependencies {
     compile project(":shadows:framework")
 
     // Compile dependencies
-    compile "org.bouncycastle:bcprov-jdk15on:1.58"
+    compile "org.bouncycastle:bcprov-jdk15on:1.52"
     compile "com.thoughtworks.xstream:xstream:1.4.8"
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
@@ -43,6 +43,7 @@ dependencies {
     }
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:4.12"
+    compile("com.android.support.test:monitor:1.0.2-alpha1")
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
@@ -70,7 +71,7 @@ checkApiChanges {
             "org.robolectric:sandbox:${apiCompatVersion}@jar",
             "org.robolectric:utils:${apiCompatVersion}@jar",
             "org.robolectric:shadowapi:${apiCompatVersion}@jar",
-            "org.robolectric:framework:${apiCompatVersion}@jar",
+            "org.robolectric:shadows-framework:${apiCompatVersion}@jar",
     ]
 
     to = [

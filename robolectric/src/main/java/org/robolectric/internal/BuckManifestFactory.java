@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
@@ -33,28 +32,21 @@ public class BuckManifestFactory implements ManifestFactory {
 
     final List<FsFile> buckResources = getDirectoriesFromProperty(buckResDirs);
     final List<FsFile> buckAssets = getDirectoriesFromProperty(buckAssetsDirs);
-
-    if (buckResources.size() != buckAssets.size()) {
-      throw new IllegalArgumentException("number of resources and assets do not match match: "
-          + buckResources.size() + " != " + buckAssets.size());
-    }
-
-    int pathCount = buckResources.size();
-    final FsFile resDir;
-    final FsFile assetsDir;
+    final FsFile resDir = buckResources.size() == 0 ? null : buckResources.get(buckResources.size() - 1);
+    final FsFile assetsDir = buckAssets.size() == 0 ? null : buckAssets.get(buckAssets.size() - 1);
     final List<ManifestIdentifier> libraries;
-    if (pathCount == 0) {
-      resDir = null;
-      assetsDir = null;
+
+    if (resDir == null && assetsDir == null) {
       libraries = null;
     } else {
-      resDir = buckResources.get(pathCount - 1);
-      assetsDir = buckAssets.get(pathCount - 1);
       libraries = new ArrayList<>();
 
-      for (int i = 0; i < pathCount - 1; i++) {
-        libraries.add(new ManifestIdentifier(null, null,
-            buckResources.get(i), buckAssets.get(i), null));
+      for (int i = 0; i < buckResources.size() - 1; i++) {
+        libraries.add(new ManifestIdentifier((String) null, null, buckResources.get(i), null, null));
+      }
+
+      for (int i = 0; i < buckAssets.size() - 1; i++) {
+        libraries.add(new ManifestIdentifier(null, null, null, buckAssets.get(i), null));
       }
     }
 
@@ -84,6 +76,10 @@ public class BuckManifestFactory implements ManifestFactory {
       dirs = Arrays.asList(property.split(File.pathSeparator));
     }
 
-    return dirs.stream().map(Fs::fileFromPath).collect(Collectors.toList());
+    List<FsFile> files = new ArrayList<>();
+    for (String dir : dirs) {
+      files.add(Fs.fileFromPath(dir));
+    }
+    return files;
   }
 }

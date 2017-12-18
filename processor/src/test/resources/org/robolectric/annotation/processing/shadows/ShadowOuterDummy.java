@@ -7,6 +7,6 @@ import com.example.objects.OuterDummy;
 public class ShadowOuterDummy {
 
   @Implements(OuterDummy.InnerDummy.class)
-  public class ShadowInnerDummy {
+  public static class ShadowInnerDummy {
   }
 }
