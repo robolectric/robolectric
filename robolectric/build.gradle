@@ -71,7 +71,7 @@ checkApiChanges {
             "org.robolectric:sandbox:${apiCompatVersion}@jar",
             "org.robolectric:utils:${apiCompatVersion}@jar",
             "org.robolectric:shadowapi:${apiCompatVersion}@jar",
-            "org.robolectric:framework:${apiCompatVersion}@jar",
+            "org.robolectric:shadows-framework:${apiCompatVersion}@jar",
     ]
 
     to = [
