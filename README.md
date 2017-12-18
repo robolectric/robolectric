@@ -38,18 +38,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 ### Gradle
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.5.1"
-```
-
-### Maven
-
-```xml
-<dependency>
-   <groupId>org.robolectric</groupId>
-   <artifactId>robolectric</artifactId>
-   <version>3.5.1</version>
-   <scope>test</scope>
-</dependency>
+testCompile "org.robolectric:robolectric:3.6"
 ```
 
 ## Building And Contributing
@@ -78,22 +67,6 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:3.6-SNAPSHOT"
+    testCompile "org.robolectric:robolectric:3.7-SNAPSHOT"
 }
-```
-
-### Maven
-
-```xml
-<repository>
-  <id>sonatype-snapshpots</id>
-  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-</repository>
-
-<dependency>
-   <groupId>org.robolectric</groupId>
-   <artifactId>robolectric</artifactId>
-   <version>3.6-SNAPSHOT</version>
-   <scope>test</scope>
-</dependency>
 ```
