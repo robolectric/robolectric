@@ -5,10 +5,7 @@ import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
 import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
 import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
-import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
-import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
 import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
@@ -31,6 +28,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -88,7 +86,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowPackageManagerTest {
@@ -96,7 +93,7 @@ public class ShadowPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
   private static final String TEST_APP_PATH = "/values/app/application.apk";
-  private ShadowPackageManager shadowPackageManager;
+  protected ShadowPackageManager shadowPackageManager;
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private PackageManager packageManager;
@@ -167,23 +164,18 @@ public class ShadowPackageManagerTest {
   @Test
   public void applicationFlags() throws Exception {
     int flags = packageManager.getApplicationInfo("org.robolectric", 0).flags;
-    assertThat(flags).isEqualTo(
-        FLAG_ALLOW_BACKUP
-            | FLAG_ALLOW_CLEAR_USER_DATA
-            | FLAG_ALLOW_TASK_REPARENTING
-            | FLAG_DEBUGGABLE
-            | FLAG_HAS_CODE
-            | FLAG_KILL_AFTER_RESTORE
-            | FLAG_PERSISTENT
-            | FLAG_RESIZEABLE_FOR_SCREENS
-            | FLAG_RESTORE_ANY_VERSION
-            | FLAG_SUPPORTS_LARGE_SCREENS
-            | FLAG_SUPPORTS_NORMAL_SCREENS
-            | FLAG_SUPPORTS_SCREEN_DENSITIES
-            | FLAG_SUPPORTS_SMALL_SCREENS
-            | FLAG_TEST_ONLY
-            | FLAG_VM_SAFE_MODE
-    );
+    assertThat((flags & FLAG_ALLOW_BACKUP)).isEqualTo(FLAG_ALLOW_BACKUP);
+    assertThat((flags & FLAG_ALLOW_CLEAR_USER_DATA)).isEqualTo(FLAG_ALLOW_CLEAR_USER_DATA);
+    assertThat((flags & FLAG_ALLOW_TASK_REPARENTING)).isEqualTo(FLAG_ALLOW_TASK_REPARENTING);
+    assertThat((flags & FLAG_DEBUGGABLE)).isEqualTo(FLAG_DEBUGGABLE);
+    assertThat((flags & FLAG_HAS_CODE)).isEqualTo(FLAG_HAS_CODE);
+    assertThat((flags & FLAG_RESIZEABLE_FOR_SCREENS)).isEqualTo(FLAG_RESIZEABLE_FOR_SCREENS);
+    assertThat((flags & FLAG_SUPPORTS_LARGE_SCREENS)).isEqualTo(FLAG_SUPPORTS_LARGE_SCREENS);
+    assertThat((flags & FLAG_SUPPORTS_NORMAL_SCREENS)).isEqualTo(FLAG_SUPPORTS_NORMAL_SCREENS);
+    assertThat((flags & FLAG_SUPPORTS_SCREEN_DENSITIES)).isEqualTo(FLAG_SUPPORTS_SCREEN_DENSITIES);
+    assertThat((flags & FLAG_SUPPORTS_SMALL_SCREENS)).isEqualTo(FLAG_SUPPORTS_SMALL_SCREENS);
+    assertThat((flags & FLAG_TEST_ONLY)).isEqualTo(FLAG_TEST_ONLY);
+    assertThat((flags & FLAG_VM_SAFE_MODE)).isEqualTo(FLAG_VM_SAFE_MODE);
   }
 
   @Test
@@ -203,9 +195,12 @@ public class ShadowPackageManagerTest {
 
     List<ResolveInfo> receiverInfos = packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
     assertThat(receiverInfos).isNotEmpty();
-    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.get(0).activityInfo.name);
-    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.get(0).activityInfo.permission);
-    assertEquals("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE", receiverInfos.get(0).filter.getAction(0));
+    assertThat(receiverInfos.get(0).activityInfo.name)
+        .isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
+    assertThat(receiverInfos.get(0).activityInfo.permission)
+        .isEqualTo("org.robolectric.CUSTOM_PERM");
+    assertThat(receiverInfos.get(0).filter.getAction(0))
+        .isEqualTo("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
   }
 
   @Test
@@ -216,11 +211,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void testQueryBroadcastReceiverFailsForMissingAction() {
+  public void testQueryBroadcastReceiver_matchAllWithoutIntentFilter() {
     Intent intent = new Intent();
     intent.setPackage(RuntimeEnvironment.application.getPackageName());
     List<ResolveInfo> receiverInfos = packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
-    assertTrue(receiverInfos.size() == 0);
+    assertThat(receiverInfos).hasSize(7);
+
+    for (ResolveInfo receiverInfo : receiverInfos) {
+      assertThat(receiverInfo.activityInfo.name)
+          .isNotEqualTo("com.bar.ReceiverWithoutIntentFilter");
+    }
   }
 
   @Test
@@ -241,19 +241,32 @@ public class ShadowPackageManagerTest {
     ActivityInfo activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
 
     int configChanges = activityInfo.configChanges;
-    assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
     assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_LAYOUT).isEqualTo(ActivityInfo.CONFIG_SCREEN_LAYOUT);
     assertThat(configChanges & ActivityInfo.CONFIG_ORIENTATION).isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
 
     // Spot check a few other possible values that shouldn't be in the flags.
-    assertThat(configChanges & ActivityInfo.CONFIG_MNC).isZero();
     assertThat(configChanges & ActivityInfo.CONFIG_FONT_SCALE).isZero();
     assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_SIZE).isZero();
   }
 
+  /** MCC + MNC are always present in config changes since Oreo. */
+  @Test
+  @Config(minSdk = O)
+  public void getActivityMetaData_configChangesAlwaysIncludesMccAndMnc() throws Exception {
+    Activity activity = setupActivity(ShadowPackageManagerTest.ActivityWithConfigChanges.class);
+
+    ActivityInfo activityInfo =
+        activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
+
+    int configChanges = activityInfo.configChanges;
+    assertThat(configChanges & ActivityInfo.CONFIG_MCC).isEqualTo(ActivityInfo.CONFIG_MCC);
+    assertThat(configChanges & ActivityInfo.CONFIG_MNC).isEqualTo(ActivityInfo.CONFIG_MNC);
+  }
+
   @Test
   public void getPermissionInfo_withMinimalFields() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("permission_with_minimal_fields", 0);
+    PermissionInfo permission =
+        packageManager.getPermissionInfo("org.robolectric.permission_with_minimal_fields", 0);
     assertThat(permission.labelRes).isEqualTo(0);
     assertThat(permission.descriptionRes).isEqualTo(0);
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
@@ -386,6 +399,23 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryIntentActivities_launcher() {
+    Intent intent = new Intent(Intent.ACTION_MAIN);
+    intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+    // TODO: make this the default and remove.
+    shadowPackageManager.setQueryIntentImplicitly(true);
+    List<ResolveInfo> resolveInfos =
+        packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
+    assertThat(resolveInfos).hasSize(1);
+
+    assertThat(resolveInfos.get(0).activityInfo.name)
+        .isEqualTo("org.robolectric.shadows.TestActivityAlias");
+    assertThat(resolveInfos.get(0).activityInfo.targetActivity)
+        .isEqualTo("org.robolectric.shadows.TestActivity");
+  }
+
+  @Test
   public void queryIntentActivities_MatchSystemOnly() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -427,7 +457,8 @@ public class ShadowPackageManagerTest {
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
     assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
-    assertThat(activities.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).activityInfo.name)
+        .isEqualTo("org.robolectric.shadows.TestActivity");
   }
 
   @Test
@@ -612,22 +643,28 @@ public class ShadowPackageManagerTest {
   @Test
   public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
     ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
-    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.my_content_provider_authority");
 
     assertThat(providerInfo.readPermission).isEqualTo("READ_PERMISSION");
     assertThat(providerInfo.writePermission).isEqualTo("WRITE_PERMISSION");
 
     assertThat(providerInfo.pathPermissions).hasSize(1);
+    assertThat(providerInfo.pathPermissions[0].getType())
+        .isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);
     assertThat(providerInfo.pathPermissions[0].getPath()).isEqualTo("/path/*");
-    assertThat(providerInfo.pathPermissions[0].getType()).isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);
     assertThat(providerInfo.pathPermissions[0].getReadPermission()).isEqualTo("PATH_READ_PERMISSION");
     assertThat(providerInfo.pathPermissions[0].getWritePermission()).isEqualTo("PATH_WRITE_PERMISSION");
   }
 
   @Test
   public void getProviderInfo_shouldMetaDataInProviderInfos() throws Exception {
-    ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
-    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
+    ProviderInfo providerInfo =
+        packageManager.getProviderInfo(
+            new ComponentName(
+                RuntimeEnvironment.application,
+                "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"),
+            PackageManager.GET_META_DATA);
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.my_content_provider_authority");
 
     assertThat(providerInfo.metaData.getString("greeting")).isEqualTo("Hello");
   }
@@ -642,58 +679,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void testReceiverInfo() throws Exception {
     ActivityInfo info = packageManager.getReceiverInfo(new ComponentName(RuntimeEnvironment.application, ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
-    Bundle meta = info.metaData;
-    Object metaValue = meta.get("org.robolectric.metaName1");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue1", metaValue);
-
-    metaValue = meta.get("org.robolectric.metaName2");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue2", metaValue);
-
-    metaValue = meta.get("org.robolectric.metaFalse");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(false, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaTrue");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(true, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaInt");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(123, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaFloat");
-    assertTrue(Float.class.isInstance(metaValue));
-    assertThat(metaValue).isEqualTo(1.23f);
-
-    metaValue = meta.get("org.robolectric.metaColor");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(Color.WHITE, metaValue);
-
-    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.app_name), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.str_int), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(R.string.app_name, metaValue);
+    assertThat(info.metaData.getInt("numberOfSheep")).isEqualTo(42);
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -805,6 +791,13 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void shouldAssignTheApplicationClassNameFromTheManifest() throws Exception {
+    ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
+    assertThat(applicationInfo.className).isEqualTo("org.robolectric.TestApplication");
+  }
+
+  @Test
+  @Config(minSdk = N_MR1)
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
@@ -818,6 +811,7 @@ public class ShadowPackageManagerTest {
     Intent launchIntent = new Intent(Intent.ACTION_MAIN);
     launchIntent.setPackage(TEST_PACKAGE_LABEL);
     launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+    launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
@@ -830,62 +824,39 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
-    ShadowApplication app = ShadowApplication.getInstance();
-    String packageName = app.getAppManifest().getPackageName();
-    ApplicationInfo info = packageManager.getApplicationInfo(packageName, 0);
+    ApplicationInfo info =
+        packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
     Bundle meta = info.metaData;
 
-    Object metaValue = meta.get("org.robolectric.metaName1");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue1", metaValue);
+    assertThat(meta.getString("org.robolectric.metaName1")).isEqualTo("metaValue1");
+    assertThat(meta.getString("org.robolectric.metaName2")).isEqualTo("metaValue2");
 
-    metaValue = meta.get("org.robolectric.metaName2");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals("metaValue2", metaValue);
+    assertThat(meta.getBoolean("org.robolectric.metaFalseLiteral")).isEqualTo(false);
+    assertThat(meta.getBoolean("org.robolectric.metaTrueLiteral")).isEqualTo(true);
 
-    metaValue = meta.get("org.robolectric.metaFalse");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(false, metaValue);
+    assertThat(meta.getInt("org.robolectric.metaInt")).isEqualTo(123);
+    assertThat(meta.getFloat("org.robolectric.metaFloat")).isEqualTo(1.23f);
 
-    metaValue = meta.get("org.robolectric.metaTrue");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(true, metaValue);
+    assertThat(meta.getInt("org.robolectric.metaColor")).isEqualTo(Color.WHITE);
 
-    metaValue = meta.get("org.robolectric.metaInt");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(123, metaValue);
+    assertThat(meta.getBoolean("org.robolectric.metaBooleanFromRes"))
+        .isEqualTo(
+            RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value));
 
-    metaValue = meta.get("org.robolectric.metaFloat");
-    assertTrue(Float.class.isInstance(metaValue));
-    assertThat(metaValue).isEqualTo(1.23f);
+    assertThat(meta.getInt("org.robolectric.metaIntFromRes"))
+        .isEqualTo(
+            RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1));
 
-    metaValue = meta.get("org.robolectric.metaColor");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(Color.WHITE, metaValue);
+    assertThat(meta.getInt("org.robolectric.metaColorFromRes"))
+        .isEqualTo(RuntimeEnvironment.application.getResources().getColor(R.color.clear));
 
-    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+    assertThat(meta.getString("org.robolectric.metaStringFromRes"))
+        .isEqualTo(RuntimeEnvironment.application.getString(R.string.app_name));
 
-    metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
+    assertThat(meta.getString("org.robolectric.metaStringOfIntFromRes"))
+        .isEqualTo(RuntimeEnvironment.application.getString(R.string.str_int));
 
-    metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.app_name), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertTrue(String.class.isInstance(metaValue));
-    assertEquals(RuntimeEnvironment.application.getString(R.string.str_int), metaValue);
-
-    metaValue = meta.get("org.robolectric.metaStringRes");
-    assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(R.string.app_name, metaValue);
+    assertThat(meta.getInt("org.robolectric.metaStringRes")).isEqualTo(R.string.app_name);
   }
 
   @Test
@@ -987,27 +958,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void shouldAssignNonLocalizedLabelFromTheManifest() throws Exception {
-    AndroidManifest androidManifest = new AndroidManifest(null, null, null) {
-
-      @Override
-      public String getPackageName() {
-        return "package.with.label";
-      }
-
-      @Override
-      public String getLabelRef() {
-        return "App Label";
-      }
-    };
-
-    shadowPackageManager.addManifest(androidManifest);
-    ApplicationInfo applicationInfo = packageManager.getApplicationInfo("package.with.label", 0);
-    assertThat(applicationInfo.labelRes).isEqualTo(0);
-    assertThat(applicationInfo.nonLocalizedLabel).isEqualTo("App Label");
-  }
-
-  @Test
   public void getServiceInfo_shouldReturnServiceInfoIfExists() throws Exception {
     ServiceInfo serviceInfo = packageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
     assertEquals(serviceInfo.packageName, "org.robolectric");
@@ -1092,7 +1042,13 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getResourcesForApplication_anotherPackage() throws Exception {
-    shadowPackageManager.addPackage("another.package");
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "another.package";
+
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "another.package";
+    packageInfo.applicationInfo = applicationInfo;
+    shadowPackageManager.addPackage(packageInfo);
 
     assertThat(packageManager.getResourcesForApplication("another.package")).isNotNull();
     assertThat(packageManager.getResourcesForApplication("another.package")).isNotEqualTo(RuntimeEnvironment.application.getResources());
@@ -1243,10 +1199,13 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPermissionInfo() throws Exception {
-    PermissionInfo permission = RuntimeEnvironment.application.getPackageManager().getPermissionInfo("some_permission", 0);
+    PermissionInfo permission =
+        RuntimeEnvironment.application
+            .getPackageManager()
+            .getPermissionInfo("org.robolectric.some_permission", 0);
     assertThat(permission.labelRes).isEqualTo(R.string.test_permission_label);
     assertThat(permission.descriptionRes).isEqualTo(R.string.test_permission_description);
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
   }
 
   @Test
@@ -1310,9 +1269,10 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPermissionInfo_noMetaData() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("some_permission", 0);
+    PermissionInfo permission =
+        packageManager.getPermissionInfo("org.robolectric.some_permission", 0);
     assertThat(permission.metaData).isNull();
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
     assertThat(permission.descriptionRes).isEqualTo(R.string.test_permission_description);
     assertThat(permission.labelRes).isEqualTo(R.string.test_permission_label);
     assertThat(permission.nonLocalizedLabel).isNullOrEmpty();
@@ -1322,14 +1282,17 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPermissionInfo_withMetaData() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("some_permission", PackageManager.GET_META_DATA);
+    PermissionInfo permission =
+        packageManager.getPermissionInfo(
+            "org.robolectric.some_permission", PackageManager.GET_META_DATA);
     assertThat(permission.metaData).isNotNull();
     assertThat(permission.metaData.getString("meta_data_name")).isEqualTo("meta_data_value");
   }
 
   @Test
   public void getPermissionInfo_withLiteralLabel() throws Exception {
-    PermissionInfo permission = packageManager.getPermissionInfo("permission_with_literal_label", 0);
+    PermissionInfo permission =
+        packageManager.getPermissionInfo("org.robolectric.permission_with_literal_label", 0);
     assertThat(permission.labelRes).isEqualTo(0);
     assertThat(permission.nonLocalizedLabel).isEqualTo("Literal label");
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
@@ -1343,7 +1306,7 @@ public class ShadowPackageManagerTest {
     PermissionInfo permission = permissions.get(0);
 
     assertThat(permission.group).isEqualTo("my_permission_group");
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
     assertThat(permission.metaData).isNull();
   }
 
@@ -1355,7 +1318,7 @@ public class ShadowPackageManagerTest {
     PermissionInfo permission = permissions.get(0);
 
     assertThat(permission.group).isEqualTo("my_permission_group");
-    assertThat(permission.name).isEqualTo("some_permission");
+    assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
     assertThat(permission.metaData).isNotNull();
     assertThat(permission.metaData.getString("meta_data_name")).isEqualTo("meta_data_value");
   }
@@ -1365,7 +1328,9 @@ public class ShadowPackageManagerTest {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
 
     assertThat(Iterables.transform(permissions, getPermissionNames()))
-        .containsExactlyInAnyOrder("permission_with_minimal_fields", "permission_with_literal_label");
+        .containsExactlyInAnyOrder(
+            "org.robolectric.permission_with_minimal_fields",
+            "org.robolectric.permission_with_literal_label");
   }
 
   @Test

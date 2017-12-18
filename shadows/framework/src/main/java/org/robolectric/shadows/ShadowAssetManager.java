@@ -19,14 +19,11 @@ import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +37,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
@@ -121,6 +117,7 @@ public final class ShadowAssetManager {
 
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = Converter.getNextStringCookie();
+    outValue.changingConfigurations = 0;
 
     // TODO: Handle resource and style references
     if (attribute.isStyleReference()) {
@@ -313,32 +310,22 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final InputStream open(String fileName) throws IOException {
-    return findAssetFile(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
-    return findAssetFile(fileName).getInputStream();
+    return getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(findAssetFile(fileName).getPath());
+    File file = new File(getAssetsDirectory().join(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
     }
     ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
-  }
-
-  private FsFile findAssetFile(String fileName) throws IOException {
-    for (FsFile assetDir : getAllAssetsDirectories()) {
-      if (assetDir.join(fileName).exists()) {
-        return assetDir.join(fileName);
-      }
-    }
-
-    throw new FileNotFoundException("Asset file " + fileName + " not found");
   }
 
   /**
@@ -382,21 +369,16 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final String[] list(String path) throws IOException {
-    List<String> assetFiles = new ArrayList<>();
-
-    for (FsFile assetsDir : getAllAssetsDirectories()) {
-      FsFile file;
-      if (path.isEmpty()) {
-        file = assetsDir;
-      } else {
-        file = assetsDir.join(path);
-      }
-
-      if (file.isDirectory()) {
-        Collections.addAll(assetFiles, file.listFileNames());
-      }
+    FsFile file;
+    if (path.isEmpty()) {
+      file = getAssetsDirectory();
+    } else {
+      file = getAssetsDirectory().join(path);
     }
-    return assetFiles.toArray(new String[assetFiles.size()]);
+    if (file.isDirectory()) {
+      return file.listFileNames();
+    }
+    return new String[0];
   }
 
   @HiddenApi @Implementation
@@ -435,11 +417,11 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), "fixme");
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
-    return getXmlResourceParser(null, xmlBlock, "fixme");
+    return getXmlResourceParser(resourceTable, xmlBlock, resourceTable.getPackageName());
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
@@ -975,26 +957,8 @@ public final class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  private List<FsFile> getAllAssetsDirectories() {
-    List<FsFile> assetsDirs = new ArrayList<>();
-    assetsDirs.add(getAssetsDirectory());
-    assetsDirs.addAll(getLibraryAssetsDirectories());
-    return assetsDirs;
-  }
-
   private FsFile getAssetsDirectory() {
     return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
-  }
-
-  private List<FsFile> getLibraryAssetsDirectories() {
-    List<FsFile> libraryAssetsDirectory = new ArrayList<>();
-    for (AndroidManifest manifest : ShadowApplication.getInstance().getAppManifest().getLibraryManifests()) {
-      if (manifest.getAssetsDirectory() != null) {
-        libraryAssetsDirectory.add(manifest.getAssetsDirectory());
-      }
-    }
-
-    return libraryAssetsDirectory;
   }
 
   @Nonnull private ResName getResName(int id) {

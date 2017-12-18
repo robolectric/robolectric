@@ -17,13 +17,11 @@ import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
 import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
-import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,8 +39,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.BaseCursor;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
@@ -597,14 +593,10 @@ public class ShadowContentResolver {
 
   synchronized private static ContentProvider getProvider(String authority) {
     if (!providers.containsKey(authority)) {
-      AndroidManifest manifest = shadowOf(RuntimeEnvironment.application).getAppManifest();
-      if (manifest != null) {
-        for (ContentProviderData providerData : manifest.getContentProviders()) {
-          // todo: handle multiple authorities
-          if (providerData.getAuthorities().equals(authority)) {
-            providers.put(providerData.getAuthorities(), createAndInitialize(providerData));
-          }
-        }
+      ProviderInfo providerInfo =
+          RuntimeEnvironment.application.getPackageManager().resolveContentProvider(authority, 0);
+      if (providerInfo != null) {
+        providers.put(providerInfo.authority, createAndInitialize(providerInfo));
       }
     }
     return providers.get(authority);
@@ -797,31 +789,15 @@ public class ShadowContentResolver {
     return observers;
   }
 
-  @Implementation
-  public final AssetFileDescriptor openTypedAssetFileDescriptor(Uri uri, String mimeType, Bundle opts) throws FileNotFoundException {
-    ContentProvider provider = getProvider(uri);
-    if (provider == null) {
-      return null;
-    }
-    return provider.openTypedAssetFile(uri, mimeType, opts);
-  }
-
-  private static ContentProvider createAndInitialize(ContentProviderData providerData) {
+  private static ContentProvider createAndInitialize(ProviderInfo providerInfo) {
     try {
-      ContentProvider provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
-      initialize(provider, providerData.getAuthorities());
+      ContentProvider provider = (ContentProvider) Class.forName(providerInfo.name).newInstance();
+      provider.attachInfo(RuntimeEnvironment.application, providerInfo);
+      provider.onCreate();
       return provider;
     } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
-      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
+      throw new RuntimeException("Error instantiating class " + providerInfo.name);
     }
-  }
-
-  private static void initialize(ContentProvider provider, String authorities) {
-    ProviderInfo providerInfo = new ProviderInfo();
-    providerInfo.authority = authorities; // todo: support multiple authorities
-    providerInfo.grantUriPermissions = true;
-    provider.attachInfo(RuntimeEnvironment.application, providerInfo);
-    provider.onCreate();
   }
 
   private BaseCursor getCursor(Uri uri) {
