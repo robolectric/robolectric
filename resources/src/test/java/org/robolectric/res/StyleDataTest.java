@@ -58,8 +58,8 @@ public class StyleDataTest {
             new AttributeResource(myLibSearchViewStyle, "\n lib_value ", "library.resource")
     ));
 
-    assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("lib_value");
-    assertThat(styleData.getAttrValue(myLibSearchViewStyle).value).isEqualTo("lib_value");
+    assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("\n lib_value ");
+    assertThat(styleData.getAttrValue(myLibSearchViewStyle).trimmedValue).isEqualTo("lib_value");
   }
 
 }
