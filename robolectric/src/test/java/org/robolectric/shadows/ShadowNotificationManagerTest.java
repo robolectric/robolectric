@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
+import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -16,8 +18,8 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -28,6 +30,16 @@ public class ShadowNotificationManagerTest {
 
   @Before public void setUp() {
     notificationManager = (NotificationManager) RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void getCurrentInterruptionFilter() {
+    // Sensible default
+    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_ALL);
+
+    notificationManager.setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY);
+    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_PRIORITY);
   }
 
   @Test
