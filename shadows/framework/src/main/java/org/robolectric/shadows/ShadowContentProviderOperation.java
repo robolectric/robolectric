@@ -20,7 +20,7 @@ public class ShadowContentProviderOperation {
   private ContentProviderOperation realOperation;
 
   @HiddenApi @Implementation
-  public int getType() {
+  protected int getType() {
     return getFieldReflectively("mType");
   }
 

@@ -25,7 +25,7 @@ public class ShadowKeyguardManager {
    * @see #setinRestrictedInputMode(boolean)
    */
   @Implementation
-  public boolean inKeyguardRestrictedInputMode() {
+  protected boolean inKeyguardRestrictedInputMode() {
     return inRestrictedInputMode;
   }
 
@@ -36,7 +36,7 @@ public class ShadowKeyguardManager {
    * @see #setKeyguardLocked(boolean)
    */
   @Implementation
-  public boolean isKeyguardLocked() {
+  protected boolean isKeyguardLocked() {
     return isKeyguardLocked;
   }
 
@@ -55,7 +55,7 @@ public class ShadowKeyguardManager {
    * @see ShadowKeyguardLock
    */
   @Implementation
-  public KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
+  protected KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
     return keyguardLock;
   }
 
@@ -77,7 +77,7 @@ public class ShadowKeyguardManager {
    * @see #setIsKeyguardSecure(boolean)
    */
   @Implementation(minSdk = M)
-  public boolean isKeyguardSecure() {
+  protected boolean isKeyguardSecure() {
     return isKeyguardSecure;
   }
 
@@ -99,7 +99,7 @@ public class ShadowKeyguardManager {
    * @see #setIsDeviceSecure(boolean)
    */
   @Implementation(minSdk = M)
-  public boolean isDeviceSecure() {
+  protected boolean isDeviceSecure() {
     return isDeviceSecure;
   }
 
@@ -123,7 +123,7 @@ public class ShadowKeyguardManager {
      * @see #isEnabled()
      */
     @Implementation
-    public void disableKeyguard() {
+    protected void disableKeyguard() {
       keyguardEnabled = false;
     }
 
@@ -133,7 +133,7 @@ public class ShadowKeyguardManager {
      * @see #isEnabled()
      */
     @Implementation
-    public void reenableKeyguard() {
+    protected void reenableKeyguard() {
       keyguardEnabled = true;
     }
 

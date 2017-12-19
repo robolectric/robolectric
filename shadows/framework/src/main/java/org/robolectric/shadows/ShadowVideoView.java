@@ -28,84 +28,84 @@ public class ShadowVideoView extends ShadowSurfaceView {
   private int currentPosition;
 
   @Implementation
-  public void setOnPreparedListener(MediaPlayer.OnPreparedListener l) {
+  protected void setOnPreparedListener(MediaPlayer.OnPreparedListener l) {
     preparedListener = l;
   }
 
   @Implementation
-  public void setOnErrorListener(MediaPlayer.OnErrorListener l) {
+  protected void setOnErrorListener(MediaPlayer.OnErrorListener l) {
     errorListener = l;
   }
 
   @Implementation
-  public void setOnCompletionListener(MediaPlayer.OnCompletionListener l) {
+  protected void setOnCompletionListener(MediaPlayer.OnCompletionListener l) {
     completionListner = l;
   }
 
   @Implementation
-  public void setVideoPath(String path) {
+  protected void setVideoPath(String path) {
     this.path = path;
   }
 
   @Implementation
-  public void setVideoURI(Uri uri) {
+  protected void setVideoURI(Uri uri) {
     this.uri = uri;
   }
 
   @Implementation
-  public void start() {
+  protected void start() {
     savePrevState();
     currentState = ShadowVideoView.START;
   }
 
   @Implementation
-  public void stopPlayback() {
+  protected void stopPlayback() {
     savePrevState();
     currentState = ShadowVideoView.STOP;
   }
 
   @Implementation
-  public void suspend() {
+  protected void suspend() {
     savePrevState();
     currentState = ShadowVideoView.SUSPEND;
   }
 
   @Implementation
-  public void pause() {
+  protected void pause() {
     savePrevState();
     currentState = ShadowVideoView.PAUSE;
   }
 
   @Implementation
-  public void resume() {
+  protected void resume() {
     savePrevState();
     currentState = ShadowVideoView.RESUME;
   }
 
   @Implementation
-  public boolean isPlaying() {
+  protected boolean isPlaying() {
     return (currentState == ShadowVideoView.START);
   }
 
   @Implementation
-  public boolean canPause() {
+  protected boolean canPause() {
     return (currentState != ShadowVideoView.PAUSE &&
         currentState != ShadowVideoView.STOP &&
         currentState != ShadowVideoView.SUSPEND);
   }
 
   @Implementation
-  public void seekTo(int msec) {
+  protected void seekTo(int msec) {
     currentPosition = msec;
   }
 
   @Implementation
-  public int getCurrentPosition() {
+  protected int getCurrentPosition() {
     return currentPosition;
   }
 
   @Implementation
-  public int getDuration() {
+  protected int getDuration() {
     return duration;
   }
 

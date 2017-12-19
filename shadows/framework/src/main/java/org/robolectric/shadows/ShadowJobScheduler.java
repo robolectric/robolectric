@@ -21,22 +21,22 @@ import org.robolectric.annotation.Implements;
 public abstract class ShadowJobScheduler {
 
   @Implementation
-  public abstract int schedule(JobInfo job);
+  protected abstract int schedule(JobInfo job);
 
   @Implementation
-  public abstract void cancel(int jobId);
+  protected abstract void cancel(int jobId);
 
   @Implementation
-  public abstract void cancelAll();
+  protected abstract void cancelAll();
 
   @Implementation
-  public abstract List<JobInfo> getAllPendingJobs();
+  protected abstract List<JobInfo> getAllPendingJobs();
 
   @Implementation(minSdk = N)
-  public abstract JobInfo getPendingJob(int jobId);
+  protected abstract JobInfo getPendingJob(int jobId);
 
   @Implementation(minSdk = O)
-  public abstract int enqueue(JobInfo job, JobWorkItem work);
+  protected abstract int enqueue(JobInfo job, JobWorkItem work);
 
   public abstract void failOnJob(int jobId);
 
@@ -47,7 +47,7 @@ public abstract class ShadowJobScheduler {
     private Set<Integer> jobsToFail = new HashSet<>();
 
     @Override @Implementation
-    public int schedule(JobInfo job) {
+    protected int schedule(JobInfo job) {
       if (jobsToFail.contains(job.getId())) {
         return JobScheduler.RESULT_FAILURE;
       }
@@ -57,28 +57,28 @@ public abstract class ShadowJobScheduler {
     }
 
     @Override @Implementation
-    public void cancel(int jobId) {
+    protected void cancel(int jobId) {
       scheduledJobs.remove(jobId);
     }
 
     @Override @Implementation
-    public void cancelAll() {
+    protected void cancelAll() {
       scheduledJobs.clear();
     }
 
     @Override @Implementation
-    public List<JobInfo> getAllPendingJobs() {
+    protected List<JobInfo> getAllPendingJobs() {
       return new ArrayList<>(scheduledJobs.values());
     }
 
     @Override @Implementation(minSdk = N)
-    public JobInfo getPendingJob(int jobId) {
+    protected JobInfo getPendingJob(int jobId) {
       return scheduledJobs.get(jobId);
     }
 
     @Override
     @Implementation(minSdk = O)
-    public int enqueue(JobInfo job, JobWorkItem work) {
+    protected int enqueue(JobInfo job, JobWorkItem work) {
       // Shadow-wise, enqueue and schedule are identical.
       return schedule(job);
     }

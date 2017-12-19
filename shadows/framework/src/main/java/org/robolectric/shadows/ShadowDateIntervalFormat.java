@@ -17,19 +17,19 @@ public class ShadowDateIntervalFormat {
   private static Map<Long, com.ibm.icu.text.DateIntervalFormat> INTERVAL_CACHE = new HashMap<>();
 
   @Implementation
-  public static long createDateIntervalFormat(String skeleton, String localeName, String tzName) {
+  protected static long createDateIntervalFormat(String skeleton, String localeName, String tzName) {
     address++;
     INTERVAL_CACHE.put(address, com.ibm.icu.text.DateIntervalFormat.getInstance(skeleton, new Locale(localeName)));
     return address;
   }
 
   @Implementation
-  public static void destroyDateIntervalFormat(long address) {
+  protected static void destroyDateIntervalFormat(long address) {
     INTERVAL_CACHE.remove(address);
   }
 
   @Implementation
-  public static String formatDateInterval(long address, long fromDate, long toDate) {
+  protected static String formatDateInterval(long address, long fromDate, long toDate) {
     StringBuffer buffer = new StringBuffer();
 
     FieldPosition pos = new FieldPosition(0);

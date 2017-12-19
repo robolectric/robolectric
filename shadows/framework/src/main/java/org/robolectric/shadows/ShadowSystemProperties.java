@@ -30,7 +30,7 @@ public class ShadowSystemProperties {
   }
 
   @Implementation
-  public static String get(String key) {
+  protected static String get(String key) {
     Object o = VALUES.get(key);
     if (o == null) {
       warnUnknown(key);
@@ -40,25 +40,25 @@ public class ShadowSystemProperties {
   }
 
   @Implementation
-  public static String get(String key, String def) {
+  protected static String get(String key, String def) {
     Object value = VALUES.get(key);
     return value == null ? def : value.toString();
   }
 
   @Implementation
-  public static int getInt(String key, int def) {
+  protected static int getInt(String key, int def) {
     Object value = VALUES.get(key);
     return value == null ? def : (Integer) value;
   }
 
   @Implementation
-  public static long getLong(String key, long def) {
+  protected static long getLong(String key, long def) {
     Object value = VALUES.get(key);
     return value == null ? def : (Long) value;
   }
 
   @Implementation
-  public static boolean getBoolean(String key, boolean def) {
+  protected static boolean getBoolean(String key, boolean def) {
     Object value = VALUES.get(key);
     return value == null ? def : (Boolean) value;
   }

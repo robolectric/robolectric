@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implements;
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
   @Implementation
-  public static void __staticInitializer__() {}
+  protected static void __staticInitializer__() {}
 
   private String macAddress = "02:00:00:00:00:00"; // WifiInfo.DEFAULT_MAC_ADDRESS (@hide)
   private String ssid = "<unknown ssid>"; // WifiSsid.NONE (@hide)
@@ -21,73 +21,73 @@ public class ShadowWifiInfo {
   private int networkId = -1;
 
   @Implementation
-  public String getMacAddress() {
+  protected String getMacAddress() {
     return macAddress;
   }
 
   @Implementation
-  public String getSSID() {
+  protected String getSSID() {
     return ssid;
   }
 
   @Implementation
-  public String getBSSID() {
+  protected String getBSSID() {
     return bssid;
   }
 
   @Implementation
-  public int getRssi() {
+  protected int getRssi() {
     return rssi;
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public int getFrequency() {
+  protected int getFrequency() {
     return frequency;
   }
 
   @Implementation
-  public int getLinkSpeed() {
+  protected int getLinkSpeed() {
     return linkSpeed;
   }
 
   @Implementation
-  public int getNetworkId() {
+  protected int getNetworkId() {
     return networkId;
   }
 
   @HiddenApi @Implementation
-  public void setMacAddress(String newMacAddress) {
+  protected void setMacAddress(String newMacAddress) {
     macAddress = newMacAddress;
   }
 
   @HiddenApi @Implementation
-  public void setSSID(String ssid) {
+  protected void setSSID(String ssid) {
     this.ssid = ssid;
   }
 
   @HiddenApi @Implementation
-  public void setBSSID(String bssid) {
+  protected void setBSSID(String bssid) {
     this.bssid = bssid;
   }
 
   @HiddenApi @Implementation
-  public void setRssi(int rssi) {
+  protected void setRssi(int rssi) {
     this.rssi = rssi;
   }
 
   @HiddenApi @Implementation
-  public void setLinkSpeed(int linkSpeed) {
+  protected void setLinkSpeed(int linkSpeed) {
     this.linkSpeed = linkSpeed;
   }
 
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
-  public void setFrequency(int frequency) {
+  protected void setFrequency(int frequency) {
     this.frequency = frequency;
   }
 
   @HiddenApi @Implementation
-  public void setNetworkId(int id) {
+  protected void setNetworkId(int id) {
     this.networkId = id;
   }
 }

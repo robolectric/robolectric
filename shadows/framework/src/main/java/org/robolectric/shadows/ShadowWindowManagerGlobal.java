@@ -18,17 +18,17 @@ public class ShadowWindowManagerGlobal {
   }
 
   @Implementation
-  public static Object getWindowSession() {
+  protected static Object getWindowSession() {
     return null;
   }
 
   @Implementation
-  public static Object getWindowSession(Looper looper) {
+  protected static Object getWindowSession(Looper looper) {
     return null;
   }
 
   @Implementation
-  public static Object getWindowManagerService() {
+  protected static Object getWindowManagerService() {
     return null;
   }
 

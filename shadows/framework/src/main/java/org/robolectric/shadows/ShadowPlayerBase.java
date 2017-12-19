@@ -10,7 +10,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowPlayerBase {
 
   @Implementation
-  public static IAudioService getService() {
+  protected static IAudioService getService() {
     return ReflectionHelpers.createNullProxy(IAudioService.class);
   }
 }

@@ -31,7 +31,7 @@ public class ShadowParcel {
   private static long nextNativePtr = 1; // this needs to start above 0, which is a magic number to Parcel
 
   @Implementation
-  public void writeByteArray(byte[] b, int offset, int len) {
+  protected void writeByteArray(byte[] b, int offset, int len) {
     if (b == null) {
       realObject.writeInt(-1);
       return;
@@ -42,215 +42,215 @@ public class ShadowParcel {
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeDataSize(int nativePtr) {
+  protected static int nativeDataSize(int nativePtr) {
     return nativeDataSize((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataSize(long nativePtr) {
+  protected static int nativeDataSize(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataSize();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeDataAvail(int nativePtr) {
+  protected static int nativeDataAvail(int nativePtr) {
     return nativeDataAvail((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataAvail(long nativePtr) {
+  protected static int nativeDataAvail(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataAvailable();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeDataPosition(int nativePtr) {
+  protected static int nativeDataPosition(int nativePtr) {
     return nativeDataPosition((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataPosition(long nativePtr) {
+  protected static int nativeDataPosition(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataPosition();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeDataCapacity(int nativePtr) {
+  protected static int nativeDataCapacity(int nativePtr) {
     return nativeDataCapacity((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataCapacity(long nativePtr) {
+  protected static int nativeDataCapacity(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataCapacity();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeSetDataSize(int nativePtr, int size) {
+  protected static void nativeSetDataSize(int nativePtr, int size) {
     nativeSetDataSize((long) nativePtr, size);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeSetDataSize(long nativePtr, int size) {
+  protected static void nativeSetDataSize(long nativePtr, int size) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataSize(size);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeSetDataPosition(int nativePtr, int pos) {
+  protected static void nativeSetDataPosition(int nativePtr, int pos) {
     nativeSetDataPosition((long) nativePtr, pos);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeSetDataPosition(long nativePtr, int pos) {
+  protected static void nativeSetDataPosition(long nativePtr, int pos) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataPosition(pos);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeSetDataCapacity(int nativePtr, int size) {
+  protected static void nativeSetDataCapacity(int nativePtr, int size) {
     nativeSetDataCapacity((long) nativePtr, size);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeSetDataCapacity(long nativePtr, int size) {
+  protected static void nativeSetDataCapacity(long nativePtr, int size) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataCapacity(size);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWriteByteArray(int nativePtr, byte[] b, int offset, int len) {
+  protected static void nativeWriteByteArray(int nativePtr, byte[] b, int offset, int len) {
     nativeWriteByteArray((long) nativePtr, b, offset, len);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteByteArray(long nativePtr, byte[] b, int offset, int len) {
+  protected static void nativeWriteByteArray(long nativePtr, byte[] b, int offset, int len) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWriteInt(int nativePtr, int val) {
+  protected static void nativeWriteInt(int nativePtr, int val) {
     nativeWriteInt((long) nativePtr, val);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteInt(long nativePtr, int val) {
+  protected static void nativeWriteInt(long nativePtr, int val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeInt(val);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWriteLong(int nativePtr, long val) {
+  protected static void nativeWriteLong(int nativePtr, long val) {
     nativeWriteLong((long) nativePtr, val);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteLong(long nativePtr, long val) {
+  protected static void nativeWriteLong(long nativePtr, long val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeLong(val);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWriteFloat(int nativePtr, float val) {
+  protected static void nativeWriteFloat(int nativePtr, float val) {
     nativeWriteFloat((long) nativePtr, val);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteFloat(long nativePtr, float val) {
+  protected static void nativeWriteFloat(long nativePtr, float val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeFloat(val);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWriteDouble(int nativePtr, double val) {
+  protected static void nativeWriteDouble(int nativePtr, double val) {
     nativeWriteDouble((long) nativePtr, val);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteDouble(long nativePtr, double val) {
+  protected static void nativeWriteDouble(long nativePtr, double val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeDouble(val);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWriteString(int nativePtr, String val) {
+  protected static void nativeWriteString(int nativePtr, String val) {
     nativeWriteString((long) nativePtr, val);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteString(long nativePtr, String val) {
+  protected static void nativeWriteString(long nativePtr, String val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeString(val);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static byte[] nativeCreateByteArray(int nativePtr) {
+  protected static byte[] nativeCreateByteArray(int nativePtr) {
     return nativeCreateByteArray((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static byte[] nativeCreateByteArray(long nativePtr) {
+  protected static byte[] nativeCreateByteArray(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeReadInt(int nativePtr) {
+  protected static int nativeReadInt(int nativePtr) {
     return nativeReadInt((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeReadInt(long nativePtr) {
+  protected static int nativeReadInt(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readInt();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static long nativeReadLong(int nativePtr) {
+  protected static long nativeReadLong(int nativePtr) {
     return nativeReadLong((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static long nativeReadLong(long nativePtr) {
+  protected static long nativeReadLong(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readLong();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static float nativeReadFloat(int nativePtr) {
+  protected static float nativeReadFloat(int nativePtr) {
     return nativeReadFloat((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static float nativeReadFloat(long nativePtr) {
+  protected static float nativeReadFloat(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readFloat();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static double nativeReadDouble(int nativePtr) {
+  protected static double nativeReadDouble(int nativePtr) {
     return nativeReadDouble((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static double nativeReadDouble(long nativePtr) {
+  protected static double nativeReadDouble(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readDouble();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static String nativeReadString(int nativePtr) {
+  protected static String nativeReadString(int nativePtr) {
     return nativeReadString((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String nativeReadString(long nativePtr) {
+  protected static String nativeReadString(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readString();
   }
 
   @Implementation @HiddenApi
-  synchronized public static Number nativeCreate() {
+  synchronized protected static Number nativeCreate() {
     long nativePtr = nextNativePtr++;
     NATIVE_PTR_TO_PARCEL.put(nativePtr, new ByteBuffer());
     return castNativePtr(nativePtr);
@@ -258,56 +258,56 @@ public class ShadowParcel {
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeFreeBuffer(int nativePtr) {
+  protected static void nativeFreeBuffer(int nativePtr) {
     nativeFreeBuffer((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeFreeBuffer(long nativePtr) {
+  protected static void nativeFreeBuffer(long nativePtr) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).clear();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeDestroy(int nativePtr) {
+  protected static void nativeDestroy(int nativePtr) {
     nativeDestroy((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeDestroy(long nativePtr) {
+  protected static void nativeDestroy(long nativePtr) {
     NATIVE_PTR_TO_PARCEL.remove(nativePtr);
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static byte[] nativeMarshall(int nativePtr) {
+  protected static byte[] nativeMarshall(int nativePtr) {
     return nativeMarshall((long) nativePtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static byte[] nativeMarshall(long nativePtr) {
+  protected static byte[] nativeMarshall(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).toByteArray();
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeUnmarshall(int nativePtr, byte[] data, int offset, int length) {
+  protected static void nativeUnmarshall(int nativePtr, byte[] data, int offset, int length) {
     nativeUnmarshall((long) nativePtr, data, offset, length);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeUnmarshall(long nativePtr, byte[] data, int offset, int length) {
+  protected static void nativeUnmarshall(long nativePtr, byte[] data, int offset, int length) {
     NATIVE_PTR_TO_PARCEL.put(nativePtr, ByteBuffer.fromByteArray(data, offset, length));
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeAppendFrom(int thisNativePtr, int otherNativePtr, int offset, int length) {
+  protected static void nativeAppendFrom(int thisNativePtr, int otherNativePtr, int offset, int length) {
     nativeAppendFrom((long) thisNativePtr, otherNativePtr, offset, length);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeAppendFrom(long thisNativePtr, long otherNativePtr, int offset, int length) {
+  protected static void nativeAppendFrom(long thisNativePtr, long otherNativePtr, int offset, int length) {
     ByteBuffer thisByteBuffer = NATIVE_PTR_TO_PARCEL.get(thisNativePtr);
     ByteBuffer otherByteBuffer = NATIVE_PTR_TO_PARCEL.get(otherNativePtr);
     thisByteBuffer.appendFrom(otherByteBuffer, offset, length);
@@ -315,12 +315,12 @@ public class ShadowParcel {
   
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWriteInterfaceToken(int nativePtr, String interfaceName) {
+  protected static void nativeWriteInterfaceToken(int nativePtr, String interfaceName) {
     nativeWriteInterfaceToken((long) nativePtr, interfaceName);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteInterfaceToken(long nativePtr, String interfaceName) {
+  protected static void nativeWriteInterfaceToken(long nativePtr, String interfaceName) {
     // Write StrictMode.ThreadPolicy bits (assume 0 for test).
     nativeWriteInt(nativePtr, 0);
     nativeWriteString(nativePtr, interfaceName);
@@ -328,12 +328,12 @@ public class ShadowParcel {
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeEnforceInterface(int nativePtr, String interfaceName) {
+  protected static void nativeEnforceInterface(int nativePtr, String interfaceName) {
     nativeEnforceInterface((long) nativePtr, interfaceName);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeEnforceInterface(long nativePtr, String interfaceName) {
+  protected static void nativeEnforceInterface(long nativePtr, String interfaceName) {
     // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
     nativeReadInt(nativePtr);
     String actualInterfaceName = nativeReadString(nativePtr);

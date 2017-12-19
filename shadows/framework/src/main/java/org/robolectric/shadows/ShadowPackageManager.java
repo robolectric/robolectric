@@ -874,12 +874,12 @@ public class ShadowPackageManager {
   }
 
   @Implementation
-  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
+  protected List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
     return null;
   }
 
   @Implementation
-  public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags, @UserIdInt int userId) {
+  protected List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags, @UserIdInt int userId) {
     return null;
   }
 
@@ -905,11 +905,11 @@ public class ShadowPackageManager {
   }
 
   @Implementation
-  public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
+  protected void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
   }
 
   @Implementation
-  public void freeStorage(long freeStorageSize, IntentSender pi) {
+  protected void freeStorage(long freeStorageSize, IntentSender pi) {
   }
 
   /**

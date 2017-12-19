@@ -23,7 +23,7 @@ public class ShadowMotionEvent {
   private int source;
 
   @Implementation
-  public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
+  protected static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
     try {
       Constructor<MotionEvent> constructor = MotionEvent.class.getDeclaredConstructor();
       constructor.setAccessible(true);
@@ -41,72 +41,72 @@ public class ShadowMotionEvent {
   }
 
   @Implementation
-  public static MotionEvent obtain(MotionEvent motionEvent) {
+  protected static MotionEvent obtain(MotionEvent motionEvent) {
     return obtain(motionEvent.getDownTime(), motionEvent.getEventTime(), motionEvent.getAction(), motionEvent.getX(), motionEvent.getY(), motionEvent.getMetaState());
   }
 
   @Implementation
-  public int getAction() {
+  protected int getAction() {
     return action | (pointerIndex << MotionEvent.ACTION_POINTER_ID_SHIFT);
   }
 
   @Implementation
-  public void setAction(int action ) {
+  protected void setAction(int action) {
     this.action = action;
   }
 
   @Implementation
-  public float getRawX() {
+  protected float getRawX() {
     return getX();
   }
 
   @Implementation
-  public float getRawY() {
+  protected float getRawY() {
     return getY();
   }
 
   @Implementation
-  public final float getX() {
+  protected final float getX() {
     return getX(0);
   }
 
   @Implementation
-  public final float getY() {
+  protected final float getY() {
     return getY(0);
   }
 
   @Implementation
-  public final float getX(int pointerIndex) {
+  protected final float getX(int pointerIndex) {
     return x[pointerIndex];
   }
 
   @Implementation
-  public final float getY(int pointerIndex) {
+  protected final float getY(int pointerIndex) {
     return y[pointerIndex];
   }
 
   @Implementation
-  public final int getPointerCount() {
+  protected final int getPointerCount() {
     return pointerCount;
   }
 
   @Implementation
-  public final long getEventTime() {
+  protected final long getEventTime() {
     return eventTime;
   }
 
   @Implementation
-  public final long getDownTime() {
+  protected final long getDownTime() {
     return downTime;
   }
 
   @Implementation
-  public final int getPointerId(int index) {
+  protected final int getPointerId(int index) {
     return pointerIds[index];
   }
 
   @Implementation
-  public final int getPointerIdBits() {
+  protected final int getPointerIdBits() {
     int idBits = 0;
     for (int i = 0; i < pointerCount; i++) {
       idBits |= 1 << pointerIds[i];
@@ -115,7 +115,7 @@ public class ShadowMotionEvent {
   }
 
   @Implementation
-  public final int findPointerIndex(int id) {
+  protected final int findPointerIndex(int id) {
     for (int i = 0; i < pointerIds.length; i++) {
       int pointerId = pointerIds[i];
 
@@ -127,22 +127,22 @@ public class ShadowMotionEvent {
   }
 
   @Implementation
-  public final int getActionMasked() {
+  protected final int getActionMasked() {
     return action;
   }
 
   @Implementation
-  public final int getActionIndex() {
+  protected final int getActionIndex() {
     return pointerIndex;
   }
 
   @Implementation
-  public final float getPressure(int pointerIndex) {
+  protected final float getPressure(int pointerIndex) {
     return 1.0f;
   }
 
   @Implementation
-  public final void setLocation(float x, float y) {
+  protected final void setLocation(float x, float y) {
     this.x[0] = x;
     this.y[0] = y;
   }
@@ -164,12 +164,12 @@ public class ShadowMotionEvent {
   }
 
   @Implementation
-  public void setSource(int source) {
+  protected void setSource(int source) {
     this.source = source;
   }
 
   @Implementation
-  public int getSource() {
+  protected int getSource() {
     return source;
   }
 }

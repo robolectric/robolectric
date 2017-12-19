@@ -39,50 +39,50 @@ public class ShadowMessageQueue {
   // rather than automatic.
   @HiddenApi
   @Implementation
-  public static Number nativeInit() {
+  protected static Number nativeInit() {
     return 1;
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeDestroy(int ptr) {
+  protected static void nativeDestroy(int ptr) {
     nativeDestroy((long) ptr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeDestroy(long ptr) {
+  protected static void nativeDestroy(long ptr) {
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativePollOnce(int ptr, int timeoutMillis) {
+  protected static void nativePollOnce(int ptr, int timeoutMillis) {
     nativePollOnce((long) ptr, timeoutMillis);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativePollOnce(long ptr, int timeoutMillis) {
+  protected static void nativePollOnce(long ptr, int timeoutMillis) {
     throw new AssertionError("Should not be called");
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWake(int ptr) {
+  protected static void nativeWake(int ptr) {
     nativeWake((long) ptr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWake(long ptr) {
+  protected static void nativeWake(long ptr) {
     throw new AssertionError("Should not be called");
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativeIsIdling(int ptr) {
+  protected static boolean nativeIsIdling(int ptr) {
     return nativeIsIdling((long) ptr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativeIsIdling(long ptr) {
+  protected static boolean nativeIsIdling(long ptr) {
     return false;
   }
 
@@ -107,7 +107,7 @@ public class ShadowMessageQueue {
   }
 
   @Implementation
-  public boolean enqueueMessage(final Message msg, long when) {
+  protected boolean enqueueMessage(final Message msg, long when) {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {
       final Runnable callback = new Runnable() {
@@ -149,7 +149,7 @@ public class ShadowMessageQueue {
 
   @HiddenApi
   @Implementation
-  public void removeSyncBarrier(int token) {
+  protected void removeSyncBarrier(int token) {
   }
 
   private static void dispatchMessage(Message msg) {

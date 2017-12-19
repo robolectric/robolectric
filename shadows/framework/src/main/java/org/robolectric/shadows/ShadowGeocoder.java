@@ -12,7 +12,7 @@ public final class ShadowGeocoder {
 
   /** Returns true by default, or the last value set by {@link #setIsPresent(boolean)}. */
   @Implementation
-  public static boolean isPresent() {
+  protected static boolean isPresent() {
     return isPresent;
   }
 

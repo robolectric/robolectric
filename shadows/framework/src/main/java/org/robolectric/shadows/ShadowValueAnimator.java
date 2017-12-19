@@ -43,7 +43,7 @@ public class ShadowValueAnimator {
   }
 
   @Implementation
-  public void setRepeatCount(int count) {
+  protected void setRepeatCount(int count) {
     actualRepeatCount = count;
     if (count == ValueAnimator.INFINITE) {
       count = 1;

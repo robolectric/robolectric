@@ -23,7 +23,7 @@ public class ShadowTime {
   private Time time;
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void setToNow() {
+  protected void setToNow() {
     time.set(ShadowSystemClock.currentTimeMillis());
   }
 
@@ -33,12 +33,12 @@ public class ShadowTime {
   private static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void __constructor__() {
+  protected void __constructor__() {
     __constructor__(getCurrentTimezone());
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void __constructor__(String timezone) {
+  protected void __constructor__(String timezone) {
     if (timezone == null) {
       throw new NullPointerException("timezone is null!");
     }
@@ -49,12 +49,12 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void __constructor__(Time other) {
+  protected void __constructor__(Time other) {
     set(other);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void set(Time other) {
+  protected void set(Time other) {
     time.timezone = other.timezone;
     time.second = other.second;
     time.minute = other.minute;
@@ -69,20 +69,20 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean isEpoch(Time time) {
+  protected static boolean isEpoch(Time time) {
     long millis = time.toMillis(true);
     return getJulianDay(millis, 0) == Time.EPOCH_JULIAN_DAY;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int getJulianDay(long millis, long gmtoff) {
+  protected static int getJulianDay(long millis, long gmtoff) {
     long offsetMillis = gmtoff * 1000;
     long julianDay = (millis + offsetMillis) / DAY_IN_MILLIS;
     return (int) julianDay + Time.EPOCH_JULIAN_DAY;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public long setJulianDay(int julianDay) {
+  protected long setJulianDay(int julianDay) {
     // Don't bother with the GMT offset since we don't know the correct
     // value for the given Julian day.  Just get close and then adjust
     // the day.
@@ -105,7 +105,7 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void set(long millis) {
+  protected void set(long millis) {
     Calendar c = getCalendar();
     c.setTimeInMillis(millis);
     set(
@@ -119,13 +119,13 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public long toMillis(boolean ignoreDst) {
+  protected long toMillis(boolean ignoreDst) {
     Calendar c = getCalendar();
     return c.getTimeInMillis();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void set(int second, int minute, int hour, int monthDay, int month, int year) {
+  protected void set(int second, int minute, int hour, int monthDay, int month, int year) {
     time.second = second;
     time.minute = minute;
     time.hour = hour;
@@ -139,12 +139,12 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void set(int monthDay, int month, int year) {
+  protected void set(int monthDay, int month, int year) {
     set(0, 0, 0, monthDay, month, year);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void clear(String timezone) {
+  protected void clear(String timezone) {
     if (timezone == null) {
       throw new NullPointerException("timezone is null!");
     }
@@ -163,12 +163,12 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static String getCurrentTimezone() {
+  protected static String getCurrentTimezone() {
     return TimeZone.getDefault().getID();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void switchTimezone(String timezone) {
+  protected void switchTimezone(String timezone) {
     long date = toMillis(true);
     long gmtoff = TimeZone.getTimeZone(timezone).getOffset(date);
     set(date + gmtoff);
@@ -177,7 +177,7 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int compare(Time a, Time b) {
+  protected static int compare(Time a, Time b) {
     long ams = a.toMillis(false);
     long bms = b.toMillis(false);
     if (ams == bms) {
@@ -190,17 +190,17 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public boolean before(Time other) {
+  protected boolean before(Time other) {
     return Time.compare(time, other) < 0;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public boolean after(Time other) {
+  protected boolean after(Time other) {
     return Time.compare(time, other) > 0;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public boolean parse(String timeString) {
+  protected boolean parse(String timeString) {
     TimeZone tz;
     if (timeString.endsWith("Z")) {
       timeString = timeString.substring(0, timeString.length() - 1);
@@ -226,7 +226,7 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public String format2445() {
+  protected String format2445() {
     String value = format("%Y%m%dT%H%M%S");
     if ( "UTC".equals(time.timezone)){
       value += "Z";
@@ -235,7 +235,7 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public String format3339(boolean allDay) {
+  protected String format3339(boolean allDay) {
     if (allDay) {
       return format("%Y-%m-%d");
     } else if ("UTC".equals(time.timezone)) {
@@ -251,7 +251,7 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public boolean parse3339(String rfc3339String) {
+  protected boolean parse3339(String rfc3339String) {
     SimpleDateFormat formatter =  new SimpleDateFormat();
     // Special case Date without time first
     if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
@@ -312,7 +312,7 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public String format(String format) {
+  protected String format(String format) {
     return Strftime.format(format, new Date(toMillis(false)), Locale.getDefault(), TimeZone.getTimeZone(time.timezone));
   }
 

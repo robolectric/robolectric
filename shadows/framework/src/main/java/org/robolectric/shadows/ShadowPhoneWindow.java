@@ -17,13 +17,13 @@ public class ShadowPhoneWindow extends ShadowWindow {
   protected @RealObject Window realWindow;
 
   @Implementation(minSdk = M)
-  public void setTitle(CharSequence title) {
+  protected void setTitle(CharSequence title) {
     this.title = title;
     directlyOn(realWindow, realWindow.getClass().getName(), "setTitle", ClassParameter.from(CharSequence.class, title));
   }
 
   @Implementation(minSdk = M)
-  public void setBackgroundDrawable(Drawable drawable) {
+  protected void setBackgroundDrawable(Drawable drawable) {
     this.backgroundDrawable = drawable;
     directlyOn(realWindow, realWindow.getClass().getName(), "setBackgroundDrawable", ClassParameter.from(Drawable.class, drawable));
   }

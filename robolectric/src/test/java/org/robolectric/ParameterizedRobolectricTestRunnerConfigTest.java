@@ -54,7 +54,7 @@ public final class ParameterizedRobolectricTestRunnerConfigTest {
 
     @Implementation
     @Override
-    public int getType(int columnIndex) {
+    protected int getType(int columnIndex) {
       return 1;
     }
   }
@@ -64,7 +64,7 @@ public final class ParameterizedRobolectricTestRunnerConfigTest {
 
     @Implementation
     @Override
-    public int getType(int columnIndex) {
+    protected int getType(int columnIndex) {
       return columnIndex;
     }
   }

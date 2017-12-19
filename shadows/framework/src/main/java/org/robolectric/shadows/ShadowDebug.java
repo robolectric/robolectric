@@ -11,17 +11,17 @@ import org.robolectric.annotation.Implements;
 @Implements(Debug.class)
 public class ShadowDebug {
   @Implementation
-  public static void __staticInitializer__() {
+  protected static void __staticInitializer__() {
     // Avoid calling Environment.getLegacyExternalStorageDirectory()
   }
 
   @Implementation
-  public static long getNativeHeapAllocatedSize() {
+  protected static long getNativeHeapAllocatedSize() {
     return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
   }
 
   @Implementation(minSdk = M)
-  public static Map<String, String> getRuntimeStats() {
+  protected static Map<String, String> getRuntimeStats() {
     return ImmutableMap.<String, String>builder().build();
   }
 }

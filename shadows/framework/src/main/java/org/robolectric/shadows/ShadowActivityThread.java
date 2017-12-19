@@ -15,7 +15,7 @@ public class ShadowActivityThread {
   public static final String CLASS_NAME = "android.app.ActivityThread";
 
   @Implementation
-  public static Object getPackageManager() {
+  protected static Object getPackageManager() {
     ClassLoader classLoader = ShadowActivityThread.class.getClassLoader();
     Class<?> iPackageManagerClass;
     try {
@@ -45,7 +45,7 @@ public class ShadowActivityThread {
   }
 
   @Implementation
-  public static Object currentActivityThread() {
+  protected static Object currentActivityThread() {
     return RuntimeEnvironment.getActivityThread();
   }
 }

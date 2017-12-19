@@ -15,12 +15,12 @@ public class ShadowAsyncTaskLoader<D> {
   private BackgroundWorker worker;
 
   @Implementation
-  public void __constructor__(Context context) {
+  protected void __constructor__(Context context) {
     worker = new BackgroundWorker();
   }
 
   @Implementation
-  public void onForceLoad() {
+  protected void onForceLoad() {
     FutureTask<D> future = new FutureTask<D>(worker) {
       @Override
       protected void done() {

@@ -16,7 +16,7 @@ public class ShadowPopupWindow {
   private PopupWindow realPopupWindow;
 
   @Implementation
-  public void invokePopup(WindowManager.LayoutParams p) {
+  protected void invokePopup(WindowManager.LayoutParams p) {
     ShadowApplication.getInstance().setLatestPopupWindow(realPopupWindow);
     directlyOn(realPopupWindow,
         PopupWindow.class,

@@ -32,23 +32,23 @@ public class ShadowTypeface {
 
   @HiddenApi
   @Implementation
-  public void __constructor__(int fontId) {
+  protected void __constructor__(int fontId) {
     description = findById((long) fontId);
   }
 
   @HiddenApi
   @Implementation
-  public void __constructor__(long fontId) {
+  protected void __constructor__(long fontId) {
     description = findById(fontId);
   }
 
   @Implementation
-  public static Typeface create(String familyName, int style) {
+  protected static Typeface create(String familyName, int style) {
     return createUnderlyingTypeface(familyName, style);
   }
 
   @Implementation
-  public static Typeface create(Typeface family, int style) {
+  protected static Typeface create(Typeface family, int style) {
     if (family == null) {
       return createUnderlyingTypeface(null, style);
     } else {
@@ -57,7 +57,7 @@ public class ShadowTypeface {
   }
 
   @Implementation
-  public static Typeface createFromAsset(AssetManager mgr, String path) {
+  protected static Typeface createFromAsset(AssetManager mgr, String path) {
     AndroidManifest appManifest = Shadows.shadowOf(RuntimeEnvironment.application).getAppManifest();
     ArrayList<String> paths = new ArrayList<>();
     paths.add(getAssetsPath(appManifest, path));
@@ -79,30 +79,30 @@ public class ShadowTypeface {
   }
 
   @Implementation
-  public static Typeface createFromFile(File path) {
+  protected static Typeface createFromFile(File path) {
     String familyName = path.toPath().getFileName().toString();
     return createUnderlyingTypeface(familyName, Typeface.NORMAL);
   }
 
   @Implementation
-  public static Typeface createFromFile(String path) {
+  protected static Typeface createFromFile(String path) {
     return createFromFile(new File(path));
   }
 
   @Implementation
-  public int getStyle() {
+  protected int getStyle() {
     return description.getStyle();
   }
 
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
-  public static Typeface createFromFamilies(Object /*FontFamily[]*/ families) {
+  protected static Typeface createFromFamilies(Object /*FontFamily[]*/ families) {
     return null;
   }
 
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
-  public static Typeface createFromFamiliesWithDefault(Object /*FontFamily[]*/ families) {
+  protected static Typeface createFromFamiliesWithDefault(Object /*FontFamily[]*/ families) {
     return null;
   }
 

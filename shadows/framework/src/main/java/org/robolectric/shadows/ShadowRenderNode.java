@@ -26,174 +26,174 @@ public class ShadowRenderNode {
   private float translationZ;
 
   @Implementation
-  public boolean setAlpha(float alpha) {
+  protected boolean setAlpha(float alpha) {
     this.alpha = alpha;
     return true;
   }
 
   @Implementation
-  public float getAlpha() {
+  protected float getAlpha() {
     return alpha;
   }
 
   @Implementation
-  public boolean setCameraDistance(float cameraDistance) {
+  protected boolean setCameraDistance(float cameraDistance) {
     this.cameraDistance = cameraDistance;
     return true;
   }
 
   @Implementation
-  public float getCameraDistance() {
+  protected float getCameraDistance() {
     return cameraDistance;
   }
 
   @Implementation
-  public boolean setClipToOutline(boolean clipToOutline) {
+  protected boolean setClipToOutline(boolean clipToOutline) {
     this.clipToOutline = clipToOutline;
     return true;
   }
 
   @Implementation
-  public boolean getClipToOutline() {
+  protected boolean getClipToOutline() {
     return clipToOutline;
   }
 
   @Implementation
-  public boolean setElevation(float lift) {
+  protected boolean setElevation(float lift) {
     elevation = lift;
     return true;
   }
 
   @Implementation
-  public float getElevation() {
+  protected float getElevation() {
     return elevation;
   }
 
   @Implementation
-  public boolean setHasOverlappingRendering(boolean overlappingRendering) {
+  protected boolean setHasOverlappingRendering(boolean overlappingRendering) {
     this.overlappingRendering = overlappingRendering;
     return true;
   }
 
   @Implementation
-  public boolean hasOverlappingRendering() {
+  protected boolean hasOverlappingRendering() {
     return overlappingRendering;
   }
 
   @Implementation
-  public boolean setRotation(float rotation) {
+  protected boolean setRotation(float rotation) {
     this.rotation = rotation;
     return true;
   }
 
   @Implementation
-  public float getRotation() {
+  protected float getRotation() {
     return rotation;
   }
 
   @Implementation
-  public boolean setRotationX(float rotationX) {
+  protected boolean setRotationX(float rotationX) {
     this.rotationX = rotationX;
     return true;
   }
 
   @Implementation
-  public float getRotationX() {
+  protected float getRotationX() {
     return rotationX;
   }
 
   @Implementation
-  public boolean setRotationY(float rotationY) {
+  protected boolean setRotationY(float rotationY) {
     this.rotationY = rotationY;
     return true;
   }
 
   @Implementation
-  public float getRotationY() {
+  protected float getRotationY() {
     return rotationY;
   }
 
   @Implementation
-  public boolean setScaleX(float scaleX) {
+  protected boolean setScaleX(float scaleX) {
     this.scaleX = scaleX;
     return true;
   }
 
   @Implementation
-  public float getScaleX() {
+  protected float getScaleX() {
     return scaleX;
   }
 
   @Implementation
-  public boolean setScaleY(float scaleY) {
+  protected boolean setScaleY(float scaleY) {
     this.scaleY = scaleY;
     return true;
   }
 
   @Implementation
-  public float getScaleY() {
+  protected float getScaleY() {
     return scaleY;
   }
 
   @Implementation
-  public boolean setTranslationX(float translationX) {
+  protected boolean setTranslationX(float translationX) {
     this.translationX = translationX;
     return true;
   }
 
   @Implementation
-  public boolean setTranslationY(float translationY) {
+  protected boolean setTranslationY(float translationY) {
     this.translationY = translationY;
     return true;
   }
 
   @Implementation
-  public boolean setTranslationZ(float translationZ) {
+  protected boolean setTranslationZ(float translationZ) {
     this.translationZ = translationZ;
     return true;
   }
 
   @Implementation
-  public float getTranslationX() {
+  protected float getTranslationX() {
     return translationX;
   }
 
   @Implementation
-  public float getTranslationY() {
+  protected float getTranslationY() {
     return translationY;
   }
 
   @Implementation
-  public float getTranslationZ() {
+  protected float getTranslationZ() {
     return translationZ;
   }
 
   @Implementation
-  public boolean isPivotExplicitlySet() {
+  protected boolean isPivotExplicitlySet() {
     return pivotExplicitlySet;
   }
 
   @Implementation
-  public boolean setPivotX(float pivotX) {
+  protected boolean setPivotX(float pivotX) {
     this.pivotX = pivotX;
     this.pivotExplicitlySet = true;
     return true;
   }
 
   @Implementation
-  public float getPivotX() {
+  protected float getPivotX() {
     return pivotX;
   }
 
   @Implementation
-  public boolean setPivotY(float pivotY) {
+  protected boolean setPivotY(float pivotY) {
     this.pivotY = pivotY;
     this.pivotExplicitlySet = true;
     return true;
   }
 
   @Implementation
-  public float getPivotY() {
+  protected float getPivotY() {
     return pivotY;
   }
 }

@@ -24,12 +24,12 @@ public class ShadowViewRootImpl {
   @RealObject private ViewRootImpl realObject;
 
   @Implementation
-  public static Object getWindowSession(Looper mainLooper) {
+  protected static Object getWindowSession(Looper mainLooper) {
     return null;
   }
 
   @Implementation
-  public void playSoundEffect(int effectId) {
+  protected void playSoundEffect(int effectId) {
   }
 
   public void callDispatchResized() {

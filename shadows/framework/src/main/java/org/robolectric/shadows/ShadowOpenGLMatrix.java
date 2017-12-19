@@ -30,7 +30,7 @@ public class ShadowOpenGLMatrix {
    *                                  rhsOffset + 16 > rhs.length.
    */
   @Implementation
-  public static void multiplyMM(float[] result, int resultOffset,
+  protected static void multiplyMM(float[] result, int resultOffset,
                                 float[] lhs, int lhsOffset, float[] rhs, int rhsOffset) {
     if (result == null) {
       throw new IllegalArgumentException("result == null");
@@ -92,7 +92,7 @@ public class ShadowOpenGLMatrix {
    *                                  rhsVecOffset + 4 > rhsVec.length.
    */
   @Implementation
-  public static void multiplyMV(float[] resultVec,
+  protected static void multiplyMV(float[] resultVec,
                                 int resultVecOffset, float[] lhsMat, int lhsMatOffset,
                                 float[] rhsVec, int rhsVecOffset) {
     if (resultVec == null) {

@@ -35,36 +35,36 @@ public class ShadowTelecomManager {
   private String defaultDialerPackageName;
 
   @Implementation
-  public PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
+  protected PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
     return null;
   }
 
   @Implementation
-  public PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
+  protected PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
     return null;
   }
 
   @Implementation
-  public void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
+  protected void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
   }
 
   @Implementation
-  public PhoneAccountHandle getSimCallManager() {
+  protected PhoneAccountHandle getSimCallManager() {
     return simCallManager;
   }
 
   @Implementation
-  public PhoneAccountHandle getSimCallManager(int userId) {
+  protected PhoneAccountHandle getSimCallManager(int userId) {
     return null;
   }
 
   @Implementation
-  public PhoneAccountHandle getConnectionManager() {
+  protected PhoneAccountHandle getConnectionManager() {
     return this.getSimCallManager();
   }
 
   @Implementation
-  public List<PhoneAccountHandle> getPhoneAccountsSupportingScheme(String uriScheme) {
+  protected List<PhoneAccountHandle> getPhoneAccountsSupportingScheme(String uriScheme) {
     List<PhoneAccountHandle> result = new LinkedList<>();
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
@@ -77,12 +77,12 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
-  public List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
+  protected List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
     return this.getCallCapablePhoneAccounts(false);
   }
 
   @Implementation(minSdk = M)
-  public List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
+  protected List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
     List<PhoneAccountHandle> result = new LinkedList<>();
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
@@ -96,7 +96,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public List<PhoneAccountHandle> getPhoneAccountsForPackage() {
+  protected List<PhoneAccountHandle> getPhoneAccountsForPackage() {
     Context context = ReflectionHelpers.getField(realObject, "mContext");
 
     List<PhoneAccountHandle> results = new LinkedList<>();
@@ -109,45 +109,45 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
+  protected PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
     return accounts.get(account);
   }
 
   @Implementation
-  public int getAllPhoneAccountsCount() {
+  protected int getAllPhoneAccountsCount() {
     return accounts.size();
   }
 
   @Implementation
-  public List<PhoneAccount> getAllPhoneAccounts() {
+  protected List<PhoneAccount> getAllPhoneAccounts() {
     return ImmutableList.copyOf(accounts.values());
   }
 
   @Implementation
-  public List<PhoneAccountHandle> getAllPhoneAccountHandles() {
+  protected List<PhoneAccountHandle> getAllPhoneAccountHandles() {
     return ImmutableList.copyOf(accounts.keySet());
   }
 
   @Implementation
-  public void registerPhoneAccount(PhoneAccount account) {
+  protected void registerPhoneAccount(PhoneAccount account) {
     accounts.put(account.getAccountHandle(), account);
   }
 
   @Implementation
-  public void unregisterPhoneAccount(PhoneAccountHandle accountHandle) {
+  protected void unregisterPhoneAccount(PhoneAccountHandle accountHandle) {
     accounts.remove(accountHandle);
   }
 
   /** @deprecated */
   @Deprecated
   @Implementation
-  public void clearAccounts() {
+  protected void clearAccounts() {
     accounts.clear();
   }
 
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public void clearAccountsForPackage(String packageName) {
+  protected void clearAccountsForPackage(String packageName) {
     Set<PhoneAccountHandle> phoneAccountHandlesInPackage = new HashSet<>();
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
@@ -164,81 +164,81 @@ public class ShadowTelecomManager {
   /** @deprecated */
   @Deprecated
   @Implementation
-  public ComponentName getDefaultPhoneApp() {
+  protected ComponentName getDefaultPhoneApp() {
     return null;
   }
 
   @Implementation(minSdk = M)
-  public String getDefaultDialerPackage() {
+  protected String getDefaultDialerPackage() {
     return defaultDialerPackageName;
   }
 
   @Implementation(minSdk = M)
-  public boolean setDefaultDialer(String packageName) {
+  protected boolean setDefaultDialer(String packageName) {
     this.defaultDialerPackageName = packageName;
     return true;
   }
 
   @Implementation
-  public String getSystemDialerPackage() {
+  protected String getSystemDialerPackage() {
     return null;
   }
 
   @Implementation
-  public boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
+  protected boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
     return false;
   }
 
   @Implementation
-  public String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
+  protected String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
     return null;
   }
 
   @Implementation
-  public String getLine1Number(PhoneAccountHandle accountHandle) {
+  protected String getLine1Number(PhoneAccountHandle accountHandle) {
     return null;
   }
 
   @Implementation
-  public boolean isInCall() {
+  protected boolean isInCall() {
     return false;
   }
 
   @Implementation
-  public int getCallState() {
+  protected int getCallState() {
     return 0;
   }
 
   @Implementation
-  public boolean isRinging() {
+  protected boolean isRinging() {
     return false;
   }
 
   @Implementation
-  public boolean endCall() {
+  protected boolean endCall() {
     return false;
   }
 
   @Implementation
-  public void acceptRingingCall() {
+  protected void acceptRingingCall() {
   }
 
   @Implementation
-  public void silenceRinger() {
+  protected void silenceRinger() {
   }
 
   @Implementation
-  public boolean isTtySupported() {
+  protected boolean isTtySupported() {
     return false;
   }
 
   @Implementation
-  public int getCurrentTtyMode() {
+  protected int getCurrentTtyMode() {
     return 0;
   }
 
   @Implementation
-  public void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+  protected void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
     incomingCalls.add(new CallRecord(phoneAccount, extras));
   }
 
@@ -247,7 +247,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public void addNewUnknownCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+  protected void addNewUnknownCall(PhoneAccountHandle phoneAccount, Bundle extras) {
     unknownCalls.add(new CallRecord(phoneAccount, extras));
   }
 
@@ -256,34 +256,34 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public boolean handleMmi(String dialString) {
+  protected boolean handleMmi(String dialString) {
     return false;
   }
 
   @Implementation
-  public boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
+  protected boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
     return false;
   }
 
   @Implementation
-  public Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
+  protected Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
     return Uri.parse("content://icc/adn");
   }
 
   @Implementation
-  public void cancelMissedCallsNotification() {
+  protected void cancelMissedCallsNotification() {
   }
 
   @Implementation
-  public void showInCallScreen(boolean showDialpad) {
+  protected void showInCallScreen(boolean showDialpad) {
   }
 
   @Implementation
-  public void placeCall(Uri address, Bundle extras) {
+  protected void placeCall(Uri address, Bundle extras) {
   }
 
   @Implementation
-  public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
+  protected void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
   }
 
   public void setSimCallManager(PhoneAccountHandle simCallManager) {

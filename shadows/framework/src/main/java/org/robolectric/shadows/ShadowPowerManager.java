@@ -24,14 +24,14 @@ public class ShadowPowerManager {
   private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
   @Implementation
-  public PowerManager.WakeLock newWakeLock(int flags, String tag) {
+  protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
     PowerManager.WakeLock wl = Shadow.newInstanceOf(PowerManager.WakeLock.class);
     getInstance().addWakeLock(wl);
     return wl;
   }
 
   @Implementation
-  public boolean isScreenOn() {
+  protected boolean isScreenOn() {
     return isScreenOn;
   }
 
@@ -40,7 +40,7 @@ public class ShadowPowerManager {
   }
 
   @Implementation(minSdk = KITKAT_WATCH)
-  public boolean isInteractive() {
+  protected boolean isInteractive() {
     return isInteractive;
   }
 
@@ -49,7 +49,7 @@ public class ShadowPowerManager {
   }
 
   @Implementation(minSdk = KITKAT_WATCH)
-  public boolean isPowerSaveMode() {
+  protected boolean isPowerSaveMode() {
     return isPowerSaveMode;
   }
 
@@ -60,7 +60,7 @@ public class ShadowPowerManager {
   private Map<Integer, Boolean> supportedWakeLockLevels = new HashMap<>();
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean isWakeLockLevelSupported(int level) {
+  protected boolean isWakeLockLevelSupported(int level) {
     return supportedWakeLockLevels.containsKey(level) ? supportedWakeLockLevels.get(level) : false;
   }
 
@@ -89,7 +89,7 @@ public class ShadowPowerManager {
   }
 
   @Implementation(minSdk = M)
-  public boolean isIgnoringBatteryOptimizations(String packageName) {
+  protected boolean isIgnoringBatteryOptimizations(String packageName) {
     Boolean result = ignoringBatteryOptimizations.get(packageName);
     return result == null ? false : result;
   }
@@ -106,13 +106,13 @@ public class ShadowPowerManager {
     private WorkSource workSource = null;
 
     @Implementation
-    public void acquire() {
+    protected void acquire() {
       acquire(0);
 
     }
 
     @Implementation
-    public synchronized void acquire(long timeout) {
+    protected synchronized void acquire(long timeout) {
       if (refCounted) {
         refCount++;
       } else {
@@ -121,7 +121,7 @@ public class ShadowPowerManager {
     }
 
     @Implementation
-    public synchronized void release() {
+    protected synchronized void release() {
       if (refCounted) {
         if (--refCount < 0) throw new RuntimeException("WakeLock under-locked");
       } else {
@@ -130,7 +130,7 @@ public class ShadowPowerManager {
     }
 
     @Implementation
-    public synchronized boolean isHeld() {
+    protected synchronized boolean isHeld() {
       return refCounted ? refCount > 0 : locked;
     }
 
@@ -144,12 +144,12 @@ public class ShadowPowerManager {
     }
 
     @Implementation
-    public void setReferenceCounted(boolean value) {
+    protected void setReferenceCounted(boolean value) {
       refCounted = value;
     }
 
     @Implementation
-    public synchronized void setWorkSource(WorkSource ws) {
+    protected synchronized void setWorkSource(WorkSource ws) {
       workSource = ws;
     }
 

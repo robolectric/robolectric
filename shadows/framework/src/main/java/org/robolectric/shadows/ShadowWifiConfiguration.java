@@ -12,7 +12,7 @@ public class ShadowWifiConfiguration {
   @RealObject private WifiConfiguration realObject;
 
   @Implementation
-  public void __constructor__() {
+  protected void __constructor__() {
     realObject.networkId = -1;
     realObject.SSID = null;
     realObject.BSSID = null;

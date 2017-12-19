@@ -1,7 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.NameNotFoundException;
+
 import android.app.LoadedApk;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build.VERSION_CODES;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -10,12 +11,12 @@ import org.robolectric.annotation.Implements;
 public class ShadowLoadedApk {
 
   @Implementation
-  public ClassLoader getClassLoader() {
+  protected ClassLoader getClassLoader() {
     return this.getClass().getClassLoader();
   }
 
   @Implementation(minSdk = VERSION_CODES.O)
-  public ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException {
+  protected ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException {
     return this.getClass().getClassLoader();
   }
 }

@@ -38,7 +38,7 @@ public class ShadowServiceManager {
       };
 
   @Implementation
-  public static IBinder getService(String name) {
+  protected static IBinder getService(String name) {
     return SERVICES.get(name);
   }
 
@@ -49,20 +49,20 @@ public class ShadowServiceManager {
   }
 
   @Implementation
-  public static void addService(String name, IBinder service) {
+  protected static void addService(String name, IBinder service) {
   }
 
   @Implementation
-  public static IBinder checkService(String name) {
+  protected static IBinder checkService(String name) {
     return null;
   }
 
   @Implementation
-  public static String[] listServices() throws RemoteException {
+  protected static String[] listServices() throws RemoteException {
     return null;
   }
 
   @Implementation
-  public static void initServiceCache(Map<String, IBinder> cache) {
+  protected static void initServiceCache(Map<String, IBinder> cache) {
   }
 }

@@ -15,12 +15,12 @@ public class ShadowNetworkScoreManager {
   private String activeScorerPackage;
 
   @Implementation
-  public String getActiveScorerPackage() {
+  protected String getActiveScorerPackage() {
     return activeScorerPackage;
   }
 
   @Implementation
-  public boolean setActiveScorer(String packageName) {
+  protected boolean setActiveScorer(String packageName) {
     activeScorerPackage = packageName;
     return true;
   }

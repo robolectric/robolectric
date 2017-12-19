@@ -19,57 +19,57 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
   private NumberPicker.OnValueChangeListener onValueChangeListener;
 
   @Implementation
-  public void setValue(int value) {
+  protected void setValue(int value) {
     this.value = value;
   }
 
   @Implementation
-  public int getValue() {
+  protected int getValue() {
     return value;
   }
 
   @Implementation
-  public void setDisplayedValues(String[] displayedValues) {
+  protected void setDisplayedValues(String[] displayedValues) {
     this.displayedValues = displayedValues;
   }
 
   @Implementation
-  public String[] getDisplayedValues() {
+  protected String[] getDisplayedValues() {
     return displayedValues;
   }
 
   @Implementation
-  public void setMinValue(int minValue) {
+  protected void setMinValue(int minValue) {
     this.minValue = minValue;
   }
 
   @Implementation
-  public void setMaxValue(int maxValue) {
+  protected void setMaxValue(int maxValue) {
     this.maxValue = maxValue;
   }
 
   @Implementation
-  public int getMinValue() {
+  protected int getMinValue() {
     return this.minValue;
   }
 
   @Implementation
-  public int getMaxValue() {
+  protected int getMaxValue() {
     return this.maxValue;
   }
 
   @Implementation
-  public void setWrapSelectorWheel(boolean wrapSelectorWheel) {
+  protected void setWrapSelectorWheel(boolean wrapSelectorWheel) {
     this.wrapSelectorWheel = wrapSelectorWheel;
   }
 
   @Implementation
-  public boolean getWrapSelectorWheel() {
+  protected boolean getWrapSelectorWheel() {
     return wrapSelectorWheel;
   }
 
   @Implementation
-  public void setOnValueChangedListener(NumberPicker.OnValueChangeListener listener) {
+  protected void setOnValueChangedListener(NumberPicker.OnValueChangeListener listener) {
     directlyOn(realObject, NumberPicker.class).setOnValueChangedListener(listener);
     this.onValueChangeListener = listener;
   }

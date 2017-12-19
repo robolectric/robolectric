@@ -12,12 +12,12 @@ public class ShadowMessenger {
   private Handler handler;
 
   @Implementation
-  public void __constructor__(Handler handler) {
+  protected void __constructor__(Handler handler) {
     this.handler = handler;
   }
 
   @Implementation
-  public void send(Message message) throws RemoteException {
+  protected void send(Message message) throws RemoteException {
     message.setTarget(handler);
     message.sendToTarget();
   }

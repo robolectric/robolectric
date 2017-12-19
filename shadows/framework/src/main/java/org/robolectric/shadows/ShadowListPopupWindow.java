@@ -16,7 +16,7 @@ public class ShadowListPopupWindow {
   private ListPopupWindow realListPopupWindow;
 
   @Implementation
-  public void show() {
+  protected void show() {
     shadowOf(RuntimeEnvironment.application).setLatestListPopupWindow(realListPopupWindow);
     directlyOn(realListPopupWindow, ListPopupWindow.class).show();
   }

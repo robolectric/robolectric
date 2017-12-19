@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowStrictMode {
 
   @Implementation
-  public static void setVmPolicy(StrictMode.VmPolicy p) {
+  protected static void setVmPolicy(StrictMode.VmPolicy p) {
     // Prevent Robolectric from calling through
   }
 }

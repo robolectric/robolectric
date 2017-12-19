@@ -29,12 +29,12 @@ public class ShadowStateListDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  public void addState(int[] stateSet, Drawable drawable) {
+  protected void addState(int[] stateSet, Drawable drawable) {
     stateToDrawable.put(createStateList(stateSet), drawable);
   }
 
   @Implementation
-  public void inflate(Resources r, XmlPullParser parser, AttributeSet attrs) throws XmlPullParserException, IOException {
+  protected void inflate(Resources r, XmlPullParser parser, AttributeSet attrs) throws XmlPullParserException, IOException {
   }
 
   /**

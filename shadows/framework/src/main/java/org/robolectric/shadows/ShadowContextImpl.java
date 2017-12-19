@@ -118,7 +118,7 @@ public class ShadowContextImpl {
   private Map<String, Object> systemServices = new HashMap<String, Object>();
 
   @Implementation
-  public Object getSystemService(String name) {
+  protected Object getSystemService(String name) {
     if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
       return new RoboLayoutInflater(RuntimeEnvironment.application);
     }
@@ -215,13 +215,13 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void startIntentSender(IntentSender intent, Intent fillInIntent,
+  protected void startIntentSender(IntentSender intent, Intent fillInIntent,
                     int flagsMask, int flagsValues, int extraFlags, Bundle options) throws IntentSender.SendIntentException {
     intent.sendIntent(realObject, 0, fillInIntent, null, null, null);
   }
 
   @Implementation
-  public ComponentName startService(Intent service) {
+  protected ComponentName startService(Intent service) {
     return ShadowApplication.getInstance().startService(service);
   }
 
@@ -231,42 +231,42 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void startActivity(Intent intent) {
+  protected void startActivity(Intent intent) {
     ShadowApplication.getInstance().startActivity(intent);
   }
 
   @Implementation
-  public void sendBroadcast(Intent intent) {
+  protected void sendBroadcast(Intent intent) {
     ShadowApplication.getInstance().sendBroadcast(intent);
   }
 
   @Implementation
-  public ClassLoader getClassLoader() {
+  protected ClassLoader getClassLoader() {
     return this.getClass().getClassLoader();
   }
 
   @Implementation
-  public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+  protected boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
     return ShadowApplication.getInstance().bindService(intent, serviceConnection, i);
   }
 
   @Implementation
-  public void unbindService(final ServiceConnection serviceConnection) {
+  protected void unbindService(final ServiceConnection serviceConnection) {
     ShadowApplication.getInstance().unbindService(serviceConnection);
   }
 
   @Implementation
-  public int checkCallingPermission(String permission) {
+  protected int checkCallingPermission(String permission) {
     return checkPermission(permission, -1, -1);
   }
 
   @Implementation
-  public int checkCallingOrSelfPermission(String permission) {
+  protected int checkCallingOrSelfPermission(String permission) {
     return checkPermission(permission, -1, -1);
   }
 
   @Implementation
-  public ContentResolver getContentResolver() {
+  protected ContentResolver getContentResolver() {
     if (contentResolver == null) {
       contentResolver = new ContentResolver(realObject) {
         @Override
@@ -299,94 +299,94 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void sendBroadcast(Intent intent, String receiverPermission) {
+  protected void sendBroadcast(Intent intent, String receiverPermission) {
     ShadowApplication.getInstance().sendBroadcast(intent, receiverPermission);
   }
 
   @Implementation
-  public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
+  protected void sendOrderedBroadcast(Intent intent, String receiverPermission) {
     ShadowApplication.getInstance().sendOrderedBroadcast(intent, receiverPermission);
   }
 
   @Implementation
-  public void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
+  protected void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
                                    Handler scheduler, int initialCode, String initialData, Bundle initialExtras) {
     ShadowApplication.getInstance().sendOrderedBroadcast(intent, receiverPermission, resultReceiver, scheduler, initialCode,
         initialData, initialExtras);
   }
 
   @Implementation
-  public void sendStickyBroadcast(Intent intent) {
+  protected void sendStickyBroadcast(Intent intent) {
     ShadowApplication.getInstance().sendStickyBroadcast(intent);
   }
 
   @Implementation
-  public int checkPermission(String permission, int pid, int uid) {
+  protected int checkPermission(String permission, int pid, int uid) {
     return ShadowApplication.getInstance().checkPermission(permission, pid, uid);
   }
 
   @Implementation
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+  protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
     return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, null, null, realObject);
   }
 
   @Implementation
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+  protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
     return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
   }
 
   @Implementation
-  public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
+  protected Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
       IntentFilter filter, String broadcastPermission, Handler scheduler) {
     return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
   }
 
   @Implementation
-  public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
+  protected void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     ShadowApplication.getInstance().unregisterReceiver(broadcastReceiver);
   }
 
   @Implementation
-  public boolean stopService(Intent name) {
+  protected boolean stopService(Intent name) {
     return ShadowApplication.getInstance().stopService(name);
   }
 
   @Implementation
-  public void startActivity(Intent intent, Bundle options) {
+  protected void startActivity(Intent intent, Bundle options) {
     ShadowApplication.getInstance().startActivity(intent, options);
   }
 
   @Implementation
-  public void startActivities(Intent[] intents) {
+  protected void startActivities(Intent[] intents) {
     for (int i = intents.length - 1; i >= 0; i--) {
       startActivity(intents[i]);
     }
   }
 
   @Implementation
-  public void startActivities(Intent[] intents, Bundle options) {
+  protected void startActivities(Intent[] intents, Bundle options) {
     for (int i = intents.length - 1; i >= 0; i--) {
       startActivity(intents[i], options);
     }
   }
 
   @Implementation
-  public int getUserId() {
+  protected int getUserId() {
     return 0;
   }
 
   @Implementation
-  public File getExternalCacheDir() {
+  protected File getExternalCacheDir() {
     return Environment.getExternalStorageDirectory();
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)
-  public File getExternalFilesDir(String type) {
+  protected File getExternalFilesDir(String type) {
     return Environment.getExternalStoragePublicDirectory(type);
   }
 
   @Implementation(minSdk = KITKAT)
-  public File[] getExternalFilesDirs(String type) {
+  protected File[] getExternalFilesDirs(String type) {
     return new File[] { Environment.getExternalStoragePublicDirectory(type) };
   }
 

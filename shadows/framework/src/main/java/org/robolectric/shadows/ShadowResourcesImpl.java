@@ -190,7 +190,7 @@ public class ShadowResourcesImpl {
   }
 
   @Implementation(minSdk = O)
-  public Drawable loadDrawable(Resources wrapper,  TypedValue value, int id, int density, Resources.Theme theme) {
+  protected Drawable loadDrawable(Resources wrapper, TypedValue value, int id, int density, Resources.Theme theme) {
     Drawable drawable = directlyOn(realResourcesImpl, ResourcesImpl.class, "loadDrawable",
         from(Resources.class, wrapper),
         from(TypedValue.class, value),

@@ -22,7 +22,7 @@ public class ShadowLocaleData {
   public static final String REAL_CLASS_NAME = "libcore.icu.LocaleData";
 
   @Implementation
-  public static LocaleData get(Locale locale) {
+  protected static LocaleData get(Locale locale) {
     LocaleData localeData = (LocaleData) Shadow.newInstanceOf(REAL_CLASS_NAME);
     if (locale == null) {
       locale = Locale.getDefault();

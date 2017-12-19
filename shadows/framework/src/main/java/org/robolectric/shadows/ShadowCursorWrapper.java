@@ -15,221 +15,221 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(CursorWrapper.class)
-public class ShadowCursorWrapper implements Cursor {
+public class ShadowCursorWrapper {
   private Cursor wrappedCursor;
 
   @Implementation
-  public void __constructor__(Cursor c) {
+  protected void __constructor__(Cursor c) {
     wrappedCursor = c;
   }
 
-  @Override @Implementation
-  public int getCount() {
+  @Implementation
+  protected int getCount() {
     return wrappedCursor.getCount();
   }
 
-  @Override @Implementation
-  public int getPosition() {
+  @Implementation
+  protected int getPosition() {
     return wrappedCursor.getPosition();
   }
 
-  @Override @Implementation
-  public boolean move(int i) {
+  @Implementation
+  protected boolean move(int i) {
     return wrappedCursor.move(i);
   }
 
-  @Override @Implementation
-  public boolean moveToPosition(int i) {
+  @Implementation
+  protected boolean moveToPosition(int i) {
     return wrappedCursor.moveToPosition(i);
   }
 
-  @Override @Implementation
-  public boolean moveToFirst() {
+  @Implementation
+  protected boolean moveToFirst() {
     return wrappedCursor.moveToFirst();
   }
 
-  @Override @Implementation
-  public boolean moveToLast() {
+  @Implementation
+  protected boolean moveToLast() {
     return wrappedCursor.moveToLast();
   }
 
-  @Override @Implementation
-  public boolean moveToNext() {
+  @Implementation
+  protected boolean moveToNext() {
     return wrappedCursor.moveToNext();
   }
 
-  @Override @Implementation
-  public boolean moveToPrevious() {
+  @Implementation
+  protected boolean moveToPrevious() {
     return wrappedCursor.moveToPrevious();
   }
 
-  @Override @Implementation
-  public boolean isFirst() {
+  @Implementation
+  protected boolean isFirst() {
     return wrappedCursor.isFirst();
   }
 
-  @Override @Implementation
-  public boolean isLast() {
+  @Implementation
+  protected boolean isLast() {
     return wrappedCursor.isLast();
   }
 
-  @Override @Implementation
-  public boolean isBeforeFirst() {
+  @Implementation
+  protected boolean isBeforeFirst() {
     return wrappedCursor.isBeforeFirst();
   }
 
-  @Override @Implementation
-  public boolean isAfterLast() {
+  @Implementation
+  protected boolean isAfterLast() {
     return wrappedCursor.isAfterLast();
   }
 
-  @Override @Implementation
-  public int getColumnIndex(String s) {
+  @Implementation
+  protected int getColumnIndex(String s) {
     return wrappedCursor.getColumnIndex(s);
   }
 
-  @Override @Implementation
-  public int getColumnIndexOrThrow(String s) throws IllegalArgumentException {
+  @Implementation
+  protected int getColumnIndexOrThrow(String s) throws IllegalArgumentException {
     return wrappedCursor.getColumnIndexOrThrow(s);
   }
 
-  @Override @Implementation
-  public String getColumnName(int i) {
+  @Implementation
+  protected String getColumnName(int i) {
     return wrappedCursor.getColumnName(i);
   }
 
-  @Override @Implementation
-  public String[] getColumnNames() {
+  @Implementation
+  protected String[] getColumnNames() {
     return wrappedCursor.getColumnNames();
   }
 
-  @Override @Implementation
-  public int getColumnCount() {
+  @Implementation
+  protected int getColumnCount() {
     return wrappedCursor.getColumnCount();
   }
 
-  @Override @Implementation
-  public byte[] getBlob(int i) {
+  @Implementation
+  protected byte[] getBlob(int i) {
     return wrappedCursor.getBlob(i);
   }
 
-  @Override @Implementation
-  public String getString(int i) {
+  @Implementation
+  protected String getString(int i) {
     return wrappedCursor.getString(i);
   }
 
-  @Override @Implementation
-  public void copyStringToBuffer(int i, CharArrayBuffer charArrayBuffer) {
+  @Implementation
+  protected void copyStringToBuffer(int i, CharArrayBuffer charArrayBuffer) {
     wrappedCursor.copyStringToBuffer(i, charArrayBuffer);
   }
 
-  @Override @Implementation
-  public short getShort(int i) {
+  @Implementation
+  protected short getShort(int i) {
     return wrappedCursor.getShort(i);
   }
 
-  @Override @Implementation
-  public int getInt(int i) {
+  @Implementation
+  protected int getInt(int i) {
     return wrappedCursor.getInt(i);
   }
 
-  @Override @Implementation
-  public long getLong(int i) {
+  @Implementation
+  protected long getLong(int i) {
     return wrappedCursor.getLong(i);
   }
 
-  @Override @Implementation
-  public float getFloat(int i) {
+  @Implementation
+  protected float getFloat(int i) {
     return wrappedCursor.getFloat(i);
   }
 
-  @Override @Implementation
-  public double getDouble(int i) {
+  @Implementation
+  protected double getDouble(int i) {
     return wrappedCursor.getDouble(i);
   }
 
-  @Override @Implementation
-  public boolean isNull(int i) {
+  @Implementation
+  protected boolean isNull(int i) {
     return wrappedCursor.isNull(i);
   }
 
   @Implementation
-  public void deactivate() {
+  protected void deactivate() {
     wrappedCursor.deactivate();
   }
 
   @Implementation
-  public boolean requery() {
+  protected boolean requery() {
     return wrappedCursor.requery();
   }
 
-  @Override @Implementation
-  public void close() {
+  @Implementation
+  protected void close() {
     wrappedCursor.close();
   }
 
-  @Override @Implementation
-  public boolean isClosed() {
+  @Implementation
+  protected boolean isClosed() {
     return wrappedCursor.isClosed();
   }
 
-  @Override @Implementation
-  public void registerContentObserver(ContentObserver contentObserver) {
+  @Implementation
+  protected void registerContentObserver(ContentObserver contentObserver) {
     wrappedCursor.registerContentObserver(contentObserver);
   }
 
-  @Override @Implementation
-  public void unregisterContentObserver(ContentObserver contentObserver) {
+  @Implementation
+  protected void unregisterContentObserver(ContentObserver contentObserver) {
     wrappedCursor.unregisterContentObserver(contentObserver);
   }
 
-  @Override @Implementation
-  public void registerDataSetObserver(DataSetObserver dataSetObserver) {
+  @Implementation
+  protected void registerDataSetObserver(DataSetObserver dataSetObserver) {
     wrappedCursor.registerDataSetObserver(dataSetObserver);
   }
 
-  @Override @Implementation
-  public void unregisterDataSetObserver(DataSetObserver dataSetObserver) {
+  @Implementation
+  protected void unregisterDataSetObserver(DataSetObserver dataSetObserver) {
     wrappedCursor.unregisterDataSetObserver(dataSetObserver);
   }
 
-  @Override @Implementation
-  public void setNotificationUri(ContentResolver contentResolver, Uri uri) {
+  @Implementation
+  protected void setNotificationUri(ContentResolver contentResolver, Uri uri) {
     wrappedCursor.setNotificationUri(contentResolver, uri);
   }
 
-  @Override @Implementation(minSdk = KITKAT)
-  public Uri getNotificationUri() {
+  @Implementation(minSdk = KITKAT)
+  protected Uri getNotificationUri() {
     return wrappedCursor.getNotificationUri();
   }
 
-  @Override @Implementation
-  public boolean getWantsAllOnMoveCalls() {
+  @Implementation
+  protected boolean getWantsAllOnMoveCalls() {
     return wrappedCursor.getWantsAllOnMoveCalls();
   }
 
-  @Override @Implementation(minSdk = M)
-  public void setExtras(Bundle extras) {
+  @Implementation(minSdk = M)
+  protected void setExtras(Bundle extras) {
     wrappedCursor.setExtras(extras);
   }
 
-  @Override @Implementation
-  public Bundle getExtras() {
+  @Implementation
+  protected Bundle getExtras() {
     return wrappedCursor.getExtras();
   }
 
-  @Override @Implementation
-  public Bundle respond(Bundle bundle) {
+  @Implementation
+  protected Bundle respond(Bundle bundle) {
     return wrappedCursor.respond(bundle);
   }
 
-  @Override @Implementation
-  public int getType(int columnIndex) {
+  @Implementation
+  protected int getType(int columnIndex) {
     return wrappedCursor.getType(columnIndex);
   }
 
   @Implementation
-  public Cursor getWrappedCursor() {
+  protected Cursor getWrappedCursor() {
     return wrappedCursor;
   }
 }

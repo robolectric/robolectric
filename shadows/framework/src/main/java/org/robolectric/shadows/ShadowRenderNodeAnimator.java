@@ -35,7 +35,7 @@ public class ShadowRenderNodeAnimator {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public void moveToRunningState() {
+  protected void moveToRunningState() {
     directlyOn(realObject, RenderNodeAnimator.class, "moveToRunningState");
     if (!isEnding) {
       // Only schedule if this wasn't called during an end() call, as Robolectric will run any
@@ -46,7 +46,7 @@ public class ShadowRenderNodeAnimator {
   }
 
   @Implementation
-  public void doStart() {
+  protected void doStart() {
     directlyOn(realObject, RenderNodeAnimator.class, "doStart");
     if (getApiLevel() <= LOLLIPOP) {
       schedule();
@@ -54,7 +54,7 @@ public class ShadowRenderNodeAnimator {
   }
 
   @Implementation
-  public void cancel() {
+  protected void cancel() {
     directlyOn(realObject, RenderNodeAnimator.class).cancel();
 
     if (getApiLevel() <= LOLLIPOP) {
@@ -68,7 +68,7 @@ public class ShadowRenderNodeAnimator {
   }
 
   @Implementation
-  public void end() {
+  protected void end() {
     // Set this to true to prevent us from scheduling and running the full animation on the end()
     // call. This can happen if the animation had not been started yet.
     isEnding = true;

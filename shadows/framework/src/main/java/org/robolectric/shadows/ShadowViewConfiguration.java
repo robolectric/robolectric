@@ -86,149 +86,149 @@ public class ShadowViewConfiguration {
   }
 
   @Implementation
-  public static ViewConfiguration get(Context context) {
+  protected static ViewConfiguration get(Context context) {
     ViewConfiguration viewConfiguration = Shadow.newInstanceOf(ViewConfiguration.class);
     Shadows.shadowOf(viewConfiguration).setup(context);
     return viewConfiguration;
   }
 
   @Implementation
-  public static int getScrollBarSize() {
+  protected static int getScrollBarSize() {
     return SCROLL_BAR_SIZE;
   }
 
   @Implementation
-  public int getScaledScrollBarSize() {
+  protected int getScaledScrollBarSize() {
     return scrollbarSize;
   }
 
   @Implementation
-  public static int getScrollBarFadeDuration() {
+  protected static int getScrollBarFadeDuration() {
     return SCROLL_BAR_FADE_DURATION;
   }
 
   @Implementation
-  public static int getScrollDefaultDelay() {
+  protected static int getScrollDefaultDelay() {
     return SCROLL_BAR_DEFAULT_DELAY;
   }
 
   @Implementation
-  public static int getFadingEdgeLength() {
+  protected static int getFadingEdgeLength() {
     return FADING_EDGE_LENGTH;
   }
 
   @Implementation
-  public int getScaledFadingEdgeLength() {
+  protected int getScaledFadingEdgeLength() {
     return fadingEdgeLength;
   }
 
   @Implementation
-  public static int getPressedStateDuration() {
+  protected static int getPressedStateDuration() {
     return PRESSED_STATE_DURATION;
   }
 
   @Implementation
-  public static int getLongPressTimeout() {
+  protected static int getLongPressTimeout() {
     return LONG_PRESS_TIMEOUT;
   }
 
   @Implementation
-  public static int getTapTimeout() {
+  protected static int getTapTimeout() {
     return TAP_TIMEOUT;
   }
 
   @Implementation
-  public static int getJumpTapTimeout() {
+  protected static int getJumpTapTimeout() {
     return JUMP_TAP_TIMEOUT;
   }
 
   @Implementation
-  public static int getDoubleTapTimeout() {
+  protected static int getDoubleTapTimeout() {
     return DOUBLE_TAP_TIMEOUT;
   }
 
   @Implementation
-  public static int getEdgeSlop() {
+  protected static int getEdgeSlop() {
     return EDGE_SLOP;
   }
 
   @Implementation
-  public int getScaledEdgeSlop() {
+  protected int getScaledEdgeSlop() {
     return edgeSlop;
   }
 
   @Implementation
-  public static int getTouchSlop() {
+  protected static int getTouchSlop() {
     return TOUCH_SLOP;
   }
 
   @Implementation
-  public int getScaledTouchSlop() {
+  protected int getScaledTouchSlop() {
     return touchSlop;
   }
 
   @Implementation
-  public int getScaledPagingTouchSlop() {
+  protected int getScaledPagingTouchSlop() {
     return pagingTouchSlop;
   }
 
   @Implementation
-  public int getScaledDoubleTapSlop() {
+  protected int getScaledDoubleTapSlop() {
     return doubleTapSlop;
   }
 
   @Implementation
-  public static int getWindowTouchSlop() {
+  protected static int getWindowTouchSlop() {
     return WINDOW_TOUCH_SLOP;
   }
 
   @Implementation
-  public int getScaledWindowTouchSlop() {
+  protected int getScaledWindowTouchSlop() {
     return windowTouchSlop;
   }
 
   @Implementation
-  public static int getMinimumFlingVelocity() {
+  protected static int getMinimumFlingVelocity() {
     return MINIMUM_FLING_VELOCITY;
   }
 
   @Implementation
-  public int getScaledMinimumFlingVelocity() {
+  protected int getScaledMinimumFlingVelocity() {
     return minimumFlingVelocity;
   }
 
   @Implementation
-  public static int getMaximumFlingVelocity() {
+  protected static int getMaximumFlingVelocity() {
     return MAXIMUM_FLING_VELOCITY;
   }
 
   @Implementation
-  public int getScaledMaximumFlingVelocity() {
+  protected int getScaledMaximumFlingVelocity() {
     return maximumFlingVelocity;
   }
 
   @Implementation
-  public static int getMaximumDrawingCacheSize() {
+  protected static int getMaximumDrawingCacheSize() {
     return MAXIMUM_DRAWING_CACHE_SIZE;
   }
 
   @Implementation
-  public static long getZoomControlsTimeout() {
+  protected static long getZoomControlsTimeout() {
     return ZOOM_CONTROLS_TIMEOUT;
   }
 
   @Implementation
-  public static long getGlobalActionKeyTimeout() {
+  protected static long getGlobalActionKeyTimeout() {
     return GLOBAL_ACTIONS_KEY_TIMEOUT;
   }
 
   @Implementation
-  public static float getScrollFriction() {
+  protected static float getScrollFriction() {
     return SCROLL_FRICTION;
   }
 
   @Implementation
-  public boolean hasPermanentMenuKey() {
+  protected boolean hasPermanentMenuKey() {
     return hasPermanentMenuKey;
   }
 

@@ -18,7 +18,7 @@ public class ShadowContentProvider {
   }
 
   @Implementation
-  public String getCallingPackage() {
+  protected String getCallingPackage() {
     if (callingPackage != null) {
       return callingPackage;
     } else {

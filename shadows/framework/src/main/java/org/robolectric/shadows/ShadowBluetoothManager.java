@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowBluetoothManager {
 
     @Implementation
-    public BluetoothAdapter getAdapter() {
+    protected BluetoothAdapter getAdapter() {
       return BluetoothAdapter.getDefaultAdapter();
     }
 }

@@ -13,7 +13,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowIoUtils {
 
   @Implementation
-  public static String readFileAsString(String absolutePath) throws IOException {
+  protected static String readFileAsString(String absolutePath) throws IOException {
     return new String(Files.readAllBytes(Paths.get(absolutePath)), UTF_8);
   }
 }

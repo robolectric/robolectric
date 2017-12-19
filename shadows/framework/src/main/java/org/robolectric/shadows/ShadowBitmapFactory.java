@@ -36,7 +36,7 @@ public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<>();
 
   @Implementation
-  public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
+  protected static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
     Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream",
         ClassParameter.from(Resources.class, res),
         ClassParameter.from(TypedValue.class, value),
@@ -52,7 +52,7 @@ public class ShadowBitmapFactory {
   }
 
   @Implementation
-  public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
+  protected static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
     if (id == 0) {
       return null;
     }
@@ -62,17 +62,17 @@ public class ShadowBitmapFactory {
   }
 
   @Implementation
-  public static Bitmap decodeResource(Resources res, int id) {
+  protected static Bitmap decodeResource(Resources res, int id) {
     return decodeResource(res, id, null);
   }
 
   @Implementation
-  public static Bitmap decodeFile(String pathName) {
+  protected static Bitmap decodeFile(String pathName) {
     return decodeFile(pathName, null);
   }
 
   @Implementation
-  public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
+  protected static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
     Bitmap bitmap = create("file:" + pathName, options);
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.createdFromPath = pathName;
@@ -80,7 +80,7 @@ public class ShadowBitmapFactory {
   }
 
   @Implementation
-  public static Bitmap decodeFileDescriptor(FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
+  protected static Bitmap decodeFileDescriptor(FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
     Bitmap bitmap = create("fd:" + fd, opts);
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
@@ -88,12 +88,12 @@ public class ShadowBitmapFactory {
   }
 
   @Implementation
-  public static Bitmap decodeStream(InputStream is) {
+  protected static Bitmap decodeStream(InputStream is) {
     return decodeStream(is, null, null);
   }
 
   @Implementation
-  public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
+  protected static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
     String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
     Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
@@ -103,7 +103,7 @@ public class ShadowBitmapFactory {
   }
 
   @Implementation
-  public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
+  protected static Bitmap decodeByteArray(byte[] data, int offset, int length) {
     Bitmap bitmap = decodeByteArray(data, offset, length, new BitmapFactory.Options());
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.createdFromBytes = data;
@@ -111,7 +111,7 @@ public class ShadowBitmapFactory {
   }
 
   @Implementation
-  public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
+  protected static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
     String desc = new String(data, UTF_8);
     if (!Charset.forName("US-ASCII").newEncoder().canEncode(desc)) {
       Checksum checksumEngine = new CRC32();

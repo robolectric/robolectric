@@ -23,27 +23,27 @@ public class ShadowCursorWindow {
   private static final WindowData WINDOW_DATA = new WindowData();
 
   @Implementation
-  public static Number nativeCreate(String name, int cursorWindowSize) {
+  protected static Number nativeCreate(String name, int cursorWindowSize) {
     return castNativePtr(WINDOW_DATA.create(name, cursorWindowSize));
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeDispose(int windowPtr) {
+  protected static void nativeDispose(int windowPtr) {
     nativeDispose((long) windowPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeDispose(long windowPtr) {
+  protected static void nativeDispose(long windowPtr) {
     WINDOW_DATA.close(windowPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static byte[] nativeGetBlob(int windowPtr, int row, int column) {
+  protected static byte[] nativeGetBlob(int windowPtr, int row, int column) {
     return nativeGetBlob((long) windowPtr, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static byte[] nativeGetBlob(long windowPtr, int row, int column) {
+  protected static byte[] nativeGetBlob(long windowPtr, int row, int column) {
     Value value = WINDOW_DATA.get(windowPtr).value(row, column);
 
     switch (value.type) {
@@ -61,12 +61,12 @@ public class ShadowCursorWindow {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static String nativeGetString(int windowPtr, int row, int column) {
+  protected static String nativeGetString(int windowPtr, int row, int column) {
     return nativeGetString((long) windowPtr, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String nativeGetString(long windowPtr, int row, int column) {
+  protected static String nativeGetString(long windowPtr, int row, int column) {
     Value val = WINDOW_DATA.get(windowPtr).value(row, column);
     if (val.type == Cursor.FIELD_TYPE_BLOB) {
       throw new android.database.sqlite.SQLiteException("Getting string when column is blob. Row " + row + ", col " + column);
@@ -76,132 +76,132 @@ public class ShadowCursorWindow {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static long nativeGetLong(int windowPtr, int row, int column) {
+  protected static long nativeGetLong(int windowPtr, int row, int column) {
     return nativeGetLong((long) windowPtr, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static long nativeGetLong(long windowPtr, int row, int column) {
+  protected static long nativeGetLong(long windowPtr, int row, int column) {
     return nativeGetNumber(windowPtr, row, column).longValue();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static double nativeGetDouble(int windowPtr, int row, int column) {
+  protected static double nativeGetDouble(int windowPtr, int row, int column) {
     return nativeGetDouble((long) windowPtr, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static double nativeGetDouble(long windowPtr, int row, int column) {
+  protected static double nativeGetDouble(long windowPtr, int row, int column) {
     return nativeGetNumber(windowPtr, row, column).doubleValue();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeGetType(int windowPtr, int row, int column) {
+  protected static int nativeGetType(int windowPtr, int row, int column) {
     return nativeGetType((long) windowPtr, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeGetType(long windowPtr, int row, int column) {
+  protected static int nativeGetType(long windowPtr, int row, int column) {
     return WINDOW_DATA.get(windowPtr).value(row, column).type;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeClear(int windowPtr) {
+  protected static void nativeClear(int windowPtr) {
     nativeClear((long) windowPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeClear(long windowPtr) {
+  protected static void nativeClear(long windowPtr) {
     WINDOW_DATA.clear(windowPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeGetNumRows(int windowPtr) {
+  protected static int nativeGetNumRows(int windowPtr) {
     return nativeGetNumRows((long) windowPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeGetNumRows(long windowPtr) {
+  protected static int nativeGetNumRows(long windowPtr) {
     return WINDOW_DATA.get(windowPtr).numRows();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativePutBlob(int windowPtr, byte[] value, int row, int column) {
+  protected static boolean nativePutBlob(int windowPtr, byte[] value, int row, int column) {
     return nativePutBlob((long) windowPtr, value, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
+  protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_BLOB), row, column);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativePutString(int windowPtr, String value, int row, int column) {
+  protected static boolean nativePutString(int windowPtr, String value, int row, int column) {
     return nativePutString((long) windowPtr, value, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativePutString(long windowPtr, String value, int row, int column) {
+  protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_STRING), row, column);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativePutLong(int windowPtr, long value, int row, int column) {
+  protected static boolean nativePutLong(int windowPtr, long value, int row, int column) {
     return nativePutLong((long) windowPtr, value, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativePutLong(long windowPtr, long value, int row, int column) {
+  protected static boolean nativePutLong(long windowPtr, long value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_INTEGER), row, column);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativePutDouble(int windowPtr, double value, int row, int column) {
+  protected static boolean nativePutDouble(int windowPtr, double value, int row, int column) {
     return nativePutDouble((long) windowPtr, value, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativePutDouble(long windowPtr, double value, int row, int column) {
+  protected static boolean nativePutDouble(long windowPtr, double value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_FLOAT), row, column);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativePutNull(int windowPtr, int row, int column) {
+  protected static boolean nativePutNull(int windowPtr, int row, int column) {
     return nativePutNull((long) windowPtr, row, column);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativePutNull(long windowPtr, int row, int column) {
+  protected static boolean nativePutNull(long windowPtr, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(null, Cursor.FIELD_TYPE_NULL), row, column);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativeAllocRow(int windowPtr) {
+  protected static boolean nativeAllocRow(int windowPtr) {
     return nativeAllocRow((long) windowPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativeAllocRow(long windowPtr) {
+  protected static boolean nativeAllocRow(long windowPtr) {
     return WINDOW_DATA.get(windowPtr).allocRow();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativeSetNumColumns(int windowPtr, int columnNum) {
+  protected static boolean nativeSetNumColumns(int windowPtr, int columnNum) {
     return nativeSetNumColumns((long) windowPtr, columnNum);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativeSetNumColumns(long windowPtr, int columnNum) {
+  protected static boolean nativeSetNumColumns(long windowPtr, int columnNum) {
     return WINDOW_DATA.get(windowPtr).setNumColumns(columnNum);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static String nativeGetName(int windowPtr) {
+  protected static String nativeGetName(int windowPtr) {
     return nativeGetName((long) windowPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String nativeGetName(long windowPtr) {
+  protected static String nativeGetName(long windowPtr) {
     return WINDOW_DATA.get(windowPtr).getName();
   }
 

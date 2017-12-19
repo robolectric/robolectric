@@ -43,67 +43,67 @@ public class ShadowGooglePlayServicesUtil {
   }
 
   @Implementation
-  public static synchronized Context getRemoteContext(Context context) {
+  protected static synchronized Context getRemoteContext(Context context) {
     return googlePlayServicesUtilImpl.getRemoteContext(context);
   }
 
   @Implementation
-  public static synchronized Resources getRemoteResource(Context context) {
+  protected static synchronized Resources getRemoteResource(Context context) {
     return googlePlayServicesUtilImpl.getRemoteResource(context);
   }
 
   @Implementation
-  public static synchronized boolean showErrorDialogFragment(int errorCode, Activity activity,
+  protected static synchronized boolean showErrorDialogFragment(int errorCode, Activity activity,
       Fragment fragment, int requestCode, OnCancelListener cancelListener) {
     return googlePlayServicesUtilImpl.showErrorDialogFragment(
         errorCode, activity, fragment, requestCode, cancelListener);
   }
 
   @Implementation
-  public static synchronized boolean showErrorDialogFragment(int errorCode, Activity activity,
+  protected static synchronized boolean showErrorDialogFragment(int errorCode, Activity activity,
       int requestCode) {
     return googlePlayServicesUtilImpl.showErrorDialogFragment(
         errorCode, activity, requestCode);
   }
 
   @Implementation
-  public static synchronized boolean showErrorDialogFragment(
+  protected static synchronized boolean showErrorDialogFragment(
       int errorCode, Activity activity, int requestCode, OnCancelListener cancelListener) {
     return googlePlayServicesUtilImpl.showErrorDialogFragment(
         errorCode, activity, requestCode, cancelListener);
   }
 
   @Implementation
-  public static synchronized Dialog getErrorDialog(int errorCode, Activity activity,
+  protected static synchronized Dialog getErrorDialog(int errorCode, Activity activity,
       int requestCode) {
     return googlePlayServicesUtilImpl.getErrorDialog(errorCode, activity, requestCode);
   }
 
   @Implementation
-  public static synchronized Dialog getErrorDialog(int errorCode, Activity activity,
+  protected static synchronized Dialog getErrorDialog(int errorCode, Activity activity,
       int requestCode, OnCancelListener cancelListener) {
     return googlePlayServicesUtilImpl.getErrorDialog(
         errorCode, activity, requestCode, cancelListener);
   }
 
   @Implementation
-  public static synchronized PendingIntent getErrorPendingIntent(int errorCode, Context context,
+  protected static synchronized PendingIntent getErrorPendingIntent(int errorCode, Context context,
       int requestCode) {
     return googlePlayServicesUtilImpl.getErrorPendingIntent(errorCode, context, requestCode);
   }
 
   @Implementation
-  public static synchronized String getOpenSourceSoftwareLicenseInfo(Context context) {
+  protected static synchronized String getOpenSourceSoftwareLicenseInfo(Context context) {
     return googlePlayServicesUtilImpl.getOpenSourceSoftwareLicenseInfo(context);
   }
 
   @Implementation
-  public static synchronized int isGooglePlayServicesAvailable(Context context) {
+  protected static synchronized int isGooglePlayServicesAvailable(Context context) {
     return googlePlayServicesUtilImpl.isGooglePlayServicesAvailable(context);
   }
 
   @Implementation
-  public static synchronized void showErrorNotification(int errorCode, Context context) {
+  protected static synchronized void showErrorNotification(int errorCode, Context context) {
     googlePlayServicesUtilImpl.showErrorNotification(errorCode, context);
   }
 

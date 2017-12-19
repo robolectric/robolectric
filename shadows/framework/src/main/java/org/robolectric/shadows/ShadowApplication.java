@@ -195,24 +195,24 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public Context getApplicationContext() {
+  protected Context getApplicationContext() {
     return realApplication;
   }
 
   @Implementation
-  public void startActivity(Intent intent) {
+  protected void startActivity(Intent intent) {
     verifyActivityInManifest(intent);
     startedActivities.add(intent);
   }
 
   @Implementation
-  public void startActivity(Intent intent, Bundle options) {
+  protected void startActivity(Intent intent, Bundle options) {
     verifyActivityInManifest(intent);
     startedActivities.add(intent);
   }
 
   @Implementation
-  public ComponentName startService(Intent intent) {
+  protected ComponentName startService(Intent intent) {
     startedServices.add(new Intent.FilterComparison(intent));
     if (intent.getComponent() != null) {
       return intent.getComponent();
@@ -221,7 +221,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public boolean stopService(Intent name) {
+  protected boolean stopService(Intent name) {
     stoppedServices.add(new Intent.FilterComparison(name));
     return startedServices.contains(new Intent.FilterComparison(name));
   }
@@ -236,7 +236,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public boolean bindService(final Intent intent, final ServiceConnection serviceConnection, int i) {
+  protected boolean bindService(final Intent intent, final ServiceConnection serviceConnection, int i) {
     boundServiceConnections.add(serviceConnection);
     unboundServiceConnections.remove(serviceConnection);
     if (unbindableActions.contains(intent.getAction())) {
@@ -269,7 +269,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public void unbindService(final ServiceConnection serviceConnection) {
+  protected void unbindService(final ServiceConnection serviceConnection) {
     if (unbindServiceShouldThrowIllegalArgument) {
       throw new IllegalArgumentException();
     }
@@ -373,22 +373,22 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public void sendBroadcast(Intent intent) {
+  protected void sendBroadcast(Intent intent) {
     sendBroadcastWithPermission(intent, null);
   }
 
   @Implementation
-  public void sendBroadcast(Intent intent, String receiverPermission) {
+  protected void sendBroadcast(Intent intent, String receiverPermission) {
     sendBroadcastWithPermission(intent, receiverPermission);
   }
 
   @Implementation
-  public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
+  protected void sendOrderedBroadcast(Intent intent, String receiverPermission) {
     sendOrderedBroadcastWithPermission(intent, receiverPermission);
   }
 
   @Implementation
-  public void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
+  protected void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
                                    Handler scheduler, int initialCode, String initialData, Bundle initialExtras) {
     List<Wrapper> receivers = getAppropriateWrappers(intent, receiverPermission);
     sortByPriority(receivers);
@@ -550,7 +550,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public void sendStickyBroadcast(Intent intent) {
+  protected void sendStickyBroadcast(Intent intent) {
     stickyIntents.put(intent.getAction(), intent);
     sendBroadcast(intent);
   }
@@ -561,12 +561,12 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @return {@code null}
    */
   @Implementation
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+  protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
     return registerReceiverWithContext(receiver, filter, null, null, realApplication);
   }
 
   @Implementation
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+  protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
     return registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realApplication);
   }
 
@@ -601,7 +601,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
+  protected void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     boolean found = false;
     Iterator<Wrapper> iterator = registeredReceivers.iterator();
     while (iterator.hasNext()) {
@@ -701,7 +701,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return latestWakeLock;
   }
 
-  public void addWakeLock( PowerManager.WakeLock wl ) {
+  public void addWakeLock(PowerManager.WakeLock wl) {
     latestWakeLock = wl;
   }
 
@@ -800,7 +800,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public int checkPermission(String permission, int pid, int uid) {
+  protected int checkPermission(String permission, int pid, int uid) {
     return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
   }
 

@@ -43,7 +43,7 @@ public class ShadowMessage {
    */
   @Implementation
   @HiddenApi
-  public void recycleUnchecked() {
+  protected void recycleUnchecked() {
     if (getApiLevel() >= LOLLIPOP) {
       unschedule();
       directlyOn(realMessage, Message.class, "recycleUnchecked");
@@ -59,7 +59,7 @@ public class ShadowMessage {
    * {@link Message#recycle()} on the real object.
    */
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void recycle() {
+  protected void recycle() {
     unschedule();
     directlyOn(realMessage, Message.class, "recycle");
   }
@@ -89,12 +89,12 @@ public class ShadowMessage {
    * In API 19, a message was only considered "in use" during its dispatch. In API 21, the
    * message is considered "in use" from the time it is enqueued until the time that
    * it is freshly obtained via a call to {@link Message#obtain()}. This means that
-   * in API 21 messages that are in the recycled pool will still be marked as "in use". 
+   * in API 21 messages that are in the recycled pool will still be marked as "in use".
    *
    * @return {@code true} if the message is currently "in use", {@code false} otherwise.
    */
   @Implementation
-  public boolean isInUse() {
+  protected boolean isInUse() {
   	return directlyOn(realMessage, Message.class, "isInUse");
   }
 
@@ -103,23 +103,23 @@ public class ShadowMessage {
    * {@code Message.next}.
    *
    * @return The next message in the current message chain.
-   * @see #setNext(Message) 
+   * @see #setNext(Message)
    */
   public Message getNext() {
-    return getField(realMessage, "next");    
+    return getField(realMessage, "next");
   }
-  
+
   /**
    * Convenience method to provide setter access to the private field
    * {@code Message.next}.
    *
    * @param next the new next message for the current message.
-   * @see #getNext() 
+   * @see #getNext()
    */
   public void setNext(Message next) {
     setField(realMessage, "next", next);
   }
-  
+
   /**
    * Resets the static state of the {@link Message} class by
    * emptying the message pool.

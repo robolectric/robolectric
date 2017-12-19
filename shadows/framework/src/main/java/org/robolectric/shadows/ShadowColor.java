@@ -22,13 +22,13 @@ public class ShadowColor {
    * @param hsv Array to store HSV components
    */
   @Implementation
-  public static void RGBToHSV(int red, int green, int blue, float hsv[]) {
+  protected static void RGBToHSV(int red, int green, int blue, float hsv[]) {
     java.awt.Color.RGBtoHSB(red, green, blue, hsv);
     hsv[0] = hsv[0] * 360;
   }
 
   @Implementation
-  public static int HSVToColor(int alpha, float hsv[]) {
+  protected static int HSVToColor(int alpha, float hsv[]) {
     int rgb = java.awt.Color.HSBtoRGB(hsv[0] / 360, hsv[1], hsv[2]);
     return Color.argb(alpha, Color.red(rgb), Color.green(rgb), Color.blue(rgb));
   }

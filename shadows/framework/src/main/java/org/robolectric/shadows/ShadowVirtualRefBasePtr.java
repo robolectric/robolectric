@@ -22,13 +22,13 @@ public class ShadowVirtualRefBasePtr {
   }
 
   @Implementation
-  synchronized public static void nIncStrong(long ptr) {
+  synchronized protected static void nIncStrong(long ptr) {
     if (ptr == 0) return;
     POINTERS.get(ptr).incr();
   }
 
   @Implementation
-  synchronized public static void nDecStrong(long ptr) {
+  synchronized protected static void nDecStrong(long ptr) {
     if (ptr == 0) return;
     if (POINTERS.get(ptr).decr()) {
       POINTERS.remove(ptr);

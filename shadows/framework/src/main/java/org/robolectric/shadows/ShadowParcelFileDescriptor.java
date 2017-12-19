@@ -16,7 +16,7 @@ public class ShadowParcelFileDescriptor {
   private RandomAccessFile file;
 
   @Implementation
-  public static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
+  protected static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
     ParcelFileDescriptor pfd;
     try {
       Constructor<ParcelFileDescriptor> constructor = ParcelFileDescriptor.class.getDeclaredConstructor(FileDescriptor.class);
@@ -29,7 +29,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
-  public FileDescriptor getFileDescriptor() {
+  protected FileDescriptor getFileDescriptor() {
     try {
       return file.getFD();
     } catch (IOException e) {
@@ -38,7 +38,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
-  public long getStatSize() {
+  protected long getStatSize() {
     try {
       return file.length();
     } catch (IOException e) {
@@ -47,7 +47,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
-  public void close() throws IOException {
+  protected void close() throws IOException {
     file.close();
   }
 }

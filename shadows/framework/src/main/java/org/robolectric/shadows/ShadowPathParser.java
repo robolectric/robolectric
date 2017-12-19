@@ -10,18 +10,18 @@ import org.robolectric.annotation.Implements;
 public class ShadowPathParser {
 
   @Implementation
-  public static long nCreatePathDataFromString(String pathString, int stringLength) {
+  protected static long nCreatePathDataFromString(String pathString, int stringLength) {
     return 1;
   }
 
   @Implementation
-  public static boolean nInterpolatePathData(long outDataPtr, long fromDataPtr,
+  protected static boolean nInterpolatePathData(long outDataPtr, long fromDataPtr,
                                              long toDataPtr, float fraction) {
     return true;
   }
 
   @Implementation
-  public static boolean nCanMorph(long fromDataPtr, long toDataPtr) {
+  protected static boolean nCanMorph(long fromDataPtr, long toDataPtr) {
     return true;
   }
 }

@@ -53,39 +53,39 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public boolean isDeviceOwnerApp(String packageName) {
+  protected boolean isDeviceOwnerApp(String packageName) {
     return deviceOwner != null && deviceOwner.getPackageName().equals(packageName);
   }
 
   @Implementation
-  public boolean isProfileOwnerApp(String packageName) {
+  protected boolean isProfileOwnerApp(String packageName) {
     return profileOwner != null && profileOwner.getPackageName().equals(packageName);
   }
 
   @Implementation
-  public boolean isAdminActive(ComponentName who) {
+  protected boolean isAdminActive(ComponentName who) {
     return who != null && deviceAdmins.contains(who);
   }
 
   @Implementation
-  public List<ComponentName> getActiveAdmins() {
+  protected List<ComponentName> getActiveAdmins() {
     return deviceAdmins;
   }
 
   @Implementation
-  public void addUserRestriction(ComponentName admin, String key) {
+  protected void addUserRestriction(ComponentName admin, String key) {
     enforceActiveAdmin(admin);
     getShadowUserManager().setUserRestriction(Process.myUserHandle(), key, true);
   }
 
   @Implementation
-  public void clearUserRestriction(ComponentName admin, String key) {
+  protected void clearUserRestriction(ComponentName admin, String key) {
     enforceActiveAdmin(admin);
     getShadowUserManager().setUserRestriction(Process.myUserHandle(), key, false);
   }
 
   @Implementation
-  public void setApplicationHidden(ComponentName admin, String packageName, boolean hidden) {
+  protected void setApplicationHidden(ComponentName admin, String packageName, boolean hidden) {
     enforceActiveAdmin(admin);
     if (hidden) {
       hiddenPackages.add(packageName);
@@ -96,7 +96,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public boolean isApplicationHidden(ComponentName admin, String packageName) {
+  protected boolean isApplicationHidden(ComponentName admin, String packageName) {
     enforceActiveAdmin(admin);
     return hiddenPackages.contains(packageName);
   }
@@ -107,7 +107,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public int enableSystemApp(ComponentName admin, String packageName) {
+  protected int enableSystemApp(ComponentName admin, String packageName) {
     enforceActiveAdmin(admin);
     systemAppsEnabled.add(packageName);
     return 1;
@@ -119,8 +119,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public void setUninstallBlocked(
-      ComponentName admin, String packageName, boolean uninstallBlocked) {
+  protected void setUninstallBlocked(ComponentName admin, String packageName, boolean uninstallBlocked) {
     enforceActiveAdmin(admin);
     if (uninstallBlocked) {
       uninstallBlockedPackages.add(packageName);
@@ -130,7 +129,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public boolean isUninstallBlocked(ComponentName admin, String packageName) {
+  protected boolean isUninstallBlocked(ComponentName admin, String packageName) {
     enforceActiveAdmin(admin);
     return uninstallBlockedPackages.contains(packageName);
   }
@@ -158,7 +157,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public Bundle getApplicationRestrictions(ComponentName admin, String packageName) {
+  protected Bundle getApplicationRestrictions(ComponentName admin, String packageName) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return getApplicationRestrictions(packageName);
   }
@@ -171,8 +170,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public void setApplicationRestrictions(
-      ComponentName admin, String packageName, Bundle applicationRestrictions) {
+  protected void setApplicationRestrictions(ComponentName admin, String packageName, Bundle applicationRestrictions) {
     enforceDeviceOwnerOrProfileOwner(admin);
     setApplicationRestrictions(packageName, applicationRestrictions);
   }
@@ -211,8 +209,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public void setAccountManagementDisabled(
-      ComponentName admin, String accountType, boolean disabled) {
+  protected void setAccountManagementDisabled(ComponentName admin, String accountType, boolean disabled) {
     enforceDeviceOwnerOrProfileOwner(admin);
     if (disabled) {
       accountTypesWithManagementDisabled.add(accountType);
@@ -222,7 +219,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public String[] getAccountTypesWithManagementDisabled() {
+  protected String[] getAccountTypesWithManagementDisabled() {
     return accountTypesWithManagementDisabled.toArray(new String[0]);
   }
 
@@ -233,7 +230,7 @@ public class ShadowDevicePolicyManager {
    * profile owner and device owner since Android O.
    */
   @Implementation(minSdk = N)
-  public void setOrganizationName(ComponentName admin, @Nullable CharSequence name) {
+  protected void setOrganizationName(ComponentName admin, @Nullable CharSequence name) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       enforceDeviceOwnerOrProfileOwner(admin);
     } else {
@@ -248,7 +245,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation(minSdk = N)
-  public void setOrganizationColor(ComponentName admin, int color) {
+  protected void setOrganizationColor(ComponentName admin, int color) {
     enforceProfileOwner(admin);
     organizationColor = color;
   }
@@ -265,7 +262,7 @@ public class ShadowDevicePolicyManager {
    */
   @Implementation(minSdk = N)
   @Nullable
-  public CharSequence getOrganizationName(ComponentName admin) {
+  protected CharSequence getOrganizationName(ComponentName admin) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       enforceDeviceOwnerOrProfileOwner(admin);
     } else {
@@ -276,19 +273,19 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation(minSdk = N)
-  public int getOrganizationColor(ComponentName admin) {
+  protected int getOrganizationColor(ComponentName admin) {
     enforceProfileOwner(admin);
     return organizationColor;
   }
 
   @Implementation
-  public void setAutoTimeRequired(ComponentName admin, boolean required) {
+  protected void setAutoTimeRequired(ComponentName admin, boolean required) {
     enforceDeviceOwnerOrProfileOwner(admin);
     isAutoTimeRequired = required;
   }
 
   @Implementation
-  public boolean getAutoTimeRequired() {
+  protected boolean getAutoTimeRequired() {
     return isAutoTimeRequired;
   }
 
@@ -301,7 +298,7 @@ public class ShadowDevicePolicyManager {
    * set the restriction and return true.
    */
   @Implementation
-  public boolean setPermittedAccessibilityServices(ComponentName admin, List<String> packageNames) {
+  protected boolean setPermittedAccessibilityServices(ComponentName admin, List<String> packageNames) {
     enforceDeviceOwnerOrProfileOwner(admin);
     permittedAccessibilityServices = packageNames;
     return true;
@@ -309,7 +306,7 @@ public class ShadowDevicePolicyManager {
 
   @Implementation
   @Nullable
-  public List<String> getPermittedAccessibilityServices(ComponentName admin) {
+  protected List<String> getPermittedAccessibilityServices(ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return permittedAccessibilityServices;
   }
@@ -323,7 +320,7 @@ public class ShadowDevicePolicyManager {
    * restriction and return true.
    */
   @Implementation
-  public boolean setPermittedInputMethods(ComponentName admin, List<String> packageNames) {
+  protected boolean setPermittedInputMethods(ComponentName admin, List<String> packageNames) {
     enforceDeviceOwnerOrProfileOwner(admin);
     permittedInputMethods = packageNames;
     return true;
@@ -331,7 +328,7 @@ public class ShadowDevicePolicyManager {
 
   @Implementation
   @Nullable
-  public List<String> getPermittedInputMethods(ComponentName admin) {
+  protected List<String> getPermittedInputMethods(ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return permittedInputMethods;
   }

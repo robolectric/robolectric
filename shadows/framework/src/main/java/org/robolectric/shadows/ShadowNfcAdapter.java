@@ -22,12 +22,12 @@ public class ShadowNfcAdapter {
   private NfcAdapter.CreateNdefMessageCallback callback;
 
   @Implementation
-  public static NfcAdapter getNfcAdapter(Context context) {
+  protected static NfcAdapter getNfcAdapter(Context context) {
     return ReflectionHelpers.callConstructor(NfcAdapter.class);
   }
 
   @Implementation
-  public void enableForegroundDispatch(Activity activity, PendingIntent intent, IntentFilter[] filters, String[][] techLists) {
+  protected void enableForegroundDispatch(Activity activity, PendingIntent intent, IntentFilter[] filters, String[][] techLists) {
     this.enabledActivity = activity;
     this.intent = intent;
     this.filters = filters;
@@ -35,17 +35,17 @@ public class ShadowNfcAdapter {
   }
 
   @Implementation
-  public void disableForegroundDispatch(Activity activity) {
+  protected void disableForegroundDispatch(Activity activity) {
     disabledActivity = activity;
   }
 
   @Implementation
-  public void setNdefPushMessageCallback(NfcAdapter.CreateNdefMessageCallback callback, Activity activity, Activity... activities) {
+  protected void setNdefPushMessageCallback(NfcAdapter.CreateNdefMessageCallback callback, Activity activity, Activity... activities) {
     this.callback = callback;
   }
 
   @Implementation
-  public boolean isEnabled() {
+  protected boolean isEnabled() {
     return enabled;
   }
 

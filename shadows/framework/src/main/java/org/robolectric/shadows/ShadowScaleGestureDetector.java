@@ -17,12 +17,12 @@ public class ShadowScaleGestureDetector {
   private float focusY;
 
   @Implementation
-  public void __constructor__(Context context, ScaleGestureDetector.OnScaleGestureListener listener) {
+  protected void __constructor__(Context context, ScaleGestureDetector.OnScaleGestureListener listener) {
     this.listener = listener;
   }
 
   @Implementation
-  public boolean onTouchEvent(MotionEvent event) {
+  protected boolean onTouchEvent(MotionEvent event) {
     onTouchEventMotionEvent = event;
     return true;
   }
@@ -47,7 +47,7 @@ public class ShadowScaleGestureDetector {
   }
 
   @Implementation
-  public float getScaleFactor() {
+  protected float getScaleFactor() {
     return scaleFactor;
   }
 
@@ -57,12 +57,12 @@ public class ShadowScaleGestureDetector {
   }
 
   @Implementation
-  public float getFocusX(){
+  protected float getFocusX(){
     return focusX;
   }
 
   @Implementation
-  public float getFocusY(){
+  protected float getFocusY(){
     return focusY;
   }
 }

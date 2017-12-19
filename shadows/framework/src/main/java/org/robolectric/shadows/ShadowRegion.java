@@ -10,7 +10,7 @@ public class ShadowRegion {
   public static int nextId = 1;
 
   @HiddenApi @Implementation
-  public static int nativeConstructor() {
+  protected static int nativeConstructor() {
     return nextId++;
   }
 }

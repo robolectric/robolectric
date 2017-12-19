@@ -33,12 +33,12 @@ public class ShadowSharedMemory {
    * For tests, returns a {@link ByteBuffer} of the requested size.
    */
   @Implementation
-  public ByteBuffer map(int prot, int offset, int length) throws ErrnoException {
+  protected ByteBuffer map(int prot, int offset, int length) {
     return ByteBuffer.allocate(length);
   }
 
   @Implementation
-  public static FileDescriptor nCreate(String name, int size) throws ErrnoException {
+  protected static FileDescriptor nCreate(String name, int size) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
     try {
@@ -57,7 +57,7 @@ public class ShadowSharedMemory {
   }
 
   @Implementation
-  public static int nGetSize(FileDescriptor fd) {
+  protected static int nGetSize(FileDescriptor fd) {
     synchronized (filesByFd) {
       return (int) filesByFd.get(fd).length();
     }

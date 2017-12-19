@@ -37,7 +37,7 @@ public class ShadowAppOpsManager {
   Multimap<String, Integer> mStoredOps = HashMultimap.create();
 
   @Implementation(minSdk = KITKAT)
-  public int noteOp(int op, int uid, String packageName) {
+  protected int noteOp(int op, int uid, String packageName) {
     mStoredOps.put(getInternalKey(uid, packageName), op);
 
     // Permission check not currently implemented in this shadow.
@@ -46,7 +46,7 @@ public class ShadowAppOpsManager {
 
   @Implementation(minSdk = KITKAT)
   @HiddenApi
-  public List<PackageOps> getOpsForPackage(int uid, String packageName, int[] ops) {
+  protected List<PackageOps> getOpsForPackage(int uid, String packageName, int[] ops) {
     Set<Integer> opFilter = new HashSet<>();
     if (ops != null) {
       for (int op : ops) {

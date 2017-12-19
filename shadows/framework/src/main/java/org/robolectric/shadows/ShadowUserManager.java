@@ -27,17 +27,17 @@ public class ShadowUserManager {
   private Map<UserHandle, Long> serialNumbers = new HashMap<>();
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getApplicationRestrictions(String packageName) {
+  protected Bundle getApplicationRestrictions(String packageName) {
     return null;
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public List<UserHandle> getUserProfiles(){
+  protected List<UserHandle> getUserProfiles(){
     return Collections.emptyList();
   }
 
   @Implementation(minSdk = N)
-  public boolean isUserUnlocked() {
+  protected boolean isUserUnlocked() {
     return userUnlocked;
   }
 
@@ -49,7 +49,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean isManagedProfile() {
+  protected boolean isManagedProfile() {
     return managedProfile;
   }
 
@@ -61,7 +61,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
+  protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
     Bundle bundle = userRestrictions.get(userHandle);
     return bundle != null && bundle.getBoolean(restrictionKey);
   }
@@ -81,7 +81,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getUserRestrictions(UserHandle userHandle) {
+  protected Bundle getUserRestrictions(UserHandle userHandle) {
     return getUserRestrictionsForUser(userHandle);
   }
 
@@ -95,7 +95,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public long getSerialNumberForUser(UserHandle userHandle) {
+  protected long getSerialNumberForUser(UserHandle userHandle) {
     Long result = serialNumbers.get(userHandle);
     return result == null ? -1L : result;
   }

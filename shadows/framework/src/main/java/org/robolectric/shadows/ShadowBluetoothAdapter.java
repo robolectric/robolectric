@@ -25,12 +25,12 @@ public class ShadowBluetoothAdapter {
   private int state;
 
   @Implementation
-  public static BluetoothAdapter getDefaultAdapter() {
+  protected static BluetoothAdapter getDefaultAdapter() {
     return (BluetoothAdapter) ShadowApplication.getInstance().getBluetoothAdapter();
   }
 
   @Implementation
-  public Set<BluetoothDevice> getBondedDevices() {
+  protected Set<BluetoothDevice> getBondedDevices() {
     return Collections.unmodifiableSet(bondedDevices);
   }
 
@@ -39,31 +39,31 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
-  public boolean startDiscovery() {
+  protected boolean startDiscovery() {
     isDiscovering = true;
     return true;
   }
 
   @Implementation
-  public boolean cancelDiscovery() {
+  protected boolean cancelDiscovery() {
     isDiscovering = false;
     return true;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public boolean startLeScan(LeScanCallback callback) {
+  protected boolean startLeScan(LeScanCallback callback) {
     return startLeScan(null, callback);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public boolean startLeScan(UUID[] serviceUuids, LeScanCallback callback) {
+  protected boolean startLeScan(UUID[] serviceUuids, LeScanCallback callback) {
     // Ignoring the serviceUuids param for now.
     leScanCallbacks.add(callback);
     return true;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public void stopLeScan(LeScanCallback callback) {
+  protected void stopLeScan(LeScanCallback callback) {
     leScanCallbacks.remove(callback);
   }
 
@@ -79,34 +79,34 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
-  public boolean isDiscovering() {
+  protected boolean isDiscovering() {
     return isDiscovering;
   }
 
   @Implementation
-  public boolean isEnabled() {
+  protected boolean isEnabled() {
     return enabled;
   }
 
   @Implementation
-  public boolean enable() {
+  protected boolean enable() {
     enabled = true;
     return true;
   }
 
   @Implementation
-  public boolean disable() {
+  protected boolean disable() {
     enabled = false;
     return true;
   }
 
   @Implementation
-  public String getAddress() {
+  protected String getAddress() {
     return this.address;
   }
 
   @Implementation
-  public int getState() {
+  protected int getState() {
     return state;
   }
 
@@ -120,7 +120,7 @@ public class ShadowBluetoothAdapter {
    * @return true if the address is valid, false otherwise
    */
   @Implementation
-  public static boolean checkBluetoothAddress(String address) {
+  protected static boolean checkBluetoothAddress(String address) {
     if (address == null || address.length() != ADDRESS_LENGTH) {
       return false;
     }

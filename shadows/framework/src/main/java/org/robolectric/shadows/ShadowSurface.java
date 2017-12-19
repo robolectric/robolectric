@@ -10,7 +10,7 @@ public class ShadowSurface {
   private SurfaceTexture surfaceTexture;
 
   @Implementation
-  public void __constructor__(SurfaceTexture surfaceTexture) {
+  protected void __constructor__(SurfaceTexture surfaceTexture) {
     this.surfaceTexture = surfaceTexture;
   }
 

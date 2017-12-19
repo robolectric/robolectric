@@ -11,12 +11,12 @@ import org.robolectric.annotation.Implements;
 @Implements(value = Linux.class, minSdk = Build.VERSION_CODES.O, isInAndroidSdk = false)
 public class ShadowLinux {
   @Implementation
-  public static void mkdir(String path, int mode) throws ErrnoException {
+  protected static void mkdir(String path, int mode) throws ErrnoException {
     new File(path).mkdirs();
   }
 
   @Implementation
-  public StructStat stat(String path) throws ErrnoException {
+  protected StructStat stat(String path) throws ErrnoException {
     return new StructStat(0, // st_dev
         0, // st_ino
         0, // st_mode
