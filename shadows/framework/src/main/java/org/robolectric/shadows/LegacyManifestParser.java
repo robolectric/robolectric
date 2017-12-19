@@ -189,6 +189,9 @@ public class LegacyManifestParser {
                 .getResourceId(
                     ResName.qualifyResName(
                         data.getLabel().replace("@", ""), pkg.packageName, "string"));
+        if (activityInfo.labelRes == 0) {
+          activityInfo.nonLocalizedLabel = data.getLabel();
+        }
       }
 
       Activity activity = createActivity(pkg, activityInfo);

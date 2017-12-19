@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.ContextThemeWrapper;
 import android.view.Window;
 import android.widget.LinearLayout;
 import java.util.ArrayList;
@@ -217,34 +219,85 @@ public class ActivityControllerTest {
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
-    
+
+    controller.setup();
+    transcript.clear();
     controller.configurationChange(config);
-    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume");
+    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
-  
+
   @Test
   public void configurationChange_callsOnConfigurationChangedAndAppliesConfigWhenAllManaged() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
-    
-    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
     configController.configurationChange(config);
     assertThat(transcript).contains("onConfigurationChanged");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
-  
+
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     final int newOrientation = config.orientation = (config.orientation + 1) % 3;
-    
-    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
     configController.configurationChange(config);
     assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
     assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void noArgsConfigurationChange_appliesChangedSystemConfiguration() throws Exception {
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    RuntimeEnvironment.setQualifiers("port");
+    configController.configurationChange();
+    assertThat(configController.get().newConfig.orientation)
+        .isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void configurationChange_restoresTheme() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    config.orientation = Configuration.ORIENTATION_PORTRAIT;
+
+    controller.get().setTheme(android.R.style.Theme_Black);
+    controller.setup();
+    transcript.clear();
+    controller.configurationChange(config);
+    int restoredTheme = shadowOf((ContextThemeWrapper) controller.get()).callGetThemeResId();
+    assertThat(restoredTheme).isEqualTo(android.R.style.Theme_Black);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void configurationChange_reattachesRetainedFragments() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    config.orientation = Configuration.ORIENTATION_PORTRAIT;
+
+    ActivityController<NonConfigStateActivity> configController =
+        Robolectric.buildActivity(NonConfigStateActivity.class).setup();
+    NonConfigStateActivity activity = configController.get();
+    Fragment retainedFragment = activity.retainedFragment;
+    Fragment otherFragment = activity.nonRetainedFragment;
+    configController.configurationChange(config);
+    activity = configController.get();
+
+    assertThat(activity.retainedFragment).isNotNull();
+    assertThat(activity.retainedFragment).isSameAs(retainedFragment);
+    assertThat(activity.nonRetainedFragment).isNotNull();
+    assertThat(activity.nonRetainedFragment).isNotSameAs(otherFragment);
   }
 
   public static class MyActivity extends Activity {
@@ -333,7 +386,7 @@ public class ActivityControllerTest {
       transcribeWhilePaused("onUserLeaveHint");
       transcript.add("finishedOnUserLeaveHint");
     }
-    
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
       super.onConfigurationChanged(newConfig);
@@ -349,8 +402,51 @@ public class ActivityControllerTest {
       });
     }
   }
-  
+
   public static class ConfigAwareActivity extends MyActivity {
-	  
+
+    Configuration newConfig;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState != null) {
+        assertThat(savedInstanceState.getSerializable("test")).isNotNull();
+      }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      outState.putSerializable("test", new Exception());
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      this.newConfig = new Configuration(newConfig);
+      super.onConfigurationChanged(newConfig);
+    }
+  }
+
+  public static final class NonConfigStateActivity extends Activity {
+    Fragment retainedFragment;
+    Fragment nonRetainedFragment;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState == null) {
+        retainedFragment = new Fragment();
+        retainedFragment.setRetainInstance(true);
+        nonRetainedFragment = new Fragment();
+        getFragmentManager().beginTransaction()
+            .add(android.R.id.content, retainedFragment, "retained")
+            .add(android.R.id.content, nonRetainedFragment, "non-retained")
+            .commit();
+      } else {
+        retainedFragment = getFragmentManager().findFragmentByTag("retained");
+        nonRetainedFragment = getFragmentManager().findFragmentByTag("non-retained");
+      }
+    }
   }
 }

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,7 +46,8 @@ public class ResourceLoaderTest {
   }
 
   private void checkForPollutionHelper() {
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + RuntimeEnvironment.getApiLevel());
+    assertThat(RuntimeEnvironment.getQualifiers())
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
 
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = view.findViewById(android.R.id.text1);

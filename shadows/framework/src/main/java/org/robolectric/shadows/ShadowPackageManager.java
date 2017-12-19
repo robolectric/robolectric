@@ -140,6 +140,7 @@ public class ShadowPackageManager {
     return classString;
   }
 
+
   static ResolveInfo getResolveInfo(Activity activity, IntentFilter intentFilter) {
     ResolveInfo info = new ResolveInfo();
     info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
@@ -492,10 +493,20 @@ public class ShadowPackageManager {
     return 0;
   }
 
+  /**
+   * @deprecated - this will be the default behaviour in Robolectric 3.7 and bring behaviour into line with that of
+   * other Android components (note this method only affects Activities)
+   */
+  @Deprecated
   public boolean isQueryIntentImplicitly() {
     return queryIntentImplicitly;
   }
 
+  /**
+   * @deprecated - this will be the default behaviour in Robolectric 3.7 and bring behaviour into line with that of
+   * other Android components (note this method only affects Activities)
+   */
+  @Deprecated
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
     this.queryIntentImplicitly = queryIntentImplicitly;
   }

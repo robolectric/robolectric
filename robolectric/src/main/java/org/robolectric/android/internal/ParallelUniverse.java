@@ -1,7 +1,6 @@
 package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.app.ActivityThread;
 import android.app.Application;
@@ -19,15 +18,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
+import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
-import org.robolectric.android.ApplicationTestUtil;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
@@ -36,16 +34,20 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowContextImpl;
+import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageParser;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
@@ -56,7 +58,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Robolectric.reset();
 
     if (!loggingInitialized) {
-      shadowsAdapter.setupLogging();
+      ShadowLog.setupLogging();
       loggingInitialized = true;
     }
   }
@@ -93,16 +95,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
         displayMetrics);
-    setDisplayMetricsDimens(displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
         : configuration.locale;
     Locale.setDefault(locale);
-
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(configuration, displayMetrics);
-
 
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
@@ -112,7 +109,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
+    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
     PackageParser.Package parsedPackage = null;
 
     ApplicationInfo applicationInfo = null;
@@ -150,21 +148,32 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Class<?> contextImplClass =
         ReflectionHelpers.loadClass(
-            getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
+            getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
-    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
-    Resources.getSystem().getDisplayMetrics().setTo(displayMetrics);
+    Bootstrap.setUpDisplay(configuration, displayMetrics);
 
-    final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
+    Resources systemResources = Resources.getSystem();
+    systemResources.updateConfiguration(configuration, displayMetrics);
+
+    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
+    RuntimeEnvironment.systemContext = systemContextImpl;
+
+    Application app;
+    try {
+      app = (Application) testLifecycle.createApplication(method, appManifest, config);
+      System.out.println("*** TestLifecycle.createApplication() is a deprecated interface and will be removed in Robolectric 3.7;" +
+          "*** please refactor your tests and remove " + testLifecycle.getClass().getName() + ".");
+    } catch (Exception e) {
+      app = createApplication(appManifest, config);
+    }
+    Application application = app;
     RuntimeEnvironment.application = application;
 
     if (application != null) {
-      shadowsAdapter.bind(application, appManifest);
+      shadowOf(application).bind(appManifest);
 
       final Class<?> appBindDataClass;
       try {
@@ -183,7 +192,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
         shadowOf(contextImpl.getPackageManager()).addPackage(parsedPackage);
         ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
-        ApplicationTestUtil.attach(application, contextImpl);
+        shadowOf(application).callAttach(contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -196,23 +205,59 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
 
-      application.onCreate();
+      PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
+        application.onCreate();
+      });
     }
   }
 
-  // todo: kill this, use DisplayInfo to initialize instead
-  private void setDisplayMetricsDimens(DisplayMetrics displayMetrics) {
-    displayMetrics.scaledDensity = displayMetrics.density;
+  @VisibleForTesting
+  static Application createApplication(AndroidManifest appManifest, Config config) {
+    Application application = null;
+    if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
+      if (config.application().getCanonicalName() != null) {
+        Class<? extends Application> applicationClass;
+        try {
+          applicationClass = ClassNameResolver.resolve(null, config.application().getName());
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+        application = ReflectionHelpers.callConstructor(applicationClass);
+      }
+    } else if (appManifest != null && appManifest.getApplicationName() != null) {
+      Class<? extends Application> applicationClass = null;
+      try {
+        applicationClass = ClassNameResolver.resolve(appManifest.getPackageName(),
+            getTestApplicationName(appManifest.getApplicationName()));
+      } catch (ClassNotFoundException e) {
+        // no problem
+      }
 
-    displayMetrics.widthPixels = 480;
-    displayMetrics.heightPixels = 800;
-    displayMetrics.xdpi = displayMetrics.densityDpi;
-    displayMetrics.ydpi = displayMetrics.densityDpi;
+      if (applicationClass == null) {
+        try {
+          applicationClass = ClassNameResolver.resolve(appManifest.getPackageName(),
+              appManifest.getApplicationName());
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
 
-    displayMetrics.noncompatWidthPixels = displayMetrics.widthPixels;
-    displayMetrics.noncompatHeightPixels = displayMetrics.heightPixels;
-    displayMetrics.noncompatXdpi = displayMetrics.xdpi;
-    displayMetrics.noncompatYdpi = displayMetrics.ydpi;
+      application = ReflectionHelpers.callConstructor(applicationClass);
+    } else {
+      application = new Application();
+    }
+
+    return application;
+  }
+
+  @VisibleForTesting
+  static String getTestApplicationName(String applicationName) {
+    int lastDot = applicationName.lastIndexOf('.');
+    if (lastDot > -1) {
+      return applicationName.substring(0, lastDot) + ".Test" + applicationName.substring(lastDot + 1);
+    } else {
+      return "Test" + applicationName;
+    }
   }
 
   private void initInstrumentation(

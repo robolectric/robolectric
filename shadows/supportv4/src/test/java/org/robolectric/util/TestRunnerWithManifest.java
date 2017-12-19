@@ -1,6 +1,8 @@
 package org.robolectric.util;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URL;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
@@ -13,17 +15,24 @@ public class TestRunnerWithManifest extends RobolectricTestRunner {
     super(testClass);
   }
 
-  public static FsFile resourceFile(String... pathParts) {
+  private static FsFile resourceFile(String... pathParts) {
     return Fs.newFile(resourcesBaseDirFile()).join(pathParts);
   }
 
   private static File resourcesBaseDirFile() {
-    File testDir = Util.file("src", "test", "resources");
-    return hasTestManifest(testDir) ? testDir : Util.file("shadows-support-v4", "src", "test", "resources");
-  }
+    // Try to locate the manifest file as a classpath resource.
+    final String resourceName = "/src/test/resources/AndroidManifest.xml";
+    final URL resourceUrl = TestRunnerWithManifest.class.getResource(resourceName);
+    if (resourceUrl != null && "file".equals(resourceUrl.getProtocol())) {
+      // Construct a path to the manifest file relative to the current working directory.
+      final URI workingDirectory = URI.create(System.getProperty("user.dir"));
+      final URI absolutePath = URI.create(resourceUrl.getPath());
+      final URI relativePath = workingDirectory.relativize(absolutePath);
+      return new File(relativePath.toString()).getParentFile();
+    }
 
-  private static boolean hasTestManifest(File testDir) {
-    return new File(testDir, "AndroidManifest.xml").isFile();
+    // Return a path relative to the current working directory.
+    return Util.file("src", "test", "resources");
   }
 
   @Override

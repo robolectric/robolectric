@@ -54,6 +54,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 @Implements(Application.class)
@@ -112,6 +113,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public static void setDisplayMetricsDensity(float densityMultiplier) {
+    shadowOf(Resources.getSystem()).setDensity(densityMultiplier);
     shadowOf(RuntimeEnvironment.application.getResources()).setDensity(densityMultiplier);
   }
 
@@ -120,8 +122,10 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public static void setDefaultDisplay(Display display) {
-    shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
+    shadowOf(Resources.getSystem()).setDisplay(display);
     display.getMetrics(RuntimeEnvironment.application.getResources().getDisplayMetrics());
+
+    shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
     display.getMetrics(Resources.getSystem().getDisplayMetrics());
   }
 
@@ -131,6 +135,18 @@ public class ShadowApplication extends ShadowContextWrapper {
     if (appManifest != null) {
       this.registerBroadcastReceivers(appManifest);
     }
+  }
+
+  /**
+   * Attaches an application to a base context.
+   *
+   * @param application The application to attach.
+   * @param context The context with which to initialize the application, whose base context will
+   *                be attached to the application
+   */
+  public void callAttach(Context context) {
+    ReflectionHelpers.callInstanceMethod(Application.class, realApplication, "attach",
+        ReflectionHelpers.ClassParameter.from(Context.class, context));
   }
 
   private void registerBroadcastReceivers(AndroidManifest androidManifest) {

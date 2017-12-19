@@ -34,6 +34,7 @@ import android.print.PrintManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.CaptioningManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import java.util.List;
@@ -98,6 +99,7 @@ public class ShadowApplicationTest {
   @Config(minSdk = KITKAT)
   public void shouldProvideServicesIntroducedInKitKat() throws Exception {
     checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
+    checkSystemService(Context.CAPTIONING_SERVICE, CaptioningManager.class);
   }
 
   @Test

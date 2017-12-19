@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.Config.NONE;
 
 import android.accounts.Account;
 import android.app.Application;
@@ -707,9 +708,10 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  @Config(manifest = NONE)
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    Application application = new DefaultTestLifecycle().createApplication(null, null, null);
-    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
+    Application application = new Application();
+    shadowOf(application).callAttach(RuntimeEnvironment.systemContext);
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 

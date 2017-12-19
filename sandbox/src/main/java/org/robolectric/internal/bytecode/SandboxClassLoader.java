@@ -53,6 +53,7 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.Logger;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
@@ -110,6 +111,9 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
   @Override
   public URL getResource(String name) {
+    if (config.shouldAcquireResource(name)) {
+      return urls.getResource(name);
+    }
     URL fromParent = super.getResource(name);
     if (fromParent != null) {
       return fromParent;
@@ -128,7 +132,8 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   @Override
   protected Class<?> findClass(String name) throws ClassNotFoundException {
     if (config.shouldAcquire(name)) {
-      return maybeInstrumentClass(name);
+      return PerfStatsCollector.getInstance().measure("load sandboxed class",
+          () -> maybeInstrumentClass(name));
     } else {
       return systemClassLoader.loadClass(name);
     }
@@ -160,7 +165,9 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       byte[] bytes;
       ClassInfo classInfo = new ClassInfo(className, classNode);
       if (config.shouldInstrument(classInfo)) {
-        bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
+        bytes = PerfStatsCollector.getInstance().measure("instrument class",
+            () -> getInstrumentedBytes(classNode, config.containsStubs(classInfo))
+        );
       } else {
         bytes = origClassBytes;
       }

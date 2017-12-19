@@ -12,10 +12,10 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XHIGH;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XXHIGH;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_DENSITY_XXXHIGH;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_12KEY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_HDR_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_HDR_NO;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_HDR_YES;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_ANY;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_NOKEYS;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYBOARD_QWERTY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_ANY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_NO;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_KEYSHIDDEN_SOFT;
@@ -27,10 +27,6 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVHIDDE
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVHIDDEN_NO;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVHIDDEN_YES;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_ANY;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_DPAD;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_NONAV;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_TRACKBALL;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_NAVIGATION_WHEEL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_ANY;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_LAND;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_ORIENTATION_PORT;
@@ -47,40 +43,42 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSI
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_SMALL;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_SCREENSIZE_XLARGE;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_ANY;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_FINGER;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_NOTOUCH;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_TOUCHSCREEN_STYLUS;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_ANY;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_NO;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_NIGHT_YES;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_ANY;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_APPLIANCE;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_CAR;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_DESK;
 import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_NORMAL;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_TELEVISION;
-import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_UI_MODE_TYPE_WATCH;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_WIDE_COLOR_GAMUT_ANY;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_WIDE_COLOR_GAMUT_NO;
+import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_WIDE_COLOR_GAMUT_YES;
+import static org.robolectric.res.android.LocaleData.localeDataCompareRegions;
 import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
+import static org.robolectric.res.android.LocaleData.localeDataIsCloseToUsEnglish;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.primitives.Bytes;
 import com.google.common.primitives.UnsignedBytes;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 /**
  * Describes a particular resource configuration.
  *
- * <p>frameworks/base/include/androidfw/ResourceTypes.h (struct ResTable_config)
+ * Transliterated from:
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h (struct ResTable_config)
+ *
+ * Changes from 8.0.0_r4 partially applied.
  */
 public class ResTable_config {
   public static final boolean kDebugTableSuperNoisy = false;
@@ -115,7 +113,7 @@ public class ResTable_config {
   static final byte[] kFilipino = new byte[] {(byte)0xAD, 0x05};  // packed version of "fil" ported from C {'\xAD', '\x05'}
   static final byte[] kTagalog = new byte[] {'t', 'l'};  // packed version of "tl"
 
-  static org.robolectric.res.android.ResTable_config createConfig(ByteBuffer buffer) {
+  static ResTable_config createConfig(ByteBuffer buffer) {
     int startPosition = buffer.position();  // The starting buffer position to calculate bytes read.
     int size = buffer.getInt();
     int mcc = buffer.getShort() & 0xFFFF;
@@ -176,18 +174,25 @@ public class ResTable_config {
     byte[] unknown = new byte[size - bytesRead];
     buffer.get(unknown);
 
-    return new org.robolectric.res.android.ResTable_config(size, mcc, mnc, language, region, orientation,
+    return new ResTable_config(size, mcc, mnc, language, region, orientation,
         touchscreen, density, keyboard, navigation, inputFlags, screenWidth, screenHeight,
         sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp,
         screenHeightDp, localeScript, localeVariant, screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
   }
 
-  /** The different types of configs that can be present in a {@link org.robolectric.res.android.ResTable_config}. */
+  /**
+   * The different types of configs that can be present in a {@link ResTable_config}.
+   *
+   * The ordering of these types is roughly the same as {@code #isBetterThan}, but is not
+   * guaranteed to be the same.
+   */
   public enum Type {
     MCC,
     MNC,
     LANGUAGE_STRING,
+    LOCALE_SCRIPT_STRING,
     REGION_STRING,
+    LOCALE_VARIANT_STRING,
     SCREEN_LAYOUT_DIRECTION,
     SMALLEST_SCREEN_WIDTH_DP,
     SCREEN_WIDTH_DP,
@@ -195,6 +200,8 @@ public class ResTable_config {
     SCREEN_LAYOUT_SIZE,
     SCREEN_LAYOUT_LONG,
     SCREEN_LAYOUT_ROUND,
+    COLOR_MODE_WIDE_COLOR_GAMUT, // NB: COLOR_GAMUT takes priority over HDR in #isBetterThan.
+    COLOR_MODE_HDR,
     ORIENTATION,
     UI_MODE_TYPE,
     UI_MODE_NIGHT,
@@ -204,6 +211,7 @@ public class ResTable_config {
     KEYBOARD,
     NAVIGATION_HIDDEN,
     NAVIGATION,
+    SCREEN_SIZE,
     SDK_VERSION
   }
 
@@ -226,18 +234,11 @@ public class ResTable_config {
   public static final int MASK_UI_MODE_TYPE = 0x0f;
   public static final int UI_MODE_TYPE_ANY = ACONFIGURATION_UI_MODE_TYPE_ANY;
   public static final int UI_MODE_TYPE_NORMAL = ACONFIGURATION_UI_MODE_TYPE_NORMAL;
-  public static final int UI_MODE_TYPE_DESK = ACONFIGURATION_UI_MODE_TYPE_DESK;
-  public static final int UI_MODE_TYPE_CAR = ACONFIGURATION_UI_MODE_TYPE_CAR;
-  public static final int UI_MODE_TYPE_TELEVISION = ACONFIGURATION_UI_MODE_TYPE_TELEVISION;
-  public static final int UI_MODE_TYPE_APPLIANCE = ACONFIGURATION_UI_MODE_TYPE_APPLIANCE;
-  public static final int UI_MODE_TYPE_WATCH = ACONFIGURATION_UI_MODE_TYPE_WATCH;
 
   // uiMode bits for the night switch;
   public static final int MASK_UI_MODE_NIGHT = 0x30;
   public static final int SHIFT_UI_MODE_NIGHT = 4;
   public static final int UI_MODE_NIGHT_ANY = ACONFIGURATION_UI_MODE_NIGHT_ANY << SHIFT_UI_MODE_NIGHT;
-  public static final int UI_MODE_NIGHT_NO = ACONFIGURATION_UI_MODE_NIGHT_NO << SHIFT_UI_MODE_NIGHT;
-  public static final int UI_MODE_NIGHT_YES = ACONFIGURATION_UI_MODE_NIGHT_YES << SHIFT_UI_MODE_NIGHT;
 
   public static final int DENSITY_DEFAULT = ACONFIGURATION_DENSITY_DEFAULT;
   public static final int DENSITY_LOW = ACONFIGURATION_DENSITY_LOW;
@@ -251,9 +252,6 @@ public class ResTable_config {
   public static final int DENSITY_NONE = ACONFIGURATION_DENSITY_NONE;
 
   public static final int TOUCHSCREEN_ANY  = ACONFIGURATION_TOUCHSCREEN_ANY;
-  public static final int TOUCHSCREEN_NOTOUCH  = ACONFIGURATION_TOUCHSCREEN_NOTOUCH;
-  public static final int TOUCHSCREEN_STYLUS  = ACONFIGURATION_TOUCHSCREEN_STYLUS;
-  public static final int TOUCHSCREEN_FINGER  = ACONFIGURATION_TOUCHSCREEN_FINGER;
 
   public static final int MASK_KEYSHIDDEN = 0x0003;
   public static final byte KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY;
@@ -262,9 +260,6 @@ public class ResTable_config {
   public static final byte KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
 
   public static final int KEYBOARD_ANY  = ACONFIGURATION_KEYBOARD_ANY;
-  public static final int KEYBOARD_NOKEYS  = ACONFIGURATION_KEYBOARD_NOKEYS;
-  public static final int KEYBOARD_QWERTY  = ACONFIGURATION_KEYBOARD_QWERTY;
-  public static final int KEYBOARD_12KEY  = ACONFIGURATION_KEYBOARD_12KEY;
 
   public static final int MASK_NAVHIDDEN = 0x000c;
   public static final int SHIFT_NAVHIDDEN = 2;
@@ -273,122 +268,167 @@ public class ResTable_config {
   public static final byte NAVHIDDEN_YES = ACONFIGURATION_NAVHIDDEN_YES << SHIFT_NAVHIDDEN;
 
   public static final int NAVIGATION_ANY  = ACONFIGURATION_NAVIGATION_ANY;
-  public static final int NAVIGATION_NONAV  = ACONFIGURATION_NAVIGATION_NONAV;
-  public static final int NAVIGATION_DPAD  = ACONFIGURATION_NAVIGATION_DPAD;
-  public static final int NAVIGATION_TRACKBALL  = ACONFIGURATION_NAVIGATION_TRACKBALL;
-  public static final int NAVIGATION_WHEEL  = ACONFIGURATION_NAVIGATION_WHEEL;
 
   public static final int SCREENHEIGHT_ANY = 0;
 
   public static final int SDKVERSION_ANY = 0;
   public static final int MINORVERSION_ANY = 0;
 
+  // from https://github.com/google/android-arscblamer/blob/master/java/com/google/devrel/gmscore/tools/apk/arsc/ResourceConfiguration.java
   /** The below constants are from android.content.res.Configuration. */
-  private static final int DENSITY_DPI_UNDEFINED = 0;
-  private static final int DENSITY_DPI_LDPI = 120;
-  private static final int DENSITY_DPI_MDPI = 160;
-  private static final int DENSITY_DPI_TVDPI = 213;
-  private static final int DENSITY_DPI_HDPI = 240;
-  private static final int DENSITY_DPI_XHDPI = 320;
-  private static final int DENSITY_DPI_XXHDPI = 480;
-  private static final int DENSITY_DPI_XXXHDPI = 640;
-  private static final int DENSITY_DPI_ANY  = 0xFFFE;
-  private static final int DENSITY_DPI_NONE = 0xFFFF;
-  private static final Map<Integer, String> DENSITY_DPI_VALUES =
-      ImmutableMap.<Integer, String>builder()
-          .put(DENSITY_DPI_UNDEFINED, "")
-          .put(DENSITY_DPI_LDPI, "ldpi")
-          .put(DENSITY_DPI_MDPI, "mdpi")
-          .put(DENSITY_DPI_TVDPI, "tvdpi")
-          .put(DENSITY_DPI_HDPI, "hdpi")
-          .put(DENSITY_DPI_XHDPI, "xhdpi")
-          .put(DENSITY_DPI_XXHDPI, "xxhdpi")
-          .put(DENSITY_DPI_XXXHDPI, "xxxhdpi")
-          .put(DENSITY_DPI_ANY, "anydpi")
-          .put(DENSITY_DPI_NONE, "nodpi")
-          .build();
+  static final int COLOR_MODE_WIDE_COLOR_GAMUT_MASK = 0x03;
 
-  private static final Map<Integer, String> KEYBOARD_VALUES = ImmutableMap.of(
-      KEYBOARD_NOKEYS, "nokeys",
-      KEYBOARD_QWERTY, "qwerty",
-      KEYBOARD_12KEY, "12key");
+  public static final int WIDE_COLOR_GAMUT_ANY = ACONFIGURATION_WIDE_COLOR_GAMUT_ANY;
+  public static final int WIDE_COLOR_GAMUT_NO = ACONFIGURATION_WIDE_COLOR_GAMUT_NO;
+  public static final int WIDE_COLOR_GAMUT_YES = ACONFIGURATION_WIDE_COLOR_GAMUT_YES;
+  public static final int MASK_WIDE_COLOR_GAMUT = 0x03;
+  static final int COLOR_MODE_WIDE_COLOR_GAMUT_UNDEFINED = 0;
+  static final int COLOR_MODE_WIDE_COLOR_GAMUT_NO = 0x01;
+  static final int COLOR_MODE_WIDE_COLOR_GAMUT_YES = 0x02;
 
-  private static final int KEYBOARDHIDDEN_MASK = 0x03;
-  private static final int KEYBOARDHIDDEN_NO   = 1;
-  private static final int KEYBOARDHIDDEN_YES  = 2;
-  private static final int KEYBOARDHIDDEN_SOFT = 3;
-  private static final Map<Integer, String> KEYBOARDHIDDEN_VALUES = ImmutableMap.of(
-      KEYBOARDHIDDEN_NO, "keysexposed",
-      KEYBOARDHIDDEN_YES, "keyshidden",
-      KEYBOARDHIDDEN_SOFT, "keyssoft");
+  private static final Map<Integer, String> COLOR_MODE_WIDE_COLOR_GAMUT_VALUES;
 
-  private static final Map<Integer, String> NAVIGATION_VALUES = ImmutableMap.of(
-      NAVIGATION_NONAV, "nonav",
-      NAVIGATION_DPAD, "dpad",
-      NAVIGATION_TRACKBALL, "trackball",
-      NAVIGATION_WHEEL, "wheel");
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(COLOR_MODE_WIDE_COLOR_GAMUT_UNDEFINED, "");
+    map.put(COLOR_MODE_WIDE_COLOR_GAMUT_NO, "nowidecg");
+    map.put(COLOR_MODE_WIDE_COLOR_GAMUT_YES, "widecg");
+    COLOR_MODE_WIDE_COLOR_GAMUT_VALUES = Collections.unmodifiableMap(map);
+  }
 
-  private static final int NAVIGATIONHIDDEN_MASK  = 0x0C;
-  private static final int NAVIGATIONHIDDEN_NO    = 0x04;
-  private static final int NAVIGATIONHIDDEN_YES   = 0x08;
-  private static final Map<Integer, String> NAVIGATIONHIDDEN_VALUES = ImmutableMap.of(
-      NAVIGATIONHIDDEN_NO, "navexposed",
-      NAVIGATIONHIDDEN_YES, "navhidden");
+  public static final int HDR_ANY = ACONFIGURATION_HDR_ANY;
+  public static final int HDR_NO = ACONFIGURATION_HDR_NO << 2;
+  public static final int HDR_YES = ACONFIGURATION_HDR_YES << 2;
+  public static final int MASK_HDR = 0x0c;
+  static final int COLOR_MODE_HDR_MASK = 0x0C;
+  static final int COLOR_MODE_HDR_UNDEFINED = 0;
+  static final int COLOR_MODE_HDR_NO = 0x04;
+  static final int COLOR_MODE_HDR_YES = 0x08;
 
-  private static final int ORIENTATION_PORTRAIT  = 0x01;
-  private static final int ORIENTATION_LANDSCAPE = 0x02;
-  private static final Map<Integer, String> ORIENTATION_VALUES = ImmutableMap.of(
-      ORIENTATION_PORTRAIT, "port",
-      ORIENTATION_LANDSCAPE, "land");
+  private static final Map<Integer, String> COLOR_MODE_HDR_VALUES;
 
-  private static final int SCREENLAYOUT_LAYOUTDIR_MASK = 0xC0;
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(COLOR_MODE_HDR_UNDEFINED, "");
+    map.put(COLOR_MODE_HDR_NO, "lowdr");
+    map.put(COLOR_MODE_HDR_YES, "highdr");
+    COLOR_MODE_HDR_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  public static final int DENSITY_DPI_UNDEFINED = 0;
+  static final int DENSITY_DPI_LDPI = 120;
+  public static final int DENSITY_DPI_MDPI = 160;
+  static final int DENSITY_DPI_TVDPI = 213;
+  static final int DENSITY_DPI_HDPI = 240;
+  static final int DENSITY_DPI_XHDPI = 320;
+  static final int DENSITY_DPI_XXHDPI = 480;
+  static final int DENSITY_DPI_XXXHDPI = 640;
+  public static final int DENSITY_DPI_ANY  = 0xFFFE;
+  public static final int DENSITY_DPI_NONE = 0xFFFF;
+
+  private static final Map<Integer, String> DENSITY_DPI_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(DENSITY_DPI_UNDEFINED, "");
+    map.put(DENSITY_DPI_LDPI, "ldpi");
+    map.put(DENSITY_DPI_MDPI, "mdpi");
+    map.put(DENSITY_DPI_TVDPI, "tvdpi");
+    map.put(DENSITY_DPI_HDPI, "hdpi");
+    map.put(DENSITY_DPI_XHDPI, "xhdpi");
+    map.put(DENSITY_DPI_XXHDPI, "xxhdpi");
+    map.put(DENSITY_DPI_XXXHDPI, "xxxhdpi");
+    map.put(DENSITY_DPI_ANY, "anydpi");
+    map.put(DENSITY_DPI_NONE, "nodpi");
+    DENSITY_DPI_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int KEYBOARD_NOKEYS = 1;
+  static final int KEYBOARD_QWERTY = 2;
+  static final int KEYBOARD_12KEY  = 3;
+
+  private static final Map<Integer, String> KEYBOARD_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(KEYBOARD_NOKEYS, "nokeys");
+    map.put(KEYBOARD_QWERTY, "qwerty");
+    map.put(KEYBOARD_12KEY, "12key");
+    KEYBOARD_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int KEYBOARDHIDDEN_MASK = 0x03;
+  static final int KEYBOARDHIDDEN_NO   = 1;
+  static final int KEYBOARDHIDDEN_YES  = 2;
+  static final int KEYBOARDHIDDEN_SOFT = 3;
+
+  private static final Map<Integer, String> KEYBOARDHIDDEN_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(KEYBOARDHIDDEN_NO, "keysexposed");
+    map.put(KEYBOARDHIDDEN_YES, "keyshidden");
+    map.put(KEYBOARDHIDDEN_SOFT, "keyssoft");
+    KEYBOARDHIDDEN_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int NAVIGATION_NONAV     = 1;
+  static final int NAVIGATION_DPAD      = 2;
+  static final int NAVIGATION_TRACKBALL = 3;
+  static final int NAVIGATION_WHEEL     = 4;
+
+  private static final Map<Integer, String> NAVIGATION_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(NAVIGATION_NONAV, "nonav");
+    map.put(NAVIGATION_DPAD, "dpad");
+    map.put(NAVIGATION_TRACKBALL, "trackball");
+    map.put(NAVIGATION_WHEEL, "wheel");
+    NAVIGATION_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int NAVIGATIONHIDDEN_MASK  = 0x0C;
+  static final int NAVIGATIONHIDDEN_NO    = 0x04;
+  static final int NAVIGATIONHIDDEN_YES   = 0x08;
+
+  private static final Map<Integer, String> NAVIGATIONHIDDEN_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(NAVIGATIONHIDDEN_NO, "navexposed");
+    map.put(NAVIGATIONHIDDEN_YES, "navhidden");
+    NAVIGATIONHIDDEN_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  public static final int ORIENTATION_ANY  = ACONFIGURATION_ORIENTATION_ANY;
+  public static final int ORIENTATION_PORT = ACONFIGURATION_ORIENTATION_PORT;
+  public static final int ORIENTATION_LAND = ACONFIGURATION_ORIENTATION_LAND;
+  public static final int ORIENTATION_SQUARE = ACONFIGURATION_ORIENTATION_SQUARE;
+  static final int ORIENTATION_PORTRAIT  = 0x01;
+  static final int ORIENTATION_LANDSCAPE = 0x02;
+
+  private static final Map<Integer, String> ORIENTATION_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(ORIENTATION_PORTRAIT, "port");
+    map.put(ORIENTATION_LANDSCAPE, "land");
+    ORIENTATION_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int SCREENLAYOUT_LAYOUTDIR_MASK = 0xC0;
   static final int SCREENLAYOUT_LAYOUTDIR_LTR  = 0x40;
   static final int SCREENLAYOUT_LAYOUTDIR_RTL  = 0x80;
-  private static final Map<Integer, String> SCREENLAYOUT_LAYOUTDIR_VALUES = ImmutableMap.of(
-      SCREENLAYOUT_LAYOUTDIR_LTR, "ldltr",
-      SCREENLAYOUT_LAYOUTDIR_RTL, "ldrtl");
 
-  private static final int SCREENLAYOUT_LONG_MASK = 0x30;
-  private static final int SCREENLAYOUT_LONG_NO   = 0x10;
-  private static final int SCREENLAYOUT_LONG_YES  = 0x20;
-  private static final Map<Integer, String> SCREENLAYOUT_LONG_VALUES = ImmutableMap.of(
-      SCREENLAYOUT_LONG_NO, "notlong",
-      SCREENLAYOUT_LONG_YES, "long");
+  private static final Map<Integer, String> SCREENLAYOUT_LAYOUTDIR_VALUES;
 
-  private static final int SCREENLAYOUT_ROUND_MASK = 0x0300;
-  private static final int SCREENLAYOUT_ROUND_NO   = 0x0100;
-  private static final int SCREENLAYOUT_ROUND_YES  = 0x0200;
-  private static final Map<Integer, String> SCREENLAYOUT_ROUND_VALUES = ImmutableMap.of(
-      SCREENLAYOUT_ROUND_NO, "notround",
-      SCREENLAYOUT_ROUND_YES, "round");
-
-  private static final int SCREENLAYOUT_SIZE_MASK   = 0x0F;
-  private static final int SCREENLAYOUT_SIZE_SMALL  = 0x01;
-  private static final int SCREENLAYOUT_SIZE_NORMAL = 0x02;
-  private static final int SCREENLAYOUT_SIZE_LARGE  = 0x03;
-  private static final int SCREENLAYOUT_SIZE_XLARGE = 0x04;
-  private static final Map<Integer, String> SCREENLAYOUT_SIZE_VALUES = ImmutableMap.of(
-      SCREENLAYOUT_SIZE_SMALL, "small",
-      SCREENLAYOUT_SIZE_NORMAL, "normal",
-      SCREENLAYOUT_SIZE_LARGE, "large",
-      SCREENLAYOUT_SIZE_XLARGE, "xlarge");
-
-  private static final Map<Integer, String> TOUCHSCREEN_VALUES = ImmutableMap.of(
-      TOUCHSCREEN_NOTOUCH, "notouch",
-      TOUCHSCREEN_FINGER, "finger");
-
-  private static final int UI_MODE_NIGHT_MASK = 0x30;
-  private static final Map<Integer, String> UI_MODE_NIGHT_VALUES = ImmutableMap.of(
-      UI_MODE_NIGHT_NO, "notnight",
-      UI_MODE_NIGHT_YES, "night");
-
-  private static final int UI_MODE_TYPE_MASK       = 0x0F;
-  private static final Map<Integer, String> UI_MODE_TYPE_VALUES = ImmutableMap.of(
-      UI_MODE_TYPE_DESK, "desk",
-      UI_MODE_TYPE_CAR, "car",
-      UI_MODE_TYPE_TELEVISION, "television",
-      UI_MODE_TYPE_APPLIANCE, "appliance",
-      UI_MODE_TYPE_WATCH, "watch");
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(SCREENLAYOUT_LAYOUTDIR_LTR, "ldltr");
+    map.put(SCREENLAYOUT_LAYOUTDIR_RTL, "ldrtl");
+    SCREENLAYOUT_LAYOUTDIR_VALUES = Collections.unmodifiableMap(map);
+  }
 
   // screenLayout bits for wide/long screen variation.
   public static final int MASK_SCREENLONG = 0x30;
@@ -396,17 +436,101 @@ public class ResTable_config {
   public static final int SCREENLONG_ANY = ACONFIGURATION_SCREENLONG_ANY << SHIFT_SCREENLONG;
   public static final int SCREENLONG_NO = ACONFIGURATION_SCREENLONG_NO << SHIFT_SCREENLONG;
   public static final int SCREENLONG_YES = ACONFIGURATION_SCREENLONG_YES << SHIFT_SCREENLONG;
+  static final int SCREENLAYOUT_LONG_MASK = 0x30;
+  static final int SCREENLAYOUT_LONG_NO   = 0x10;
+  static final int SCREENLAYOUT_LONG_YES  = 0x20;
+
+  private static final Map<Integer, String> SCREENLAYOUT_LONG_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(SCREENLAYOUT_LONG_NO, "notlong");
+    map.put(SCREENLAYOUT_LONG_YES, "long");
+    SCREENLAYOUT_LONG_VALUES = Collections.unmodifiableMap(map);
+  }
 
   // screenLayout2 bits for round/notround.
-  public static final int MASK_SCREENROUND = 0x03;
+  static final int MASK_SCREENROUND = 0x03;
   public static final int SCREENROUND_ANY = ACONFIGURATION_SCREENROUND_ANY;
   public static final int SCREENROUND_NO = ACONFIGURATION_SCREENROUND_NO;
   public static final int SCREENROUND_YES = ACONFIGURATION_SCREENROUND_YES;
 
-  public static final int ORIENTATION_ANY  = ACONFIGURATION_ORIENTATION_ANY;
-  public static final int ORIENTATION_PORT = ACONFIGURATION_ORIENTATION_PORT;
-  public static final int ORIENTATION_LAND = ACONFIGURATION_ORIENTATION_LAND;
-  public static final int ORIENTATION_SQUARE = ACONFIGURATION_ORIENTATION_SQUARE;
+  static final int SCREENLAYOUT_ROUND_MASK = 0x03;
+  static final int SCREENLAYOUT_ROUND_NO   = 0x01;
+  static final int SCREENLAYOUT_ROUND_YES  = 0x02;
+
+  private static final Map<Integer, String> SCREENLAYOUT_ROUND_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(SCREENLAYOUT_ROUND_NO, "notround");
+    map.put(SCREENLAYOUT_ROUND_YES, "round");
+    SCREENLAYOUT_ROUND_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int SCREENLAYOUT_SIZE_MASK   = 0x0F;
+  static final int SCREENLAYOUT_SIZE_SMALL  = 0x01;
+  static final int SCREENLAYOUT_SIZE_NORMAL = 0x02;
+  static final int SCREENLAYOUT_SIZE_LARGE  = 0x03;
+  static final int SCREENLAYOUT_SIZE_XLARGE = 0x04;
+
+  private static final Map<Integer, String> SCREENLAYOUT_SIZE_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(SCREENLAYOUT_SIZE_SMALL, "small");
+    map.put(SCREENLAYOUT_SIZE_NORMAL, "normal");
+    map.put(SCREENLAYOUT_SIZE_LARGE, "large");
+    map.put(SCREENLAYOUT_SIZE_XLARGE, "xlarge");
+    SCREENLAYOUT_SIZE_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int TOUCHSCREEN_NOTOUCH = 1;
+  @Deprecated static final int TOUCHSCREEN_STYLUS  = 2;
+  public static final int TOUCHSCREEN_FINGER  = 3;
+
+  private static final Map<Integer, String> TOUCHSCREEN_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(TOUCHSCREEN_NOTOUCH, "notouch");
+    map.put(TOUCHSCREEN_FINGER, "finger");
+    TOUCHSCREEN_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int UI_MODE_NIGHT_MASK = 0x30;
+  public static final int UI_MODE_NIGHT_NO   = 0x10;
+  static final int UI_MODE_NIGHT_YES  = 0x20;
+
+  private static final Map<Integer, String> UI_MODE_NIGHT_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(UI_MODE_NIGHT_NO, "notnight");
+    map.put(UI_MODE_NIGHT_YES, "night");
+    UI_MODE_NIGHT_VALUES = Collections.unmodifiableMap(map);
+  }
+
+  static final int UI_MODE_TYPE_MASK       = 0x0F;
+  static final int UI_MODE_TYPE_DESK       = 0x02;
+  static final int UI_MODE_TYPE_CAR        = 0x03;
+  static final int UI_MODE_TYPE_TELEVISION = 0x04;
+  static final int UI_MODE_TYPE_APPLIANCE  = 0x05;
+  static final int UI_MODE_TYPE_WATCH      = 0x06;
+  static final int UI_MODE_TYPE_VR_HEADSET = 0x07;
+
+  private static final Map<Integer, String> UI_MODE_TYPE_VALUES;
+
+  static {
+    Map<Integer, String> map = new HashMap<>();
+    map.put(UI_MODE_TYPE_DESK, "desk");
+    map.put(UI_MODE_TYPE_CAR, "car");
+    map.put(UI_MODE_TYPE_TELEVISION, "television");
+    map.put(UI_MODE_TYPE_APPLIANCE, "appliance");
+    map.put(UI_MODE_TYPE_WATCH, "watch");
+    map.put(UI_MODE_TYPE_VR_HEADSET, "vrheadset");
+    UI_MODE_TYPE_VALUES = Collections.unmodifiableMap(map);
+  }
 
   /** The number of bytes that this resource configuration takes up. */
   int size;
@@ -419,8 +543,34 @@ public class ResTable_config {
   public final byte[] language;
 
   /** Returns {@link #language} as an unpacked string representation. */
+  @Nonnull
   public final String languageString() {
     return unpackLanguage();
+  }
+
+  /** Returns the {@link #localeScript} as a string. */
+  public final String localeScriptString() {
+    return byteArrayToString(localeScript);
+  }
+
+  /** Returns the {@link #localeVariant} as a string. */
+  public final String localeVariantString() {
+    return byteArrayToString(localeVariant);
+  }
+
+  private String byteArrayToString(byte[] data) {
+    int length = Bytes.indexOf(data, (byte) 0);
+    return new String(data, 0, length >= 0 ? length : data.length, Charsets.US_ASCII);
+  }
+
+  /** Returns the wide color gamut section of {@link #colorMode}. */
+  public final int colorModeWideColorGamut() {
+    return colorMode & COLOR_MODE_WIDE_COLOR_GAMUT_MASK;
+  }
+
+  /** Returns the HDR section of {@link #colorMode}. */
+  public final int colorModeHdr() {
+    return colorMode & COLOR_MODE_HDR_MASK;
   }
 
   /** Returns a packed 2-byte country code. */
@@ -428,6 +578,7 @@ public class ResTable_config {
   public final byte[] country;
 
   /** Returns {@link #country} as an unpacked string representation. */
+  @Nonnull
   public final String regionString() {
     return unpackRegion();
   }
@@ -451,8 +602,16 @@ public class ResTable_config {
     return inputFlags & KEYBOARDHIDDEN_MASK;
   }
 
+  public final void keyboardHidden(int value) {
+    inputFlags = (inputFlags & ~KEYBOARDHIDDEN_MASK) | value;
+  }
+
   public final int navigationHidden() {
     return (inputFlags & NAVIGATIONHIDDEN_MASK) >> 2;
+  }
+
+  public final void navigationHidden(int value) {
+    inputFlags = (inputFlags & ~NAVIGATIONHIDDEN_MASK) | value;
   }
 
   public int screenWidth;
@@ -466,22 +625,22 @@ public class ResTable_config {
    * @param sdkVersion The SDK version of the returned configuration.
    * @return A copy of this configuration with the only difference being #sdkVersion.
    */
-  public final org.robolectric.res.android.ResTable_config withSdkVersion(int sdkVersion) {
+  public final ResTable_config withSdkVersion(int sdkVersion) {
     if (sdkVersion == this.sdkVersion) {
       return this;
     }
-    return new org.robolectric.res.android.ResTable_config(size, mcc, mnc, language, country,
+    return new ResTable_config(size, mcc, mnc, language, country,
         orientation, touchscreen, density, keyboard, navigation, inputFlags,
         screenWidth, screenHeight, sdkVersion, minorVersion, screenLayout, uiMode,
         smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant,
-        screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
+        screenLayout2, colorMode, screenConfigPad2, unknown);
   }
 
   public ResTable_config(int size, int mcc, int mnc, byte[] language, byte[] country,
       int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
       int screenWidth, int screenHeight, int sdkVersion, int minorVersion, int screenLayout,
       int uiMode, int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-      byte[] localeScript, byte[] localeVariant, byte screenLayout2, byte screenConfigPad1,
+      byte[] localeScript, byte[] localeVariant, byte screenLayout2, byte colorMode,
       short screenConfigPad2, byte[] unknown) {
     this.size = size;
     this.mcc = mcc;
@@ -506,7 +665,7 @@ public class ResTable_config {
     this.localeScript = localeScript;
     this.localeVariant = localeVariant;
     this.screenLayout2 = screenLayout2;
-    this.screenConfigPad1 = screenConfigPad1;
+    this.colorMode = colorMode;
     this.screenConfigPad2 = screenConfigPad2;
     this.unknown = unknown;
   }
@@ -526,7 +685,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutDirection(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | value;
   }
 
   public final int screenLayoutSize() {
@@ -534,7 +693,7 @@ public class ResTable_config {
   }
 
   public final void screenLayoutSize(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_SIZE_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_SIZE_MASK) | value;
   }
 
   public final int screenLayoutLong() {
@@ -542,18 +701,16 @@ public class ResTable_config {
   }
 
   public final void screenLayoutLong(int value) {
-    screenLayout = (byte) ((screenLayout & ~SCREENLAYOUT_LONG_MASK) | value);
+    screenLayout = (screenLayout & ~SCREENLAYOUT_LONG_MASK) | value;
   }
 
   public final int screenLayoutRound() {
-    return screenLayout2 & MASK_SCREENROUND;
+    return screenLayout2 & SCREENLAYOUT_ROUND_MASK;
   }
 
   public final void screenLayoutRound(int value) {
-    screenLayout2 = (byte) ((screenLayout2 & ~MASK_SCREENROUND) | value);
+    screenLayout2 = (byte) ((screenLayout2 & ~SCREENLAYOUT_ROUND_MASK) | value);
   }
-
-  public int colorMode;
 
   public int uiMode;
 
@@ -586,9 +743,9 @@ public class ResTable_config {
   public final byte[] localeVariant;
 
   /** An extension to {@link #screenLayout}. Contains round/notround qualifier. */
-  public byte screenLayout2;
-  public byte screenConfigPad1;
-  public short screenConfigPad2;
+  public byte screenLayout2;        // Contains round/notround qualifier.
+  public byte colorMode;            // Wide-gamut, HDR, etc.
+  public short screenConfigPad2;    // Reserved padding.
 
   /** Any remaining bytes in this resource configuration that are unaccounted for. */
   @SuppressWarnings("mutable")
@@ -607,7 +764,7 @@ public class ResTable_config {
    };
    */
   private int screenConfig2() {
-    return ((screenLayout2 & 0xff) << 24) | ((screenConfigPad1 * 0xff) << 16) | (screenConfigPad2 & 0xffff);
+    return ((screenLayout2 & 0xff) << 24) | ((colorMode * 0xff) << 16) | (screenConfigPad2 & 0xffff);
   }
 
   // If false and localeScript is set, it means that the script of the locale
@@ -632,6 +789,7 @@ public class ResTable_config {
 //    }
 //  }
 
+  @Nonnull
   private String unpackLanguageOrRegion(byte[] value, int base) {
     Preconditions.checkState(value.length == 2, "Language or country value must be 2 bytes.");
     if (value[0] == 0 && value[1] == 0) {
@@ -673,6 +831,7 @@ public class ResTable_config {
     packLanguageOrRegion(region, (byte) '0', this.country);
   }
 
+  @Nonnull
   private String unpackLanguage() {
     return unpackLanguageOrRegion(language, 0x61);
   }
@@ -697,8 +856,8 @@ public class ResTable_config {
 //  }
 
 //  void ResTable_config::copyFromDtoH(const ResTable_config& o) {
-  static org.robolectric.res.android.ResTable_config fromDtoH(final org.robolectric.res.android.ResTable_config o) {
-    return new org.robolectric.res.android.ResTable_config(
+  static ResTable_config fromDtoH(final ResTable_config o) {
+    return new ResTable_config(
         0 /*sizeof(ResTable_config)*/,
         dtohs((short) o.mcc),
         dtohs((short) o.mnc),
@@ -722,7 +881,7 @@ public class ResTable_config {
         o.localeScript,
         o.localeVariant,
         o.screenLayout2,
-        o.screenConfigPad1,
+        o.colorMode,
         o.screenConfigPad2,
         o.unknown
     );
@@ -742,7 +901,7 @@ public class ResTable_config {
 //    screenHeightDp = htods(screenHeightDp);
   }
 
-  static final int compareLocales(final org.robolectric.res.android.ResTable_config l, final org.robolectric.res.android.ResTable_config r) {
+  static final int compareLocales(final ResTable_config l, final ResTable_config r) {
     if (l.locale() != r.locale()) {
       // NOTE: This is the old behaviour with respect to comparison orders.
       // The diff value here doesn't make much sense (given our bit packing scheme)
@@ -777,7 +936,7 @@ public class ResTable_config {
     return 0;
   }
 
-  int compare(final org.robolectric.res.android.ResTable_config o) {
+  int compare(final ResTable_config o) {
     int diff = imsi() - o.imsi();
     if (diff != 0) return diff;
     diff = compareLocales(this, o);
@@ -793,6 +952,8 @@ public class ResTable_config {
     diff = (screenLayout - o.screenLayout);
     if (diff != 0) return diff;
     diff = (screenLayout2 - o.screenLayout2);
+    if (diff != 0) return diff;
+    diff = (colorMode - o.colorMode);
     if (diff != 0) return diff;
     diff = (uiMode - o.uiMode);
     if (diff != 0) return diff;
@@ -826,7 +987,9 @@ public class ResTable_config {
         && screenHeightDp == 0
         && isZeroes(localeScript)
         && isZeroes(localeVariant)
-        && screenLayout2 == 0;
+        && screenLayout2 == 0
+        && colorMode == 0
+        ;
   }
 
   private boolean isZeroes(byte[] bytes1) {
@@ -851,27 +1014,33 @@ public class ResTable_config {
   /**
    * Returns a map of the configuration parts for {@link #toString}.
    *
-   * <p>If a configuration part is not defined for this {@link org.robolectric.res.android.ResTable_config}, its value
+   * If a configuration part is not defined for this {@link ResTable_config}, its value
    * will be the empty string.
    */
   public final Map<Type, String> toStringParts() {
     Map<Type, String> result = new LinkedHashMap<>();  // Preserve order for #toString().
-    result.put(Type.MCC, isTruthy(mcc) ? "mcc" + mcc : "");
-    result.put(Type.MNC, isTruthy(mnc) ? "mnc" + mnc : "");
-    result.put(Type.LANGUAGE_STRING, !languageString().isEmpty() ? "" + languageString() : "");
+    result.put(Type.MCC, mcc != 0 ? "mcc" + mcc : "");
+    result.put(Type.MNC, mnc != 0 ? "mnc" + mnc : "");
+    result.put(Type.LANGUAGE_STRING, languageString());
+    result.put(Type.LOCALE_SCRIPT_STRING, localeScriptString());
     result.put(Type.REGION_STRING, !regionString().isEmpty() ? "r" + regionString() : "");
+    result.put(Type.LOCALE_VARIANT_STRING, localeVariantString());
     result.put(Type.SCREEN_LAYOUT_DIRECTION,
         getOrDefault(SCREENLAYOUT_LAYOUTDIR_VALUES, screenLayoutDirection(), ""));
     result.put(Type.SMALLEST_SCREEN_WIDTH_DP,
-        isTruthy(smallestScreenWidthDp) ? "sw" + smallestScreenWidthDp + "dp" : "");
-    result.put(Type.SCREEN_WIDTH_DP, isTruthy(screenWidthDp) ? "w" + screenWidthDp + "dp" : "");
-    result.put(Type.SCREEN_HEIGHT_DP, isTruthy(screenHeightDp) ? "h" + screenHeightDp + "dp" : "");
+        smallestScreenWidthDp != 0 ? "sw" + smallestScreenWidthDp + "dp" : "");
+    result.put(Type.SCREEN_WIDTH_DP, screenWidthDp != 0 ? "w" + screenWidthDp + "dp" : "");
+    result.put(Type.SCREEN_HEIGHT_DP, screenHeightDp != 0 ? "h" + screenHeightDp + "dp" : "");
     result.put(Type.SCREEN_LAYOUT_SIZE,
         getOrDefault(SCREENLAYOUT_SIZE_VALUES, screenLayoutSize(), ""));
     result.put(Type.SCREEN_LAYOUT_LONG,
         getOrDefault(SCREENLAYOUT_LONG_VALUES, screenLayoutLong(), ""));
     result.put(Type.SCREEN_LAYOUT_ROUND,
         getOrDefault(SCREENLAYOUT_ROUND_VALUES, screenLayoutRound(), ""));
+    result.put(Type.COLOR_MODE_HDR, getOrDefault(COLOR_MODE_HDR_VALUES, colorModeHdr(), ""));
+    result.put(
+        Type.COLOR_MODE_WIDE_COLOR_GAMUT,
+        getOrDefault(COLOR_MODE_WIDE_COLOR_GAMUT_VALUES, colorModeWideColorGamut(), ""));
     result.put(Type.ORIENTATION, getOrDefault(ORIENTATION_VALUES, orientation, ""));
     result.put(Type.UI_MODE_TYPE, getOrDefault(UI_MODE_TYPE_VALUES, uiModeType(), ""));
     result.put(Type.UI_MODE_NIGHT, getOrDefault(UI_MODE_NIGHT_VALUES, uiModeNight(), ""));
@@ -882,7 +1051,17 @@ public class ResTable_config {
     result.put(Type.NAVIGATION_HIDDEN,
         getOrDefault(NAVIGATIONHIDDEN_VALUES, navigationHidden(), ""));
     result.put(Type.NAVIGATION, getOrDefault(NAVIGATION_VALUES, navigation, ""));
-    result.put(Type.SDK_VERSION, isTruthy(sdkVersion) ? "v" + sdkVersion : "");
+    result.put(Type.SCREEN_SIZE,
+        screenWidth != 0 || screenHeight != 0 ? screenWidth + "x" + screenHeight : "");
+
+    String sdkVersion = "";
+    if (this.sdkVersion != 0) {
+      sdkVersion = "v" + this.sdkVersion;
+      if (minorVersion != 0) {
+        sdkVersion += "." + minorVersion;
+      }
+    }
+    result.put(Type.SDK_VERSION, sdkVersion);
     return result;
   }
 
@@ -901,11 +1080,12 @@ public class ResTable_config {
 
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
+  // Changes from 8.0.0_r4 partially applied.
 
 /*
   */
 /**
-   * Is {@code requested} a better match to this {@link org.robolectric.res.android.ResTable_config} object than {@code o}
+   * Is {@code requested} a better match to this {@link ResTable_config} object than {@code o}
    *//*
 
   public boolean isBetterThan(ResTable_config o, ResTable_config requested) {
@@ -920,7 +1100,7 @@ public class ResTable_config {
 */
 
   public boolean isBetterThan(
-      org.robolectric.res.android.ResTable_config o, org.robolectric.res.android.ResTable_config requested) {
+      ResTable_config o, ResTable_config requested) {
     if (isTruthy(requested)) {
       if (isTruthy(imsi()) || isTruthy(o.imsi())) {
         if ((mcc != o.mcc) && isTruthy(requested.mcc)) {
@@ -1016,6 +1196,17 @@ public class ResTable_config {
         if (((screenLayout2^o.screenLayout2) & MASK_SCREENROUND) != 0 &&
             isTruthy(requested.screenLayout2 & MASK_SCREENROUND)) {
           return isTruthy(screenLayout2 & MASK_SCREENROUND);
+        }
+      }
+
+      if (isTruthy(colorMode) || isTruthy(o.colorMode)) {
+        if (((colorMode^o.colorMode) & MASK_WIDE_COLOR_GAMUT) != 0 &&
+            isTruthy((requested.colorMode & MASK_WIDE_COLOR_GAMUT))) {
+          return isTruthy(colorMode & MASK_WIDE_COLOR_GAMUT);
+        }
+        if (((colorMode^o.colorMode) & MASK_HDR) != 0 &&
+            isTruthy((requested.colorMode & MASK_HDR))) {
+          return isTruthy(colorMode & MASK_HDR);
         }
       }
 
@@ -1176,7 +1367,7 @@ public class ResTable_config {
   }
 */
 
-  public boolean match(final org.robolectric.res.android.ResTable_config settings) {
+  public boolean match(final ResTable_config settings) {
     if (imsi() != 0) {
       if (mcc != 0 && mcc != settings.mcc) {
         return false;
@@ -1194,7 +1385,7 @@ public class ResTable_config {
       //
       // If two configs differ only in their country and variant,
       // they can be weeded out in the isMoreSpecificThan test.
-      if (language[0] != settings.language[0] || language[1] != settings.language[1]) {
+      if (!langsAreEquivalent(language, settings.language)) {
         return false;
       }
 
@@ -1222,9 +1413,7 @@ public class ResTable_config {
       }
 
       if (countriesMustMatch) {
-        if (country[0] != '\0'
-            && (country[0] != settings.country[0]
-            || country[1] != settings.country[1])) {
+        if (country[0] != '\0' && !areIdentical(country, settings.country)) {
           return false;
         }
       } else {
@@ -1279,6 +1468,18 @@ public class ResTable_config {
       if (screenRound != 0 && screenRound != setScreenRound) {
         return false;
       }
+    }
+
+    final int hdr = colorMode & MASK_HDR;
+    final int setHdr = settings.colorMode & MASK_HDR;
+    if (hdr != 0 && hdr != setHdr) {
+      return false;
+    }
+
+    final int wideColorGamut = colorMode & MASK_WIDE_COLOR_GAMUT;
+    final int setWideColorGamut = settings.colorMode & MASK_WIDE_COLOR_GAMUT;
+    if (wideColorGamut != 0 && wideColorGamut != setWideColorGamut) {
+      return false;
     }
 
     if (screenSizeDp() != 0) {
@@ -1406,18 +1607,21 @@ public class ResTable_config {
 //    }
 //  }
 
-  String getBcp47Locale() {
+  String getBcp47Locale(boolean canonicalize) {
     StringBuilder str = new StringBuilder();
 
     // This represents the "any" locale value, which has traditionally been
     // represented by the empty string.
-    if (!isTruthy(language[0]) && !isTruthy(country[0])) {
+    if (language[0] == '\0' && country[0] == '\0') {
       return "";
     }
 
-    if (isTruthy(language[0])) {
-      String languageStr = unpackLanguage();
-      str.append(languageStr);
+    if (language[0] != '\0') {
+      if (canonicalize && areIdentical(language, kTagalog)) {
+        // Replace Tagalog with Filipino if we are canonicalizing
+        str.setLength(0);
+        str.append("fil");// 3-letter code for Filipino
+      }
     }
 
     if (isTruthy(localeScript[0]) && !localeScriptWasComputed) {
@@ -1429,7 +1633,7 @@ public class ResTable_config {
       }
     }
 
-    if (isTruthy(country[0])) {
+    if (country[0] != '\0') {
       if (str.length() > 0) {
         str.append('-');
       }
@@ -1450,7 +1654,7 @@ public class ResTable_config {
     return str.toString();
   }
 
-   static boolean assignLocaleComponent(org.robolectric.res.android.ResTable_config config,
+   static boolean assignLocaleComponent(ResTable_config config,
         final String start, int size) {
 
     switch (size) {
@@ -1691,8 +1895,7 @@ public class ResTable_config {
     return (language[0] & 0xff << 24) | (language[1] * 0xff << 16) | ((country[0] & 0xff) << 8) | (country[1] & 0xff);
   }
 
-  private boolean isLocaleBetterThan(
-      org.robolectric.res.android.ResTable_config o, org.robolectric.res.android.ResTable_config requested) {
+  private boolean isLocaleBetterThan(ResTable_config o, ResTable_config requested) {
     if (requested.locale() == 0) {
       // The request doesn't have a locale, so no resource is better
       // than the other.
@@ -1737,11 +1940,11 @@ public class ResTable_config {
           } else {
             return !(o.country[0] == '\0' || areIdentical(o.country, kUnitedStates));
           }
-        } else if (LocaleData.localeDataIsCloseToUsEnglish(requested.country)) {
+        } else if (localeDataIsCloseToUsEnglish(requested.country)) {
           if (language[0] != '\0') {
-            return LocaleData.localeDataIsCloseToUsEnglish(country);
+            return localeDataIsCloseToUsEnglish(country);
           } else {
-            return !LocaleData.localeDataIsCloseToUsEnglish(o.country);
+            return !localeDataIsCloseToUsEnglish(o.country);
           }
         }
       }
@@ -1758,7 +1961,7 @@ public class ResTable_config {
     // check the country and variant.
 
     // See if any of the regions is better than the other.
-    final int region_comparison = LocaleData.localeDataCompareRegions(
+    final int region_comparison = localeDataCompareRegions(
         country, o.country,
         requested.language, str(requested.localeScript), requested.country);
     if (region_comparison != 0) {
@@ -1798,10 +2001,162 @@ public class ResTable_config {
     return code1[0] == code2[0] && code1[1] == code2[1];
   }
 
-  // TODO Convert from C
-  private boolean isMoreSpecificThan(org.robolectric.res.android.ResTable_config o) {
-    return false;
+  int isLocaleMoreSpecificThan(ResTable_config o) {
+    if (isTruthy(locale()) || isTruthy(o.locale())) {
+      if (language[0] != o.language[0]) {
+        if (!isTruthy(language[0])) return -1;
+        if (!isTruthy(o.language[0])) return 1;
+      }
+      if (country[0] != o.country[0]) {
+        if (!isTruthy(country[0])) return -1;
+        if (!isTruthy(o.country[0])) return 1;
+      }
+    }
+    // There isn't a well specified "importance" order between variants and
+    // scripts. We can't easily tell whether, say "en-Latn-US" is more or less
+    // specific than "en-US-POSIX".
+    //
+    // We therefore arbitrarily decide to give priority to variants over
+    // scripts since it seems more useful to do so. We will consider
+    // "en-US-POSIX" to be more specific than "en-Latn-US".
+    int score = ((localeScript[0] != '\0' && !localeScriptWasComputed) ? 1 : 0) +
+        ((localeVariant[0] != '\0') ? 2 : 0);
+    int oScore = (o.localeScript[0] != '\0' && !o.localeScriptWasComputed ? 1 : 0) +
+        ((o.localeVariant[0] != '\0') ? 2 : 0);
+    return score - oScore;
   }
 
-}
+  private boolean isMoreSpecificThan(ResTable_config o) {
+    // The order of the following tests defines the importance of one
+    // configuration parameter over another.  Those tests first are more
+    // important, trumping any values in those following them.
+    if (isTruthy(imsi()) || isTruthy(o.imsi())) {
+      if (mcc != o.mcc) {
+        if (!isTruthy(mcc)) return false;
+        if (!isTruthy(o.mcc)) return true;
+      }
+      if (mnc != o.mnc) {
+        if (!isTruthy(mnc)) return false;
+        if (!isTruthy(o.mnc)) return true;
+      }
+    }
+    if (isTruthy(locale()) || isTruthy(o.locale())) {
+      int diff = isLocaleMoreSpecificThan(o);
+      if (diff < 0) {
+        return false;
+      }
+      if (diff > 0) {
+        return true;
+      }
+    }
+    if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
+      if (((screenLayout^o.screenLayout) & MASK_LAYOUTDIR) != 0) {
+        if (!isTruthy((screenLayout & MASK_LAYOUTDIR))) return false;
+        if (!isTruthy((o.screenLayout & MASK_LAYOUTDIR))) return true;
+      }
+    }
+    if (isTruthy(smallestScreenWidthDp) || isTruthy(o.smallestScreenWidthDp)) {
+      if (smallestScreenWidthDp != o.smallestScreenWidthDp) {
+        if (!isTruthy(smallestScreenWidthDp)) return false;
+        if (!isTruthy(o.smallestScreenWidthDp)) return true;
+      }
+    }
+    if (isTruthy(screenSizeDp()) || isTruthy(o.screenSizeDp())) {
+      if (screenWidthDp != o.screenWidthDp) {
+        if (!isTruthy(screenWidthDp)) return false;
+        if (!isTruthy(o.screenWidthDp)) return true;
+      }
+      if (screenHeightDp != o.screenHeightDp) {
+        if (!isTruthy(screenHeightDp)) return false;
+        if (!isTruthy(o.screenHeightDp)) return true;
+      }
+    }
+    if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
+      if (((screenLayout^o.screenLayout) & MASK_SCREENSIZE) != 0) {
+        if (!isTruthy((screenLayout & MASK_SCREENSIZE))) return false;
+        if (!isTruthy((o.screenLayout & MASK_SCREENSIZE))) return true;
+      }
+      if (((screenLayout^o.screenLayout) & MASK_SCREENLONG) != 0) {
+        if (!isTruthy((screenLayout & MASK_SCREENLONG))) return false;
+        if (!isTruthy((o.screenLayout & MASK_SCREENLONG))) return true;
+      }
+    }
+    if (isTruthy(screenLayout2) || isTruthy(o.screenLayout2)) {
+      if (((screenLayout2^o.screenLayout2) & MASK_SCREENROUND) != 0) {
+        if (!isTruthy((screenLayout2 & MASK_SCREENROUND))) return false;
+        if (!isTruthy((o.screenLayout2 & MASK_SCREENROUND))) return true;
+      }
+    }
 
+    if (isTruthy(colorMode) || isTruthy(o.colorMode)) {
+      if (((colorMode^o.colorMode) & MASK_HDR) != 0) {
+        if (!isTruthy((colorMode & MASK_HDR))) return false;
+        if (!isTruthy((o.colorMode & MASK_HDR))) return true;
+      }
+      if (((colorMode^o.colorMode) & MASK_WIDE_COLOR_GAMUT) != 0) {
+        if (!isTruthy((colorMode & MASK_WIDE_COLOR_GAMUT))) return false;
+        if (!isTruthy((o.colorMode & MASK_WIDE_COLOR_GAMUT))) return true;
+      }
+    }
+
+    if (orientation != o.orientation) {
+      if (!isTruthy(orientation)) return false;
+      if (!isTruthy(o.orientation)) return true;
+    }
+    if (isTruthy(uiMode) || isTruthy(o.uiMode)) {
+      if (((uiMode^o.uiMode) & MASK_UI_MODE_TYPE) != 0) {
+        if (!isTruthy((uiMode & MASK_UI_MODE_TYPE))) return false;
+        if (!isTruthy((o.uiMode & MASK_UI_MODE_TYPE))) return true;
+      }
+      if (((uiMode^o.uiMode) & MASK_UI_MODE_NIGHT) != 0) {
+        if (!isTruthy((uiMode & MASK_UI_MODE_NIGHT))) return false;
+        if (!isTruthy((o.uiMode & MASK_UI_MODE_NIGHT))) return true;
+      }
+    }
+    // density is never 'more specific'
+    // as the default just equals 160
+    if (touchscreen != o.touchscreen) {
+      if (!isTruthy(touchscreen)) return false;
+      if (!isTruthy(o.touchscreen)) return true;
+    }
+    if (isTruthy(input()) || isTruthy(o.input())) {
+      if (((inputFlags^o.inputFlags) & MASK_KEYSHIDDEN) != 0) {
+        if (!isTruthy((inputFlags & MASK_KEYSHIDDEN))) return false;
+        if (!isTruthy((o.inputFlags & MASK_KEYSHIDDEN))) return true;
+      }
+      if (((inputFlags^o.inputFlags) & MASK_NAVHIDDEN) != 0) {
+        if (!isTruthy((inputFlags & MASK_NAVHIDDEN))) return false;
+        if (!isTruthy((o.inputFlags & MASK_NAVHIDDEN))) return true;
+      }
+      if (keyboard != o.keyboard) {
+        if (!isTruthy(keyboard)) return false;
+        if (!isTruthy(o.keyboard)) return true;
+      }
+      if (navigation != o.navigation) {
+        if (!isTruthy(navigation)) return false;
+        if (!isTruthy(o.navigation)) return true;
+      }
+    }
+    if (isTruthy(screenSize()) || isTruthy(o.screenSize())) {
+      if (screenWidth != o.screenWidth) {
+        if (!isTruthy(screenWidth)) return false;
+        if (!isTruthy(o.screenWidth)) return true;
+      }
+      if (screenHeight != o.screenHeight) {
+        if (!isTruthy(screenHeight)) return false;
+        if (!isTruthy(o.screenHeight)) return true;
+      }
+    }
+    if (isTruthy(version()) || isTruthy(o.version())) {
+      if (sdkVersion != o.sdkVersion) {
+        if (!isTruthy(sdkVersion)) return false;
+        if (!isTruthy(o.sdkVersion)) return true;
+      }
+      if (minorVersion != o.minorVersion) {
+        if (!isTruthy(minorVersion)) return false;
+        if (!isTruthy(o.minorVersion)) return true;
+      }
+    }
+    return false;
+  }
+}
