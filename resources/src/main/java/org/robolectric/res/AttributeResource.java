@@ -23,7 +23,7 @@ public class AttributeResource {
     if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
 
     this.resName = resName;
-    this.value = value.trim();
+    this.value = value;
     this.contextPackageName = contextPackageName;
   }
 

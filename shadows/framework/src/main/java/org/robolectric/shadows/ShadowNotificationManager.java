@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
+import static android.os.Build.VERSION_CODES.M;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.os.Build;
@@ -22,6 +25,7 @@ public class ShadowNotificationManager {
   private final Map<String, Object> notificationChannels = new HashMap<>();
   private final Map<String, Object> notificationChannelGroups = new HashMap<>();
   private final Map<String, Object> deletedNotificationChannels = new HashMap<>();
+  private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
 
   @Implementation
   public void notify(int id, Notification notification) {
@@ -60,7 +64,7 @@ public class ShadowNotificationManager {
     mAreNotificationsEnabled = areNotificationsEnabled;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.M)
+  @Implementation(minSdk = M)
   public StatusBarNotification[] getActiveNotifications() {
     StatusBarNotification[] statusBarNotifications =
         new StatusBarNotification[notifications.size()];
@@ -151,6 +155,19 @@ public class ShadowNotificationManager {
       }
       notificationChannelGroups.remove(channelGroupId);
     }
+  }
+
+  @Implementation(minSdk = M)
+  public final int getCurrentInterruptionFilter() {
+    return currentInteruptionFilter;
+  }
+
+  /**
+   * Currently does not support checking for granted policy access.
+   */
+  @Implementation(minSdk = M)
+  public final void setInterruptionFilter(int interruptionFilter) {
+    currentInteruptionFilter = interruptionFilter;
   }
 
   /**
