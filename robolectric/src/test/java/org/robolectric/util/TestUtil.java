@@ -1,12 +1,11 @@
 package org.robolectric.util;
 
+import org.junit.Test;
+import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.PropertiesDependencyResolver;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
@@ -59,14 +58,14 @@ public abstract class TestUtil {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
       Fs fs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("res"), fs.join("assets"));
+      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("raw-res/res"), fs.join("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
     Fs sdkResFs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
-    return new ResourcePath(null, sdkResFs.join("res"), null, null);
+    return new ResourcePath(null, sdkResFs.join("raw-res/res"), null, null);
   }
 
   public static ResourcePath gradleAppResources() {
@@ -89,25 +88,26 @@ public abstract class TestUtil {
   }
 
   private static DependencyResolver getDependencyResolver() {
+    try {
+      return new MyRobolectricTestRunner().getJarResolver();
+    } catch (InitializationError initializationError) {
+      throw new RuntimeException(initializationError);
+    }
+  }
 
-    if (Boolean.getBoolean("robolectric.offline")) {
-      String propPath = System.getProperty("robolectric-deps.properties");
-      if (propPath != null) {
-        try {
-          return new PropertiesDependencyResolver(
-              Fs.newFile(propPath),
-              null);
-        } catch (IOException e) {
-          throw new RuntimeException("couldn't read dependencies" , e);
-        }
-      } else {
-        String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-        return new LocalDependencyResolver(new File(dependencyDir));
+  private static class MyRobolectricTestRunner extends RobolectricTestRunner {
+    MyRobolectricTestRunner() throws InitializationError {
+      super(FakeTest.class);
+    }
+
+    @Override
+    protected DependencyResolver getJarResolver() {
+      return super.getJarResolver();
+    }
+
+    public static class FakeTest {
+      @Test public void fakeTest() {
       }
-    } else {
-      Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
-              "org.robolectric.internal.dependency.MavenDependencyResolver");
-      return (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
     }
   }
 }

@@ -26,12 +26,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.android.ResTable_config;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -46,7 +46,7 @@ public class XmlResourceParserImplTest {
   @Before
   public void setUp() throws Exception {
     resourceTable = new ResourceTableFactory().newResourceTable(R.class.getPackage().getName(), testResources());
-    TypedResource typedResource = resourceTable.getValue(R.xml.preferences, "");
+    TypedResource typedResource = resourceTable.getValue(R.xml.preferences, new ResTable_config());
     FsFile xmlFile = typedResource.getXmlContext().getXmlFile();
     String packageName = typedResource.getXmlContext().getPackageName();
     XmlBlock xmlBlock = XmlBlock.create(xmlFile, packageName);

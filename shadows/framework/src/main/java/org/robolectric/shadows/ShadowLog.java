@@ -168,11 +168,18 @@ public class ShadowLog {
    * Returns ordered list of all log items for a specific tag.
    *
    * @param tag The tag to get logs for
-   * @return The list of log items for the tag
+   * @return The list of log items for the tag or an empty list if no logs for that tag exist.
    */
-  public static List<LogItem> getLogsForTag( String tag ) {
+  public static List<LogItem> getLogsForTag(String tag) {
     Queue<LogItem> logs = logsByTag.get(tag);
-    return logs == null ? null : new ArrayList<>(logs);
+    return logs == null ? Collections.emptyList() : new ArrayList<>(logs);
+  }
+
+  /**
+   * Clear all accummulated logs.
+   */
+  public static void clear() {
+    reset();
   }
 
   @Resetter

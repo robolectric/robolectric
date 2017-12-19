@@ -1,4 +1,5 @@
 package org.robolectric.shadows;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.app.ActivityManager;
 import android.app.IActivityManager;
@@ -9,6 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ActivityManager.class)
@@ -19,6 +21,8 @@ public class ShadowActivityManager {
   private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
   private List<ActivityManager.RunningAppProcessInfo> processes = new CopyOnWriteArrayList<>();
+  @RealObject private ActivityManager realObject;
+  private Boolean isLowRamDeviceOverride = null;
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
@@ -126,5 +130,21 @@ public class ShadowActivityManager {
   @Implementation
   public static IActivityManager getService() {
     return ReflectionHelpers.createNullProxy(IActivityManager.class);
+  }
+
+  @Implementation
+  public boolean isLowRamDevice() {
+    if (isLowRamDeviceOverride != null) {
+      return isLowRamDeviceOverride;
+    }
+    return directlyOn(realObject, ActivityManager.class, "isLowRamDevice");
+  }
+
+  /**
+   * Override the return value of isLowRamDevice().
+   */
+  public ShadowActivityManager setIsLowRamDevice(boolean isLowRamDevice) {
+    isLowRamDeviceOverride = isLowRamDevice;
+    return this;
   }
 }

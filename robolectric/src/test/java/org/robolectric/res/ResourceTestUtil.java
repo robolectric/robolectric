@@ -58,7 +58,7 @@ public class ResourceTestUtil {
           data = data.toString() + "^" + styleData.getParent() + " " + attrs;
         }
         buf.append("  ").append(data).append(" {").append(typedResource.getResType())
-            .append("/").append(typedResource.getQualifiers()).append(": ")
+            .append("/").append(typedResource.getConfig()).append(": ")
             .append(shortContext(typedResource)).append("}").append("\n");
       }
     }

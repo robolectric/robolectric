@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -50,9 +51,6 @@ public class ShadowResources {
   private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
 
-  private float density = 1.0f;
-  private DisplayMetrics displayMetrics;
-  private Display display;
   @RealObject Resources realResources;
 
   @Resetter
@@ -112,7 +110,7 @@ public class ShadowResources {
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
 
-    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
+    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, shadowAssetManager.config);
     if (typedResource != null && typedResource instanceof PluralRules) {
       PluralRules pluralRules = (PluralRules) typedResource;
       Plural plural = pluralRules.find(quantity);
@@ -123,7 +121,7 @@ public class ShadowResources {
 
       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
           new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
-          RuntimeEnvironment.getQualifiers(), resId);
+          shadowAssetManager.config, resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
       return null;
@@ -132,8 +130,9 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ResourceTable resourceTable = shadowOf(realResources.getAssets()).getResourceTable();
-    InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+    InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
     if (inputStream == null) {
       throw newNotFoundException(id);
     } else {
@@ -183,36 +182,29 @@ public class ShadowResources {
     }
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setDensity(float density) {
-    this.density = density;
-    if (displayMetrics != null) {
-      displayMetrics.density = density;
-    }
+    realResources.getDisplayMetrics().density = density;
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setScaledDensity(float scaledDensity) {
-    if (displayMetrics != null) {
-      displayMetrics.scaledDensity = scaledDensity;
-    }
+    realResources.getDisplayMetrics().scaledDensity = scaledDensity;
   }
 
+  /**
+   * @deprecated Set up display using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setDisplay(Display display) {
-    this.display = display;
-    displayMetrics = null;
-  }
-
-  @Implementation
-  public DisplayMetrics getDisplayMetrics() {
-    if (displayMetrics == null) {
-      if (display == null) {
-        display = ReflectionHelpers.callConstructor(Display.class);
-      }
-
-      displayMetrics = new DisplayMetrics();
-      display.getMetrics(displayMetrics);
-    }
-    displayMetrics.density = this.density;
-    return displayMetrics;
+    DisplayMetrics displayMetrics = realResources.getDisplayMetrics();
+    display.getMetrics(displayMetrics);
   }
 
   @HiddenApi @Implementation
@@ -281,11 +273,11 @@ public class ShadowResources {
 
   static void setCreatedFromResId(Resources resources, int id, Drawable drawable) {
     // todo: this kinda sucks, find some better way...
-    if (drawable != null) {
+    if (drawable != null && Shadow.extract(drawable) instanceof ShadowDrawable) {
       shadowOf(drawable).createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        if (bitmap != null) {
+        if (bitmap != null  && Shadow.extract(bitmap) instanceof ShadowBitmap) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
             shadowBitmap.setCreatedFromResId(id, shadowOf(resources.getAssets()).getResourceName(id));

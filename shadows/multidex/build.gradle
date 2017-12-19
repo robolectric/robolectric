@@ -1,5 +1,5 @@
 plugins {
-    id "net.ltgt.errorprone" version "0.0.11"
+    id "net.ltgt.errorprone" version "0.0.13"
 }
 
 new RoboJavaModulePlugin(
@@ -20,11 +20,4 @@ dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testCompile project(":robolectric")
-}
-
-// change local artifact name to match dependencies
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = 'shadows-multidex'
-    }
 }

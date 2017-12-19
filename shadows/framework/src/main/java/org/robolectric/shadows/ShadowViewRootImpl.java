@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
@@ -7,11 +10,11 @@ import android.os.Looper;
 import android.util.MergedConfiguration;
 import android.view.Display;
 import android.view.ViewRootImpl;
+import android.view.WindowManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -30,7 +33,7 @@ public class ShadowViewRootImpl {
   }
 
   public void callDispatchResized() {
-    Display display = Shadow.newInstanceOf(Display.class);
+    Display display = getDisplay();
     Rect frame = new Rect();
     display.getRectSize(frame);
     Rect zeroSizedRect = new Rect(0, 0, 0, 0);
@@ -45,7 +48,7 @@ public class ShadowViewRootImpl {
           ClassParameter.from(Rect.class, zeroSizedRect),
           ClassParameter.from(boolean.class, true),
           ClassParameter.from(Configuration.class, null));
-    } else if (apiLevel <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+    } else if (apiLevel <= JELLY_BEAN_MR1) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(Rect.class, zeroSizedRect),
@@ -111,6 +114,16 @@ public class ShadowViewRootImpl {
           ClassParameter.from(int.class, 0));
     } else {
       throw new RuntimeException("Could not find AndroidRuntimeAdapter for API level: " + apiLevel);
+    }
+  }
+
+  private Display getDisplay() {
+    if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN_MR1) {
+      return realObject.getView().getDisplay();
+    } else {
+      WindowManager windowManager = (WindowManager) realObject.getView().getContext()
+          .getSystemService(Context.WINDOW_SERVICE);
+      return windowManager.getDefaultDisplay();
     }
   }
 }

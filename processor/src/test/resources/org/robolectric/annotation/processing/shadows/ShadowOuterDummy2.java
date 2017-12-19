@@ -9,16 +9,14 @@ public class ShadowOuterDummy2 {
 
   @Implements(value=Robolectric.Anything.class,
               className="com.example.objects.OuterDummy2$InnerProtected")
-  public class ShadowInnerProtected {
+  public static class ShadowInnerProtected {
   }
 
-  @Implements(value=Robolectric.Anything.class,
-              className="com.example.objects.OuterDummy2$InnerPackage")
-  public class ShadowInnerPackage {
+  @Implements(className="com.example.objects.OuterDummy2$InnerPackage")
+  public static class ShadowInnerPackage {
   }
 
-  @Implements(value=Robolectric.Anything.class,
-              className="com.example.objects.OuterDummy2$InnerPrivate")
-  public class ShadowInnerPrivate {
+  @Implements(className="com.example.objects.OuterDummy2$InnerPrivate", maxSdk = 1)
+  public static class ShadowInnerPrivate {
   }
 }

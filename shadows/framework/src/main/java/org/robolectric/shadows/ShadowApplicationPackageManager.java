@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
+import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
@@ -25,7 +26,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
-import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
@@ -44,7 +44,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -79,9 +78,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
           != COMPONENT_ENABLED_STATE_DISABLED
-          || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
-            result.add(packageInfo);
-          }
+          || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES
+          || (flags & MATCH_DISABLED_COMPONENTS) == MATCH_DISABLED_COMPONENTS) {
+        result.add(packageInfo);
+      }
     }
 
     return result;
@@ -216,6 +216,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ProviderInfo resolveContentProvider(String name, int flags) {
+    if (name == null) {
+      return null;
+    }
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (packageInfo.providers == null) continue;
 
@@ -239,7 +242,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
       if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
-          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES
+          && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
         throw new NameNotFoundException("Package is disabled, can't find");
       }
       return info;
@@ -269,6 +273,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     return resolveInfos;
+  }
+
+  /**
+   * Behaves as {@link #queryIntentServices(Intent, int)} and currently ignores userId.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  public List<ResolveInfo> queryIntentServicesAsUser(Intent intent, int flags, int userId) {
+    return queryIntentServices(intent, flags);
   }
 
   @Implementation
@@ -493,11 +505,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
-  public void getPackageSizeInfo(String packageName, final IPackageStatsObserver observer) {
-    final PackageStats packageStats = packageStatsMap.get(packageName);
+  public void getPackageSizeInfo(Object pkgName, Object observer) {
+    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper()).post(() -> {
       try {
-        observer.onGetStatsCompleted(packageStats, packageStats != null);
+        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
       } catch (RemoteException remoteException) {
         remoteException.rethrowFromSystemServer();
       }
@@ -505,11 +517,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
-  public void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver callback) {
-    final PackageStats packageStats = packageStatsMap.get(pkgName);
+  public void getPackageSizeInfo(Object pkgName, Object uid, final Object observer) {
+    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper()).post(() -> {
       try {
-        callback.onGetStatsCompleted(packageStats, packageStats != null);
+        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
       } catch (RemoteException remoteException) {
         remoteException.rethrowFromSystemServer();
       }
@@ -517,11 +529,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = N)
-  public void getPackageSizeInfoAsUser(String pkgName, int uid, final IPackageStatsObserver callback) {
-    final PackageStats packageStats = packageStatsMap.get(pkgName);
+  public void getPackageSizeInfoAsUser(Object pkgName, Object uid, final Object observer) {
+    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper()).post(() -> {
       try {
-        callback.onGetStatsCompleted(packageStats, packageStats != null);
+        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
       } catch (RemoteException remoteException) {
         remoteException.rethrowFromSystemServer();
       }
@@ -700,7 +712,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
 
       if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
-          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES) {
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES
+          && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
         throw new NameNotFoundException("Package is disabled, can't find");
       }
       return info.applicationInfo;
@@ -708,7 +721,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throw new NameNotFoundException(packageName);
     }
   }
-  
+
   @Implementation
   public String[] getSystemSharedLibraryNames() {
     return new String[0];
@@ -802,11 +815,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
-    return null;
-  }
-
-  @Implementation
-  public List<ResolveInfo> queryIntentServicesAsUser(Intent intent, int flags, int userId) {
     return null;
   }
 
@@ -941,10 +949,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public CharSequence getText(String packageName, @StringRes int resid, ApplicationInfo appInfo) {
     return null;
-  }
-
-  @Implementation
-  public void installPackage(Uri packageURI, IPackageInstallObserver observer, int flags, String installerPackageName) {
   }
 
   @Implementation

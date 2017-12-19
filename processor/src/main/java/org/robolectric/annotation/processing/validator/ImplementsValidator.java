@@ -8,6 +8,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -55,6 +56,13 @@ public class ImplementsValidator extends Validator {
   public Void visitType(TypeElement elem, Element parent) {
     captureJavadoc(elem);
 
+    // inner class shadows must be static
+    if (elem.getEnclosingElement().getKind() == ElementKind.CLASS
+        && !elem.getModifiers().contains(Modifier.STATIC)) {
+
+      error("inner shadow classes must be static");
+    }
+
     validateShadowMethods(elem);
 
     // Don't import nested classes because some of them have the same name.
@@ -73,7 +81,14 @@ public class ImplementsValidator extends Validator {
       }
 
       // there's no such type at the current SDK level, so just use strings...
-      model.addExtraShadow(sdkClassName, elem.getQualifiedName().toString());
+      // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
+      StringBuilder name = new StringBuilder();
+      while (elem.getEnclosingElement().getKind() == ElementKind.CLASS) {
+        name.insert(0, "$" + elem.getSimpleName().toString());
+        elem = (TypeElement) elem.getEnclosingElement();
+      }
+      name.insert(0, elem.getQualifiedName());
+      model.addExtraShadow(sdkClassName, name.toString());
       return null;
     }
 
