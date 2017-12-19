@@ -2,18 +2,29 @@ plugins {
     id "net.ltgt.errorprone" version "0.0.13"
 }
 
-new RoboJavaModulePlugin(
-        deploy: true
-).apply(project)
-
-apply plugin: ShadowsPlugin
-
-shadows {
-    packageName "org.robolectric"
-}
+apply plugin: 'com.android.library'
 
 configurations {
     jni
+}
+
+android {
+    defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                className 'org.robolectric.annotation.processing.RobolectricProcessor'
+                arguments = [ 'org.robolectric.annotation.processing.shadowPackage' : 'org.robolectric' ]
+            }
+        }
+    }
+
+    buildToolsVersion '26.0.2'
+    compileSdkVersion 26
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 task copyNatives(type: Copy) {
@@ -34,24 +45,24 @@ task copyNatives(type: Copy) {
 
     into project.file("$buildDir/resources/main")
 }
-
-jar {
-    dependsOn copyNatives
-}
+//
+//jar {
+//    dependsOn copyNatives
+//}
 
 dependencies {
     // Project dependencies
-    compile project(":annotations")
-    compile project(":resources")
-    compile project(":utils")
-    compile project(":shadowapi")
+    implementation project(":annotations")
+    implementation project(":resources")
+    implementation project(":utils")
+    implementation project(":shadowapi")
 
     // Compile dependencies
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
-    compile "com.almworks.sqlite4java:sqlite4java:0.282"
+    implementation "com.almworks.sqlite4java:sqlite4java:0.282"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
-    compile "com.ibm.icu:icu4j:53.1"
-    compile "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
+    implementation "com.ibm.icu:icu4j:53.1"
+    implementation "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"

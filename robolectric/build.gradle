@@ -28,9 +28,9 @@ dependencies {
     compile project(":sandbox")
     compile project(":utils")
 
-    // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
-    //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
-    compile project(":shadows:framework")
+//    // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
+//    //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
+//    compile project(":shadows:framework")
 
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk15on:1.52"
