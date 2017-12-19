@@ -29,9 +29,7 @@ public class InstrumentationRegistryTest {
   @Test
   public void getTargetContext() {
     assertThat(InstrumentationRegistry.getTargetContext()).isNotNull();
-    assertThat(InstrumentationRegistry.getContext()).isNotNull();
-    assertThat(InstrumentationRegistry.getTargetContext().getPackageName()).isEqualTo(
-        InstrumentationRegistry.getContext().getPackageName());
+    assertThat(InstrumentationRegistry.getTargetContext()).isEqualTo(InstrumentationRegistry.getContext());
   }
 
   @Test
@@ -57,4 +55,5 @@ public class InstrumentationRegistryTest {
       assertThat(priorContext).isNotEqualTo(InstrumentationRegistry.getTargetContext());
     }
   }
+
 }
