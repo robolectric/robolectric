@@ -23,7 +23,7 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
   }
 
   protected SupportFragmentController(F fragment, Class<? extends FragmentActivity> activityClass, Intent intent) {
-    super(Robolectric.getShadowsAdapter(), fragment, intent);
+    super(fragment, intent);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass, intent);
   }
