@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +59,7 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.util.Logger;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -297,6 +299,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     SdkEnvironment sdkEnvironment = (SdkEnvironment) sandbox;
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
+    PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
+    SdkConfig sdkConfig = roboMethod.sdkConfig;
+    perfStatsCollector.putMetadata(AndroidMetadata.class,
+        new AndroidMetadata(
+            ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel())));
+
     roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
     Class<TestLifecycle> cl = sdkEnvironment.bootstrappedClass(getTestLifecycleClass());
     roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
@@ -304,12 +312,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final Config config = roboMethod.config;
     final AndroidManifest appManifest = roboMethod.getAppManifest();
 
-    roboMethod.parallelUniverseInterface.setSdkConfig((sdkEnvironment).getSdkConfig());
-    roboMethod.parallelUniverseInterface.resetStaticState(config);
+    roboMethod.parallelUniverseInterface.setSdkConfig(sdkConfig);
+    perfStatsCollector.measure("reset Android state (before test)",
+        () -> roboMethod.parallelUniverseInterface.resetStaticState(config));
 
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
     Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
+    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RESOURCES_SDK_INT", sdkConfig.getApiLevel());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
     ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
 
@@ -331,7 +340,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         internalAfterTest(method, bootstrappedMethod);
       } finally {
         Config config = ((RobolectricFrameworkMethod) method).config;
-        roboMethod.parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
+
+        // reset static state afterward too, so statics don't defeat GC?
+        PerfStatsCollector.getInstance().measure("reset Android state (after test)",
+            () -> roboMethod.parallelUniverseInterface.resetStaticState(config));
       }
     }
   }
@@ -490,7 +502,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   private static class MethodPassThrough extends Config.Implementation {
-    private FrameworkMethod method;
+    private final FrameworkMethod method;
 
     private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);

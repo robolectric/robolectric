@@ -35,11 +35,3 @@ dependencies {
     testImplementation "org.assertj:assertj-core:3.8.0"
     testImplementation "org.mockito:mockito-core:2.5.4"
 }
-
-// TODO - Figure out how to migrate this
-// change local artifact name to match dependencies
-//install {
-//    repositories.mavenInstaller {
-//        pom.artifactId = 'shadows-httpclient'
-//    }
-//}

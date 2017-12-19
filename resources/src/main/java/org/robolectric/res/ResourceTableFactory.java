@@ -3,46 +3,55 @@ package org.robolectric.res;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.robolectric.util.Logger;
+import org.robolectric.util.PerfStatsCollector;
 
 public class ResourceTableFactory {
-  /**
-   * Builds an Android framework resource table in the "android" package space.
-   */
+  /** Builds an Android framework resource table in the "android" package space. */
   public PackageResourceTable newFrameworkResourceTable(ResourcePath resourcePath) {
-    PackageResourceTable resourceTable = new PackageResourceTable("android");
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "load legacy framework resources",
+            () -> {
+              PackageResourceTable resourceTable = new PackageResourceTable("android");
 
-    if (resourcePath.getRClass() != null) {
-      addRClassValues(resourceTable, resourcePath.getRClass());
-      addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
-    }
-    if (resourcePath.getInternalRClass() != null) {
-      addRClassValues(resourceTable, resourcePath.getInternalRClass());
-      addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
-    }
+              if (resourcePath.getRClass() != null) {
+                addRClassValues(resourceTable, resourcePath.getRClass());
+                addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
+              }
+              if (resourcePath.getInternalRClass() != null) {
+                addRClassValues(resourceTable, resourcePath.getInternalRClass());
+                addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
+              }
 
-    parseResourceFiles(resourcePath, resourceTable);
+              parseResourceFiles(resourcePath, resourceTable);
 
-    return resourceTable;
+              return resourceTable;
+            });
   }
 
   /**
-   * Creates an application resource table which can be constructed with multiple resources paths representing
-   * overlayed resource libraries.
+   * Creates an application resource table which can be constructed with multiple resources paths
+   * representing overlayed resource libraries.
    */
   public PackageResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
-    PackageResourceTable resourceTable = new PackageResourceTable(packageName);
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "load legacy app resources",
+            () -> {
+              PackageResourceTable resourceTable = new PackageResourceTable(packageName);
 
-    for (ResourcePath resourcePath : resourcePaths) {
-      if (resourcePath.getRClass() != null) {
-        addRClassValues(resourceTable, resourcePath.getRClass());
-      }
-    }
+              for (ResourcePath resourcePath : resourcePaths) {
+                if (resourcePath.getRClass() != null) {
+                  addRClassValues(resourceTable, resourcePath.getRClass());
+                }
+              }
 
-    for (ResourcePath resourcePath : resourcePaths) {
-      parseResourceFiles(resourcePath, resourceTable);
-    }
+              for (ResourcePath resourcePath : resourcePaths) {
+                parseResourceFiles(resourcePath, resourceTable);
+              }
 
-    return resourceTable;
+              return resourceTable;
+            });
   }
 
   private void addRClassValues(PackageResourceTable resourceTable, Class<?> rClass) {
@@ -113,9 +122,10 @@ public class ResourceTableFactory {
                   .addHandler("bool", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
                   .addHandler("item[@type='bool']", new StaxValueLoader(resourceTable, "bool", ResType.BOOLEAN))
                   .addHandler("color", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
-                  .addHandler("drawable", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
                   .addHandler("item[@type='color']", new StaxValueLoader(resourceTable, "color", ResType.COLOR))
+                  .addHandler("drawable", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
                   .addHandler("item[@type='drawable']", new StaxValueLoader(resourceTable, "drawable", ResType.DRAWABLE))
+                  .addHandler("item[@type='mipmap']", new StaxValueLoader(resourceTable, "mipmap", ResType.DRAWABLE))
                   .addHandler("dimen", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
                   .addHandler("item[@type='dimen']", new StaxValueLoader(resourceTable, "dimen", ResType.DIMEN))
                   .addHandler("integer", new StaxValueLoader(resourceTable, "integer", ResType.INTEGER))
@@ -141,6 +151,7 @@ public class ResourceTableFactory {
       loadOpaque(resourcePath, resourceTable, "layout", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "menu", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "drawable", ResType.DRAWABLE);
+      loadOpaque(resourcePath, resourceTable, "mipmap", ResType.DRAWABLE);
       loadOpaque(resourcePath, resourceTable, "anim", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "animator", ResType.LAYOUT);
       loadOpaque(resourcePath, resourceTable, "color", ResType.COLOR_STATE_LIST);

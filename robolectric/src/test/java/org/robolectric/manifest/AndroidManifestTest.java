@@ -2,7 +2,6 @@ package org.robolectric.manifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
@@ -271,6 +270,13 @@ public class AndroidManifestTest {
   }
 
   @Test
+  public void whenMissingManifestFile_getPackageName_shouldBeDefault() throws Exception {
+    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), null);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.default");
+    assertThat(appManifest.getRClass()).isEqualTo(null);
+  }
+
+  @Test
   public void shouldRead1IntentFilter() {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
     appManifest.getMinSdkVersion(); // Force parsing
@@ -484,5 +490,9 @@ public class AndroidManifestTest {
     File f = temporaryFolder.newFile(fileName);
     Files.write(contents, f, Charsets.UTF_8);
     return new AndroidManifest(Fs.newFile(f), null, null);
+  }
+
+  private static AndroidManifest newConfig(String androidManifestFile) {
+    return new AndroidManifest(resourceFile(androidManifestFile), null, null);
   }
 }

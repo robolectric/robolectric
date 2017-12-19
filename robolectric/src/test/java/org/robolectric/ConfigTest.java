@@ -102,6 +102,21 @@ public class ConfigTest {
   }
 
   @Test
+  public void shouldAppendQualifiersStartingWithPlus() throws Exception {
+    Config config = new Config.Builder().setQualifiers("w100dp").build();
+    config = overlay(config, new Config.Builder().setQualifiers("w101dp").build());
+    assertThat(config.qualifiers()).isEqualTo("w101dp");
+
+    config = overlay(config, new Config.Builder().setQualifiers("+w102dp").build());
+    config = overlay(config, new Config.Builder().setQualifiers("+w103dp").build());
+    assertThat(config.qualifiers()).isEqualTo("w101dp +w102dp +w103dp");
+
+    config = overlay(config, new Config.Builder().setQualifiers("+w104dp").build());
+    config = overlay(config, new Config.Builder().setQualifiers("w105dp").build());
+    assertThat(config.qualifiers()).isEqualTo("w105dp");
+  }
+
+  @Test
   public void sdksFromProperties() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("sdk", "1, 2, ALL_SDKS, TARGET_SDK, OLDEST_SDK, NEWEST_SDK, 666");
@@ -153,7 +168,7 @@ public class ConfigTest {
   }
 
   @Nonnull
-  private Config overlay(Config.Implementation base, Config.Implementation build) {
+  private Config overlay(Config base, Config.Implementation build) {
     return new Config.Builder(base).overlay(build).build();
   }
 }

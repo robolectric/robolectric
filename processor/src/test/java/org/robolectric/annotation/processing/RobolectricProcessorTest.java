@@ -6,6 +6,7 @@ import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaFileObjects.forSourceString;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
 import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
 import static org.robolectric.annotation.processing.validator.Utils.ROBO_SOURCE;
@@ -18,9 +19,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
@@ -29,21 +32,19 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class RobolectricProcessorTest {
-  private static final Map<String,String> DEFAULT_OPTS = new HashMap<>();
-
-  static {
-    DEFAULT_OPTS.put(PACKAGE_OPT, "org.robolectric");
-  }
+  public static final Map<String,String> DEFAULT_OPTS = new HashMap<String, String>() {{
+    put(PACKAGE_OPT, "org.robolectric");
+  }};
 
   @Test
   public void robolectricProcessor_supportsPackageOption() {
-    assertThat(new RobolectricProcessor().getSupportedOptions()).contains(PACKAGE_OPT);
+    assertThat(new RobolectricProcessor(DEFAULT_OPTS).getSupportedOptions()).contains(PACKAGE_OPT);
   }
 
   @Test
   public void robolectricProcessor_supportsShouldInstrumentPackageOption() {
     assertThat(
-        new RobolectricProcessor().getSupportedOptions()).contains(SHOULD_INSTRUMENT_PKG_OPT);
+        new RobolectricProcessor(DEFAULT_OPTS).getSupportedOptions()).contains(SHOULD_INSTRUMENT_PKG_OPT);
   }
 
   @Test
@@ -54,7 +55,7 @@ public class RobolectricProcessorTest {
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forSourceString("HelloWorld", "final class HelloWorld {}")))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .compilesWithoutError();
     //.and().generatesNoSources(); Should add this assertion onces
     // it becomes available in compile-testing
@@ -79,7 +80,7 @@ public class RobolectricProcessorTest {
   }
 
   @Test
-  public void generatedFile_shouldSkipNonPublicClasses() {
+  public void generatedFile_shouldHandleNonPublicClasses() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
@@ -92,6 +93,19 @@ public class RobolectricProcessorTest {
       .compilesWithoutError()
       .and()
       .generatesSources(forResource("org/robolectric/Robolectric_HiddenClasses.java"));
+  }
+
+  @Test
+  public void generatedFile_shouldComplainAboutNonStaticInnerClasses() {
+    assertAbout(javaSources())
+      .that(ImmutableList.of(
+          ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
+          SHADOW_EXTRACTOR_SOURCE,
+          forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummyWithErrs.java")))
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
+      .failsToCompile()
+      .withErrorContaining("inner shadow classes must be static");
   }
 
   @Test
@@ -138,8 +152,10 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedFile_shouldUseSpecifiedPackage() throws IOException {
-    StringBuffer expected = new StringBuffer();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(RobolectricProcessorTest.class.getClassLoader().getResourceAsStream("org/robolectric/Robolectric_ClassNameOnly.java")));
+    StringBuilder expected = new StringBuilder();
+    InputStream in = RobolectricProcessorTest.class.getClassLoader()
+        .getResourceAsStream("org/robolectric/Robolectric_ClassNameOnly.java");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(in, UTF_8));
 
     String line;
     while ((line = reader.readLine()) != null) {
@@ -185,7 +201,7 @@ public class RobolectricProcessorTest {
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/TestWithUnrecognizedAnnotation.java")))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .compilesWithoutError();
   }
 
@@ -193,7 +209,7 @@ public class RobolectricProcessorTest {
   public void shouldGracefullyHandleNoAnythingClass_withNoRealObject() {
     assertAbout(javaSource())
       .that(forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .failsToCompile();
   }
 
@@ -204,7 +220,7 @@ public class RobolectricProcessorTest {
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectAnything.java")))
-      .processedWith(new RobolectricProcessor())
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .failsToCompile();
   }
 
@@ -248,11 +264,11 @@ public class RobolectricProcessorTest {
         .that(ImmutableList.of(
             ROBO_SOURCE,
             forResource("org/robolectric/annotation/processing/shadows/DocumentedObjectShadow.java")))
-        .processedWith(new RobolectricProcessor())
+        .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
         .compilesWithoutError();
     JsonParser jsonParser = new JsonParser();
     String jsonFile = "build/docs/json/org.robolectric.Robolectric.DocumentedObject.json";
-    JsonElement json = jsonParser.parse(new BufferedReader(new FileReader(jsonFile)));
+    JsonElement json = jsonParser.parse(Files.newBufferedReader(Paths.get(jsonFile), UTF_8));
     assertThat(((JsonObject) json).get("documentation").getAsString())
         .isEqualTo("Robolectric Javadoc goes here!\n");
 

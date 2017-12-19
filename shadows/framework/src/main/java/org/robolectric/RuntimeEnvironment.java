@@ -3,16 +3,22 @@ package org.robolectric;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.util.DisplayMetrics;
+import org.robolectric.android.Bootstrap;
+import org.robolectric.android.ConfigurationV25;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 public class RuntimeEnvironment {
+  public static Context systemContext;
   public static Application application;
 
   private volatile static Thread mainThread = Thread.currentThread();
-  private static String qualifiers;
   private static Object activityThread;
   private static int apiLevel;
   private static Scheduler masterScheduler;
@@ -74,12 +80,53 @@ public class RuntimeEnvironment {
     activityThread = newActivityThread;
   }
 
+  /**
+   * Returns a qualifier string describing the current {@link Configuration} of the system resources.
+   *
+   * @return a qualifier string as described (https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules)[here].
+   */
   public static String getQualifiers() {
-    return qualifiers;
+    Resources systemResources = Resources.getSystem();
+    return getQualifiers(systemResources.getConfiguration(), systemResources.getDisplayMetrics());
   }
 
+  /**
+   * Returns a qualifier string describing the given configuration and display metrics.
+   *
+   * @param configuration the configuration.
+   * @param displayMetrics the display metrics.
+   * @return a qualifier string as described (https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules)[here].
+   */
+  public static String getQualifiers(Configuration configuration, DisplayMetrics displayMetrics) {
+    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+  }
+
+  /**
+   * Overrides the current device configuration.
+   *
+   * If `newQualifiers` starts with a plus (`+`), the prior configuration is used as the base
+   * configuration, with the given changes applied additively. Otherwise, default values are used
+   * for unspecified properties, as described [here](http://robolectric.org/device-configuration/).
+   *
+   * @param newQualifiers the qualifiers to apply
+   */
   public static void setQualifiers(String newQualifiers) {
-    qualifiers = newQualifiers;
+    Configuration configuration;
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    if (newQualifiers.startsWith("+")) {
+      configuration = new Configuration(Resources.getSystem().getConfiguration());
+      displayMetrics.setTo(Resources.getSystem().getDisplayMetrics());
+    } else {
+      configuration = new Configuration();
+    }
+    Bootstrap.applyQualifiers(newQualifiers, getApiLevel(), configuration, displayMetrics);
+
+    Resources systemResources = Resources.getSystem();
+    systemResources.updateConfiguration(configuration, displayMetrics);
+
+    if (application != null) {
+      application.getResources().updateConfiguration(configuration, displayMetrics);
+    }
   }
 
   public static int getApiLevel() {
@@ -149,6 +196,11 @@ public class RuntimeEnvironment {
     RuntimeEnvironment.appManifest = appManifest;
   }
 
+  /**
+   * @deprecated Use {@link android.content.Context} or {@link android.content.pm.PackageManager}
+   *             instead. This method will be removed in a future version of Robolectric.
+   */
+  @Deprecated
   public static AndroidManifest getAppManifest() {
     return RuntimeEnvironment.appManifest;
   }

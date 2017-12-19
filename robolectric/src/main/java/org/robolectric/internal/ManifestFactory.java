@@ -1,5 +1,7 @@
 package org.robolectric.internal;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -14,7 +16,35 @@ import org.robolectric.manifest.AndroidManifest;
  * * Buck
  */
 public interface ManifestFactory {
+
+  /**
+   * Creates a {@link ManifestIdentifier} which represents an Android app, service, or library
+   * under test, indicating its manifest file, resources and assets directories, and optionally
+   * dependency libraries and an overridden package name.
+   *
+   * @param config The merged configuration for the running test.
+   */
   ManifestIdentifier identify(Config config);
 
-  AndroidManifest create(ManifestIdentifier manifestIdentifier);
+  /**
+   * @deprecated This method should no longer be overridden as of Robolectric 3.5. Instead,
+   *             {@link #identify(Config)} should return a fully-specified
+   *             {@link ManifestIdentifier}.
+   */
+  @Deprecated
+  default AndroidManifest create(ManifestIdentifier manifestIdentifier) {
+    return createLibraryAndroidManifest(manifestIdentifier);
+  }
+
+  static AndroidManifest createLibraryAndroidManifest(ManifestIdentifier manifestIdentifier) {
+    List<ManifestIdentifier> libraries = manifestIdentifier.getLibraries();
+
+    List<AndroidManifest> libraryManifests = new ArrayList<>();
+    for (ManifestIdentifier library : libraries) {
+      libraryManifests.add(createLibraryAndroidManifest(library));
+    }
+
+    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(),
+        manifestIdentifier.getAssetDir(), libraryManifests, manifestIdentifier.getPackageName());
+  }
 }

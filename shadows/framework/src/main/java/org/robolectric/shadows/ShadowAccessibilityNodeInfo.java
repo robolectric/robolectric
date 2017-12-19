@@ -920,15 +920,16 @@ public class ShadowAccessibilityNodeInfo {
       performedActionAndArgsList = new LinkedList<>();
     }
 
-    performedActionAndArgsList.add(new Pair<Integer, Bundle>(new Integer(action), arguments));
-    return (actionListener != null) ? actionListener.onPerformAccessibilityAction(action, arguments)
-      : true;
+    performedActionAndArgsList.add(new Pair<>(action, arguments));
+    return actionListener == null || actionListener.onPerformAccessibilityAction(action, arguments);
   }
 
   private boolean childrenEqualityCheck(
       ShadowAccessibilityNodeInfo otherShadow,
       LinkedList<ShadowAccessibilityNodeInfo> visitedNodes) {
-    if (children.size() != otherShadow.children.size()) {
+    if (children == null) {
+      return otherShadow.getChildCount() == 0;
+    } else if (getChildCount() != otherShadow.getChildCount()) {
       return false;
     }
     boolean childrenEquality = true;
@@ -973,7 +974,8 @@ public class ShadowAccessibilityNodeInfo {
       if (parent == null) {
         areEqual &= (otherShadow.parent == null);
       } else if (!shadowOf(parent).visitedWhenCheckingChildren){
-        areEqual &= (shadowOf(parent).equals(shadowOf(otherShadow.parent)));
+        areEqual &=
+            ((otherShadow.parent != null) && shadowOf(parent).equals(shadowOf(otherShadow.parent)));
       }
 
       while (!visitedNodes.isEmpty()) {
@@ -1219,6 +1221,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public boolean equals(Object object) {
       if (object == null) {
         return false;

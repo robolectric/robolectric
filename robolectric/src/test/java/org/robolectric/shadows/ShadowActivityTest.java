@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -60,9 +62,8 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
@@ -411,6 +412,35 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN)
+  public void shouldCallFinishOnFinishAffinity() {
+    Activity activity = new Activity();
+    activity.finishAffinity();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldCallFinishOnFinishAndRemoveTask() {
+    Activity activity = new Activity();
+    activity.finishAndRemoveTask();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
+  public void shouldCallFinishOnFinish() {
+    Activity activity = new Activity();
+    activity.finish();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
   public void shouldSupportCurrentFocus() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     ShadowActivity shadow = shadowOf(activity);
@@ -570,10 +600,9 @@ public class ShadowActivityTest {
     assertThat(root).isNotEqualTo(null);
     assertThat(decorView.getWidth()).isNotEqualTo(0);
     assertThat(decorView.getHeight()).isNotEqualTo(0);
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
-    assertThat(decorView.getWidth()).isEqualTo(shadowDisplay.getWidth());
-    assertThat(decorView.getHeight()).isEqualTo(shadowDisplay.getHeight());
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(decorView.getWidth()).isEqualTo(display.getWidth());
+    assertThat(decorView.getHeight()).isEqualTo(display.getHeight());
   }
 
   @Test

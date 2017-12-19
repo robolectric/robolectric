@@ -16,6 +16,7 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.NameNotFoundException;
 import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
@@ -29,13 +30,17 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -68,6 +73,7 @@ import android.os.Bundle;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -79,8 +85,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
@@ -156,7 +162,6 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
   }
 
   @Test
@@ -282,7 +287,6 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
   }
 
   @Test
@@ -305,6 +309,16 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
+  }
+
+  @Test
+  public void getApplicationInfo_disabledApplication_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    ApplicationInfo info = packageManager.getApplicationInfo(
+        RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -480,6 +494,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void queryIntentServicesAsUser() {
+    Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+    i.setType("image/jpeg");
+    List<ResolveInfo> services = packageManager.queryIntentServicesAsUser(i, 0, 0);
+    assertThat(services).isNotEmpty();
+  }
+
+  @Test
   public void queryBroadcastReceivers_EmptyResult() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -641,7 +665,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
-    assertEquals(new Float(1.23), metaValue);
+    assertThat(metaValue).isEqualTo(1.23f);
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));
@@ -707,6 +731,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getPackageInfo_disabledPackage_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    PackageInfo info = packageManager.getPackageInfo(
+        RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test
   public void getInstalledPackages_uninstalledPackage_includeUninstalled() throws Exception {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
@@ -719,6 +753,16 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getInstalledPackages(0)).isEmpty();
+  }
+
+  @Test
+  public void getInstalledPackages_disabledPackage_includeDisabled() throws Exception {
+    shadowPackageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS)).isNotEmpty();
+    assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS).get(0).packageName)
+        .isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test
@@ -813,7 +857,7 @@ public class ShadowPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
-    assertEquals(new Float(1.23), metaValue);
+    assertThat(metaValue).isEqualTo(1.23f);
 
     metaValue = meta.get("org.robolectric.metaColor");
     assertTrue(Integer.class.isInstance(metaValue));
@@ -1032,7 +1076,7 @@ public class ShadowPackageManagerTest {
       assertThat(e.getMessage()).contains("a_name");
       throw e;
     }
-    
+
   }
 
   @Test
@@ -1095,7 +1139,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresent_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
 
@@ -1104,7 +1148,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
 
@@ -1118,7 +1162,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenNotPreconfigured_getPackageSizeInfo_callsBackWithDefaults() throws Exception {
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
@@ -1127,7 +1171,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPreconfigured_getPackageSizeInfo_callsBackWithConfiguredValues() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = "org.robolectric";
@@ -1142,7 +1186,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPreconfiguredForAnotherPackage_getPackageSizeInfo_callsBackWithConfiguredValues() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = "org.other";
@@ -1157,7 +1201,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPaused_getPackageSizeInfo_callsBackWithConfiguredValuesAfterIdle() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
 
@@ -1406,6 +1450,17 @@ public class ShadowPackageManagerTest {
 
     // Shouldn't throw exception
     shadowPackageManager.addPackage("test.package");
+  }
+
+  @Test
+  public void addPackageSetsStorage() throws Exception {
+    shadowPackageManager.addPackage("test.package");
+
+    PackageInfo packageInfo = packageManager.getPackageInfo("test.package", 0);
+    assertThat(packageInfo.applicationInfo.sourceDir).isNotNull();
+    assertThat(new File(packageInfo.applicationInfo.sourceDir).exists()).isTrue();
+    assertThat(packageInfo.applicationInfo.publicSourceDir)
+        .isEqualTo(packageInfo.applicationInfo.sourceDir);
   }
 
   @Test

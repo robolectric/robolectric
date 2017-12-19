@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -48,10 +48,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.android.TestOnClickListener;
-import org.robolectric.android.TestOnLongClickListener;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
@@ -187,21 +186,22 @@ public class ShadowViewTest {
 
   @Test
   public void performLongClick_shouldClickOnView() throws Exception {
-    TestOnLongClickListener clickListener = new TestOnLongClickListener();
+    OnLongClickListener clickListener = mock(OnLongClickListener.class);
+    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnLongClickListener(clickListener);
     view.performLongClick();
 
-    assertTrue(clickListener.clicked);
+    verify(clickListener).onLongClick(view);
   }
 
   @Test
   public void checkedClick_shouldClickOnView() throws Exception {
-    TestOnClickListener clickListener = new TestOnClickListener();
+    OnClickListener clickListener = mock(OnClickListener.class);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnClickListener(clickListener);
     shadowOf(view).checkedPerformClick();
 
-    assertTrue(clickListener.clicked);
+    verify(clickListener).onClick(view);
   }
 
   @Test(expected = RuntimeException.class)
@@ -915,7 +915,8 @@ public class ShadowViewTest {
     assertThat(view.getGlobalVisibleRect(globalVisibleRect))
         .isTrue();
     assertThat(globalVisibleRect)
-        .isEqualTo(new Rect(0, 25, 480, 800));
+        .isEqualTo(new Rect(0, 25,
+            DeviceConfig.DEFAULT_SCREEN_SIZE.width, DeviceConfig.DEFAULT_SCREEN_SIZE.height));
   }
 
   public static class MyActivity extends Activity {

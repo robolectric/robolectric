@@ -8,13 +8,12 @@ import org.robolectric.shadow.api.Shadow;
 
 public class Sandbox {
   private final ClassLoader robolectricClassLoader;
-  private final ShadowInvalidator shadowInvalidator;
+  private ShadowInvalidator shadowInvalidator;
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
   public Sandbox(ClassLoader robolectricClassLoader) {
     this.robolectricClassLoader = robolectricClassLoader;
-    this.shadowInvalidator = new ShadowInvalidator();
   }
 
   public <T> Class<T> bootstrappedClass(Class<?> clazz) {
@@ -28,7 +27,10 @@ public class Sandbox {
     return robolectricClassLoader;
   }
 
-  public ShadowInvalidator getShadowInvalidator() {
+  private ShadowInvalidator getShadowInvalidator() {
+    if (shadowInvalidator == null) {
+      this.shadowInvalidator = new ShadowInvalidator();
+    }
     return shadowInvalidator;
   }
 
@@ -45,11 +47,13 @@ public class Sandbox {
     this.classHandler = classHandler;
 
     ClassLoader robolectricClassLoader = getRobolectricClassLoader();
-    ShadowInvalidator invalidator = getShadowInvalidator();
-
     Class<?> robolectricInternalsClass = bootstrappedClass(RobolectricInternals.class);
+    if (InvokeDynamic.ENABLED) {
+      ShadowInvalidator invalidator = getShadowInvalidator();
+      setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
+    }
+
     setStaticField(robolectricInternalsClass, "classHandler", classHandler);
-    setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
     setStaticField(robolectricInternalsClass, "classLoader", robolectricClassLoader);
 
     Class<?> invokeDynamicSupportClass = bootstrappedClass(InvokeDynamicSupport.class);

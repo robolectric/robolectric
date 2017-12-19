@@ -1,9 +1,10 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 class ProvideBuildClasspathTask extends DefaultTask {
-    File outFile
+    @OutputFile File outFile
 
     @TaskAction
     public void writeProperties() throws Exception {
@@ -17,6 +18,12 @@ class ProvideBuildClasspathTask extends DefaultTask {
                 File resourcesDir = otherProject.sourceSets['main'].output.resourcesDir
                 paths << "${artifactName.replaceAll(/:/, '\\\\:')}: ${classesDir}:${resourcesDir}"
             }
+        }
+
+        AndroidSdk.ALL_SDKS.each { androidSdk ->
+            def config = project.configurations.create("sdk${androidSdk.apiLevel}")
+            project.dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+            paths << "${androidSdk.coordinates.replaceAll(/:/, '\\\\:')}: ${config.files.join(':')}"
         }
 
         File outDir = outFile.parentFile

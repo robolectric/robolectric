@@ -224,6 +224,7 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  @SuppressWarnings("ReferenceEquality")
   private ShadowConfig getShadowConfig(Class clazz) {
     ShadowConfig shadowConfig = shadowConfigCache.get(clazz);
     if (shadowConfig == null) {
@@ -424,12 +425,10 @@ public class ShadowWrangler implements ClassHandler {
 
   private MetaShadow getMetaShadow(Class<?> shadowClass) {
     synchronized (metaShadowMap) {
-      MetaShadow metaShadow = metaShadowMap.get(shadowClass);
-      if (metaShadow == null) {
-        metaShadow = new MetaShadow(shadowClass);
-        metaShadowMap.put(shadowClass, metaShadow);
+      if (!metaShadowMap.containsKey(shadowClass)) {
+        metaShadowMap.put(shadowClass, new MetaShadow(shadowClass));
       }
-      return metaShadow;
+      return metaShadowMap.get(shadowClass);
     }
   }
 
@@ -476,7 +475,7 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  private class MetaShadow {
+  private static class MetaShadow {
     final List<Field> realObjectFields = new ArrayList<>();
 
     public MetaShadow(Class<?> shadowClass) {

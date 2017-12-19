@@ -1,18 +1,19 @@
 package org.robolectric.internal;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.util.Logger;
+import org.robolectric.util.Util;
 
 public class BuckManifestFactory implements ManifestFactory {
 
@@ -24,53 +25,61 @@ public class BuckManifestFactory implements ManifestFactory {
   public ManifestIdentifier identify(Config config) {
     String buckManifest = System.getProperty(BUCK_ROBOLECTRIC_MANIFEST);
     FsFile manifestFile = Fs.fileFromPath(buckManifest);
-    return new ManifestIdentifier(manifestFile, null, null, config.packageName(), null);
-  }
 
-  @Override
-  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
     String buckResDirs = System.getProperty(BUCK_ROBOLECTRIC_RES_DIRECTORIES);
     String buckAssetsDirs = System.getProperty(BUCK_ROBOLECTRIC_ASSETS_DIRECTORIES);
-    String packageName = manifestIdentifier.getPackageName();
-    FsFile manifestFile = manifestIdentifier.getManifestFile();
+    String packageName = config.packageName();
 
-    final List<String> buckResources = buckResDirs == null ? null :
-            Arrays.asList(buckResDirs.split(File.pathSeparator));
-    final List<String> buckAssets = buckAssetsDirs == null ? null :
-              Arrays.asList(buckAssetsDirs.split(File.pathSeparator));
+    final List<FsFile> buckResources = getDirectoriesFromProperty(buckResDirs);
+    final List<FsFile> buckAssets = getDirectoriesFromProperty(buckAssetsDirs);
+    final FsFile resDir = buckResources.size() == 0 ? null : buckResources.get(buckResources.size() - 1);
+    final FsFile assetsDir = buckAssets.size() == 0 ? null : buckAssets.get(buckAssets.size() - 1);
+    final List<ManifestIdentifier> libraries;
 
-    final FsFile resDir = (buckResources == null || buckResources.isEmpty()) ? null :
-            Fs.fileFromPath(buckResources.get(buckResources.size() - 1));
-    final FsFile assetsDir = (buckAssets == null || buckAssets.isEmpty()) ? null :
-            Fs.fileFromPath(buckAssets.get(buckAssets.size() - 1));
+    if (resDir == null && assetsDir == null) {
+      libraries = null;
+    } else {
+      libraries = new ArrayList<>();
 
-    Logger.debug("Robolectric assets directory: " + (assetsDir == null ? null : assetsDir.getPath()));
-    Logger.debug("   Robolectric res directory: " + (resDir == null ? null : resDir.getPath()));
-    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
-    Logger.debug("    Robolectric package name: " + packageName);
+      for (int i = 0; i < buckResources.size() - 1; i++) {
+        libraries.add(new ManifestIdentifier((String) null, null, buckResources.get(i), null, null));
+      }
 
-    return new AndroidManifest(manifestFile, resDir, assetsDir, packageName) {
-        @Override
-        public List<ResourcePath> getIncludedResourcePaths() {
-            Collection<ResourcePath> resourcePaths = new LinkedHashSet<>(); // Needs stable ordering and no duplicates
-            resourcePaths.add(super.getResourcePath());
+      for (int i = 0; i < buckAssets.size() - 1; i++) {
+        libraries.add(new ManifestIdentifier(null, null, null, buckAssets.get(i), null));
+      }
+    }
 
-            // Add all the buck resource folders, no duplicates as they are being added to a set.
-            if (buckResources != null) {
-                ListIterator<String> it = buckResources.listIterator(buckResources.size());
-                while (it.hasPrevious()) {
-                    resourcePaths.add(new ResourcePath(
-                            getRClass(),
-                            Fs.fileFromPath(it.previous()),
-                            getAssetsDirectory()));
-                }
-            }
-            return new ArrayList<>(resourcePaths);
-        }
-    };
+    return new ManifestIdentifier(packageName, manifestFile, resDir, assetsDir, libraries);
   }
 
   public static boolean isBuck() {
     return System.getProperty(BUCK_ROBOLECTRIC_MANIFEST) != null;
+  }
+
+  @Nonnull
+  private List<FsFile> getDirectoriesFromProperty(String property) {
+    if (property == null) {
+      return Collections.emptyList();
+    }
+
+    List<String> dirs;
+    if (property.startsWith("@")) {
+      String filename = property.substring(1);
+      try {
+        dirs = Arrays.asList(
+            new String(Util.readBytes(new FileInputStream(filename)), UTF_8).split("\\n"));
+      } catch (IOException e) {
+        throw new RuntimeException("Cannot read file " + filename);
+      }
+    } else {
+      dirs = Arrays.asList(property.split(File.pathSeparator));
+    }
+
+    List<FsFile> files = new ArrayList<>();
+    for (String dir : dirs) {
+      files.add(Fs.fileFromPath(dir));
+    }
+    return files;
   }
 }

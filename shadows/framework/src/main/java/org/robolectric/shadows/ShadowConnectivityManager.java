@@ -32,6 +32,7 @@ public class ShadowConnectivityManager {
   private HashSet<ConnectivityManager.NetworkCallback> networkCallbacks = new HashSet<>();
   private final Map<Integer, Network> netIdToNetwork = new HashMap<>();
   private final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
+  private Network processBoundNetwork;
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -130,6 +131,17 @@ public class ShadowConnectivityManager {
     } else {
       return false;
     }
+  }
+
+  @Implementation(minSdk = M)
+  public boolean bindProcessToNetwork(Network network) {
+    processBoundNetwork = network;
+    return true;
+  }
+
+  @Implementation(minSdk = M)
+  public Network getBoundNetworkForProcess() {
+    return processBoundNetwork;
   }
 
   public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {

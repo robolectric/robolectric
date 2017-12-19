@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -21,8 +20,8 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -173,7 +172,7 @@ public class ShadowDialogTest {
   public void shouldFindViewsWithinAContentViewThatWasPreviouslySet() throws Exception {
     Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
-    assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
+    assertThat(dialog.<TextView>findViewById(R.id.title)).isInstanceOf((Class<? extends TextView>) TextView.class);
   }
 
   @Test

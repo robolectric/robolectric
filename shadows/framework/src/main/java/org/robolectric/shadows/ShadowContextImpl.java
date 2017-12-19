@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
@@ -86,6 +87,7 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
     SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
+    SYSTEM_SERVICE_MAP.put(Context.USB_SERVICE, "android.hardware.usb.UsbManager");
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
       SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
@@ -95,6 +97,8 @@ public class ShadowContextImpl {
     }
     if (getApiLevel() >= KITKAT) {
       SYSTEM_SERVICE_MAP.put(Context.PRINT_SERVICE, "android.print.PrintManager");
+      SYSTEM_SERVICE_MAP.put(Context.APP_OPS_SERVICE, "android.app.AppOpsManager");
+      SYSTEM_SERVICE_MAP.put(Context.CAPTIONING_SERVICE, "android.view.accessibility.CaptioningManager");
     }
     if (getApiLevel() >= LOLLIPOP) {
       SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
@@ -163,7 +167,7 @@ public class ShadowContextImpl {
             service = ReflectionHelpers.callConstructor(windowMgrImplClass,
                 ClassParameter.from(Context.class, realObject));
           } else {
-            Display display = newInstanceOf(Display.class);
+            Display display = ShadowDisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
             service = ReflectionHelpers.callConstructor(windowMgrImplClass,
                 ClassParameter.from(Display.class, display));
           }
@@ -187,6 +191,13 @@ public class ShadowContextImpl {
                 Class.forName(serviceClassName),
                 ClassParameter.from(Looper.class, Looper.getMainLooper()));
           }
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.app.KeyguardManager")) {
+          service =
+              ReflectionHelpers.callConstructor(
+                  clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
+        } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.view.accessibility.CaptioningManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else {
           service = newInstanceOf(clazz);
         }
@@ -211,6 +222,11 @@ public class ShadowContextImpl {
 
   @Implementation
   public ComponentName startService(Intent service) {
+    return ShadowApplication.getInstance().startService(service);
+  }
+
+  @Implementation(minSdk = O)
+  public ComponentName startForegroundService(Intent service) {
     return ShadowApplication.getInstance().startService(service);
   }
 

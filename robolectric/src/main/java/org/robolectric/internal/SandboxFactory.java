@@ -1,7 +1,6 @@
 package org.robolectric.internal;
 
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -44,8 +43,7 @@ public class SandboxFactory {
 
   @Nonnull
   public ClassLoader createClassLoader(InstrumentationConfiguration instrumentationConfig, URL... urls) {
-    URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-    return new SandboxClassLoader(systemClassLoader, instrumentationConfig, urls);
+    return new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfig, urls);
   }
 
 }

@@ -28,7 +28,7 @@
 
     <permission android:name="some_permission"
                 android:description="@string/test_permission_description"
-                android:icon="drawable resource"
+                android:icon="@drawable/an_image"
                 android:label="@string/test_permission_label"
                 android:permissionGroup="my_permission_group"
                 android:protectionLevel="dangerous">
@@ -37,7 +37,7 @@
 
     <permission android:name="permission_with_literal_label"
                 android:description="@string/test_permission_description"
-                android:icon="drawable resource"
+                android:icon="@drawable/an_image"
                 android:label="Literal label"/>
 
     <permission android:name="permission_with_minimal_fields"/>

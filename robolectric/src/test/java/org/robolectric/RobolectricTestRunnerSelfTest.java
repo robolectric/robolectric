@@ -28,14 +28,18 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void shouldSetUpSystemResources() {
-    assertThat(Resources.getSystem()).as("system resources").isNotNull();
-    assertThat(Resources.getSystem().getString(android.R.string.copy)).as("system resource")
-      .isEqualTo(RuntimeEnvironment.application.getResources().getString(android.R.string.copy));
+    Resources systemResources = Resources.getSystem();
+    Resources appResources = RuntimeEnvironment.application.getResources();
 
-    assertThat(RuntimeEnvironment.application.getResources().getString(R.string.howdy)).as("app resource")
+    assertThat(systemResources).as("system resources").isNotNull();
+
+    assertThat(systemResources.getString(android.R.string.copy)).as("system resource")
+        .isEqualTo(appResources.getString(android.R.string.copy));
+
+    assertThat(appResources.getString(R.string.howdy)).as("app resource")
       .isNotNull();
     try {
-      Resources.getSystem().getString(R.string.howdy);
+      systemResources.getString(R.string.howdy);
       Assertions.failBecauseExceptionWasNotThrown(Resources.NotFoundException.class);
     } catch (Resources.NotFoundException e) {
     }

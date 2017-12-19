@@ -22,7 +22,7 @@ public class ShadowIntentServiceTest {
     assertThat(shadowIntentService.getIntentRedelivery()).isFalse();
   }
 
-  private class TestIntentService extends IntentService {
+  private static class TestIntentService extends IntentService {
     public TestIntentService() {
       super("TestIntentService");
     }

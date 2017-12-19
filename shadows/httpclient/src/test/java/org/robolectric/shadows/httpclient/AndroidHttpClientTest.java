@@ -1,5 +1,6 @@
 package org.robolectric.shadows.httpclient;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import android.net.http.AndroidHttpClient;
@@ -38,7 +39,7 @@ public class AndroidHttpClientTest {
     FakeHttp.addPendingHttpResponse(200, "foo");
     HttpResponse resp = client.execute(new HttpGet("/foo"));
     assertThat(resp.getStatusLine().getStatusCode()).isEqualTo(200);
-    assertThat(CharStreams.toString(new InputStreamReader(resp.getEntity().getContent())))
+    assertThat(CharStreams.toString(new InputStreamReader(resp.getEntity().getContent(), UTF_8)))
         .isEqualTo("foo");
   }
 }

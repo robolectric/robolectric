@@ -1,11 +1,16 @@
 package org.robolectric.internal.bytecode;
 
+import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
+import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
 import static java.lang.invoke.MethodType.methodType;
 import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.CallSite;
@@ -13,6 +18,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -47,6 +53,7 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.Logger;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
@@ -54,18 +61,19 @@ import org.robolectric.util.Util;
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
  */
 public class SandboxClassLoader extends URLClassLoader implements Opcodes {
-  private final URLClassLoader systemClassLoader;
+  private final ClassLoader systemClassLoader;
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
   private final Map<String, String> classesToRemap;
   private final Set<MethodRef> methodsToIntercept;
 
   public SandboxClassLoader(InstrumentationConfiguration config) {
-    this(((URLClassLoader) ClassLoader.getSystemClassLoader()), config);
+    this(ClassLoader.getSystemClassLoader(), config);
   }
 
-  public SandboxClassLoader(URLClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
-    super(systemClassLoader.getURLs(), systemClassLoader.getParent());
+  public SandboxClassLoader(
+      ClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
+    super(getClassPathUrls(systemClassLoader), systemClassLoader.getParent());
     this.systemClassLoader = systemClassLoader;
 
     this.config = config;
@@ -75,6 +83,30 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     for (URL url : urls) {
       Logger.debug("Loading classes from: %s", url);
     }
+  }
+
+  private static URL[] getClassPathUrls(ClassLoader classloader) {
+    if (classloader instanceof URLClassLoader) {
+      return ((URLClassLoader) classloader).getURLs();
+    }
+    return parseJavaClassPath();
+  }
+
+  // TODO(b/65488446): Use a public API once one is available.
+  private static URL[] parseJavaClassPath() {
+    ImmutableList.Builder<URL> urls = ImmutableList.builder();
+    for (String entry : Splitter.on(PATH_SEPARATOR.value()).split(JAVA_CLASS_PATH.value())) {
+      try {
+        try {
+          urls.add(new File(entry).toURI().toURL());
+        } catch (SecurityException e) { // File.toURI checks to see if the file is a directory
+          urls.add(new URL("file", null, new File(entry).getAbsolutePath()));
+        }
+      } catch (MalformedURLException e) {
+        Logger.strict("malformed classpath entry: " + entry, e);
+      }
+    }
+    return urls.build().toArray(new URL[0]);
   }
 
   @Override
@@ -97,7 +129,8 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   @Override
   protected Class<?> findClass(String name) throws ClassNotFoundException {
     if (config.shouldAcquire(name)) {
-      return maybeInstrumentClass(name);
+      return PerfStatsCollector.getInstance().measure("load sandboxed class",
+          () -> maybeInstrumentClass(name));
     } else {
       return systemClassLoader.loadClass(name);
     }
@@ -129,7 +162,9 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       byte[] bytes;
       ClassInfo classInfo = new ClassInfo(className, classNode);
       if (config.shouldInstrument(classInfo)) {
-        bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
+        bytes = PerfStatsCollector.getInstance().measure("instrument class",
+            () -> getInstrumentedBytes(classNode, config.containsStubs(classInfo))
+        );
       } else {
         bytes = origClassBytes;
       }
@@ -270,7 +305,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       return;
     }
 
-    if (type == Type.VOID_TYPE) {
+    if (Type.VOID_TYPE.equals(type)) {
       instructions.add(new InsnNode(ACONST_NULL));
     } else {
       Type boxed = getBoxedType(type);
@@ -285,7 +320,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
         instructions.add(new InsnNode(DUP_X1));
         instructions.add(new InsnNode(SWAP));
       }
-      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V"));
+      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V", false));
     }
   }
 
@@ -394,7 +429,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
         MethodNode defaultConstructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", "()V", null);
         RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(defaultConstructor);
         generator.loadThis();
-        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
         generator.loadThis();
         generator.invokeVirtual(classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
         generator.returnValue();
@@ -509,7 +544,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
         RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
         generator.loadThis();
-        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
         generator.returnValue();
         generator.endMethod();
       }
@@ -926,11 +961,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     private void invokeMethod(String internalClassName, String methodName, String methodDesc) {
       if (isStatic()) {
         loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc);
+        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc, false);
       } else {
         loadThisOrNull();                                       // this
         loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc);
+        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc, false);
       }
     }
 
@@ -986,11 +1021,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
       generator.loadThis();
       if (classNode.superName.equals("java/lang/Object")) {
-        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+        generator.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
       } else {
         generator.loadArgs();
         generator.visitMethodInsn(INVOKESPECIAL, classNode.superName,
-            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V");
+            "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V", false);
       }
       generator.loadThis();
       generator.loadArg(1);
@@ -1033,7 +1068,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
         generator.checkCast(classType);                               // __robo_data__ but cast to my class
         generator.loadArgs();                                         // __robo_data__ instance, [args]
 
-        generator.visitMethodInsn(INVOKESPECIAL, internalClassName, originalMethod.name, originalMethod.desc);
+        generator.visitMethodInsn(INVOKESPECIAL, internalClassName, originalMethod.name, originalMethod.desc, false);
         tryCatchForProxyCall.end();
 
         generator.returnValue();
@@ -1189,7 +1224,8 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       instructions.add(new LdcInsnNode(classType)); // signature instance [] class
       instructions.add(new MethodInsnNode(INVOKESTATIC,
           Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
-          "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;"));
+          "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;",
+          false));
 
       final Type returnType = Type.getReturnType(targetMethod.desc);
       switch (returnType.getSort()) {

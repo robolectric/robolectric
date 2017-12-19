@@ -1,9 +1,9 @@
 package org.robolectric;
 
 import static com.google.common.collect.ImmutableMap.of;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
-import static org.robolectric.util.TestUtil.stringify;
 
 import android.app.Application;
 import java.io.ByteArrayInputStream;
@@ -22,6 +22,7 @@ import org.robolectric.shadows.ShadowViewGroup;
 
 @RunWith(JUnit4.class)
 public class ConfigMergerTest {
+
   @Test public void defaultValuesAreMerged() throws Exception {
     assertThat(configFor(Test2.class, "withoutAnnotation",
         new Config.Builder().build()).manifest())
@@ -175,7 +176,7 @@ public class ConfigMergerTest {
       @Override
       InputStream getResourceAsStream(String resourceName) {
         String properties = configProperties.get(resourceName);
-        return properties == null ? null : new ByteArrayInputStream(properties.getBytes());
+        return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
       }
     }.getConfig(testClass, info, globalConfig);
   }
@@ -188,8 +189,19 @@ public class ConfigMergerTest {
     }
   }
 
-  private void assertConfig(Config config, int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, String[] instrumentedPackages, String[] libraries, Class<?> constants) {
-    assertThat(stringify(config)).isEqualTo(stringify(sdk, manifest, application, packageName, qualifiers, resourceDir, assetsDir, shadows, instrumentedPackages, libraries, constants));
+  private static void assertConfig(Config config, int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir,
+                            String assetsDir, Class<?>[] shadows, String[] instrumentedPackages, String[] libraries, Class<?> constants) {
+    assertThat(config.sdk()).isEqualTo(sdk);
+    assertThat(config.manifest()).isEqualTo(manifest);
+    assertThat(config.application()).isEqualTo(application);
+    assertThat(config.packageName()).isEqualTo(packageName);
+    assertThat(config.qualifiers()).isEqualTo(qualifiers);
+    assertThat(config.resourceDir()).isEqualTo(resourceDir);
+    assertThat(config.assetDir()).isEqualTo(assetsDir);
+    assertThat(config.shadows()).containsExactlyInAnyOrder(shadows);
+    assertThat(config.instrumentedPackages()).containsExactlyInAnyOrder(instrumentedPackages);
+    assertThat(config.libraries()).containsExactlyInAnyOrder(libraries);
+    assertThat(config.constants()).isEqualTo(constants);
   }
 
   @Ignore

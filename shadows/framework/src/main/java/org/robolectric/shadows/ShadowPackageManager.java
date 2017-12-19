@@ -53,6 +53,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.PatternMatcher;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Pair;
@@ -304,8 +305,11 @@ public class ShadowPackageManager {
       info.serviceInfo.packageName = packageName;
       info.serviceInfo.applicationInfo = new ApplicationInfo();
       info.filter = new IntentFilter();
-      for (Iterator<String> it = intentFilter.typesIterator(); it.hasNext(); ) {
-        info.filter.addDataType(it.next());
+      Iterator<String> iterator = intentFilter.typesIterator();
+      if (iterator != null) {
+        while (iterator.hasNext()) {
+          info.filter.addDataType(iterator.next());
+        }
       }
       return info;
     } catch (IntentFilter.MalformedMimeTypeException e) {
@@ -377,6 +381,7 @@ public class ShadowPackageManager {
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     applicationInfo.sourceDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-sourceDir").toAbsolutePath().toString();
+    applicationInfo.publicSourceDir = applicationInfo.sourceDir;
     applicationInfo.dataDir = tempDirectory.createIfNotExists(applicationInfo.packageName + "-dataDir").toAbsolutePath().toString();
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
@@ -741,6 +746,7 @@ public class ShadowPackageManager {
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+    applicationInfo.uid = Process.myUid();
     setUpPackageStorage(applicationInfo);
 
     int labelRes = 0;
@@ -793,10 +799,20 @@ public class ShadowPackageManager {
     return 0;
   }
 
+  /**
+   * @deprecated - this will be the default behaviour in Robolectric 3.7 and bring behaviour into line with that of
+   * other Android components (note this method only affects Activities)
+   */
+  @Deprecated
   public boolean isQueryIntentImplicitly() {
     return queryIntentImplicitly;
   }
 
+  /**
+   * @deprecated - this will be the default behaviour in Robolectric 3.7 and bring behaviour into line with that of
+   * other Android components (note this method only affects Activities)
+   */
+  @Deprecated
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
     this.queryIntentImplicitly = queryIntentImplicitly;
   }
