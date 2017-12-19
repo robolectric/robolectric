@@ -316,12 +316,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     perfStatsCollector.measure("reset Android state (before test)",
         () -> roboMethod.parallelUniverseInterface.resetStaticState(config));
 
-    Class<?> androidBuildVersionClass = (sdkEnvironment).bootstrappedClass(Build.VERSION.class);
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkConfig.getApiLevel());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RESOURCES_SDK_INT", sdkConfig.getApiLevel());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
-    ReflectionHelpers.setStaticField(androidBuildVersionClass, "CODENAME", sdkConfig.getAndroidCodeName());
-
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 

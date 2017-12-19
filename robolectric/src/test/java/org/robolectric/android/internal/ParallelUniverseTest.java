@@ -155,7 +155,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
@@ -164,7 +164,7 @@ public class ParallelUniverseTest {
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
     assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.SDK_INT);
+        .contains("notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
