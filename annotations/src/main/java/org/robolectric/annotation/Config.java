@@ -115,9 +115,14 @@ public @interface Config {
   String abiSplit() default DEFAULT_ABI_SPLIT;
 
   /**
-   * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
+   * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
    *
-   * @return Qualifiers used for resource resolution.
+   * If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
+   * broadly-scoped qualifiers.
+   *
+   * See [Device Configuration](http://robolectric.org/device-configuration/) for details.
+   *
+   * @return Qualifiers used for device configuration and resource resolution.
    */
   String qualifiers() default DEFAULT_QUALIFIERS;
 
@@ -524,7 +529,16 @@ public @interface Config {
         this.maxSdk = pick(this.maxSdk, overlayMaxSdk, DEFAULT_VALUE_INT);
       }
       this.manifest = pick(this.manifest, overlayConfig.manifest(), DEFAULT_VALUE_STRING);
-      this.qualifiers = pick(this.qualifiers, overlayConfig.qualifiers(), "");
+
+      String qualifiersOverlayValue = overlayConfig.qualifiers();
+      if (qualifiersOverlayValue != null && !qualifiersOverlayValue.equals("")) {
+        if (qualifiersOverlayValue.startsWith("+")) {
+          this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue;
+        } else {
+          this.qualifiers = qualifiersOverlayValue;
+        }
+      }
+
       this.packageName = pick(this.packageName, overlayConfig.packageName(), "");
       this.abiSplit = pick(this.abiSplit, overlayConfig.abiSplit(), "");
       this.resourceDir = pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);

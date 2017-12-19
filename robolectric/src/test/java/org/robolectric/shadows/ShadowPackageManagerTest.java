@@ -30,6 +30,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -72,6 +73,7 @@ import android.os.Bundle;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -160,7 +162,6 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
   }
 
   @Test
@@ -286,7 +287,6 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
-
   }
 
   @Test
@@ -490,6 +490,16 @@ public class ShadowPackageManagerTest {
     i.addCategory(Intent.CATEGORY_LAUNCHER);
     i.setType("image/jpeg");
     List<ResolveInfo> services = packageManager.queryIntentServices(i, 0);
+    assertThat(services).isNotEmpty();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void queryIntentServicesAsUser() {
+    Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+    i.setType("image/jpeg");
+    List<ResolveInfo> services = packageManager.queryIntentServicesAsUser(i, 0, 0);
     assertThat(services).isNotEmpty();
   }
 
@@ -1129,7 +1139,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresent_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
 
@@ -1138,7 +1148,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
 
@@ -1152,7 +1162,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenNotPreconfigured_getPackageSizeInfo_callsBackWithDefaults() throws Exception {
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
@@ -1161,7 +1171,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPreconfigured_getPackageSizeInfo_callsBackWithConfiguredValues() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = "org.robolectric";
@@ -1176,7 +1186,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPreconfiguredForAnotherPackage_getPackageSizeInfo_callsBackWithConfiguredValues() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = "org.other";
@@ -1191,7 +1201,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPaused_getPackageSizeInfo_callsBackWithConfiguredValuesAfterIdle() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
 
@@ -1440,6 +1450,17 @@ public class ShadowPackageManagerTest {
 
     // Shouldn't throw exception
     shadowPackageManager.addPackage("test.package");
+  }
+
+  @Test
+  public void addPackageSetsStorage() throws Exception {
+    shadowPackageManager.addPackage("test.package");
+
+    PackageInfo packageInfo = packageManager.getPackageInfo("test.package", 0);
+    assertThat(packageInfo.applicationInfo.sourceDir).isNotNull();
+    assertThat(new File(packageInfo.applicationInfo.sourceDir).exists()).isTrue();
+    assertThat(packageInfo.applicationInfo.publicSourceDir)
+        .isEqualTo(packageInfo.applicationInfo.sourceDir);
   }
 
   @Test

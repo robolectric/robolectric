@@ -155,6 +155,31 @@ public class ShadowAccessibilityNodeInfoTest {
         .isEqualTo(AccessibilityNodeInfo.ACTION_LONG_CLICK);
   }
 
+  @Test
+  public void equalsTest_avoidsNullPointerDuringParentComparison() {
+    AccessibilityNodeInfo grandparentInfo = AccessibilityNodeInfo.obtain();
+    AccessibilityNodeInfo childInfo = AccessibilityNodeInfo.obtain();
+    AccessibilityNodeInfo parentInfo = AccessibilityNodeInfo.obtain();
+    shadowOf(grandparentInfo).addChild(parentInfo);
+    shadowOf(parentInfo).addChild(childInfo);
+
+    assertThat(parentInfo.equals(childInfo)).isFalse();
+    assertThat(childInfo.equals(parentInfo)).isFalse();
+    assertThat(grandparentInfo.equals(parentInfo)).isFalse();
+    assertThat(parentInfo.equals(grandparentInfo)).isFalse();
+  }
+
+  @Test
+  public void equalsTest_avoidsNullPointerDuringChildrenComparison() {
+    node.setVisibleToUser(true);
+    AccessibilityNodeInfo child1 = AccessibilityNodeInfo.obtain();
+    AccessibilityNodeInfo child2 = AccessibilityNodeInfo.obtain();
+    shadowOf(node).addChild(child1);
+    shadowOf(node).addChild(child2);
+
+    assertThat(node).isEqualTo(node);
+  }
+
   @After
   public void tearDown() {
     ShadowAccessibilityNodeInfo.resetObtainedInstances();

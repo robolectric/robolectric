@@ -1,11 +1,9 @@
 package org.robolectric.res;
 
-import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.util.Logger;
 
@@ -16,8 +14,8 @@ public class ResBundle {
     valuesMap.put(resName, value);
   }
 
-  public TypedResource get(ResName resName, String qualifiers) {
-    return valuesMap.pick(resName, qualifiers);
+  public TypedResource get(ResName resName, ResTable_config config) {
+    return valuesMap.pick(resName, config);
   }
 
   public void receive(ResourceTable.Visitor visitor) {
@@ -29,15 +27,9 @@ public class ResBundle {
   static class ResMap {
     private final Map<ResName, List<TypedResource>> map = new HashMap<>();
 
-    public TypedResource pick(ResName resName, String qualifiersStr) {
+    public TypedResource pick(ResName resName, ResTable_config toMatch) {
       List<TypedResource> values = map.get(resName);
       if (values == null || values.size() == 0) return null;
-
-      ResTable_config toMatch = new ResTable_config();
-      if (!Strings.isNullOrEmpty(qualifiersStr) &&
-          !new ConfigDescription().parse(qualifiersStr, toMatch, false)) {
-        throw new IllegalArgumentException("Invalid qualifiers \"" + qualifiersStr + "\"");
-      }
 
       TypedResource bestMatchSoFar = null;
       for (TypedResource candidate : values) {
@@ -53,15 +45,18 @@ public class ResBundle {
         Logger.debug("Picked '%s' for %s for qualifiers '%s' (%d candidates)",
             bestMatchSoFar == null ? "<none>" : bestMatchSoFar.getXmlContext().getQualifiers().toString(),
             resName.getFullyQualifiedName(),
-            qualifiersStr,
+            toMatch,
             values.size());
       }
       return bestMatchSoFar;
     }
 
     public void put(ResName resName, TypedResource value) {
-      List<TypedResource> values = map.computeIfAbsent(resName, k -> new ArrayList<>());
-      values.add(value);
+      if (!map.containsKey(resName)) {
+        map.put(resName, new ArrayList<>());
+      }
+
+      map.get(resName).add(value);
     }
 
     public int size() {

@@ -653,38 +653,12 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldRegisterMultipleContentObservers() {
-    TestContentObserver co = new TestContentObserver(null);
-    TestContentObserver co1 = new TestContentObserver(null);
-    TestContentObserver co2 = new TestContentObserver(null);
-
-    assertThat(shadowContentResolver.getContentObservers(uri21)).isEmpty();
-
-    contentResolver.registerContentObserver(uri21, true, co);
-    contentResolver.registerContentObserver(uri21, true, co1);
-    contentResolver.registerContentObserver(uri22, true, co2);
-
-    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
-    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
-
-    assertThat(co.changed).isFalse();
-    assertThat(co1.changed).isFalse();
-    assertThat(co2.changed).isFalse();
-    contentResolver.notifyChange(uri21, null);
-    assertThat(co.changed).isTrue();
-    assertThat(co1.changed).isTrue();
-    assertThat(co2.changed).isFalse();
-
-    shadowContentResolver.clearContentObservers();
-    assertThat(shadowContentResolver.getContentObservers(uri21)).isEmpty();
-  }
-
-  @Test
   public void shouldUnregisterContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI))
+        .containsExactlyInAnyOrder((ContentObserver) co);
 
     contentResolver.unregisterContentObserver(co);
     assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
@@ -695,32 +669,27 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldUnregisterMultipleContentObservers() {
-    TestContentObserver co = new TestContentObserver(null);
+  public void shouldNotifyChildContentObservers() throws Exception {
     TestContentObserver co1 = new TestContentObserver(null);
     TestContentObserver co2 = new TestContentObserver(null);
 
-    contentResolver.registerContentObserver(uri21, true, co);
-    contentResolver.registerContentObserver(uri21, true, co1);
-    contentResolver.registerContentObserver(uri22, true, co);
-    contentResolver.registerContentObserver(uri22, true, co2);
-    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
-    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co, co2);
+    Uri childUri = EXTERNAL_CONTENT_URI.buildUpon().appendPath("path").build();
 
-    contentResolver.unregisterContentObserver(co);
-    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
-    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co1);
+    contentResolver.registerContentObserver(childUri, false, co2);
 
-    contentResolver.unregisterContentObserver(co2);
-    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
-    assertThat(shadowContentResolver.getContentObservers(uri22)).isEmpty();
+    co1.changed = co2.changed = false;
+    contentResolver.notifyChange(childUri, null);
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isTrue();
 
-    assertThat(co.changed).isFalse();
-    assertThat(co1.changed).isFalse();
+    co1.changed = co2.changed = false;
+    contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    assertThat(co1.changed).isTrue();
     assertThat(co2.changed).isFalse();
-    contentResolver.notifyChange(uri21, null);
-    contentResolver.notifyChange(uri22, null);
-    assertThat(co.changed).isFalse();
+
+    co1.changed = co2.changed = false;
+    contentResolver.notifyChange(childUri.buildUpon().appendPath("extra").build(), null);
     assertThat(co1.changed).isTrue();
     assertThat(co2.changed).isFalse();
   }

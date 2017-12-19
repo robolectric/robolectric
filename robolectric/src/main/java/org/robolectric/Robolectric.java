@@ -10,6 +10,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
+import java.util.ServiceLoader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
@@ -26,11 +30,6 @@ import org.robolectric.util.Scheduler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.ServiceLoader;
-
 public class Robolectric {
   private static ShadowsAdapter shadowsAdapter = null;
   private static Iterable<ShadowProvider> providers;
@@ -46,6 +45,10 @@ public class Robolectric {
     RuntimeEnvironment.setActivityThread(null);
   }
 
+  /**
+   * @deprecated Prefer to access Shadow classes directly.
+   */
+  @Deprecated
   public static ShadowsAdapter getShadowsAdapter() {
     synchronized (ShadowsAdapter.class) {
       if (shadowsAdapter == null) {
@@ -60,7 +63,7 @@ public class Robolectric {
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass, Intent intent) {
-    return ServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass), intent);
+    return ServiceController.of(ReflectionHelpers.callConstructor(serviceClass), intent);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
@@ -72,7 +75,7 @@ public class Robolectric {
   }
 
   public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
-    return IntentServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
   }
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
@@ -96,7 +99,7 @@ public class Robolectric {
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass, Intent intent) {
-    return ActivityController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(activityClass), intent);
+    return ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {

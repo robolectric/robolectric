@@ -16,6 +16,7 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_junit \
   Robolectric_utils \
   robolectric-host-android_all \
+  robolectric-host-monitor-1.0.2-alpha1 \
   robolectric-maven-ant-tasks-2.1.3 \
   robolectric-bouncycastle-1.46 \
   robolectric-asm-commons-6.0 \
@@ -51,6 +52,7 @@ LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-host-android_all:$(TARGET_OUT_COMMON_INTERMEDIATES)/JAVA_LIBRARIES/robolectric_android-all-stub_intermediates/classes-with-res.jar \
   robolectric-host-android-support-v4:$(call java-lib-files, android-support-v4) \
   robolectric-host-android-support-multidex:$(call java-lib-files, android-support-multidex) \
-  robolectric-host-org_apache_http_legacy:$(call java-lib-files, org.apache.http.legacy)
+  robolectric-host-org_apache_http_legacy:$(call java-lib-files, org.apache.http.legacy) \
+  robolectric-host-monitor-1.0.2-alpha1:$(call java-lib-files, robolectric-monitor-1.0.2-alpha1)
 
 include $(BUILD_HOST_PREBUILT)

@@ -50,6 +50,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
@@ -914,7 +915,8 @@ public class ShadowViewTest {
     assertThat(view.getGlobalVisibleRect(globalVisibleRect))
         .isTrue();
     assertThat(globalVisibleRect)
-        .isEqualTo(new Rect(0, 25, 480, 800));
+        .isEqualTo(new Rect(0, 25,
+            DeviceConfig.DEFAULT_SCREEN_SIZE.width, DeviceConfig.DEFAULT_SCREEN_SIZE.height));
   }
 
   public static class MyActivity extends Activity {

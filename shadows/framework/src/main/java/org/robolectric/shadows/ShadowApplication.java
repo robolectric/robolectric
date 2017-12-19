@@ -17,6 +17,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -46,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -105,12 +107,25 @@ public class ShadowApplication extends ShadowContextWrapper {
     getInstance().getBackgroundThreadScheduler().advanceBy(0);
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public static void setDisplayMetricsDensity(float densityMultiplier) {
+    shadowOf(Resources.getSystem()).setDensity(densityMultiplier);
     shadowOf(RuntimeEnvironment.application.getResources()).setDensity(densityMultiplier);
   }
 
+  /**
+   * @deprecated Set up display using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public static void setDefaultDisplay(Display display) {
+    shadowOf(Resources.getSystem()).setDisplay(display);
+    display.getMetrics(RuntimeEnvironment.application.getResources().getDisplayMetrics());
+
     shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
+    display.getMetrics(Resources.getSystem().getDisplayMetrics());
   }
 
   public void bind(AndroidManifest appManifest) {
