@@ -1,11 +1,11 @@
 package org.robolectric.android.fakes;
 
+import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
-import android.support.test.runner.MonitoringInstrumentation;
 import org.robolectric.util.ReflectionHelpers;
 
-public class RoboInstrumentation extends MonitoringInstrumentation {
+public class RoboInstrumentation extends Instrumentation {
 
   public void init(
       Class<?> activityThreadClass,
@@ -21,10 +21,5 @@ public class RoboInstrumentation extends MonitoringInstrumentation {
     ReflectionHelpers.setField(this, "mInstrContext", context);
     ReflectionHelpers.setField(this, "mAppContext", context);
     ReflectionHelpers.setField(this, "mComponent", component);
-  }
-
-  @Override
-  protected void specifyDexMakerCacheProperty() {
-    // ignore, unnecessary for robolectric
   }
 }
