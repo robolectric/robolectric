@@ -66,7 +66,6 @@ public class ParallelUniverseTest {
     Method method = getDummyMethodForTest();
     pu.setUpApplicationState(
         method,
-        new DefaultTestLifecycle(),
         appManifest,
         defaultConfig,
         sdkResourceProvider,
