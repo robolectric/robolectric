@@ -321,7 +321,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     roboMethod.parallelUniverseInterface.setUpApplicationState(
         bootstrappedMethod,
-        roboMethod.testLifecycle,
         appManifest,
         config,
         new RoutingResourceTable(appResourceTable, getCompiletimeSdkResourceTable()),
