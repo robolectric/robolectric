@@ -1,14 +1,15 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.annotation.StyleableRes;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.util.TypedValue;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
@@ -48,6 +49,16 @@ public class ShadowTypedArray {
   @HiddenApi @Implementation
   public CharSequence loadStringValueAt(int index) {
     return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
+  }
+
+  @Implementation
+  public String getNonResourceString(@StyleableRes int index) {
+    return directlyOn(realTypedArray, TypedArray.class).getString(index);
+  }
+
+  @Implementation
+  public String getNonConfigurationString(@StyleableRes int index, int allowedChangingConfigs) {
+    return directlyOn(realTypedArray, TypedArray.class).getString(index);
   }
 
   @Implementation
