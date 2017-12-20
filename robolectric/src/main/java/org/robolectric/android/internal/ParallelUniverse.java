@@ -23,7 +23,6 @@ import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestLifecycle;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
@@ -59,10 +58,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, AndroidManifest appManifest,
-                                    Config config, ResourceTable compileTimeResourceTable,
-                                    ResourceTable appResourceTable,
-                                    ResourceTable systemResourceTable) {
+  public void setUpApplicationState(
+      Method method,
+      AndroidManifest appManifest,
+      Config config,
+      ResourceTable compileTimeResourceTable,
+      ResourceTable appResourceTable,
+      ResourceTable systemResourceTable) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -119,15 +121,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
-    Application app;
-    try {
-      app = (Application) testLifecycle.createApplication(method, appManifest, config);
-      System.out.println("*** TestLifecycle.createApplication() is a deprecated interface and will be removed in Robolectric 3.7;" +
-          "*** please refactor your tests and remove " + testLifecycle.getClass().getName() + ".");
-    } catch (Exception e) {
-      app = createApplication(appManifest, config);
-    }
-    Application application = app;
+    Application application = createApplication(appManifest, config);
     RuntimeEnvironment.application = application;
 
     if (application != null) {

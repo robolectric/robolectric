@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.app.Application;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import java.lang.reflect.Method;
@@ -25,8 +24,6 @@ import org.robolectric.RoboSettings;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.android.DeviceConfig;
-import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -36,7 +33,6 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(RobolectricTestRunner.class)
@@ -65,9 +61,6 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationState(Config defaultConfig, AndroidManifest appManifest) {
-    // this is kinda nasty but needed to prevent double initialization from ParallelUniverse and RTR:
-    ShadowDisplayManagerGlobal.reset();
-
     ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     Method method = getDummyMethodForTest();
@@ -135,10 +128,13 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
-        new Thread(() -> {
-          setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
-          res.set(RuntimeEnvironment.isMainThread());
-        });
+        new Thread() {
+          @Override
+          public void run() {
+            setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
+            res.set(RuntimeEnvironment.isMainThread());
+          }
+        };
     t.start();
     t.join(1000);
     assertThat(res.get()).isTrue();
@@ -155,7 +151,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.SDK_INT);
   }
 
   @Test
@@ -163,8 +159,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("notlong-notround-land-notnight-mdpi-finger-v" + Build.VERSION.SDK_INT);
   }
 
   @Test
@@ -201,26 +196,5 @@ public class ParallelUniverseTest {
     assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
     assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
     assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
-  }
-
-  @Test @Config(qualifiers = "w123dp-h456dp")
-  public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
-    RuntimeEnvironment.setQualifiers("land");
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp").contains("-land-");
-  }
-
-  @Test @Config(qualifiers = "w100dp-h125dp")
-  public void whenDimensAndSizeSpecified_setQualifiers_should() throws Exception {
-    RuntimeEnvironment.setQualifiers("+xlarge");
-    Configuration configuration = Resources.getSystem().getConfiguration();
-    assertThat(configuration.screenWidthDp).isEqualTo(ScreenSize.xlarge.width);
-    assertThat(configuration.screenHeightDp).isEqualTo(ScreenSize.xlarge.height);
-    assertThat(DeviceConfig.getScreenSize(configuration)).isEqualTo(ScreenSize.xlarge);
-  }
-
-  @Test @Config(qualifiers = "w123dp-h456dp")
-  public void whenPrefixedWithPlus_setQualifiers_shouldBeBasedOnPreviousConfig() throws Exception {
-    RuntimeEnvironment.setQualifiers("+w124dp");
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
   }
 }

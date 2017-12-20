@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.os.Build;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
@@ -319,7 +318,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
-    roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, roboMethod.testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
+    roboMethod.parallelUniverseInterface.setUpApplicationState(
+        bootstrappedMethod,
+        appManifest,
+        config,
+        new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable),
+        new RoutingResourceTable(systemResourceTable, appResourceTable),
+        new RoutingResourceTable(systemResourceTable));
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
 
