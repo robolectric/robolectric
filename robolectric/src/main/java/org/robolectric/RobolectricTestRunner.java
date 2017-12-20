@@ -268,7 +268,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static PackageResourceTable getCompiletimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
       ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
-      compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
+      compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(
+          new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
   }
