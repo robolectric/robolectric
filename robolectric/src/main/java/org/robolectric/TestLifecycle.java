@@ -1,15 +1,8 @@
 package org.robolectric;
 
 import java.lang.reflect.Method;
-import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 
 public interface TestLifecycle<T> {
-  /**
-   * @deprecated This method is deprecated and will be removed in Robolectric 3.7
-   */
-  @Deprecated
-  T createApplication(Method method, AndroidManifest appManifest, Config config);
 
   /**
    * Called before each test method is run.
