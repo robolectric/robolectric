@@ -123,13 +123,6 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void resetStaticStatic_setsMainThread(){
-    RuntimeEnvironment.setMainThread(new Thread());
-    pu.resetStaticState(getDefaultConfig());
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
-  }
-
-  @Test
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
