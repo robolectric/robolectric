@@ -1,15 +1,13 @@
 package org.robolectric.annotation.processing.validator;
 
 import com.google.common.collect.ImmutableSet;
-import javax.lang.model.element.Name;
-import org.robolectric.annotation.processing.RobolectricModel;
-
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
-import java.util.Set;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.Implementation}.
