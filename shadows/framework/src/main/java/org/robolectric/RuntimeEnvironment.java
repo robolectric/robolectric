@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
@@ -26,7 +25,6 @@ public class RuntimeEnvironment {
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
-  private static AndroidManifest appManifest;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -190,19 +188,6 @@ public class RuntimeEnvironment {
 
   public static ResourceTable getCompileTimeResourceTable() {
     return compileTimeResourceTable;
-  }
-
-  public static void setApplicationManifest(AndroidManifest appManifest) {
-    RuntimeEnvironment.appManifest = appManifest;
-  }
-
-  /**
-   * @deprecated Use {@link android.content.Context} or {@link android.content.pm.PackageManager}
-   *             instead. This method will be removed in a future version of Robolectric.
-   */
-  @Deprecated
-  public static AndroidManifest getAppManifest() {
-    return RuntimeEnvironment.appManifest;
   }
 
   public static void setTempDirectory(TempDirectory tempDirectory) {
