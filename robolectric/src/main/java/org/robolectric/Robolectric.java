@@ -31,7 +31,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Robolectric {
-  private static Iterable<ShadowProvider> providers;
 
   /**
    * This method is internal and shouldn't be called by developers.
