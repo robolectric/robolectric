@@ -8,6 +8,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(className = "android.app.SharedPreferencesImpl",
     isInAndroidSdk = false)
@@ -22,6 +23,9 @@ public class ShadowSharedPreferencesImpl {
   @Implementation
   public void startLoadFromDisk() {
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.N) {
+      synchronized(realSharedPreferencesImpl) {
+        ReflectionHelpers.setField(realSharedPreferencesImpl, "mLoaded", false);
+      }
       directlyOn(realSharedPreferencesImpl, "android.app.SharedPreferencesImpl", "loadFromDisk");
     } else {
       synchronized (realSharedPreferencesImpl) {
