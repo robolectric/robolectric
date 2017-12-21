@@ -9,8 +9,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageParser;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,7 +25,6 @@ import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestLifecycle;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
@@ -33,9 +34,12 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
+import org.robolectric.shadows.LegacyManifestParser;
+import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -59,10 +63,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, AndroidManifest appManifest,
-                                    Config config, ResourceTable compileTimeResourceTable,
-                                    ResourceTable appResourceTable,
-                                    ResourceTable systemResourceTable) {
+  public void setUpApplicationState(
+      Method method,
+      AndroidManifest appManifest,
+      Config config,
+      ResourceTable compileTimeResourceTable,
+      ResourceTable appResourceTable,
+      ResourceTable systemResourceTable) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -96,8 +103,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         : configuration.locale;
     Locale.setDefault(locale);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
-
     // Looper needs to be prepared before the activity thread is created
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
@@ -108,6 +113,45 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
     ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
+    PackageParser.Package parsedPackage = null;
+
+    ApplicationInfo applicationInfo = null;
+    if (appManifest.getAndroidManifestFile() != null
+        && appManifest.getAndroidManifestFile().exists()) {
+      if (Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
+        parsedPackage = ShadowPackageParser.callParsePackage(appManifest.getAndroidManifestFile());
+      } else {
+        parsedPackage = LegacyManifestParser.createPackage(appManifest);
+      }
+    } else {
+      parsedPackage = new PackageParser.Package("org.robolectric.default");
+      parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+    }
+    applicationInfo = parsedPackage.applicationInfo;
+
+    // Support overriding the package name specified in the Manifest.
+    if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
+      parsedPackage.packageName = config.packageName();
+      parsedPackage.applicationInfo.packageName = config.packageName();
+    }
+    // TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
+    // "-dataDir").toAbsolutePath().toString());
+    setUpPackageStorage(applicationInfo);
+
+    // Bit of a hack... Context.createPackageContext() is called before the application is created.
+    // It calls through
+    // to ActivityThread for the package which in turn calls the PackageManagerService directly.
+    // This works for now
+    // but it might be nicer to have ShadowPackageManager implementation move into the service as
+    // there is also lots of
+    // code in there that can be reusable, e.g: the XxxxIntentResolver code.
+    ShadowActivityThread.setApplicationInfo(applicationInfo);
+
+    Class<?> contextImplClass =
+        ReflectionHelpers.loadClass(
+            getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
+
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
@@ -119,26 +163,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
-    Application app;
-    try {
-      app = (Application) testLifecycle.createApplication(method, appManifest, config);
-      System.out.println("*** TestLifecycle.createApplication() is a deprecated interface and will be removed in Robolectric 3.7;" +
-          "*** please refactor your tests and remove " + testLifecycle.getClass().getName() + ".");
-    } catch (Exception e) {
-      app = createApplication(appManifest, config);
-    }
-    Application application = app;
+    Application application = createApplication(appManifest, config);
     RuntimeEnvironment.application = application;
 
     if (application != null) {
       shadowOf(application).bind(appManifest);
-
-      final ApplicationInfo applicationInfo;
-      try {
-        applicationInfo = systemContextImpl.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
-      } catch (PackageManager.NameNotFoundException e) {
-        throw new RuntimeException(e);
-      }
 
       final Class<?> appBindDataClass;
       try {
@@ -155,6 +184,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+        shadowOf(contextImpl.getPackageManager()).addPackage(parsedPackage);
         ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
         shadowOf(application).callAttach(contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
@@ -269,5 +299,31 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   public void setSdkConfig(SdkConfig sdkConfig) {
     this.sdkConfig = sdkConfig;
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+  }
+
+  private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
+    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    applicationInfo.sourceDir =
+        tempDirectory
+            .createIfNotExists(applicationInfo.packageName + "-sourceDir")
+            .toAbsolutePath()
+            .toString();
+    applicationInfo.publicSourceDir =
+        tempDirectory
+            .createIfNotExists(applicationInfo.packageName + "-publicSourceDir")
+            .toAbsolutePath()
+            .toString();
+    applicationInfo.dataDir =
+        tempDirectory
+            .createIfNotExists(applicationInfo.packageName + "-dataDir")
+            .toAbsolutePath()
+            .toString();
+
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      applicationInfo.credentialProtectedDataDir =
+          tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir =
+          tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+    }
   }
 }

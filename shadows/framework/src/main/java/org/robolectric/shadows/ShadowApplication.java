@@ -155,7 +155,7 @@ public class ShadowApplication extends ShadowContextWrapper {
       for (String action : receiver.getActions()) {
         filter.addAction(action);
       }
-      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getClassName());
+      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
       registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
     }
   }

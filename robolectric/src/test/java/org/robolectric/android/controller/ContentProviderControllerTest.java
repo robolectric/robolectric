@@ -18,10 +18,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 23)
 public class ContentProviderControllerTest {
   private final ContentProviderController<MyContentProvider> controller = Robolectric.buildContentProvider(MyContentProvider.class);
   private ContentResolver contentResolver;
@@ -55,7 +53,9 @@ public class ContentProviderControllerTest {
   public void shouldRegisterWithContentResolver() throws Exception {
     controller.create().get();
 
-    ContentProviderClient client = contentResolver.acquireContentProviderClient("org.robolectric.authority2");
+    ContentProviderClient client =
+        contentResolver.acquireContentProviderClient(
+            "org.robolectric.my_content_provider_authority");
     client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
     assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
   }

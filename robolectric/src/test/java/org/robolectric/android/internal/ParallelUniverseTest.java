@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
 import org.robolectric.RoboSettings;
 import org.robolectric.RobolectricTestRunner;
@@ -73,7 +72,6 @@ public class ParallelUniverseTest {
     Method method = getDummyMethodForTest();
     pu.setUpApplicationState(
         method,
-        new DefaultTestLifecycle(),
         appManifest,
         defaultConfig,
         sdkResourceProvider,

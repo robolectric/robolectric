@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.os.Build;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
@@ -243,6 +242,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       try {
         Config config = getConfig(frameworkMethod.getMethod());
         AndroidManifest appManifest = getAppManifest(config);
+
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
@@ -268,7 +268,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static PackageResourceTable getCompiletimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
       ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
-      compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
+      compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(
+          new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
   }
@@ -319,7 +320,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
     PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
 
-    roboMethod.parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, roboMethod.testLifecycle, appManifest, config, new RoutingResourceTable(getCompiletimeSdkResourceTable(), appResourceTable), new RoutingResourceTable(systemResourceTable, appResourceTable), new RoutingResourceTable(systemResourceTable));
+    roboMethod.parallelUniverseInterface.setUpApplicationState(
+        bootstrappedMethod,
+        appManifest,
+        config,
+        new RoutingResourceTable(appResourceTable, getCompiletimeSdkResourceTable()),
+        new RoutingResourceTable(appResourceTable, systemResourceTable),
+        new RoutingResourceTable(systemResourceTable));
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
 

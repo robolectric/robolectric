@@ -52,7 +52,6 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void isKeyguardSecure() {
     assertThat(manager.isKeyguardSecure()).isFalse();
 

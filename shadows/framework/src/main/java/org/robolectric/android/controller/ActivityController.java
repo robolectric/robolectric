@@ -16,26 +16,10 @@ import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
-  /**
-   * @deprecated use {@link #of(Activity, Intent)} instead.
-   */
-  @Deprecated
-  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter unused, T activity, Intent intent) {
-    return of(activity, intent);
-  }
-
-  /**
-   * @deprecated use {@link #of(Activity)} instead.
-   */
-  @Deprecated
-  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter unused, T activity) {
-    return of(activity);
-  }
 
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
     return new ActivityController<>(activity, intent).attach();
