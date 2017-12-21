@@ -25,6 +25,7 @@ import android.os.CancellationSignal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -104,7 +105,7 @@ public class ShadowContentResolver {
       String testPath = test.getPath();
 
       return Objects.equals(uriPath, testPath)
-          || notifyForDescendents && testPath != null && testPath.startsWith(uriPath);
+          || (notifyForDescendents && testPath != null && testPath.startsWith(uriPath));
     }
   }
 
@@ -791,11 +792,13 @@ public class ShadowContentResolver {
 
   private static ContentProvider createAndInitialize(ProviderInfo providerInfo) {
     try {
-      ContentProvider provider = (ContentProvider) Class.forName(providerInfo.name).newInstance();
+      ContentProvider provider = (ContentProvider) Class.forName(providerInfo.name)
+          .getDeclaredConstructor().newInstance();
       provider.attachInfo(RuntimeEnvironment.application, providerInfo);
       provider.onCreate();
       return provider;
-    } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
+    } catch (InstantiationException | ClassNotFoundException | IllegalAccessException
+        | NoSuchMethodException | InvocationTargetException e) {
       throw new RuntimeException("Error instantiating class " + providerInfo.name);
     }
   }
@@ -929,6 +932,16 @@ public class ShadowContentResolver {
 
     @Override
     public int read() throws IOException {
+      throw new UnsupportedOperationException("You must use ShadowContentResolver.registerInputStream() in order to call read()");
+    }
+
+    @Override
+    public int read(byte[] b) throws IOException {
+      throw new UnsupportedOperationException("You must use ShadowContentResolver.registerInputStream() in order to call read()");
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
       throw new UnsupportedOperationException("You must use ShadowContentResolver.registerInputStream() in order to call read()");
     }
 

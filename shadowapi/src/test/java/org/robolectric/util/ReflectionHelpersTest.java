@@ -298,6 +298,7 @@ public class ReflectionHelpersTest {
   private static class ExampleDescendant extends ExampleBase {
     public static int DESCENDANT = 6;
 
+    @SuppressWarnings("HidingField")
     protected int overridden;
 
     private int returnNumber() {

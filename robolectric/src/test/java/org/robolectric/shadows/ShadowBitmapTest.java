@@ -238,7 +238,7 @@ public class ShadowBitmapTest {
     Bitmap bmp = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     for (int y = 0; y < bmp.getHeight(); ++y) {
       for (int x = 0; x < bmp.getWidth(); ++x) {
-        bmp.setPixel(x, y, 0xff << 24 + x << 16 + y << 8);
+        bmp.setPixel(x, y, packRGB(x, y, 0));
       }
     }
 
@@ -504,5 +504,9 @@ public class ShadowBitmapTest {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);
     return bitmap;
+  }
+
+  private static int packRGB(int r, int g, int b) {
+    return 0xff000000 | r << 16 | g << 8 | b;
   }
 }

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
@@ -215,7 +214,7 @@ public class ShadowAccessibilityNodeInfo {
      * of performed actions will not contain all actions performed on the
      * underlying view.
      */
-    shadowObtained.performedActionAndArgsList = new LinkedList<>();
+    shadowObtained.performedActionAndArgsList = new ArrayList<>();
 
     shadowObtained.view = view;
     sAllocationCount++;
@@ -927,7 +926,7 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   public boolean performAction(int action, Bundle arguments) {
     if (performedActionAndArgsList == null) {
-      performedActionAndArgsList = new LinkedList<>();
+      performedActionAndArgsList = new ArrayList<>();
     }
 
     performedActionAndArgsList.add(new Pair<>(action, arguments));
@@ -975,7 +974,7 @@ public class ShadowAccessibilityNodeInfo {
    */
   public void addChild(AccessibilityNodeInfo child) {
     if (children == null) {
-      children = new LinkedList<>();
+      children = new ArrayList<>();
     }
 
     children.add(child);
@@ -999,11 +998,11 @@ public class ShadowAccessibilityNodeInfo {
    */
   public List<Integer> getPerformedActions() {
     if (performedActionAndArgsList == null) {
-      performedActionAndArgsList = new LinkedList<>();
+      performedActionAndArgsList = new ArrayList<>();
     }
 
     // Here we take the actions out of the pairs and stick them into a separate LinkedList to return
-    List<Integer> actionsOnly = new LinkedList<Integer>();
+    List<Integer> actionsOnly = new ArrayList<>();
     Iterator<Pair<Integer, Bundle>> iter = performedActionAndArgsList.iterator();
     while (iter.hasNext()) {
       actionsOnly.add(iter.next().first);
@@ -1017,7 +1016,7 @@ public class ShadowAccessibilityNodeInfo {
    */
   public List<Pair<Integer, Bundle>> getPerformedActionsWithArgs() {
     if (performedActionAndArgsList == null) {
-      performedActionAndArgsList = new LinkedList<>();
+      performedActionAndArgsList = new ArrayList<>();
     }
     return Collections.unmodifiableList(performedActionAndArgsList);
   }
@@ -1059,7 +1058,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     if (children != null) {
-      newShadow.children = new LinkedList<>();
+      newShadow.children = new ArrayList<>();
       newShadow.children.addAll(children);
     } else {
       newShadow.children = null;
@@ -1146,6 +1145,7 @@ public class ShadowAccessibilityNodeInfo {
 
     @Override
     @Implementation
+    @SuppressWarnings("EqualsHashCode")
     public boolean equals(Object other) {
       if (other == null) {
         return false;

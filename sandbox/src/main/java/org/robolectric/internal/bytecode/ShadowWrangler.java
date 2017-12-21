@@ -360,11 +360,12 @@ public class ShadowWrangler implements ClassHandler {
 
     try {
       Class<?> shadowClass = loadClass(shadowClassName, instance.getClass().getClassLoader());
-      Object shadow = shadowClass.newInstance();
+      Object shadow = shadowClass.getDeclaredConstructor().newInstance();
       injectRealObjectOn(shadow, shadowClass, instance);
 
       return shadow;
-    } catch (InstantiationException | IllegalAccessException e) {
+    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
+        | InvocationTargetException e) {
       throw new RuntimeException("Could not instantiate shadow, missing public empty constructor.", e);
     }
   }

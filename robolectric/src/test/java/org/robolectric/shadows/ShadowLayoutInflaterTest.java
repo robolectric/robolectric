@@ -440,6 +440,7 @@ public class ShadowLayoutInflaterTest {
 
   /////////////////////////
 
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   private <T extends View> T inflate(int layoutResId) {
     return (T) LayoutInflater.from(context).inflate(layoutResId, null);
   }

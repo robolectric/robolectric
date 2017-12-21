@@ -147,6 +147,7 @@ public class ShadowProviderGenerator extends Generator {
       writer.println();
     }
 
+    writer.println("  @Override");
     writer.println("  public void reset() {");
     for (Map.Entry<TypeElement, ExecutableElement> entry : model.getResetters().entrySet()) {
       Implements annotation = entry.getKey().getAnnotation(Implements.class);

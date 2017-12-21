@@ -5,8 +5,8 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
@@ -122,6 +122,7 @@ public class ShadowAccessibilityWindowInfo {
 
   @Override
   @Implementation
+  @SuppressWarnings("ReferenceEquality")
   public boolean equals(Object object) {
     if (!(object instanceof AccessibilityWindowInfo)) {
       return false;
@@ -259,7 +260,7 @@ public class ShadowAccessibilityWindowInfo {
 
   public void addChild(AccessibilityWindowInfo child) {
     if (children == null) {
-      children = new LinkedList<>();
+      children = new ArrayList<>();
     }
 
     children.add(child);
@@ -279,6 +280,7 @@ public class ShadowAccessibilityWindowInfo {
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public boolean equals(Object object) {
       if (object == null) {
         return false;

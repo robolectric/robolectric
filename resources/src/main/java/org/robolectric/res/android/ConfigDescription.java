@@ -2,6 +2,7 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Util.isTruthy;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
@@ -182,11 +183,11 @@ public class ConfigDescription {
       out.packRegion(region);
 
       Arrays.fill(out.localeScript, (byte) 0);
-      byte[] scriptBytes = script == null ? new byte[4] : script.getBytes();
+      byte[] scriptBytes = script == null ? new byte[4] : script.getBytes(Charsets.UTF_8);
       System.arraycopy(scriptBytes, 0, out.localeScript, 0, scriptBytes.length);
 
       Arrays.fill(out.localeVariant, (byte) 0);
-      byte[] variantBytes = variant == null ? new byte[8] : variant.getBytes();
+      byte[] variantBytes = variant == null ? new byte[8] : variant.getBytes(Charsets.UTF_8);
       System.arraycopy(variantBytes, 0, out.localeVariant, 0, variantBytes.length);
     }
   }

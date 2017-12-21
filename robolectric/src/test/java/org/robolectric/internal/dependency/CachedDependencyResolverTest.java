@@ -122,6 +122,11 @@ public class CachedDependencyResolverTest {
 
         return this.getArtifactId().equals(d.getArtifactId()) && this.getGroupId().equals(groupId);
       }
+
+      @Override
+      public int hashCode() {
+        return 31 * getArtifactId().hashCode() + getGroupId().hashCode();
+      }
     };
   }
 

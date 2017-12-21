@@ -316,6 +316,7 @@ public class ShadowAlertDialogTest {
   private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
     private final ArrayList<String> transcript = new ArrayList<>();
 
+    @Override
     public void onClick(DialogInterface dialog, int item) {
       transcript.add("clicked on " + item);
     }

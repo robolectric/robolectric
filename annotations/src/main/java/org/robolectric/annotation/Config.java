@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
+@SuppressWarnings(value = {"BadAnnotationImplementation", "ImmutableAnnotationChecker"})
 public @interface Config {
   /**
    * TODO(vnayar): Create named constants for default values instead of magic numbers.

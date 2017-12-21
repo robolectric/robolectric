@@ -410,7 +410,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       try {
         resourceAsStream.close();
       } catch (IOException e) {
-        throw new RuntimeException("couldn't close test_config.properties", e);
+        // ignore
       }
     }
   }
@@ -507,6 +507,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return resourceTable;
   }
 
+  @SuppressWarnings(value = {"ImmutableAnnotationChecker", "BadAnnotationImplementation"})
   private static class MethodPassThrough extends Config.Implementation {
     private final FrameworkMethod method;
 
