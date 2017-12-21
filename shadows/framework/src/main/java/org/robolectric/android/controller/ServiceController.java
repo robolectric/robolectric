@@ -9,18 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T> {
-
-  /**
-   * @deprecated Use {@link #of(Service, Intent)} instead.
-   */
-  @Deprecated
-  public static <T extends Service> ServiceController<T> of(ShadowsAdapter unused, T service, Intent intent) {
-    return of(service, intent);
-  }
 
   public static <T extends Service> ServiceController<T> of(T service, Intent intent) {
     ServiceController<T> controller = new ServiceController<>(service, intent);
