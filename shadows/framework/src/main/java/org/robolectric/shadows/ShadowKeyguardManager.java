@@ -71,18 +71,18 @@ public class ShadowKeyguardManager {
   private boolean isKeyguardSecure;
 
   /**
-   * For tests on Android >=M, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or
-   * `false` by default.
+   * For tests, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or `false` by
+   * default.
    *
    * @see #setIsKeyguardSecure(boolean)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   public boolean isKeyguardSecure() {
     return isKeyguardSecure;
   }
 
   /**
-   * For tests on Android >=M, sets the value to be returned by {@link #isKeyguardSecure()}.
+   * Sets the value to be returned by {@link #isKeyguardSecure()}.
    *
    * @see #isKeyguardSecure()
    */
