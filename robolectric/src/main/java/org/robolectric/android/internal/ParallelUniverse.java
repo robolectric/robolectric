@@ -86,7 +86,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     } catch (RoboNotFoundException e1) {
       throw new Resources.NotFoundException(e1.getMessage());
     }
-    RuntimeEnvironment.setApplicationManifest(appManifest);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
