@@ -9,8 +9,8 @@ import android.app.KeyguardManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -52,7 +52,6 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void isKeyguardSecure() {
     assertThat(manager.isKeyguardSecure()).isFalse();
 
