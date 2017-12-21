@@ -16,12 +16,8 @@
 
 package org.robolectric.android.internal;
 
-import android.content.res.CompatibilityInfo;
-import android.content.res.Configuration;
 import android.util.ArraySet;
-import android.util.DisplayMetrics;
 import android.view.Display;
-import android.view.DisplayAdjustments;
 import android.view.DisplayInfo;
 import android.view.Surface;
 import java.util.Arrays;
@@ -413,134 +409,6 @@ public final class DisplayConfig {
         other.ownerUid = ownerUid;
         other.ownerPackageName = ownerPackageName;
         other.removeMode = removeMode;
-    }
-
-
-    public Display.Mode getMode() {
-        return findMode(modeId);
-    }
-
-    public Display.Mode getDefaultMode() {
-        return findMode(defaultModeId);
-    }
-
-    private Display.Mode findMode(int id) {
-        for (int i = 0; i < supportedModes.length; i++) {
-            if (supportedModes[i].getModeId() == id) {
-                return supportedModes[i];
-            }
-        }
-        throw new IllegalStateException("Unable to locate mode " + id);
-    }
-
-    /**
-     * Returns the id of the "default" mode with the given refresh rate, or {@code 0} if no suitable
-     * mode could be found.
-     */
-    public int findDefaultModeByRefreshRate(float refreshRate) {
-        Display.Mode[] modes = supportedModes;
-        Display.Mode defaultMode = getDefaultMode();
-        for (int i = 0; i < modes.length; i++) {
-            if (modes[i].matches(
-                    defaultMode.getPhysicalWidth(), defaultMode.getPhysicalHeight(), refreshRate)) {
-                return modes[i].getModeId();
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * Returns the list of supported refresh rates in the default mode.
-     */
-    public float[] getDefaultRefreshRates() {
-        Display.Mode[] modes = supportedModes;
-        ArraySet<Float> rates = new ArraySet<>();
-        Display.Mode defaultMode = getDefaultMode();
-        for (int i = 0; i < modes.length; i++) {
-            Display.Mode mode = modes[i];
-            if (mode.getPhysicalWidth() == defaultMode.getPhysicalWidth()
-                    && mode.getPhysicalHeight() == defaultMode.getPhysicalHeight()) {
-                rates.add(mode.getRefreshRate());
-            }
-        }
-        float[] result = new float[rates.size()];
-        int i = 0;
-        for (Float rate : rates) {
-            result[i++] = rate;
-        }
-        return result;
-    }
-
-    public void getAppMetrics(DisplayMetrics outMetrics) {
-        getAppMetrics(outMetrics, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null);
-    }
-
-    public void getAppMetrics(DisplayMetrics outMetrics, DisplayAdjustments displayAdjustments) {
-        getMetricsWithSize(outMetrics, displayAdjustments.getCompatibilityInfo(),
-                displayAdjustments.getConfiguration(), appWidth, appHeight);
-    }
-
-    public void getAppMetrics(DisplayMetrics outMetrics, CompatibilityInfo ci,
-            Configuration configuration) {
-        getMetricsWithSize(outMetrics, ci, configuration, appWidth, appHeight);
-    }
-
-    public void getLogicalMetrics(DisplayMetrics outMetrics, CompatibilityInfo compatInfo,
-            Configuration configuration) {
-        getMetricsWithSize(outMetrics, compatInfo, configuration, logicalWidth, logicalHeight);
-    }
-
-    public int getNaturalWidth() {
-        return rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180 ?
-                logicalWidth : logicalHeight;
-    }
-
-    public int getNaturalHeight() {
-        return rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180 ?
-                logicalHeight : logicalWidth;
-    }
-
-    public boolean isHdr() {
-        int[] types = hdrCapabilities != null ? hdrCapabilities.getSupportedHdrTypes() : null;
-        return types != null && types.length > 0;
-    }
-
-    public boolean isWideColorGamut() {
-        for (int colorMode : supportedColorModes) {
-            if (colorMode == Display.COLOR_MODE_DCI_P3 || colorMode > Display.COLOR_MODE_SRGB) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if the specified UID has access to this display.
-     */
-    public boolean hasAccess(int uid) {
-        return Display.hasAccess(uid, flags, ownerUid);
-    }
-
-    private void getMetricsWithSize(DisplayMetrics outMetrics, CompatibilityInfo compatInfo,
-            Configuration configuration, int width, int height) {
-        outMetrics.densityDpi = outMetrics.noncompatDensityDpi = logicalDensityDpi;
-        outMetrics.density = outMetrics.noncompatDensity =
-                logicalDensityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-        outMetrics.scaledDensity = outMetrics.noncompatScaledDensity = outMetrics.density;
-        outMetrics.xdpi = outMetrics.noncompatXdpi = physicalXDpi;
-        outMetrics.ydpi = outMetrics.noncompatYdpi = physicalYDpi;
-
-        width = configuration != null && configuration.appBounds != null
-                ? configuration.appBounds.width() : width;
-        height = configuration != null && configuration.appBounds != null
-                ? configuration.appBounds.height() : height;
-
-        outMetrics.noncompatWidthPixels  = outMetrics.widthPixels = width;
-        outMetrics.noncompatHeightPixels = outMetrics.heightPixels = height;
-
-        if (!compatInfo.equals(CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO)) {
-            compatInfo.applyToDisplayMetrics(outMetrics);
-        }
     }
 
     // For debugging purposes
