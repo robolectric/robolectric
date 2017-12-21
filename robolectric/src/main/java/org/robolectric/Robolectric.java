@@ -31,17 +31,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Robolectric {
-  private static Iterable<ShadowProvider> providers;
 
+  /**
+   * This method is internal and shouldn't be called by developers.
+   */
+  @Deprecated
   public static void reset() {
-    if (providers == null) {
-      providers = ServiceLoader.load(ShadowProvider.class);
-    }
-    for (ShadowProvider provider : providers) {
-      provider.reset();
-    }
-    RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setActivityThread(null);
+    // No-op- is now handled in the test runner. Users should not be calling this method anyway.
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {

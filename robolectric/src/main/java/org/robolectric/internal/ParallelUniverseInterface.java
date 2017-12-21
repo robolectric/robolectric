@@ -6,11 +6,14 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceTable;
 
 public interface ParallelUniverseInterface {
-  void resetStaticState(Config config);
 
-  void setUpApplicationState(Method method, AndroidManifest appManifest, Config config,
-                             ResourceTable compiletimeResourceTable, ResourceTable appResourceTable,
-                             ResourceTable systemResourceTable);
+  void setUpApplicationState(
+      Method method,
+      AndroidManifest appManifest,
+      Config config,
+      ResourceTable compiletimeResourceTable,
+      ResourceTable appResourceTable,
+      ResourceTable systemResourceTable);
 
   Thread getMainThread();
 

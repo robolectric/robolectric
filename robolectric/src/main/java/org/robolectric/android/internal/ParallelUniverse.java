@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboInstrumentation;
@@ -52,17 +51,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private SdkConfig sdkConfig;
 
   @Override
-  public void resetStaticState(Config config) {
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
-    Robolectric.reset();
-
-    if (!loggingInitialized) {
-      ShadowLog.setupLogging();
-      loggingInitialized = true;
-    }
-  }
-
-  @Override
   public void setUpApplicationState(
       Method method,
       AndroidManifest appManifest,
@@ -73,6 +61,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
+    RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
@@ -80,6 +69,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
+
+    if (!loggingInitialized) {
+      ShadowLog.setupLogging();
+      loggingInitialized = true;
+    }
 
     try {
       appManifest.initMetaData(appResourceTable);
