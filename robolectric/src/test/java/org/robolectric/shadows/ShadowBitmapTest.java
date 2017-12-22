@@ -28,7 +28,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowBitmapTest {
   @Test
   public void shouldCreateScaledBitmap() throws Exception {
-    Bitmap originalBitmap = create("Original bitmap", 100, 100);
+    Bitmap originalBitmap = create("Original bitmap");
     Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 100, 200, false);
     assertThat(shadowOf(scaledBitmap).getDescription())
         .isEqualTo("Original bitmap scaled to 100 x 200");
@@ -84,7 +84,7 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldCreateBitmapFromAnotherBitmap() {
-    Bitmap originalBitmap = create("Original bitmap", 100, 100);
+    Bitmap originalBitmap = create("Original bitmap");
     Bitmap newBitmap = Bitmap.createBitmap(originalBitmap);
     assertThat(shadowOf(newBitmap).getDescription())
         .isEqualTo("Original bitmap created from Bitmap object");
@@ -92,7 +92,7 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldCreateBitmapWithMatrix() {
-    Bitmap originalBitmap = create("Original bitmap", 100, 100);
+    Bitmap originalBitmap = create("Original bitmap");
     shadowOf(originalBitmap).setWidth(200);
     shadowOf(originalBitmap).setHeight(200);
     Matrix m = new Matrix();
@@ -129,8 +129,8 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldReceiveDescriptionWhenDrawingToCanvas() throws Exception {
-    Bitmap bitmap1 = create("Bitmap One", 100, 100);
-    Bitmap bitmap2 = create("Bitmap Two", 100, 100);
+    Bitmap bitmap1 = create("Bitmap One");
+    Bitmap bitmap2 = create("Bitmap Two");
 
     Canvas canvas = new Canvas(bitmap1);
     canvas.drawBitmap(bitmap2, 0, 0, null);
@@ -140,8 +140,8 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldReceiveDescriptionWhenDrawingToCanvasWithBitmapAndMatrixAndPaint() throws Exception {
-    Bitmap bitmap1 = create("Bitmap One", 100, 100);
-    Bitmap bitmap2 = create("Bitmap Two", 100, 100);
+    Bitmap bitmap1 = create("Bitmap One");
+    Bitmap bitmap2 = create("Bitmap Two");
 
     Canvas canvas = new Canvas(bitmap1);
     canvas.drawBitmap(bitmap2, new Matrix(), null);
@@ -152,8 +152,8 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldReceiveDescriptionWhenDrawABitmapToCanvasWithAPaintEffect() throws Exception {
-    Bitmap bitmap1 = create("Bitmap One", 100, 100);
-    Bitmap bitmap2 = create("Bitmap Two", 100, 100);
+    Bitmap bitmap1 = create("Bitmap One");
+    Bitmap bitmap2 = create("Bitmap Two");
 
     Canvas canvas = new Canvas(bitmap1);
     Paint paint = new Paint();
@@ -168,7 +168,7 @@ public class ShadowBitmapTest {
 
   @Test
   public void visualize_shouldReturnDescription() throws Exception {
-    Bitmap bitmap = create("Bitmap One", 100, 100);
+    Bitmap bitmap = create("Bitmap One");
     assertThat(ShadowBitmap.visualize(bitmap))
         .isEqualTo("Bitmap One");
   }
@@ -500,7 +500,7 @@ public class ShadowBitmapTest {
     bitmapOriginal.copyPixelsFromBuffer(buffer);
   }
 
-  private static Bitmap create(String name, int width, int height) {
+  private static Bitmap create(String name) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);
     return bitmap;

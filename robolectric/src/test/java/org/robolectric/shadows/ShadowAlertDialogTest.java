@@ -199,7 +199,7 @@ public class ShadowAlertDialogTest {
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
     assertThat(shadowAlertDialog.getTitle().toString()).isEqualTo("title");
     assertThat(shadowAlertDialog.getItems().length).isEqualTo(2);
-    assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
+    assertThat(shadowAlertDialog.getItems()[0]).isEqualTo("Aloha");
     assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog())).isSameAs(shadowAlertDialog);
     assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
   }
@@ -224,8 +224,8 @@ public class ShadowAlertDialogTest {
 
     assertTrue(alert.isShowing());
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-    assertEquals(shadowAlertDialog.getAdapter().getCount(), 3);
-    assertEquals(shadowAlertDialog.getAdapter().getItem(0), 99);
+    assertThat(shadowAlertDialog.getAdapter().getCount()).isEqualTo(3);
+    assertThat(shadowAlertDialog.getAdapter().getItem(0)).isEqualTo(99);
   }
 
   @Test

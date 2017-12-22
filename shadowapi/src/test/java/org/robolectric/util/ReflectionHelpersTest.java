@@ -296,7 +296,7 @@ public class ReflectionHelpersTest {
 
   @SuppressWarnings("unused")
   private static class ExampleDescendant extends ExampleBase {
-    public static int DESCENDANT = 6;
+    public static final int DESCENDANT = 6;
 
     @SuppressWarnings("HidingField")
     protected int overridden;

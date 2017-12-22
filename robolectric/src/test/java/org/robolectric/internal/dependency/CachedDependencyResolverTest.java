@@ -48,7 +48,6 @@ public class CachedDependencyResolverTest {
   };
 
   private URL url;
-  private URL[] urls;
   private Cache cache = new CacheStub();
   private DependencyJar[] dependencies = new DependencyJar[]{
       createDependency("group1", "artifact1"),
@@ -58,7 +57,6 @@ public class CachedDependencyResolverTest {
 
   @Before
   public void setUp() throws InitializationError, MalformedURLException {
-    urls = new URL[] { new URL("http://localhost") };
     url = new URL("http://localhost");
   }
 
@@ -97,10 +95,6 @@ public class CachedDependencyResolverTest {
     res.getLocalArtifactUrl(dependency);
 
     verify(internalResolver).getLocalArtifactUrl(dependency);
-  }
-
-  private void assertCacheContents(URL[] urls) {
-    assertArrayEquals(urls, cache.load(CACHE_NAME, URL[].class));
   }
 
   private void assertCacheContents(URL url) {
