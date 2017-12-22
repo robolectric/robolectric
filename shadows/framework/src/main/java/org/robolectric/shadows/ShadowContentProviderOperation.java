@@ -21,7 +21,7 @@ public class ShadowContentProviderOperation {
 
   @HiddenApi @Implementation
   public int getType() {
-    return getFieldReflectively("mType", int.class);
+    return getFieldReflectively("mType", Integer.class);
   }
 
   public String getSelection() {

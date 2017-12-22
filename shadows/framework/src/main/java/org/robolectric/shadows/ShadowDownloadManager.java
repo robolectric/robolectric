@@ -101,23 +101,23 @@ public class ShadowDownloadManager {
     }
 
     public int getNotificationVisibility() {
-      return getFieldReflectively("mNotificationVisibility", realObject, int.class);
+      return getFieldReflectively("mNotificationVisibility", realObject, Integer.class);
     }
 
     public int getAllowedNetworkTypes() {
-      return getFieldReflectively("mAllowedNetworkTypes", realObject, int.class);
+      return getFieldReflectively("mAllowedNetworkTypes", realObject, Integer.class);
     }
 
     public boolean getAllowedOverRoaming() {
-      return getFieldReflectively("mRoamingAllowed", realObject, boolean.class);
+      return getFieldReflectively("mRoamingAllowed", realObject, Boolean.class);
     }
 
     public boolean getAllowedOverMetered() {
-      return getFieldReflectively("mMeteredAllowed", realObject, boolean.class);
+      return getFieldReflectively("mMeteredAllowed", realObject, Boolean.class);
     }
 
     public boolean getVisibleInDownloadsUi() {
-      return getFieldReflectively("mIsVisibleInDownloadsUi", realObject, boolean.class);
+      return getFieldReflectively("mIsVisibleInDownloadsUi", realObject, Boolean.class);
     }
 
     public List<Pair<String, String>> getRequestHeaders() {
