@@ -1,9 +1,6 @@
 package org.robolectric.internal;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
 
 /**
  * A factory that detects what build system is in use and provides a ManifestFactory that can
