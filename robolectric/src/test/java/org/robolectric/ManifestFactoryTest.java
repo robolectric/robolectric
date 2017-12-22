@@ -28,8 +28,10 @@ public class ManifestFactoryTest {
     properties.setProperty("manifest", resourceFile("TestAndroidManifest.xml").toString());
     properties.setProperty("libraries", "lib1");
     Config config = Config.Implementation.fromProperties(properties);
-    ManifestFactory manifestFactory = new RobolectricTestRunner(ManifestFactoryTest.class).getManifestFactory(config);
-    AndroidManifest manifest = manifestFactory.create(manifestFactory.identify(config));
+    ManifestFactory manifestFactory = new RobolectricTestRunner(ManifestFactoryTest.class)
+        .getManifestFactory(config);
+    AndroidManifest manifest = RobolectricTestRunner
+        .createAndroidManifest(manifestFactory.identify(config));
 
     List<AndroidManifest> libraryManifests = manifest.getLibraryManifests();
     assertEquals(1, libraryManifests.size());
@@ -43,8 +45,10 @@ public class ManifestFactoryTest {
     properties.setProperty("resourceDir", "res");
     properties.setProperty("assetDir", "assets");
     Config config = Config.Implementation.fromProperties(properties);
-    ManifestFactory manifestFactory = new RobolectricTestRunner(ManifestFactoryTest.class).getManifestFactory(config);
-    AndroidManifest appManifest = manifestFactory.create(manifestFactory.identify(config));
+    ManifestFactory manifestFactory = new RobolectricTestRunner(ManifestFactoryTest.class)
+        .getManifestFactory(config);
+    AndroidManifest appManifest = RobolectricTestRunner
+        .createAndroidManifest(manifestFactory.identify(config));
 
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
@@ -80,7 +84,8 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
-    AndroidManifest androidManifest = manifestFactory.create(manifestIdentifier);
+    AndroidManifest androidManifest = RobolectricTestRunner
+        .createAndroidManifest(manifestIdentifier);
     assertThat(androidManifest.getAndroidManifestFile()).isEqualTo(Fs.fileFromPath("/path/to/MergedManifest.xml"));
     assertThat(androidManifest.getResDirectory()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
     assertThat(androidManifest.getAssetsDirectory()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
