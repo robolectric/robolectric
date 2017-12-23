@@ -108,11 +108,8 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldStartPostRun() {
-    Runnable testRun = new Runnable() {
-      public void run() {
-        //Do something...
-        return;
-      }
+    Runnable testRun = () -> {
+      //Do something...
     };
     assertThat(shadowWebView.getRunFlag()).isFalse();
     shadowWebView.post(testRun);

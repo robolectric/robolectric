@@ -28,6 +28,7 @@ import org.robolectric.util.Scheduler;
  * @see ShadowMessageQueue
  */
 @Implements(Looper.class)
+@SuppressWarnings("SynchronizeOnNonFinalField")
 public class ShadowLooper {
   // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
   // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()

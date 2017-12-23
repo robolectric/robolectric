@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -502,7 +501,7 @@ public class ShadowAccountManager {
     return start(new BaseRoboAccountManagerFuture<Account[]>(callback, handler) {
       @Override
       public Account[] doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        List<Account> result = new LinkedList<>();
+        List<Account> result = new ArrayList<>();
 
         Account[] accountsByType = getAccountsByType(type);
         for (Account account : accountsByType) {
@@ -523,7 +522,7 @@ public class ShadowAccountManager {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public Account[] getAccountsByTypeForPackage (String type, String packageName) {
-    List<Account> result = new LinkedList<>();
+    List<Account> result = new ArrayList<>();
 
     Account[] accountsByType = getAccountsByType(type);
     for (Account account : accountsByType) {

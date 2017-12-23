@@ -17,8 +17,8 @@ public class ShadowVirtualRefBasePtr {
     return nativePtr;
   }
 
-  synchronized public static <T> T get(long nativePtr) {
-    return (T) POINTERS.get(nativePtr).nativeThing;
+  synchronized public static <T> T get(long nativePtr, Class<T> clazz) {
+    return clazz.cast(POINTERS.get(nativePtr).nativeThing);
   }
 
   @Implementation

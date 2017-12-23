@@ -71,7 +71,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,7 +85,7 @@ import org.robolectric.util.TempDirectory;
 public class ShadowPackageManager {
 
   Map<String, Boolean> permissionRationaleMap = new HashMap<>();
-  List<FeatureInfo> systemAvailableFeatures = new LinkedList<>();
+  List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
   final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   final Map<String, Package> packages = new LinkedHashMap<>();
   private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();

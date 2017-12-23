@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import android.app.ActivityThread;
 import android.content.res.CompatibilityInfo;
@@ -38,6 +39,7 @@ public class ShadowActivityThreadTest {
     try {
       activityThread.getPackageInfo(
           "com.unknownpackage.ab", CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, 0);
+      fail("should have thrown");
     } catch (RuntimeException e) {
       assertThat(e).hasCauseInstanceOf(RemoteException.class);
     }

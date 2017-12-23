@@ -47,8 +47,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -59,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -453,7 +450,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<ApplicationInfo> getInstalledApplications(int flags) {
-    List<ApplicationInfo> result = new LinkedList<>();
+    List<ApplicationInfo> result = new ArrayList<>();
 
     for (PackageInfo packageInfo : packageInfos.values()) {
       result.add(packageInfo.applicationInfo);
@@ -631,7 +628,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<PermissionInfo> queryPermissionsByGroup(String group, int flags) throws NameNotFoundException {
-    List<PermissionInfo> result = new LinkedList<>();
+    List<PermissionInfo> result = new ArrayList<>();
     for (PermissionInfo permissionInfo : extraPermissions.values()) {
       if (Objects.equals(permissionInfo.group, group)) {
         result.add(permissionInfo);

@@ -137,8 +137,8 @@ public class PreferenceIntegrationTest {
     return activity.getPreferenceScreen();
   }
 
+  @SuppressWarnings("FragmentInjection")
   private static class TestPreferenceActivity extends PreferenceActivity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
