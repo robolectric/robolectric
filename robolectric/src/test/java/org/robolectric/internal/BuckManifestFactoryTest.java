@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
@@ -55,7 +54,7 @@ public class BuckManifestFactoryTest {
     System.setProperty("buck.robolectric_assets_directories", "buck/assets1:buck/assets2");
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
+    AndroidManifest manifest = buckManifestFactory.create(manifestIdentifier);
     assertThat(manifest.getResDirectory())
             .isEqualTo(FileFsFile.from("buck/res2"));
     assertThat(manifest.getAssetsDirectory())
@@ -82,7 +81,7 @@ public class BuckManifestFactoryTest {
     System.setProperty("buck.robolectric_assets_directories", "@" + assetDirectoriesFile.getAbsolutePath());
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
+    AndroidManifest manifest = buckManifestFactory.create(manifestIdentifier);
     assertThat(manifest.getResDirectory())
         .isEqualTo(FileFsFile.from("buck/res2"));
     assertThat(manifest.getAssetsDirectory())

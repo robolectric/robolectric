@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.gradleapp.BuildConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -222,7 +221,7 @@ public class GradleManifestFactoryTest {
   ////////////////////////////////
 
   private AndroidManifest createManifest(Config config) {
-    return RobolectricTestRunner.createAndroidManifest(factory.identify(config));
+    return factory.create(factory.identify(config));
   }
 
   private static FsFile file(String path) {
