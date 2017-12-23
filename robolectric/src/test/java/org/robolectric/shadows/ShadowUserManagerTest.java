@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -25,11 +26,12 @@ import org.robolectric.annotation.Config;
 public class ShadowUserManagerTest {
 
   private UserManager userManager;
+  private Context context;
 
   @Before
   public void setUp() {
-    userManager = (UserManager)
-        RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE);
+    context = RuntimeEnvironment.application;
+    userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
   }
 
   @Test
@@ -41,9 +43,16 @@ public class ShadowUserManagerTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void shouldGetApplicationRestrictions() {
-    userManager.getApplicationRestrictions("somepackage");
-    // Should not NPE
+  public void testGetApplicationRestrictions() {
+    String packageName = context.getPackageName();
+    assertThat(userManager.getApplicationRestrictions(packageName).size()).isZero();
+
+    Bundle restrictions = new Bundle();
+    restrictions.putCharSequence("test_key", "test_value");
+    shadowOf(userManager).setApplicationRestrictions(packageName, restrictions);
+
+    assertThat(userManager.getApplicationRestrictions(packageName).getCharSequence("test_key"))
+            .isEqualTo("test_value");
   }
 
   @Test

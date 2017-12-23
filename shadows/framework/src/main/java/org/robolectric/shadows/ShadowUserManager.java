@@ -25,10 +25,23 @@ public class ShadowUserManager {
   private boolean managedProfile = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private Map<UserHandle, Long> serialNumbers = new HashMap<>();
+  private Map<String, Bundle> applicationRestrictions = new HashMap<>();
 
+  /**
+   * Compared to real Android, there is no check that the package name matches the application
+   * package name and the method returns instantly.
+   */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public Bundle getApplicationRestrictions(String packageName) {
-    return null;
+    Bundle bundle = applicationRestrictions.get(packageName);
+    return bundle != null ? bundle : new Bundle();
+  }
+
+  /**
+   * Setter for {@link #getApplicationRestrictions(String)}
+   */
+  public void setApplicationRestrictions(String packageName, Bundle restrictions) {
+    applicationRestrictions.put(packageName, restrictions);
   }
 
   @Implementation(minSdk = LOLLIPOP)
