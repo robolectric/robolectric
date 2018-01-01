@@ -183,17 +183,6 @@ public class ShadowWranglerUnitTest {
 
   ///////////////////////
 
-  private class WranglerBuilder extends ShadowMap.Builder {
-    ShadowWrangler wranglerFor(int apiLevel) {
-      return new ShadowWrangler(build(), apiLevel, interceptors);
-    }
-
-    @Override
-    public WranglerBuilder addShadowClasses(Class<?>... shadowClasses) {
-      return (WranglerBuilder) super.addShadowClasses(shadowClasses);
-    }
-  }
-
   private String internalName(Class clazz) {
     return clazz.getName().replaceAll("\\.", "/");
   }

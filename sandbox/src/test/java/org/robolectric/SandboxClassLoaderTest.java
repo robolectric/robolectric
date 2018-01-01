@@ -693,7 +693,7 @@ public class SandboxClassLoaderTest {
       final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, getClass().getClassLoader());
       return new Plan() {
         @Override
-        public Object run(Object instance, Object roboData, Object[] params) throws Exception {
+        public Object run(Object instance, Object[] params) throws Exception {
           try {
             return methodInvoked(invocationProfile.clazz, invocationProfile.methodName, instance, invocationProfile.paramTypes, params);
           } catch (Throwable throwable) {
@@ -708,8 +708,8 @@ public class SandboxClassLoaderTest {
       };
     }
 
-    @Override public MethodHandle getShadowCreator(Class<?> caller) {
-      return dropArguments(constant(String.class, "a shadow!"), 0, caller);
+    @Override public MethodHandle getShadowCreator(Class<?> theClass) {
+      return dropArguments(constant(String.class, "a shadow!"), 0, theClass);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -718,7 +718,7 @@ public class SandboxClassLoaderTest {
           invocationProfile.paramTypes, params);
     }
 
-    @Override public MethodHandle findShadowMethod(Class<?> theClass, String name, MethodType type,
+    @Override public MethodHandle findShadowMethodHandle(Class<?> theClass, String name, MethodType type,
         boolean isStatic) throws IllegalAccessException {
       String signature = getSignature(theClass, name, type, isStatic);
       InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, getClass().getClassLoader());
