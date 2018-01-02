@@ -113,7 +113,7 @@ public class ShadowingTest {
     public static boolean shadowDefaultConstructorImplementorCalled = false;
 
     public ShadowForClassWithNoDefaultConstructor() {
-      this.shadowDefaultConstructorCalled = true;
+      shadowDefaultConstructorCalled = true;
     }
 
     @Implementation
