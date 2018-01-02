@@ -54,6 +54,16 @@ public class ImplementsValidator extends Validator {
 
   @Override
   public Void visitType(TypeElement elem, Element parent) {
+    for (Element memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
+      String methodName = memberElement.getSimpleName().toString();
+      if (methodName.equals("__constructor__") || methodName.equals("__staticInitializer__")) {
+        Implementation implementation = memberElement.getAnnotation(Implementation.class);
+        if (implementation == null) {
+          messager.printMessage(Kind.ERROR, "Shadow methods must be annotated @Implementation", memberElement);
+        }
+      }
+    }
+
     captureJavadoc(elem);
 
     // inner class shadows must be static
