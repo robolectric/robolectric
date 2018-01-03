@@ -7,14 +7,12 @@ import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,8 +35,12 @@ public class ShadowUserManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void shouldGetUserProfiles() {
-    List<UserHandle> userProfiles = userManager.getUserProfiles();
-    assertThat(userProfiles).isNotNull();
+    assertThat(userManager.getUserProfiles()).contains(Process.myUserHandle());
+
+    UserHandle anotherProfile = newUserHandle(2);
+    shadowOf(userManager).addUserProfile(anotherProfile);
+
+    assertThat(userManager.getUserProfiles()).containsOnly(Process.myUserHandle(), anotherProfile);
   }
 
   @Test
@@ -115,11 +117,13 @@ public class ShadowUserManagerTest {
   @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldGetSerialNumberForUser() {
     long serialNumberInvalid = -1L;
-    long serialNumber = 123L;
+
     UserHandle userHandle = newUserHandle(10);
     assertThat(userManager.getSerialNumberForUser(userHandle)).isEqualTo(serialNumberInvalid);
-    shadowOf(userManager).setSerialNumberForUser(userHandle, serialNumber);
-    assertThat(userManager.getSerialNumberForUser(userHandle)).isEqualTo(serialNumber);
+
+    shadowOf(userManager).addUserProfile(userHandle);
+
+    assertThat(userManager.getSerialNumberForUser(userHandle)).isNotEqualTo(serialNumberInvalid);
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

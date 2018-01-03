@@ -5,10 +5,14 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 
+import android.content.pm.UserInfo;
 import android.os.Bundle;
+import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
-import java.util.Collections;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +28,13 @@ public class ShadowUserManager {
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
-  private Map<UserHandle, Long> serialNumbers = new HashMap<>();
+  private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
+  private int nextUserSerial = 0;
+
+  public ShadowUserManager() {
+    addUserProfile(Process.myUserHandle());
+  }
 
   /**
    * Compared to real Android, there is no check that the package name matches the application
@@ -44,9 +53,16 @@ public class ShadowUserManager {
     applicationRestrictions.put(packageName, restrictions);
   }
 
+  /**
+   * Adds a profile associated for the user that the calling process is running on.
+   */
+  public void addUserProfile(UserHandle userHandle) {
+    setSerialNumberForUser(userHandle, nextUserSerial++);
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   public List<UserHandle> getUserProfiles(){
-    return Collections.emptyList();
+    return ImmutableList.copyOf(userProfiles.keySet());
   }
 
   @Implementation(minSdk = N)
@@ -109,11 +125,29 @@ public class ShadowUserManager {
 
   @Implementation
   public long getSerialNumberForUser(UserHandle userHandle) {
-    Long result = serialNumbers.get(userHandle);
+    Long result = userProfiles.get(userHandle);
     return result == null ? -1L : result;
   }
 
+  /**
+   * @deprecated prefer {@link #addUserProfile()} to ensure consistency of profiles known to
+   * UserManager. Furthermore, calling this method for the current user, i.e:
+   * {@link Process.myUserHandle()} is no longer necessary as this user is always known to
+   * UserManager and has a preassigned serial number.
+   */
+  @Deprecated
   public void setSerialNumberForUser(UserHandle userHandle, long serialNumber) {
-    serialNumbers.put(userHandle, serialNumber);
+    userProfiles.put(userHandle, serialNumber);
+  }
+
+  @Implementation
+  public UserHandle getUserForSerialNumber(long serialNumber) {
+    return userProfiles.inverse().get(serialNumber);
+  }
+
+  @Implementation
+  public List<UserInfo> getUsers() {
+    // Implement this - return null to avoid NPE from call to getUserCount()
+    return null;
   }
 }
