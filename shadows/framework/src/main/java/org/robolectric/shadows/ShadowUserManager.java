@@ -147,7 +147,7 @@ public class ShadowUserManager {
 
   @Implementation
   public List<UserInfo> getUsers() {
-    // Implement this - return null to avoid NPE from call to getUserCount()
-    return null;
+    // Implement this - return empty list to avoid NPE from call to getUserCount()
+    return ImmutableList.of();
   }
 }
