@@ -168,6 +168,7 @@ public class LegacyManifestParser {
       activityInfo.metaData = metaDataToBundle(data.getMetaData().getValueMap());
       activityInfo.applicationInfo = pkg.applicationInfo;
       activityInfo.targetActivity = data.getTargetActivityName();
+      activityInfo.exported = data.isExported();
       String themeRef;
 
       // Based on ShadowActivity
@@ -223,6 +224,7 @@ public class LegacyManifestParser {
       ActivityInfo info = new ActivityInfo();
       populateComponentInfo(info, pkg, data);
       info.permission = data.getPermission();
+      info.exported = data.isExported();
 
       Activity receiver = createActivity(pkg, info);
       for (IntentFilterData intentFilterData : data.getIntentFilters()) {
@@ -237,6 +239,7 @@ public class LegacyManifestParser {
       ServiceInfo info = new ServiceInfo();
       populateComponentInfo(info, pkg, data);
       info.permission = data.getPermission();
+      info.exported = data.isExported();
 
       Service service = createService(pkg, info);
       for (IntentFilterData intentFilterData : data.getIntentFilters()) {

@@ -614,6 +614,17 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getPackageInfo_shouldReturnActivityInfos() throws Exception {
+    PackageInfo packageInfo = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_ACTIVITIES);
+    ActivityInfo[] activities = packageInfo.activities;
+    assertThat(activities.length).isEqualTo(3);
+    assertThat(activities[0].packageName).isEqualTo("org.robolectric");
+    assertThat(activities[0].exported).isEqualTo(true);
+    assertThat(activities[1].packageName).isEqualTo("org.robolectric");
+    assertThat(activities[2].packageName).isEqualTo("org.robolectric");
+  }
+
+  @Test
   public void getPackageInfo_getProvidersShouldReturnProviderInfos() throws Exception {
     PackageInfo packageInfo = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
