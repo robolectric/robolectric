@@ -44,6 +44,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Activity;
+import android.content.pm.PackageParser.Component;
+import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
@@ -71,6 +73,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +88,7 @@ import org.robolectric.util.TempDirectory;
 public class ShadowPackageManager {
 
   Map<String, Boolean> permissionRationaleMap = new HashMap<>();
-  List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
+  List<FeatureInfo> systemAvailableFeatures = new LinkedList<>();
   final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   final Map<String, Package> packages = new LinkedHashMap<>();
   private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
@@ -808,5 +811,66 @@ public class ShadowPackageManager {
       this.newState = newState;
       this.flags = flags;
     }
+  }
+
+  /**
+   * Get list of intent filters defined for given activity.
+   *
+   * @param componentName Name of the activity whose intent filters are to be retrieved
+   * @return the activity's intent filters
+   */
+  public List<IntentFilter> getIntentFiltersForActivity(ComponentName componentName)
+      throws NameNotFoundException {
+    return getIntentFiltersForComponent(getAppPackage(componentName).activities, componentName);
+  }
+
+  /**
+   * Get list of intent filters defined for given service.
+   *
+   * @param componentName Name of the service whose intent filters are to be retrieved
+   * @return the service's intent filters
+   */
+  public List<IntentFilter> getIntentFiltersForService(ComponentName componentName)
+      throws NameNotFoundException {
+    return getIntentFiltersForComponent(getAppPackage(componentName).services, componentName);
+  }
+
+  /**
+   * Get list of intent filters defined for given receiver.
+   *
+   * @param componentName Name of the receiver whose intent filters are to be retrieved
+   * @return the receiver's intent filters
+   */
+  public List<IntentFilter> getIntentFiltersForReceiver(ComponentName componentName)
+      throws NameNotFoundException {
+    return getIntentFiltersForComponent(getAppPackage(componentName).receivers, componentName);
+  }
+
+  private static List<IntentFilter> getIntentFiltersForComponent(
+      List<? extends Component> components, ComponentName componentName)
+      throws NameNotFoundException {
+    for (Component component : components) {
+      if (component.getComponentName().equals(componentName)) {
+        return component.intents;
+      }
+    }
+    throw new NameNotFoundException("unknown component " + componentName);
+  }
+
+  private Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
+    Package appPackage = this.packages.get(componentName.getPackageName());
+    if (appPackage == null) {
+      throw new NameNotFoundException("unknown package " + componentName.getPackageName());
+    }
+    return appPackage;
+  }
+
+  private static List<IntentFilter> convertIntentFilters(
+      List<? extends PackageParser.IntentInfo> intentInfos) {
+    List<IntentFilter> intentFilters = new ArrayList<>(intentInfos.size());
+    for (IntentInfo intentInfo : intentInfos) {
+      intentFilters.add(intentInfo);
+    }
+    return intentFilters;
   }
 }

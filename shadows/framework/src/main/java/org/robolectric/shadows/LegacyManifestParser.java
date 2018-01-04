@@ -169,6 +169,7 @@ public class LegacyManifestParser {
       activityInfo.applicationInfo = pkg.applicationInfo;
       activityInfo.targetActivity = data.getTargetActivityName();
       activityInfo.exported = data.isExported();
+      activityInfo.permission = data.getPermission();
       String themeRef;
 
       // Based on ShadowActivity
@@ -311,6 +312,7 @@ public class LegacyManifestParser {
     ReflectionHelpers.setField(component, "info", info);
     ReflectionHelpers.setField(component, "intents", new ArrayList<>());
     ReflectionHelpers.setField(component, "owner", pkg);
+    ReflectionHelpers.setField(component, "className", info.name);
   }
 
   private static void populateIntentInfo(IntentFilterData intentFilterData, IntentInfo outInfo) {

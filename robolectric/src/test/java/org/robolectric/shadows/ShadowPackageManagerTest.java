@@ -615,13 +615,23 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPackageInfo_shouldReturnActivityInfos() throws Exception {
-    PackageInfo packageInfo = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_ACTIVITIES);
-    ActivityInfo[] activities = packageInfo.activities;
-    assertThat(activities.length).isEqualTo(3);
-    assertThat(activities[0].packageName).isEqualTo("org.robolectric");
-    assertThat(activities[0].exported).isEqualTo(true);
-    assertThat(activities[1].packageName).isEqualTo("org.robolectric");
-    assertThat(activities[2].packageName).isEqualTo("org.robolectric");
+    PackageInfo packageInfo =
+        packageManager.getPackageInfo(
+            RuntimeEnvironment.application.getPackageName(), PackageManager.GET_ACTIVITIES);
+    ActivityInfo activityInfoWithFilters = findActivity(packageInfo.activities,
+        ActivityWithFilters.class.getName());
+    assertThat(activityInfoWithFilters.packageName).isEqualTo("org.robolectric");
+    assertThat(activityInfoWithFilters.exported).isEqualTo(true);
+    assertThat(activityInfoWithFilters.permission).isEqualTo("com.foo.MY_PERMISSION");
+  }
+
+  private static ActivityInfo findActivity(ActivityInfo[] activities, String name) {
+    for (ActivityInfo activityInfo : activities) {
+      if (activityInfo.name.equals(name)) {
+        return activityInfo;
+      }
+    }
+    return null;
   }
 
   @Test
@@ -1472,6 +1482,20 @@ public class ShadowPackageManagerTest {
 
     assertThat(shadowPackageManager.getDeletedPackages()).hasSize(0);
     verify(mockObserver).packageDeleted(packageInfo.packageName, PackageManager.DELETE_FAILED_INTERNAL_ERROR);
+  }
+
+  public static class ActivityWithFilters extends Activity {}
+
+  @Test
+  public void getIntentFiltersForActivity() throws NameNotFoundException {
+    List<IntentFilter> intentFilters =
+        shadowPackageManager.getIntentFiltersForActivity(
+            new ComponentName(RuntimeEnvironment.application, ActivityWithFilters.class));
+    assertThat(intentFilters).hasSize(1);
+    IntentFilter intentFilter = intentFilters.get(0);
+    assertThat(intentFilter.getCategory(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
+    assertThat(intentFilter.getAction(0)).isEqualTo(Intent.ACTION_VIEW);
+    assertThat(intentFilter.getDataPath(0).getPath()).isEqualTo("/testPath/test.jpeg");
   }
 
   private static Function<PermissionInfo, String> getPermissionNames() {
