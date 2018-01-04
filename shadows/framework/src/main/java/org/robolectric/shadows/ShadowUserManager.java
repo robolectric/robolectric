@@ -31,6 +31,7 @@ public class ShadowUserManager {
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
   private int nextUserSerial = 0;
+  private Map<UserHandle, UserState> userState = new HashMap<>();
 
   public ShadowUserManager() {
     addUserProfile(Process.myUserHandle());
@@ -145,8 +146,6 @@ public class ShadowUserManager {
     return userProfiles.inverse().get(serialNumber);
   }
 
-  private Map<UserHandle, UserState> userState = new HashMap<>();
-
   private void checkPermissions() {
     // TODO Ensure permisions
     //              throw new SecurityException("You need INTERACT_ACROSS_USERS or MANAGE_USERS
@@ -169,7 +168,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public boolean isUserRunningOrStopping (UserHandle handle) {
+  public boolean isUserRunningOrStopping(UserHandle handle) {
     checkPermissions();
     UserState state = userState.get(handle);
 
@@ -202,12 +201,17 @@ public class ShadowUserManager {
     STATE_SHUTDOWN
   }
 
+  /**
+   * Sets the current state for a given user, see {@link #isUserRunning()}
+   * and {@link #isUserRunningOrStopping()}
+   */  
   public void setUserState(UserHandle handle, UserState state) {
     userState.put(handle, state);
   }
 
   @Implementation
   public List<UserInfo> getUsers() {
-    return null;
+    // Implement this - return empty list to avoid NPE from call to getUserCount()
+    return ImmutableList.of();
   }
 }
