@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.KEYGUARD_SERVICE;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -70,5 +71,16 @@ public class ShadowKeyguardManagerTest {
     shadowMgr.setIsDeviceSecure(true);
 
     assertThat(manager.isDeviceSecure()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void isDeviceLocked() {
+    assertThat(manager.isDeviceLocked()).isFalse();
+
+    ShadowKeyguardManager shadowMgr = shadowOf(manager);
+    shadowMgr.setIsDeviceLocked(true);
+
+    assertThat(manager.isDeviceLocked()).isTrue();
   }
 }
