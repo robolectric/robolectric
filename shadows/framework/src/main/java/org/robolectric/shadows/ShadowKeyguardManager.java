@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.app.KeyguardManager;
@@ -15,8 +16,11 @@ public class ShadowKeyguardManager {
   private KeyguardManager.KeyguardLock keyguardLock =
       Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
 
-  private boolean inRestrictedInputMode = false;
-  private boolean isKeyguardLocked = false;
+  private boolean inRestrictedInputMode;
+  private boolean isKeyguardLocked;
+  private boolean isDeviceLocked;
+  private boolean isKeyguardSecure;
+  private boolean isDeviceSecure;
 
   /**
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
@@ -68,8 +72,6 @@ public class ShadowKeyguardManager {
     inRestrictedInputMode = restricted;
   }
 
-  private boolean isKeyguardSecure;
-
   /**
    * For tests, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or `false` by
    * default.
@@ -90,8 +92,6 @@ public class ShadowKeyguardManager {
     isKeyguardSecure = secure;
   }
 
-  private boolean isDeviceSecure;
-
   /**
    * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(boolean)}, or
    * `false` by default.
@@ -110,6 +110,20 @@ public class ShadowKeyguardManager {
    */
   public void setIsDeviceSecure(boolean isDeviceSecure) {
     this.isDeviceSecure = isDeviceSecure;
+  }
+
+  /**
+   * For tests on Android >=L MR1, sets the value to be returned by {@link #isDeviceLocked()}.
+   *
+   * @see #isDeviceLocked()
+   */
+  public void setIsDeviceLocked(boolean isDeviceLocked) {
+    this.isDeviceLocked = isDeviceLocked;
+  }
+
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  public boolean isDeviceLocked() {
+    return isDeviceLocked;
   }
 
   /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */

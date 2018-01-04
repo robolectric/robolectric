@@ -5,10 +5,14 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 
+import android.content.pm.UserInfo;
 import android.os.Bundle;
+import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
-import java.util.Collections;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +28,14 @@ public class ShadowUserManager {
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
-  private Map<UserHandle, Long> serialNumbers = new HashMap<>();
+  private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
+  private int nextUserSerial = 0;
+  private Map<UserHandle, UserState> userState = new HashMap<>();
+
+  public ShadowUserManager() {
+    addUserProfile(Process.myUserHandle());
+  }
 
   /**
    * Compared to real Android, there is no check that the package name matches the application
@@ -44,9 +54,16 @@ public class ShadowUserManager {
     applicationRestrictions.put(packageName, restrictions);
   }
 
+  /**
+   * Adds a profile associated for the user that the calling process is running on.
+   */
+  public void addUserProfile(UserHandle userHandle) {
+    setSerialNumberForUser(userHandle, nextUserSerial++);
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   public List<UserHandle> getUserProfiles(){
-    return Collections.emptyList();
+    return ImmutableList.copyOf(userProfiles.keySet());
   }
 
   @Implementation(minSdk = N)
@@ -109,11 +126,92 @@ public class ShadowUserManager {
 
   @Implementation
   public long getSerialNumberForUser(UserHandle userHandle) {
-    Long result = serialNumbers.get(userHandle);
+    Long result = userProfiles.get(userHandle);
     return result == null ? -1L : result;
   }
 
+  /**
+   * @deprecated prefer {@link #addUserProfile()} to ensure consistency of profiles known to
+   * UserManager. Furthermore, calling this method for the current user, i.e:
+   * {@link Process.myUserHandle()} is no longer necessary as this user is always known to
+   * UserManager and has a preassigned serial number.
+   */
+  @Deprecated
   public void setSerialNumberForUser(UserHandle userHandle, long serialNumber) {
-    serialNumbers.put(userHandle, serialNumber);
+    userProfiles.put(userHandle, serialNumber);
+  }
+
+  @Implementation
+  public UserHandle getUserForSerialNumber(long serialNumber) {
+    return userProfiles.inverse().get(serialNumber);
+  }
+
+  private void checkPermissions() {
+    // TODO Ensure permisions
+    //              throw new SecurityException("You need INTERACT_ACROSS_USERS or MANAGE_USERS
+    // permission "
+    //                + "to: check " + name);throw new SecurityException();
+  }
+
+  @Implementation
+  public boolean isUserRunning(UserHandle handle) {
+    checkPermissions();
+    UserState state = userState.get(handle);
+
+    if (state == UserState.STATE_RUNNING_LOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKING) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @Implementation
+  public boolean isUserRunningOrStopping(UserHandle handle) {
+    checkPermissions();
+    UserState state = userState.get(handle);
+
+    if (state == UserState.STATE_RUNNING_LOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKING
+        || state == UserState.STATE_STOPPING) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Describes the current state of the user. State can be set using
+   *  {@link UserManager#setUserState()}
+   */
+  public enum UserState {
+    // User is first coming up.
+    STATE_BOOTING,
+    // User is in the locked state.
+    STATE_RUNNING_LOCKED,
+    // User is in the unlocking state.
+    STATE_RUNNING_UNLOCKING,
+    // User is in the running state.
+    STATE_RUNNING_UNLOCKED,
+    // User is in the initial process of being stopped.
+    STATE_STOPPING,
+    // User is in the final phase of stopping, sending Intent.ACTION_SHUTDOWN.
+    STATE_SHUTDOWN
+  }
+
+  /**
+   * Sets the current state for a given user, see {@link #isUserRunning()}
+   * and {@link #isUserRunningOrStopping()}
+   */  
+  public void setUserState(UserHandle handle, UserState state) {
+    userState.put(handle, state);
+  }
+
+  @Implementation
+  public List<UserInfo> getUsers() {
+    // Implement this - return empty list to avoid NPE from call to getUserCount()
+    return ImmutableList.of();
   }
 }
