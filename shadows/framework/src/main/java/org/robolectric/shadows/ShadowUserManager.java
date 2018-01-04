@@ -145,10 +145,69 @@ public class ShadowUserManager {
     return userProfiles.inverse().get(serialNumber);
   }
 
+  private Map<UserHandle, UserState> userState = new HashMap<>();
+
+  private void checkPermissions() {
+    // TODO Ensure permisions
+    //              throw new SecurityException("You need INTERACT_ACROSS_USERS or MANAGE_USERS
+    // permission "
+    //                + "to: check " + name);throw new SecurityException();
+  }
+
+  @Implementation
+  public boolean isUserRunning(UserHandle handle) {
+    checkPermissions();
+    UserState state = userState.get(handle);
+
+    if (state == UserState.STATE_RUNNING_LOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKING) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @Implementation
+  public boolean isUserRunningOrStopping (UserHandle handle) {
+    checkPermissions();
+    UserState state = userState.get(handle);
+
+    if (state == UserState.STATE_RUNNING_LOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKED
+        || state == UserState.STATE_RUNNING_UNLOCKING
+        || state == UserState.STATE_STOPPING) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Describes the current state of the user. State can be set using
+   *  {@link UserManager#setUserState()}
+   */
+  public enum UserState {
+    // User is first coming up.
+    STATE_BOOTING,
+    // User is in the locked state.
+    STATE_RUNNING_LOCKED,
+    // User is in the unlocking state.
+    STATE_RUNNING_UNLOCKING,
+    // User is in the running state.
+    STATE_RUNNING_UNLOCKED,
+    // User is in the initial process of being stopped.
+    STATE_STOPPING,
+    // User is in the final phase of stopping, sending Intent.ACTION_SHUTDOWN.
+    STATE_SHUTDOWN
+  }
+
+  public void setUserState(UserHandle handle, UserState state) {
+    userState.put(handle, state);
+  }
+
   @Implementation
   public List<UserInfo> getUsers() {
-    
-    // Implement this - return empty list to avoid NPE from call to getUserCount()
-    return ImmutableList.of();
+    return null;
   }
 }
