@@ -1,11 +1,11 @@
 package org.robolectric.manifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
@@ -127,47 +127,48 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(4).getName())
         .isEqualTo("org.robolectric.test.ConfigTestReceiver");
-    assertThat(config.getBroadcastReceivers().get(4).getActions()).contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
+    assertThat(config.getBroadcastReceivers().get(4).getActions())
+        .contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
 
     Map<String, Object> meta = config.getBroadcastReceivers().get(4).getMetaData().getValueMap();
     Object metaValue = meta.get("org.robolectric.metaName1");
-    assertEquals("metaValue1", metaValue);
+    assertThat(metaValue).isEqualTo("metaValue1");
 
     metaValue = meta.get("org.robolectric.metaName2");
-    assertEquals("metaValue2", metaValue);
+    assertThat(metaValue).isEqualTo("metaValue2");
 
     metaValue = meta.get("org.robolectric.metaFalse");
-    assertEquals("false", metaValue);
+    assertThat(metaValue).isEqualTo("false");
 
     metaValue = meta.get("org.robolectric.metaTrue");
-    assertEquals("true", metaValue);
+    assertThat(metaValue).isEqualTo("true");
 
     metaValue = meta.get("org.robolectric.metaInt");
-    assertEquals("123", metaValue);
+    assertThat(metaValue).isEqualTo("123");
 
     metaValue = meta.get("org.robolectric.metaFloat");
-    assertEquals("1.23", metaValue);
+    assertThat(metaValue).isEqualTo("1.23");
 
     metaValue = meta.get("org.robolectric.metaColor");
-    assertEquals("#FFFFFF", metaValue);
+    assertThat(metaValue).isEqualTo("#FFFFFF");
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertEquals("@bool/false_bool_value", metaValue);
+    assertThat(metaValue).isEqualTo("@bool/false_bool_value");
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertEquals("@integer/test_integer1", metaValue);
+    assertThat(metaValue).isEqualTo("@integer/test_integer1");
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertEquals("@color/clear", metaValue);
+    assertThat(metaValue).isEqualTo("@color/clear");
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertEquals("@string/app_name", metaValue);
+    assertThat(metaValue).isEqualTo("@string/app_name");
 
     metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertEquals("@string/str_int", metaValue);
+    assertThat(metaValue).isEqualTo("@string/str_int");
 
     metaValue = meta.get("org.robolectric.metaStringRes");
-    assertEquals("@string/app_name", metaValue);
+    assertThat(metaValue).isEqualTo("@string/app_name");
   }
 
   @Test
@@ -176,22 +177,30 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(7).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
-    assertThat(config.getBroadcastReceivers().get(7).getActions()).contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
+    assertThat(config.getBroadcastReceivers().get(7).getActions())
+        .contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
 
-    assertEquals("org.robolectric.CUSTOM_PERM", config.getBroadcastReceivers().get(7).getPermission());
+    assertThat(config.getBroadcastReceivers().get(7).getPermission())
+        .isEqualTo("org.robolectric.CUSTOM_PERM");
   }
 
   @Test
   public void shouldReadTargetSdkVersionFromAndroidManifestOrDefaultToMin() throws Exception {
-    assertEquals(42, newConfigWith("targetsdk42minsdk6.xml", "android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"").getTargetSdkVersion());
-    assertEquals(7, newConfigWith("minsdk7.xml", "android:minSdkVersion=\"7\"").getTargetSdkVersion());
-    assertEquals(1, newConfigWith("noattributes.xml", "").getTargetSdkVersion());
+    assertThat(newConfigWith("targetsdk42minsdk6.xml",
+        "android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"").getTargetSdkVersion())
+        .isEqualTo(42);
+    assertThat(newConfigWith("minsdk7.xml", "android:minSdkVersion=\"7\"").getTargetSdkVersion())
+        .isEqualTo(7);
+    assertThat(newConfigWith("noattributes.xml", "").getTargetSdkVersion())
+        .isEqualTo(VERSION_CODES.JELLY_BEAN);
   }
 
   @Test
-  public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToOne() throws Exception {
-    assertEquals(17, newConfigWith("minsdk17.xml", "android:minSdkVersion=\"17\"").getMinSdkVersion());
-    assertEquals(1, newConfigWith("noattributes.xml", "").getMinSdkVersion());
+  public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToJellyBean() throws Exception {
+    assertThat(newConfigWith("minsdk17.xml", "android:minSdkVersion=\"17\"").getMinSdkVersion())
+        .isEqualTo(17);
+    assertThat(newConfigWith("noattributes.xml", "").getMinSdkVersion())
+        .isEqualTo(VERSION_CODES.JELLY_BEAN);
   }
 
   /**
@@ -201,62 +210,66 @@ public class AndroidManifestTest {
    */
   @Test
   public void shouldReadTargetSDKVersionOPreview() throws Exception {
-    assertEquals(26, newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"").getTargetSdkVersion());
+    assertThat(newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"")
+        .getTargetSdkVersion()).isEqualTo(26);
   }
 
   @Test
   public void shouldReadProcessFromAndroidManifest() throws Exception {
-    assertEquals("robolectricprocess", newConfig("TestAndroidManifestWithProcess.xml").getProcessName());
+    assertThat(newConfig("TestAndroidManifestWithProcess.xml").getProcessName())
+        .isEqualTo("robolectricprocess");
   }
 
   @Test
   public void shouldReturnPackageNameWhenNoProcessIsSpecifiedInTheManifest() {
-    assertEquals("org.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
+    assertThat(newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName())
+        .isEqualTo("org.robolectric");
   }
 
   @Test
   @Config(manifest = "TestAndroidManifestWithAppMetaData.xml")
   public void shouldReturnApplicationMetaData() throws Exception {
-    Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
+    Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml")
+        .getApplicationMetaData();
 
     Object metaValue = meta.get("org.robolectric.metaName1");
-    assertEquals("metaValue1", metaValue);
+    assertThat(metaValue).isEqualTo("metaValue1");
 
     metaValue = meta.get("org.robolectric.metaName2");
-    assertEquals("metaValue2", metaValue);
+    assertThat(metaValue).isEqualTo("metaValue2");
 
     metaValue = meta.get("org.robolectric.metaFalse");
-    assertEquals("false", metaValue);
+    assertThat(metaValue).isEqualTo("false");
 
     metaValue = meta.get("org.robolectric.metaTrue");
-    assertEquals("true", metaValue);
+    assertThat(metaValue).isEqualTo("true");
 
     metaValue = meta.get("org.robolectric.metaInt");
-    assertEquals("123", metaValue);
+    assertThat(metaValue).isEqualTo("123");
 
     metaValue = meta.get("org.robolectric.metaFloat");
-    assertEquals("1.23", metaValue);
+    assertThat(metaValue).isEqualTo("1.23");
 
     metaValue = meta.get("org.robolectric.metaColor");
-    assertEquals("#FFFFFF", metaValue);
+    assertThat(metaValue).isEqualTo("#FFFFFF");
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
-    assertEquals("@bool/false_bool_value", metaValue);
+    assertThat(metaValue).isEqualTo("@bool/false_bool_value");
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
-    assertEquals("@integer/test_integer1", metaValue);
+    assertThat(metaValue).isEqualTo("@integer/test_integer1");
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
-    assertEquals("@color/clear", metaValue);
+    assertThat(metaValue).isEqualTo("@color/clear");
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
-    assertEquals("@string/app_name", metaValue);
+    assertThat(metaValue).isEqualTo("@string/app_name");
 
     metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
-    assertEquals("@string/str_int", metaValue);
+    assertThat(metaValue).isEqualTo("@string/str_int");
 
     metaValue = meta.get("org.robolectric.metaStringRes");
-    assertEquals("@string/app_name", metaValue);
+    assertThat(metaValue).isEqualTo("@string/app_name");
   }
 
   @Test
@@ -417,7 +430,7 @@ public class AndroidManifestTest {
     int hashCode1 = manifest.hashCode();
     manifest.getServices();
     int hashCode2 = manifest.hashCode();
-    assertEquals(hashCode1, hashCode2);
+    assertThat(hashCode2).isEqualTo(hashCode1);
   }
 
   @Test
