@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.Rule;
@@ -494,9 +495,8 @@ public class AndroidManifestTest {
   @Test
   public void getTransitiveManifests() throws Exception {
     AndroidManifest lib1 = new AndroidManifest(resourceFile("lib1/AndroidManifest.xml"), null, null);
-    List<AndroidManifest> libraryManifests = java.util.Arrays.asList(lib1);
     AndroidManifest lib2 = new AndroidManifest(resourceFile("lib2/AndroidManifest.xml"), null, null,
-        libraryManifests, null);
+        Collections.singletonList(lib1), null);
     AndroidManifest app = new AndroidManifest(
         resourceFile("TestAndroidManifestWithReceivers.xml"), null, null,
         Arrays.asList(lib1, lib2), null);
