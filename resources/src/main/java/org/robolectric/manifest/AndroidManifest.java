@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
@@ -590,6 +592,26 @@ public class AndroidManifest {
   public List<AndroidManifest> getLibraryManifests() {
     assert(libraryManifests != null);
     return Collections.unmodifiableList(libraryManifests);
+  }
+
+  /**
+   * Returns all transitively reachable manifests, including this one, in order and without
+   * duplicates.
+   */
+  public List<AndroidManifest> getAllManifests() {
+    Set<AndroidManifest> seenManifests = new HashSet<>();
+    List<AndroidManifest> uniqueManifests = new ArrayList<>();
+    addTransitiveManifests(seenManifests, uniqueManifests);
+    return uniqueManifests;
+  }
+
+  private void addTransitiveManifests(Set<AndroidManifest> unique, List<AndroidManifest> list) {
+    if (unique.add(this)) {
+      list.add(this);
+      for (AndroidManifest androidManifest : getLibraryManifests()) {
+        androidManifest.addTransitiveManifests(unique, list);
+      }
+    }
   }
 
   public FsFile getResDirectory() {
