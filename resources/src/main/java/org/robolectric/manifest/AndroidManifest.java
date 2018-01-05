@@ -536,9 +536,18 @@ public class AndroidManifest {
     return labelRef;
   }
 
+  /**
+   * Returns the minimum Android SDK version that this package expects to be runnable on, as
+   * specified in the manifest.
+   *
+   * Note that this value changes the behavior of some Android code (notably
+   * {@link android.content.SharedPreferences}) to emulate old bugs.
+   *
+   * @return the minimum SDK version, or Jelly Bean (16) by default
+   */
   public int getMinSdkVersion() {
     parseAndroidManifest();
-    return minSdkVersion == null ? 1 : minSdkVersion;
+    return minSdkVersion == null ? 16 : minSdkVersion;
   }
 
   public int getTargetSdkVersion() {
