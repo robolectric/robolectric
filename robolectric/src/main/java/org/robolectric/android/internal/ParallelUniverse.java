@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
@@ -189,14 +190,23 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, displayMetrics);
-      // TODO remove in favor of passing asset directories directly
-      shadowOf(appResources.getAssets()).setAndroidManifest(appManifest);
+      populateAssetPaths(appResources.getAssets(), appManifest);
 
       initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
 
       PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
         application.onCreate();
       });
+    }
+  }
+
+  private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
+    // TODO remove in favor of system passing library directories to assetManager
+    assetManager.addAssetPath(appManifest.getAssetsDirectory().getPath());
+    for (AndroidManifest libraryManifest : appManifest.getLibraryManifests()) {
+      if (libraryManifest.getAssetsDirectory() != null) {
+        assetManager.addAssetPath(libraryManifest.getAssetsDirectory().getPath());
+      }
     }
   }
 
