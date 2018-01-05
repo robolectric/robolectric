@@ -203,13 +203,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
-      // TODO remove in favor of system passing library directories to assetManager
     if (appManifest.getAssetsDirectory() != null) {
       assetManager.addAssetPath(appManifest.getAssetsDirectory().getPath());
-      for (AndroidManifest libraryManifest : appManifest.getLibraryManifests()) {
-        if (libraryManifest.getAssetsDirectory() != null) {
-          assetManager.addAssetPath(libraryManifest.getAssetsDirectory().getPath());
-        }
+    }
+    for (AndroidManifest libraryManifest : appManifest.getLibraryManifests()) {
+      if (libraryManifest.getAssetsDirectory() != null) {
+        assetManager.addAssetPath(libraryManifest.getAssetsDirectory().getPath());
       }
     }
   }
