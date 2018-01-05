@@ -65,7 +65,7 @@ public class ShadowingTest {
   @Implements(ClassWithProtectedMethod.class)
   public static class ShadowClassWithProtectedMethod {
     @Implementation
-    protected String getName() {
+    public String getName() {
       return "shadow name";
     }
   }
@@ -97,12 +97,12 @@ public class ShadowingTest {
     private int color;
 
     @Implementation
-    protected void setColor(int color) {
+    public void setColor(int color) {
       this.color = color;
     }
 
     @Implementation
-    protected int getColor() {
+    public int getColor() {
       return color;
     }
   }
@@ -116,8 +116,7 @@ public class ShadowingTest {
       shadowDefaultConstructorCalled = true;
     }
 
-    @Implementation
-    protected void __constructor__() {
+    public void __constructor__() {
       shadowDefaultConstructorImplementorCalled = true;
     }
   }
@@ -186,8 +185,8 @@ public class ShadowingTest {
 
   @Implements(ClassWithSomeConstructors.class)
   public static class ShadowOfClassWithSomeConstructors {
-    @Implementation
-    protected void __constructor__(String s) {
+    @SuppressWarnings("UnusedDeclaration")
+    public void __constructor__(String s) {
     }
   }
 
@@ -231,7 +230,7 @@ public class ShadowingTest {
   @Implements(NonInstrumentedClass.class)
   public static class ShadowNonInstrumentedClass {
     @Implementation
-    protected int plus(int x) {
+    public int plus(int x) {
       return x + 2;
     }
   }

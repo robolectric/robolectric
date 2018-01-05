@@ -159,7 +159,7 @@ public class RobolectricTest {
   @Implements(View.class)
   public static class TestShadowView {
     @Implementation
-    protected Context getContext() {
+    public Context getContext() {
       return null;
     }
   }

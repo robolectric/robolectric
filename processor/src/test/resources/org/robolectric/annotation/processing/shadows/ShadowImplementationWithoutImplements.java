@@ -5,5 +5,5 @@ import org.robolectric.annotation.Implementation;
 public class ShadowImplementationWithoutImplements {
 
   @Implementation
-  protected static void implementation_method() {}
+  public static void implementation_method() {}
 }

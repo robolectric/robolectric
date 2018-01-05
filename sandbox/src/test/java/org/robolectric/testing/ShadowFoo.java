@@ -1,7 +1,6 @@
 package org.robolectric.testing;
 
 import org.robolectric.ShadowWranglerIntegrationTest;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
@@ -12,8 +11,8 @@ public class ShadowFoo extends ShadowWranglerIntegrationTest.ShadowFooParent {
   public String name;
 
   @Override
-  @Implementation
-  protected void __constructor__(String name) {
+  @SuppressWarnings({"UnusedDeclaration"})
+  public void __constructor__(String name) {
     super.__constructor__(name);
     this.name = name;
     realFooInConstructor = realFooField;
