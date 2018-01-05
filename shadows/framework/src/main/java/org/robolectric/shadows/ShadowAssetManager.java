@@ -43,7 +43,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
@@ -93,7 +92,6 @@ public final class ShadowAssetManager {
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
   private ResourceTable resourceTable;
-  private AndroidManifest androidManifest;
 
   ResTable_config config = new ResTable_config();
   private Set<FsFile> assetDirs = new CopyOnWriteArraySet<>();
@@ -225,14 +223,6 @@ public final class ShadowAssetManager {
 
   public ResourceTable getResourceTable() {
     return resourceTable;
-  }
-
-  /**
-   * @deprecated references to androidmanifest will be removed in Robolectric 3.8
-   */
-  @Deprecated
-  public void setAndroidManifest(AndroidManifest androidManifest) {
-    this.androidManifest = androidManifest;
   }
 
   @HiddenApi @Implementation

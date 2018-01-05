@@ -68,7 +68,6 @@ public class ParallelUniverseCreateApplicationTest {
             + "    </receiver>"
             + "</application>");
     Application application = ParallelUniverse.createApplication(appManifest, null);
-    shadowOf(application).bind(appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers).hasSize(1);
