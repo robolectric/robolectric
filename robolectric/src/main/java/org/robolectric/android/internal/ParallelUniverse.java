@@ -203,12 +203,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
-    if (appManifest.getAssetsDirectory() != null) {
-      assetManager.addAssetPath(appManifest.getAssetsDirectory().getPath());
-    }
-    for (AndroidManifest libraryManifest : appManifest.getLibraryManifests()) {
-      if (libraryManifest.getAssetsDirectory() != null) {
-        assetManager.addAssetPath(libraryManifest.getAssetsDirectory().getPath());
+    for (AndroidManifest manifest : appManifest.getAllManifests()) {
+      if (manifest.getAssetsDirectory() != null) {
+        assetManager.addAssetPath(manifest.getAssetsDirectory().getPath());
       }
     }
   }
@@ -339,14 +336,16 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   // TODO move/replace this with packageManager
-  private static void registerBroadcastReceivers(Application application, AndroidManifest androidManifest) {
+  private static void registerBroadcastReceivers(Application application,
+      AndroidManifest androidManifest) {
     for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
       IntentFilter filter = new IntentFilter();
       for (String action : receiver.getActions()) {
         filter.addAction(action);
       }
       String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
-      shadowOf(application).registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+      shadowOf(application).registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName),
+          filter);
     }
   }
 
