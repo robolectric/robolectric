@@ -5,7 +5,6 @@ import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
