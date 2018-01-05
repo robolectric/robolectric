@@ -90,6 +90,7 @@ public final class ShadowAssetManager {
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
   private ResourceTable resourceTable;
+  private AndroidManifest androidManifest;
 
   ResTable_config config = new ResTable_config();
 
@@ -220,6 +221,19 @@ public final class ShadowAssetManager {
 
   public ResourceTable getResourceTable() {
     return resourceTable;
+  }
+
+  /**
+   * @deprecated references to androidmanifest will be removed in Robolectric 3.8
+   */
+  @Deprecated
+  public void setAndroidManifest(AndroidManifest androidManifest) {
+    this.androidManifest = androidManifest;
+  }
+
+  @Deprecated
+  AndroidManifest getAppManifest() {
+    return this.androidManifest;
   }
 
   @HiddenApi @Implementation
@@ -425,7 +439,7 @@ public final class ShadowAssetManager {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
-      return ResName.qualifyFromFilePath(ShadowApplication.getInstance().getAppManifest().getPackageName(), fileName);
+      return ResName.qualifyFromFilePath(androidManifest.getPackageName(), fileName);
     }
   }
 
@@ -984,12 +998,12 @@ public final class ShadowAssetManager {
   }
 
   private FsFile getAssetsDirectory() {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
+    return androidManifest.getAssetsDirectory();
   }
 
   private List<FsFile> getLibraryAssetsDirectories() {
     List<FsFile> libraryAssetsDirectory = new ArrayList<>();
-    for (AndroidManifest manifest : ShadowApplication.getInstance().getAppManifest().getLibraryManifests()) {
+    for (AndroidManifest manifest : androidManifest.getLibraryManifests()) {
       if (manifest.getAssetsDirectory() != null) {
         libraryAssetsDirectory.add(manifest.getAssetsDirectory());
       }

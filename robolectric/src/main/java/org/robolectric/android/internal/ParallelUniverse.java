@@ -189,6 +189,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, displayMetrics);
+      // TODO remove in favor of passing asset directories directly
+      shadowOf(appResources.getAssets()).setAndroidManifest(appManifest);
 
       initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
 
