@@ -5,6 +5,8 @@ import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
@@ -190,14 +192,16 @@ public class AndroidManifestTest {
         .isEqualTo(42);
     assertThat(newConfigWith("minsdk7.xml", "android:minSdkVersion=\"7\"").getTargetSdkVersion())
         .isEqualTo(7);
-    assertThat(newConfigWith("noattributes.xml", "").getTargetSdkVersion()).isEqualTo(1);
+    assertThat(newConfigWith("noattributes.xml", "").getTargetSdkVersion())
+        .isEqualTo(VERSION_CODES.JELLY_BEAN);
   }
 
   @Test
-  public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToOne() throws Exception {
+  public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToJellyBean() throws Exception {
     assertThat(newConfigWith("minsdk17.xml", "android:minSdkVersion=\"17\"").getMinSdkVersion())
         .isEqualTo(17);
-    assertThat(newConfigWith("noattributes.xml", "").getMinSdkVersion()).isEqualTo(2);
+    assertThat(newConfigWith("noattributes.xml", "").getMinSdkVersion())
+        .isEqualTo(VERSION_CODES.JELLY_BEAN);
   }
 
   /**
