@@ -978,7 +978,6 @@ public final class ShadowAssetManager {
 
   private List<FsFile> getAllAssetsDirectories() {
     List<FsFile> assetsDirs = new ArrayList<>();
-    assetsDirs.add(getAssetsDirectory());
     assetsDirs.addAll(getLibraryAssetsDirectories());
     return assetsDirs;
   }
@@ -989,7 +988,8 @@ public final class ShadowAssetManager {
 
   private List<FsFile> getLibraryAssetsDirectories() {
     List<FsFile> libraryAssetsDirectory = new ArrayList<>();
-    for (AndroidManifest manifest : ShadowApplication.getInstance().getAppManifest().getLibraryManifests()) {
+    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
+    for (AndroidManifest manifest : appManifest.getAllManifests()) {
       if (manifest.getAssetsDirectory() != null) {
         libraryAssetsDirectory.add(manifest.getAssetsDirectory());
       }

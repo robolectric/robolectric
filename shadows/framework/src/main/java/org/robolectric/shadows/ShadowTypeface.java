@@ -60,11 +60,9 @@ public class ShadowTypeface {
   public static Typeface createFromAsset(AssetManager mgr, String path) {
     AndroidManifest appManifest = Shadows.shadowOf(RuntimeEnvironment.application).getAppManifest();
     ArrayList<String> paths = new ArrayList<>();
-    paths.add(getAssetsPath(appManifest, path));
 
-    List<AndroidManifest> libraryManifests = appManifest.getLibraryManifests();
-    for (AndroidManifest libraryManifest : libraryManifests) {
-      paths.add(getAssetsPath(libraryManifest, path));
+    for (AndroidManifest depManifest : appManifest.getAllManifests()) {
+      paths.add(getAssetsPath(depManifest, path));
     }
 
     for (String assetPath : paths) {
