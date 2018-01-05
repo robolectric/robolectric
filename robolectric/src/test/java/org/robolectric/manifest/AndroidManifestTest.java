@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.Rule;
@@ -501,6 +503,17 @@ public class AndroidManifestTest {
     BroadcastReceiverData receiverData = config.getBroadcastReceiver("com.foo.Receiver");
     assertThat(receiverData).isNotNull();
     assertThat(receiverData.isExported()).isTrue();
+  }
+
+  @Test
+  public void getTransitiveManifests() throws Exception {
+    AndroidManifest lib1 = new AndroidManifest(resourceFile("lib1/AndroidManifest.xml"), null, null);
+    AndroidManifest lib2 = new AndroidManifest(resourceFile("lib2/AndroidManifest.xml"), null, null,
+        Collections.singletonList(lib1), null);
+    AndroidManifest app = new AndroidManifest(
+        resourceFile("TestAndroidManifestWithReceivers.xml"), null, null,
+        Arrays.asList(lib1, lib2), null);
+    assertThat(app.getAllManifests()).containsExactly(app, lib1, lib2);
   }
 
   /////////////////////////////

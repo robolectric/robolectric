@@ -62,7 +62,7 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(AssetManager.class)
-public final class ShadowAssetManager {
+public class ShadowAssetManager {
 
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
@@ -976,20 +976,20 @@ public final class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  private List<FsFile> getAllAssetsDirectories() {
+  protected List<FsFile> getAllAssetsDirectories() {
     List<FsFile> assetsDirs = new ArrayList<>();
-    assetsDirs.add(getAssetsDirectory());
     assetsDirs.addAll(getLibraryAssetsDirectories());
     return assetsDirs;
   }
 
-  private FsFile getAssetsDirectory() {
+  protected FsFile getAssetsDirectory() {
     return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
   }
 
   private List<FsFile> getLibraryAssetsDirectories() {
     List<FsFile> libraryAssetsDirectory = new ArrayList<>();
-    for (AndroidManifest manifest : ShadowApplication.getInstance().getAppManifest().getLibraryManifests()) {
+    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
+    for (AndroidManifest manifest : appManifest.getAllManifests()) {
       if (manifest.getAssetsDirectory() != null) {
         libraryAssetsDirectory.add(manifest.getAssetsDirectory());
       }
