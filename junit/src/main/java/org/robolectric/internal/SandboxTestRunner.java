@@ -160,7 +160,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("org.junit.");
 
     for (Class<?> shadowClass : getExtraShadows(method)) {
-      ShadowMap.ShadowInfo shadowInfo = ShadowMap.getShadowInfo(shadowClass);
+      ShadowMap.ShadowInfo shadowInfo = ShadowMap.createShadowInfo(shadowClass);
       builder.addInstrumentedClass(shadowInfo.getShadowedClassName());
     }
 

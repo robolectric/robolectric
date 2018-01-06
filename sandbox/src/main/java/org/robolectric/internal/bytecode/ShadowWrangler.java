@@ -64,7 +64,6 @@ public class ShadowWrangler implements ClassHandler {
           return size() > 500;
         }
       });
-  private final Map<Class, ShadowConfig> shadowConfigCache = new ConcurrentHashMap<>();
   private final ClassValue<ShadowConfig> shadowConfigs = new ClassValue<ShadowConfig>() {
     @Override protected ShadowConfig computeValue(Class<?> type) {
       return shadowMap.get(type);
@@ -139,12 +138,12 @@ public class ShadowWrangler implements ClassHandler {
     return plan;
   }
 
-  @Override public MethodHandle findShadowMethod(Class<?> caller, String name, MethodType type,
+  @Override public MethodHandle findShadowMethod(Class<?> definingClass, String name, MethodType type,
       boolean isStatic) throws IllegalAccessException {
-    ShadowConfig shadowConfig = shadowConfigs.get(caller);
+    ShadowConfig shadowConfig = getShadowConfig(definingClass);
     if (shadowConfig == null) return CALL_REAL_CODE;
 
-    ClassLoader classLoader = caller.getClassLoader();
+    ClassLoader classLoader = definingClass.getClassLoader();
     MethodType actualType = isStatic ? type : type.dropParameterTypes(0, 1);
     Method method = findShadowMethod(classLoader, shadowConfig, name, actualType.parameterArray());
     if (method == null) {
@@ -157,7 +156,7 @@ public class ShadowWrangler implements ClassHandler {
       return CALL_REAL_CODE;
     }
 
-    boolean shadowClassMismatch = !declaredShadowedClass.equals(caller);
+    boolean shadowClassMismatch = !declaredShadowedClass.equals(definingClass);
     if (shadowClassMismatch && !shadowConfig.inheritImplementationMethods) {
       return CALL_REAL_CODE;
     } else {
@@ -236,16 +235,8 @@ public class ShadowWrangler implements ClassHandler {
     return method;
   }
 
-  @SuppressWarnings("ReferenceEquality")
   private ShadowConfig getShadowConfig(Class clazz) {
-    ShadowConfig shadowConfig = shadowConfigCache.get(clazz);
-    if (shadowConfig == null) {
-      shadowConfig = shadowMap.get(clazz);
-      shadowConfigCache.put(clazz, shadowConfig == null ? NO_SHADOW_CONFIG : shadowConfig);
-      return shadowConfig;
-    } else {
-      return (shadowConfig == NO_SHADOW_CONFIG) ? null : shadowConfig;
-    }
+    return shadowConfigs.get(clazz);
   }
 
   private boolean isAndroidSupport(InvocationProfile invocationProfile) {
@@ -414,7 +405,7 @@ public class ShadowWrangler implements ClassHandler {
     Class clazz = cl;
     ShadowConfig shadowConfig = null;
     while (shadowConfig == null && clazz != null) {
-      shadowConfig = shadowConfigs.get(clazz);
+      shadowConfig = getShadowConfig(clazz);
       clazz = clazz.getSuperclass();
     }
     return shadowConfig == null ? null : shadowConfig.shadowClassName;

@@ -1,5 +1,6 @@
 package org.robolectric.internal.bytecode;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,8 +11,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
 
 public class ShadowMap {
-  public static final ShadowMap EMPTY = new ShadowMap(Collections.<String, ShadowConfig>emptyMap());
-  private final Map<String, ShadowConfig> map;
+  public static final ShadowMap EMPTY = new ShadowMap(Collections.emptyMap());
+  private final ImmutableMap<String, ShadowConfig> map;
   private static final Map<String, String> SHADOWS = new HashMap<>();
 
   static {
@@ -21,7 +22,7 @@ public class ShadowMap {
   }
 
   ShadowMap(Map<String, ShadowConfig> map) {
-    this.map = new HashMap<>(map);
+    this.map = ImmutableMap.copyOf(map);
   }
 
   public ShadowConfig get(Class<?> clazz) {
@@ -29,13 +30,11 @@ public class ShadowMap {
 
     if (shadowConfig == null && clazz.getClassLoader() != null) {
       Class<?> shadowClass = getShadowClass(clazz);
-      if (shadowClass == null) {
-        return null;
-      }
-
-      ShadowInfo shadowInfo = getShadowInfo(shadowClass);
-      if (shadowInfo != null && shadowInfo.shadowedClassName.equals(clazz.getName())) {
-        return shadowInfo.getShadowConfig();
+      if (shadowClass != null) {
+        ShadowInfo shadowInfo = createShadowInfo(shadowClass);
+        if (shadowInfo.shadowedClassName.equals(clazz.getName())) {
+          shadowConfig = shadowInfo.getShadowConfig();
+        }
       }
     }
     return shadowConfig;
@@ -50,15 +49,13 @@ public class ShadowMap {
           return clazz.getClassLoader().loadClass(shadowName);
         }
       }
-    } catch (ClassNotFoundException e) {
-      return null;
-    } catch (IncompatibleClassChangeError e) {
+    } catch (ClassNotFoundException | IncompatibleClassChangeError e) {
       return null;
     }
     return null;
   }
 
-  public static ShadowInfo getShadowInfo(Class<?> clazz) {
+  public static ShadowInfo createShadowInfo(Class<?> clazz) {
     Implements annotation = clazz.getAnnotation(Implements.class);
     if (annotation == null) {
       throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
@@ -146,10 +143,8 @@ public class ShadowMap {
     }
 
     public Builder addShadowClass(Class<?> shadowClass) {
-      ShadowInfo shadowInfo = getShadowInfo(shadowClass);
-      if (shadowInfo != null) {
-        addShadowConfig(shadowInfo.getShadowedClassName(), shadowInfo.getShadowConfig());
-      }
+      ShadowInfo shadowInfo = createShadowInfo(shadowClass);
+      addShadowConfig(shadowInfo.getShadowedClassName(), shadowInfo.getShadowConfig());
       return this;
     }
 
