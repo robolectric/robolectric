@@ -3,6 +3,8 @@ package org.robolectric.internal.bytecode;
 import org.robolectric.annotation.Implements;
 
 public class ShadowConfig {
+
+  public final String shadowedClassName;
   public final String shadowClassName;
   public final boolean callThroughByDefault;
   public final boolean inheritImplementationMethods;
@@ -10,8 +12,9 @@ public class ShadowConfig {
   private final int minSdk;
   private final int maxSdk;
 
-  ShadowConfig(String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods,
-               boolean looseSignatures, int minSdk, int maxSdk) {
+  ShadowConfig(String shadowedClassName, String shadowClassName, boolean callThroughByDefault,
+      boolean inheritImplementationMethods, boolean looseSignatures, int minSdk, int maxSdk) {
+    this.shadowedClassName = shadowedClassName;
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
     this.inheritImplementationMethods = inheritImplementationMethods;
@@ -20,8 +23,9 @@ public class ShadowConfig {
     this.maxSdk = maxSdk;
   }
 
-  ShadowConfig(String shadowClassName, Implements annotation) {
-    this(shadowClassName,
+  ShadowConfig(String shadowedClassName, String shadowClassName, Implements annotation) {
+    this(shadowedClassName,
+        shadowClassName,
         annotation.callThroughByDefault(),
         annotation.inheritImplementationMethods(),
         annotation.looseSignatures(),

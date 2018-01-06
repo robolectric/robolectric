@@ -31,6 +31,7 @@ import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.SandboxConfig;
+import org.robolectric.internal.bytecode.ShadowConfig;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.util.PerfStatsCollector;
@@ -160,8 +161,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("org.junit.");
 
     for (Class<?> shadowClass : getExtraShadows(method)) {
-      ShadowMap.ShadowInfo shadowInfo = ShadowMap.createShadowInfo(shadowClass);
-      builder.addInstrumentedClass(shadowInfo.getShadowedClassName());
+      ShadowConfig shadowConfig = ShadowMap.obtainShadowConfig(shadowClass);
+      builder.addInstrumentedClass(shadowConfig.shadowedClassName);
     }
 
     addInstrumentedPackages(method, builder);

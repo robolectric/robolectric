@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -50,7 +49,6 @@ public class ShadowWrangler implements ClassHandler {
   public static final MethodHandle DO_NOTHING = constant(Void.class, null).asType(methodType(void.class));
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
   private static final boolean STRIP_SHADOW_STACK_TRACES = true;
-  private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false, -1, -1);
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
@@ -64,7 +62,7 @@ public class ShadowWrangler implements ClassHandler {
           return size() > 500;
         }
       });
-  private final ClassValue<ShadowConfig> shadowConfigs = new ClassValue<ShadowConfig>() {
+  private final ClassValue<ShadowConfig> cachedShadowInfos = new ClassValue<ShadowConfig>() {
     @Override protected ShadowConfig computeValue(Class<?> type) {
       return shadowMap.get(type);
     }
@@ -236,7 +234,7 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private ShadowConfig getShadowConfig(Class clazz) {
-    return shadowConfigs.get(clazz);
+    return cachedShadowInfos.get(clazz);
   }
 
   private boolean isAndroidSupport(InvocationProfile invocationProfile) {
