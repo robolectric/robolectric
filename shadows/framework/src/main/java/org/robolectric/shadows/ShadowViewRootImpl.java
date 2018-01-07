@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Looper;
 import android.util.MergedConfiguration;
 import android.view.Display;
+import android.view.DisplayCutout.ParcelableWrapper;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import org.robolectric.RuntimeEnvironment;
@@ -95,11 +96,8 @@ public class ShadowViewRootImpl {
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false));
-    } else if (apiLevel >= Build.VERSION_CODES.O) {
-      ReflectionHelpers.callInstanceMethod(
-          ViewRootImpl.class,
-          component,
-          "dispatchResized",
+    } else if (apiLevel <= Build.VERSION_CODES.O_MR1) {
+      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(Rect.class, zeroSizedRect),
           ClassParameter.from(Rect.class, zeroSizedRect),
@@ -112,6 +110,23 @@ public class ShadowViewRootImpl {
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(int.class, 0));
+    // BEGIN-INTERNAL
+    } else if (apiLevel >= Build.VERSION_CODES.P) {
+      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
+          ClassParameter.from(Rect.class, frame),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(MergedConfiguration.class, new MergedConfiguration()),
+          ClassParameter.from(Rect.class, frame),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(ParcelableWrapper.class, new ParcelableWrapper()));
+    // END-INTERNAL
     } else {
       throw new RuntimeException("Could not find AndroidRuntimeAdapter for API level: " + apiLevel);
     }

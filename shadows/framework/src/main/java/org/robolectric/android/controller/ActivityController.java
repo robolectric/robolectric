@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -82,7 +83,11 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> restart() {
-    invokeWhilePaused("performRestart");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performRestart");
+    } else {
+      invokeWhilePaused("performRestart", from(boolean.class, true));
+    }
     return this;
   }
 

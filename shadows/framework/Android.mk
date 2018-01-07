@@ -1,3 +1,6 @@
+##############################################
+# Compile Robolectric shadows framework
+##############################################
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -44,9 +47,9 @@ LOCAL_JAVA_RESOURCE_DIRS := src/main/resources
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
-###########################################
+##############################################
 # Situate the SQLite native libraries
-###########################################
+##############################################
 $(intermediates)/sqlite-natives/linux-x86_64/libsqlite4java.so: prebuilts/tools/common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-amd64/0.282/libsqlite4java-linux-amd64-0.282.so
 	$(hide) cp $< $@
 

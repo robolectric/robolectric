@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
@@ -142,7 +143,20 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(data, "appInfo", applicationInfo);
       ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
-      LoadedApk loadedApk = activityThread.getLoadedApk(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+      // BEGIN-INTERNAL
+      LoadedApk loadedApk = null;
+      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+        loadedApk = activityThread.getLoadedApk(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+      } else {
+        // END-INTERNAL
+        loadedApk = ReflectionHelpers.callInstanceMethod(ActivityThread.class, activityThread,
+            "getPackageInfo",
+            ClassParameter.from(ApplicationInfo.class, applicationInfo),
+            ClassParameter.from(CompatibilityInfo.class, null),
+            ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
+        // BEGIN-INTERNAL
+      }
+      // END-INTERNAL
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
