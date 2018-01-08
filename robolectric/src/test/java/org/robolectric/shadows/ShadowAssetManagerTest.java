@@ -19,9 +19,11 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import com.google.common.io.CharStreams;
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -119,6 +121,18 @@ public class ShadowAssetManagerTest {
     assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
         .isEqualTo("asset in lib 2");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(14);
+  }
+
+  @Test
+  public void openFd_createOutputStream() throws Exception {
+    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("assetsHome.txt");
+    try (FileOutputStream outFile = assetFileDescriptor.createOutputStream()) {
+      outFile.write("modified asset".getBytes());
+    }
+
+    assetFileDescriptor = assetManager.openFd("assetsHome.txt");
+    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
+        .isEqualTo("modified asset");
   }
 
   @Test
