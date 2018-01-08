@@ -718,7 +718,7 @@ public class SandboxClassLoaderTest {
           invocationProfile.paramTypes, params);
     }
 
-    @Override public MethodHandle findShadowMethod(Class<?> theClass, String name, MethodType type,
+    @Override public MethodHandle findShadowMethodHandle(Class<?> theClass, String name, MethodType type,
         boolean isStatic) throws IllegalAccessException {
       String signature = getSignature(theClass, name, type, isStatic);
       InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, getClass().getClassLoader());

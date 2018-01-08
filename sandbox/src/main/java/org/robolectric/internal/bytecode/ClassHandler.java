@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 
 public interface ClassHandler {
+
   void classInitializing(Class clazz);
 
   Object initializing(Object instance);
@@ -12,15 +13,16 @@ public interface ClassHandler {
 
   MethodHandle getShadowCreator(Class<?> caller);
 
-  MethodHandle findShadowMethod(Class<?> theClass, String name, MethodType type,
-      boolean isStatic)
-      throws IllegalAccessException;
+  MethodHandle findShadowMethodHandle(Class<?> theClass, String name, MethodType methodType,
+      boolean isStatic) throws IllegalAccessException;
 
-  Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable;
+  Object intercept(String signature, Object instance, Object[] params, Class theClass)
+      throws Throwable;
 
   <T extends Throwable> T stripStackTrace(T throwable);
 
-  public interface Plan {
+  interface Plan {
+
     Object run(Object instance, Object roboData, Object[] params) throws Throwable;
 
     String describe();
