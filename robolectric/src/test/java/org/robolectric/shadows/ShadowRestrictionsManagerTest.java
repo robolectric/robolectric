@@ -5,19 +5,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
+import android.content.RestrictionEntry;
 import android.content.RestrictionsManager;
 import android.os.Bundle;
-
+import com.google.common.collect.Iterables;
+import java.util.List;
 import org.junit.Before;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(minSdk = LOLLIPOP)
 public final class ShadowRestrictionsManagerTest {
 
   private RestrictionsManager restrictionsManager;
@@ -30,8 +31,7 @@ public final class ShadowRestrictionsManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)  
-  public void getApplicationRestrictions() throws Exception {
+  public void getApplicationRestrictions() {
     assertThat(restrictionsManager.getApplicationRestrictions()).isNull();
 
     Bundle bundle = new Bundle();
@@ -39,5 +39,13 @@ public final class ShadowRestrictionsManagerTest {
     shadowOf(restrictionsManager).setApplicationRestrictions(bundle);
 
     assertThat(restrictionsManager.getApplicationRestrictions().getCharSequence("test_key")).isEqualTo("test_value");
+  }
+
+  @Test
+  public void getManifestRestrictions() {
+    RestrictionEntry restrictionEntry = Iterables.getOnlyElement(restrictionsManager
+        .getManifestRestrictions(context.getPackageName()));
+
+    assertThat(restrictionEntry.getKey()).isEqualTo("restrictionKey");
   }
 }
