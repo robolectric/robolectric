@@ -29,6 +29,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IUserManager;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.view.Display;
@@ -205,7 +206,11 @@ public class ShadowContextImpl {
         } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.view.accessibility.CaptioningManager")) {
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application));
-        } else {
+        } else if (serviceClassName.equals("android.os.UserManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(IUserManager.class, null));
+	} else {
           service = newInstanceOf(clazz);
         }
       } catch (ClassNotFoundException e) {
