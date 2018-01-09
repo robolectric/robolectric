@@ -18,6 +18,7 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IContentProvider;
+import android.content.IRestrictionsManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
@@ -136,7 +137,11 @@ public class ShadowContextImpl {
       try {
         Class<?> clazz = Class.forName(serviceClassName);
 
-        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+        if (serviceClassName.equals("android.content.RestrictionsManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IRestrictionsManager.class, null));
+        } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
           if (getApiLevel() >= N) {
             service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
