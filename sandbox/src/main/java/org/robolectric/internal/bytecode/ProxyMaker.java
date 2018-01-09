@@ -6,7 +6,6 @@ import static org.objectweb.asm.Opcodes.ACC_SUPER;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.V1_7;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.objectweb.asm.ClassWriter;
@@ -92,7 +91,7 @@ public class ProxyMaker {
           }
         }
       };
-    } catch (NoSuchMethodException e) {
+    } catch (NoSuchFieldException e) {
       throw new AssertionError(e);
     }
   }
