@@ -83,7 +83,7 @@ public class ProxyMaker {
           try {
             Object proxy = UNSAFE.allocateInstance(proxyClass);
 
-            field.set(target, proxy);
+            field.set(proxy, target);
 
             return targetClass.cast(proxy);
           } catch (Throwable t) {
