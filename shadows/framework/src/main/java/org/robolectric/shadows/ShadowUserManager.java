@@ -5,8 +5,12 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 
+import android.Manifest.permission;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.Bundle;
+import android.os.IUserManager;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -16,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -32,9 +37,20 @@ public class ShadowUserManager {
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
   private int nextUserSerial = 0;
   private Map<UserHandle, UserState> userState = new HashMap<>();
+  private Context context;
+  private boolean enforcePermissions;
+
+  @Implementation
+  public void __constructor__(Context context, IUserManager service) {
+    this.context = context;
+  }
 
   public ShadowUserManager() {
     addUserProfile(Process.myUserHandle());
+  }
+
+  public void enforcePermissionChecks(boolean enforcePermissions) {
+    this.enforcePermissions = enforcePermissions;
   }
 
   /**
@@ -80,6 +96,11 @@ public class ShadowUserManager {
 
   @Implementation(minSdk = LOLLIPOP)
   public boolean isManagedProfile() {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException(
+          "You need MANAGE_USERS permission to: check if specified user a " +
+              "managed profile outside your profile group");
+    }
     return managedProfile;
   }
 
@@ -146,6 +167,10 @@ public class ShadowUserManager {
     return userProfiles.inverse().get(serialNumber);
   }
 
+  private boolean hasManageUsersPermission() {
+    return context.getPackageManager().checkPermission(permission.MANAGE_USERS, context.getPackageName()) == PackageManager.PERMISSION_GRANTED;
+  }
+
   private void checkPermissions() {
     // TODO Ensure permisions
     //              throw new SecurityException("You need INTERACT_ACROSS_USERS or MANAGE_USERS
@@ -204,7 +229,7 @@ public class ShadowUserManager {
   /**
    * Sets the current state for a given user, see {@link #isUserRunning()}
    * and {@link #isUserRunningOrStopping()}
-   */  
+   */
   public void setUserState(UserHandle handle, UserState state) {
     userState.put(handle, state);
   }

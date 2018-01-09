@@ -5,9 +5,13 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.Manifest.permission;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Process;
@@ -111,6 +115,26 @@ public class ShadowUserManagerTest {
   public void isManagedProfile() {
     assertThat(userManager.isManagedProfile()).isFalse();
     shadowOf(userManager).setManagedProfile(true);
+    assertThat(userManager.isManagedProfile()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void enforcePermissionChecks() throws Exception {
+    shadowOf(userManager).enforcePermissionChecks(true);
+
+    try {
+      userManager.isManagedProfile();
+      fail("Expected exception");
+    } catch (SecurityException expected) {}
+
+    PackageInfo packageInfo = RuntimeEnvironment.application.getPackageManager()
+        .getPackageInfo(RuntimeEnvironment.application.getPackageName(),
+            PackageManager.GET_PERMISSIONS);
+    packageInfo.requestedPermissions = new String[] { permission.MANAGE_USERS };
+
+    shadowOf(userManager).setManagedProfile(true);
+
     assertThat(userManager.isManagedProfile()).isTrue();
   }
 
