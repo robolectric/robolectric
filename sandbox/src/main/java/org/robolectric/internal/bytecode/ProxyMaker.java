@@ -18,7 +18,6 @@ import sun.misc.Unsafe;
 public class ProxyMaker {
   private static final String TARGET_FIELD = "__proxy__";
   private static final Unsafe UNSAFE;
-  private static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 
   static {
     try {
@@ -79,13 +78,13 @@ public class ProxyMaker {
     final Class<?> proxyClass = UNSAFE.defineAnonymousClass(targetClass, writer.toByteArray(), null);
 
     try {
-      final java.lang.reflect.Method setter = targetClass.getDeclaredMethod("set" + TARGET_FIELD);
+      final Field field = proxyClass.getDeclaredField(TARGET_FIELD);
       return new Factory() {
         @Override public <E> E createProxy(Class<E> targetClass, E target) {
           try {
             Object proxy = UNSAFE.allocateInstance(proxyClass);
 
-            setter.invoke(proxy, target);
+            field.set(target, proxy);
 
             return targetClass.cast(proxy);
           } catch (Throwable t) {
