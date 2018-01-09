@@ -108,6 +108,19 @@
       </intent-filter>
     </activity>
 
+    <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithFilters"
+        android:permission="com.foo.MY_PERMISSION">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:scheme="content"
+            android:host="testhost1.com"
+            android:port="1"
+            android:path="/testPath/test.jpeg"
+            android:mimeType="video/mpeg" />
+      </intent-filter>
+    </activity>
+
     <activity-alias
             android:name="org.robolectric.shadows.TestActivityAlias"
             android:targetActivity=".shadows.TestActivity">
