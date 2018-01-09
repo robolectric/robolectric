@@ -64,7 +64,13 @@ public class ShadowAssetManagerTest {
   public void assetsPathListing() throws IOException {
     assertThat(assetManager.list(""))
         .containsExactlyInAnyOrder(
-            "assetsHome.txt", "docs", "myFont.ttf", "libFont.ttf", "file-in-lib2.txt");
+            "assetsHome.txt",   // test/resources/assets
+            "docs",             // test/resources/assets
+            "myFont.ttf",       // test/resources/assets
+            "libFont.ttf",      // test/resources/lib1/assets
+            "file-in-lib2.txt", // test/resources/lib2/assets
+            "file-in-lib2.txt"  // test/resources/lib1/../lib2/assets (yes, weird)
+            );
 
     assertThat(assetManager.list("docs"))
         .contains("extra");

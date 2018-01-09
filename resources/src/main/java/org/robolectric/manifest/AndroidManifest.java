@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
@@ -536,11 +538,29 @@ public class AndroidManifest {
     return labelRef;
   }
 
+  /**
+   * Returns the minimum Android SDK version that this package expects to be runnable on, as
+   * specified in the manifest.
+   *
+   * Note that if `targetSdkVersion` isn't set, this value changes the behavior of some Android
+   * code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
+   *
+   * @return the minimum SDK version, or Jelly Bean (16) by default
+   */
   public int getMinSdkVersion() {
     parseAndroidManifest();
-    return minSdkVersion == null ? 1 : minSdkVersion;
+    return minSdkVersion == null ? 16 : minSdkVersion;
   }
 
+  /**
+   * Returns the Android SDK version that this package prefers to be run on, as
+   * specified in the manifest.
+   *
+   * Note that this value changes the behavior of some Android code (notably
+   * {@link android.content.SharedPreferences}) to emulate old bugs.
+   *
+   * @return the minimum SDK version, or Jelly Bean (16) by default
+   */
   public int getTargetSdkVersion() {
     parseAndroidManifest();
     return targetSdkVersion == null ? getMinSdkVersion() : targetSdkVersion;
@@ -590,6 +610,26 @@ public class AndroidManifest {
   public List<AndroidManifest> getLibraryManifests() {
     assert(libraryManifests != null);
     return Collections.unmodifiableList(libraryManifests);
+  }
+
+  /**
+   * Returns all transitively reachable manifests, including this one, in order and without
+   * duplicates.
+   */
+  public List<AndroidManifest> getAllManifests() {
+    Set<AndroidManifest> seenManifests = new HashSet<>();
+    List<AndroidManifest> uniqueManifests = new ArrayList<>();
+    addTransitiveManifests(seenManifests, uniqueManifests);
+    return uniqueManifests;
+  }
+
+  private void addTransitiveManifests(Set<AndroidManifest> unique, List<AndroidManifest> list) {
+    if (unique.add(this)) {
+      list.add(this);
+      for (AndroidManifest androidManifest : getLibraryManifests()) {
+        androidManifest.addTransitiveManifests(unique, list);
+      }
+    }
   }
 
   public FsFile getResDirectory() {

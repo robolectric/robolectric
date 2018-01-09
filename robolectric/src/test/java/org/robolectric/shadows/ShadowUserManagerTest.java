@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowUserManager.UserState;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowUserManagerTest {
@@ -124,6 +125,58 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).addUserProfile(userHandle);
 
     assertThat(userManager.getSerialNumberForUser(userHandle)).isNotEqualTo(serialNumberInvalid);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void isUserRunning() {
+    UserHandle userHandle = newUserHandle(0);
+
+    assertThat(userManager.isUserRunning(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKED);
+    assertThat(userManager.isUserRunning(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_LOCKED);
+    assertThat(userManager.isUserRunning(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKING);
+    assertThat(userManager.isUserRunning(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_STOPPING);
+    assertThat(userManager.isUserRunning(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_BOOTING);
+    assertThat(userManager.isUserRunning(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_SHUTDOWN);
+    assertThat(userManager.isUserRunning(userHandle)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void isUserRunningOrStopping() {
+    UserHandle userHandle = newUserHandle(0);
+
+    assertThat(userManager.isUserRunningOrStopping(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKED);
+    assertThat(userManager.isUserRunningOrStopping(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_LOCKED);
+    assertThat(userManager.isUserRunningOrStopping(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKING);
+    assertThat(userManager.isUserRunningOrStopping(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_STOPPING);
+    assertThat(userManager.isUserRunningOrStopping(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_BOOTING);
+    assertThat(userManager.isUserRunningOrStopping(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_SHUTDOWN);
+    assertThat(userManager.isUserRunningOrStopping(userHandle)).isFalse();
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

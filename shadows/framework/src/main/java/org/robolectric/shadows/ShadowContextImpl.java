@@ -18,6 +18,7 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IContentProvider;
+import android.content.IRestrictionsManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
@@ -88,6 +89,7 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
     SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
     SYSTEM_SERVICE_MAP.put(Context.USB_SERVICE, "android.hardware.usb.UsbManager");
+
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
       SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
@@ -106,6 +108,7 @@ public class ShadowContextImpl {
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
       SYSTEM_SERVICE_MAP.put(Context.BATTERY_SERVICE, "android.os.BatteryManager");
+      SYSTEM_SERVICE_MAP.put(Context.RESTRICTIONS_SERVICE, "android.content.RestrictionsManager");
     }
     if (getApiLevel() >= LOLLIPOP_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");
@@ -134,7 +137,11 @@ public class ShadowContextImpl {
       try {
         Class<?> clazz = Class.forName(serviceClassName);
 
-        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+        if (serviceClassName.equals("android.content.RestrictionsManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IRestrictionsManager.class, null));
+        } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
           if (getApiLevel() >= N) {
             service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),

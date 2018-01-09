@@ -23,6 +23,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.RestrictionsManager;
 import android.content.ServiceConnection;
 import android.hardware.SystemSensorManager;
 import android.media.session.MediaSessionManager;
@@ -107,6 +108,7 @@ public class ShadowApplicationTest {
   public void shouldProvideMediaSessionService() throws Exception {
     checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
     checkSystemService(Context.BATTERY_SERVICE, BatteryManager.class);
+    checkSystemService(Context.RESTRICTIONS_SERVICE, RestrictionsManager.class);
   }
 
   @Test
