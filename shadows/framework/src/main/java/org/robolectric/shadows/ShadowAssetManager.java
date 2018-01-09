@@ -64,7 +64,7 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(AssetManager.class)
-public final class ShadowAssetManager {
+public class ShadowAssetManager {
 
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
