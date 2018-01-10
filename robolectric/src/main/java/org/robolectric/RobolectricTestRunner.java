@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import android.app.Application;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
@@ -423,13 +424,30 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       AndroidManifest appManifest;
       appManifest = appManifestsCache.get(identifier);
       if (appManifest == null) {
-        appManifest = manifestFactory.create(identifier);
+        appManifest = createAndroidManifest(identifier);
         appManifestsCache.put(identifier, appManifest);
       }
 
       return appManifest;
     }
   }
+
+  /**
+   * Internal use only.
+   */
+  @VisibleForTesting
+  public static AndroidManifest createAndroidManifest(ManifestIdentifier manifestIdentifier) {
+    List<ManifestIdentifier> libraries = manifestIdentifier.getLibraries();
+
+    List<AndroidManifest> libraryManifests = new ArrayList<>();
+    for (ManifestIdentifier library : libraries) {
+      libraryManifests.add(createAndroidManifest(library));
+    }
+
+    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(),
+        manifestIdentifier.getAssetDir(), libraryManifests, manifestIdentifier.getPackageName());
+  }
+
 
   /**
    * Compute the effective Robolectric configuration for a given test method.
