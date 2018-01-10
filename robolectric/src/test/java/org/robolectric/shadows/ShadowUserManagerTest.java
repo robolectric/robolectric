@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -201,6 +202,16 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setUserState(userHandle, UserState.STATE_SHUTDOWN);
     assertThat(userManager.isUserRunningOrStopping(userHandle)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void isSystemUser() {
+    assertThat(userManager.isSystemUser()).isFalse();
+
+    shadowOf(userManager).setIsSystemUser(true);
+
+    assertThat(userManager.isSystemUser()).isTrue();
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
