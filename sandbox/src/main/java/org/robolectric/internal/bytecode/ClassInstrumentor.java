@@ -1,5 +1,6 @@
 package org.robolectric.internal.bytecode;
 
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -209,10 +210,27 @@ abstract class ClassInstrumentor {
     }
   }
 
+  /**
+   * Constructors are instrumented as follows:
+   * # Code other than a call to the superclass constructor is moved to a new method named
+   *   `__constructor__` with the same signature.
+   * # The constructor is modified to call {@link ClassHandler#initializing(Object)} (or
+   *   {@link ClassHandler#getShadowCreator(Class)} for `invokedynamic` JVMs).
+   * # The constructor is modified to then call
+   *   {@link ClassHandler#methodInvoked(String, boolean, Class)} (or
+   *   {@link ClassHandler#findShadowMethodHandle(Class, String, MethodType, boolean)} for
+   *   `invokedynamic` JVMs) with the method name `__constructor__` and the same parameter types.
+   *
+   * Note that most code in the constructor will not be executed unless the {@link ClassHandler}
+   * arranges for it to happen.
+   *
+   * @param method the constructor to instrument
+   */
   private void instrumentConstructor(MethodNode method) {
     makeMethodPrivate(method);
 
     if (containsStubs) {
+      // method.instructions just throws a `stub!` exception, replace it with something anodyne...
       method.instructions.clear();
 
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
@@ -222,7 +240,7 @@ abstract class ClassInstrumentor {
       generator.endMethod();
     }
 
-    InsnList removedInstructions = extractCallToSuperConstructor(method);
+    InsnList callSuper = extractCallToSuperConstructor(method);
     method.name = new ShadowImpl().directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     classNode.methods.add(redirectorMethod(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
@@ -231,7 +249,7 @@ abstract class ClassInstrumentor {
     makeMethodPublic(methodNode);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
 
-    methodNode.instructions = removedInstructions;
+    methodNode.instructions = callSuper;
 
     generator.loadThis();
     generator.invokeVirtual(classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));

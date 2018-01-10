@@ -708,8 +708,8 @@ public class SandboxClassLoaderTest {
       };
     }
 
-    @Override public MethodHandle getShadowCreator(Class<?> caller) {
-      return dropArguments(constant(String.class, "a shadow!"), 0, caller);
+    @Override public MethodHandle getShadowCreator(Class<?> theClass) {
+      return dropArguments(constant(String.class, "a shadow!"), 0, theClass);
     }
 
     @SuppressWarnings("UnusedDeclaration")
