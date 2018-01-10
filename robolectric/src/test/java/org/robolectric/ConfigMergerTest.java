@@ -62,25 +62,40 @@ public class ConfigMergerTest {
   @Test
   public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test5.class, "withoutAnnotation"),
-        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"com.example.test1"}, new String[]{"libs/test"}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res",
+        "test/assets", new Class[]{Test1.class, Test1.class}, new String[]{"com.example.test1"},
+        new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test5.class, "withDefaultsAnnotation"),
-        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"com.example.test1"}, new String[]{"libs/test"}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res",
+        "test/assets", new Class[]{Test1.class, Test1.class}, new String[]{"com.example.test1"},
+        new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test5.class, "withOverrideAnnotation"),
-        new int[] {14}, "foo", TestFakeApp.class, "com.example.test", "from-method5", "test/res", "method5/assets", new Class[]{Test1.class, Test5.class}, new String[]{"com.example.test1", "com.example.method5"}, new String[]{"libs/test"}, BuildConfigConstants5.class);
+        new int[] {14}, "foo", TestFakeApp.class, "com.example.test", "from-method5", "test/res",
+        "method5/assets", new Class[]{Test1.class, Test1.class, Test5.class},
+        new String[]{"com.example.test1", "com.example.method5"}, new String[]{"libs/test"}, BuildConfigConstants5.class);
   }
 
   @Test
   public void whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test6.class, "withoutAnnotation"),
-        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-class6", "class6/res", "test/assets", new Class[]{Test1.class, Test6.class}, new String[]{"com.example.test1", "com.example.test6"}, new String[]{"libs/test"}, BuildConfigConstants6.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-class6", "class6/res",
+        "test/assets", new Class[]{Test1.class, Test1.class, Test6.class},
+        new String[]{"com.example.test1", "com.example.test6"},
+        new String[]{"libs/test"}, BuildConfigConstants6.class);
 
     assertConfig(configFor(Test6.class, "withDefaultsAnnotation"),
-        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-class6", "class6/res", "test/assets", new Class[]{Test1.class, Test6.class}, new String[]{"com.example.test1", "com.example.test6"}, new String[]{"libs/test"}, BuildConfigConstants6.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-class6", "class6/res",
+        "test/assets", new Class[]{Test1.class, Test1.class, Test6.class},
+        new String[]{"com.example.test1", "com.example.test6"},
+        new String[]{"libs/test"}, BuildConfigConstants6.class);
 
     assertConfig(configFor(Test6.class, "withOverrideAnnotation"),
-        new int[] {14}, "foo", TestFakeApp.class, "com.example.test", "from-method5", "class6/res", "method5/assets", new Class[]{Test1.class, Test5.class, Test6.class}, new String[]{"com.example.test1", "com.example.method5", "com.example.test6"}, new String[]{"libs/test"}, BuildConfigConstants5.class);
+        new int[] {14}, "foo", TestFakeApp.class, "com.example.test", "from-method5", "class6/res",
+        "method5/assets", new Class[]{Test1.class, Test1.class, Test6.class, Test5.class},
+        new String[]{"com.example.test1", "com.example.method5", "com.example.test6"},
+        new String[]{"libs/test"}, BuildConfigConstants5.class);
   }
 
   @Test
@@ -198,7 +213,7 @@ public class ConfigMergerTest {
     assertThat(config.qualifiers()).isEqualTo(qualifiers);
     assertThat(config.resourceDir()).isEqualTo(resourceDir);
     assertThat(config.assetDir()).isEqualTo(assetsDir);
-    assertThat(config.shadows()).containsExactlyInAnyOrder(shadows);
+    assertThat(config.shadows()).containsExactly(shadows);
     assertThat(config.instrumentedPackages()).containsExactlyInAnyOrder(instrumentedPackages);
     assertThat(config.libraries()).containsExactlyInAnyOrder(libraries);
     assertThat(config.constants()).isEqualTo(constants);
