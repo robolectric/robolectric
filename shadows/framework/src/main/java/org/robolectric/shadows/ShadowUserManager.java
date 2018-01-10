@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 
 import android.Manifest.permission;
@@ -20,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -39,6 +39,7 @@ public class ShadowUserManager {
   private Map<UserHandle, UserState> userState = new HashMap<>();
   private Context context;
   private boolean enforcePermissions;
+  private boolean isSystemUser;
 
   @Implementation
   public void __constructor__(Context context, IUserManager service) {
@@ -51,6 +52,19 @@ public class ShadowUserManager {
 
   public void enforcePermissionChecks(boolean enforcePermissions) {
     this.enforcePermissions = enforcePermissions;
+  }
+
+  @Implementation(minSdk = M)
+  public boolean isSystemUser() {
+    return isSystemUser;
+  }
+
+  /**
+   * Sets if the running process is a system user.
+   * Controls value returned by {@link UserManager#isSystemUser()}
+   */
+  public void setIsSystemUser(boolean isSystemUser) {
+    this.isSystemUser = isSystemUser;
   }
 
   /**
