@@ -44,6 +44,7 @@
          android:testOnly="true"
          android:vmSafeMode="true">
 
+    <meta-data android:name="android.content.APP_RESTRICTIONS" android:resource="@xml/app_restrictions" />
     <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
     <meta-data android:name="org.robolectric.metaName2" android:value="metaValue2" />
     <meta-data android:name="org.robolectric.metaTrueLiteral" android:value="true" />
@@ -105,6 +106,19 @@
               android:port="3"
               android:pathPattern="/.*testPattern"
               android:mimeType="image/*" />
+      </intent-filter>
+    </activity>
+
+    <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithFilters"
+        android:permission="com.foo.MY_PERMISSION">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:scheme="content"
+            android:host="testhost1.com"
+            android:port="1"
+            android:path="/testPath/test.jpeg"
+            android:mimeType="video/mpeg" />
       </intent-filter>
     </activity>
 

@@ -18,6 +18,7 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IContentProvider;
+import android.content.IRestrictionsManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
@@ -28,6 +29,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IUserManager;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.view.Display;
@@ -136,7 +138,11 @@ public class ShadowContextImpl {
       try {
         Class<?> clazz = Class.forName(serviceClassName);
 
-        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+        if (serviceClassName.equals("android.content.RestrictionsManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IRestrictionsManager.class, null));
+        } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
           if (getApiLevel() >= N) {
             service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
@@ -200,7 +206,11 @@ public class ShadowContextImpl {
         } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.view.accessibility.CaptioningManager")) {
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application));
-        } else {
+        } else if (serviceClassName.equals("android.os.UserManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(IUserManager.class, null));
+	} else {
           service = newInstanceOf(clazz);
         }
       } catch (ClassNotFoundException e) {
