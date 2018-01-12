@@ -317,11 +317,16 @@ public class ShadowPackageManagerTest {
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
+  @Test
   public void getApplicationInfo_uninstalledApplication_dontIncludeUninstalled() throws Exception {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
-    packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
+    try {
+      packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
+      fail("PackageManager.NameNotFoundException not thrown");
+    } catch (PackageManager.NameNotFoundException e) {
+      // expected
+    }
   }
 
   @Test
@@ -360,8 +365,8 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.getApplicationLabel(info).toString()).isEqualTo(TEST_PACKAGE_LABEL);
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
-  public void removePackage_shouldHideItFromGetApplicationInfo() throws Exception {
+  @Test
+  public void removePackage_shouldHideItFromGetApplicationInfo() {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
     packageInfo.applicationInfo = new ApplicationInfo();
@@ -370,13 +375,18 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addPackage(packageInfo);
     shadowPackageManager.removePackage(TEST_PACKAGE_NAME);
 
-    packageManager.getApplicationInfo(TEST_PACKAGE_NAME, 0);
+    try {
+      packageManager.getApplicationInfo(TEST_PACKAGE_NAME, 0);
+      fail("NameNotFoundException not thrown");
+    } catch (NameNotFoundException e) {
+      // expected
+    }
   }
 
   @Test
   public void queryIntentActivities_EmptyResult() throws Exception {
-    Intent i = new Intent(Intent.ACTION_MAIN, null);
-    i.addCategory(Intent.CATEGORY_LAUNCHER);
+    Intent i = new Intent(Intent.ACTION_APP_ERROR, null);
+    i.addCategory(Intent.CATEGORY_APP_BROWSER);
 
     List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
     assertThat(activities).isEmpty();
@@ -403,8 +413,6 @@ public class ShadowPackageManagerTest {
     Intent intent = new Intent(Intent.ACTION_MAIN);
     intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-    // TODO: make this the default and remove.
-    shadowPackageManager.setQueryIntentImplicitly(true);
     List<ResolveInfo> resolveInfos =
         packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
     assertThat(resolveInfos).hasSize(1);
@@ -440,9 +448,21 @@ public class ShadowPackageManagerTest {
     i.addCategory(Intent.CATEGORY_LAUNCHER);
     i.setDataAndType(Uri.parse("content://testhost1.com:1/testPath/test.jpeg"), "image/jpeg");
 
-    shadowPackageManager.setQueryIntentImplicitly(true);
     List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
     assertThat(activities).isEmpty();
+  }
+
+  @Test
+  public void queryIntentActivities_MatchWithExplicitIntent() throws Exception {
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+
+    List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
+    assertThat(activities).isNotNull();
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.name)
+        .isEqualTo("org.robolectric.shadows.TestActivity");
   }
 
   @Test
@@ -452,7 +472,6 @@ public class ShadowPackageManagerTest {
     i.addCategory(Intent.CATEGORY_DEFAULT);
     i.setDataAndType(uri, "image/jpeg");
 
-    shadowPackageManager.setQueryIntentImplicitly(true);
     List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
@@ -466,7 +485,6 @@ public class ShadowPackageManagerTest {
     Intent i = new Intent(Intent.ACTION_MAIN);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
-    shadowPackageManager.setQueryIntentImplicitly(true);
     List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
@@ -568,7 +586,8 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void removeResolveInfosForIntent_shouldCauseResolveActivityToReturnNull() throws Exception {
-    Intent intent = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
+    Intent intent =
+        new Intent(Intent.ACTION_APP_ERROR, null).addCategory(Intent.CATEGORY_APP_BROWSER);
     ResolveInfo info = new ResolveInfo();
     info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
     info.activityInfo = new ActivityInfo();
@@ -656,9 +675,14 @@ public class ShadowPackageManagerTest {
     assertThat(providerInfo2.authority).isEqualTo("org.robolectric.authority2");
   }
 
-  @Test(expected = NameNotFoundException.class)
-  public void getProviderInfo_packageNotFoundShouldThrowException() throws Exception {
-    packageManager.getProviderInfo(new ComponentName("non.existent.package", ".tester.FullyQualifiedClassName"), 0);
+  @Test
+  public void getProviderInfo_packageNotFoundShouldThrowException() {
+    try {
+      packageManager.getProviderInfo(new ComponentName("non.existent.package", ".tester.FullyQualifiedClassName"), 0);
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      // expected
+    }
   }
 
   @Test
@@ -703,14 +727,13 @@ public class ShadowPackageManagerTest {
     assertThat(info.metaData.getInt("numberOfSheep")).isEqualTo(42);
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
-  public void testGetPackageInfo_ForReceiversIncorrectPackage() throws Exception {
+  @Test
+  public void testGetPackageInfo_ForReceiversIncorrectPackage() {
     try {
       packageManager.getPackageInfo("unknown_package", PackageManager.GET_RECEIVERS);
       fail("should have thrown NameNotFoundException");
     } catch (PackageManager.NameNotFoundException e) {
       assertThat(e.getMessage()).contains("unknown_package");
-      throw e;
     }
   }
 
@@ -730,11 +753,16 @@ public class ShadowPackageManagerTest {
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
-  public void getPackageInfo_uninstalledPackage_dontIncludeUninstalled() throws Exception {
+  @Test
+  public void getPackageInfo_uninstalledPackage_dontIncludeUninstalled() {
     shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
-    packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), 0);
+    try {
+      packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), 0);
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      // expected
+    }
   }
 
   @Test
@@ -840,7 +868,7 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addResolveInfoForIntent(launchIntent, resolveInfo);
 
     intent = packageManager.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
-    assertThat(intent).isNotNull();
+    assertThat(intent.getComponent().getClassName()).isEqualTo("LauncherActivity");
   }
 
   @Test
@@ -882,62 +910,61 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void testResolveDifferentIntentObjects() {
-    Intent intent1 = packageManager.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
-    assertThat(intent1).isNull();
-
-    intent1 = new Intent(Intent.ACTION_MAIN);
+    Intent intent1 = new Intent(Intent.ACTION_MAIN);
     intent1.setPackage(TEST_PACKAGE_LABEL);
-    intent1.addCategory(Intent.CATEGORY_LAUNCHER);
+    intent1.addCategory(Intent.CATEGORY_APP_BROWSER);
+
+    assertThat(packageManager.resolveActivity(intent1, -1)).isNull();
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
-    resolveInfo.activityInfo.name = "LauncherActivity";
+    resolveInfo.activityInfo.name = "BrowserActivity";
     shadowPackageManager.addResolveInfoForIntent(intent1, resolveInfo);
 
     // the original intent object should yield a result
     ResolveInfo result  = packageManager.resolveActivity(intent1, -1);
-    assertThat(result).isNotNull();
+    assertThat(result.activityInfo.name).isEqualTo("BrowserActivity");
 
     // AND a new, functionally equivalent intent should also yield a result
     Intent intent2 = new Intent(Intent.ACTION_MAIN);
     intent2.setPackage(TEST_PACKAGE_LABEL);
-    intent2.addCategory(Intent.CATEGORY_LAUNCHER);
+    intent2.addCategory(Intent.CATEGORY_APP_BROWSER);
     result = packageManager.resolveActivity(intent2, -1);
-    assertThat(result).isNotNull();
+    assertThat(result.activityInfo.name).isEqualTo("BrowserActivity");
   }
 
   @Test
   public void testResolvePartiallySimilarIntents() {
-    Intent intent1 = packageManager.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
-    assertThat(intent1).isNull();
-
-    intent1 = new Intent(Intent.ACTION_MAIN);
+    Intent intent1 = new Intent(Intent.ACTION_APP_ERROR);
     intent1.setPackage(TEST_PACKAGE_LABEL);
-    intent1.addCategory(Intent.CATEGORY_LAUNCHER);
+    intent1.addCategory(Intent.CATEGORY_APP_BROWSER);
+
+    assertThat(packageManager.resolveActivity(intent1, -1)).isNull();
+
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
-    resolveInfo.activityInfo.name = "LauncherActivity";
+    resolveInfo.activityInfo.name = "BrowserActivity";
     shadowPackageManager.addResolveInfoForIntent(intent1, resolveInfo);
 
     // the original intent object should yield a result
     ResolveInfo result  = packageManager.resolveActivity(intent1, -1);
-    assertThat(result).isNotNull();
+    assertThat(result.activityInfo.name).isEqualTo("BrowserActivity");
 
     // an intent with just the same action should not be considered the same
-    Intent intent2 = new Intent(Intent.ACTION_MAIN);
+    Intent intent2 = new Intent(Intent.ACTION_APP_ERROR);
     result = packageManager.resolveActivity(intent2, -1);
     assertThat(result).isNull();
 
     // an intent with just the same category should not be considered the same
     Intent intent3 = new Intent();
-    intent3.addCategory(Intent.CATEGORY_LAUNCHER);
+    intent3.addCategory(Intent.CATEGORY_APP_BROWSER);
     result = packageManager.resolveActivity(intent3, -1);
     assertThat(result).isNull();
 
     // an intent without the correct package restriction should not be the same
-    Intent intent4 = new Intent(Intent.ACTION_MAIN);
-    intent4.addCategory(Intent.CATEGORY_LAUNCHER);
+    Intent intent4 = new Intent(Intent.ACTION_APP_ERROR);
+    intent4.addCategory(Intent.CATEGORY_APP_BROWSER);
     result = packageManager.resolveActivity(intent4, -1);
     assertThat(result).isNull();
   }
@@ -981,9 +1008,9 @@ public class ShadowPackageManagerTest {
   @Test
   public void getServiceInfo_shouldReturnServiceInfoIfExists() throws Exception {
     ServiceInfo serviceInfo = packageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
-    assertEquals(serviceInfo.packageName, "org.robolectric");
-    assertEquals(serviceInfo.name, "com.foo.Service");
-    assertEquals(serviceInfo.permission, "com.foo.MY_PERMISSION");
+    assertEquals("org.robolectric", serviceInfo.packageName);
+    assertEquals("com.foo.Service", serviceInfo.name);
+    assertEquals("com.foo.MY_PERMISSION", serviceInfo.permission);
     assertNotNull(serviceInfo.applicationInfo);
   }
 
@@ -999,15 +1026,14 @@ public class ShadowPackageManagerTest {
     assertNull(serviceInfo.metaData);
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
-  public void getServiceInfo_shouldThrowNameNotFoundExceptionIfNotExist() throws Exception {
+  @Test
+  public void getServiceInfo_shouldThrowNameNotFoundExceptionIfNotExist() {
     ComponentName nonExistComponent = new ComponentName("org.robolectric", "com.foo.NonExistService");
     try {
       packageManager.getServiceInfo(nonExistComponent, PackageManager.GET_SERVICES);
       fail("should have thrown NameNotFoundException");
     } catch (PackageManager.NameNotFoundException e) {
       assertThat(e.getMessage()).contains("com.foo.NonExistService");
-      throw e;
     }
   }
 
@@ -1036,18 +1062,15 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.getPackageUid("a_name", 0)).isEqualTo(10);
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
+  @Test
   @Config(minSdk = N)
-  public void getPackageUid_shouldThrowNameNotFoundExceptionIfNotExist()
-      throws NameNotFoundException {
+  public void getPackageUid_shouldThrowNameNotFoundExceptionIfNotExist() {
     try {
       packageManager.getPackageUid("a_name", 0);
       fail("should have thrown NameNotFoundException");
     } catch (PackageManager.NameNotFoundException e) {
       assertThat(e.getMessage()).contains("a_name");
-      throw e;
     }
-
   }
 
   @Test
@@ -1056,9 +1079,14 @@ public class ShadowPackageManagerTest {
         .isEqualTo(RuntimeEnvironment.application.getString(R.string.app_name));
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
-  public void getResourcesForApplication_unknownPackage() throws Exception {
-    packageManager.getResourcesForApplication("non.existent.package");
+  @Test
+  public void getResourcesForApplication_unknownPackage() {
+    try {
+      packageManager.getResourcesForApplication("non.existent.package");
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      // expected
+    }
   }
 
   @Test
@@ -1283,9 +1311,14 @@ public class ShadowPackageManagerTest {
     return firstPackageInfo;
   }
 
-  @Test(expected = PackageManager.NameNotFoundException.class)
-  public void getPermissionInfo_notFound() throws Exception {
-    packageManager.getPermissionInfo("non_existant_permission", 0);
+  @Test
+  public void getPermissionInfo_notFound(){
+    try {
+      packageManager.getPermissionInfo("non_existant_permission", 0);
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      // expected
+    }
   }
 
   @Test

@@ -223,7 +223,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         }
       }
     }
-
     return null;
   }
 
@@ -250,7 +249,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
     // Check the manually added resolve infos first.
-    List<ResolveInfo> resolveInfos = queryIntent(intent, flags);
+    List<ResolveInfo> resolveInfos = queryOverriddenIntents(intent, flags);
     if (!resolveInfos.isEmpty()) {
       return resolveInfos;
     }
@@ -280,10 +279,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-    List<ResolveInfo> resolveInfoList = queryIntent(intent, flags);
+    List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
 
-    if (resolveInfoList.isEmpty() && queryIntentImplicitly) {
-      resolveInfoList = queryImplicitIntent(intent, flags);
+    if (resolveInfoList.isEmpty()) {
+      if (isExplicitIntent(intent)) {
+        ResolveInfo resolvedActivity = resolveActivityForExplicitIntent(intent);
+        if (resolvedActivity != null) {
+          resolveInfoList = new ArrayList<>();
+          resolveInfoList.add(resolvedActivity);
+        }
+      } else {
+        resolveInfoList = queryImplicitIntentActivities(intent, flags);
+      }
     }
 
     // If the flag is set, no further filtering will happen.
@@ -311,26 +318,59 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return resolveInfoList;
   }
 
-  private List<ResolveInfo> queryImplicitIntent(Intent intent, int flags) {
+  /**
+   * Returns true if intent has specified a specific component.
+   */
+  private static boolean isExplicitIntent(Intent intent) {
+    return intent.getComponent() != null
+        || (intent.getSelector() != null && intent.getSelector().getComponent() != null);
+  }
+
+  private ResolveInfo resolveActivityForExplicitIntent(Intent intent) {
+
+    ComponentName component = intent.getComponent();
+    if (component == null) {
+      if (intent.getSelector() != null) {
+        intent = intent.getSelector();
+        component = intent.getComponent();
+      }
+    }
+
+    if (component != null) {
+      for (Package appPackage : packages.values()) {
+
+        for (Activity activity : appPackage.activities) {
+          if (component.equals(activity.getComponentName())) {
+            return buildResolveInfo(activity);
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private List<ResolveInfo> queryImplicitIntentActivities(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<>();
 
     for (Package appPackage : packages.values()) {
-
-      for (Activity activity : appPackage.activities) {
-
-        IntentFilter intentFilter = matchIntentFilter(intent, activity.intents, flags);
-        if (intentFilter != null) {
-          ResolveInfo resolveInfo = new ResolveInfo();
-          resolveInfo.resolvePackageName = appPackage.packageName;
-          resolveInfo.activityInfo = new ActivityInfo();
-          resolveInfo.activityInfo.targetActivity = activity.info.targetActivity;
-          resolveInfo.activityInfo.name = activity.info.name;
-          resolveInfoList.add(resolveInfo);
+      if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
+        for (Activity activity : appPackage.activities) {
+          if (matchIntentFilter(intent, activity.intents, flags) != null) {
+            resolveInfoList.add(buildResolveInfo(activity));
+          }
         }
       }
     }
 
     return resolveInfoList;
+  }
+
+  private ResolveInfo buildResolveInfo(Activity activity) {
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.resolvePackageName = activity.info.applicationInfo.packageName;
+    resolveInfo.activityInfo = activity.info;
+    return resolveInfo;
   }
 
   @Implementation
@@ -372,7 +412,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
     // Check the manually added resolve infos first.
-    List<ResolveInfo> resolveInfos = queryIntent(intent, flags);
+    List<ResolveInfo> resolveInfos = queryOverriddenIntents(intent, flags);
     if (!resolveInfos.isEmpty()) {
       return resolveInfos;
     }
@@ -412,7 +452,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ResolveInfo resolveService(Intent intent, int flags) {
-    List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
+    List<ResolveInfo> candidates = queryIntentServices(intent, flags);
     return candidates.isEmpty() ? null : candidates.get(0);
   }
 
@@ -595,7 +635,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  @Override
   public Drawable getApplicationIcon(String packageName) throws NameNotFoundException {
     return applicationIcons.get(packageName);
   }
@@ -657,7 +696,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  @Override
   public Intent getLaunchIntentForPackage(String packageName) {
     Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
     intentToResolve.addCategory(Intent.CATEGORY_INFO);
@@ -675,7 +713,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     Intent intent = new Intent(intentToResolve);
     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    intent.setClassName(ris.get(0).activityInfo.packageName, ris.get(0).activityInfo.name);
+    intent.setClassName(packageName, ris.get(0).activityInfo.name);
     return intent;
   }
 
@@ -739,7 +777,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  @Override
   public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
