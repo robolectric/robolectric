@@ -35,7 +35,7 @@ public class ShadowWrangler implements ClassHandler {
   };
   public static final Plan DO_NOTHING_PLAN = new Plan() {
     @Override
-    public Object run(Object instance, Object roboData, Object[] params) throws Exception {
+    public Object run(Object instance, Object[] params) throws Exception {
       return null;
     }
 
@@ -448,9 +448,9 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     @Override
-    public Object run(Object instance, Object roboData, Object[] params) throws Throwable {
-      //noinspection UnnecessaryLocalVariable
-      Object shadow = roboData;
+    public Object run(Object instance, Object[] params) throws Throwable {
+      ShadowedObject shadowedObject = (ShadowedObject) instance;
+      Object shadow = shadowedObject == null ? null : shadowedObject.$$robo$getData();
       try {
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {

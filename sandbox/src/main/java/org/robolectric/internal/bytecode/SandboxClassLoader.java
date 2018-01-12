@@ -2,8 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
 import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
-import static org.objectweb.asm.Type.ARRAY;
-import static org.objectweb.asm.Type.OBJECT;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import com.google.common.base.Splitter;
@@ -14,10 +12,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Set;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -45,7 +41,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   private final ClassLoader systemClassLoader;
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
-  private final Map<String, String> classesToRemap;
+  private final TypeMapper typeMapper;
   private final Set<MethodRef> methodsToIntercept;
   private final ClassInstrumentor classInstrumentor;
 
@@ -60,7 +56,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
-    classesToRemap = convertToSlashes(config.classNameTranslations());
+    this.typeMapper = new TypeMapper(config.classNameTranslations());
     methodsToIntercept = convertToSlashes(config.methodsToIntercept());
     for (URL url : urls) {
       Logger.debug("Loading classes from: %s", url);
@@ -132,13 +128,13 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     ClassNode classNode = new ClassNode(Opcodes.ASM4) {
       @Override
       public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        desc = remapParamType(desc);
+        desc = typeMapper.remapParamType(desc);
         return super.visitField(access, name, desc, signature, value);
       }
 
       @Override
       public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor methodVisitor = super.visitMethod(access, name, remapParams(desc), signature, exceptions);
+        MethodVisitor methodVisitor = super.visitMethod(access, name, typeMapper.remapParams(desc), signature, exceptions);
         return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
       }
     };
@@ -199,77 +195,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     }
   }
 
-  String remapParams(String desc) {
-    StringBuilder buf = new StringBuilder();
-    buf.append("(");
-    for (Type type : Type.getArgumentTypes(desc)) {
-      buf.append(remapParamType(type));
-    }
-    buf.append(")");
-    buf.append(remapParamType(Type.getReturnType(desc)));
-    return buf.toString();
-  }
-
-  // remap Landroid/Foo; to Landroid/Bar;
-  private String remapParamType(String desc) {
-    return remapParamType(Type.getType(desc));
-  }
-
-  private String remapParamType(Type type) {
-    String remappedName;
-    String internalName;
-
-    switch (type.getSort()) {
-      case ARRAY:
-        internalName = type.getInternalName();
-        int count = 0;
-        while (internalName.charAt(count) == '[') count++;
-
-        remappedName = remapParamType(internalName.substring(count));
-        if (remappedName != null) {
-          return Type.getObjectType(internalName.substring(0, count) + remappedName).getDescriptor();
-        }
-        break;
-
-      case OBJECT:
-        internalName = type.getInternalName();
-        remappedName = classesToRemap.get(internalName);
-        if (remappedName != null) {
-          return Type.getObjectType(remappedName).getDescriptor();
-        }
-        break;
-
-      default:
-        break;
-    }
-    return type.getDescriptor();
-  }
-
-  // remap android/Foo to android/Bar
-  String remapType(String value) {
-    String remappedValue = classesToRemap.get(value);
-    if (remappedValue != null) {
-      value = remappedValue;
-    }
-    return value;
-  }
-
   private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) {
-    classInstrumentor.instrument(this, classNode, containsStubs);
+    classInstrumentor.instrument(this, typeMapper, classNode, containsStubs);
     ClassWriter writer = new InstrumentingClassWriter(classNode);
     classNode.accept(writer);
     return writer.toByteArray();
-  }
-
-  private Map<String, String> convertToSlashes(Map<String, String> map) {
-    HashMap<String, String> newMap = new HashMap<>();
-    for (Map.Entry<String, String> entry : map.entrySet()) {
-      String key = internalize(entry.getKey());
-      String value = internalize(entry.getValue());
-      newMap.put(key, value);
-      newMap.put("L" + key + ";", "L" + value + ";"); // also the param reference form
-    }
-    return newMap;
   }
 
   private Set<MethodRef> convertToSlashes(Set<MethodRef> methodRefs) {
@@ -356,13 +286,14 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
     @Override
     public int newNameType(String name, String desc) {
-      return super.newNameType(name, desc.charAt(0) == ')' ? remapParams(desc) : remapParamType(desc));
+      return super.newNameType(name, desc.charAt(0) == ')'
+          ? typeMapper.remapParams(desc)
+          : typeMapper.remapParamType(desc));
     }
 
     @Override
     public int newClass(String value) {
-      value = remapType(value);
-      return super.newClass(value);
+      return super.newClass(typeMapper.mappedTypeName(value));
     }
 
     @Override

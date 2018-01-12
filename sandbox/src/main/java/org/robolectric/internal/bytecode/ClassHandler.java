@@ -124,7 +124,7 @@ public interface ClassHandler {
    */
   interface Plan {
 
-    Object run(Object instance, Object roboData, Object[] params) throws Throwable;
+    Object run(Object instance, Object[] params) throws Throwable;
 
     String describe();
   }

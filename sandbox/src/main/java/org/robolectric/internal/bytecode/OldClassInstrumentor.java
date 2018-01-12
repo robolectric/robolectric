@@ -21,7 +21,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   private final Type THROWABLE_TYPE = Type.getType(Throwable.class);
   private final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
   private final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
-  private final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, OBJECT_TYPE, Type.getType(Object[].class)});
+  private final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, Type.getType(Object[].class)});
   private final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
   private final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
   private final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
@@ -67,21 +67,31 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     Label directCall = new Label();
     Label doReturn = new Label();
 
-    boolean isNormalInstanceMethod = !generator.isStatic && !originalMethodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+    boolean isNormalInstanceMethod = !generator.isStatic
+        && !originalMethodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
 
-    // maybe perform proxy call...
+    // maybe perform direct call...
     if (isNormalInstanceMethod) {
+      // generates this code:
+      // if (__robo_data__ instanceof MyClass) {
+      //   try {
+      //     return __robo_data__.$$robo$$originalMethod(params);
+      //   } (Throwable t) {
+      //     throw RobolectricInternals.cleanStackTrace(t);
+      //   }
+      // }
+
       Label notInstanceOfThis = new Label();
 
       generator.loadThis();                                         // this
-      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-      generator.instanceOf(subject.classType);                              // __robo_data__, is instance of same class?
-      generator.visitJumpInsn(Opcodes.IFEQ, notInstanceOfThis);             // jump if no (is not instance)
+      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of this.__robo_data__
+      generator.instanceOf(subject.classType);                      // __robo_data__, is instance of same class?
+      generator.visitJumpInsn(Opcodes.IFEQ, notInstanceOfThis);     // jump if no (is not instance)
 
       SandboxClassLoader.TryCatch tryCatchForProxyCall = generator.tryStart(THROWABLE_TYPE);
       generator.loadThis();                                         // this
-      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-      generator.checkCast(subject.classType);                               // __robo_data__ but cast to my class
+      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of this.__robo_data__
+      generator.checkCast(subject.classType);                       // __robo_data__ but cast to my class
       generator.loadArgs();                                         // __robo_data__ instance, [args]
 
       generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.internalClassName, originalMethod.name, originalMethod.desc, false);
@@ -114,12 +124,6 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     SandboxClassLoader.TryCatch tryCatchForHandler = generator.tryStart(THROWABLE_TYPE);
     generator.loadLocal(planLocalVar); // plan
     generator.loadThisOrNull();        // instance
-    if (generator.isStatic()) {        // roboData
-      generator.loadNull();
-    } else {
-      generator.loadThis();
-      generator.invokeVirtual(subject.classType, new Method(ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE));
-    }
     generator.loadArgArray();          // params
     generator.invokeInterface(PLAN_TYPE, PLAN_RUN_METHOD);
 
@@ -248,7 +252,8 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       case ARRAY:
         /* falls through */
       case OBJECT:
-        instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, subject.sandboxClassLoader.remapType(returnType.getInternalName())));
+        String remappedType = subject.typeMapper.mappedTypeName(returnType.getInternalName());
+        instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, remappedType));
         break;
       case VOID:
         instructions.add(new InsnNode(Opcodes.POP));

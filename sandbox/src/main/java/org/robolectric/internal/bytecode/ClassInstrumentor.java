@@ -24,17 +24,17 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
-  static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
-  final Decorator decorator;
+  private final Decorator decorator;
 
   protected ClassInstrumentor(Decorator decorator) {
     this.decorator = decorator;
   }
 
   class Subject {
-    SandboxClassLoader sandboxClassLoader;
+    final SandboxClassLoader sandboxClassLoader;
+    final TypeMapper typeMapper;
     final ClassNode classNode;
     private final boolean containsStubs;
     final String internalClassName;
@@ -42,8 +42,9 @@ abstract class ClassInstrumentor {
     final Type classType;
     final ImmutableSet<String> foundMethods;
 
-    Subject(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
+    Subject(SandboxClassLoader sandboxClassLoader, TypeMapper typeMapper, ClassNode classNode, boolean containsStubs) {
       this.sandboxClassLoader = sandboxClassLoader;
+      this.typeMapper = typeMapper;
       this.classNode = classNode;
       this.containsStubs = containsStubs;
 
@@ -75,8 +76,8 @@ abstract class ClassInstrumentor {
     }
   }
 
-  public void instrument(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
-    instrument(new Subject(sandboxClassLoader, classNode, containsStubs));
+  public void instrument(SandboxClassLoader sandboxClassLoader, TypeMapper typeMapper, ClassNode classNode, boolean containsStubs) {
+    instrument(new Subject(sandboxClassLoader, typeMapper, classNode, containsStubs));
   }
 
   //todo javadoc. Extract blocks to separate methods.
@@ -86,8 +87,6 @@ abstract class ClassInstrumentor {
 
     // Need Java version >=7 to allow invokedynamic
     subject.classNode.version = Math.max(subject.classNode.version, Opcodes.V1_7);
-
-    decorator.decorate(subject);
 
     instrumentMethods(subject);
 
@@ -103,14 +102,14 @@ abstract class ClassInstrumentor {
 
     addRoboInitMethod(subject);
 
-    addRoboGetDataMethod(subject);
+    decorator.decorate(subject);
 
     doSpecialHandling(subject);
   }
 
   private void instrumentMethods(Subject subject) {
     for (MethodNode method : subject.getMethods()) {
-      filterSpecialMethods(subject, method);
+      rewriteMethodBody(subject, method);
 
       if (method.name.equals("<clinit>")) {
         method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
@@ -156,16 +155,6 @@ abstract class ClassInstrumentor {
   }
 
   abstract protected void writeCallToInitializing(Subject subject, RobolectricGeneratorAdapter generator);
-
-  private void addRoboGetDataMethod(Subject subject) {
-    MethodNode initMethodNode = new MethodNode(Opcodes.ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
-    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
-    generator.loadThis();                                         // this
-    generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-    generator.returnValue();
-    generator.endMethod();
-    subject.addMethod(initMethodNode);
-  }
 
   private void doSpecialHandling(Subject subject) {
     if (subject.className.equals("android.os.Build$VERSION")) {
@@ -354,11 +343,8 @@ abstract class ClassInstrumentor {
     makeMethodPrivate(method);
 
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(delegatorMethodNode);
-
     generateShadowCall(subject, method, originalName, generator);
-
     generator.endMethod();
-
     subject.addMethod(delegatorMethodNode);
   }
 
@@ -384,7 +370,7 @@ abstract class ClassInstrumentor {
   /**
    * Filters methods that might need special treatment because of various reasons
    */
-  private void filterSpecialMethods(Subject subject, MethodNode callingMethod) {
+  private void rewriteMethodBody(Subject subject, MethodNode callingMethod) {
     ListIterator<AbstractInsnNode> instructions = callingMethod.instructions.iterator();
     while (instructions.hasNext()) {
       AbstractInsnNode node = instructions.next();
@@ -392,7 +378,7 @@ abstract class ClassInstrumentor {
       switch (node.getOpcode()) {
         case Opcodes.NEW:
           TypeInsnNode newInsnNode = (TypeInsnNode) node;
-          newInsnNode.desc = subject.sandboxClassLoader.remapType(newInsnNode.desc);
+          newInsnNode.desc = subject.typeMapper.mappedTypeName(newInsnNode.desc);
           break;
 
         case Opcodes.GETFIELD:
@@ -403,7 +389,7 @@ abstract class ClassInstrumentor {
           /* falls through */
         case Opcodes.PUTSTATIC:
           FieldInsnNode fieldInsnNode = (FieldInsnNode) node;
-          fieldInsnNode.desc = subject.sandboxClassLoader.remapType(fieldInsnNode.desc); // todo test
+          fieldInsnNode.desc = subject.typeMapper.mappedTypeName(fieldInsnNode.desc); // todo test
           break;
 
         case Opcodes.INVOKESTATIC:
@@ -414,7 +400,7 @@ abstract class ClassInstrumentor {
           /* falls through */
         case Opcodes.INVOKEVIRTUAL:
           MethodInsnNode targetMethod = (MethodInsnNode) node;
-          targetMethod.desc = subject.sandboxClassLoader.remapParams(targetMethod.desc);
+          targetMethod.desc = subject.typeMapper.remapParams(targetMethod.desc);
           if (isGregorianCalendarBooleanConstructor(targetMethod)) {
             replaceGregorianCalendarBooleanConstructor(instructions, targetMethod);
           } else if (subject.sandboxClassLoader.shouldIntercept(targetMethod)) {

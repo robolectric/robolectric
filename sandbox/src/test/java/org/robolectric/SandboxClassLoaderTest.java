@@ -693,7 +693,7 @@ public class SandboxClassLoaderTest {
       final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, getClass().getClassLoader());
       return new Plan() {
         @Override
-        public Object run(Object instance, Object roboData, Object[] params) throws Exception {
+        public Object run(Object instance, Object[] params) throws Exception {
           try {
             return methodInvoked(invocationProfile.clazz, invocationProfile.methodName, instance, invocationProfile.paramTypes, params);
           } catch (Throwable throwable) {
