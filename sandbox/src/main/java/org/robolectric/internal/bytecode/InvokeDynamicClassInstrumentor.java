@@ -37,6 +37,10 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
     BOOTSTRAP_INTRINSIC = new Handle(Opcodes.H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntrinsic);
   }
 
+  public InvokeDynamicClassInstrumentor(Decorator decorator) {
+    super(decorator);
+  }
+
   @Override
   protected void addDirectCallConstructor(Subject subject) {
     // not needed, for reasons.

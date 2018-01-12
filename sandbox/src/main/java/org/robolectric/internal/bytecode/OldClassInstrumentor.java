@@ -26,6 +26,10 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   private final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
   private final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
 
+  public OldClassInstrumentor(ClassInstrumentor.Decorator decorator) {
+    super(decorator);
+  }
+
   @Override
   protected void addDirectCallConstructor(Subject subject) {
     MethodNode directCallConstructor = new MethodNode(Opcodes.ACC_PUBLIC,

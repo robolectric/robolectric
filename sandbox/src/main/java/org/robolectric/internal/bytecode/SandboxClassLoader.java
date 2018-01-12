@@ -47,6 +47,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   private final InstrumentationConfiguration config;
   private final Map<String, String> classesToRemap;
   private final Set<MethodRef> methodsToIntercept;
+  private final ClassInstrumentor classInstrumentor;
 
   public SandboxClassLoader(InstrumentationConfiguration config) {
     this(ClassLoader.getSystemClassLoader(), config);
@@ -64,6 +65,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     for (URL url : urls) {
       Logger.debug("Loading classes from: %s", url);
     }
+
+    ClassInstrumentor.Decorator decorator = new ShadowDecorator();
+    classInstrumentor = InvokeDynamic.ENABLED
+        ? new InvokeDynamicClassInstrumentor(decorator)
+        : new OldClassInstrumentor(decorator);
   }
 
   private static URL[] getClassPathUrls(ClassLoader classloader) {
@@ -139,8 +145,6 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
     final ClassReader classReader = new ClassReader(origClassBytes);
     classReader.accept(classNode, 0);
-
-    classNode.interfaces.add(Type.getInternalName(ShadowedObject.class));
 
     try {
       byte[] bytes;
@@ -250,11 +254,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     return value;
   }
 
-  private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) throws ClassNotFoundException {
-    ClassInstrumentor classInstrumentor = InvokeDynamic.ENABLED
-        ? new InvokeDynamicClassInstrumentor()
-        : new OldClassInstrumentor();
-
+  private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) {
     classInstrumentor.instrument(this, classNode, containsStubs);
     ClassWriter writer = new InstrumentingClassWriter(classNode);
     classNode.accept(writer);

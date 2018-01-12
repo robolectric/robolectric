@@ -27,7 +27,11 @@ abstract class ClassInstrumentor {
   static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
-  private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
+  final Decorator decorator;
+
+  protected ClassInstrumentor(Decorator decorator) {
+    this.decorator = decorator;
+  }
 
   class Subject {
     SandboxClassLoader sandboxClassLoader;
@@ -65,6 +69,10 @@ abstract class ClassInstrumentor {
     public Iterable<? extends MethodNode> getMethods() {
       return new ArrayList<>(classNode.methods);
     }
+
+    public void addInterface(String internalName) {
+      classNode.interfaces.add(internalName);
+    }
   }
 
   public void instrument(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
@@ -79,8 +87,7 @@ abstract class ClassInstrumentor {
     // Need Java version >=7 to allow invokedynamic
     subject.classNode.version = Math.max(subject.classNode.version, Opcodes.V1_7);
 
-    subject.addField(0, new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL,
-        ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+    decorator.decorate(subject);
 
     instrumentMethods(subject);
 
@@ -495,5 +502,9 @@ abstract class ClassInstrumentor {
 
   int getTag(MethodNode m) {
     return Modifier.isStatic(m.access) ? Opcodes.H_INVOKESTATIC : Opcodes.H_INVOKESPECIAL;
+  }
+
+  public interface Decorator {
+    void decorate(Subject subject);
   }
 }
