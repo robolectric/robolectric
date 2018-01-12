@@ -11,20 +11,17 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
-  private final Handle BOOTSTRAP_INIT;
-  private final Handle BOOTSTRAP;
-  private final Handle BOOTSTRAP_STATIC;
-  private final Handle BOOTSTRAP_INTRINSIC;
+  private static final Handle BOOTSTRAP_INIT;
+  private static final Handle BOOTSTRAP;
+  private static final Handle BOOTSTRAP_STATIC;
+  private static final Handle BOOTSTRAP_INTRINSIC;
 
-  InvokeDynamicClassInstrumentor(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
-    super(sandboxClassLoader, classNode, containsStubs);
-
+  static {
     String className = Type.getInternalName(InvokeDynamicSupport.class);
 
     MethodType bootstrap =
@@ -41,31 +38,31 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
   }
 
   @Override
-  protected void addDirectCallConstructor() {
+  protected void addDirectCallConstructor(Subject subject) {
     // not needed, for reasons.
   }
 
   @Override
-  protected void writeCallToInitializing(RobolectricGeneratorAdapter generator) {
-    generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
+  protected void writeCallToInitializing(Subject subject, RobolectricGeneratorAdapter generator) {
+    generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, subject.classType), BOOTSTRAP_INIT);
   }
 
   @Override
-  protected void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
-    generateInvokeDynamic(originalMethod, originalMethodName, generator);
+  protected void generateShadowCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+    generateInvokeDynamic(subject, originalMethod, originalMethodName, generator);
   }
 
   // todo javadocs
-  private void generateInvokeDynamic(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+  private void generateInvokeDynamic(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
     Handle original =
-        new Handle(getTag(originalMethod), classType.getInternalName(), originalMethod.name,
+        new Handle(getTag(originalMethod), subject.classType.getInternalName(), originalMethod.name,
             originalMethod.desc);
 
     if (generator.isStatic()) {
       generator.loadArgs();
       generator.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
     } else {
-      String desc = "(" + classType.getDescriptor() + originalMethod.desc.substring(1);
+      String desc = "(" + subject.classType.getDescriptor() + originalMethod.desc.substring(1);
       generator.loadThis();
       generator.loadArgs();
       generator.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original);
@@ -75,7 +72,7 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
   }
 
   @Override
-  protected void interceptInvokeVirtualMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  protected void interceptInvokeVirtualMethod(Subject subject, ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     interceptInvokeVirtualMethodWithInvokeDynamic(instructions, targetMethod);
   }
 

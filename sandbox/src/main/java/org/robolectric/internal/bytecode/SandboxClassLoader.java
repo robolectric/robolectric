@@ -251,11 +251,11 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   }
 
   private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) throws ClassNotFoundException {
-    if (InvokeDynamic.ENABLED) {
-      new InvokeDynamicClassInstrumentor(this, classNode, containsStubs).instrument();
-    } else {
-      new OldClassInstrumentor(this, classNode, containsStubs).instrument();
-    }
+    ClassInstrumentor classInstrumentor = InvokeDynamic.ENABLED
+        ? new InvokeDynamicClassInstrumentor()
+        : new OldClassInstrumentor();
+
+    classInstrumentor.instrument(this, classNode, containsStubs);
     ClassWriter writer = new InstrumentingClassWriter(classNode);
     classNode.accept(writer);
     return writer.toByteArray();

@@ -1,13 +1,11 @@
 package org.robolectric.internal.bytecode;
 
+import com.google.common.collect.ImmutableSet;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
-import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -27,124 +25,144 @@ import org.objectweb.asm.tree.VarInsnNode;
 abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
-  private SandboxClassLoader sandboxClassLoader;
-  final Type OBJECT_TYPE = Type.getType(Object.class);
-  private final String OBJECT_DESC = Type.getDescriptor(Object.class);
+  static final Type OBJECT_TYPE = Type.getType(Object.class);
+  private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
+  private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
 
-  final ClassNode classNode;
-  private final boolean containsStubs;
-  final String internalClassName;
-  private final String className;
-  final Type classType;
+  class Subject {
+    SandboxClassLoader sandboxClassLoader;
+    final ClassNode classNode;
+    private final boolean containsStubs;
+    final String internalClassName;
+    private final String className;
+    final Type classType;
+    final ImmutableSet<String> foundMethods;
 
-  ClassInstrumentor(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
-    this.sandboxClassLoader = sandboxClassLoader;
-    this.classNode = classNode;
-    this.containsStubs = containsStubs;
+    Subject(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
+      this.sandboxClassLoader = sandboxClassLoader;
+      this.classNode = classNode;
+      this.containsStubs = containsStubs;
 
-    this.internalClassName = classNode.name;
-    this.className = classNode.name.replace('/', '.');
-    this.classType = Type.getObjectType(internalClassName);
+      this.internalClassName = classNode.name;
+      this.className = classNode.name.replace('/', '.');
+      this.classType = Type.getObjectType(internalClassName);
+
+      List<String> foundMethods = new ArrayList<>(classNode.methods.size());
+      for (MethodNode methodNode : getMethods()) {
+        foundMethods.add(methodNode.name + methodNode.desc);
+      }
+      this.foundMethods = ImmutableSet.copyOf(foundMethods);
+    }
+
+    public void addMethod(MethodNode methodNode) {
+      classNode.methods.add(methodNode);
+    }
+
+    public void addField(int index, FieldNode fieldNode) {
+      classNode.fields.add(index, fieldNode);
+    }
+
+    public Iterable<? extends MethodNode> getMethods() {
+      return new ArrayList<>(classNode.methods);
+    }
+  }
+
+  public void instrument(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
+    instrument(new Subject(sandboxClassLoader, classNode, containsStubs));
   }
 
   //todo javadoc. Extract blocks to separate methods.
-  public void instrument() {
-    makeClassPublic(classNode);
-    classNode.access = classNode.access & ~Opcodes.ACC_FINAL;
+  public void instrument(Subject subject) {
+    makeClassPublic(subject.classNode);
+    subject.classNode.access = subject.classNode.access & ~Opcodes.ACC_FINAL;
 
     // Need Java version >=7 to allow invokedynamic
-    classNode.version = Math.max(classNode.version, Opcodes.V1_7);
+    subject.classNode.version = Math.max(subject.classNode.version, Opcodes.V1_7);
 
-    classNode.fields.add(0, new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL,
+    subject.addField(0, new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL,
         ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
 
-    Set<String> foundMethods = instrumentMethods();
+    instrumentMethods(subject);
 
     // If there is no constructor, adds one
-    addNoArgsConstructor(foundMethods);
+    addNoArgsConstructor(subject);
 
-    addDirectCallConstructor();
+    addDirectCallConstructor(subject);
 
     // Do not override final #equals, #hashCode, and #toString for all classes
-    instrumentInheritedObjectMethod(classNode, foundMethods, "equals", "(Ljava/lang/Object;)Z");
-    instrumentInheritedObjectMethod(classNode, foundMethods, "hashCode", "()I");
-    instrumentInheritedObjectMethod(classNode, foundMethods, "toString", "()Ljava/lang/String;");
+    instrumentInheritedObjectMethod(subject, "equals", "(Ljava/lang/Object;)Z");
+    instrumentInheritedObjectMethod(subject, "hashCode", "()I");
+    instrumentInheritedObjectMethod(subject, "toString", "()Ljava/lang/String;");
 
-    addRoboInitMethod();
+    addRoboInitMethod(subject);
 
-    addRoboGetDataMethod();
+    addRoboGetDataMethod(subject);
 
-    doSpecialHandling();
+    doSpecialHandling(subject);
   }
 
-  @Nonnull
-  private Set<String> instrumentMethods() {
-    Set<String> foundMethods = new HashSet<>();
-    List<MethodNode> methods = new ArrayList<>(classNode.methods);
-    for (MethodNode method : methods) {
-      foundMethods.add(method.name + method.desc);
-
-      filterSpecialMethods(method);
+  private void instrumentMethods(Subject subject) {
+    for (MethodNode method : subject.getMethods()) {
+      filterSpecialMethods(subject, method);
 
       if (method.name.equals("<clinit>")) {
         method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
-        classNode.methods.add(generateStaticInitializerNotifierMethod());
+        subject.addMethod(generateStaticInitializerNotifierMethod(subject));
       } else if (method.name.equals("<init>")) {
-        instrumentConstructor(method);
+        instrumentConstructor(subject, method);
       } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {
-        instrumentNormalMethod(method);
+        instrumentNormalMethod(subject, method);
       }
     }
-    return foundMethods;
   }
 
-  private void addNoArgsConstructor(Set<String> foundMethods) {
-    if (!foundMethods.contains("<init>()V")) {
+  private void addNoArgsConstructor(Subject subject) {
+    if (!subject.foundMethods.contains("<init>()V")) {
       MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null);
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(defaultConstructor);
       generator.loadThis();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
+      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.classNode.superName, "<init>", "()V", false);
       generator.loadThis();
-      generator.invokeVirtual(classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
+      generator.invokeVirtual(subject.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
       generator.returnValue();
-      classNode.methods.add(defaultConstructor);
+      subject.addMethod(defaultConstructor);
     }
   }
 
-  abstract protected void addDirectCallConstructor();
+  abstract protected void addDirectCallConstructor(Subject subject);
 
-  private void addRoboInitMethod() {
+  private void addRoboInitMethod(Subject subject) {
     MethodNode initMethodNode = new MethodNode(Opcodes.ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
     Label alreadyInitialized = new Label();
     generator.loadThis();                                         // this
-    generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+    generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
     generator.ifNonNull(alreadyInitialized);
     generator.loadThis();                                         // this
     generator.loadThis();                                         // this, this
-    writeCallToInitializing(generator);
+    writeCallToInitializing(subject, generator);
     // this, __robo_data__
-    generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+    generator.putField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
     generator.mark(alreadyInitialized);
     generator.returnValue();
-    classNode.methods.add(initMethodNode);
+    subject.addMethod(initMethodNode);
   }
 
-  abstract protected void writeCallToInitializing(RobolectricGeneratorAdapter generator);
+  abstract protected void writeCallToInitializing(Subject subject, RobolectricGeneratorAdapter generator);
 
-  private void addRoboGetDataMethod() {
+  private void addRoboGetDataMethod(Subject subject) {
     MethodNode initMethodNode = new MethodNode(Opcodes.ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
     generator.loadThis();                                         // this
-    generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+    generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
     generator.returnValue();
     generator.endMethod();
-    classNode.methods.add(initMethodNode);
+    subject.addMethod(initMethodNode);
   }
 
-  private void doSpecialHandling() {
-    if (className.equals("android.os.Build$VERSION")) {
-      for (Object field : classNode.fields) {
+  private void doSpecialHandling(Subject subject) {
+    if (subject.className.equals("android.os.Build$VERSION")) {
+      for (Object field : subject.classNode.fields) {
         FieldNode fieldNode = (FieldNode) field;
         fieldNode.access &= ~(Modifier.FINAL);
       }
@@ -155,7 +173,8 @@ abstract class ClassInstrumentor {
    * Checks if the given method in the class if overriding, at some point of it's
    * inheritance tree, a final method
    */
-  private boolean isOverridingFinalMethod(ClassNode classNode, String methodName, String methodSignature) {
+  private boolean isOverridingFinalMethod(Subject subject, String methodName, String methodSignature) {
+    ClassNode classNode = subject.classNode;
     while (true) {
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
 
@@ -172,7 +191,7 @@ abstract class ClassInstrumentor {
       }
 
       try {
-        byte[] byteCode = sandboxClassLoader.getByteCode(classNode.superName);
+        byte[] byteCode = subject.sandboxClassLoader.getByteCode(classNode.superName);
         ClassReader classReader = new ClassReader(byteCode);
         classNode = new ClassNode();
         classReader.accept(classNode, 0);
@@ -192,21 +211,21 @@ abstract class ClassInstrumentor {
    * such as hashCode, equals, and toString.
    * Adds the methods directly to the class.
    */
-  private void instrumentInheritedObjectMethod(ClassNode classNode, Set<String> foundMethods, final String methodName, String methodDesc) {
+  private void instrumentInheritedObjectMethod(Subject subject, final String methodName, String methodDesc) {
     // Won't instrument if method is overriding a final method
-    if (isOverridingFinalMethod(classNode, methodName, methodDesc)) {
+    if (isOverridingFinalMethod(subject, methodName, methodDesc)) {
       return;
     }
 
     // if the class doesn't directly override the method, it adds it as a direct invocation and instruments it
-    if (!foundMethods.contains(methodName + methodDesc)) {
+    if (!subject.foundMethods.contains(methodName + methodDesc)) {
       MethodNode methodNode = new MethodNode(Opcodes.ACC_PUBLIC, methodName, methodDesc, null, null);
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
       generator.invokeMethod("java/lang/Object", methodNode);
       generator.returnValue();
       generator.endMethod();
-      this.classNode.methods.add(methodNode);
-      instrumentNormalMethod(methodNode);
+      subject.addMethod(methodNode);
+      instrumentNormalMethod(subject, methodNode);
     }
   }
 
@@ -226,23 +245,23 @@ abstract class ClassInstrumentor {
    *
    * @param method the constructor to instrument
    */
-  private void instrumentConstructor(MethodNode method) {
+  private void instrumentConstructor(Subject subject, MethodNode method) {
     makeMethodPrivate(method);
 
-    if (containsStubs) {
+    if (subject.containsStubs) {
       // method.instructions just throws a `stub!` exception, replace it with something anodyne...
       method.instructions.clear();
 
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
       generator.loadThis();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
+      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.classNode.superName, "<init>", "()V", false);
       generator.returnValue();
       generator.endMethod();
     }
 
-    InsnList callSuper = extractCallToSuperConstructor(method);
-    method.name = new ShadowImpl().directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
-    classNode.methods.add(redirectorMethod(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
+    InsnList callSuper = extractCallToSuperConstructor(subject, method);
+    method.name = directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+    subject.addMethod(redirectorMethod(subject, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
     String[] exceptions = exceptionArray(method);
     MethodNode methodNode = new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
@@ -252,14 +271,14 @@ abstract class ClassInstrumentor {
     methodNode.instructions = callSuper;
 
     generator.loadThis();
-    generator.invokeVirtual(classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
-    generateShadowCall(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
+    generator.invokeVirtual(subject.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
+    generateShadowCall(subject, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
 
     generator.endMethod();
-    classNode.methods.add(methodNode);
+    subject.addMethod(methodNode);
   }
 
-  private InsnList extractCallToSuperConstructor(MethodNode ctor) {
+  private InsnList extractCallToSuperConstructor(Subject subject, MethodNode ctor) {
     InsnList removedInstructions = new InsnList();
     int startIndex = 0;
 
@@ -277,7 +296,7 @@ abstract class ClassInstrumentor {
 
         case Opcodes.INVOKESPECIAL:
           MethodInsnNode mnode = (MethodInsnNode) node;
-          if (mnode.owner.equals(internalClassName) || mnode.owner.equals(classNode.superName)) {
+          if (mnode.owner.equals(subject.internalClassName) || mnode.owner.equals(subject.classNode.superName)) {
             assert mnode.name.equals("<init>");
 
             // remove all instructions in the range startIndex..i, from aload_0 to invokespecial <init>
@@ -302,7 +321,7 @@ abstract class ClassInstrumentor {
   }
 
   //TODO javadocs
-  private void instrumentNormalMethod(MethodNode method) {
+  private void instrumentNormalMethod(Subject subject, MethodNode method) {
     // if not abstract, set a final modifier
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
       method.access = method.access | Opcodes.ACC_FINAL;
@@ -319,7 +338,7 @@ abstract class ClassInstrumentor {
 
     // todo figure out
     String originalName = method.name;
-    method.name = new ShadowImpl().directMethodName(originalName);
+    method.name = directMethodName(originalName);
 
     MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
     delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;
@@ -329,20 +348,24 @@ abstract class ClassInstrumentor {
 
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(delegatorMethodNode);
 
-    generateShadowCall(method, originalName, generator);
+    generateShadowCall(subject, method, originalName, generator);
 
     generator.endMethod();
 
-    classNode.methods.add(delegatorMethodNode);
+    subject.addMethod(delegatorMethodNode);
+  }
+
+  private String directMethodName(String originalName) {
+    return SHADOW_IMPL.directMethodName(originalName);
   }
 
   //todo rename
-  private MethodNode redirectorMethod(MethodNode method, String newName) {
+  private MethodNode redirectorMethod(Subject subject, MethodNode method, String newName) {
     MethodNode redirector = new MethodNode(Opcodes.ASM4, newName, method.desc, method.signature, exceptionArray(method));
     redirector.access = method.access & ~(Opcodes.ACC_NATIVE | Opcodes.ACC_ABSTRACT | Opcodes.ACC_FINAL);
     makeMethodPrivate(redirector);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(redirector);
-    generator.invokeMethod(internalClassName, method);
+    generator.invokeMethod(subject.internalClassName, method);
     generator.returnValue();
     return redirector;
   }
@@ -354,7 +377,7 @@ abstract class ClassInstrumentor {
   /**
    * Filters methods that might need special treatment because of various reasons
    */
-  private void filterSpecialMethods(MethodNode callingMethod) {
+  private void filterSpecialMethods(Subject subject, MethodNode callingMethod) {
     ListIterator<AbstractInsnNode> instructions = callingMethod.instructions.iterator();
     while (instructions.hasNext()) {
       AbstractInsnNode node = instructions.next();
@@ -362,7 +385,7 @@ abstract class ClassInstrumentor {
       switch (node.getOpcode()) {
         case Opcodes.NEW:
           TypeInsnNode newInsnNode = (TypeInsnNode) node;
-          newInsnNode.desc = sandboxClassLoader.remapType(newInsnNode.desc);
+          newInsnNode.desc = subject.sandboxClassLoader.remapType(newInsnNode.desc);
           break;
 
         case Opcodes.GETFIELD:
@@ -373,7 +396,7 @@ abstract class ClassInstrumentor {
           /* falls through */
         case Opcodes.PUTSTATIC:
           FieldInsnNode fieldInsnNode = (FieldInsnNode) node;
-          fieldInsnNode.desc = sandboxClassLoader.remapType(fieldInsnNode.desc); // todo test
+          fieldInsnNode.desc = subject.sandboxClassLoader.remapType(fieldInsnNode.desc); // todo test
           break;
 
         case Opcodes.INVOKESTATIC:
@@ -384,11 +407,11 @@ abstract class ClassInstrumentor {
           /* falls through */
         case Opcodes.INVOKEVIRTUAL:
           MethodInsnNode targetMethod = (MethodInsnNode) node;
-          targetMethod.desc = sandboxClassLoader.remapParams(targetMethod.desc);
+          targetMethod.desc = subject.sandboxClassLoader.remapParams(targetMethod.desc);
           if (isGregorianCalendarBooleanConstructor(targetMethod)) {
             replaceGregorianCalendarBooleanConstructor(instructions, targetMethod);
-          } else if (sandboxClassLoader.shouldIntercept(targetMethod)) {
-            interceptInvokeVirtualMethod(instructions, targetMethod);
+          } else if (subject.sandboxClassLoader.shouldIntercept(targetMethod)) {
+            interceptInvokeVirtualMethod(subject, instructions, targetMethod);
           }
           break;
 
@@ -434,7 +457,7 @@ abstract class ClassInstrumentor {
    * Decides to call through the appropriate method to intercept the method with an INVOKEVIRTUAL Opcode,
    * depending if the invokedynamic bytecode instruction is available (Java 7+)
    */
-  abstract protected void interceptInvokeVirtualMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod);
+  abstract protected void interceptInvokeVirtualMethod(Subject subject, ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod);
 
   /**
    * Replaces protected and private class modifiers with public
@@ -457,10 +480,10 @@ abstract class ClassInstrumentor {
     method.access = (method.access | Opcodes.ACC_PRIVATE) & ~(Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED);
   }
 
-  private MethodNode generateStaticInitializerNotifierMethod() {
+  private MethodNode generateStaticInitializerNotifierMethod(Subject subject) {
     MethodNode methodNode = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", "()V", null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
-    generator.push(classType);
+    generator.push(subject.classType);
     generator.invokeStatic(Type.getType(RobolectricInternals.class), new Method("classInitializing", "(Ljava/lang/Class;)V"));
     generator.returnValue();
     generator.endMethod();
@@ -468,7 +491,7 @@ abstract class ClassInstrumentor {
   }
 
   // todo javadocs
-  protected abstract void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator);
+  protected abstract void generateShadowCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator);
 
   int getTag(MethodNode m) {
     return Modifier.isStatic(m.access) ? Opcodes.H_INVOKESTATIC : Opcodes.H_INVOKESPECIAL;

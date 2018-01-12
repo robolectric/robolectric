@@ -10,7 +10,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -18,7 +17,6 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 
 public class OldClassInstrumentor extends ClassInstrumentor {
-  private SandboxClassLoader sandboxClassLoader;
   private final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
   private final Type THROWABLE_TYPE = Type.getType(Throwable.class);
   private final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
@@ -28,43 +26,38 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   private final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
   private final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
 
-  OldClassInstrumentor(SandboxClassLoader sandboxClassLoader, ClassNode classNode, boolean containsStubs) {
-    super(sandboxClassLoader, classNode, containsStubs);
-    this.sandboxClassLoader = sandboxClassLoader;
-  }
-
   @Override
-  protected void addDirectCallConstructor() {
+  protected void addDirectCallConstructor(Subject subject) {
     MethodNode directCallConstructor = new MethodNode(Opcodes.ACC_PUBLIC,
-        "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + classType.getDescriptor() + ")V", null, null);
+        "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + subject.classType.getDescriptor() + ")V", null, null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
     generator.loadThis();
-    if (classNode.superName.equals("java/lang/Object")) {
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.superName, "<init>", "()V", false);
+    if (subject.classNode.superName.equals("java/lang/Object")) {
+      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.classNode.superName, "<init>", "()V", false);
     } else {
       generator.loadArgs();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.superName,
-          "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + classNode.superName + ";)V", false);
+      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.classNode.superName,
+          "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + subject.classNode.superName + ";)V", false);
     }
     generator.loadThis();
     generator.loadArg(1);
-    generator.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+    generator.putField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
     generator.returnValue();
-    classNode.methods.add(directCallConstructor);
+    subject.addMethod(directCallConstructor);
   }
 
   @Override
-  protected void writeCallToInitializing(RobolectricGeneratorAdapter generator) {
+  protected void writeCallToInitializing(Subject subject, RobolectricGeneratorAdapter generator) {
     generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
   }
 
   @Override
-  protected void generateShadowCall(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
-    generateCallToClassHandler(originalMethod, originalMethodName, generator);
+  protected void generateShadowCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+    generateCallToClassHandler(subject, originalMethod, originalMethodName, generator);
   }
 
   //TODO clean up & javadocs
-  private void generateCallToClassHandler(MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+  private void generateCallToClassHandler(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
     int planLocalVar = generator.newLocal(PLAN_TYPE);
     int exceptionLocalVar = generator.newLocal(THROWABLE_TYPE);
     Label directCall = new Label();
@@ -77,17 +70,17 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       Label notInstanceOfThis = new Label();
 
       generator.loadThis();                                         // this
-      generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-      generator.instanceOf(classType);                              // __robo_data__, is instance of same class?
+      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+      generator.instanceOf(subject.classType);                              // __robo_data__, is instance of same class?
       generator.visitJumpInsn(Opcodes.IFEQ, notInstanceOfThis);             // jump if no (is not instance)
 
       SandboxClassLoader.TryCatch tryCatchForProxyCall = generator.tryStart(THROWABLE_TYPE);
       generator.loadThis();                                         // this
-      generator.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
-      generator.checkCast(classType);                               // __robo_data__ but cast to my class
+      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+      generator.checkCast(subject.classType);                               // __robo_data__ but cast to my class
       generator.loadArgs();                                         // __robo_data__ instance, [args]
 
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, internalClassName, originalMethod.name, originalMethod.desc, false);
+      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.internalClassName, originalMethod.name, originalMethod.desc, false);
       tryCatchForProxyCall.end();
 
       generator.returnValue();
@@ -104,9 +97,9 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     }
 
     // prepare for call to classHandler.methodInvoked(String signature, boolean isStatic)
-    generator.push(classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
+    generator.push(subject.classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
     generator.push(generator.isStatic());
-    generator.push(classType);                                         // my class
+    generator.push(subject.classType);                                         // my class
     generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_INVOKED_METHOD);
     generator.storeLocal(planLocalVar);
 
@@ -121,7 +114,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       generator.loadNull();
     } else {
       generator.loadThis();
-      generator.invokeVirtual(classType, new Method(ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE));
+      generator.invokeVirtual(subject.classType, new Method(ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE));
     }
     generator.loadArgArray();          // params
     generator.invokeInterface(PLAN_TYPE, PLAN_RUN_METHOD);
@@ -167,7 +160,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     if (!originalMethod.name.equals("<init>")) {
       generator.mark(directCall);
       SandboxClassLoader.TryCatch tryCatchForDirect = generator.tryStart(THROWABLE_TYPE);
-      generator.invokeMethod(classType.getInternalName(), originalMethod.name, originalMethod.desc);
+      generator.invokeMethod(subject.classType.getInternalName(), originalMethod.name, originalMethod.desc);
       tryCatchForDirect.end();
       generator.returnValue();
 
@@ -188,15 +181,15 @@ public class OldClassInstrumentor extends ClassInstrumentor {
    * depending if the invokedynamic bytecode instruction is available (Java 7+)
    */
   @Override
-  protected void interceptInvokeVirtualMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
-    interceptInvokeVirtualMethodWithoutInvokeDynamic(instructions, targetMethod);
+  protected void interceptInvokeVirtualMethod(Subject subject, ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+    interceptInvokeVirtualMethodWithoutInvokeDynamic(subject, instructions, targetMethod);
   }
 
   /**
    * Intercepts the method without using the invokedynamic bytecode instruction.
    * Should be called through interceptInvokeVirtualMethod, not directly
    */
-  private void interceptInvokeVirtualMethodWithoutInvokeDynamic(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  private void interceptInvokeVirtualMethodWithoutInvokeDynamic(Subject subject, ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     boolean isStatic = targetMethod.getOpcode() == Opcodes.INVOKESTATIC;
 
     instructions.remove(); // remove the method invocation
@@ -240,7 +233,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     instructions.add(new InsnNode(Opcodes.DUP_X2));       // signature instance [] signature
     instructions.add(new InsnNode(Opcodes.POP));          // signature instance []
 
-    instructions.add(new LdcInsnNode(classType)); // signature instance [] class
+    instructions.add(new LdcInsnNode(subject.classType)); // signature instance [] class
     instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
         Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
         "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;",
@@ -251,7 +244,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       case ARRAY:
         /* falls through */
       case OBJECT:
-        instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, sandboxClassLoader.remapType(returnType.getInternalName())));
+        instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, subject.sandboxClassLoader.remapType(returnType.getInternalName())));
         break;
       case VOID:
         instructions.add(new InsnNode(Opcodes.POP));
