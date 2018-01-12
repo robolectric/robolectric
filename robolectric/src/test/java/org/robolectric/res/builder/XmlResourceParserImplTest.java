@@ -382,6 +382,30 @@ public class XmlResourceParserImplTest {
   }
 
   @Test
+  public void testGetAttributeEscapedValue() throws Exception {
+    forgeAndOpenDocument("<foo bar=\"\\'\"/>");
+    assertThat(parser.getAttributeValue(0)).isEqualTo("\'");
+  }
+
+  @Test
+  public void testGetAttributeEntityValue() throws Exception {
+    forgeAndOpenDocument("<foo bar=\"\\u201e&#34;\"/>");
+    assertThat(parser.getAttributeValue(0)).isEqualTo("„\"");
+  }
+
+  @Test
+  public void testGetNodeTextEscapedValue() throws Exception {
+    forgeAndOpenDocument("<foo>\'</foo>");
+    assertThat(parser.getText()).isEqualTo("\'");
+  }
+
+  @Test
+  public void testGetNodeTextEntityValue() throws Exception {
+    forgeAndOpenDocument("<foo>\\u201e&#34;</foo>");
+    assertThat(parser.getText()).isEqualTo("„\"");
+  }
+
+  @Test
   public void testGetAttributeType() {
     // Hardcoded to always return CDATA
     assertThat(parser.getAttributeType(attributeIndexOutOfIndex())).isEqualTo("CDATA");
