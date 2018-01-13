@@ -17,14 +17,14 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 
 public class OldClassInstrumentor extends ClassInstrumentor {
-  private final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
-  private final Type THROWABLE_TYPE = Type.getType(Throwable.class);
-  private final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
-  private final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
-  private final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, Type.getType(Object[].class)});
-  private final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
-  private final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
-  private final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
+  private static final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
+  static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
+  static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
+  private static final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
+  private static final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
+  private static final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, Type.getType(Object[].class)});
+  static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
+  private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
 
   public OldClassInstrumentor(ClassInstrumentor.Decorator decorator) {
     super(decorator);
@@ -56,59 +56,18 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   }
 
   @Override
-  protected void generateShadowCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+  protected void generateClassHandlerCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
     generateCallToClassHandler(subject, originalMethod, originalMethodName, generator);
   }
 
   //TODO clean up & javadocs
   private void generateCallToClassHandler(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+    decorator.decorateMethodPreClassHandler(subject, originalMethod, originalMethodName, generator);
+
     int planLocalVar = generator.newLocal(PLAN_TYPE);
     int exceptionLocalVar = generator.newLocal(THROWABLE_TYPE);
     Label directCall = new Label();
     Label doReturn = new Label();
-
-    boolean isNormalInstanceMethod = !generator.isStatic
-        && !originalMethodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
-
-    // maybe perform direct call...
-    if (isNormalInstanceMethod) {
-      // generates this code:
-      // if (__robo_data__ instanceof MyClass) {
-      //   try {
-      //     return __robo_data__.$$robo$$originalMethod(params);
-      //   } (Throwable t) {
-      //     throw RobolectricInternals.cleanStackTrace(t);
-      //   }
-      // }
-
-      Label notInstanceOfThis = new Label();
-
-      generator.loadThis();                                         // this
-      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of this.__robo_data__
-      generator.instanceOf(subject.classType);                      // __robo_data__, is instance of same class?
-      generator.visitJumpInsn(Opcodes.IFEQ, notInstanceOfThis);     // jump if no (is not instance)
-
-      SandboxClassLoader.TryCatch tryCatchForProxyCall = generator.tryStart(THROWABLE_TYPE);
-      generator.loadThis();                                         // this
-      generator.getField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of this.__robo_data__
-      generator.checkCast(subject.classType);                       // __robo_data__ but cast to my class
-      generator.loadArgs();                                         // __robo_data__ instance, [args]
-
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.internalClassName, originalMethod.name, originalMethod.desc, false);
-      tryCatchForProxyCall.end();
-
-      generator.returnValue();
-
-      // catch(Throwable)
-      tryCatchForProxyCall.handler();
-      generator.storeLocal(exceptionLocalVar);
-      generator.loadLocal(exceptionLocalVar);
-      generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, HANDLE_EXCEPTION_METHOD);
-      generator.throwException();
-
-      // callClassHandler...
-      generator.mark(notInstanceOfThis);
-    }
 
     // prepare for call to classHandler.methodInvoked(String signature, boolean isStatic)
     generator.push(subject.classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);

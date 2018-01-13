@@ -52,7 +52,7 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
   }
 
   @Override
-  protected void generateShadowCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+  protected void generateClassHandlerCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
     generateInvokeDynamic(subject, originalMethod, originalMethodName, generator);
   }
 

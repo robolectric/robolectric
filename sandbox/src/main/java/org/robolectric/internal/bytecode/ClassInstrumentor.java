@@ -26,7 +26,7 @@ abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
-  private final Decorator decorator;
+  final Decorator decorator;
 
   protected ClassInstrumentor(Decorator decorator) {
     this.decorator = decorator;
@@ -268,7 +268,7 @@ abstract class ClassInstrumentor {
 
     generator.loadThis();
     generator.invokeVirtual(subject.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
-    generateShadowCall(subject, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
+    generateClassHandlerCall(subject, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
 
     generator.endMethod();
     subject.addMethod(methodNode);
@@ -316,7 +316,12 @@ abstract class ClassInstrumentor {
     throw new RuntimeException("huh? " + ctor.name + ctor.desc);
   }
 
-  //TODO javadocs
+  /**
+   * # Rename the method from `methodName` to `$$robo$$methodName`.
+   * # Make it private so we can invoke it directly without subclass overrides taking precedence.
+   * # Remove `final` and `native` modifiers, if present.
+   * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
+   */
   private void instrumentNormalMethod(Subject subject, MethodNode method) {
     // if not abstract, set a final modifier
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
@@ -343,7 +348,7 @@ abstract class ClassInstrumentor {
     makeMethodPrivate(method);
 
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(delegatorMethodNode);
-    generateShadowCall(subject, method, originalName, generator);
+    generateClassHandlerCall(subject, method, originalName, generator);
     generator.endMethod();
     subject.addMethod(delegatorMethodNode);
   }
@@ -484,7 +489,7 @@ abstract class ClassInstrumentor {
   }
 
   // todo javadocs
-  protected abstract void generateShadowCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator);
+  protected abstract void generateClassHandlerCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator);
 
   int getTag(MethodNode m) {
     return Modifier.isStatic(m.access) ? Opcodes.H_INVOKESTATIC : Opcodes.H_INVOKESPECIAL;
@@ -492,5 +497,7 @@ abstract class ClassInstrumentor {
 
   public interface Decorator {
     void decorate(Subject subject);
+
+    void decorateMethodPreClassHandler(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator);
   }
 }
