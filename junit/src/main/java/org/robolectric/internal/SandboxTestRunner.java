@@ -159,6 +159,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("org.robolectric.util.")
         .doNotAcquirePackage("org.junit.");
 
+    String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
+    for (String pkg: customPackages.split(",")) {
+      builder.doNotAcquirePackage(pkg);
+    }
+
     for (Class<?> shadowClass : getExtraShadows(method)) {
       ShadowMap.ShadowInfo shadowInfo = ShadowMap.getShadowInfo(shadowClass);
       builder.addInstrumentedClass(shadowInfo.getShadowedClassName());
