@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -133,6 +135,16 @@ public class ShadowDevicePolicyManager {
   public boolean isUninstallBlocked(ComponentName admin, String packageName) {
     enforceActiveAdmin(admin);
     return uninstallBlockedPackages.contains(packageName);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public String getDeviceOwner() {
+    return deviceOwner != null ? deviceOwner.getPackageName() : null;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public ComponentName getProfileOwner() {
+    return profileOwner;
   }
 
   private ShadowUserManager getShadowUserManager() {

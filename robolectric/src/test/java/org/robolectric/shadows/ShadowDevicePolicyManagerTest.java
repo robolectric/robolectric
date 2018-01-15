@@ -81,6 +81,26 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getDeviceOwnerShouldReturnDeviceOwnerPackageName() {
+    // GIVEN an test package which is the device owner app of the device
+    String testPackage = testComponent.getPackageName();
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN DevicePolicyManager#getDeviceOwner is called
+    // THEN the method should return the package name
+    assertThat(devicePolicyManager.getDeviceOwner()).isEqualTo(testPackage);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getDeviceOwnerShouldReturnNullWhenThereIsNoDeviceOwner() {
+    // WHEN DevicePolicyManager#getProfileOwner is called without a device owner
+    // THEN the method should return null
+    assertThat(devicePolicyManager.getDeviceOwner()).isNull();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void isProfileOwnerAppShouldReturnFalseForNonProfileOwnerApp() {
     // GIVEN an test package which is not the profile owner app of the device
@@ -114,6 +134,26 @@ public final class ShadowDevicePolicyManagerTest {
     // THEN the method should return true
     assertThat(devicePolicyManager.isProfileOwnerApp(testPackage)).isTrue();
   }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getProfileOwnerShouldReturnDeviceOwnerComponentName() {
+    // GIVEN an test package which is the profile owner app of the device
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    // WHEN DevicePolicyManager#getProfileOwner is called
+    // THEN the method should return the component
+    assertThat(devicePolicyManager.getProfileOwner()).isEqualTo(testComponent);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getProfileOwnerShouldReturnNullWhenThereIsNoProfileOwner() {
+    // WHEN DevicePolicyManager#getProfileOwner is called without a profile owner
+    // THEN the method should return null
+    assertThat(devicePolicyManager.getProfileOwner()).isNull();
+  }
+
 
   @Test
   public void isAdminActiveShouldReturnFalseForNonAdminDevice() {
