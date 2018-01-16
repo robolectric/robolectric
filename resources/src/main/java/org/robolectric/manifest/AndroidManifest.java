@@ -49,6 +49,7 @@ public class AndroidManifest {
   private int versionCode;
   private String versionName;
   private final Map<String, PermissionItemData> permissions = new HashMap<>();
+  private final Map<String, PermissionGroupItemData> permissionGroups = new HashMap<>();
   private final List<ContentProviderData> providers = new ArrayList<>();
   private final List<BroadcastReceiverData> receivers = new ArrayList<>();
   private final Map<String, ServiceData> serviceDatas = new LinkedHashMap<>();
@@ -184,6 +185,7 @@ public class AndroidManifest {
 
         parseUsedPermissions(manifestDocument);
         parsePermissions(manifestDocument);
+        parsePermissionGroups(manifestDocument);
       } catch (Exception ignored) {
         ignored.printStackTrace();
       }
@@ -236,6 +238,23 @@ public class AndroidManifest {
               getAttributeValue(permissionNode, "android:description"),
               getAttributeValue(permissionNode, "android:permissionGroup"),
               getAttributeValue(permissionNode, "android:protectionLevel"),
+              metaData));
+    }
+  }
+
+  private void parsePermissionGroups(final Document manifestDocument) {
+    NodeList elementsByTagName = manifestDocument.getElementsByTagName("permission-group");
+
+    for (int i = 0; i < elementsByTagName.getLength(); i++) {
+      Node permissionGroupNode = elementsByTagName.item(i);
+      final MetaData metaData = new MetaData(getChildrenTags(permissionGroupNode, "meta-data"));
+      String name = getAttributeValue(permissionGroupNode, "android:name");
+      permissionGroups.put(
+          name,
+          new PermissionGroupItemData(
+              name,
+              getAttributeValue(permissionGroupNode, "android:label"),
+              getAttributeValue(permissionGroupNode, "android:description"),
               metaData));
     }
   }
@@ -542,7 +561,7 @@ public class AndroidManifest {
    * Returns the minimum Android SDK version that this package expects to be runnable on, as
    * specified in the manifest.
    *
-   * Note that if `targetSdkVersion` isn't set, this value changes the behavior of some Android
+   * <p>Note that if `targetSdkVersion` isn't set, this value changes the behavior of some Android
    * code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
    *
    * @return the minimum SDK version, or Jelly Bean (16) by default
@@ -553,11 +572,11 @@ public class AndroidManifest {
   }
 
   /**
-   * Returns the Android SDK version that this package prefers to be run on, as
-   * specified in the manifest.
+   * Returns the Android SDK version that this package prefers to be run on, as specified in the
+   * manifest.
    *
-   * Note that this value changes the behavior of some Android code (notably
-   * {@link android.content.SharedPreferences}) to emulate old bugs.
+   * <p>Note that this value changes the behavior of some Android code (notably {@link
+   * android.content.SharedPreferences}) to emulate old bugs.
    *
    * @return the minimum SDK version, or Jelly Bean (16) by default
    */
@@ -718,6 +737,11 @@ public class AndroidManifest {
   public Map<String, PermissionItemData> getPermissions() {
     parseAndroidManifest();
     return permissions;
+  }
+
+  public Map<String, PermissionGroupItemData> getPermissionGroups() {
+    parseAndroidManifest();
+    return permissionGroups;
   }
 
   /**
