@@ -15,7 +15,6 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
-import static android.content.pm.PackageManager.NameNotFoundException;
 import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
@@ -43,6 +42,7 @@ import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.Manifest;
+import android.Manifest.permission_group;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -55,8 +55,12 @@ import android.content.pm.IPackageStatsObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageParser.Package;
+import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageStats;
 import android.content.pm.PathPermission;
+import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
@@ -93,6 +97,9 @@ public class ShadowPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
   private static final String TEST_APP_PATH = "/values/app/application.apk";
+  private static final String TEST_PACKAGE2_NAME = "com.a.second.package";
+  private static final String TEST_PACKAGE2_LABEL = "A Second App";
+  private static final String TEST_APP2_PATH = "/values/app/application2.apk";
   protected ShadowPackageManager shadowPackageManager;
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -279,6 +286,93 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addPermissionInfo(permissionInfo);
     PermissionInfo permission = packageManager.getPermissionInfo("manually_added_permission", 0);
     assertThat(permission.name).isEqualTo("manually_added_permission");
+  }
+
+  @Test
+  public void getPermissionGroupInfo_fromManifest() throws Exception {
+    PermissionGroupInfo permissionGroupInfo =
+        RuntimeEnvironment.application
+            .getPackageManager()
+            .getPermissionGroupInfo("org.robolectric.package_permission_group", 0);
+    assertThat(permissionGroupInfo.name).isEqualTo("org.robolectric.package_permission_group");
+  }
+
+  @Test
+  public void getPermissionGroupInfo_extraPermissionGroup() throws Exception {
+    PermissionGroupInfo newCameraPermission = new PermissionGroupInfo();
+    newCameraPermission.name = permission_group.CAMERA;
+    shadowPackageManager.addPermissionGroupInfo(newCameraPermission);
+
+    assertThat(packageManager.getPermissionGroupInfo(permission_group.CAMERA, 0).name)
+        .isEqualTo(newCameraPermission.name);
+  }
+
+  @Test
+  public void getAllPermissionGroups_fromManifest() throws Exception {
+    List<PermissionGroupInfo> allPermissionGroups = packageManager.getAllPermissionGroups(0);
+    assertThat(allPermissionGroups).hasSize(1);
+    assertThat(allPermissionGroups.get(0).name).isEqualTo("org.robolectric.package_permission_group");
+  }
+
+  @Test
+  public void getAllPermissionGroups_duplicateInExtraPermissions() throws Exception {
+    assertThat(packageManager.getAllPermissionGroups(0)).hasSize(1);
+
+    PermissionGroupInfo overriddenPermission = new PermissionGroupInfo();
+    overriddenPermission.name = "org.robolectric.package_permission_group";
+    shadowPackageManager.addPermissionGroupInfo(overriddenPermission);
+    PermissionGroupInfo newCameraPermission = new PermissionGroupInfo();
+    newCameraPermission.name = permission_group.CAMERA;
+    shadowPackageManager.addPermissionGroupInfo(newCameraPermission);
+
+    List<PermissionGroupInfo> allPermissionGroups = packageManager.getAllPermissionGroups(0);
+    assertThat(allPermissionGroups).hasSize(2);
+  }
+
+  @Test
+  public void getAllPermissionGroups_duplicatePermission() throws Exception {
+    assertThat(packageManager.getAllPermissionGroups(0)).hasSize(1);
+
+    // Package 1
+    Package pkg = new Package(TEST_PACKAGE_NAME);
+    ApplicationInfo appInfo = pkg.applicationInfo;
+    appInfo.flags = 0;
+    appInfo.packageName = TEST_PACKAGE_NAME;
+    appInfo.sourceDir = TEST_APP_PATH;
+    appInfo.name = TEST_PACKAGE_LABEL;
+    PermissionGroupInfo contactsPermissionGroupInfoApp1 = new PermissionGroupInfo();
+    contactsPermissionGroupInfoApp1.name = Manifest.permission_group.CONTACTS;
+    PermissionGroup contactsPermissionGroupApp1 = new PermissionGroup(pkg, contactsPermissionGroupInfoApp1);
+    pkg.permissionGroups.add(contactsPermissionGroupApp1);
+    PermissionGroupInfo storagePermissionGroupInfoApp1 = new PermissionGroupInfo();
+    storagePermissionGroupInfoApp1.name = permission_group.STORAGE;
+    PermissionGroup storagePermissionGroupApp1 = new PermissionGroup(pkg, storagePermissionGroupInfoApp1);
+    pkg.permissionGroups.add(storagePermissionGroupApp1);
+
+    shadowPackageManager.addPackage(pkg);
+
+    // Package 2, contains one permission group that is the same
+    Package pkg2 = new Package(TEST_PACKAGE2_NAME);
+    ApplicationInfo appInfo2 = pkg2.applicationInfo;
+    appInfo2.flags = 0;
+    appInfo2.packageName = TEST_PACKAGE2_NAME;
+    appInfo2.sourceDir = TEST_APP2_PATH;
+    appInfo2.name = TEST_PACKAGE2_LABEL;
+    PermissionGroupInfo contactsPermissionGroupInfoApp2 = new PermissionGroupInfo();
+    contactsPermissionGroupInfoApp2.name = Manifest.permission_group.CONTACTS;
+    PermissionGroup contactsPermissionGroupApp2 = new PermissionGroup(pkg2, contactsPermissionGroupInfoApp2);
+    pkg2.permissionGroups.add(contactsPermissionGroupApp2);
+    PermissionGroupInfo calendarPermissionGroupInfoApp2 = new PermissionGroupInfo();
+    calendarPermissionGroupInfoApp2.name = permission_group.CALENDAR;
+    PermissionGroup calendarPermissionGroupApp2 = new PermissionGroup(pkg2, calendarPermissionGroupInfoApp2);
+    pkg2.permissionGroups.add(calendarPermissionGroupApp2);
+
+    shadowPackageManager.addPackage(pkg2);
+
+    // Make sure that the duplicate permission group does not show up in the list
+    // Total list should be: contacts, storage, calendar, "org.robolectric.package_permission_group"
+    List<PermissionGroupInfo> allPermissionGroups = packageManager.getAllPermissionGroups(0);
+    assertThat(allPermissionGroups).hasSize(4);
   }
 
   @Test

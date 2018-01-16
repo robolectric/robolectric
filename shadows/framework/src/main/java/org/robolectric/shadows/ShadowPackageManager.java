@@ -50,6 +50,7 @@ import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
 import android.content.pm.PackageUserState;
+import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
@@ -107,6 +108,7 @@ public class ShadowPackageManager {
   final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
   public Map<String, Resources> resources = new HashMap<>();
   private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
   private Set<String> deletedPackages = new HashSet<>();
@@ -329,6 +331,19 @@ public class ShadowPackageManager {
 
   public void addPermissionInfo(PermissionInfo permissionInfo) {
     extraPermissions.put(permissionInfo.name, permissionInfo);
+  }
+
+  /**
+   * Allows overriding or adding permission-group elements. These would be otherwise specified by
+   * either the system (https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups)
+   * or by the app itself, as part of its manifest
+   * (https://developer.android.com/guide/topics/manifest/permission-group-element.html).
+   * 
+   * PermissionGroups added through this method have precedence over those specified with the same name
+   * by one of the aforementioned methods.
+   */
+  public void addPermissionGroupInfo(PermissionGroupInfo permissionGroupInfo) {
+    extraPermissionGroups.put(permissionGroupInfo.name, permissionGroupInfo);
   }
 
   public void removePackage(String packageName) {

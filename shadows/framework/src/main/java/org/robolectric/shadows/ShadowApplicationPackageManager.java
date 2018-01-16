@@ -35,6 +35,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Activity;
 import android.content.pm.PackageParser.Package;
+import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
@@ -57,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -327,7 +329,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   private ResolveInfo resolveActivityForExplicitIntent(Intent intent) {
-
     ComponentName component = intent.getComponent();
     if (component == null) {
       if (intent.getSelector() != null) {
@@ -352,7 +353,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private List<ResolveInfo> queryImplicitIntentActivities(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<>();
-
     for (Package appPackage : packages.values()) {
       if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
         for (Activity activity : appPackage.activities) {
@@ -768,12 +768,45 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
-    return null;
+    if (extraPermissionGroups.containsKey(name)) {
+      return new PermissionGroupInfo(extraPermissionGroups.get(name));
+    }
+
+    for (Package pkg : packages.values()) {
+      for (PermissionGroup permissionGroup : pkg.permissionGroups) {
+        if (name.equals(permissionGroup.info.name)) {
+          return PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
+        }
+      }
+    }
+
+    throw new NameNotFoundException(name);
   }
 
   @Implementation
   public List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
-    return null;
+    ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
+    // To be consistent with Android's implementation, return at most one PermissionGroupInfo object
+    // per permission group string
+    HashSet<String> handledPermissionGroups = new HashSet<>();
+
+    for (PermissionGroupInfo permissionGroupInfo : extraPermissionGroups.values()) {
+      allPermissionGroups.add(new PermissionGroupInfo(permissionGroupInfo));
+      handledPermissionGroups.add(permissionGroupInfo.name);
+    }
+
+    for (Package pkg : packages.values()) {
+      for (PermissionGroup permissionGroup : pkg.permissionGroups) {
+        if (!handledPermissionGroups.contains(permissionGroup.info.name)) {
+          PermissionGroupInfo permissionGroupInfo = PackageParser
+              .generatePermissionGroupInfo(permissionGroup, flags);
+          allPermissionGroups.add(new PermissionGroupInfo(permissionGroupInfo));
+          handledPermissionGroups.add(permissionGroup.info.name);
+        }
+      }
+    }
+
+    return allPermissionGroups;
   }
 
   @Implementation
