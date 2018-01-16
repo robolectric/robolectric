@@ -7,6 +7,7 @@ apply plugin: RoboJavaModulePlugin
 dependencies {
     compile project(":robolectric")
     compile "junit:junit:4.12"
+    compile("com.android.support.test:monitor:1.0.2-alpha1")
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     // Testing dependencies
