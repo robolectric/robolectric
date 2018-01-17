@@ -108,7 +108,7 @@ public class ShadowWrangler implements ClassHandler {
     Class<?> shadowClass = findDirectShadowClass(clazz);
     if (shadowClass != null) {
       try {
-        Method method = shadowClass.getDeclaredMethod(ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
+        Method method = shadowClass.getMethod(ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
         if (!Modifier.isStatic(method.getModifiers())) {
           throw new RuntimeException(shadowClass.getName() + "." + method.getName() + " is not static");
         }
@@ -210,30 +210,18 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private Method findShadowMethod(ClassLoader classLoader, ShadowConfig config, String name, Class<?>[] types) {
-    Class<?> shadowClass;
     try {
-      shadowClass = Class.forName(config.shadowClassName, false, classLoader);
+      Class<?> shadowClass = Class.forName(config.shadowClassName, false, classLoader);
+      Method method = findShadowMethodInternal(shadowClass, name, types);
+      if (method == null && config.looseSignatures) {
+        Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
+        method = findShadowMethodInternal(shadowClass, name, genericTypes);
+      }
+
+      return method;
     } catch (ClassNotFoundException e) {
       throw new IllegalStateException(e);
     }
-
-    return findShadowMethod(config, shadowClass, name, types);
-  }
-
-  private Method findShadowMethod(ShadowConfig config, Class<?> shadowClass, String name, Class<?>[] types) {
-    Method method = findShadowMethodInternal(shadowClass, name, types);
-
-    if (method == null && config.looseSignatures) {
-      Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
-      method = findShadowMethodInternal(shadowClass, name, genericTypes);
-    }
-
-    Class<?> superclass;
-    if (method == null && config.inheritImplementationMethods && (superclass = shadowClass.getSuperclass()) != null) {
-      return findShadowMethod(config, superclass, name, types);
-    }
-
-    return method;
   }
 
   @SuppressWarnings("ReferenceEquality")
@@ -256,10 +244,9 @@ public class ShadowWrangler implements ClassHandler {
     return isAndroidSupport(invocationProfile) || invocationProfile.isDeclaredOnObject();
   }
 
-  private Method findShadowMethodInternal(Class<?> shadowClass, String methodName, Class<?>[] paramClasses) {
+  private Method findShadowMethodInternal(Class<?> shadowClass, String methodName, Class<?>[] paramClasses) throws ClassNotFoundException {
     try {
-      Method method = shadowClass.getDeclaredMethod(methodName, paramClasses);
-      method.setAccessible(true);
+      Method method = shadowClass.getMethod(methodName, paramClasses);
       Implementation implementation = getImplementationAnnotation(method);
       return matchesSdk(implementation) ? method : null;
 

@@ -16,7 +16,7 @@ public class DocumentedObjectShadow {
    * Docs for shadow method go here!
    */
   @Implementation
-  protected String getSomething(int index, Map<String, String> defaultValue) {
+  public String getSomething(int index, Map<String, String> defaultValue) {
     return null;
   }
 
