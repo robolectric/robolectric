@@ -283,9 +283,10 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
   public void bindProcessToNetwork_should() {
     Network network = ShadowNetwork.newInstance(789);
-    shadowConnectivityManager.bindProcessToNetwork(network);
-    assertThat(shadowConnectivityManager.getBoundNetworkForProcess()).isSameAs(network);
+    connectivityManager.bindProcessToNetwork(network);
+    assertThat(connectivityManager.getBoundNetworkForProcess()).isSameAs(network);
   }
 }

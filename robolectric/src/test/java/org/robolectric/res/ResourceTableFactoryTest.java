@@ -17,17 +17,10 @@ import org.robolectric.R;
 public class ResourceTableFactoryTest {
   private ResourceTable appResourceTable;
   private ResourceTable systemResourceTable;
-  private ResourceTableFactory resourceTableFactory;
 
   @Before
   public void setUp() throws Exception {
-    ResourceRemapper resourceRemapper = new ResourceRemapper(testResources().getRClass());
-    resourceRemapper.remapRClass(lib1Resources().getRClass());
-    resourceRemapper.remapRClass(lib2Resources().getRClass());
-    resourceRemapper.remapRClass(lib3Resources().getRClass());
-
-
-    resourceTableFactory = new ResourceTableFactory();
+    ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
     appResourceTable = resourceTableFactory.newResourceTable("org.robolectric",
         lib3Resources(),
         lib2Resources(),
@@ -44,7 +37,7 @@ public class ResourceTableFactoryTest {
 
   @Test
   public void shouldHandleStyleable() throws Exception {
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/textStyle"))).isEqualTo(R.id.textStyle);
+    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/burritos"))).isEqualTo(R.id.burritos);
     assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:styleable/TitleBar_textStyle"))).isEqualTo(0);
   }
 

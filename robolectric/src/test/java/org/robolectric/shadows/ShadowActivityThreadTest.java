@@ -7,7 +7,6 @@ import android.app.ActivityThread;
 import android.content.res.CompatibilityInfo;
 import android.os.Build;
 import android.os.RemoteException;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -17,16 +16,10 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 public class ShadowActivityThreadTest {
 
-  private ActivityThread activityThread;
-
-  @Before
-  public void setUp() {
-    activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-  }
-
   @Test
   @Config(maxSdk = Build.VERSION_CODES.M)
   public void getPackageInfo_returnsNullWhenNotFound() throws Exception {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     assertThat(
             activityThread.getPackageInfo(
                 "com.unknownpackage.ab", CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, 0))
@@ -36,6 +29,7 @@ public class ShadowActivityThreadTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.N_MR1)
   public void getPackageInfo_throwsRemoteExceptionWhenNotFound() throws Exception {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     try {
       activityThread.getPackageInfo(
           "com.unknownpackage.ab", CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, 0);

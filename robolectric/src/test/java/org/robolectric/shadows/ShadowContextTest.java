@@ -172,7 +172,7 @@ public class ShadowContextTest {
   public void openFileOutput_shouldReturnAFileOutputStream() throws Exception {
     File file = new File("__test__");
     String fileContents = "blah";
-    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", -1)) {
+    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_PRIVATE)) {
       fileOutputStream.write(fileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {
