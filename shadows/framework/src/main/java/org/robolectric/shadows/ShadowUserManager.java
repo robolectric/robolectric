@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 
 import android.Manifest.permission;
 import android.content.Context;
@@ -32,6 +33,7 @@ public class ShadowUserManager {
 
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
+  private boolean isDemoUser = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
@@ -176,6 +178,19 @@ public class ShadowUserManager {
     //              throw new SecurityException("You need INTERACT_ACROSS_USERS or MANAGE_USERS
     // permission "
     //                + "to: check " + name);throw new SecurityException();
+  }
+
+  @Implementation(minSdk = N_MR1)
+  public boolean isDemoUser() {
+    return isDemoUser;
+  }
+
+  /**
+   * Sets that the current user is a demo user; controls the return value of
+   * {@link UserManager.isDemoUser}.
+   */
+  public void setIsDemoUser(boolean isDemoUser) {
+    this.isDemoUser = isDemoUser;
   }
 
   @Implementation
