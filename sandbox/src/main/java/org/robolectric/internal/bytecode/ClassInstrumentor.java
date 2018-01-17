@@ -32,7 +32,7 @@ abstract class ClassInstrumentor {
     this.decorator = decorator;
   }
 
-  class Subject {
+  static class Subject {
     final SandboxClassLoader sandboxClassLoader;
     final TypeMapper typeMapper;
     final ClassNode classNode;
@@ -369,7 +369,8 @@ abstract class ClassInstrumentor {
   }
 
   private String[] exceptionArray(MethodNode method) {
-    return ((List<String>) method.exceptions).toArray(new String[method.exceptions.size()]);
+    List<String> exceptions = method.exceptions;
+    return exceptions.toArray(new String[exceptions.size()]);
   }
 
   /**

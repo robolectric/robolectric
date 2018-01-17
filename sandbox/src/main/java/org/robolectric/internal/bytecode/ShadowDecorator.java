@@ -25,6 +25,7 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
     addRoboGetDataMethod(subject);
   }
 
+  // only called by OldClassInstrumentor...
   @Override
   public void decorateMethodPreClassHandler(ClassInstrumentor.Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
     boolean isNormalInstanceMethod = !generator.isStatic

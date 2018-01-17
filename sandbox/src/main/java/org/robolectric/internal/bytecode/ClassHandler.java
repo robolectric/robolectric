@@ -107,7 +107,7 @@ public interface ClassHandler {
    * @return the value to be returned
    * @throws Throwable if anything bad happens
    */
-  Object intercept(String signature, Object instance, Object[] params, Class theClass)
+  Object intercept(String signature, Object instance, Object[] params, Class<?> theClass)
       throws Throwable;
 
   /**

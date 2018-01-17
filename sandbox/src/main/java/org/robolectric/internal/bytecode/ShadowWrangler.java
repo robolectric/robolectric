@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -74,14 +76,16 @@ public class ShadowWrangler implements ClassHandler {
       });
 
   /** key is instrumented class */
-  private final ClassValue<ShadowInfo> cachedShadowInfos = new ClassValue<ShadowInfo>() {
+  private final ClassValueMap<ShadowInfo> cachedShadowInfos = new ClassValueMap<ShadowInfo>() {
+    @Nonnull
     @Override protected ShadowInfo computeValue(Class<?> type) {
       return shadowMap.getShadowInfo(type, apiLevel);
     }
   };
 
   /** key is shadow class */
-  private final ClassValue<ShadowMetadata> cachedShadowMetadata = new ClassValue<ShadowMetadata>() {
+  private final ClassValueMap<ShadowMetadata> cachedShadowMetadata = new ClassValueMap<ShadowMetadata>() {
+    @Nonnull
     @Override
     protected ShadowMetadata computeValue(Class<?> type) {
       return new ShadowMetadata(type);
@@ -428,7 +432,7 @@ public class ShadowWrangler implements ClassHandler {
     return shadowInfo;
   }
 
-  private ShadowInfo getExactShadowInfo(Class clazz) {
+  private ShadowInfo getExactShadowInfo(Class<?> clazz) {
     return cachedShadowInfos.get(clazz);
   }
 
@@ -495,6 +499,29 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  @SuppressWarnings("unused")
   private static void doNothing() {
+  }
+
+  /**
+   * {@link java.lang.ClassValue} doesn't exist in Android, so provide a trivial impl.
+   *
+   * Note that if T contains references to Class, this won't really be weak. That's okay.
+   */
+  private static abstract class ClassValueMap<T> {
+    private final Map<Class<?>, T> map = new WeakHashMap<>();
+
+    @Nonnull
+    protected abstract T computeValue(Class<?> type);
+
+    @SuppressWarnings("Java8MapApi")
+    synchronized public T get(Class<?> type) {
+      T t = map.get(type);
+      if (t == null) {
+        t = computeValue(type);
+        map.put(type, t);
+      }
+      return t;
+    }
   }
 }

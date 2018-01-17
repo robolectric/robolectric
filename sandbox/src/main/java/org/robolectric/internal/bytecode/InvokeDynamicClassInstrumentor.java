@@ -93,7 +93,7 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
 
     if (targetMethod.getOpcode() != Opcodes.INVOKESTATIC) {
       String thisType = type.getDescriptor();
-      description = "(" + thisType + description.substring(1, description.length());
+      description = "(" + thisType + description.substring(1);
     }
 
     instructions.add(new InvokeDynamicInsnNode(targetMethod.name, description, BOOTSTRAP_INTRINSIC, owner));

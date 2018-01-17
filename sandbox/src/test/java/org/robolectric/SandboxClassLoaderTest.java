@@ -373,7 +373,7 @@ public class SandboxClassLoaderTest {
 
   @Test
   public void shouldNotInstrumentFinalEqualsHashcode() throws ClassNotFoundException {
-    Class<?> theClass = loadClass(AClassThatExtendsAClassWithFinalEqualsHashCode.class);
+    loadClass(AClassThatExtendsAClassWithFinalEqualsHashCode.class);
   }
 
   @Test
@@ -712,7 +712,7 @@ public class SandboxClassLoaderTest {
       return dropArguments(constant(String.class, "a shadow!"), 0, theClass);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
+    @SuppressWarnings(value = {"UnusedDeclaration", "unused"})
     private Object invoke(InvocationProfile invocationProfile, Object instance, Object[] params) {
       return methodInvoked(invocationProfile.clazz, invocationProfile.methodName, instance,
           invocationProfile.paramTypes, params);
