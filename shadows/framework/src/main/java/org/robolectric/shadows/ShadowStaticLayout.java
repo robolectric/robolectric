@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.text.StaticLayout;
 import org.robolectric.annotation.HiddenApi;
@@ -24,4 +25,30 @@ public class ShadowStaticLayout {
             Object recycleBreaks, Object recycleWidths, Object recycleFlags, Object recycleLength) {
     return 1;
   }
+
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = P)
+  @HiddenApi
+  public static int nComputeLineBreaks(
+      Object nativePtr,
+      Object text,
+      Object measuredTextPtr,
+      Object length,
+      Object firstWidth,
+      Object firstWidthLineCount,
+      Object restWidth,
+      Object variableTabStops,
+      Object defaultTabStop,
+      Object indentsOffset,
+      Object recycle,
+      Object recycleLength,
+      Object recycleBreaks,
+      Object recycleWidths,
+      Object recycleAscents,
+      Object recycleDescents,
+      Object recycleFlags,
+      Object charWidths) {
+    return 1;
+  }
+  // END-INTERNAL
 }

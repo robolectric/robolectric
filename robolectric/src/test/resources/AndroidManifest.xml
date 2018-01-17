@@ -1,7 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.robolectric">
+      package="org.robolectric" android:sharedUserId="sharedUserId.robolectric"
+    android:versionCode="123"
+    android:versionName="aVersionName">
   <uses-sdk android:targetSdkVersion="23"/>
+
+  <permission android:name="some_permission"
+      android:description="@string/test_permission_description"
+      android:icon="@drawable/an_image"
+      android:label="@string/test_permission_label"
+      android:permissionGroup="my_permission_group"
+      android:protectionLevel="dangerous">
+    <meta-data android:name="meta_data_name" android:value="meta_data_value"/>
+  </permission>
+
+  <permission android:name="permission_with_literal_label"
+      android:description="@string/test_permission_description"
+      android:icon="@drawable/an_image"
+      android:label="Literal label"/>
+
+  <permission android:name="permission_with_minimal_fields"/>
+
+  <permission-group android:name="package_permission_group"
+    android:icon="@drawable/an_image"
+    android:label="Permission Group Label"
+    />
+
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+  <uses-permission android:name="android.permission.GET_TASKS"/>
 
   <application android:name="org.robolectric.TestApplication"
          android:theme="@style/Theme.Robolectric"
@@ -22,30 +49,11 @@
          android:testOnly="true"
          android:vmSafeMode="true">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.GET_TASKS"/>
-
-    <permission android:name="some_permission"
-                android:description="@string/test_permission_description"
-                android:icon="@drawable/an_image"
-                android:label="@string/test_permission_label"
-                android:permissionGroup="my_permission_group"
-                android:protectionLevel="dangerous">
-      <meta-data android:name="meta_data_name" android:value="meta_data_value"/>
-    </permission>
-
-    <permission android:name="permission_with_literal_label"
-                android:description="@string/test_permission_description"
-                android:icon="@drawable/an_image"
-                android:label="Literal label"/>
-
-    <permission android:name="permission_with_minimal_fields"/>
-
+    <meta-data android:name="android.content.APP_RESTRICTIONS" android:resource="@xml/app_restrictions" />
     <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
     <meta-data android:name="org.robolectric.metaName2" android:value="metaValue2" />
-    <meta-data android:name="org.robolectric.metaTrue" android:value="true" />
-    <meta-data android:name="org.robolectric.metaFalse" android:value="false" />
+    <meta-data android:name="org.robolectric.metaTrueLiteral" android:value="true" />
+    <meta-data android:name="org.robolectric.metaFalseLiteral" android:value="false" />
     <meta-data android:name="org.robolectric.metaInt" android:value="123" />
     <meta-data android:name="org.robolectric.metaFloat" android:value="1.23" />
     <meta-data android:name="org.robolectric.metaColor" android:value="#FFFFFF" />
@@ -73,7 +81,7 @@
     </activity>
 
     <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithConfigChanges"
-              android:configChanges="mcc|screenLayout|orientation"/>
+              android:configChanges="screenLayout|orientation"/>
 
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity1" />
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity2"
@@ -106,6 +114,19 @@
       </intent-filter>
     </activity>
 
+    <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithFilters"
+        android:permission="com.foo.MY_PERMISSION">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:scheme="content"
+            android:host="testhost1.com"
+            android:port="1"
+            android:path="/testPath/test.jpeg"
+            android:mimeType="video/mpeg" />
+      </intent-filter>
+    </activity>
+
     <activity-alias
             android:name="org.robolectric.shadows.TestActivityAlias"
             android:targetActivity=".shadows.TestActivity">
@@ -135,16 +156,14 @@
 
     <provider
             android:name="org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"
-            android:authorities="org.robolectric.authority2"
+            android:authorities="org.robolectric.my_content_provider_authority"
             android:permission="PERMISSION"
             android:readPermission="READ_PERMISSION"
-            android:writePermission="WRITE_PERMISSION"
-    >
+            android:writePermission="WRITE_PERMISSION">
       <path-permission
               android:pathPattern="/path/*"
               android:readPermission="PATH_READ_PERMISSION"
-              android:writePermission="PATH_WRITE_PERMISSION"
-      />
+              android:writePermission="PATH_WRITE_PERMISSION"/>
       <meta-data android:name="greeting" android:value="@string/hello"/>
     </provider>
 
@@ -182,19 +201,7 @@
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_SUBPACKAGE"/>
       </intent-filter>
-      <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
-      <meta-data android:name="org.robolectric.metaName2" android:value="metaValue2" />
-      <meta-data android:name="org.robolectric.metaTrue" android:value="true" />
-      <meta-data android:name="org.robolectric.metaFalse" android:value="false" />
-      <meta-data android:name="org.robolectric.metaInt" android:value="123" />
-      <meta-data android:name="org.robolectric.metaFloat" android:value="1.23" />
-      <meta-data android:name="org.robolectric.metaColor" android:value="#FFFFFF" />
-      <meta-data android:name="org.robolectric.metaBooleanFromRes" android:value="@bool/false_bool_value" />
-      <meta-data android:name="org.robolectric.metaIntFromRes" android:value="@integer/test_integer1" />
-      <meta-data android:name="org.robolectric.metaColorFromRes" android:value="@color/clear" />
-      <meta-data android:name="org.robolectric.metaStringFromRes" android:value="@string/app_name" />
-      <meta-data android:name="org.robolectric.metaStringOfIntFromRes" android:value="@string/str_int" />
-      <meta-data android:name="org.robolectric.metaStringRes" android:resource="@string/app_name" />
+      <meta-data android:name="numberOfSheep" android:value="42" />
     </receiver>
 
     <receiver android:name="com.foo.Receiver">

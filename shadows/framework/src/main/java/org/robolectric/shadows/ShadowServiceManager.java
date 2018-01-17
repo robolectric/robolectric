@@ -5,7 +5,9 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.app.ISearchManager;
 import android.app.trust.ITrustManager;
 import android.content.Context;
+import android.net.INetworkPolicyManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteException;
@@ -34,6 +36,13 @@ public class ShadowServiceManager {
                 Context.TRUST_SERVICE,
                 createBinder(ITrustManager.class, "android.app.trust.ITrustManager"));
           }
+          // BEGIN-INTERNAL
+          if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+            put(
+                Context.NETWORK_POLICY_SERVICE,
+                createBinder(INetworkPolicyManager.class, "android.net.INetworkPolicyManager"));
+          }
+          // END-INTERNAL
         }
       };
 

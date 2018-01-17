@@ -52,6 +52,7 @@ public class ShadowPreferenceActivityTest {
     assertNotNull(activity.findPreference("preference_resource_key_value"));
   }
 
+  @SuppressWarnings("FragmentInjection")
   private static class TestPreferenceActivity extends PreferenceActivity {
   }
 }

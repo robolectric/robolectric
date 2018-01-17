@@ -2,7 +2,6 @@ package org.robolectric.manifest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,14 +20,14 @@ public class BroadcastReceiverData extends PackageItemData {
     super(attributes.get(NAME), metaData);
     this.attributes = attributes;
     this.actions = new ArrayList<>();
-    this.intentFilters = new LinkedList<>(intentFilters);
+    this.intentFilters = new ArrayList<>(intentFilters);
   }
 
   public BroadcastReceiverData(String className, MetaData metaData) {
     super(className, metaData);
     this.actions = new ArrayList<>();
     this.attributes = new HashMap<>();
-    intentFilters = new LinkedList<>();
+    intentFilters = new ArrayList<>();
   }
 
   public List<String> getActions() {

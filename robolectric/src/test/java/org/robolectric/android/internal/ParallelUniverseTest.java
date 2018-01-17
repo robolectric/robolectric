@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
 import org.robolectric.RoboSettings;
 import org.robolectric.RobolectricTestRunner;
@@ -51,7 +50,7 @@ public class ParallelUniverseTest {
   @Before
   public void setUp() throws InitializationError {
     pu = new ParallelUniverse();
-    pu.setSdkConfig(new SdkConfig(Build.VERSION.SDK_INT));
+    pu.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
   }
 
   public void dummyMethodForTest() {}
@@ -73,7 +72,6 @@ public class ParallelUniverseTest {
     Method method = getDummyMethodForTest();
     pu.setUpApplicationState(
         method,
-        new DefaultTestLifecycle(),
         appManifest,
         defaultConfig,
         sdkResourceProvider,
@@ -125,13 +123,6 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void resetStaticStatic_setsMainThread(){
-    RuntimeEnvironment.setMainThread(new Thread());
-    pu.resetStaticState(getDefaultConfig());
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
-  }
-
-  @Test
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
@@ -155,7 +146,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.SDK_INT);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
@@ -164,7 +155,7 @@ public class ParallelUniverseTest {
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
     assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.SDK_INT);
+        .contains("notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test

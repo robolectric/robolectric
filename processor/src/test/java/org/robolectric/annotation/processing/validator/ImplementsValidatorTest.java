@@ -35,7 +35,7 @@ public class ImplementsValidatorTest {
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
-      .onLine(6);
+      .onLine(7);
   }
 
   @Test

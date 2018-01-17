@@ -4,6 +4,7 @@ import java.util.ServiceLoader;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.fakes.RoboCharsets;
+import org.robolectric.android.fakes.RoboCleaner;
 import org.robolectric.android.fakes.RoboExtendedResponseCache;
 import org.robolectric.android.fakes.RoboResponseSource;
 import org.robolectric.annotation.Config;
@@ -71,10 +72,14 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("kotlin.")
         .doNotAcquirePackage("com.almworks.sqlite4java"); // Fix #958: SQLite native library must be loaded once.
 
-    builder.addClassNameTranslation("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
+    builder
+        .addClassNameTranslation(
+            "java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
         .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
         .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName())
-        .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName());
+        .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
+        .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName())
+        .addClassNameTranslation("sun.misc.Cleaner", RoboCleaner.class.getName());
 
     // Instrumenting these classes causes a weird failure.
     builder.doNotInstrumentClass("android.R")

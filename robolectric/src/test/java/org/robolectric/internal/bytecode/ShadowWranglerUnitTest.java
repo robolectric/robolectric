@@ -151,23 +151,23 @@ public class ShadowWranglerUnitTest {
   @Implements(value = DummyClass.class, minSdk = 19, maxSdk = 21)
   public static class ShadowDummyClass {
     @Implementation(minSdk = 20, maxSdk = 20)
-    public void __constructor__() {
+    protected void __constructor__() {
     }
     
     @Implementation
-    public void methodWithoutRange() {
+    protected void methodWithoutRange() {
     }
 
     @Implementation(minSdk = 20, maxSdk = 20)
-    public void methodFor20() {
+    protected void methodFor20() {
     }
 
     @Implementation(minSdk = 20)
-    public void methodMin20() {
+    protected void methodMin20() {
     }
 
     @Implementation(maxSdk = 20)
-    public void methodMax20() {
+    protected void methodMax20() {
     }
   }
 
@@ -177,7 +177,7 @@ public class ShadowWranglerUnitTest {
   @Implements(value = ChildOfDummyClass.class, minSdk = 20, maxSdk = 21)
   public static class ShadowChildOfDummyClass {
     @Implementation
-    public void methodWithoutRange() {
+    protected void methodWithoutRange() {
     }
   }
 

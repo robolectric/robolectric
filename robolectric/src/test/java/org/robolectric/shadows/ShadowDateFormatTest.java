@@ -1,16 +1,29 @@
 package org.robolectric.shadows;
 
-import static org.junit.Assert.assertEquals;
+import static android.text.format.DateFormat.getDateFormat;
+import static android.text.format.DateFormat.getLongDateFormat;
+import static android.text.format.DateFormat.getTimeFormat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import android.text.format.DateFormat;
+import android.app.Application;
 import java.util.Calendar;
 import java.util.Date;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowDateFormatTest {
+
+  private Application context;
+
+  @Before
+  public void setUp() throws Exception {
+    context = RuntimeEnvironment.application;
+  }
 
   @Test
   public void getTimeFormat_returnsATimeFormat() {
@@ -20,7 +33,7 @@ public class ShadowDateFormatTest {
     cal.set(Calendar.MINUTE, 48);
     cal.set(Calendar.SECOND, 3);
     Date date = cal.getTime();
-    assertEquals("07:48:03", DateFormat.getTimeFormat(null).format(date));
+    assertThat(getTimeFormat(context).format(date)).isEqualTo("07:48:03");
   }
 
   @Test
@@ -31,7 +44,7 @@ public class ShadowDateFormatTest {
     cal.set(Calendar.MONTH, Calendar.JANUARY);
     cal.set(Calendar.YEAR, 1970);
     Date date = cal.getTime();
-    assertEquals("Jan-12-1970", DateFormat.getDateFormat(null).format(date));
+    assertThat(getDateFormat(context).format(date)).isEqualTo("Jan-12-1970");
   }
 
   @Test
@@ -42,7 +55,7 @@ public class ShadowDateFormatTest {
     cal.set(Calendar.MONTH, Calendar.DECEMBER);
     cal.set(Calendar.YEAR, 1970);
     Date date = cal.getTime();
-    assertEquals("Dec-31-1970", DateFormat.getDateFormat(null).format(date));
+    assertThat(getDateFormat(context).format(date)).isEqualTo("Dec-31-1970");
   }
 
   @Test
@@ -53,7 +66,7 @@ public class ShadowDateFormatTest {
     cal.set(Calendar.MONTH, Calendar.JANUARY);
     cal.set(Calendar.YEAR, 1970);
     Date date = cal.getTime();
-    assertEquals("January 12, 1970", DateFormat.getLongDateFormat(null).format(date));
+    assertThat(getLongDateFormat(context).format(date)).isEqualTo("January 12, 1970");
   }
 
   @Test
@@ -64,7 +77,7 @@ public class ShadowDateFormatTest {
     cal.set(Calendar.MONTH, Calendar.DECEMBER);
     cal.set(Calendar.YEAR, 1970);
     Date date = cal.getTime();
-    assertEquals("December 31, 1970", DateFormat.getLongDateFormat(null).format(date));
+    assertThat(getLongDateFormat(context).format(date)).isEqualTo("December 31, 1970");
   }
 
 }

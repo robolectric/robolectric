@@ -1,5 +1,9 @@
 package org.robolectric.android.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
@@ -13,10 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
 public class FragmentControllerTest {
@@ -160,7 +160,7 @@ public class FragmentControllerTest {
     assertThat(fragment.isVisible()).isTrue();
   }
 
-  private static class LoginFragment extends Fragment {
+  public static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
