@@ -1,9 +1,13 @@
 package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.ActivityThread;
 import android.app.Application;
+import android.app.IInstrumentationWatcher;
+import android.app.IUiAutomationConnection;
+import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.content.ComponentName;
 import android.content.Context;
@@ -104,8 +108,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
     PackageParser.Package parsedPackage = null;
 
     ApplicationInfo applicationInfo = null;
@@ -153,7 +155,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
+    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application application = createApplication(appManifest, config);
@@ -190,7 +192,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       appResources.updateConfiguration(configuration, displayMetrics);
 
-      initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
+      initInstrumentation(activityThread, applicationInfo);
 
       PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
         application.onCreate();
@@ -249,14 +251,44 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   private void initInstrumentation(
       ActivityThread activityThread,
-      RoboInstrumentation androidInstrumentation,
       ApplicationInfo applicationInfo) {
+    Instrumentation androidInstrumentation = createInstrumentation();
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
+
     final ComponentName component =
         new ComponentName(
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
-    androidInstrumentation.init(
-        ActivityThread.class, activityThread, RuntimeEnvironment.application, component);
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
+          from(ActivityThread.class, activityThread),
+          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, RuntimeEnvironment.application),
+          from(ComponentName.class, component),
+          from(IInstrumentationWatcher.class, null));
+    } else {
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
+          from(ActivityThread.class, activityThread),
+          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, RuntimeEnvironment.application),
+          from(ComponentName.class, component),
+          from(IInstrumentationWatcher.class, null),
+          from(IUiAutomationConnection.class, null));
+    }
+
     androidInstrumentation.onCreate(new Bundle());
+  }
+
+  private Instrumentation createInstrumentation() {
+    // Use RoboInstrumentation if its parent class from optional dependency android.support.test is
+    // available. Otherwise use Instrumentation
+    try {
+      Class<? extends Instrumentation> roboInstrumentationClass =
+          (Class<? extends Instrumentation>) Class.forName("org.robolectric.android.fakes.RoboInstrumentation");
+      return ReflectionHelpers.newInstance(roboInstrumentationClass);
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      // fall through
+    }
+    return new Instrumentation();
   }
 
   /**
