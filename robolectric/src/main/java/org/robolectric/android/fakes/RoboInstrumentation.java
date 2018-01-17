@@ -16,30 +16,30 @@ public class RoboInstrumentation extends MonitoringInstrumentation {
   }
 
   @Override
-   public void setInTouchMode(boolean inTouch) {
-        // ignore
-          }
+  public void setInTouchMode(boolean inTouch) {
+    // ignore
+  }
 
-       @Override
-   public void waitForIdleSync() {
-        // ignore
-          }
+  @Override
+  public void waitForIdleSync() {
+    // ignore
+  }
 
-       @Override
-   public Activity startActivitySync(final Intent intent) {
-        ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
-        try {
-            Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
-            ActivityController<? extends Activity> controller = Robolectric.buildActivity(activityClass);
-            Activity activity = controller.get();
-            callActivityOnCreate(activity, new Bundle());
-            controller.postCreate(new Bundle());
-            callActivityOnStart(activity);
-            callActivityOnResume(activity);
-            controller.visible();
-            return activity;
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Could not load activity " + ai.name, e);
-          }
-      }
+  @Override
+  public Activity startActivitySync(final Intent intent) {
+    ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
+    try {
+      Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
+      ActivityController<? extends Activity> controller = Robolectric.buildActivity(activityClass);
+      Activity activity = controller.get();
+      callActivityOnCreate(activity, new Bundle());
+      controller.postCreate(new Bundle());
+      callActivityOnStart(activity);
+      callActivityOnResume(activity);
+      controller.visible();
+      return activity;
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Could not load activity " + ai.name, e);
+    }
+  }
 }
