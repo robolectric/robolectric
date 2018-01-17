@@ -329,7 +329,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   private ResolveInfo resolveActivityForExplicitIntent(Intent intent) {
-
     ComponentName component = intent.getComponent();
     if (component == null) {
       if (intent.getSelector() != null) {
@@ -354,7 +353,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private List<ResolveInfo> queryImplicitIntentActivities(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<>();
-
     for (Package appPackage : packages.values()) {
       if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
         for (Activity activity : appPackage.activities) {
