@@ -1,15 +1,19 @@
 package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.LoadedApk;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
@@ -30,6 +34,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
@@ -160,8 +165,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.application = application;
 
     if (application != null) {
-      shadowOf(application).bind(appManifest);
-
       final Class<?> appBindDataClass;
       try {
         appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
@@ -189,12 +192,21 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, displayMetrics);
+      populateAssetPaths(appResources.getAssets(), appManifest);
 
       initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
 
       PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
         application.onCreate();
       });
+    }
+  }
+
+  private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
+    for (AndroidManifest manifest : appManifest.getAllManifests()) {
+      if (manifest.getAssetsDirectory() != null) {
+        assetManager.addAssetPath(manifest.getAssetsDirectory().getPath());
+      }
     }
   }
 
@@ -234,6 +246,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       application = new Application();
     }
 
+    if (appManifest != null) {
+      registerBroadcastReceivers(application, appManifest);
+    }
     return application;
   }
 
@@ -318,5 +333,31 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       applicationInfo.deviceProtectedDataDir =
           tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
     }
+  }
+
+  // TODO move/replace this with packageManager
+  private static void registerBroadcastReceivers(Application application,
+      AndroidManifest androidManifest) {
+    for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
+      IntentFilter filter = new IntentFilter();
+      for (String action : receiver.getActions()) {
+        filter.addAction(action);
+      }
+      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
+      shadowOf(application).registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName),
+          filter);
+    }
+  }
+
+  private static String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
+    String[] splits = receiverClassName.split("\\.");
+    String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
+    if (splits[splits.length - 1].matches(staticInnerClassRegex) && splits[splits.length - 2].matches(staticInnerClassRegex)) {
+      int lastDotIndex = receiverClassName.lastIndexOf(".");
+      StringBuilder buffer = new StringBuilder(receiverClassName);
+      buffer.setCharAt(lastDotIndex, '$');
+      return buffer.toString();
+    }
+    return receiverClassName;
   }
 }

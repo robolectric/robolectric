@@ -8,16 +8,15 @@ import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -57,22 +56,17 @@ public class ShadowTypeface {
 
   @Implementation
   public static Typeface createFromAsset(AssetManager mgr, String path) {
-    AndroidManifest appManifest = Shadows.shadowOf(RuntimeEnvironment.application).getAppManifest();
-    ArrayList<String> paths = new ArrayList<>();
-
-    for (AndroidManifest depManifest : appManifest.getAllManifests()) {
-      paths.add(getAssetsPath(depManifest, path));
-    }
-
-    for (String assetPath : paths) {
+    Collection<FsFile> assetDirs = shadowOf(mgr).getAllAssetsDirectories();
+    for (FsFile assetDir : assetDirs) {
       // check if in zip file too?
-      FsFile[] files = appManifest.getAssetsDirectory().listFiles(new StartsWith(path));
-      if (new File(assetPath).exists() || files.length != 0) {
+      FsFile[] files = assetDir.listFiles(new StartsWith(path));
+      FsFile assetFile = assetDir.join(path);
+      if (assetFile.exists() || files.length != 0) {
         return createUnderlyingTypeface(path, Typeface.NORMAL);
       }
     }
 
-    throw new RuntimeException("Font not found at " + paths);
+    throw new RuntimeException("Font not found at " + assetDirs);
   }
 
   @Implementation
@@ -116,10 +110,6 @@ public class ShadowTypeface {
     } else {
       return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(int.class, (int) thisFontId));
     }
-  }
-
-  private static String getAssetsPath(AndroidManifest appManifest, String fontName) {
-    return appManifest.getAssetsDirectory().join(fontName).toString();
   }
 
   private synchronized static FontDesc findById(long fontId) {
