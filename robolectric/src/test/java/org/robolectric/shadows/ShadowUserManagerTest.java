@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -149,6 +150,19 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).addUserProfile(userHandle);
 
     assertThat(userManager.getSerialNumberForUser(userHandle)).isNotEqualTo(serialNumberInvalid);
+  }
+
+  @Test
+  @Config(minSdk = N_MR1)
+  public void isDemoUser() {
+    // All methods are based on the current user, so no need to pass a UserHandle.
+    assertThat(userManager.isDemoUser()).isFalse();
+
+    shadowOf(userManager).setIsDemoUser(true);
+    assertThat(userManager.isDemoUser()).isTrue();
+
+    shadowOf(userManager).setIsDemoUser(false);
+    assertThat(userManager.isDemoUser()).isFalse();
   }
 
   @Test
