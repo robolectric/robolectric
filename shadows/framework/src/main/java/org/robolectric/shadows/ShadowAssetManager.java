@@ -26,10 +26,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
@@ -40,7 +43,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
@@ -92,6 +94,7 @@ public class ShadowAssetManager {
   private ResourceTable resourceTable;
 
   ResTable_config config = new ResTable_config();
+  private Set<FsFile> assetDirs = new CopyOnWriteArraySet<>();
 
   class NativeTheme {
     private ThemeStyleSet themeStyleSet;
@@ -334,8 +337,9 @@ public class ShadowAssetManager {
 
   private FsFile findAssetFile(String fileName) throws IOException {
     for (FsFile assetDir : getAllAssetsDirectories()) {
-      if (assetDir.join(fileName).exists()) {
-        return assetDir.join(fileName);
+      FsFile assetFile = assetDir.join(fileName);
+      if (assetFile.exists()) {
+        return assetFile;
       }
     }
 
@@ -425,7 +429,7 @@ public class ShadowAssetManager {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
-      return ResName.qualifyFromFilePath(ShadowApplication.getInstance().getAppManifest().getPackageName(), fileName);
+      return ResName.qualifyFromFilePath(RuntimeEnvironment.application.getPackageName(), fileName);
     }
   }
 
@@ -468,6 +472,7 @@ public class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
+    assetDirs.add(Fs.newFile(path));
     return 1;
   }
 
@@ -976,26 +981,8 @@ public class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  protected List<FsFile> getAllAssetsDirectories() {
-    List<FsFile> assetsDirs = new ArrayList<>();
-    assetsDirs.addAll(getLibraryAssetsDirectories());
-    return assetsDirs;
-  }
-
-  protected FsFile getAssetsDirectory() {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
-  }
-
-  private List<FsFile> getLibraryAssetsDirectories() {
-    List<FsFile> libraryAssetsDirectory = new ArrayList<>();
-    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
-    for (AndroidManifest manifest : appManifest.getAllManifests()) {
-      if (manifest.getAssetsDirectory() != null) {
-        libraryAssetsDirectory.add(manifest.getAssetsDirectory());
-      }
-    }
-
-    return libraryAssetsDirectory;
+  Collection<FsFile> getAllAssetsDirectories() {
+    return assetDirs;
   }
 
   @Nonnull private ResName getResName(int id) {
