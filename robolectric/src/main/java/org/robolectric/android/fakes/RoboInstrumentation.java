@@ -16,6 +16,11 @@ public class RoboInstrumentation extends MonitoringInstrumentation {
   }
 
   @Override
+  protected void installMultidex() {
+    // ignore, unnecessary for robolectric
+  }
+
+  @Override
   public void setInTouchMode(boolean inTouch) {
     // ignore
   }
