@@ -15,19 +15,14 @@ import org.robolectric.annotation.Config;
 /** ShadowNetworkScoreManagerTest tests {@link ShadowNetworkScoreManager}. */
 @RunWith(RobolectricTestRunner.class)
 public final class ShadowNetworkScoreManagerTest {
-  private NetworkScoreManager networkScoreManager;
-
-  @Before
-  @Config(minSdk = LOLLIPOP)
-  public void setUp() throws Exception {
-    networkScoreManager =
-        (NetworkScoreManager)
-            RuntimeEnvironment.application.getSystemService(Context.NETWORK_SCORE_SERVICE);
-  }
 
   @Test
   @Config(minSdk = LOLLIPOP)
   public void testGetActiveScorerPackage() throws Exception {
+    NetworkScoreManager networkScoreManager =
+        (NetworkScoreManager)
+            RuntimeEnvironment.application.getSystemService(Context.NETWORK_SCORE_SERVICE);
+
     String testPackage = "com.package.test";
     networkScoreManager.setActiveScorer(testPackage);
     assertThat(networkScoreManager.getActiveScorerPackage()).isEqualTo(testPackage);
