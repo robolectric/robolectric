@@ -24,9 +24,8 @@ public class ResourceRemapperTest {
     remapper.remapRClass(ThirdClass.class);
 
     // Resource identifiers that are common across libraries should be remapped to the same value.
-    assertThat(org.robolectric.R.string.in_all_libs).isEqualTo(org.robolectric.lib1.R.string.in_all_libs);
-    assertThat(org.robolectric.R.string.in_all_libs).isEqualTo(org.robolectric.lib2.R.string.in_all_libs);
-    assertThat(org.robolectric.R.string.in_all_libs).isEqualTo(org.robolectric.lib3.R.string.in_all_libs);
+    assertThat(ApplicationRClass.string.string_one).isEqualTo(SecondClass.string.string_one);
+    assertThat(ApplicationRClass.string.string_one).isEqualTo(ThirdClass.string.string_one);
 
     // Resource identifiers that clash across two libraries should be remapped to different values.
     assertThat(SecondClass.id.id_clash)
@@ -121,6 +120,10 @@ public class ResourceRemapperTest {
     public static final class raw {
       public static int raw_one = 0x7f010001;
       public static int raw_two = 0x7f010002;
+    }
+
+    public static final class string {
+      public static int string_one = 0x7f020009;
     }
 
     public static final class attr {
