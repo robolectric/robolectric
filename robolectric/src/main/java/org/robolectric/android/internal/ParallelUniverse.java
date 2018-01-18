@@ -33,7 +33,6 @@ import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
-import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
@@ -50,7 +49,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -163,7 +161,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", from(ActivityThread.class, activityThread));
+    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass,
+        "createSystemContext", from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application application = createApplication(appManifest, config);
@@ -301,14 +300,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     // available. Otherwise use Instrumentation
     try {
       Class<? extends Instrumentation> roboInstrumentationClass =
-          (Class<? extends Instrumentation>) Class.forName("org.robolectric.android.fakes.RoboInstrumentation");
+          Class.forName("org.robolectric.android.fakes.RoboInstrumentation").asSubclass(
+              Instrumentation.class);
       return ReflectionHelpers.newInstance(roboInstrumentationClass);
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       // fall through
     }
     return new Instrumentation();
   }
-
 
   /**
    * Create a file system safe directory path name for the current test.
