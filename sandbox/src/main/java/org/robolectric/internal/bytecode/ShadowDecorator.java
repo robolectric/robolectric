@@ -25,22 +25,26 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
     addRoboGetDataMethod(subject);
   }
 
-  // only called by OldClassInstrumentor...
+  /**
+   * For non-invokedynamic JVMs, generates this code:
+   * ```java
+   * if (__robo_data__ instanceof ThisClass) {
+   *   try {
+   *     return __robo_data__.$$robo$$originalMethod(params);
+   *   } (Throwable t) {
+   *     throw RobolectricInternals.cleanStackTrace(t);
+   *   }
+   * }
+   * ```
+   *
+   * Note that this method is only called by {@link OldClassInstrumentor}.
+   */
   @Override
   public void decorateMethodPreClassHandler(ClassInstrumentor.Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
     boolean isNormalInstanceMethod = !generator.isStatic
         && !originalMethodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     // maybe perform direct call...
     if (isNormalInstanceMethod) {
-      // generates this code:
-      // if (__robo_data__ instanceof MyClass) {
-      //   try {
-      //     return __robo_data__.$$robo$$originalMethod(params);
-      //   } (Throwable t) {
-      //     throw RobolectricInternals.cleanStackTrace(t);
-      //   }
-      // }
-
       int exceptionLocalVar = generator.newLocal(THROWABLE_TYPE);
       Label notInstanceOfThis = new Label();
 

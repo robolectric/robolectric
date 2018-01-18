@@ -30,6 +30,15 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     super(decorator);
   }
 
+  /**
+   * Generates code like this:
+   * ```java
+   * public ThisClass(DirectObjectMarker dom, ThisClass domInstance) {
+   *   super(dom, domInstance);
+   *   __robo_data__ = domInstance;
+   * }
+   * ```
+   */
   @Override
   protected void addDirectCallConstructor(Subject subject) {
     MethodNode directCallConstructor = new MethodNode(Opcodes.ACC_PUBLIC,
@@ -60,7 +69,24 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     generateCallToClassHandler(subject, originalMethod, originalMethodName, generator);
   }
 
-  //TODO clean up & javadocs
+  /**
+   * Generates codelike this:
+   * ```java
+   * // decorator-specific code...
+   *
+   * Plan plan = RobolectricInternals.methodInvoked(
+   *     "pkg/ThisClass/thisMethod(Ljava/lang/String;Z)V", isStatic, ThisClass.class);
+   * if (plan != null) {
+   *   try {
+   *     return plan.run(this, args);
+   *   } catch (Throwable t) {
+   *     throw RobolectricInternals.cleanStackTrace(t);
+   *   }
+   * } else {
+   *   return $$robo$$thisMethod(*args);
+   * }
+   * ```
+   */
   private void generateCallToClassHandler(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
     decorator.decorateMethodPreClassHandler(subject, originalMethod, originalMethodName, generator);
 

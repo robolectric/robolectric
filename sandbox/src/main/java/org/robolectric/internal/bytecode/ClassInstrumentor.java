@@ -137,6 +137,16 @@ abstract class ClassInstrumentor {
 
   abstract protected void addDirectCallConstructor(Subject subject);
 
+  /**
+   * Generates code like this:
+   * ```java
+   * protected void $$robo$init() {
+   *   if (__robo_data__ == null) {
+   *     __robo_data__ = RobolectricInternals.initializing(this);
+   *   }
+   * }
+   * ```
+   */
   private void addRoboInitMethod(Subject subject) {
     MethodNode initMethodNode = new MethodNode(Opcodes.ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
@@ -239,6 +249,40 @@ abstract class ClassInstrumentor {
    * Note that most code in the constructor will not be executed unless the {@link ClassHandler}
    * arranges for it to happen.
    *
+   * Given a constructor like this:
+   * ```java
+   * public ThisClass(String name, int size) {
+   *   super(name, someStaticMethod());
+   *   this.size = size;
+   * }
+   * ```
+   *
+   * ... generates code like this:
+   * ```java
+   * private $$robo$$__constructor__(String name, int size) {
+   *   this.size = size;
+   * }
+   *
+   * private __constructor__(String name, int size) {
+   *   Plan plan = RobolectricInternals.methodInvoked(
+   *       "pkg/ThisClass/__constructor__(Ljava/lang/String;I)V", true, ThisClass.class);
+   *   if (plan != null) {
+   *     try {
+   *       plan.run(this, new Object[] {name, size});
+   *     } catch (Throwable t) {
+   *       throw RobolectricInternals.cleanStackTrace(t);
+   *     }
+   *   } else {
+   *     $$robo$$__constructor__(name, size);
+   *   }
+   * }
+   *
+   * public ThisClass(String name, int size) {
+   *   super(name, someStaticMethod());
+   *   $$robo$init();
+   * }
+   * ```
+   *
    * @param method the constructor to instrument
    */
   private void instrumentConstructor(Subject subject, MethodNode method) {
@@ -260,18 +304,18 @@ abstract class ClassInstrumentor {
     subject.addMethod(redirectorMethod(subject, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
     String[] exceptions = exceptionArray(method);
-    MethodNode methodNode = new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
-    makeMethodPublic(methodNode);
-    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
+    MethodNode initMethodNode = new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
+    makeMethodPublic(initMethodNode);
+    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
 
-    methodNode.instructions = callSuper;
+    initMethodNode.instructions = callSuper;
 
     generator.loadThis();
     generator.invokeVirtual(subject.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
     generateClassHandlerCall(subject, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
 
     generator.endMethod();
-    subject.addMethod(methodNode);
+    subject.addMethod(initMethodNode);
   }
 
   private InsnList extractCallToSuperConstructor(Subject subject, MethodNode ctor) {

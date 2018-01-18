@@ -77,7 +77,6 @@ public class ShadowWrangler implements ClassHandler {
 
   /** key is instrumented class */
   private final ClassValueMap<ShadowInfo> cachedShadowInfos = new ClassValueMap<ShadowInfo>() {
-    @Nonnull
     @Override protected ShadowInfo computeValue(Class<?> type) {
       return shadowMap.getShadowInfo(type, apiLevel);
     }
@@ -511,15 +510,16 @@ public class ShadowWrangler implements ClassHandler {
   private static abstract class ClassValueMap<T> {
     private final Map<Class<?>, T> map = new WeakHashMap<>();
 
-    @Nonnull
     protected abstract T computeValue(Class<?> type);
 
     @SuppressWarnings("Java8MapApi")
     synchronized public T get(Class<?> type) {
       T t = map.get(type);
       if (t == null) {
-        t = computeValue(type);
-        map.put(type, t);
+        if (!map.containsKey(type)) {
+          t = computeValue(type);
+          map.put(type, t);
+        }
       }
       return t;
     }
