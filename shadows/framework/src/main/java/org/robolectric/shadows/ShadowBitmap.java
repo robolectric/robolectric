@@ -595,6 +595,8 @@ public class ShadowBitmap {
       throw new NullPointerException("Bitmap config was null.");
     }
     switch (config) {
+      case RGBA_F16:
+        return 8;
       case ARGB_8888:
         return 4;
       case RGB_565:
