@@ -5,13 +5,16 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.accounts.IAccountManager;
+import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -24,6 +27,7 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.hardware.SystemSensorManager;
+import android.hardware.fingerprint.IFingerprintService;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -114,6 +118,9 @@ public class ShadowContextImpl {
     if (getApiLevel() >= LOLLIPOP_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");
     }
+    if (getApiLevel() >= M) {
+      SYSTEM_SERVICE_MAP.put(Context.FINGERPRINT_SERVICE, "android.hardware.fingerprint.FingerprintManager");
+    }
     if (getApiLevel() >= N_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.SHORTCUT_SERVICE, "android.content.pm.ShortcutManager");
     }
@@ -154,12 +161,25 @@ public class ShadowContextImpl {
                 ClassParameter.from(Handler.class, null));
           }
         } else if (serviceClassName.equals("android.app.SearchManager")
-            || serviceClassName.equals("android.app.ActivityManager")
-            || serviceClassName.equals("android.app.WallpaperManager")) {
+            || serviceClassName.equals("android.app.ActivityManager")) {
 
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(Handler.class, null));
+        } else if (serviceClassName.equals("android.app.WallpaperManager")) {
+          if (getApiLevel() <= O_MR1) {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(Handler.class, null));
+          }
+          // BEGIN-INTERNAL
+          else {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(IWallpaperManager.class, null),
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(Handler.class, null));
+          }
+          // END-INTERNAL
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
         } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
@@ -208,9 +228,13 @@ public class ShadowContextImpl {
               ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else if (serviceClassName.equals("android.os.UserManager")) {
           service = ReflectionHelpers.callConstructor(clazz,
-                ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(IUserManager.class, null));
-	} else {
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IUserManager.class, null));
+        } else if (getApiLevel() >= M && serviceClassName.equals("android.hardware.fingerprint.FingerprintManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IFingerprintService.class, null));
+        } else {
           service = newInstanceOf(clazz);
         }
       } catch (ClassNotFoundException e) {
