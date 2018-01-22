@@ -23,6 +23,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.RestrictionsManager;
 import android.content.ServiceConnection;
 import android.hardware.SystemSensorManager;
 import android.media.session.MediaSessionManager;
@@ -31,39 +32,30 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserManager;
 import android.print.PrintManager;
-import android.view.accessibility.CaptioningManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.CaptioningManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboVibrator;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
 import org.robolectric.util.Scheduler;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowApplicationTest {
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
   @Config(packageName = "override.package")
   public void shouldOverridePackageWithConfig() {
-    assertEquals("override.package", RuntimeEnvironment.application.getPackageName());
+    assertThat(RuntimeEnvironment.application.getPackageName()).isEqualTo("override.package");
   }
 
   @Test
@@ -116,6 +108,7 @@ public class ShadowApplicationTest {
   public void shouldProvideMediaSessionService() throws Exception {
     checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
     checkSystemService(Context.BATTERY_SERVICE, BatteryManager.class);
+    checkSystemService(Context.RESTRICTIONS_SERVICE, RestrictionsManager.class);
   }
 
   @Test
@@ -152,19 +145,6 @@ public class ShadowApplicationTest {
     assertThat(systemService).isSameAs(RuntimeEnvironment.application.getSystemService(name));
   }
 
-  @Test
-  public void packageManager_shouldKnowPackageName() throws Exception {
-    assertThat(RuntimeEnvironment.application.getPackageManager().getApplicationInfo("org.robolectric", 0).packageName)
-        .isEqualTo("org.robolectric");
-  }
-
-  @Test
-  public void packageManager_shouldKnowApplicationName() throws Exception {
-    assertThat(RuntimeEnvironment.application.getPackageManager().getApplicationInfo("org.robolectric", 0).name)
-        .isEqualTo("org.robolectric.TestApplication");
-  }
-
-  @Test
   public void bindServiceShouldCallOnServiceConnectedWithDefaultValues() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
@@ -556,21 +536,6 @@ public class ShadowApplicationTest {
   }
 
   /////////////////////////////
-
-  public AndroidManifest newConfigWith(String contents) throws IOException {
-    return newConfigWith("org.robolectric", contents);
-  }
-
-  private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
-    String fileContents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-        "          package=\"" + packageName + "\">\n" +
-        "    " + contents + "\n" +
-        "</manifest>\n";
-    File f = temporaryFolder.newFile("whatever.xml");
-    Files.write(fileContents, f, Charsets.UTF_8);
-    return new AndroidManifest(Fs.newFile(f), null, null);
-  }
 
   private static class EmptyServiceConnection implements ServiceConnection {
     @Override

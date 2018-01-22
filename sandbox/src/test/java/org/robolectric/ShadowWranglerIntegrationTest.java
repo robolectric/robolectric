@@ -219,7 +219,7 @@ public class ShadowWranglerIntegrationTest {
   @Implements(Parent.class)
   public static class ShadowOfParent {
     @Implementation
-    public String get() {
+    protected String get() {
       return "from shadow of parent";
     }
   }
@@ -242,8 +242,8 @@ public class ShadowWranglerIntegrationTest {
 
   @Implements(Foo.class)
   public static class WithEquals {
-    @SuppressWarnings("UnusedDeclaration")
-    public void __constructor__(String s) {
+    @Implementation
+    protected void __constructor__(String s) {
     }
 
     @Override
@@ -261,8 +261,8 @@ public class ShadowWranglerIntegrationTest {
 
   @Implements(Foo.class)
   public static class WithToString {
-    @SuppressWarnings("UnusedDeclaration")
-    public void __constructor__(String s) {
+    @Implementation
+    protected void __constructor__(String s) {
     }
 
     @Override
@@ -288,7 +288,8 @@ public class ShadowWranglerIntegrationTest {
     private Foo realFoo;
     public Foo realFooInParentConstructor;
 
-    public void __constructor__(String name) {
+    @Implementation
+    protected void __constructor__(String name) {
       realFooInParentConstructor = realFoo;
     }
   }
@@ -314,7 +315,7 @@ public class ShadowWranglerIntegrationTest {
   @Implements(value = AClassWithDifficultArgs.class, looseSignatures = true)
   public static class ShadowAClassWithDifficultArgs {
     @Implementation
-    public Object aMethod(Object s) {
+    protected Object aMethod(Object s) {
       return "a" + s;
     }
   }

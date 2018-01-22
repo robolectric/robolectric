@@ -17,26 +17,10 @@ import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
-  /**
-   * @deprecated use {@link #of(Activity, Intent)} instead.
-   */
-  @Deprecated
-  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter unused, T activity, Intent intent) {
-    return of(activity, intent);
-  }
-
-  /**
-   * @deprecated use {@link #of(Activity)} instead.
-   */
-  @Deprecated
-  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter unused, T activity) {
-    return of(activity);
-  }
 
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
     return new ActivityController<>(activity, intent).attach();
@@ -86,7 +70,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
       invokeWhilePaused("performRestart");
     } else {
+      // BEGIN-INTERNAL
       invokeWhilePaused("performRestart", from(boolean.class, true));
+      // END-INTERNAL
     }
     return this;
   }
@@ -107,7 +93,13 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> resume() {
-    invokeWhilePaused("performResume");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performResume");
+    } else {
+      // BEGIN-INTERNAL
+      invokeWhilePaused("performResume", from(boolean.class, false));
+      // END-INTERNAL
+    }
     return this;
   }
 
@@ -309,7 +301,16 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          } else {
+            // BEGIN-INTERNAL
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume",
+                from(boolean.class, false));
+            // END-INTERNAL
+          }
+
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onPostResume");
           // TODO: Call visible() too.
         }

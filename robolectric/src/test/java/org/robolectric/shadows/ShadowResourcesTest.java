@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.InputStream;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -332,7 +331,7 @@ public class ShadowResourcesTest {
 
   @Test(expected = Resources.NotFoundException.class)
   public void testGetColor_Missing() {
-    resources.getColor(R.color.test_color_1);
+    resources.getColor(11234);
   }
 
   @Test
@@ -422,10 +421,10 @@ public class ShadowResourcesTest {
     assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
   }
 
-  @Test @Ignore("disabled while refactoring display bootstrapping") // TODO(xian) 3.6-alpha
+  @Test
   public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(470);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(320);
   }
 
   @Test
@@ -502,7 +501,7 @@ public class ShadowResourcesTest {
   public void openRawResource_shouldLoadRawResourcesFromLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+    assertThat(TestUtil.readString(resourceStream)).contains("from lib");
   }
 
   @Test

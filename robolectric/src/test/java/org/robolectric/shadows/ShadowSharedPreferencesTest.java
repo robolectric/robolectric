@@ -15,8 +15,8 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowSharedPreferencesTest {
@@ -32,7 +32,7 @@ public class ShadowSharedPreferencesTest {
   public void setUp() {
     context = RuntimeEnvironment.application;
 
-    sharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    sharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     // Ensure no shared preferences have leaked from previous tests.
     assertThat(sharedPreferences.getAll()).hasSize(0);
 
@@ -53,7 +53,7 @@ public class ShadowSharedPreferencesTest {
   public void commit_shouldStoreValues() throws Exception {
     editor.commit();
 
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
@@ -69,7 +69,7 @@ public class ShadowSharedPreferencesTest {
 
     assertThat(sharedPreferences.getString("string", "no value for key")).isEqualTo("no value for key");
 
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     anotherSharedPreferences.edit().putString("string", "value for key").commit();
 
     editor.commit();
@@ -94,7 +94,7 @@ public class ShadowSharedPreferencesTest {
 
     editor.commit();
 
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     assertThat(anotherSharedPreferences.getBoolean("boolean", false)).isTrue();
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
@@ -114,7 +114,7 @@ public class ShadowSharedPreferencesTest {
 
     editor.commit();
 
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
@@ -150,13 +150,13 @@ public class ShadowSharedPreferencesTest {
   public void apply_shouldStoreValues() throws Exception {
     editor.apply();
 
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
   }
 
   @Test
   public void shouldReturnDefaultValues() throws Exception {
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
 
     assertFalse(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(666f);
@@ -167,7 +167,7 @@ public class ShadowSharedPreferencesTest {
 
   @Test
   public void shouldRemoveRegisteredListenersOnUnresgister() {
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
 
     SharedPreferences.OnSharedPreferenceChangeListener mockListener = mock(SharedPreferences.OnSharedPreferenceChangeListener.class);
     anotherSharedPreferences.registerOnSharedPreferenceChangeListener(mockListener);
@@ -180,7 +180,7 @@ public class ShadowSharedPreferencesTest {
 
   @Test
   public void shouldTriggerRegisteredListeners() {
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", 3);
+    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
 
     final String testKey = "foo";
 

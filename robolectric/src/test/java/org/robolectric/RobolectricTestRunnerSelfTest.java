@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
@@ -10,8 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = RobolectricTestRunnerSelfTest.MyTestApplication.class)
@@ -73,8 +73,7 @@ public class RobolectricTestRunnerSelfTest {
   public void testVersionConfiguration() {
     assertThat(Build.VERSION.SDK_INT)
         .isEqualTo(Build.VERSION_CODES.KITKAT);
-    assertThat(Build.VERSION.RELEASE)
-        .isEqualTo("4.4_r1");
+    assertThat(Build.VERSION.RELEASE).isEqualTo("4.4");
   }
 
   @Test public void hamcrestMatchersDontBlowUpDuringLinking() throws Exception {

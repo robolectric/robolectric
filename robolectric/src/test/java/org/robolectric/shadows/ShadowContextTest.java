@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -28,17 +27,6 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContextTest {
   private final Context context = RuntimeEnvironment.application;
-
-  @Before
-  public void setUp() throws Exception {
-    File dataDir = new File(context.getPackageManager()
-        .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir);
-
-    File[] files = dataDir.listFiles();
-    assertThat(files)
-      .isNotNull()
-      .isEmpty();
-  }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
@@ -184,7 +172,7 @@ public class ShadowContextTest {
   public void openFileOutput_shouldReturnAFileOutputStream() throws Exception {
     File file = new File("__test__");
     String fileContents = "blah";
-    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", -1)) {
+    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_PRIVATE)) {
       fileOutputStream.write(fileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {

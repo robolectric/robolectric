@@ -1,48 +1,32 @@
 package org.robolectric.manifest;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class ServiceData {
+/**
+ * Holds parsed service data from manifest.
+ */
+public class ServiceData extends PackageItemData {
 
   private static final String EXPORTED = "android:exported";
   private static final String NAME = "android:name";
   private static final String PERMISSION = "android:permission";
 
   private final Map<String, String> attributes;
-  private final MetaData metaData;
   private final List<String> actions;
   private List<IntentFilterData> intentFilters;
 
   public ServiceData(
       Map<String, String> attributes, MetaData metaData, List<IntentFilterData> intentFilters) {
+    super(attributes.get(NAME), metaData);
     this.attributes = attributes;
     this.actions = new ArrayList<>();
-    this.metaData = metaData;
-    this.intentFilters = new LinkedList<>(intentFilters);
-  }
-
-  public ServiceData(String className, MetaData metaData, List<IntentFilterData> intentFilterData) {
-    this.attributes = new HashMap<>();
-    this.attributes.put(NAME, className);
-    this.actions = new ArrayList<>();
-    this.metaData = metaData;
-    intentFilters = new LinkedList<>(intentFilterData);
-  }
-
-  public String getClassName() {
-    return attributes.get(NAME);
+    this.intentFilters = new ArrayList<>(intentFilters);
   }
 
   public List<String> getActions() {
     return actions;
-  }
-
-  public MetaData getMetaData() {
-    return metaData;
   }
 
   public void addAction(String action) {

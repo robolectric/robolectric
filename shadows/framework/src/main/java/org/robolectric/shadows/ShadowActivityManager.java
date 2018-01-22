@@ -1,4 +1,5 @@
 package org.robolectric.shadows;
+
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.app.ActivityManager;

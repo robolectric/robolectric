@@ -65,6 +65,7 @@ test_runtime_libraries := \
   Robolectric_shadowapi \
   robolectric-byte-buddy-agent-1.6.5 \
   robolectric-compile-testing-0.12 \
+  robolectric-annotation-api-1.2 \
   robolectric-mockito-core-2.7.6 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \

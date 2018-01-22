@@ -51,16 +51,14 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
-  private AndroidManifest appManifest;
   private List<Intent> startedActivities = new ArrayList<>();
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
   private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
@@ -128,35 +126,16 @@ public class ShadowApplication extends ShadowContextWrapper {
     display.getMetrics(Resources.getSystem().getDisplayMetrics());
   }
 
-  public void bind(AndroidManifest appManifest) {
-    this.appManifest = appManifest;
-
-    if (appManifest != null) {
-      this.registerBroadcastReceivers(appManifest);
-    }
-  }
-
-  private void registerBroadcastReceivers(AndroidManifest androidManifest) {
-    for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
-      IntentFilter filter = new IntentFilter();
-      for (String action : receiver.getActions()) {
-        filter.addAction(action);
-      }
-      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getClassName());
-      registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
-    }
-  }
-
-  private static String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
-    String[] splits = receiverClassName.split("\\.");
-    String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
-    if (splits[splits.length - 1].matches(staticInnerClassRegex) && splits[splits.length - 2].matches(staticInnerClassRegex)) {
-      int lastDotIndex = receiverClassName.lastIndexOf(".");
-      StringBuilder buffer = new StringBuilder(receiverClassName);
-      buffer.setCharAt(lastDotIndex, '$');
-      return buffer.toString();
-    }
-    return receiverClassName;
+  /**
+   * Attaches an application to a base context.
+   *
+   * @param application The application to attach.
+   * @param context The context with which to initialize the application, whose base context will
+   *                be attached to the application
+   */
+  public void callAttach(Context context) {
+    ReflectionHelpers.callInstanceMethod(Application.class, realApplication, "attach",
+        ReflectionHelpers.ClassParameter.from(Context.class, context));
   }
 
   public List<Toast> getShownToasts() {
@@ -620,6 +599,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
   }
 
+  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  @Deprecated
   public boolean hasReceiverForIntent(Intent intent) {
     for (Wrapper wrapper : registeredReceivers) {
       if (wrapper.intentFilter.matchAction(intent.getAction())) {
@@ -629,6 +610,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     return false;
   }
 
+  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  @Deprecated
   public List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
     ArrayList<BroadcastReceiver> broadcastReceivers = new ArrayList<>();
     for (Wrapper wrapper : registeredReceivers) {
@@ -694,15 +677,6 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void clearWakeLocks() {
     latestWakeLock = null;
-  }
-
-  /**
-   * @deprecated Use {@link android.content.Context} or {@link android.content.pm.PackageManager}
-   *             instead. This method will be removed in a future version of Robolectric.
-   */
-  @Deprecated
-  public AndroidManifest getAppManifest() {
-    return appManifest;
   }
 
   private final Map<String, Object> singletons = new HashMap<>();

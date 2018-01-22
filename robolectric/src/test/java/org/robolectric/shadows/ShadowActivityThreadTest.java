@@ -1,25 +1,41 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
-import android.content.Context;
-import android.content.pm.PackageManager;
-import org.junit.Assert;
+import android.app.ActivityThread;
+import android.content.res.CompatibilityInfo;
+import android.os.Build;
+import android.os.RemoteException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowActivityThreadTest {
-    @Test
-    public void testTriggersUndeclaredThrowableException() throws Exception {
-        // createPackageContext internally calls ActivityThread.getPackageInfo which is what we'd like to test here.
-        try {
-            RuntimeEnvironment.application.createPackageContext("com.unknownpackage.ab", Context.CONTEXT_RESTRICTED);
-            Assert.fail("Should've triggered a NameNotFoundException and not UndeclaredThrowableException");
-        } catch (PackageManager.NameNotFoundException nnfe) {
-            assertThat(nnfe).hasMessageContaining("com.unknownpackage.ab");
-        }
-    }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.M)
+  public void getPackageInfo_returnsNullWhenNotFound() throws Exception {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    // assertThat(
+    //         activityThread.getPackageInfo(
+    //             "com.unknownpackage.ab", CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, 0))
+    //     .isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N_MR1)
+  public void getPackageInfo_throwsRemoteExceptionWhenNotFound() throws Exception {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    // try {
+    //   activityThread.getPackageInfo(
+    //       "com.unknownpackage.ab", CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, 0);
+    //   fail("should have thrown");
+    // } catch (RuntimeException e) {
+    //   assertThat(e).hasCauseInstanceOf(RemoteException.class);
+    // }
+  }
 }

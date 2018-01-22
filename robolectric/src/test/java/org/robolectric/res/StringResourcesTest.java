@@ -3,8 +3,8 @@ package org.robolectric.res;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class StringResourcesTest {
 
   @Test
   public void testInvalidCodePoints() {
-    List<String> tests = new LinkedList<>();
+    List<String> tests = new ArrayList<>();
     tests.add("\\u");
     tests.add("\\u0");
     tests.add("\\u00");

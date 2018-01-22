@@ -34,6 +34,8 @@ public class InstrumentationConfiguration {
       "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity"
   );
 
+  static final Set<String> RESOURCES_TO_ALWAYS_ACQUIRE = Sets.newHashSet("build.prop");
+
   private final List<String> instrumentedPackages;
   private final Set<String> instrumentedClasses;
   private final Set<String> classesToNotInstrument;
@@ -92,6 +94,10 @@ public class InstrumentationConfiguration {
       return true;
     }
 
+    if (name.equals("java.util.jar.StrictJarFile")) {
+      return true;
+    }
+
     // android.R and com.android.internal.R classes must be loaded from the framework jar
     if (name.matches("(android|com\\.android\\.internal)\\.R(\\$.+)?")) {
       return true;
@@ -110,6 +116,16 @@ public class InstrumentationConfiguration {
     // R classes must be loaded from system CP
     boolean isRClass = name.matches(".*\\.R(|\\$[a-z]+)$");
     return !isRClass && !classesToNotAcquire.contains(name);
+  }
+
+  /**
+   * Determine if {@link SandboxClassLoader} should load a given resource.
+   *
+   * @param name The fully-qualified resource name.
+   * @return True if the resource should be loaded.
+   */
+  public boolean shouldAcquireResource(String name) {
+    return RESOURCES_TO_ALWAYS_ACQUIRE.contains(name);
   }
 
   public Set<MethodRef> methodsToIntercept() {

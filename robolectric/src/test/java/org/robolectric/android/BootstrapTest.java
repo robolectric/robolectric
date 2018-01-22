@@ -132,13 +132,12 @@ public class BootstrapTest {
 
   @Test
   public void applyQualifiers_shouldAddDefaults() {
-    Bootstrap.applyQualifiers("", RuntimeEnvironment.getApiLevel(), configuration,
-        displayMetrics);
+    Bootstrap.applyQualifiers("", Build.VERSION.RESOURCES_SDK_INT, configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(outQualifiers)
         .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi" +
-            "-finger-keyssoft-nokeys-navhidden-nonav-v" + RuntimeEnvironment.getApiLevel());
+            "-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
@@ -173,17 +172,19 @@ public class BootstrapTest {
     Bootstrap.applyQualifiers(
         "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge-long-round-land-"
             + "appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad",
-        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+        Build.VERSION.RESOURCES_SDK_INT,
+        configuration,
+        displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
           + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
-          + RuntimeEnvironment.getApiLevel());
+          + Build.VERSION.RESOURCES_SDK_INT);
     } else {
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge"
           + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
-          + RuntimeEnvironment.getApiLevel());
+          + Build.VERSION.RESOURCES_SDK_INT);
     }
 
     assertThat(configuration.mcc).isEqualTo(310);

@@ -60,6 +60,7 @@ include $(BUILD_MULTI_PREBUILT)
 include $(CLEAR_VARS)
 LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-accessibility-test-framework-2.1:../../../prebuilts/tools/common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.1/accessibility-test-framework-2.1.jar \
+  robolectric-annotation-api-1.2:../../../prebuilts/tools/common/m2/repository/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar \
   robolectric-ant-1.8.0:../../../prebuilts/tools/common/m2/repository/org/apache/ant/ant/1.8.0/ant-1.8.0.jar \
   robolectric-asm-6.0:../../../prebuilts/tools/common/m2/repository/org/ow2/asm/asm/6.0/asm-6.0.jar \
   robolectric-asm-commons-6.0:../../../prebuilts/tools/common/m2/repository/org/ow2/asm/asm-commons/6.0/asm-commons-6.0.jar \

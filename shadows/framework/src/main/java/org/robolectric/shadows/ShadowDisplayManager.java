@@ -12,6 +12,7 @@ import android.view.DisplayInfo;
 import android.view.Surface;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
+import org.robolectric.android.internal.DisplayConfig;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.shadow.api.Shadow;
@@ -143,10 +144,12 @@ public class ShadowDisplayManager {
    * @param displayId the display id to change
    * @param consumer a function which modifies the display properties
    */
-  static void changeDisplay(int displayId, Consumer<DisplayInfo> consumer) {
+  static void changeDisplay(int displayId, Consumer<DisplayConfig> consumer) {
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
     if (displayInfo != null) {
-      consumer.accept(displayInfo);
+      DisplayConfig displayConfig = new DisplayConfig(displayInfo);
+      consumer.accept(displayConfig);
+      displayConfig.copyTo(displayInfo);
       fixNominalDimens(displayInfo);
     }
 

@@ -159,9 +159,12 @@ abstract public class Fs {
 
       @Override public FsFile[] listFiles(Filter filter) {
         List<FsFile> filteredFsFiles = new ArrayList<>();
-        for (FsFile fsFile : listFiles()) {
-          if (filter.accept(fsFile)) {
-            filteredFsFiles.add(fsFile);
+        FsFile[] fsFiles = listFiles();
+        if (fsFiles != null) {
+          for (FsFile fsFile : fsFiles) {
+            if (filter.accept(fsFile)) {
+              filteredFsFiles.add(fsFile);
+            }
           }
         }
         return filteredFsFiles.toArray(new FsFile[filteredFsFiles.size()]);

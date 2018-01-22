@@ -21,34 +21,34 @@ public class ShadowContentProviderOperation {
 
   @HiddenApi @Implementation
   public int getType() {
-    return getFieldReflectively("mType");
+    return getFieldReflectively("mType", Integer.class);
   }
 
   public String getSelection() {
-    return getFieldReflectively("mSelection");
+    return getFieldReflectively("mSelection", String.class);
   }
   public String[] getSelectionArgs() {
-    return getFieldReflectively("mSelectionArgs");
+    return getFieldReflectively("mSelectionArgs", String[].class);
   }
 
   public ContentValues getContentValues() {
-    return getFieldReflectively("mValues");
+    return getFieldReflectively("mValues", ContentValues.class);
   }
 
   public Integer getExpectedCount() {
-    return getFieldReflectively("mExpectedCount");
+    return getFieldReflectively("mExpectedCount", Integer.class);
   }
 
   public ContentValues getValuesBackReferences() {
-    return getFieldReflectively("mValuesBackReferences");
+    return getFieldReflectively("mValuesBackReferences", ContentValues.class);
   }
 
   @SuppressWarnings("unchecked")
   public Map<Integer, Integer> getSelectionArgsBackReferences() {
-    return getFieldReflectively("mSelectionArgsBackReferences");
+    return getFieldReflectively("mSelectionArgsBackReferences", Map.class);
   }
 
-  private <T> T getFieldReflectively(String fieldName) {
-    return ReflectionHelpers.getField(realOperation, fieldName);
+  private <T> T getFieldReflectively(String fieldName, Class<T> clazz) {
+    return clazz.cast(ReflectionHelpers.getField(realOperation, fieldName));
   }
 }
