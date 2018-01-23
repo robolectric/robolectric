@@ -125,25 +125,12 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
     final byte[] origClassBytes = getByteCode(className);
 
-    ClassNode classNode = new ClassNode(Opcodes.ASM4) {
-      @Override
-      public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        desc = typeMapper.remapParamType(desc);
-        return super.visitField(access, name, desc, signature, value);
-      }
-
-      @Override
-      public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor methodVisitor = super.visitMethod(access, name, typeMapper.remapParams(desc), signature, exceptions);
-        return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
-      }
-    };
-
-    final ClassReader classReader = new ClassReader(origClassBytes);
-    classReader.accept(classNode, 0);
+    ClassNode classNode = PerfStatsCollector.getInstance().measure("analyze class",
+        () -> analyzeClass(origClassBytes)
+    );
 
     try {
-      byte[] bytes;
+      final byte[] bytes;
       ClassInfo classInfo = new ClassInfo(className, classNode);
       if (config.shouldInstrument(classInfo)) {
         bytes = PerfStatsCollector.getInstance().measure("instrument class",
@@ -160,6 +147,26 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       System.err.println("[ERROR] couldn't load " + className + " in " + this);
       throw e;
     }
+  }
+
+  private ClassNode analyzeClass(byte[] origClassBytes) {
+    ClassNode classNode = new ClassNode(Opcodes.ASM4) {
+      @Override
+      public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        desc = typeMapper.remapParamType(desc);
+        return super.visitField(access, name, desc, signature, value);
+      }
+
+      @Override
+      public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodVisitor methodVisitor = super.visitMethod(access, name, typeMapper.remapParams(desc), signature, exceptions);
+        return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
+      }
+    };
+
+    final ClassReader classReader = new ClassReader(origClassBytes);
+    classReader.accept(classNode, 0);
+    return classNode;
   }
 
   @Override

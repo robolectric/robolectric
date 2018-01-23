@@ -96,9 +96,9 @@ abstract class ClassInstrumentor {
     addDirectCallConstructor(subject);
 
     // Do not override final #equals, #hashCode, and #toString for all classes
-    instrumentInheritedObjectMethod(subject, "equals", "(Ljava/lang/Object;)Z");
-    instrumentInheritedObjectMethod(subject, "hashCode", "()I");
-    instrumentInheritedObjectMethod(subject, "toString", "()Ljava/lang/String;");
+    createInstrumentableMethodIfNotAlreadyPresent(subject, "equals", "(Ljava/lang/Object;)Z");
+    createInstrumentableMethodIfNotAlreadyPresent(subject, "hashCode", "()I");
+    createInstrumentableMethodIfNotAlreadyPresent(subject, "toString", "()Ljava/lang/String;");
 
     addRoboInitMethod(subject);
 
@@ -176,8 +176,8 @@ abstract class ClassInstrumentor {
   }
 
   /**
-   * Checks if the given method in the class if overriding, at some point of it's
-   * inheritance tree, a final method
+   * Checks if the given method would override a final method in a superclass. This isn't possible at
+   * compile time but could have occurred with a synthetic method.
    */
   private boolean isOverridingFinalMethod(Subject subject, String methodName, String methodSignature) {
     ClassNode classNode = subject.classNode;
@@ -200,6 +200,7 @@ abstract class ClassInstrumentor {
         byte[] byteCode = subject.sandboxClassLoader.getByteCode(classNode.superName);
         ClassReader classReader = new ClassReader(byteCode);
         classNode = new ClassNode();
+        // perf TODO: we should be able to call `accept()` with `ClassReader.SKIP_CODE`:
         classReader.accept(classNode, 0);
       } catch (ClassNotFoundException e) {
         e.printStackTrace();
@@ -213,11 +214,12 @@ abstract class ClassInstrumentor {
   }
 
   /**
-   * To be used to instrument methods inherited from the Object class,
-   * such as hashCode, equals, and toString.
-   * Adds the methods directly to the class.
+   * Allows methods only present on a superclass (e.g. Object) to be `@Implemented` in a shadow.
+   *
+   * If the method isn't declared on this class, creates a synthetic method which calls super unless
+   * the {@link ClassHandler} decides otherwise.
    */
-  private void instrumentInheritedObjectMethod(Subject subject, final String methodName, String methodDesc) {
+  private void createInstrumentableMethodIfNotAlreadyPresent(Subject subject, final String methodName, String methodDesc) {
     // Won't instrument if method is overriding a final method
     if (isOverridingFinalMethod(subject, methodName, methodDesc)) {
       return;
