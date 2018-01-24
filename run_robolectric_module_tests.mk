@@ -48,9 +48,21 @@ copy_android_all_jar_pairs := \
   $(p_android_all_source_jar):$(android_all_target_dir)/android-all-P-robolectric-r0.jar
 copy_android_all_jars := $(call copy-many-files, $(copy_android_all_jar_pairs))
 
+# If debugging the tests was requested, set up the JVM parameters to enable it.
+debug_test_args :=
+ifdef debug_tests
+    # The arguments to the JVM needed to debug the tests.
+    # - server: wait for connection rather than connecting to a debugger
+    # - transport: how to accept debugger connections (sockets)
+    # - address: the host and port on which to accept debugger connections
+    # - suspend: do not start running any code until the debugger connects
+    debug_test_args := -Xdebug -agentlib:jdwp=server=y,transport=dt_socket,address=localhost:5005,suspend=y
+endif
+
 # Snapshot the variables so they cannot be polluted before the module is built.
 $(LOCAL_BUILT_MODULE): private_java := $(JAVA)
-$(LOCAL_BUILT_MODULE): private_working_directory := $(intermediates)
+$(LOCAL_BUILT_MODULE): private_debug_test_args := $(debug_test_args)
+$(LOCAL_BUILT_MODULE): private_test_base_dir := $(intermediates)
 $(LOCAL_BUILT_MODULE): private_test_class_names := $(test_class_names)
 $(LOCAL_BUILT_MODULE): private_host_jdk_tools_jar := $(HOST_JDK_TOOLS_JAR)
 $(LOCAL_BUILT_MODULE): private_android_all_dir := $(android_all_target_dir)
@@ -63,7 +75,8 @@ $(LOCAL_BUILT_MODULE): $(copy_test_resource_files) $(copy_android_all_jars) $(cl
 	$(hide) $(private_java) \
 	  -Drobolectric.offline=true \
 	  -Drobolectric.dependency.dir=$(private_android_all_dir) \
-	  -Drobolectric-tests.base-dir=$(private_working_directory) \
-	  -cp $(private_host_jdk_tools_jar):$(private_working_directory):$(private_classpath_jars) \
+	  -Drobolectric-tests.base-dir=$(private_test_base_dir) \
+	  $(private_debug_test_args) \
+	  -cp $(private_host_jdk_tools_jar):$(private_test_base_dir):$(private_classpath_jars) \
 	  org.junit.runner.JUnitCore \
 	  $(private_test_class_names)
