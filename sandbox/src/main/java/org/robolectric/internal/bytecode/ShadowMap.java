@@ -73,9 +73,17 @@ public class ShadowMap {
   }
 
   public static ShadowInfo obtainShadowInfo(Class<?> clazz) {
+    return obtainShadowInfo(clazz, false);
+  }
+
+  static ShadowInfo obtainShadowInfo(Class<?> clazz, boolean mayBeNonShadow) {
     Implements annotation = clazz.getAnnotation(Implements.class);
     if (annotation == null) {
-      throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+      if (mayBeNonShadow) {
+        return null;
+      } else {
+        throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+      }
     }
 
     String className = annotation.className();
