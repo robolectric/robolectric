@@ -34,7 +34,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
@@ -43,17 +42,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
-import android.content.pm.PackageParser.Activity;
 import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
-import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
 import android.content.pm.PackageUserState;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -142,31 +138,6 @@ public class ShadowPackageManager {
     return classString;
   }
 
-
-  static ResolveInfo getResolveInfo(Activity activity, IntentFilter intentFilter) {
-    ResolveInfo info = new ResolveInfo();
-    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
-    info.activityInfo = new ActivityInfo();
-    info.activityInfo.name = activity.info.name;
-    info.activityInfo.packageName = activity.info.packageName;
-    info.activityInfo.applicationInfo = activity.info.applicationInfo;
-    info.activityInfo.permission = activity.info.permission;
-    info.filter = new IntentFilter(intentFilter);
-    return info;
-  }
-
-  static ResolveInfo getResolveInfo(Service service, IntentFilter intentFilter) {
-    ResolveInfo info = new ResolveInfo();
-    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
-    info.serviceInfo = new ServiceInfo();
-    info.serviceInfo.name = service.info.name;
-    info.serviceInfo.packageName = service.info.packageName;
-    info.serviceInfo.applicationInfo = service.info.applicationInfo;
-    info.serviceInfo.permission = service.info.permission;
-    info.filter = new IntentFilter(intentFilter);
-    return info;
-  }
-
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     if (applicationInfo.sourceDir == null) {
@@ -214,10 +185,24 @@ public class ShadowPackageManager {
 
     for (Iterator<ResolveInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
-      if (resolveInfo.activityInfo.packageName.equals(packageName)) {
+      if (getPackageName(resolveInfo).equals(packageName)) {
         iterator.remove();
       }
     }
+  }
+
+  private static String getPackageName(ResolveInfo resolveInfo) {
+    if (resolveInfo.resolvePackageName != null) {
+      return resolveInfo.resolvePackageName;
+    } else if (resolveInfo.activityInfo != null) {
+      return resolveInfo.activityInfo.packageName;
+    } else if (resolveInfo.serviceInfo != null) {
+      return resolveInfo.serviceInfo.packageName;
+    } else if (resolveInfo.providerInfo != null) {
+      return resolveInfo.providerInfo.packageName;
+    }
+    throw new IllegalStateException(
+        "Could not find package name for ResolveInfo " + resolveInfo.toString());
   }
 
   public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
@@ -335,12 +320,13 @@ public class ShadowPackageManager {
 
   /**
    * Allows overriding or adding permission-group elements. These would be otherwise specified by
-   * either the system (https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups)
+   * either the system
+   * (https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups)
    * or by the app itself, as part of its manifest
    * (https://developer.android.com/guide/topics/manifest/permission-group-element.html).
-   * 
-   * PermissionGroups added through this method have precedence over those specified with the same name
-   * by one of the aforementioned methods.
+   *
+   * PermissionGroups added through this method have precedence over those specified with the same
+   * name by one of the aforementioned methods.
    */
   public void addPermissionGroupInfo(PermissionGroupInfo permissionGroupInfo) {
     extraPermissionGroups.put(permissionGroupInfo.name, permissionGroupInfo);

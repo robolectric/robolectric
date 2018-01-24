@@ -341,11 +341,13 @@ public class ShadowPackageManagerTest {
     appInfo.name = TEST_PACKAGE_LABEL;
     PermissionGroupInfo contactsPermissionGroupInfoApp1 = new PermissionGroupInfo();
     contactsPermissionGroupInfoApp1.name = Manifest.permission_group.CONTACTS;
-    PermissionGroup contactsPermissionGroupApp1 = new PermissionGroup(pkg, contactsPermissionGroupInfoApp1);
+    PermissionGroup contactsPermissionGroupApp1 =
+        new PermissionGroup(pkg, contactsPermissionGroupInfoApp1);
     pkg.permissionGroups.add(contactsPermissionGroupApp1);
     PermissionGroupInfo storagePermissionGroupInfoApp1 = new PermissionGroupInfo();
     storagePermissionGroupInfoApp1.name = permission_group.STORAGE;
-    PermissionGroup storagePermissionGroupApp1 = new PermissionGroup(pkg, storagePermissionGroupInfoApp1);
+    PermissionGroup storagePermissionGroupApp1 =
+        new PermissionGroup(pkg, storagePermissionGroupInfoApp1);
     pkg.permissionGroups.add(storagePermissionGroupApp1);
 
     shadowPackageManager.addPackage(pkg);
@@ -359,11 +361,13 @@ public class ShadowPackageManagerTest {
     appInfo2.name = TEST_PACKAGE2_LABEL;
     PermissionGroupInfo contactsPermissionGroupInfoApp2 = new PermissionGroupInfo();
     contactsPermissionGroupInfoApp2.name = Manifest.permission_group.CONTACTS;
-    PermissionGroup contactsPermissionGroupApp2 = new PermissionGroup(pkg2, contactsPermissionGroupInfoApp2);
+    PermissionGroup contactsPermissionGroupApp2 =
+        new PermissionGroup(pkg2, contactsPermissionGroupInfoApp2);
     pkg2.permissionGroups.add(contactsPermissionGroupApp2);
     PermissionGroupInfo calendarPermissionGroupInfoApp2 = new PermissionGroupInfo();
     calendarPermissionGroupInfoApp2.name = permission_group.CALENDAR;
-    PermissionGroup calendarPermissionGroupApp2 = new PermissionGroup(pkg2, calendarPermissionGroupInfoApp2);
+    PermissionGroup calendarPermissionGroupApp2 =
+        new PermissionGroup(pkg2, calendarPermissionGroupInfoApp2);
     pkg2.permissionGroups.add(calendarPermissionGroupApp2);
 
     shadowPackageManager.addPackage(pkg2);
@@ -613,6 +617,18 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryIntentServices_MatchWithExplicitIntent() throws Exception {
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "com.foo.Service");
+
+    List<ResolveInfo> services = packageManager.queryIntentServices(i, 0);
+    assertThat(services).isNotNull();
+    assertThat(services).hasSize(1);
+    assertThat(services.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(services.get(0).serviceInfo.name).isEqualTo("com.foo.Service");
+  }
+
+  @Test
   public void queryIntentServices_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
 
@@ -670,6 +686,19 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryBroadcastReceivers_MatchWithExplicitIntent() throws Exception {
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.fakes.ConfigTestReceiver");
+
+    List<ResolveInfo> receivers = packageManager.queryBroadcastReceivers(i, 0);
+    assertThat(receivers).isNotNull();
+    assertThat(receivers).hasSize(1);
+    assertThat(receivers.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(receivers.get(0).activityInfo.name)
+        .isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
+  }
+
+  @Test
   public void resolveService_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     ResolveInfo info = new ResolveInfo();
@@ -690,6 +719,21 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.removeResolveInfosForIntent(intent, "com.org");
 
     assertThat(packageManager.resolveActivity(intent, 0)).isNull();
+  }
+
+  @Test
+  public void removeResolveInfosForIntent_forService() throws Exception {
+    Intent intent =
+        new Intent(Intent.ACTION_APP_ERROR, null).addCategory(Intent.CATEGORY_APP_BROWSER);
+    ResolveInfo info = new ResolveInfo();
+    info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+    info.serviceInfo = new ServiceInfo();
+    info.serviceInfo.packageName = "com.org";
+    shadowPackageManager.addResolveInfoForIntent(intent, info);
+
+    shadowPackageManager.removeResolveInfosForIntent(intent, "com.org");
+
+    assertThat(packageManager.resolveService(intent, 0)).isNull();
   }
 
   @Test
@@ -1250,6 +1294,7 @@ public class ShadowPackageManagerTest {
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
+
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
 
