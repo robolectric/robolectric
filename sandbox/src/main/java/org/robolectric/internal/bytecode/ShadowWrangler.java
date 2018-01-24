@@ -167,6 +167,8 @@ public class ShadowWrangler implements ClassHandler {
       Method shadowMethod = pickShadowMethod(definingClass, invocationProfile.methodName, types);
       if (shadowMethod == CALL_REAL_CODE) {
         return CALL_REAL_CODE_PLAN;
+      } else if (shadowMethod == DO_NOTHING_METHOD){
+        return DO_NOTHING_PLAN;
       } else {
         return new ShadowMethodPlan(shadowMethod);
       }
