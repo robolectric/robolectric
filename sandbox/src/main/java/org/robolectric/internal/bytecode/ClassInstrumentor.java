@@ -6,7 +6,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -33,19 +32,21 @@ abstract class ClassInstrumentor {
   }
 
   static class Subject {
-    final SandboxClassLoader sandboxClassLoader;
-    final TypeMapper typeMapper;
     final ClassNode classNode;
-    private final boolean containsStubs;
+    final InstrumentationConfiguration config;
+    final ClassNodeProvider classNodeProvider;
+    final boolean containsStubs;
+
     final String internalClassName;
     private final String className;
     final Type classType;
     final ImmutableSet<String> foundMethods;
 
-    Subject(SandboxClassLoader sandboxClassLoader, TypeMapper typeMapper, ClassNode classNode, boolean containsStubs) {
-      this.sandboxClassLoader = sandboxClassLoader;
-      this.typeMapper = typeMapper;
+    Subject(ClassNode classNode, InstrumentationConfiguration config,
+        ClassNodeProvider classNodeProvider, boolean containsStubs) {
       this.classNode = classNode;
+      this.config = config;
+      this.classNodeProvider = classNodeProvider;
       this.containsStubs = containsStubs;
 
       this.internalClassName = classNode.name;
@@ -76,8 +77,9 @@ abstract class ClassInstrumentor {
     }
   }
 
-  public void instrument(SandboxClassLoader sandboxClassLoader, TypeMapper typeMapper, ClassNode classNode, boolean containsStubs) {
-    instrument(new Subject(sandboxClassLoader, typeMapper, classNode, containsStubs));
+  public void instrument(ClassNode classNode, InstrumentationConfiguration config,
+      ClassNodeProvider classNodeProvider, boolean containsStubs) {
+    instrument(new Subject(classNode, config, classNodeProvider, containsStubs));
   }
 
   //todo javadoc. Extract blocks to separate methods.
@@ -197,11 +199,7 @@ abstract class ClassInstrumentor {
       }
 
       try {
-        byte[] byteCode = subject.sandboxClassLoader.getByteCode(classNode.superName);
-        ClassReader classReader = new ClassReader(byteCode);
-        classNode = new ClassNode();
-        // perf TODO: we should be able to call `accept()` with `ClassReader.SKIP_CODE`:
-        classReader.accept(classNode, 0);
+        classNode = subject.classNodeProvider.getClassNode(classNode.superName);
       } catch (ClassNotFoundException e) {
         e.printStackTrace();
       }
@@ -430,7 +428,7 @@ abstract class ClassInstrumentor {
       switch (node.getOpcode()) {
         case Opcodes.NEW:
           TypeInsnNode newInsnNode = (TypeInsnNode) node;
-          newInsnNode.desc = subject.typeMapper.mappedTypeName(newInsnNode.desc);
+          newInsnNode.desc = subject.config.mappedTypeName(newInsnNode.desc);
           break;
 
         case Opcodes.GETFIELD:
@@ -441,7 +439,7 @@ abstract class ClassInstrumentor {
           /* falls through */
         case Opcodes.PUTSTATIC:
           FieldInsnNode fieldInsnNode = (FieldInsnNode) node;
-          fieldInsnNode.desc = subject.typeMapper.mappedTypeName(fieldInsnNode.desc); // todo test
+          fieldInsnNode.desc = subject.config.mappedTypeName(fieldInsnNode.desc); // todo test
           break;
 
         case Opcodes.INVOKESTATIC:
@@ -452,10 +450,10 @@ abstract class ClassInstrumentor {
           /* falls through */
         case Opcodes.INVOKEVIRTUAL:
           MethodInsnNode targetMethod = (MethodInsnNode) node;
-          targetMethod.desc = subject.typeMapper.remapParams(targetMethod.desc);
+          targetMethod.desc = subject.config.remapParams(targetMethod.desc);
           if (isGregorianCalendarBooleanConstructor(targetMethod)) {
             replaceGregorianCalendarBooleanConstructor(instructions, targetMethod);
-          } else if (subject.sandboxClassLoader.shouldIntercept(targetMethod)) {
+          } else if (subject.config.shouldIntercept(targetMethod)) {
             interceptInvokeVirtualMethod(subject, instructions, targetMethod);
           }
           break;

@@ -237,7 +237,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       case ARRAY:
         /* falls through */
       case OBJECT:
-        String remappedType = subject.typeMapper.mappedTypeName(returnType.getInternalName());
+        String remappedType = subject.config.mappedTypeName(returnType.getInternalName());
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, remappedType));
         break;
       case VOID:

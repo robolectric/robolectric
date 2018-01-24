@@ -12,9 +12,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashSet;
 import java.util.ListIterator;
-import java.util.Set;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -41,8 +39,6 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   private final ClassLoader systemClassLoader;
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
-  private final TypeMapper typeMapper;
-  private final Set<MethodRef> methodsToIntercept;
   private final ClassInstrumentor classInstrumentor;
 
   public SandboxClassLoader(InstrumentationConfiguration config) {
@@ -56,8 +52,6 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
-    this.typeMapper = new TypeMapper(config.classNameTranslations());
-    methodsToIntercept = convertToSlashes(config.methodsToIntercept());
     for (URL url : urls) {
       Logger.debug("Loading classes from: %s", url);
     }
@@ -153,13 +147,13 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     ClassNode classNode = new ClassNode(Opcodes.ASM4) {
       @Override
       public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        desc = typeMapper.remapParamType(desc);
+        desc = config.remapParamType(desc);
         return super.visitField(access, name, desc, signature, value);
       }
 
       @Override
       public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor methodVisitor = super.visitMethod(access, name, typeMapper.remapParams(desc), signature, exceptions);
+        MethodVisitor methodVisitor = super.visitMethod(access, name, config.remapParams(desc), signature, exceptions);
         return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
       }
     };
@@ -203,22 +197,10 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   }
 
   private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) {
-    classInstrumentor.instrument(this, typeMapper, classNode, containsStubs);
+    classInstrumentor.instrument(classNode, config, this::getByteCode, containsStubs);
     ClassWriter writer = new InstrumentingClassWriter(classNode);
     classNode.accept(writer);
     return writer.toByteArray();
-  }
-
-  private Set<MethodRef> convertToSlashes(Set<MethodRef> methodRefs) {
-    HashSet<MethodRef> transformed = new HashSet<>();
-    for (MethodRef methodRef : methodRefs) {
-      transformed.add(new MethodRef(internalize(methodRef.className), methodRef.methodName));
-    }
-    return transformed;
-  }
-
-  private String internalize(String className) {
-    return className.replace('.', '/');
   }
 
   public static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
@@ -267,12 +249,6 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     return type;
   }
 
-  boolean shouldIntercept(MethodInsnNode targetMethod) {
-    if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
-    return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
-        || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
-  }
-
   /**
    * ClassWriter implementation that verifies classes by comparing type information obtained
    * from loading the classes as resources. This was taken from the ASM ClassWriter unit tests.
@@ -294,13 +270,13 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     @Override
     public int newNameType(String name, String desc) {
       return super.newNameType(name, desc.charAt(0) == ')'
-          ? typeMapper.remapParams(desc)
-          : typeMapper.remapParamType(desc));
+          ? config.remapParams(desc)
+          : config.remapParamType(desc));
     }
 
     @Override
     public int newClass(String value) {
-      return super.newClass(typeMapper.mappedTypeName(value));
+      return super.newClass(config.mappedTypeName(value));
     }
 
     @Override
