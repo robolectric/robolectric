@@ -96,9 +96,9 @@ abstract class ClassInstrumentor {
     addDirectCallConstructor(subject);
 
     // Do not override final #equals, #hashCode, and #toString for all classes
-    createInstrumentableMethodIfNotAlreadyPresent(subject, "equals", "(Ljava/lang/Object;)Z");
-    createInstrumentableMethodIfNotAlreadyPresent(subject, "hashCode", "()I");
-    createInstrumentableMethodIfNotAlreadyPresent(subject, "toString", "()Ljava/lang/String;");
+    // createInstrumentableMethodIfNotAlreadyPresent(subject, "equals", "(Ljava/lang/Object;)Z");
+    // createInstrumentableMethodIfNotAlreadyPresent(subject, "hashCode", "()I");
+    // createInstrumentableMethodIfNotAlreadyPresent(subject, "toString", "()Ljava/lang/String;");
 
     addRoboInitMethod(subject);
 
