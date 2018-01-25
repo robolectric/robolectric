@@ -10,7 +10,8 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_annotations \
   Robolectric_shadowapi \
   robolectric-host-android-support-multidex \
-  robolectric-host-android_all
+  robolectric-host-android_all \
+  robolectric-javax.annotation-api-1.2
 
 LOCAL_ANNOTATION_PROCESSORS := \
   Robolectric_annotations \
