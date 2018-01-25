@@ -40,6 +40,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
   private final ClassInstrumentor classInstrumentor;
+  private final ClassNodeProvider classNodeProvider;
 
   public SandboxClassLoader(InstrumentationConfiguration config) {
     this(ClassLoader.getSystemClassLoader(), config);
@@ -60,6 +61,13 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
     classInstrumentor = InvokeDynamic.ENABLED
         ? new InvokeDynamicClassInstrumentor(decorator)
         : new OldClassInstrumentor(decorator);
+
+    classNodeProvider = new ClassNodeProvider() {
+      @Override
+      byte[] getClassBytes(String className) throws ClassNotFoundException {
+        return getByteCode(className);
+      }
+    };
   }
 
   private static URL[] getClassPathUrls(ClassLoader classloader) {
@@ -197,7 +205,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   }
 
   private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) {
-    classInstrumentor.instrument(classNode, config, this::getByteCode, containsStubs);
+    classInstrumentor.instrument(classNode, config, classNodeProvider, containsStubs);
     ClassWriter writer = new InstrumentingClassWriter(classNode);
     classNode.accept(writer);
     return writer.toByteArray();
