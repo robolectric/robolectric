@@ -22,6 +22,7 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
@@ -34,6 +35,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Activity;
+import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageParser.Service;
@@ -353,11 +355,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private ResolveInfo resolveActivityForExplicitIntent(Intent intent) {
     ComponentName component = getComponentForIntent(intent);
     for (Package appPackage : packages.values()) {
-      for (Activity activity : appPackage.activities) {
-        if (component.equals(activity.getComponentName())) {
+      Activity activity = findMatchingComponent(component, appPackage.activities);
+        if (activity != null) {
           return buildResolveInfo(activity);
         }
-      }
     }
     return null;
   }
@@ -365,11 +366,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private ResolveInfo resolveServiceForExplicitIntent(Intent intent) {
     ComponentName component = getComponentForIntent(intent);
     for (Package appPackage : packages.values()) {
-      for (Service service : appPackage.services) {
-        if (component.equals(service.getComponentName())) {
+      Service service = findMatchingComponent(component, appPackage.services);
+      if (service != null) {
           return buildResolveInfo(service);
         }
-      }
     }
     return null;
   }
@@ -377,10 +377,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private ResolveInfo resolveReceiverForExplicitIntent(Intent intent) {
     ComponentName component = getComponentForIntent(intent);
     for (Package appPackage : packages.values()) {
-      for (Activity activity : appPackage.receivers) {
-        if (component.equals(activity.getComponentName())) {
-          return buildResolveInfo(activity);
-        }
+      Activity receiver = findMatchingComponent(component, appPackage.receivers);
+      if (receiver != null) {
+        return buildResolveInfo(receiver);
+      }
+    }
+    return null;
+  }
+
+  private static <T extends Component> T findMatchingComponent(ComponentName componentName,
+      List<T> components) {
+    for (T component : components) {
+      if (componentName.equals(component.getComponentName())) {
+        return component;
       }
     }
     return null;
@@ -449,16 +458,20 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   static ResolveInfo buildResolveInfo(Activity activity) {
-    ResolveInfo resolveInfo = new ResolveInfo();
-    resolveInfo.resolvePackageName = activity.info.applicationInfo.packageName;
+    ResolveInfo resolveInfo = buildResolveInfo(activity.info);
     resolveInfo.activityInfo = activity.info;
     return resolveInfo;
   }
 
   static ResolveInfo buildResolveInfo(Service service) {
-    ResolveInfo resolveInfo = new ResolveInfo();
-    resolveInfo.resolvePackageName = service.info.applicationInfo.packageName;
+    ResolveInfo resolveInfo = buildResolveInfo(service.info);
     resolveInfo.serviceInfo = service.info;
+    return resolveInfo;
+  }
+
+  private static ResolveInfo buildResolveInfo(ComponentInfo componentInfo) {
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.resolvePackageName = componentInfo.applicationInfo.packageName;
     return resolveInfo;
   }
 
