@@ -26,6 +26,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.Function;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ShadowWrangler implements ClassHandler {
@@ -160,45 +161,50 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private Plan calculatePlan(String signature, boolean isStatic, Class<?> definingClass) {
-    final ClassLoader classLoader = definingClass.getClassLoader();
-    final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, classLoader);
-    try {
-      Class<?>[] types = invocationProfile.getParamClasses(classLoader);
-      Method shadowMethod = pickShadowMethod(definingClass, invocationProfile.methodName, types);
-      if (shadowMethod == CALL_REAL_CODE) {
-        return CALL_REAL_CODE_PLAN;
-      } else if (shadowMethod == DO_NOTHING_METHOD){
-        return DO_NOTHING_PLAN;
-      } else {
-        return new ShadowMethodPlan(shadowMethod);
+    return PerfStatsCollector.getInstance().measure("find shadow method", () -> {
+      final ClassLoader classLoader = definingClass.getClassLoader();
+      final InvocationProfile invocationProfile =
+          new InvocationProfile(signature, isStatic, classLoader);
+      try {
+        Class<?>[] types = invocationProfile.getParamClasses(classLoader);
+        Method shadowMethod = pickShadowMethod(definingClass, invocationProfile.methodName, types);
+        if (shadowMethod == CALL_REAL_CODE) {
+          return CALL_REAL_CODE_PLAN;
+        } else if (shadowMethod == DO_NOTHING_METHOD){
+          return DO_NOTHING_PLAN;
+        } else {
+          return new ShadowMethodPlan(shadowMethod);
+        }
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
       }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    });
   }
 
   @Override public MethodHandle findShadowMethodHandle(Class<?> definingClass, String name,
       MethodType methodType, boolean isStatic) throws IllegalAccessException {
-    MethodType actualType = isStatic ? methodType : methodType.dropParameterTypes(0, 1);
-    Class<?>[] paramTypes = actualType.parameterArray();
+    return PerfStatsCollector.getInstance().measure("find shadow method handle", () -> {
+      MethodType actualType = isStatic ? methodType : methodType.dropParameterTypes(0, 1);
+      Class<?>[] paramTypes = actualType.parameterArray();
 
-    Method shadowMethod = pickShadowMethod(definingClass, name, paramTypes);
+      Method shadowMethod = pickShadowMethod(definingClass, name, paramTypes);
 
-    if (shadowMethod == CALL_REAL_CODE) {
-      return null;
-    } else if (shadowMethod == DO_NOTHING_METHOD) {
-      return DO_NOTHING;
-    }
+      if (shadowMethod == CALL_REAL_CODE) {
+        return null;
+      } else if (shadowMethod == DO_NOTHING_METHOD) {
+        return DO_NOTHING;
+      }
 
-    MethodHandle mh = LOOKUP.unreflect(shadowMethod);
+      MethodHandle mh = LOOKUP.unreflect(shadowMethod);
 
-    // Robolectric doesn't actually look for static, this for example happens
-    // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
-    if (!isStatic && Modifier.isStatic(shadowMethod.getModifiers())) {
-      return dropArguments(mh, 0, Object.class);
-    } else {
-      return mh;
-    }
+      // Robolectric doesn't actually look for static, this for example happens
+      // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
+      if (!isStatic && Modifier.isStatic(shadowMethod.getModifiers())) {
+        return dropArguments(mh, 0, Object.class);
+      } else {
+        return mh;
+      }
+    });
   }
 
   private Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
