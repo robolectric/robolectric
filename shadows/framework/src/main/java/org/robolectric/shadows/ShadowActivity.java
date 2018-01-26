@@ -74,7 +74,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
   private ComponentName callingActivity;
 
- public void setApplication(Application application) {
+  public void setApplication(Application application) {
     ReflectionHelpers.setField(realActivity, "mApplication", application);
   }
 
