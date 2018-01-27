@@ -24,7 +24,7 @@ import org.robolectric.testing.ShadowFoo;
 @RunWith(SandboxTestRunner.class)
 public class ShadowWranglerIntegrationTest {
 
-  private static boolean yes = true;
+  private static final boolean YES = true;
 
   private String name;
 
@@ -417,7 +417,7 @@ public class ShadowWranglerIntegrationTest {
   @Instrument
   public static class AClassWithBrokenStaticInitializer {
     static {
-      if (yes) throw new RuntimeException("broken!");
+      if (YES) throw new RuntimeException("broken!");
     }
   }
 
