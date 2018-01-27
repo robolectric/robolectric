@@ -133,6 +133,13 @@ public class ShadowWrangler implements ClassHandler {
     try {
       Method method = pickShadowMethod(clazz,
           ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
+
+      // if we got back DO_NOTHING_METHOD that means the shadow is `callThroughByDefault = false`;
+      // for backwards compatibility we'll still perform static initialization though for now.
+      if (method == DO_NOTHING_METHOD) {
+        method = null;
+      }
+
       if (method != null) {
         if (!Modifier.isStatic(method.getModifiers())) {
           throw new RuntimeException(
