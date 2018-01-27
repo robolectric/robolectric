@@ -130,6 +130,8 @@ public class ShadowAccountManager {
       }
     }
 
+    notifyListeners();
+
     return true;
   }
 
@@ -176,7 +178,11 @@ public class ShadowAccountManager {
   public boolean removeAccountExplicitly(Account account) {
     passwords.remove(account);
     userData.remove(account);
-    return accounts.remove(account);
+    if (accounts.remove(account)) {
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   /**

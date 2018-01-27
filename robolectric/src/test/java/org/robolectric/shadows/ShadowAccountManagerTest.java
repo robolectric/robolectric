@@ -177,6 +177,35 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void testAddAccountExplicitly_notifiesListenersIfSuccessful() {
+    TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();
+    am.addOnAccountsUpdatedListener(listener, null, false);
+    assertThat(listener.getInvocationCount()).isEqualTo(0);
+
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, "passwd", null);
+
+    assertThat(accountAdded).isTrue();
+    assertThat(listener.getInvocationCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void testAddAccountExplicitly_doesNotNotifyListenersIfUnsuccessful() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, "passwd", null);
+    assertThat(accountAdded).isTrue();
+
+    TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();
+    am.addOnAccountsUpdatedListener(listener, null, false);
+    assertThat(listener.getInvocationCount()).isEqualTo(0);
+
+    // This account is added already, so it'll fail
+    boolean accountAdded2 = am.addAccountExplicitly(account, "passwd", null);
+    assertThat(accountAdded2).isFalse();
+    assertThat(listener.getInvocationCount()).isEqualTo(0);
+  }
+
+  @Test
   public void testGetSetUserData_addToInitiallyEmptyExtras() {
     Account account = new Account("name", "type");
     boolean accountAdded = am.addAccountExplicitly(account, null, null);
@@ -314,6 +343,34 @@ public class ShadowAccountManagerTest {
     assertThat(am.getAccountsByType("type")).isEmpty();
 
     assertThat(testAccountManagerCallback.accountManagerFuture).isNotNull();
+  }
+
+  @Test
+  public void removeAccount_notifiesListenersIfSuccessful() {
+    Account account = new Account("name", "type");
+    am.addAccountExplicitly(account, "passwd", null);
+
+    TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();
+    am.addOnAccountsUpdatedListener(listener, null, false);
+    assertThat(listener.getInvocationCount()).isEqualTo(0);
+
+    am.removeAccount(account, null, null);
+
+    assertThat(listener.getInvocationCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void removeAccount_doesNotNotifyIfUnuccessful() {
+    Account account = new Account("name", "type");
+
+    TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();
+    am.addOnAccountsUpdatedListener(listener, null, false);
+    assertThat(listener.getInvocationCount()).isEqualTo(0);
+
+    // The account has not been added
+    am.removeAccount(account, null, null);
+
+    assertThat(listener.getInvocationCount()).isEqualTo(0);
   }
 
   private static class TestOnAccountsUpdateListener implements OnAccountsUpdateListener {
