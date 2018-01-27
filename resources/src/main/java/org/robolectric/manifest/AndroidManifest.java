@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
@@ -47,6 +49,7 @@ public class AndroidManifest {
   private int versionCode;
   private String versionName;
   private final Map<String, PermissionItemData> permissions = new HashMap<>();
+  private final Map<String, PermissionGroupItemData> permissionGroups = new HashMap<>();
   private final List<ContentProviderData> providers = new ArrayList<>();
   private final List<BroadcastReceiverData> receivers = new ArrayList<>();
   private final Map<String, ServiceData> serviceDatas = new LinkedHashMap<>();
@@ -118,7 +121,7 @@ public class AndroidManifest {
       String rClassName = getRClassName();
       return Class.forName(rClassName);
     } catch (Exception e) {
-        return null;
+      return null;
     }
   }
 
@@ -168,8 +171,8 @@ public class AndroidManifest {
 
         minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
 
-        String targetSdkText = getTagAttributeText(manifestDocument, "uses-sdk",
-            "android:targetSdkVersion");
+        String targetSdkText =
+            getTagAttributeText(manifestDocument, "uses-sdk", "android:targetSdkVersion");
         if (targetSdkText != null) {
           // Support Android O Preview. This can be removed once Android O is officially launched.
           targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
@@ -182,6 +185,7 @@ public class AndroidManifest {
 
         parseUsedPermissions(manifestDocument);
         parsePermissions(manifestDocument);
+        parsePermissionGroups(manifestDocument);
       } catch (Exception ignored) {
         ignored.printStackTrace();
       }
@@ -226,15 +230,32 @@ public class AndroidManifest {
       Node permissionNode = elementsByTagName.item(i);
       final MetaData metaData = new MetaData(getChildrenTags(permissionNode, "meta-data"));
       String name = getAttributeValue(permissionNode, "android:name");
-      permissions.put(name,
+      permissions.put(
+          name,
           new PermissionItemData(
               name,
               getAttributeValue(permissionNode, "android:label"),
               getAttributeValue(permissionNode, "android:description"),
               getAttributeValue(permissionNode, "android:permissionGroup"),
               getAttributeValue(permissionNode, "android:protectionLevel"),
-              metaData
-          ));
+              metaData));
+    }
+  }
+
+  private void parsePermissionGroups(final Document manifestDocument) {
+    NodeList elementsByTagName = manifestDocument.getElementsByTagName("permission-group");
+
+    for (int i = 0; i < elementsByTagName.getLength(); i++) {
+      Node permissionGroupNode = elementsByTagName.item(i);
+      final MetaData metaData = new MetaData(getChildrenTags(permissionGroupNode, "meta-data"));
+      String name = getAttributeValue(permissionGroupNode, "android:name");
+      permissionGroups.put(
+          name,
+          new PermissionGroupItemData(
+              name,
+              getAttributeValue(permissionGroupNode, "android:label"),
+              getAttributeValue(permissionGroupNode, "android:description"),
+              metaData));
     }
   }
 
@@ -255,12 +276,15 @@ public class AndroidManifest {
         ));
       }
 
-      providers.add(new ContentProviderData(resolveClassRef(name),
+      providers.add(
+          new ContentProviderData(
+              resolveClassRef(name),
               metaData,
               authorities,
               getAttributeValue(contentProviderNode, "android:readPermission"),
               getAttributeValue(contentProviderNode, "android:writePermission"),
-              pathPermissionDatas));
+              pathPermissionDatas,
+              getAttributeValue(contentProviderNode, "android:grantUriPermissions")));
     }
   }
 
@@ -533,11 +557,29 @@ public class AndroidManifest {
     return labelRef;
   }
 
+  /**
+   * Returns the minimum Android SDK version that this package expects to be runnable on, as
+   * specified in the manifest.
+   *
+   * <p>Note that if `targetSdkVersion` isn't set, this value changes the behavior of some Android
+   * code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
+   *
+   * @return the minimum SDK version, or Jelly Bean (16) by default
+   */
   public int getMinSdkVersion() {
     parseAndroidManifest();
-    return minSdkVersion == null ? 1 : minSdkVersion;
+    return minSdkVersion == null ? 16 : minSdkVersion;
   }
 
+  /**
+   * Returns the Android SDK version that this package prefers to be run on, as specified in the
+   * manifest.
+   *
+   * <p>Note that this value changes the behavior of some Android code (notably {@link
+   * android.content.SharedPreferences}) to emulate old bugs.
+   *
+   * @return the minimum SDK version, or Jelly Bean (16) by default
+   */
   public int getTargetSdkVersion() {
     parseAndroidManifest();
     return targetSdkVersion == null ? getMinSdkVersion() : targetSdkVersion;
@@ -587,6 +629,26 @@ public class AndroidManifest {
   public List<AndroidManifest> getLibraryManifests() {
     assert(libraryManifests != null);
     return Collections.unmodifiableList(libraryManifests);
+  }
+
+  /**
+   * Returns all transitively reachable manifests, including this one, in order and without
+   * duplicates.
+   */
+  public List<AndroidManifest> getAllManifests() {
+    Set<AndroidManifest> seenManifests = new HashSet<>();
+    List<AndroidManifest> uniqueManifests = new ArrayList<>();
+    addTransitiveManifests(seenManifests, uniqueManifests);
+    return uniqueManifests;
+  }
+
+  private void addTransitiveManifests(Set<AndroidManifest> unique, List<AndroidManifest> list) {
+    if (unique.add(this)) {
+      list.add(this);
+      for (AndroidManifest androidManifest : getLibraryManifests()) {
+        androidManifest.addTransitiveManifests(unique, list);
+      }
+    }
   }
 
   public FsFile getResDirectory() {
@@ -677,6 +739,11 @@ public class AndroidManifest {
     return permissions;
   }
 
+  public Map<String, PermissionGroupItemData> getPermissionGroups() {
+    parseAndroidManifest();
+    return permissionGroups;
+  }
+
   /**
    * Returns data for the broadcast receiver with the provided name from this manifest. If no
    * receiver with the class name can be found, returns null.
@@ -687,7 +754,7 @@ public class AndroidManifest {
   public @Nullable BroadcastReceiverData getBroadcastReceiver(String className) {
     parseAndroidManifest();
     for (BroadcastReceiverData receiver : receivers) {
-      if (receiver.getClassName().equals(className)) {
+      if (receiver.getName().equals(className)) {
         return receiver;
       }
     }

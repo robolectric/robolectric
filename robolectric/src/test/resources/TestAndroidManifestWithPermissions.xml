@@ -23,6 +23,11 @@
 
     <permission android:name="permission_with_minimal_fields"/>
 
+    <permission-group android:name="permission_group"
+                android:description="@string/test_permission_description"
+                android:icon="drawable resource"
+                android:label="Literal label"/>
+
     <application>
     </application>
 </manifest>

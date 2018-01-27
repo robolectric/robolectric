@@ -18,6 +18,7 @@ public class Shadows implements ShadowProvider {
     SHADOW_MAP.put("com.example.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowExcludedFromAndroidSdk");
   }
 
+  @Override
   public void reset() {
   }
 

@@ -1,120 +1,70 @@
 package org.robolectric.res;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.robolectric.res.android.ConfigDescription;
+import org.robolectric.res.android.ResTable_config;
 
 /**
  * Android qualifers as defined by https://developer.android.com/guide/topics/resources/providing-resources.html
  */
 public class Qualifiers {
+  private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
+
   // Matches a version qualifier like "v14". Parentheses capture the numeric
   // part for easy retrieval with Matcher.group(2).
   private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
   private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
   private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("(v)([0-9]+)$");
-  private static final Pattern SIZE_QUALIFIER_PATTERN = Pattern.compile("(s?[wh])([0-9]+)dp");
   private static final Pattern ORIENTATION_QUALIFIER_PATTERN = Pattern.compile("(land|port)");
 
-  // Version are matched in the end, and hence have least order
-  private static final int ORDER_VERSION = 0;
-  // Various size qualifies, in increasing order of importance.
-  private static final List<String> INT_QUALIFIERS = Arrays.asList("v", "h", "w", "sh", "sw");
-  private static final int TOTAL_ORDER_COUNT = INT_QUALIFIERS.size();
+  private final String qualifiers;
+  private final ResTable_config config;
 
-  private static final Map<String, Qualifiers> sQualifiersCache = new HashMap<>();
-
-  private final int[] mWeights = new int[TOTAL_ORDER_COUNT];
-  // Set of all the qualifiers which need exact matching.
-  private final List<String> mDefaults = new ArrayList<>();
-
-  public boolean matches(Qualifiers other) {
-    if (!passesRequirements(other)) {
-      return false;
-    }
-    return other.mDefaults.containsAll(mDefaults);
+  public static Qualifiers parse(String qualifiers) {
+    return parse(qualifiers, true);
   }
 
-  public boolean passesRequirements(Qualifiers other) {
-    for (int i = 0; i < TOTAL_ORDER_COUNT; i++) {
-      if (other.mWeights[i] != -1 && mWeights[i] != -1 && other.mWeights[i] < mWeights[i]) {
-        return false;
-      }
+  public static Qualifiers parse(String qualifiers, boolean applyVersionForCompat) {
+    final ResTable_config config = new ResTable_config();
+    if (!qualifiers.isEmpty()
+        && !ConfigDescription.parse(qualifiers, config, applyVersionForCompat)) {
+      throw new IllegalArgumentException("failed to parse qualifiers '" + qualifiers + "'");
     }
-    return true;
+
+    return new Qualifiers(qualifiers, config);
   }
 
-  public boolean isBetterThan(Qualifiers other, Qualifiers context) {
-    // Compare the defaults in the order they appear in the context.
-    for (String qualifier : context.mDefaults) {
-      if (other.mDefaults.contains(qualifier) ^ mDefaults.contains(qualifier)) {
-        return mDefaults.contains(qualifier);
-      }
-    }
-
-    for (int i = TOTAL_ORDER_COUNT - 1; i > ORDER_VERSION; i--) {
-      if (other.mWeights[i] != mWeights[i]) {
-        return mWeights[i] > other.mWeights[i];
-      }
-    }
-
-    // Compare the version only if the context defines a version.
-    if (context.mWeights[ORDER_VERSION] != -1
-        && other.mWeights[ORDER_VERSION] != mWeights[ORDER_VERSION]) {
-      return mWeights[ORDER_VERSION] > other.mWeights[ORDER_VERSION];
-    }
-
-    // The qualifiers match completely
-    return false;
+  protected Qualifiers(String qualifiers, ResTable_config config) {
+    this.qualifiers = qualifiers;
+    this.config = config;
   }
 
-  public static Qualifiers parse(String qualifiersStr) {
-    synchronized (sQualifiersCache) {
-      Qualifiers result = sQualifiersCache.get(qualifiersStr);
-      if (result != null) {
-        return result;
-      }
-      StringTokenizer st = new StringTokenizer(qualifiersStr, "-");
-      result = new Qualifiers();
-      // Version qualifiers are also allowed to match when only one of the qualifiers
-      // defines a version restriction.
-      result.mWeights[ORDER_VERSION] = -1;
+  public ResTable_config getConfig() {
+    return config;
+  }
 
-      while (st.hasMoreTokens()) {
-        String qualifier = st.nextToken();
-        if (qualifier.isEmpty()) {
-          continue;
-        }
+  @Override
+  public String toString() {
+    return qualifiers;
+  }
 
-        Matcher m = VERSION_QUALIFIER_PATTERN.matcher(qualifier);
-        if (!m.find()) {
-          m = SIZE_QUALIFIER_PATTERN.matcher(qualifier);
-          if (!m.find()) {
-            m = null;
-          }
-        }
-        if (m != null) {
-          int order = INT_QUALIFIERS.indexOf(m.group(1));
-          if (order == ORDER_VERSION && result.mWeights[ORDER_VERSION] != -1) {
-            throw new IllegalStateException(
-                "A resource file was found that had two API level qualifiers: " + qualifiersStr);
-          }
-          result.mWeights[order] = Integer.parseInt(m.group(2));
-        } else {
-          result.mDefaults.add(qualifier);
-        }
-      }
-
-      sQualifiersCache.put(qualifiersStr, result);
-      return result;
+  public static Qualifiers fromParentDir(FsFile parentDir) {
+    if (parentDir == null) {
+      return parse("");
+    } else {
+      String parentDirName = parentDir.getName();
+      Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDirName);
+      if (!matcher.find()) throw new IllegalStateException(parentDirName);
+      String qualifiers = matcher.group(1);
+      return parse(qualifiers != null ? qualifiers : "");
     }
   }
 
+  /**
+   * @deprecated Use {@link android.os.Build.VERSION#SDK_INT} instead.
+   */
+  @Deprecated
   public static int getPlatformVersion(String qualifiers) {
     Matcher m = VERSION_QUALIFIER_PATTERN.matcher(qualifiers);
     if (m.find()) {
@@ -123,6 +73,10 @@ public class Qualifiers {
     return -1;
   }
 
+  /**
+   * @deprecated Use {@link android.content.res.Configuration#smallestScreenWidthDp} instead.
+   */
+  @Deprecated
   public static int getSmallestScreenWidth(String qualifiers) {
     for (String qualifier : qualifiers.split("-")) {
       Matcher matcher = SMALLEST_SCREEN_WIDTH_PATTERN.matcher(qualifier);
@@ -134,10 +88,13 @@ public class Qualifiers {
     return -1;
   }
 
-  /*
+  /**
    * If the Config already has a version qualifier, do nothing. Otherwise, add a version
    * qualifier for the target api level (which comes from the manifest or Config.sdk()).
+   *
+   * @deprecated Figure something else out.
    */
+  @Deprecated
   public static String addPlatformVersion(String qualifiers, int apiLevel) {
     int versionQualifierApiLevel = Qualifiers.getPlatformVersion(qualifiers);
     if (versionQualifierApiLevel == -1) {
@@ -149,10 +106,13 @@ public class Qualifiers {
     return qualifiers;
   }
 
-  /*
-   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.sdk()).
+  /**
+   * If the Config already has a `sw` qualifier, do nothing. Otherwise, add a `sw`
+   * qualifier for the given width.
+   *
+   * @deprecated Use {@link android.content.res.Configuration#smallestScreenWidthDp} instead.
    */
+  @Deprecated
   public static String addSmallestScreenWidth(String qualifiers, int smallestScreenWidth) {
     int qualifiersSmallestScreenWidth = Qualifiers.getSmallestScreenWidth(qualifiers);
     if (qualifiersSmallestScreenWidth == -1) {
@@ -164,6 +124,10 @@ public class Qualifiers {
     return qualifiers;
   }
 
+  /**
+   * @deprecated Use {@link android.content.res.Configuration#screenWidthDp} instead.
+   */
+  @Deprecated
   public static int getScreenWidth(String qualifiers) {
     for (String qualifier : qualifiers.split("-")) {
       Matcher matcher = SCREEN_WIDTH_PATTERN.matcher(qualifier);
@@ -175,6 +139,10 @@ public class Qualifiers {
     return -1;
   }
 
+  /**
+   * @deprecated Use {@link android.content.res.Configuration#screenWidthDp} instead.
+   */
+  @Deprecated
   public static String addScreenWidth(String qualifiers, int screenWidth) {
     int qualifiersScreenWidth = Qualifiers.getScreenWidth(qualifiers);
     if (qualifiersScreenWidth == -1) {
@@ -186,6 +154,10 @@ public class Qualifiers {
     return qualifiers;
   }
 
+  /**
+   * @deprecated Use {@link android.content.res.Configuration#orientation} instead.
+   */
+  @Deprecated
   public static String getOrientation(String qualifiers) {
     for (String qualifier : qualifiers.split("-")) {
       Matcher matcher = ORIENTATION_QUALIFIER_PATTERN.matcher(qualifier);

@@ -33,8 +33,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMediaPlayer.InvalidStateBehavior;
 import org.robolectric.shadows.ShadowMediaPlayer.MediaEvent;
@@ -736,6 +736,7 @@ public class ShadowMediaPlayerTest {
     }
 
     @Override
+    @SuppressWarnings("MissingFail")
     public void test(MethodSpec method) {
       final State state = shadowMediaPlayer.getState();
       boolean success = false;

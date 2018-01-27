@@ -3,9 +3,8 @@ package org.robolectric.shadows;
 import android.os.Build;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNotificationBuilder25Test extends ShadowNotificationBuilderTest {

@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id "net.ltgt.apt" version "0.12" // automatic annotation processing
+    id "net.ltgt.apt" version "0.13" // automatic annotation processing
 }
 
 allprojects {

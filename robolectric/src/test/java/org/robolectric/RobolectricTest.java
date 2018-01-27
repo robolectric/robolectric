@@ -8,9 +8,11 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
@@ -23,9 +25,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.android.DeviceConfig;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
@@ -38,6 +41,7 @@ public class RobolectricTest {
   private PrintStream originalSystemOut;
   private ByteArrayOutputStream buff;
   private String defaultLineSeparator;
+  private Application context;
 
   @Before
   public void setUp() {
@@ -48,6 +52,7 @@ public class RobolectricTest {
     buff = new ByteArrayOutputStream();
     PrintStream testOut = new PrintStream(buff);
     System.setOut(testOut);
+    context = RuntimeEnvironment.application;
   }
 
   @After
@@ -58,7 +63,7 @@ public class RobolectricTest {
 
   @Test(expected = RuntimeException.class)
   public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
-    View view = new View(RuntimeEnvironment.application);
+    View view = new View(context);
     view.setEnabled(false);
     ShadowView.clickOn(view);
   }
@@ -94,29 +99,39 @@ public class RobolectricTest {
 
   @Test
   public void shouldUseSetDensityForContexts() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.0f);
+    assertThat(context.getResources().getDisplayMetrics().density).isEqualTo(1.0f);
+    assertThat(Resources.getSystem().getDisplayMetrics().density).isEqualTo(1.0f);
     ShadowApplication.setDisplayMetricsDensity(1.5f);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
+    assertThat(context.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
+    assertThat(Resources.getSystem().getDisplayMetrics().density).isEqualTo(1.5f);
   }
 
   @Test
   public void shouldUseSetDisplayForContexts() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
+    assertThat(context.getResources().getDisplayMetrics().widthPixels)
+        .isEqualTo(DeviceConfig.DEFAULT_SCREEN_SIZE.width);
+    assertThat(context.getResources().getDisplayMetrics().heightPixels)
+        .isEqualTo(DeviceConfig.DEFAULT_SCREEN_SIZE.height);
+    assertThat(Resources.getSystem().getDisplayMetrics().widthPixels)
+        .isEqualTo(DeviceConfig.DEFAULT_SCREEN_SIZE.width);
+    assertThat(Resources.getSystem().getDisplayMetrics().heightPixels)
+        .isEqualTo(DeviceConfig.DEFAULT_SCREEN_SIZE.height);
 
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
+    Display display = ShadowDisplay.getDefaultDisplay();
+    ShadowDisplay shadowDisplay = shadowOf(display);
     shadowDisplay.setWidth(100);
     shadowDisplay.setHeight(200);
     ShadowApplication.setDefaultDisplay(display);
 
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(100);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(200);
+    assertThat(context.getResources().getDisplayMetrics().widthPixels).isEqualTo(100);
+    assertThat(context.getResources().getDisplayMetrics().heightPixels).isEqualTo(200);
+    assertThat(Resources.getSystem().getDisplayMetrics().widthPixels).isEqualTo(100);
+    assertThat(Resources.getSystem().getDisplayMetrics().heightPixels).isEqualTo(200);
   }
 
   @Test
   public void clickOn_shouldCallClickListener() throws Exception {
-    View view = new View(RuntimeEnvironment.application);
+    View view = new View(context);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     OnClickListener testOnClickListener = mock(OnClickListener.class);
     view.setOnClickListener(testOnClickListener);
@@ -128,10 +143,10 @@ public class RobolectricTest {
   @Test(expected = ActivityNotFoundException.class)
   public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
     ShadowApplication.getInstance().checkActivities(true);
-    RuntimeEnvironment.application.startActivity(new Intent("i.dont.exist.activity"));
+    context.startActivity(new Intent("i.dont.exist.activity"));
   }
 
-  @Test
+  @Test @Config(sdk = 16)
   public void setupActivity_returnsAVisibleActivity() throws Exception {
     LifeCycleActivity activity = Robolectric.setupActivity(LifeCycleActivity.class);
 
@@ -144,7 +159,7 @@ public class RobolectricTest {
   @Implements(View.class)
   public static class TestShadowView {
     @Implementation
-    public Context getContext() {
+    protected Context getContext() {
       return null;
     }
   }

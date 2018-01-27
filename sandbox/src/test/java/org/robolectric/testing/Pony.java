@@ -29,7 +29,7 @@ public class Pony {
     }
 
     @Implementation
-    public static String prance(String where) {
+    protected static String prance(String where) {
       return "I'm shadily prancing to " + where + "!";
     }
   }

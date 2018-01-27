@@ -23,7 +23,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
-import android.view.Display;
 import java.io.File;
 import java.io.InputStream;
 import org.assertj.core.data.Offset;
@@ -32,12 +31,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -132,12 +130,10 @@ public class ShadowResourcesTest {
 
   @Test
   public void obtainTypedArray() throws Exception {
-    final Display display = Shadow.newInstanceOf(Display.class);
-    final ShadowDisplay shadowDisplay = shadowOf(display);
-    // Standard xxhdpi screen
-    shadowDisplay.setDensityDpi(480);
     final DisplayMetrics displayMetrics = new DisplayMetrics();
-    display.getMetrics(displayMetrics);
+    displayMetrics.density = 1;
+    displayMetrics.scaledDensity = 1;
+    displayMetrics.xdpi = 160;
 
     final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
     assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
@@ -217,10 +213,10 @@ public class ShadowResourcesTest {
   public void getDimension() throws Exception {
     assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
     assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
-    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 240);
-    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 240)));
+    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 160);
+    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 160)));
     assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
-    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12 / 0.3f);
+    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12f * 160 / 72);
     assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
@@ -228,10 +224,10 @@ public class ShadowResourcesTest {
   public void getDimensionPixelSize() throws Exception {
     assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen)).isEqualTo(20);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 240);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(397);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(265);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(40);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(27);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
@@ -239,10 +235,10 @@ public class ShadowResourcesTest {
   public void getDimensionPixelOffset() throws Exception {
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen)).isEqualTo(20);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 240);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(396);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(264);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(40);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(26);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
@@ -335,7 +331,7 @@ public class ShadowResourcesTest {
 
   @Test(expected = Resources.NotFoundException.class)
   public void testGetColor_Missing() {
-    resources.getColor(R.color.test_color_1);
+    resources.getColor(11234);
   }
 
   @Test
@@ -427,8 +423,8 @@ public class ShadowResourcesTest {
 
   @Test
   public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(470);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(320);
   }
 
   @Test
@@ -505,7 +501,7 @@ public class ShadowResourcesTest {
   public void openRawResource_shouldLoadRawResourcesFromLibraries() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+    assertThat(TestUtil.readString(resourceStream)).contains("from lib");
   }
 
   @Test
@@ -843,7 +839,7 @@ public class ShadowResourcesTest {
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
 
     resources.getValue(R.integer.loneliest_number, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);

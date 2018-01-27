@@ -38,7 +38,7 @@ public class ShadowPagerAdapterTest {
 
   }
 
-  private class TestDataSetObserver extends DataSetObserver {
+  private static class TestDataSetObserver extends DataSetObserver {
     boolean onChangedWasCalled;
 
     @Override

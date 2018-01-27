@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -156,19 +156,19 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP, qualifiers = "anydpi")
-  public void testGetBitmapOrVectorDrawableAt21() {
-    final Drawable aDrawable = RuntimeEnvironment.application.getResources()
-        .getDrawable(R.drawable.an_image_or_vector);
-    assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
-  }
-
-  @Test
-  @Config(minSdk = KITKAT)
+  @Config(maxSdk = KITKAT_WATCH)
   public void testGetBitmapOrVectorDrawableAt19() {
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
     assertThat(aDrawable).isInstanceOf(BitmapDrawable.class);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testGetBitmapOrVectorDrawableAt21() {
+    final Drawable aDrawable = RuntimeEnvironment.application.getResources()
+        .getDrawable(R.drawable.an_image_or_vector);
+    assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
   }
 
   private static class TestDrawable extends Drawable {
