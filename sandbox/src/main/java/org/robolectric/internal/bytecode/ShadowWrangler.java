@@ -66,6 +66,7 @@ public class ShadowWrangler implements ClassHandler {
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
   private static final boolean STRIP_SHADOW_STACK_TRACES = true;
+  private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
@@ -129,25 +130,21 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public void classInitializing(Class clazz) {
-    Class<?> shadowClass = findDirectShadowClass(clazz);
-    if (shadowClass != null) {
-      try {
-        Method method = findShadowMethodDeclaredOnClass(shadowClass,
-            ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, new Class[0]);
-        if (method != null) {
-          if (!Modifier.isStatic(method.getModifiers())) {
-            throw new RuntimeException(shadowClass.getName() + "." + method.getName() + " is not static");
-          }
-
-          method.invoke(null);
-        } else {
-          RobolectricInternals.performStaticInitialization(clazz);
+    try {
+      Method method = pickShadowMethod(clazz,
+          ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
+      if (method != null) {
+        if (!Modifier.isStatic(method.getModifiers())) {
+          throw new RuntimeException(
+              method.getDeclaringClass().getName() + "." + method.getName() + " is not static");
         }
-      } catch (InvocationTargetException | IllegalAccessException e) {
-        throw new RuntimeException(e);
+
+        method.invoke(null);
+      } else {
+        RobolectricInternals.performStaticInitialization(clazz);
       }
-    } else {
-      RobolectricInternals.performStaticInitialization(clazz);
+    } catch (InvocationTargetException | IllegalAccessException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -445,14 +442,6 @@ public class ShadowWrangler implements ClassHandler {
     for (Field realObjectField : shadowMetadata.realObjectFields) {
       setField(shadow, instance, realObjectField);
     }
-  }
-
-  private Class<?> findDirectShadowClass(Class<?> originalClass) {
-    ShadowInfo shadowInfo = getExactShadowInfo(originalClass);
-    if (shadowInfo == null) {
-      return null;
-    }
-    return loadClass(shadowInfo.shadowClassName, originalClass.getClassLoader());
   }
 
   private ShadowInfo getShadowInfo(Class<?> clazz) {

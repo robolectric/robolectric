@@ -23,6 +23,9 @@ import org.robolectric.testing.ShadowFoo;
 
 @RunWith(SandboxTestRunner.class)
 public class ShadowWranglerIntegrationTest {
+
+  private static boolean yes = true;
+
   private String name;
 
   @Before
@@ -404,5 +407,30 @@ public class ShadowWranglerIntegrationTest {
     static {
       initCount++;
     }
+  }
+
+  @Test @SandboxConfig(shadows = Shadow22OfAClassWithBrokenStaticInitializer.class)
+  public void staticInitializerShadowMethodsObeySameRules() throws Exception {
+    new AClassWithBrokenStaticInitializer();
+  }
+
+  @Instrument
+  public static class AClassWithBrokenStaticInitializer {
+    static {
+      if (yes) throw new RuntimeException("broken!");
+    }
+  }
+
+  @Implements(AClassWithBrokenStaticInitializer.class)
+  public static class Shadow2OfAClassWithBrokenStaticInitializer {
+    @Implementation
+    protected static void __staticInitializer__() {
+      // don't call real static initializer
+    }
+  }
+
+  @Implements(AClassWithBrokenStaticInitializer.class)
+  public static class Shadow22OfAClassWithBrokenStaticInitializer
+      extends Shadow2OfAClassWithBrokenStaticInitializer {
   }
 }
