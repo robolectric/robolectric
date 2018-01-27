@@ -29,6 +29,7 @@ public class ShadowDateIntervalFormat {
   }
 
   @Implementation
+  @SuppressWarnings("JdkObsolete")
   public static String formatDateInterval(long address, long fromDate, long toDate) {
     StringBuffer buffer = new StringBuffer();
 

@@ -240,7 +240,7 @@ public class ShadowMessageTest {
     assertThat(dummy2).as("before resetting").isSameAs(dummy1);
 
     shadowOf(dummy2).recycleUnchecked();
-    Robolectric.reset();
+    ShadowMessage.reset();
     dummy1 = Message.obtain();
     assertThat(dummy1).as("after resetting").isNotSameAs(dummy2);
   }

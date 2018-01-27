@@ -80,7 +80,7 @@ public class RobolectricProcessorTest {
   }
 
   @Test
-  public void generatedFile_shouldSkipNonPublicClasses() {
+  public void generatedFile_shouldHandleNonPublicClasses() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
@@ -93,6 +93,19 @@ public class RobolectricProcessorTest {
       .compilesWithoutError()
       .and()
       .generatesSources(forResource("org/robolectric/Robolectric_HiddenClasses.java"));
+  }
+
+  @Test
+  public void generatedFile_shouldComplainAboutNonStaticInnerClasses() {
+    assertAbout(javaSources())
+      .that(ImmutableList.of(
+          ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
+          SHADOW_EXTRACTOR_SOURCE,
+          forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummyWithErrs.java")))
+      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
+      .failsToCompile()
+      .withErrorContaining("inner shadow classes must be static");
   }
 
   @Test

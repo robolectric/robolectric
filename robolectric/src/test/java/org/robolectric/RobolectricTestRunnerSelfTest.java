@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
@@ -10,8 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = RobolectricTestRunnerSelfTest.MyTestApplication.class)
@@ -28,14 +28,18 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void shouldSetUpSystemResources() {
-    assertThat(Resources.getSystem()).as("system resources").isNotNull();
-    assertThat(Resources.getSystem().getString(android.R.string.copy)).as("system resource")
-      .isEqualTo(RuntimeEnvironment.application.getResources().getString(android.R.string.copy));
+    Resources systemResources = Resources.getSystem();
+    Resources appResources = RuntimeEnvironment.application.getResources();
 
-    assertThat(RuntimeEnvironment.application.getResources().getString(R.string.howdy)).as("app resource")
+    assertThat(systemResources).as("system resources").isNotNull();
+
+    assertThat(systemResources.getString(android.R.string.copy)).as("system resource")
+        .isEqualTo(appResources.getString(android.R.string.copy));
+
+    assertThat(appResources.getString(R.string.howdy)).as("app resource")
       .isNotNull();
     try {
-      Resources.getSystem().getString(R.string.howdy);
+      systemResources.getString(R.string.howdy);
       Assertions.failBecauseExceptionWasNotThrown(Resources.NotFoundException.class);
     } catch (Resources.NotFoundException e) {
     }
@@ -69,8 +73,7 @@ public class RobolectricTestRunnerSelfTest {
   public void testVersionConfiguration() {
     assertThat(Build.VERSION.SDK_INT)
         .isEqualTo(Build.VERSION_CODES.KITKAT);
-    assertThat(Build.VERSION.RELEASE)
-        .isEqualTo("4.4_r1");
+    assertThat(Build.VERSION.RELEASE).isEqualTo("4.4");
   }
 
   @Test public void hamcrestMatchersDontBlowUpDuringLinking() throws Exception {

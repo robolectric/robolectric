@@ -1,71 +1,103 @@
 package org.robolectric.shadows;
 
 import android.os.SystemProperties;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.base.Preconditions;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
-  private static final Map<String, Object> VALUES = new HashMap<>();
-  private static final Set<String> alreadyWarned = new HashSet<>();
+  private static Properties buildProperties = null;
 
-  static {
-    VALUES.put("ro.build.version.release", "2.2");
-    VALUES.put("ro.build.version.incremental", "0");
-    VALUES.put("ro.build.version.sdk", 8);
-    VALUES.put("ro.build.date.utc", 1277708400000L);  // Jun 28, 2010
-    VALUES.put("ro.debuggable", 0);
-    VALUES.put("ro.secure", 1);
-    VALUES.put("ro.product.cpu.abilist", "armeabi-v7a");
-    VALUES.put("ro.product.cpu.abilist32", "armeabi-v7a,armeabi");
-    VALUES.put("ro.product.cpu.abilist64", "armeabi-v7a,armeabi");
-    VALUES.put("ro.build.fingerprint", "robolectric");
-    VALUES.put("ro.build.version.all_codenames", "REL");
-    VALUES.put("log.closeguard.Animation", false);
-    VALUES.put("debug.choreographer.vsync", false); // disable vsync for Choreographer
+  @Implementation
+  public static String native_get(String key) {
+    return native_get(key, "");
   }
 
   @Implementation
-  public static String get(String key) {
-    Object o = VALUES.get(key);
-    if (o == null) {
-      warnUnknown(key);
-      return "";
+  public static String native_get(String key, String def) {
+    String value = getProperty(key);
+    return value == null ? def : value;
+  }
+
+  @Implementation
+  public static int native_get_int(String key, int def) {
+    String stringValue = getProperty(key);
+    return stringValue == null ? def : Integer.parseInt(stringValue);
+  }
+
+  @Implementation
+  public static long native_get_long(String key, long def) {
+    String stringValue = getProperty(key);
+    return stringValue == null ? def : Long.parseLong(stringValue);
+  }
+
+  @Implementation
+  public static boolean native_get_boolean(String key, boolean def) {
+    String stringValue = getProperty(key);
+    return stringValue == null ? def : Boolean.parseBoolean(stringValue);
+  }
+
+  @Implementation
+  public static void native_set(String key, String val) {
+    if (val == null) {
+      loadProperties().remove(key);
+    } else {
+      loadProperties().setProperty(key, val);
     }
-    return o.toString();
   }
 
-  @Implementation
-  public static String get(String key, String def) {
-    Object value = VALUES.get(key);
-    return value == null ? def : value.toString();
+  // ignored/unimplemented methods
+  // private static native void native_add_change_callback();
+  // private static native void native_report_sysprop_change();
+
+  private static synchronized String getProperty(String key) {
+    return loadProperties().getProperty(key);
   }
 
-  @Implementation
-  public static int getInt(String key, int def) {
-    Object value = VALUES.get(key);
-    return value == null ? def : (Integer) value;
-  }
-
-  @Implementation
-  public static long getLong(String key, long def) {
-    Object value = VALUES.get(key);
-    return value == null ? def : (Long) value;
-  }
-
-  @Implementation
-  public static boolean getBoolean(String key, boolean def) {
-    Object value = VALUES.get(key);
-    return value == null ? def : (Boolean) value;
-  }
-
-  synchronized private static void warnUnknown(String key) {
-    if (alreadyWarned.add(key)) {
-      System.err.println("WARNING: no system properties value for " + key);
+  private static synchronized Properties loadProperties() {
+    if (buildProperties == null) {
+      // load the prop from classpath
+      ClassLoader cl = SystemProperties.class.getClassLoader();
+      URL urlFromCl = cl.getResource("build.prop");
+      try (InputStream is = cl.getResourceAsStream("build.prop")) {
+        Preconditions.checkNotNull(is, "could not find build.prop");
+        buildProperties = new Properties();
+        buildProperties.load(is);
+        setDefaults(buildProperties);
+      } catch (IOException e) {
+        throw new RuntimeException("failed to load build.prop", e);
+      }
     }
+    return buildProperties;
+  }
+
+  private static void setDefaults(Properties buildProperties) {
+    // The default generated build.prop can make this look like the emulator.
+    // Override common default properties to indicate platform is robolectric
+    // TODO: put these values directly in build.prop generated from build system
+    buildProperties.setProperty("ro.build.fingerprint", "robolectric");
+    buildProperties.setProperty("ro.product.device", "robolectric");
+    buildProperties.setProperty("ro.product.name", "robolectric");
+    buildProperties.setProperty("ro.product.model", "robolectric");
+    buildProperties.setProperty("ro.hardware", "robolectric");
+    buildProperties.setProperty("ro.build.characteristics", "robolectric");
+
+    // for backwards-compatiblity reasons, set CPUS to unknown/ARM
+    buildProperties.setProperty("ro.product.cpu.abi", "unknown");
+    buildProperties.setProperty("ro.product.cpu.abi2", "unknown");
+    buildProperties.setProperty("ro.product.cpu.abilist", "armeabi-v7a");
+    buildProperties.setProperty("ro.product.cpu.abilist32", "armeabi-v7a,armeabi");
+    buildProperties.setProperty("ro.product.cpu.abilist64", "armeabi-v7a,armeabi");
+  }
+
+  @Resetter
+  public static synchronized void reset() {
+    buildProperties = null;
   }
 }

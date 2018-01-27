@@ -2,6 +2,7 @@ package org.robolectric.internal;
 
 import static java.util.Arrays.asList;
 
+import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,17 +31,38 @@ import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.SandboxConfig;
+import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.PerfStatsCollector.Event;
+import org.robolectric.util.PerfStatsCollector.Metadata;
+import org.robolectric.util.PerfStatsCollector.Metric;
+import org.robolectric.util.PerfStatsReporter;
 
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
+  private static final ShadowMap BASE_SHADOW_MAP;
+
+  static {
+    ServiceLoader<ShadowProvider> shadowProviders = ServiceLoader.load(ShadowProvider.class);
+    BASE_SHADOW_MAP = ShadowMap.createFromShadowProviders(shadowProviders);
+  }
+
   private final Interceptors interceptors;
+  private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     super(klass);
+
     interceptors = new Interceptors(findInterceptors());
+    perfStatsReporters = Lists.newArrayList(getPerfStatsReporters().iterator());
+  }
+
+  @Nonnull
+  protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
+    return ServiceLoader.load(PerfStatsReporter.class);
   }
 
   @Nonnull
@@ -121,9 +144,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
     URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
     ClassLoader sandboxClassLoader = new SandboxClassLoader(systemClassLoader, instrumentationConfiguration);
-    Sandbox sandbox = new Sandbox(sandboxClassLoader);
-    configureShadows(method, sandbox);
-    return sandbox;
+    return new Sandbox(sandboxClassLoader);
   }
 
   /**
@@ -145,8 +166,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("org.junit.");
 
     for (Class<?> shadowClass : getExtraShadows(method)) {
-      ShadowMap.ShadowInfo shadowInfo = ShadowMap.getShadowInfo(shadowClass);
-      builder.addInstrumentedClass(shadowInfo.getShadowedClassName());
+      ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
+      builder.addInstrumentedClass(shadowInfo.shadowedClassName);
     }
 
     addInstrumentedPackages(method, builder);
@@ -190,6 +211,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
+        PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
+        perfStatsCollector.reset();
+        perfStatsCollector.setEnabled(!perfStatsReporters.isEmpty());
+
+        Event initialization = perfStatsCollector.startEvent("initialization");
+
         Sandbox sandbox = getSandbox(method);
 
         // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
@@ -219,6 +246,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
           beforeTest(sandbox, method, bootstrappedMethod);
 
+          initialization.finished();
+
           final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
 
           // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
@@ -230,9 +259,29 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         } finally {
           Thread.currentThread().setContextClassLoader(priorContextClassLoader);
           finallyAfterTest(method);
+
+          reportPerfStats(perfStatsCollector);
+          perfStatsCollector.reset();
         }
       }
     };
+  }
+
+  private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
+    if (perfStatsReporters.isEmpty()) {
+      return;
+    }
+
+    Metadata metadata = perfStatsCollector.getMetadata();
+    Collection<Metric> metrics = perfStatsCollector.getMetrics();
+
+    for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
+      try {
+        perfStatsReporter.report(metadata, metrics);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
@@ -281,7 +330,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ShadowMap createShadowMap() {
-    return ShadowMap.EMPTY;
+    return BASE_SHADOW_MAP;
   }
 
   @Nonnull

@@ -27,7 +27,7 @@ import org.robolectric.res.ResName;
  */
 public final class ResourceHelper {
 
-  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
+  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]*(?:\\.[0-9]+)?)(.*)");
   private final static float[] sFloatOut = new float[1];
 
   private final static TypedValue mValue = new TypedValue();

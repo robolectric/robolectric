@@ -82,6 +82,7 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
+  @SuppressWarnings("ReferenceEquality")
   public void cancel() {
     for (Iterator<PendingIntent> i = createdIntents.iterator(); i.hasNext(); ) {
       PendingIntent pendingIntent = i.next();

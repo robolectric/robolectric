@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -10,8 +11,8 @@ import android.content.Context;
 import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -109,15 +110,23 @@ public class ShadowActivityManagerTest {
     assertThat(ActivityManager.isUserAMonkey()).isFalse();
   }
 
+  @Test @Config(minSdk = KITKAT)
+  public void setIsLowRamDevice() {
+    final ActivityManager activityManager = getActivityManager();
+    shadowOf(activityManager).setIsLowRamDevice(true);
+    assertThat(activityManager.isLowRamDevice()).isTrue();
+  }
+
   @Test @Config(minSdk = M)
   public void getLockTaskModeState() throws Exception {
     assertThat(getActivityManager().getLockTaskModeState()).isEqualTo(0); // just don't throw
   }
 
   ///////////////////////
-  
+
   private ActivityManager getActivityManager() {
-    return (ActivityManager) RuntimeEnvironment.application.getSystemService(Context.ACTIVITY_SERVICE);
+    return (ActivityManager) RuntimeEnvironment.application.getSystemService(
+        Context.ACTIVITY_SERVICE);
   }
 
   private ActivityManager.RunningTaskInfo buildTaskInfo(ComponentName name) {

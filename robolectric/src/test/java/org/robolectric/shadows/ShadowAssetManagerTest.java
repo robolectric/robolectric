@@ -2,10 +2,7 @@ package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.R.color.test_ARGB8;
@@ -16,6 +13,7 @@ import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -24,9 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -35,8 +30,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -67,33 +62,24 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void assetsPathListing() throws IOException {
-    List<String> files;
-    String testPath;
+    assertThat(assetManager.list(""))
+        .contains(
+            "assetsHome.txt",   // test/resources/assets
+            "docs",             // test/resources/assets
+            "myFont.ttf",       // test/resources/assets
+            "libFont.ttf",      // test/resources/lib1/assets
+            "file-in-lib2.txt"  // test/resources/lib2/assets + test/resources/lib2/assets (merged)
+            );
+    assertThat(assetManager.list("docs"))
+        .contains("extra");
 
-    testPath = "";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("docs"));
-    assertTrue(files.contains("assetsHome.txt"));
+    assertThat(assetManager.list("docs/extra"))
+        .contains("testing");
 
-    testPath = "docs";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("extra"));
+    assertThat(assetManager.list("docs/extra/testing"))
+        .contains("hello.txt");
 
-    testPath ="docs/extra";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("testing"));
-
-    testPath = "docs/extra/testing";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertTrue(files.contains("hello.txt"));
-
-    testPath = "assetsHome.txt";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertFalse(files.contains(testPath));
-
-    testPath = "bogus.file";
-    files = Arrays.asList(assetManager.list(testPath));
-    assertEquals(0, files.size());
+    assertThat(assetManager.list("bogus-dir")).isEmpty();
   }
 
   @Test
@@ -101,6 +87,13 @@ public class ShadowAssetManagerTest {
     final String contents =
         CharStreams.toString(new InputStreamReader(assetManager.open("assetsHome.txt"), UTF_8));
     assertThat(contents).isEqualTo("assetsHome!");
+  }
+
+  @Test
+  public void open_shouldOpenFileInLib() throws IOException {
+    final String contents =
+        CharStreams.toString(new InputStreamReader(assetManager.open("file-in-lib2.txt"), UTF_8));
+    assertThat(contents).isEqualTo("asset in lib 2");
   }
 
   @Test
@@ -119,6 +112,14 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
+  public void openFd_shouldProvideFileDescriptorForAssetInLib() throws Exception {
+    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("file-in-lib2.txt");
+    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
+        .isEqualTo("asset in lib 2");
+    assertThat(assetFileDescriptor.getLength()).isEqualTo(14);
+  }
+
+  @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
 
@@ -126,13 +127,14 @@ public class ShadowAssetManagerTest {
     assertThat(byteArrayInputStream.available()).isEqualTo(6559);
   }
 
-  @Test
+  @Test @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
     // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name
-    final String jarFile = "jar:/android-all-5.0.0_r2-robolectric-0.jar!/res/drawable-hdpi/bottom_bar.png";
+    String fileName = "jar:res/drawable-hdpi/bottom_bar.png";
+    int expectedFileSize = 389;
 
-    InputStream inputStream = assetManager.openNonAsset(0, jarFile, 0);
-    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(389);
+    InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
+    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(expectedFileSize);
   }
 
   @Test
@@ -180,6 +182,50 @@ public class ShadowAssetManagerTest {
 
     ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
     assertThat(byteArrayInputStream.available()).isEqualTo(23447);
+  }
+
+  @Test
+  public void multiFormatAttributes_integerDecimalValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "16").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
+  }
+
+  @Test
+  public void multiFormatAttributes_integerHexValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "0x10").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+  }
+
+  @Test
+  public void multiFormatAttributes_stringValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "Hello World").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
+  }
+
+  @Test
+  public void multiFormatAttributes_booleanValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "true").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
   }
 
   @Test

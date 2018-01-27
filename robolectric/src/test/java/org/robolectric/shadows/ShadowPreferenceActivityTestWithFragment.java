@@ -45,7 +45,6 @@ public class ShadowPreferenceActivityTestWithFragment {
   }
 
   private static class TestPreferenceActivity extends Activity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -56,8 +55,7 @@ public class ShadowPreferenceActivityTestWithFragment {
     }
   }
 
-  private static class TestPreferenceFragment extends PreferenceFragment {
-
+  public static class TestPreferenceFragment extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);

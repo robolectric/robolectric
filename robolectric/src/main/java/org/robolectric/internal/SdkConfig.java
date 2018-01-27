@@ -8,33 +8,27 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.dependency.DependencyJar;
-import org.robolectric.util.Logger;
 
 public class SdkConfig implements Comparable<SdkConfig> {
 
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS = Collections.unmodifiableMap(new HashMap<Integer, SdkVersion>() {
-    private final double jdkVersion = Double.parseDouble(System.getProperty("java.specification.version"));
-
     {
-      addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "0", "1.6", "REL");
-      addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "0", "1.6", "REL");
-      addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "0", "1.6", "REL");
-      addSdk(Build.VERSION_CODES.KITKAT, "4.4_r1", "1", "1.7", "REL");
-      addSdk(Build.VERSION_CODES.LOLLIPOP, "5.0.0_r2", "1", "1.7", "REL");
-      addSdk(Build.VERSION_CODES.LOLLIPOP_MR1, "5.1.1_r9", "1", "1.7", "REL");
-      addSdk(Build.VERSION_CODES.M, "6.0.1_r3", "0", "1.7", "REL");
-      addSdk(Build.VERSION_CODES.N, "7.0.0_r1", "0", "1.8", "REL");
-      addSdk(Build.VERSION_CODES.N_MR1, "7.1.0_r7", "0", "1.8", "REL");
-      addSdk(Build.VERSION_CODES.O, "8.0.0_r4", "0", "1.8", "REL");
-      addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "4402310", "1.8", "OMR1");
+      addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "r1", "REL");
+      addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "r1", "REL");
+      addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "r1", "REL");
+      addSdk(Build.VERSION_CODES.KITKAT, "4.4_r1", "r2", "REL");
+      addSdk(Build.VERSION_CODES.LOLLIPOP, "5.0.2_r3", "r0", "REL");
+      addSdk(Build.VERSION_CODES.LOLLIPOP_MR1, "5.1.1_r9", "r2", "REL");
+      addSdk(Build.VERSION_CODES.M, "6.0.1_r3", "r1", "REL");
+      addSdk(Build.VERSION_CODES.N, "7.0.0_r1", "r1", "REL");
+      addSdk(Build.VERSION_CODES.N_MR1, "7.1.0_r7", "r1", "REL");
+      addSdk(Build.VERSION_CODES.O, "8.0.0_r4", "r1", "REL");
+      addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "r4402310", "OMR1");
     }
 
-    private void addSdk(int sdkVersion, String androidVersion, String frameworkSdkBuildVersion, String minJdkVersion, String codeName) {
-      if (jdkVersion >= Double.parseDouble(minJdkVersion)) {
+    private void addSdk(int sdkVersion, String androidVersion, String frameworkSdkBuildVersion,
+        String codeName) {
         put(sdkVersion, new SdkVersion(androidVersion, frameworkSdkBuildVersion, codeName));
-      } else {
-        Logger.info("Android SDK %s not supported on JDK %s (it requires %s)", sdkVersion, jdkVersion, minJdkVersion);
-      }
     }
   });
 

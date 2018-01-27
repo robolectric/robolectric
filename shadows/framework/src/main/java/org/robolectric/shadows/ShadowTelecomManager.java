@@ -12,9 +12,9 @@ import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
@@ -30,8 +30,8 @@ public class ShadowTelecomManager {
 
   private PhoneAccountHandle simCallManager;
   private LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap();
-  private List<CallRecord> incomingCalls = new LinkedList<>();
-  private List<CallRecord> unknownCalls = new LinkedList<>();
+  private List<CallRecord> incomingCalls = new ArrayList<>();
+  private List<CallRecord> unknownCalls = new ArrayList<>();
   private String defaultDialerPackageName;
 
   @Implementation
@@ -65,7 +65,7 @@ public class ShadowTelecomManager {
 
   @Implementation
   public List<PhoneAccountHandle> getPhoneAccountsSupportingScheme(String uriScheme) {
-    List<PhoneAccountHandle> result = new LinkedList<>();
+    List<PhoneAccountHandle> result = new ArrayList<>();
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
       PhoneAccount phoneAccount = accounts.get(handle);
@@ -83,7 +83,7 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = M)
   public List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
-    List<PhoneAccountHandle> result = new LinkedList<>();
+    List<PhoneAccountHandle> result = new ArrayList<>();
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
       PhoneAccount phoneAccount = accounts.get(handle);
@@ -99,7 +99,7 @@ public class ShadowTelecomManager {
   public List<PhoneAccountHandle> getPhoneAccountsForPackage() {
     Context context = ReflectionHelpers.getField(realObject, "mContext");
 
-    List<PhoneAccountHandle> results = new LinkedList<>();
+    List<PhoneAccountHandle> results = new ArrayList<>();
     for (PhoneAccountHandle handle : accounts.keySet()) {
       if (handle.getComponentName().getPackageName().equals(context.getPackageName())) {
         results.add(handle);

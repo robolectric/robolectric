@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import java.io.*;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
@@ -9,8 +10,6 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
-
-import java.io.*;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
@@ -42,34 +41,18 @@ public abstract class TestUtil {
     return TEST_RESOURCE_PATH;
   }
 
-  public static ResourcePath lib1Resources() {
-    return new ResourcePath(org.robolectric.lib1.R.class, resourceFile("lib1/res"), resourceFile("lib1/assets"));
-  }
-
-  public static ResourcePath lib2Resources() {
-    return new ResourcePath(org.robolectric.lib2.R.class, resourceFile("lib2/res"), resourceFile("lib2/assets"));
-  }
-
-  public static ResourcePath lib3Resources() {
-    return new ResourcePath(org.robolectric.lib3.R.class, resourceFile("lib3/res"), resourceFile("lib3/assets"));
-  }
-
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
       Fs fs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("res"), fs.join("assets"));
+      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("raw-res/res"), fs.join("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
     Fs sdkResFs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
-    return new ResourcePath(null, sdkResFs.join("res"), null, null);
-  }
-
-  public static ResourcePath gradleAppResources() {
-    return new ResourcePath(org.robolectric.gradleapp.R.class, resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
+    return new ResourcePath(null, sdkResFs.join("raw-res/res"), null, null);
   }
 
   public static String readString(InputStream is) throws IOException {
