@@ -16,11 +16,12 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_resources \
   Robolectric_utils \
   robolectric-accessibility-test-framework-2.1 \
-  robolectric-hamcrest-library-1.3 \
   robolectric-hamcrest-core-1.3 \
-  robolectric-sqlite4java-0.282 \
-  robolectric-host-android_all \
+  robolectric-hamcrest-library-1.3 \
   robolectric-guava-20.0 \
+  robolectric-host-android_all \
+  robolectric-javax.annotation-api-1.2 \
+  robolectric-sqlite4java-0.282 \
   icu4j-host \
   jsr305lib
 

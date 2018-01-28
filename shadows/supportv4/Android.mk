@@ -13,7 +13,8 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_shadowapi \
   Robolectric_utils \
   robolectric-host-android-support-v4 \
-  robolectric-host-android_all
+  robolectric-host-android_all \
+  robolectric-javax.annotation-api-1.2
 
 LOCAL_ANNOTATION_PROCESSORS := \
   Robolectric_annotations \

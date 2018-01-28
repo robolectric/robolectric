@@ -14,7 +14,8 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-host-org_apache_http_legacy \
   robolectric-host-android_all \
   robolectric-httpclient-4.0.3 \
-  robolectric-httpcore-4.0.1
+  robolectric-httpcore-4.0.1 \
+  robolectric-javax.annotation-api-1.2
 
 LOCAL_ANNOTATION_PROCESSORS := \
   Robolectric_annotations \
