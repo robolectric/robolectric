@@ -1,0 +1,92 @@
+#!/bin/bash
+#
+# Script for running java with a timeout.
+#
+# The timeout in seconds must be the first argument.  The rest of the arguments
+# are passed to the java binary itself.
+#
+# For example:
+#     java-timeout 120 -cp classes.jar org.junit.runner.JUnitCore
+# runs:
+#     java -cp classes.jar org.junit.runner.JUnitCore
+# with a timeout of 2 minutes.
+
+set -euo pipefail
+
+# Prints a message and terminates the process.
+function fatal() {
+  echo "FATAL: $*"
+  exit 113
+}
+
+# Function that is invoked if java is terminated due to timeout.
+# It take the process ID of the java command as an argument if it has already
+# been started, or the empty string if not. It should very rarely receive the
+# empty string as the pid, but it is possible.
+function on_timeout() {
+  echo 'FATAL: command timed out'
+
+  local pid="${1-}"
+  shift || fatal '[on_timeout] missing argument: pid'
+  test $# = 0 || fatal '[on_timeout] too many arguments'
+
+  if [ "$pid" != '' ]; then
+    # It is possible that the process already terminated, but there is not much
+    # we can do about that.
+    kill -TERM -- "-$pid"  # Kill the entire process group.
+  fi
+}
+
+# Executes java with the given argument, waiting for a termination signal from
+# runalarm which this script is running under. The arguments are passed to the
+# java binary itself.
+function execute() {
+  # Trap SIGTERM, which is what we will receive if runalarm interrupts us.
+  local pid  # Set below after we run the process.
+  trap 'on_timeout $pid' SIGTERM
+  # Starts java within a new process group and saves it process ID before
+  # blocking waiting for it to complete. 'setsid' starts the process within a
+  # new process group, which means that it will not be killed when this shell
+  # command is killed. This is needed so that the signal handler in the trap
+  # command above to be invoked before the java command is terminated (and will
+  # in fact have to terminate it itself).
+  setsid java "$@" & pid="$!"; wait "$pid"
+}
+
+# Runs java with a timeout. The first argument is either the timeout in seconds
+# or the string 'execute', which is used internally to execute the command under
+# runalarm.
+function main() {
+  local timeout_secs="${1-}"
+  shift || fatal '[main]: missing argument: timeout_secs'
+  # The reset of the arguments are meant for the java binary itself.
+
+  if [[ $timeout_secs = '0' ]]; then
+    # Run without any timeout.
+    java "$@"
+  elif [[ $timeout_secs = 'execute' ]]; then
+    # This means we actually have to execute the command.
+    execute "$@"
+  elif (( timeout_secs < 30 )); then
+    # We want to have a timeout of at least 30 seconds, so that we are
+    # guaranteed to be able to start the java command in the subshell. This also
+    # catches non-numeric arguments.
+    fatal 'Must specify a timeout of at least 30 seconds.'
+  else
+    # Wrap the command with runalarm if available. If runalarm is not
+    # installed try timeout which is available on Mac if GNU coreutils
+    # is installed.
+    if type runalarm > /dev/null 2>&1 ; then
+      runalarm -t "$timeout_secs" "$0" 'execute' "$@"
+    elif type gtimeout > /dev/null 2>&1 ; then
+      gtimeout "${timeout_secs}s" "$0" 'execute' "$@"
+    else
+      # No way to set a timeout available, just execute directly.
+      echo "Warning: unable to enforce timeout." 1>&2
+      java "$@"
+    fi
+  fi
+}
+
+
+main "$@"

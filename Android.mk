@@ -17,7 +17,15 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
   Robolectric_shadowapi \
   Robolectric_sandbox \
   Robolectric_junit \
-  Robolectric_utils
+  Robolectric_utils \
+  robolectric-asm-6.0 \
+  robolectric-junit-4.12 \
+  robolectric-asm-tree-6.0 \
+  robolectric-asm-commons-6.0 \
+  robolectric-bouncycastle-1.46 \
+  robolectric-hamcrest-core-1.3 \
+  robolectric-hamcrest-library-1.3 \
+  robolectric-host-org_apache_http_legacy
 
 LOCAL_JAVA_RESOURCE_DIRS := \
   shadows/framework/src/main/resources \
@@ -85,3 +93,14 @@ LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-sqlite4java-0.282:../../../prebuilts/tools/common/m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar \
   robolectric-xstream-1.4.8:../../../prebuilts/tools/common/m2/repository/com/thoughtworks/xstream/xstream/1.4.8/xstream-1.4.8.jar
 include $(BUILD_HOST_PREBUILT)
+
+###########################################
+# HACK: specify these *HOST* jars needed to execute robolectric as though they are prebuilt *TARGET* java libraries
+###########################################
+LOCAL_PATH := $(LOCAL_PATH)/../../../
+include $(CLEAR_VARS)
+
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := \
+  Robolectric_all-target:$(call java-lib-files, Robolectric_all, HOST)
+
+include $(BUILD_MULTI_PREBUILT)
