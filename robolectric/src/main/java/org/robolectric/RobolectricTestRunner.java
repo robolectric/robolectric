@@ -175,7 +175,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private ConfigMerger createConfigMerger() {
     ServiceLoader<ConfigMerger> serviceLoader = ServiceLoader.load(ConfigMerger.class);
     ConfigMerger merger;
-    if (serviceLoader.iterator().hasNext()) {
+    if (serviceLoader != null && serviceLoader.iterator().hasNext()) {
       merger = Iterators.getOnlyElement(serviceLoader.iterator());
     } else {
       merger = new ConfigMerger();
