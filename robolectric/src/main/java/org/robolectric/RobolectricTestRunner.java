@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,14 +166,21 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ConfigMerger} for calculating the {@link Config} tests.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * Overrides can be provided using a ServiceLoader
    *
    * @return an {@link ConfigMerger}.
    * @since 3.2
    */
   @Nonnull
   private ConfigMerger createConfigMerger() {
-    return new ConfigMerger();
+    ServiceLoader<ConfigMerger> serviceLoader = ServiceLoader.load(ConfigMerger.class);
+    ConfigMerger merger;
+    if (serviceLoader.iterator().hasNext()) {
+      merger = Iterators.getOnlyElement(serviceLoader.iterator());
+    } else {
+      merger = new ConfigMerger();
+    }
+    return merger;
   }
 
   /**
