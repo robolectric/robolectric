@@ -115,9 +115,11 @@ public class LegacyManifestParser {
       pkg.permissions.add(permission);
     }
 
-    Map<String, PermissionGroupItemData> permissionGroupItemData = androidManifest.getPermissionGroups();
+    Map<String, PermissionGroupItemData> permissionGroupItemData =
+        androidManifest.getPermissionGroups();
     for (PermissionGroupItemData itemData : permissionGroupItemData.values()) {
-      PermissionGroup permissionGroup = new PermissionGroup(pkg, createPermissionGroupInfo(pkg, itemData));
+      PermissionGroup permissionGroup =
+          new PermissionGroup(pkg, createPermissionGroupInfo(pkg, itemData));
       permissionGroup.metaData = permissionGroup.info.metaData;
       pkg.permissionGroups.add(permissionGroup);
     }

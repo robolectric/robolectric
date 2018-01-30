@@ -166,16 +166,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ConfigMerger} for calculating the {@link Config} tests.
    *
-   * Overrides can be provided using a ServiceLoader
+   * Alternate implementations may be provided using a ServiceLoader.
    *
-   * @return an {@link ConfigMerger}.
+   * @return a {@link ConfigMerger}
    * @since 3.2
    */
   @Nonnull
   private ConfigMerger createConfigMerger() {
     ServiceLoader<ConfigMerger> serviceLoader = ServiceLoader.load(ConfigMerger.class);
     ConfigMerger merger;
-    if (serviceLoader != null && serviceLoader.iterator().hasNext()) {
+    if (serviceLoader.iterator().hasNext()) {
       merger = Iterators.getOnlyElement(serviceLoader.iterator());
     } else {
       merger = new ConfigMerger();

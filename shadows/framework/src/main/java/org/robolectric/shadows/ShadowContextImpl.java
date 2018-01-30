@@ -9,12 +9,10 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.accounts.IAccountManager;
-import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -161,25 +159,12 @@ public class ShadowContextImpl {
                 ClassParameter.from(Handler.class, null));
           }
         } else if (serviceClassName.equals("android.app.SearchManager")
-            || serviceClassName.equals("android.app.ActivityManager")) {
+            || serviceClassName.equals("android.app.ActivityManager")
+            || serviceClassName.equals("android.app.WallpaperManager")) {
 
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(Handler.class, null));
-        } else if (serviceClassName.equals("android.app.WallpaperManager")) {
-          if (getApiLevel() <= O_MR1) {
-            service = ReflectionHelpers.callConstructor(clazz,
-                ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(Handler.class, null));
-          }
-          // BEGIN-INTERNAL
-          else {
-            service = ReflectionHelpers.callConstructor(clazz,
-                ClassParameter.from(IWallpaperManager.class, null),
-                ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(Handler.class, null));
-          }
-          // END-INTERNAL
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
         } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
