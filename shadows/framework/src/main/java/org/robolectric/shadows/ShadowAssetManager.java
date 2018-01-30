@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -350,7 +352,7 @@ public final class ShadowAssetManager {
   private static File getFileFromZip(File file) {
     File fileFromZip = null;
     String pathString = file.getPath();
-    String zipFile = pathString.substring(pathString.indexOf(":") + 1, pathString.indexOf("!"));
+    String zipFile = pathString.substring(pathString.lastIndexOf(":") + 1, pathString.indexOf("!"));
     String filePathInsideZip = pathString.split("!")[1].substring(1);
     byte[] buffer = new byte[1024];
     try {
@@ -468,7 +470,21 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
+    assetDirs.add(getFsFileFromPath(path));
     return 1;
+  }
+
+  private FsFile getFsFileFromPath(String property) {
+    if (property.startsWith("jar")) {
+      try {
+        URL url = new URL(property);
+        return Fs.fromURL(url);
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      return Fs.fileFromPath(property);
+    }
   }
 
   @HiddenApi @Implementation

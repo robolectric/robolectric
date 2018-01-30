@@ -144,12 +144,6 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void packageManager_shouldKnowPackageName() throws Exception {
-    assertThat(RuntimeEnvironment.application.getPackageManager().getApplicationInfo("org.robolectric", 0).packageName)
-        .isEqualTo("org.robolectric");
-  }
-
-  @Test
   public void bindServiceShouldCallOnServiceConnectedWithDefaultValues() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");

@@ -98,7 +98,6 @@ public class ShadowPackageManagerTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private PackageManager packageManager;
 
-  private final IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
   private final ArgumentCaptor<PackageStats> packageStatsCaptor = ArgumentCaptor.forClass(PackageStats.class);
 
   @Before
@@ -1097,6 +1096,7 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresent_getPackageSizeInfo_callsBackWithFailure() throws Exception {
+    IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(false));
@@ -1108,6 +1108,7 @@ public class ShadowPackageManagerTest {
   public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
 
+    IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
 
     verifyZeroInteractions(packageStatsObserver);
@@ -1120,6 +1121,7 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenNotPreconfigured_getPackageSizeInfo_callsBackWithDefaults() throws Exception {
+    IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
@@ -1134,6 +1136,7 @@ public class ShadowPackageManagerTest {
     PackageStats packageStats = new PackageStats("org.robolectric");
     shadowPackageManager.addPackage(packageInfo, packageStats);
 
+    IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
@@ -1149,6 +1152,7 @@ public class ShadowPackageManagerTest {
     PackageStats packageStats = new PackageStats("org.other");
     shadowPackageManager.addPackage(packageInfo, packageStats);
 
+    IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.other", packageStatsObserver);
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
@@ -1161,6 +1165,7 @@ public class ShadowPackageManagerTest {
   public void whenPaused_getPackageSizeInfo_callsBackWithConfiguredValuesAfterIdle() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
 
+    IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
     verifyZeroInteractions(packageStatsObserver);

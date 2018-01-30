@@ -126,6 +126,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
       parsedPackage.packageName = config.packageName();
       parsedPackage.applicationInfo.packageName = config.packageName();
+    } else {
+      parsedPackage.packageName = appManifest.getPackageName();
+      parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
     }
     // TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
