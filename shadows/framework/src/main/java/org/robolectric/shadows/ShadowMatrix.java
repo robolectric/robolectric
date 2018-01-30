@@ -301,7 +301,7 @@ public class ShadowMatrix {
   }
 
   @Implementation
-  public void mapPoints(float[] dst, int dstIndex, float[] src, int srcIndex, int pointCount) {
+  protected void mapPoints(float[] dst, int dstIndex, float[] src, int srcIndex, int pointCount) {
     for (int i = 0; i < pointCount; i++) {
       final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
       dst[dstIndex + i * 2] = mapped.x;
@@ -310,7 +310,7 @@ public class ShadowMatrix {
   }
 
   @Implementation
-  public void mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount) {
+  protected void mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount) {
     final float transX = mMatrix.mValues[Matrix.MTRANS_X];
     final float transY = mMatrix.mValues[Matrix.MTRANS_Y];
 
