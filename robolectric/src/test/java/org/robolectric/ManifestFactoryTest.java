@@ -97,7 +97,8 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
-    AndroidManifest androidManifest = manifestFactory.create(manifestIdentifier);
+    AndroidManifest androidManifest = RobolectricTestRunner
+        .createAndroidManifest(manifestIdentifier);
     assertThat(androidManifest.getAndroidManifestFile()).isEqualTo(Fs.fileFromPath("/path/to/MergedManifest.xml"));
     assertThat(androidManifest.getResDirectory()).isEqualTo(Fs.fileFromPath("/path/to/merged-resources"));
     assertThat(androidManifest.getAssetsDirectory()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));

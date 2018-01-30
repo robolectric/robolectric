@@ -28,10 +28,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
@@ -42,7 +45,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
@@ -64,7 +66,7 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(AssetManager.class)
-public final class ShadowAssetManager {
+public class ShadowAssetManager {
 
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
@@ -94,6 +96,7 @@ public final class ShadowAssetManager {
   private ResourceTable resourceTable;
 
   ResTable_config config = new ResTable_config();
+  private Set<FsFile> assetDirs = new CopyOnWriteArraySet<>();
 
   class NativeTheme {
     private ThemeStyleSet themeStyleSet;
@@ -336,8 +339,9 @@ public final class ShadowAssetManager {
 
   private FsFile findAssetFile(String fileName) throws IOException {
     for (FsFile assetDir : getAllAssetsDirectories()) {
-      if (assetDir.join(fileName).exists()) {
-        return assetDir.join(fileName);
+      FsFile assetFile = assetDir.join(fileName);
+      if (assetFile.exists()) {
+        return assetFile;
       }
     }
 
@@ -427,7 +431,7 @@ public final class ShadowAssetManager {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
-      return ResName.qualifyFromFilePath(ShadowApplication.getInstance().getAppManifest().getPackageName(), fileName);
+      return ResName.qualifyFromFilePath(RuntimeEnvironment.application.getPackageName(), fileName);
     }
   }
 
@@ -992,26 +996,8 @@ public final class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  private List<FsFile> getAllAssetsDirectories() {
-    List<FsFile> assetsDirs = new ArrayList<>();
-    assetsDirs.add(getAssetsDirectory());
-    assetsDirs.addAll(getLibraryAssetsDirectories());
-    return assetsDirs;
-  }
-
-  private FsFile getAssetsDirectory() {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
-  }
-
-  private List<FsFile> getLibraryAssetsDirectories() {
-    List<FsFile> libraryAssetsDirectory = new ArrayList<>();
-    for (AndroidManifest manifest : ShadowApplication.getInstance().getAppManifest().getLibraryManifests()) {
-      if (manifest.getAssetsDirectory() != null) {
-        libraryAssetsDirectory.add(manifest.getAssetsDirectory());
-      }
-    }
-
-    return libraryAssetsDirectory;
+  Collection<FsFile> getAllAssetsDirectories() {
+    return assetDirs;
   }
 
   @Nonnull private ResName getResName(int id) {

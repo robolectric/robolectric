@@ -315,8 +315,9 @@ public class ReflectionHelpers {
    */
   public static <T> T newInstance(Class<T> cl) {
     try {
-      return cl.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
+      return cl.getDeclaredConstructor().newInstance();
+    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
+        | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
   }

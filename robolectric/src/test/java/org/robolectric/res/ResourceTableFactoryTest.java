@@ -1,9 +1,6 @@
 package org.robolectric.res;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.lib1Resources;
-import static org.robolectric.util.TestUtil.lib2Resources;
-import static org.robolectric.util.TestUtil.lib3Resources;
 import static org.robolectric.util.TestUtil.systemResources;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -22,9 +19,6 @@ public class ResourceTableFactoryTest {
   public void setUp() throws Exception {
     ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
     appResourceTable = resourceTableFactory.newResourceTable("org.robolectric",
-        lib3Resources(),
-        lib2Resources(),
-        lib1Resources(),
         testResources());
 
     systemResourceTable = resourceTableFactory.newFrameworkResourceTable(systemResources());
@@ -50,13 +44,5 @@ public class ResourceTableFactoryTest {
   public void shouldRetainPackageNameForFullyQualifiedQueries() throws Exception {
     assertThat(systemResourceTable.getResName(android.R.id.text1).getFullyQualifiedName()).isEqualTo("android:id/text1");
     assertThat(appResourceTable.getResName(R.id.burritos).getFullyQualifiedName()).isEqualTo("org.robolectric:id/burritos");
-  }
-
-  @Test
-  public void shouldNotResolveLibraryResourceName() throws Exception {
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric.lib1", "string", "in_all_libs"))).isEqualTo(0);
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric.lib2", "string", "in_all_libs"))).isEqualTo(0);
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric.lib3", "string", "in_all_libs"))).isEqualTo(0);
   }
 }

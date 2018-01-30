@@ -736,6 +736,7 @@ public class ShadowMediaPlayerTest {
     }
 
     @Override
+    @SuppressWarnings("MissingFail")
     public void test(MethodSpec method) {
       final State state = shadowMediaPlayer.getState();
       boolean success = false;

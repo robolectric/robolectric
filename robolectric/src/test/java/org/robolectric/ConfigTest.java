@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Config.Builder;
 
 @RunWith(JUnit4.class)
 public class ConfigTest {
@@ -99,6 +101,18 @@ public class ConfigTest {
 
     assertThat(sdksIn(overlay(base, new Config.Builder().setMinSdk(16).setMaxSdk(18).build())))
         .isEqualTo("sdk=[], minSdk=16, maxSdk=18");
+  }
+
+  @Test
+  public void withOverlay_withShadows_maintainsOrder() throws Exception {
+    Config.Implementation base = new Config.Builder().build();
+
+    Config withString = overlay(base, new Builder().setShadows(new Class[]{String.class}).build());
+    assertThat(withString.shadows()).containsExactly(String.class);
+
+    Config withMore = overlay(withString,
+        new Builder().setShadows(new Class[]{Map.class, String.class}).build());
+    assertThat(withMore.shadows()).containsExactly(String.class, Map.class, String.class);
   }
 
   @Test

@@ -25,6 +25,7 @@ import android.os.CancellationSignal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,7 +60,8 @@ public class ShadowContentResolver {
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
-  private final Map<String, List<ContentProviderOperation>> contentProviderOperations = new HashMap<>();
+  private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
+      new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
   private final List<UriPermission> uriPermissions = new ArrayList<>();
 
@@ -71,7 +73,7 @@ public class ShadowContentResolver {
   private static boolean masterSyncAutomatically;
 
   @Resetter
-  synchronized public static void reset() {
+  public static synchronized void reset() {
     syncableAccounts.clear();
     providers.clear();
     masterSyncAutomatically = false;
@@ -104,7 +106,7 @@ public class ShadowContentResolver {
       String testPath = test.getPath();
 
       return Objects.equals(uriPath, testPath)
-          || notifyForDescendents && testPath != null && testPath.startsWith(uriPath);
+          || (notifyForDescendents && testPath != null && testPath.startsWith(uriPath));
     }
   }
 
@@ -147,8 +149,7 @@ public class ShadowContentResolver {
     return new OutputStream() {
 
       @Override
-      public void write(int arg0) throws IOException {
-      }
+      public void write(int arg0) throws IOException {}
 
       @Override
       public String toString() {
@@ -165,7 +166,8 @@ public class ShadowContentResolver {
    * {@link #getInsertStatements()}.
    *
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
-   * a {@link Uri} including the incremented value set with {@link #setNextDatabaseIdForInserts(int)} will returned.
+   * a {@link Uri} including the incremented value set with
+   * {@link #setNextDatabaseIdForInserts(int)} will returned.
    */
   @Implementation
   public final Uri insert(Uri url, ContentValues values) {
@@ -192,13 +194,15 @@ public class ShadowContentResolver {
    * If no appropriate {@link ContentProvider} is found, no action will be taken and
    * the value set with {@link #setNextDatabaseIdForUpdates(int)} will be incremented and returned.
    *
-   * *Note:* the return value in this case will be changed to {@code 1} in a future release of Robolectric.
+   * *Note:* the return value in this case will be changed to {@code 1} in a future release of
+   * Robolectric.
    */
   @Implementation
   public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
     ContentProvider provider = getProvider(uri);
     ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
-    UpdateStatement updateStatement = new UpdateStatement(uri, provider, valuesCopy, where, selectionArgs);
+    UpdateStatement updateStatement =
+        new UpdateStatement(uri, provider, valuesCopy, where, selectionArgs);
     statements.add(updateStatement);
     updateStatements.add(updateStatement);
 
@@ -210,8 +214,8 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public final Cursor query(Uri uri, String[] projection, String selection,
-      String[] selectionArgs, String sortOrder) {
+  public final Cursor query(
+      Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
     ContentProvider provider = getProvider(uri);
     if (provider != null) {
       return provider.query(uri, projection, selection, selectionArgs, sortOrder);
@@ -227,11 +231,17 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public Cursor query(Uri uri, String[] projection, String selection,
-      String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
+  public Cursor query(
+      Uri uri,
+      String[] projection,
+      String selection,
+      String[] selectionArgs,
+      String sortOrder,
+      CancellationSignal cancellationSignal) {
     ContentProvider provider = getProvider(uri);
     if (provider != null) {
-      return provider.query(uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
+      return provider.query(
+          uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
     } else {
       BaseCursor returnCursor = getCursor(uri);
       if (returnCursor == null) {
@@ -266,36 +276,45 @@ public class ShadowContentResolver {
   @Implementation
   public final ContentProviderClient acquireContentProviderClient(String name) {
     ContentProvider provider = getProvider(name);
-    if (provider == null) return null;
+    if (provider == null) {
+      return null;
+    }
     return getContentProviderClient(provider, true);
   }
 
   @Implementation
   public final ContentProviderClient acquireContentProviderClient(Uri uri) {
     ContentProvider provider = getProvider(uri);
-    if (provider == null) return null;
+    if (provider == null) {
+      return null;
+    }
     return getContentProviderClient(provider, true);
   }
 
   @Implementation
   public final ContentProviderClient acquireUnstableContentProviderClient(String name) {
     ContentProvider provider = getProvider(name);
-    if (provider == null) return null;
+    if (provider == null) {
+      return null;
+    }
     return getContentProviderClient(provider, false);
   }
 
   @Implementation
   public final ContentProviderClient acquireUnstableContentProviderClient(Uri uri) {
     ContentProvider provider = getProvider(uri);
-    if (provider == null) return null;
+    if (provider == null) {
+      return null;
+    }
     return getContentProviderClient(provider, false);
   }
 
   private ContentProviderClient getContentProviderClient(ContentProvider provider, boolean stable) {
     ContentProviderClient client =
-        Shadow.newInstance(ContentProviderClient.class,
-            new Class[]{ContentResolver.class, IContentProvider.class, boolean.class},
-            new Object[]{realContentResolver, provider.getIContentProvider(), stable});
+        Shadow.newInstance(
+            ContentProviderClient.class,
+            new Class[] {ContentResolver.class, IContentProvider.class, boolean.class},
+            new Object[] {realContentResolver, provider.getIContentProvider(), stable});
     shadowOf(client).setContentProvider(provider);
     return client;
   }
@@ -398,7 +417,9 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
+  public ContentProviderResult[] applyBatch(
+      String authority, ArrayList<ContentProviderOperation> operations)
+      throws OperationApplicationException {
     ContentProvider provider = getProvider(authority);
     if (provider != null) {
       return provider.applyBatch(operations);
@@ -459,10 +480,13 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public static void addPeriodicSync(Account account, String authority, Bundle extras, long pollFrequency) {
+  public static void addPeriodicSync(
+      Account account, String authority, Bundle extras, long pollFrequency) {
     validateSyncExtrasBundle(extras);
     removePeriodicSync(account, authority, extras);
-    getStatus(account, authority, true).syncs.add(new PeriodicSync(account, authority, extras, pollFrequency));
+    getStatus(account, authority, true)
+        .syncs
+        .add(new PeriodicSync(account, authority, extras, pollFrequency));
   }
 
   @Implementation
@@ -488,14 +512,17 @@ public class ShadowContentResolver {
   public static void validateSyncExtrasBundle(Bundle extras) {
     for (String key : extras.keySet()) {
       Object value = extras.get(key);
-      if (value == null) continue;
-      if (value instanceof Long) continue;
-      if (value instanceof Integer) continue;
-      if (value instanceof Boolean) continue;
-      if (value instanceof Float) continue;
-      if (value instanceof Double) continue;
-      if (value instanceof String) continue;
-      if (value instanceof Account) continue;
+      if (value == null
+          || value instanceof Long
+          || value instanceof Integer
+          || value instanceof Boolean
+          || value instanceof Float
+          || value instanceof Double
+          || value instanceof String
+          || value instanceof Account) {
+        continue;
+      }
+
       throw new IllegalArgumentException("unexpected value type: " + value.getClass().getName());
     }
   }
@@ -521,7 +548,7 @@ public class ShadowContentResolver {
     }
 
     // Attempt to locate an existing record for the uri.
-    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext();) {
+    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext(); ) {
       UriPermission perm = i.next();
       if (uri.equals(perm.getUri())) {
         if (perm.isReadPermission()) {
@@ -549,12 +576,13 @@ public class ShadowContentResolver {
     }
 
     // Attempt to locate an existing record for the uri.
-    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext();) {
+    for (Iterator<UriPermission> i = uriPermissions.iterator(); i.hasNext(); ) {
       UriPermission perm = i.next();
       if (uri.equals(perm.getUri())) {
         // Reconstruct the current mode flags.
-        int oldModeFlags = (perm.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0)
-            | (perm.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0);
+        int oldModeFlags =
+            (perm.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0)
+                | (perm.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0);
 
         // Apply the requested permission change.
         int newModeFlags = oldModeFlags & ~modeFlags;
@@ -591,7 +619,7 @@ public class ShadowContentResolver {
     return getProvider(uri.getAuthority());
   }
 
-  synchronized private static ContentProvider getProvider(String authority) {
+  private static synchronized ContentProvider getProvider(String authority) {
     if (!providers.containsKey(authority)) {
       ProviderInfo providerInfo =
           RuntimeEnvironment.application.getPackageManager().resolveContentProvider(authority, 0);
@@ -612,7 +640,8 @@ public class ShadowContentResolver {
    * Robolectric.buildContentProvider(ContentProvider.class).create(info);
    * ```
    */
-  synchronized public static void registerProviderInternal(String authority, ContentProvider provider) {
+  public static synchronized void registerProviderInternal(
+      String authority, ContentProvider provider) {
     providers.put(authority, provider);
   }
 
@@ -656,12 +685,13 @@ public class ShadowContentResolver {
   }
 
   /**
-   * Set the value to be returned by {@link ContentResolver#update(Uri, ContentValues, String, String[])}
-   * when no appropriate {@link ContentProvider} can be found.
-   *
-   * @deprecated This method will be removed in Robolectric 3.5. Instead, {@code 1} will be returned.
+   * Set the value to be returned by
+   * {@link ContentResolver#update(Uri, ContentValues, String, String[])} when no appropriate
+   * {@link ContentProvider} can be found.
    *
    * @param nextId the number of rows to return
+   * @deprecated This method will be removed in Robolectric 3.5. Instead, {@code 1} will be
+   * returned.
    */
   @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
@@ -730,8 +760,9 @@ public class ShadowContentResolver {
 
   public List<ContentProviderOperation> getContentProviderOperations(String authority) {
     List<ContentProviderOperation> operations = contentProviderOperations.get(authority);
-    if (operations == null)
+    if (operations == null) {
       return new ArrayList<>();
+    }
     return operations;
   }
 
@@ -791,11 +822,16 @@ public class ShadowContentResolver {
 
   private static ContentProvider createAndInitialize(ProviderInfo providerInfo) {
     try {
-      ContentProvider provider = (ContentProvider) Class.forName(providerInfo.name).newInstance();
+      ContentProvider provider =
+          (ContentProvider) Class.forName(providerInfo.name).getDeclaredConstructor().newInstance();
       provider.attachInfo(RuntimeEnvironment.application, providerInfo);
       provider.onCreate();
       return provider;
-    } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
+    } catch (InstantiationException
+        | ClassNotFoundException
+        | IllegalAccessException
+        | NoSuchMethodException
+        | InvocationTargetException e) {
       throw new RuntimeException("Error instantiating class " + providerInfo.name);
     }
   }
@@ -825,6 +861,9 @@ public class ShadowContentResolver {
     return true;
   }
 
+  /**
+   * A statement used to modify content in a {@link ContentProvider}.
+   */
   public static class Statement {
     private final Uri uri;
     private final ContentProvider contentProvider;
@@ -844,12 +883,15 @@ public class ShadowContentResolver {
     }
   }
 
+  /**
+   * A statement used to insert content into a {@link ContentProvider}.
+   */
   public static class InsertStatement extends Statement {
     private final ContentValues[] bulkContentValues;
 
     InsertStatement(Uri uri, ContentProvider contentProvider, ContentValues contentValues) {
       super(uri, contentProvider);
-      this.bulkContentValues = new ContentValues[]{contentValues};
+      this.bulkContentValues = new ContentValues[] {contentValues};
     }
 
     InsertStatement(Uri uri, ContentProvider contentProvider, ContentValues[] bulkContentValues) {
@@ -871,12 +913,20 @@ public class ShadowContentResolver {
     }
   }
 
+  /**
+   * A statement used to update content in a {@link ContentProvider}.
+   */
   public static class UpdateStatement extends Statement {
     private final ContentValues values;
     private final String where;
     private final String[] selectionArgs;
 
-    UpdateStatement(Uri uri, ContentProvider contentProvider, ContentValues values, String where, String[] selectionArgs) {
+    UpdateStatement(
+        Uri uri,
+        ContentProvider contentProvider,
+        ContentValues values,
+        String where,
+        String[] selectionArgs) {
       super(uri, contentProvider);
       this.values = values;
       this.where = where;
@@ -899,11 +949,15 @@ public class ShadowContentResolver {
     }
   }
 
+  /**
+   * A statement used to delete content in a {@link ContentProvider}.
+   */
   public static class DeleteStatement extends Statement {
     private final String where;
     private final String[] selectionArgs;
 
-    DeleteStatement(Uri uri, ContentProvider contentProvider, String where, String[] selectionArgs) {
+    DeleteStatement(
+        Uri uri, ContentProvider contentProvider, String where, String[] selectionArgs) {
       super(uri, contentProvider);
       this.where = where;
       this.selectionArgs = selectionArgs;
@@ -929,7 +983,20 @@ public class ShadowContentResolver {
 
     @Override
     public int read() throws IOException {
-      throw new UnsupportedOperationException("You must use ShadowContentResolver.registerInputStream() in order to call read()");
+      throw new UnsupportedOperationException(
+          "You must use ShadowContentResolver.registerInputStream() in order to call read()");
+    }
+
+    @Override
+    public int read(byte[] b) throws IOException {
+      throw new UnsupportedOperationException(
+          "You must use ShadowContentResolver.registerInputStream() in order to call read()");
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+      throw new UnsupportedOperationException(
+          "You must use ShadowContentResolver.registerInputStream() in order to call read()");
     }
 
     @Override

@@ -1,15 +1,23 @@
 package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.ActivityThread;
 import android.app.Application;
+import android.app.IInstrumentationWatcher;
+import android.app.IUiAutomationConnection;
+import android.app.Instrumentation;
 import android.app.LoadedApk;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
@@ -25,11 +33,11 @@ import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
-import org.robolectric.android.fakes.RoboInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
@@ -41,7 +49,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -104,8 +111,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    RoboInstrumentation androidInstrumentation = new RoboInstrumentation();
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
     PackageParser.Package parsedPackage = null;
 
     ApplicationInfo applicationInfo = null;
@@ -156,15 +161,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
+    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass,
+        "createSystemContext", from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application application = createApplication(appManifest, config);
     RuntimeEnvironment.application = application;
 
     if (application != null) {
-      shadowOf(application).bind(appManifest);
-
       final Class<?> appBindDataClass;
       try {
         appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
@@ -192,12 +196,21 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, displayMetrics);
+      populateAssetPaths(appResources.getAssets(), appManifest);
 
-      initInstrumentation(activityThread, androidInstrumentation, applicationInfo);
+      initInstrumentation(activityThread, applicationInfo);
 
       PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
         application.onCreate();
       });
+    }
+  }
+
+  private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
+    for (AndroidManifest manifest : appManifest.getAllManifests()) {
+      if (manifest.getAssetsDirectory() != null) {
+        assetManager.addAssetPath(manifest.getAssetsDirectory().getPath());
+      }
     }
   }
 
@@ -237,6 +250,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       application = new Application();
     }
 
+    if (appManifest != null) {
+      registerBroadcastReceivers(application, appManifest);
+    }
     return application;
   }
 
@@ -252,14 +268,45 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   private void initInstrumentation(
       ActivityThread activityThread,
-      RoboInstrumentation androidInstrumentation,
       ApplicationInfo applicationInfo) {
+    Instrumentation androidInstrumentation = createInstrumentation();
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
+
     final ComponentName component =
         new ComponentName(
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
-    androidInstrumentation.init(
-        ActivityThread.class, activityThread, RuntimeEnvironment.application, component);
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
+          from(ActivityThread.class, activityThread),
+          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, RuntimeEnvironment.application),
+          from(ComponentName.class, component),
+          from(IInstrumentationWatcher.class, null));
+    } else {
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
+          from(ActivityThread.class, activityThread),
+          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, RuntimeEnvironment.application),
+          from(ComponentName.class, component),
+          from(IInstrumentationWatcher.class, null),
+          from(IUiAutomationConnection.class, null));
+    }
+
     androidInstrumentation.onCreate(new Bundle());
+  }
+
+  private Instrumentation createInstrumentation() {
+    // Use RoboInstrumentation if its parent class from optional dependency android.support.test is
+    // available. Otherwise use Instrumentation
+    try {
+      Class<? extends Instrumentation> roboInstrumentationClass =
+          Class.forName("org.robolectric.android.fakes.RoboInstrumentation").asSubclass(
+              Instrumentation.class);
+      return ReflectionHelpers.newInstance(roboInstrumentationClass);
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      // fall through
+    }
+    return new Instrumentation();
   }
 
   /**
@@ -321,5 +368,32 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       applicationInfo.deviceProtectedDataDir =
           tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
     }
+  }
+
+  // TODO move/replace this with packageManager
+  private static void registerBroadcastReceivers(
+      Application application, AndroidManifest androidManifest) {
+    for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
+      IntentFilter filter = new IntentFilter();
+      for (String action : receiver.getActions()) {
+        filter.addAction(action);
+      }
+      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
+      shadowOf(application)
+          .registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+    }
+  }
+
+  private static String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
+    String[] splits = receiverClassName.split("\\.");
+    String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
+    if (splits[splits.length - 1].matches(staticInnerClassRegex)
+        && splits[splits.length - 2].matches(staticInnerClassRegex)) {
+      int lastDotIndex = receiverClassName.lastIndexOf(".");
+      StringBuilder buffer = new StringBuilder(receiverClassName);
+      buffer.setCharAt(lastDotIndex, '$');
+      return buffer.toString();
+    }
+    return receiverClassName;
   }
 }

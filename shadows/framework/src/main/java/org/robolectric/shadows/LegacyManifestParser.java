@@ -31,9 +31,11 @@ import android.content.pm.PackageParser.ActivityIntentInfo;
 import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.Permission;
+import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageParser.ServiceIntentInfo;
 import android.content.pm.PathPermission;
+import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
@@ -56,6 +58,7 @@ import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.manifest.IntentFilterData.DataAuthority;
 import org.robolectric.manifest.PackageItemData;
 import org.robolectric.manifest.PathPermissionData;
+import org.robolectric.manifest.PermissionGroupItemData;
 import org.robolectric.manifest.PermissionItemData;
 import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.AttributeResource;
@@ -110,6 +113,13 @@ public class LegacyManifestParser {
       Permission permission = new Permission(pkg, createPermissionInfo(pkg, itemData));
       permission.metaData = permission.info.metaData;
       pkg.permissions.add(permission);
+    }
+
+    Map<String, PermissionGroupItemData> permissionGroupItemData = androidManifest.getPermissionGroups();
+    for (PermissionGroupItemData itemData : permissionGroupItemData.values()) {
+      PermissionGroup permissionGroup = new PermissionGroup(pkg, createPermissionGroupInfo(pkg, itemData));
+      permissionGroup.metaData = permissionGroup.info.metaData;
+      pkg.permissionGroups.add(permissionGroup);
     }
 
     pkg.requestedPermissions.addAll(androidManifest.getUsedPermissions());
@@ -168,6 +178,8 @@ public class LegacyManifestParser {
       activityInfo.metaData = metaDataToBundle(data.getMetaData().getValueMap());
       activityInfo.applicationInfo = pkg.applicationInfo;
       activityInfo.targetActivity = data.getTargetActivityName();
+      activityInfo.exported = data.isExported();
+      activityInfo.permission = data.getPermission();
       String themeRef;
 
       // Based on ShadowActivity
@@ -223,6 +235,7 @@ public class LegacyManifestParser {
       ActivityInfo info = new ActivityInfo();
       populateComponentInfo(info, pkg, data);
       info.permission = data.getPermission();
+      info.exported = data.isExported();
 
       Activity receiver = createActivity(pkg, info);
       for (IntentFilterData intentFilterData : data.getIntentFilters()) {
@@ -237,6 +250,7 @@ public class LegacyManifestParser {
       ServiceInfo info = new ServiceInfo();
       populateComponentInfo(info, pkg, data);
       info.permission = data.getPermission();
+      info.exported = data.isExported();
 
       Service service = createService(pkg, info);
       for (IntentFilterData intentFilterData : data.getIntentFilters()) {
@@ -308,6 +322,7 @@ public class LegacyManifestParser {
     ReflectionHelpers.setField(component, "info", info);
     ReflectionHelpers.setField(component, "intents", new ArrayList<>());
     ReflectionHelpers.setField(component, "owner", pkg);
+    ReflectionHelpers.setField(component, "className", info.name);
   }
 
   private static void populateIntentInfo(IntentFilterData intentFilterData, IntentInfo outInfo) {
@@ -412,6 +427,36 @@ public class LegacyManifestParser {
     }
 
     return permissionInfo;
+  }
+
+  private static PermissionGroupInfo createPermissionGroupInfo(Package owner,
+      PermissionGroupItemData itemData) {
+    PermissionGroupInfo permissionGroupInfo = new PermissionGroupInfo();
+    populatePackageItemInfo(permissionGroupInfo, owner, itemData);
+
+    permissionGroupInfo.metaData = metaDataToBundle(itemData.getMetaData().getValueMap());
+
+    String descriptionRef = itemData.getDescription();
+    if (descriptionRef != null) {
+      ResName descResName =
+          AttributeResource.getResourceReference(descriptionRef, owner.packageName, "string");
+      permissionGroupInfo.descriptionRes =
+          RuntimeEnvironment.getAppResourceTable().getResourceId(descResName);
+    }
+
+    String labelRefOrString = itemData.getLabel();
+    if (labelRefOrString != null) {
+      if (AttributeResource.isResourceReference(labelRefOrString)) {
+        ResName labelResName =
+            AttributeResource.getResourceReference(labelRefOrString, owner.packageName, "string");
+        permissionGroupInfo.labelRes =
+            RuntimeEnvironment.getAppResourceTable().getResourceId(labelResName);
+      } else {
+        permissionGroupInfo.nonLocalizedLabel = labelRefOrString;
+      }
+    }
+
+    return permissionGroupInfo;
   }
 
   private static int decodeProtectionLevel(String protectionLevel) {

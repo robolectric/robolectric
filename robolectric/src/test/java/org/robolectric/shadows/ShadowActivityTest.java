@@ -626,7 +626,7 @@ public class ShadowActivityTest {
     @Override
     public Object onRetainNonConfigurationInstance() {
       transcript.add("onRetainNonConfigurationInstance");
-      return new Integer(5);
+      return 5;
     }
 
     @Override
