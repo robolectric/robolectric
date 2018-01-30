@@ -31,7 +31,7 @@ public class ShadowFingerprintManager {
   private AuthenticationCallback pendingCallback;
 
   /**
-   * Simulate a successful fingerprint authentication. An authentication request must have been
+   * Simulates a successful fingerprint authentication. An authentication request must have been
    * issued with {@link FingerprintManager#authenticate(CryptoObject, CancellationSignal, int, AuthenticationCallback, Handler)} and not cancelled.
    */
   public void authenticationSucceeds() {
@@ -48,12 +48,11 @@ public class ShadowFingerprintManager {
           ClassParameter.from(Fingerprint.class, null));
     }
 
-    pendingCallback.onAuthenticationSucceeded(
-        result);
+    pendingCallback.onAuthenticationSucceeded(result);
   }
 
   /**
-   * Simulate a failed fingerprint authentication. An authentication request must have been
+   * Simulates a failed fingerprint authentication. An authentication request must have been
    * issued with {@link FingerprintManager#authenticate(CryptoObject, CancellationSignal, int, AuthenticationCallback, Handler)} and not cancelled.
    */
   public void authenticationFails() {
@@ -64,8 +63,12 @@ public class ShadowFingerprintManager {
     pendingCallback.onAuthenticationFailed();
   }
 
+  /**
+   * Success or failure can be simulated with a subsequent call to {@link #authenticationSucceeds()}
+   * or {@link #authenticationFails()}.
+   */
   @Implementation
-  public void authenticate(CryptoObject crypto, CancellationSignal cancel,
+  protected void authenticate(CryptoObject crypto, CancellationSignal cancel,
       int flags, AuthenticationCallback callback, Handler handler) {
     if (callback == null) {
       throw new IllegalArgumentException("Must supply an authentication callback");
@@ -88,24 +91,30 @@ public class ShadowFingerprintManager {
   }
 
   /**
-   * Sets the return value of {@link FingerprintManager#hasEnrolledFingerprints()}
+   * Sets the return value of {@link FingerprintManager#hasEnrolledFingerprints()}.
    */
   public void setHasEnrolledFingerprints(boolean hasEnrolledFingerprints) {
     this.hasEnrolledFingerprints = hasEnrolledFingerprints;
   }
 
+  /**
+   * @return `false` by default, or the value specified via {@link #setHasEnrolledFingerprints(boolean)}
+   */
   @Implementation
-  public boolean hasEnrolledFingerprints() {
+  protected boolean hasEnrolledFingerprints() {
     return this.hasEnrolledFingerprints;
   }
 
   /**
-   * Sets the return value of {@link FingerprintManager#isHardwareDetected()}
+   * Sets the return value of {@link FingerprintManager#isHardwareDetected()}.
    */
   public void setIsHardwareDetected(boolean isHardwareDetected) {
     this.isHardwareDetected = isHardwareDetected;
   }
 
+  /**
+   * @return `false` by default, or the value specified via {@link #setIsHardwareDetected(boolean)}
+   */
   @Implementation
   public boolean isHardwareDetected() {
     return this.isHardwareDetected;

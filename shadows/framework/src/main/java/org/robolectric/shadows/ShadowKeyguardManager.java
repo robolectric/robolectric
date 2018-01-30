@@ -30,7 +30,7 @@ public class ShadowKeyguardManager {
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
    * default.
    *
-   * @see #setinRestrictedInputMode(boolean)
+   * @see #setInRestrictedInputMode(boolean)
    */
   @Implementation
   public boolean inKeyguardRestrictedInputMode() {
@@ -94,11 +94,22 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * Sets the value to be returned by {@link #isKeyguardRestrictedInputMode()}.
+   * Sets the value to be returned by {@link KeyguardManager#inKeyguardRestrictedInputMode()}.
    *
-   * @see #isKeyguardRestrictedInputMode()
+   * @see KeyguardManager#inKeyguardRestrictedInputMode()
+   * @deprecated use {@link #setInRestrictedInputMode(boolean)} instead
    */
+  @Deprecated
   public void setinRestrictedInputMode(boolean restricted) {
+    inRestrictedInputMode = restricted;
+  }
+
+  /**
+   * Sets the value to be returned by {@link KeyguardManager#inKeyguardRestrictedInputMode()}.
+   *
+   * @see KeyguardManager#inKeyguardRestrictedInputMode()
+   */
+  public void setInRestrictedInputMode(boolean restricted) {
     inRestrictedInputMode = restricted;
   }
 
@@ -151,8 +162,12 @@ public class ShadowKeyguardManager {
     this.isDeviceLocked = isDeviceLocked;
   }
 
+  /**
+   * @return `false` by default, or the value passed to {@link #setIsDeviceLocked(boolean)}.
+   * @see #isDeviceLocked()
+   */
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public boolean isDeviceLocked() {
+  protected boolean isDeviceLocked() {
     return isDeviceLocked;
   }
 
