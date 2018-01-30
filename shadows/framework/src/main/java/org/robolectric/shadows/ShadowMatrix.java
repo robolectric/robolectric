@@ -493,6 +493,7 @@ public class ShadowMatrix {
       return this == o || (o instanceof SimpleMatrix && equals((SimpleMatrix) o));
     }
 
+    @SuppressWarnings("NonOverridingEquals")
     public boolean equals(SimpleMatrix matrix) {
       if (matrix == null) {
         return false;

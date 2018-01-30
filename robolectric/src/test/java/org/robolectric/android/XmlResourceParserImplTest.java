@@ -1,12 +1,10 @@
-package org.robolectric.res.builder;
+package org.robolectric.android;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.robolectric.util.TestUtil.TEST_PACKAGE;
-import static org.robolectric.util.TestUtil.testResources;
 
 import android.content.res.XmlResourceParser;
 import java.io.ByteArrayInputStream;
@@ -24,34 +22,22 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.robolectric.R;
-import org.robolectric.android.XmlResourceParserImpl;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.PackageResourceTable;
-import org.robolectric.res.ResourceTableFactory;
-import org.robolectric.res.TypedResource;
-import org.robolectric.res.android.ResTable_config;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-@RunWith(JUnit4.class)
+@RunWith(RobolectricTestRunner.class)
 public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
-  private XmlResourceParserImpl parser;
-  private PackageResourceTable resourceTable;
+  private XmlResourceParser parser;
 
   @Before
   public void setUp() throws Exception {
-    resourceTable = new ResourceTableFactory().newResourceTable(R.class.getPackage().getName(), testResources());
-    TypedResource typedResource = resourceTable.getValue(R.xml.preferences, new ResTable_config());
-    FsFile xmlFile = typedResource.getXmlContext().getXmlFile();
-    String packageName = typedResource.getXmlContext().getPackageName();
-    XmlBlock xmlBlock = XmlBlock.create(xmlFile, packageName);
-    parser = new XmlResourceParserImpl(xmlBlock.getDocument(), typedResource.asString(), packageName,
-        TEST_PACKAGE, resourceTable);
+    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.preferences);
   }
 
   @After
@@ -79,7 +65,7 @@ public class XmlResourceParserImplTest {
           new ByteArrayInputStream(xmlValue.getBytes(UTF_8)));
 
       parser = new XmlResourceParserImpl(document, "file", R.class.getPackage().getName(),
-          TEST_PACKAGE, resourceTable);
+          "org.robolectric", null);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {
@@ -281,8 +267,9 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testIsWhitespace() throws Exception {
-    assertThat(parser.isWhitespace("bar")).isFalse();
-    assertThat(parser.isWhitespace(" ")).isTrue();
+    XmlResourceParserImpl parserImpl = (XmlResourceParserImpl) parser;
+    assertThat(parserImpl.isWhitespace("bar")).isFalse();
+    assertThat(parserImpl.isWhitespace(" ")).isTrue();
   }
 
   @Test
@@ -318,7 +305,8 @@ public class XmlResourceParserImplTest {
   @Test
   public void testGetAttribute() throws Exception {
     forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
-    assertThat(parser.getAttribute(XMLNS_NS, "bar")).isEqualTo("bar");
+    XmlResourceParserImpl parserImpl = (XmlResourceParserImpl) parser;
+    assertThat(parserImpl.getAttribute(XMLNS_NS, "bar")).isEqualTo("bar");
   }
 
   @Test
@@ -545,13 +533,17 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeResourceValueIntInt() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
+    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_attribute_resource_value);
+    parseUntilNext(XmlResourceParser.START_TAG);
+
     assertThat(parser.getAttributeResourceValue(0, 42)).isEqualTo(R.layout.main);
   }
 
   @Test
   public void testGetAttributeResourceValueStringStringInt() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
+    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_attribute_resource_value);
+    parseUntilNext(XmlResourceParser.START_TAG);
+
     assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(R.layout.main);
     assertThat(parser.getAttributeResourceValue(XMLNS_NS, "foo", 42)).isEqualTo(42);
   }
@@ -673,7 +665,8 @@ public class XmlResourceParserImplTest {
   public void testGetIdAttributeResourceValue_defaultValue() throws Exception {
     assertThat(parser.getIdAttributeResourceValue(12)).isEqualTo(12);
 
-    forgeAndOpenDocument("<foo id=\"@+id/tacos\"/>");
+    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_id);
+    parseUntilNext(XmlResourceParser.START_TAG);
     assertThat(parser.getIdAttributeResourceValue(12)).isEqualTo(R.id.tacos);
   }
 
@@ -685,13 +678,15 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void getStyleAttribute_allowStyleAttrReference() throws Exception {
-    forgeAndOpenDocument("<foo style=\"?attr/parentStyleReference\"/>");
+    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_style_attribute_reference);
+    parseUntilNext(XmlResourceParser.START_TAG);
     assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
   }
 
   @Test
   public void getStyleAttribute_allowStyleAttrReferenceLackingExplicitAttrType() throws Exception {
-    forgeAndOpenDocument("<foo style=\"?parentStyleReference\"/>");
+    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_parent_style_reference);
+    parseUntilNext(XmlResourceParser.START_TAG);
     assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
   }
 

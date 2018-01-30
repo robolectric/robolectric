@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
@@ -60,8 +61,8 @@ public class StaticInitializerTest {
   public static class ShadowClassWithStaticInitializerOverride {
     public static boolean initialized = false;
 
-    @SuppressWarnings("UnusedDeclaration")
-    public static void __staticInitializer__() {
+    @Implementation
+    protected static void __staticInitializer__() {
       initialized = true;
     }
   }

@@ -107,6 +107,7 @@ public class ShadowMessageQueue {
   }
 
   @Implementation
+  @SuppressWarnings("SynchronizeOnNonFinalField")
   public boolean enqueueMessage(final Message msg, long when) {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {

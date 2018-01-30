@@ -7,8 +7,8 @@ import android.net.Uri;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
 
 /**
  * Tests for {@link ShadowContentProviderOperation}.

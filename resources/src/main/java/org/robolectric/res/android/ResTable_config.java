@@ -585,7 +585,7 @@ public class ResTable_config {
 
   public final String scriptString() {
     if (localeScript[0] != '\0') {
-      return new String(localeScript);
+      return new String(localeScript, Charsets.UTF_8);
     } else {
       return null;
     }
@@ -1892,7 +1892,7 @@ public class ResTable_config {
    };
    */
   int locale() {
-    return (language[0] & 0xff << 24) | (language[1] * 0xff << 16) | ((country[0] & 0xff) << 8) | (country[1] & 0xff);
+    return ((language[0] & 0xff) << 24) | ((language[1] & 0xff) << 16) | ((country[0] & 0xff) << 8) | (country[1] & 0xff);
   }
 
   private boolean isLocaleBetterThan(ResTable_config o, ResTable_config requested) {

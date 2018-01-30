@@ -6,8 +6,6 @@ import static org.objectweb.asm.Opcodes.ACC_SUPER;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.V1_7;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.objectweb.asm.ClassWriter;
@@ -19,7 +17,6 @@ import sun.misc.Unsafe;
 public class ProxyMaker {
   private static final String TARGET_FIELD = "__proxy__";
   private static final Unsafe UNSAFE;
-  private static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 
   static {
     try {
@@ -80,13 +77,13 @@ public class ProxyMaker {
     final Class<?> proxyClass = UNSAFE.defineAnonymousClass(targetClass, writer.toByteArray(), null);
 
     try {
-      final MethodHandle setter = LOOKUP.findSetter(proxyClass, TARGET_FIELD, targetClass);
+      final Field field = proxyClass.getDeclaredField(TARGET_FIELD);
       return new Factory() {
         @Override public <E> E createProxy(Class<E> targetClass, E target) {
           try {
             Object proxy = UNSAFE.allocateInstance(proxyClass);
 
-            setter.invoke(proxy, target);
+            field.set(proxy, target);
 
             return targetClass.cast(proxy);
           } catch (Throwable t) {
@@ -94,7 +91,7 @@ public class ProxyMaker {
           }
         }
       };
-    } catch (IllegalAccessException | NoSuchFieldException e) {
+    } catch (NoSuchFieldException e) {
       throw new AssertionError(e);
     }
   }

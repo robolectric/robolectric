@@ -29,6 +29,9 @@ public class ShadowServiceManager {
           put(
               Context.UI_MODE_SERVICE,
               createBinder(ISearchManager.class, "android.app.IUiModeManager"));
+          put(
+              Context.NETWORK_POLICY_SERVICE,
+              createBinder(ISearchManager.class, "android.net.INetworkPolicyManager"));
           if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
             put(
                 Context.TRUST_SERVICE,

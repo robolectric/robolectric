@@ -21,11 +21,11 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
@@ -42,10 +42,10 @@ public class ActivityControllerTest {
   }
 
   @Test
-  @Config(manifest = Config.NONE)
   public void canCreateActivityNotListedInManifest() {
-    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
-    assertThat(activityController.setup()).isNotNull();
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity).isNotNull();
+    assertThat(activity.getThemeResId()).isEqualTo(R.style.Theme_Robolectric);
   }
 
   public static class TestDelayedPostActivity extends Activity {
@@ -98,7 +98,7 @@ public class ActivityControllerTest {
 
   @Test
   public void shouldSetIntentForGivenActivityInstance() throws Exception {
-    ActivityController<MyActivity> activityController = ActivityController.of(new CoreShadowsAdapter(), new MyActivity()).create();
+    ActivityController<MyActivity> activityController = ActivityController.of(new MyActivity()).create();
     assertThat(activityController.get().getIntent()).isNotNull();
   }
 
@@ -225,12 +225,12 @@ public class ActivityControllerTest {
     assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
-  
+
   @Test
   public void configurationChange_callsOnConfigurationChangedAndAppliesConfigWhenAllManaged() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
-    
+
     ActivityController<ConfigAwareActivity> configController =
         Robolectric.buildActivity(ConfigAwareActivity.class).setup();
     transcript.clear();
@@ -238,7 +238,7 @@ public class ActivityControllerTest {
     assertThat(transcript).contains("onConfigurationChanged");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
-  
+
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
@@ -385,7 +385,7 @@ public class ActivityControllerTest {
       transcribeWhilePaused("onUserLeaveHint");
       transcript.add("finishedOnUserLeaveHint");
     }
-    
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
       super.onConfigurationChanged(newConfig);
@@ -401,7 +401,7 @@ public class ActivityControllerTest {
       });
     }
   }
-  
+
   public static class ConfigAwareActivity extends MyActivity {
 
     Configuration newConfig;

@@ -2,11 +2,10 @@ package org.robolectric.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.IOException;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,6 +13,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.gradleapp.BuildConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -222,7 +222,7 @@ public class GradleManifestFactoryTest {
   ////////////////////////////////
 
   private AndroidManifest createManifest(Config config) {
-    return factory.create(factory.identify(config));
+    return RobolectricTestRunner.createAndroidManifest(factory.identify(config));
   }
 
   private static FsFile file(String path) {

@@ -5,11 +5,9 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.ParcelFileDescriptor;
 import com.google.common.base.Preconditions;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
