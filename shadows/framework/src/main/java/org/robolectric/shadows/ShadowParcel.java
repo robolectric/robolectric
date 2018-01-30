@@ -196,7 +196,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = O_MR1)
-  public static boolean nativeReadByteArray(long nativePtr, byte[] dest, int destLen) {
+  protected static boolean nativeReadByteArray(long nativePtr, byte[] dest, int destLen) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray(dest, destLen);
   }
 
