@@ -182,7 +182,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(data, "appInfo", applicationInfo);
       ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
-      LoadedApk loadedApk = getLoadedApk(activityThread, applicationInfo);
+      LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
@@ -206,22 +206,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         application.onCreate();
       });
     }
-  }
-
-  private static LoadedApk getLoadedApk(
-      ActivityThread activityThread, ApplicationInfo applicationInfo) {
-    // BEGIN-INTERNAL
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
-      return activityThread.getLoadedApk(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
-    }
-    // END-INTERNAL
-    return ReflectionHelpers.callInstanceMethod(
-        ActivityThread.class,
-        activityThread,
-        "getPackageInfo",
-        ClassParameter.from(ApplicationInfo.class, applicationInfo),
-        ClassParameter.from(CompatibilityInfo.class, null),
-        ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
   }
 
   private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
