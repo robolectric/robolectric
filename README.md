@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/robolectric/robolectric.svg?branch=master)](https://travis-ci.org/robolectric/robolectric)
 [![GitHub release](https://img.shields.io/github/release/robolectric/robolectric.svg?maxAge=60)](https://github.com/robolectric/robolectric/releases)
 
-Robolectric is a testing framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
+Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead of an emulator.
 
 ## Usage
 
@@ -35,21 +35,10 @@ For more information about how to install and use Robolectric on your project, e
 
 If you'd like to start a new project with Robolectric tests you can refer to `deckard` (for either [maven](http://github.com/robolectric/deckard-maven) or [gradle](http://github.com/robolectric/deckard-gradle)) as a guide to setting up both Android and Robolectric on your machine.
 
-### Gradle
+#### build.gradle:
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.5.1"
-```
-
-### Maven
-
-```xml
-<dependency>
-   <groupId>org.robolectric</groupId>
-   <artifactId>robolectric</artifactId>
-   <version>3.5.1</version>
-   <scope>test</scope>
-</dependency>
+testCompile "org.robolectric:robolectric:3.6.1"
 ```
 
 ## Building And Contributing
@@ -70,7 +59,7 @@ Robolectric supports running tests against multiple Android API levels. The work
 
 If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs.
 
-### Gradle
+#### build.gradle:
 
 ```groovy
 repositories {
@@ -78,22 +67,6 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:3.6-SNAPSHOT"
+    testCompile "org.robolectric:robolectric:3.7-SNAPSHOT"
 }
-```
-
-### Maven
-
-```xml
-<repository>
-  <id>sonatype-snapshpots</id>
-  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-</repository>
-
-<dependency>
-   <groupId>org.robolectric</groupId>
-   <artifactId>robolectric</artifactId>
-   <version>3.6-SNAPSHOT</version>
-   <scope>test</scope>
-</dependency>
 ```

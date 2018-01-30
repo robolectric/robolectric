@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.android.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -13,32 +13,36 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.robolectric.FakeApp;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestApplication;
+import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 
 @RunWith(RobolectricTestRunner.class)
-public class DefaultTestLifecycleTest {
+public class ParallelUniverseCreateApplicationTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private DefaultTestLifecycle defaultTestLifecycle = new DefaultTestLifecycle();
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
-    defaultTestLifecycle.createApplication(null,
+    ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"), null);
   }
 
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, newConfigWith(""), null))
+    assertThat(ParallelUniverse.createApplication(newConfigWith(""), null))
         .isExactlyInstanceOf(Application.class);
   }
 
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null,
+    assertThat(ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"), null))
         .isExactlyInstanceOf(TestApplication.class);
   }
@@ -60,8 +64,7 @@ public class DefaultTestLifecycleTest {
             + "      </intent-filter>"
             + "    </receiver>"
             + "</application>");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
-    shadowOf(application).bind(appManifest);
+    Application application = ParallelUniverse.createApplication(appManifest, null);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers).hasSize(1);
@@ -69,31 +72,33 @@ public class DefaultTestLifecycleTest {
   }
 
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {
-    assertThat(defaultTestLifecycle.getTestApplicationName(".Applicationz")).isEqualTo(".TestApplicationz");
-    assertThat(defaultTestLifecycle.getTestApplicationName("Applicationz")).isEqualTo("TestApplicationz");
-    assertThat(defaultTestLifecycle.getTestApplicationName("com.foo.Applicationz")).isEqualTo("com.foo.TestApplicationz");
+    assertThat(ParallelUniverse.getTestApplicationName(".Applicationz")).isEqualTo(".TestApplicationz");
+    assertThat(ParallelUniverse.getTestApplicationName("Applicationz")).isEqualTo("TestApplicationz");
+    assertThat(ParallelUniverse.getTestApplicationName("com.foo.Applicationz")).isEqualTo("com.foo.TestApplicationz");
   }
 
   @Test public void shouldLoadConfigApplicationIfSpecified() throws Exception {
-    Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Builder().setApplication(TestFakeApp.class).build());
+    Application application = ParallelUniverse.createApplication(
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
+        new Config.Builder().setApplication(TestFakeApp.class).build());
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
-    Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Builder().setApplication(TestFakeAppInner.class).build());
+    Application application = ParallelUniverse.createApplication(
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
+        new Config.Builder().setApplication(TestFakeAppInner.class).build());
     assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
   }
 
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
-    Application application = defaultTestLifecycle.createApplication(null,
+    Application application = ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null);
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, null, null)).isExactlyInstanceOf(Application.class);
+    assertThat(ParallelUniverse.createApplication(null, null)).isExactlyInstanceOf(Application.class);
   }
 
   /////////////////////////////

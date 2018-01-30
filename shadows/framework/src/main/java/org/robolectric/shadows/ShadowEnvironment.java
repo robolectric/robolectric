@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
@@ -27,7 +27,7 @@ public class ShadowEnvironment {
   private static final Map<File, Boolean> STORAGE_REMOVABLE = new HashMap<>();
   private static boolean sIsExternalStorageEmulated;
   private static Path tmpExternalFilesDirBase;
-  private static final List<File> externalDirs = new LinkedList<>();
+  private static final List<File> externalDirs = new ArrayList<>();
   private static Map<Path, String> storageState = new HashMap<>();
 
   static Path EXTERNAL_CACHE_DIR;

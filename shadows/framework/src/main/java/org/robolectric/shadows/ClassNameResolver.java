@@ -1,16 +1,9 @@
-package org.robolectric.android.internal;
+package org.robolectric.shadows;
 
 public class ClassNameResolver<T> {
-  private String packageName;
-  private String className;
 
-  public ClassNameResolver(String packageName, String className) {
-    this.packageName = packageName;
-    this.className = className;
-  }
-
-  public Class<? extends T> resolve() throws ClassNotFoundException {
-    Class<? extends T> aClass;
+  public static <T> Class<T> resolve(String packageName, String className) throws ClassNotFoundException {
+    Class<T> aClass;
     if (looksFullyQualified(className)) {
       aClass = safeClassForName(className);
     } else {
@@ -28,13 +21,13 @@ public class ClassNameResolver<T> {
     return aClass;
   }
 
-  private boolean looksFullyQualified(String className) {
+  private static boolean looksFullyQualified(String className) {
     return className.contains(".") && !className.startsWith(".");
   }
 
-  private Class<? extends T> safeClassForName(String classNamePath) {
+  private static <T> Class<T> safeClassForName(String classNamePath) {
     try {
-      return (Class<? extends T>) Class.forName(classNamePath);
+      return (Class<T>) Class.forName(classNamePath);
     } catch (ClassNotFoundException e) {
       return null;
     }

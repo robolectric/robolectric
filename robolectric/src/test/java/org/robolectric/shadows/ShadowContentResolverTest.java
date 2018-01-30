@@ -9,9 +9,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.Config.NONE;
 
 import android.accounts.Account;
-import android.app.Activity;
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
@@ -19,7 +19,6 @@ import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
@@ -48,15 +47,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContentResolverTest {
@@ -70,7 +65,7 @@ public class ShadowContentResolverTest {
 
   @Before
   public void setUp() {
-    contentResolver = Robolectric.setupActivity(Activity.class).getContentResolver();
+    contentResolver = RuntimeEnvironment.application.getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
     uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
     uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
@@ -695,81 +690,33 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void getProvider_shouldCreateProviderFromManifest() {
-    AndroidManifest manifest = ShadowApplication.getInstance().getAppManifest();
-    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ShadowContentResolverTest$TestContentProvider", null, AUTHORITY, null, null, null);
-    try {
-      manifest.getContentProviders().add(testProviderData);
-      assertThat(ShadowContentResolver.getProvider(Uri.parse("content://" + AUTHORITY + "/shadows"))).isNotNull();
-    } finally {
-      manifest.getContentProviders().remove(testProviderData);
-    }
+  public void getProvider_shouldCreateProviderFromManifest() throws Exception {
+    Uri uri = Uri.parse("content://org.robolectric.my_content_provider_authority/shadows");
+    ContentProvider provider = ShadowContentResolver.getProvider(uri);
+    assertThat(provider).isNotNull();
+    assertThat(provider.getReadPermission()).isEqualTo("READ_PERMISSION");
+    assertThat(provider.getWritePermission()).isEqualTo("WRITE_PERMISSION");
+    assertThat(provider.getPathPermissions()).hasSize(1);
+
+    // unfortunately, there is no direct way of testing if authority is set or not
+    // however, it's checked in ContentProvider.Transport method calls (validateIncomingUri), so
+    // it's the closest we can test against
+    provider.getIContentProvider().getType(uri); // should not throw
   }
 
   @Test
+  @Config(manifest = NONE)
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    Application application = new DefaultTestLifecycle().createApplication(null, null, null);
-    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
+    Application application = new Application();
+    shadowOf(application).callAttach(RuntimeEnvironment.systemContext);
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 
-  @Test
-  public void getProvider_shouldSetAuthority() throws RemoteException {
-    AndroidManifest manifest = ShadowApplication.getInstance().getAppManifest();
-    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ShadowContentResolverTest$TestContentProvider", null, AUTHORITY, null, null, null);
-    try {
-      manifest.getContentProviders().add(testProviderData);
-      Uri uri = Uri.parse("content://" + AUTHORITY + "/shadows");
-      ContentProvider provider = ShadowContentResolver.getProvider(uri);
-      // unfortunately, there is no direct way of testing if authority is set or not
-      // however, it's checked in ContentProvider.Transport method calls (validateIncomingUri), so it's the closest we can test against
-      provider.getIContentProvider().getType(uri); // should not throw
-    } finally {
-      manifest.getContentProviders().remove(testProviderData);
-    }
-  }
+
 
   @Test
   public void openTypedAssetFileDescriptor_shouldOpenDescriptor() throws IOException, RemoteException {
-    final File file = new File(RuntimeEnvironment.application.getFilesDir(), "test_file");
-    file.createNewFile();
-
-    ShadowContentResolver.registerProviderInternal(AUTHORITY, new ContentProvider() {
-      @Override
-      public boolean onCreate() {
-        return true;
-      }
-
-      @Override
-      public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
-        return null;
-      }
-
-      @Override
-      public String getType(Uri uri) {
-        return null;
-      }
-
-      @Override
-      public Uri insert(Uri uri, ContentValues contentValues) {
-        return null;
-      }
-
-      @Override
-      public int delete(Uri uri, String s, String[] strings) {
-        return 0;
-      }
-
-      @Override
-      public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
-        return 0;
-      }
-
-      @Override
-      public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
-      }
-    });
+    Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
 
     AssetFileDescriptor afd = contentResolver.openTypedAssetFileDescriptor(Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null);
 
@@ -876,4 +823,51 @@ public class ShadowContentResolverTest {
       return 0;
     }
   }
+
+  /**
+   * Provider that opens a temporary file.
+   */
+  public static class MyContentProvider extends ContentProvider {
+    @Override
+    public boolean onCreate() {
+      return true;
+    }
+
+    @Override
+    public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
+      return null;
+    }
+
+    @Override
+    public String getType(Uri uri) {
+      return null;
+    }
+
+    @Override
+    public Uri insert(Uri uri, ContentValues contentValues) {
+      return null;
+    }
+
+    @Override
+    public int delete(Uri uri, String s, String[] strings) {
+      return 0;
+    }
+
+    @Override
+    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+      return 0;
+    }
+
+    @Override
+    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+      final File file = new File(RuntimeEnvironment.application.getFilesDir(), "test_file");
+      try {
+        file.createNewFile();
+      } catch (IOException e) {
+        throw new RuntimeException("error creating new file", e);
+      }
+      return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    }
+  }
+
 }

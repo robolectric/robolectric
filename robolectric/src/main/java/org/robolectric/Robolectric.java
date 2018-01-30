@@ -31,31 +31,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Robolectric {
-  private static ShadowsAdapter shadowsAdapter = null;
-  private static Iterable<ShadowProvider> providers;
-
-  public static void reset() {
-    if (providers == null) {
-      providers = ServiceLoader.load(ShadowProvider.class);
-    }
-    for (ShadowProvider provider : providers) {
-      provider.reset();
-    }
-    RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setActivityThread(null);
-  }
 
   /**
-   * @deprecated Prefer to access Shadow classes directly.
+   * This method is internal and shouldn't be called by developers.
    */
   @Deprecated
-  public static ShadowsAdapter getShadowsAdapter() {
-    synchronized (ShadowsAdapter.class) {
-      if (shadowsAdapter == null) {
-        shadowsAdapter = instantiateShadowsAdapter();
-      }
-    }
-    return shadowsAdapter;
+  public static void reset() {
+    // No-op- is now handled in the test runner. Users should not be calling this method anyway.
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
@@ -216,7 +198,6 @@ public class Robolectric {
     }
   }
 
-
   /**
    * Return the foreground scheduler (e.g. the UI thread scheduler).
    *
@@ -247,21 +228,5 @@ public class Robolectric {
    */
   public static void flushBackgroundThreadScheduler() {
     getBackgroundThreadScheduler().advanceToLastPostedRunnable();
-  }
-
-  private static ShadowsAdapter instantiateShadowsAdapter() {
-    ShadowsAdapter result = null;
-    for (ShadowsAdapter adapter : ServiceLoader.load(ShadowsAdapter.class)) {
-      if (result == null) {
-        result = adapter;
-      } else {
-        throw new RuntimeException("Multiple " + ShadowsAdapter.class.getCanonicalName() + "s found.  Robolectric has loaded multiple core shadow modules for some reason.");
-      }
-    }
-    if (result == null) {
-      throw new RuntimeException("No shadows modules found containing a " + ShadowsAdapter.class.getCanonicalName());
-    } else {
-      return result;
-    }
   }
 }

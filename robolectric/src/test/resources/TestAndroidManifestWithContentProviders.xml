@@ -16,6 +16,7 @@
       android:permission="PERMISSION"
       android:readPermission="READ_PERMISSION"
       android:writePermission="WRITE_PERMISSION"
+      android:grantUriPermissions="true"
     >
       <path-permission
               android:pathPattern="/path/*"
