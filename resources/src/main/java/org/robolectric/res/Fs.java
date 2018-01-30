@@ -208,7 +208,7 @@ abstract public class Fs {
       }
 
       @Override public String getPath() {
-        return "jar:" + getJarFileName() + "!/" + path;
+        return "jar:file:" + getJarFileName() + "!/" + path;
       }
 
       @Override
