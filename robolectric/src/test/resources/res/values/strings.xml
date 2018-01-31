@@ -45,4 +45,10 @@
   <string name="string_with_spaces">
     Up to <xliff:g id="upper_limit" example="12">%1$s</xliff:g> <xliff:g id="space"> </xliff:g> <xliff:g id="currency" example="USD">%2$s</xliff:g>
   </string>
+
+  <!--
+    Resources to validate examples from https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling
+  -->
+  <string name="bad_example">This is a "bad string".</string>
+  <!-- Quotes are stripped; displays as: This is a bad string. -->
 </resources>
