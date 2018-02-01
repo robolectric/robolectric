@@ -205,14 +205,6 @@ public class ShadowPackageManager {
         "Could not find package name for ResolveInfo " + resolveInfo.toString());
   }
 
-  public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
-    return drawableList.get(intent.getComponent());
-  }
-
-  public Drawable getActivityIcon(ComponentName componentName) throws NameNotFoundException {
-    return drawableList.get(componentName);
-  }
-
   public void addActivityIcon(ComponentName component, Drawable drawable) {
     drawableList.put(component, drawable);
   }
@@ -223,10 +215,6 @@ public class ShadowPackageManager {
 
   public void setApplicationIcon(String packageName, Drawable drawable) {
     applicationIcons.put(packageName, drawable);
-  }
-
-  public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
-    applicationEnabledSettingMap.put(packageName, newState);
   }
 
   public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
@@ -345,10 +333,6 @@ public class ShadowPackageManager {
     drawables.put(new Pair(packageName, resourceId), drawable);
   }
 
-  public Drawable getDrawable(String packageName, int resourceId, ApplicationInfo applicationInfo) {
-    return drawables.get(new Pair(packageName, resourceId));
-  }
-
   public void setNameForUid(int uid, String name) {
     namesForUid.put(uid, name);
   }
@@ -406,17 +390,19 @@ public class ShadowPackageManager {
   }
 
   @Implementation
-  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
+  protected List<ResolveInfo> queryBroadcastReceiversAsUser(
+      Intent intent, int flags, UserHandle userHandle) {
     return null;
   }
 
   @Implementation
-  public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags, @UserIdInt int userId) {
+  protected List<ResolveInfo> queryBroadcastReceivers(
+      Intent intent, int flags, @UserIdInt int userId) {
     return null;
   }
 
   @Implementation
-  public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+  protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
@@ -437,12 +423,10 @@ public class ShadowPackageManager {
   }
 
   @Implementation
-  public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
-  }
+  protected void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {}
 
   @Implementation
-  public void freeStorage(long freeStorageSize, IntentSender pi) {
-  }
+  protected void freeStorage(long freeStorageSize, IntentSender pi) {}
 
   /**
    * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
