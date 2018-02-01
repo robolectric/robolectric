@@ -8,7 +8,6 @@ import android.hardware.fingerprint.FingerprintManager.AuthenticationCallback;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationResult;
 import android.hardware.fingerprint.FingerprintManager.CryptoObject;
 import android.os.CancellationSignal;
-import android.os.CancellationSignal.OnCancelListener;
 import android.os.Handler;
 import android.util.Log;
 import org.robolectric.RuntimeEnvironment;
@@ -65,8 +64,12 @@ public class ShadowFingerprintManager {
   }
 
   @Implementation
-  public void authenticate(CryptoObject crypto, CancellationSignal cancel,
-      int flags, AuthenticationCallback callback, Handler handler) {
+  protected void authenticate(
+      CryptoObject crypto,
+      CancellationSignal cancel,
+      int flags,
+      AuthenticationCallback callback,
+      Handler handler) {
     if (callback == null) {
       throw new IllegalArgumentException("Must supply an authentication callback");
     }
@@ -95,7 +98,7 @@ public class ShadowFingerprintManager {
   }
 
   @Implementation
-  public boolean hasEnrolledFingerprints() {
+  protected boolean hasEnrolledFingerprints() {
     return this.hasEnrolledFingerprints;
   }
 
@@ -107,7 +110,7 @@ public class ShadowFingerprintManager {
   }
 
   @Implementation
-  public boolean isHardwareDetected() {
+  protected boolean isHardwareDetected() {
     return this.isHardwareDetected;
   }
 }

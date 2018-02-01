@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -43,7 +42,7 @@ public class ShadowUserManager {
   private boolean enforcePermissions;
 
   @Implementation
-  public void __constructor__(Context context, IUserManager service) {
+  protected void __constructor__(Context context, IUserManager service) {
     this.context = context;
   }
 
@@ -60,7 +59,7 @@ public class ShadowUserManager {
    * package name and the method returns instantly.
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getApplicationRestrictions(String packageName) {
+  protected Bundle getApplicationRestrictions(String packageName) {
     Bundle bundle = applicationRestrictions.get(packageName);
     return bundle != null ? bundle : new Bundle();
   }
@@ -80,12 +79,12 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public List<UserHandle> getUserProfiles(){
+  protected List<UserHandle> getUserProfiles() {
     return ImmutableList.copyOf(userProfiles.keySet());
   }
 
   @Implementation(minSdk = N)
-  public boolean isUserUnlocked() {
+  protected boolean isUserUnlocked() {
     return userUnlocked;
   }
 
@@ -97,7 +96,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean isManagedProfile() {
+  protected boolean isManagedProfile() {
     if (enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException(
           "You need MANAGE_USERS permission to: check if specified user a " +
@@ -114,7 +113,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
+  protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
     Bundle bundle = userRestrictions.get(userHandle);
     return bundle != null && bundle.getBoolean(restrictionKey);
   }
@@ -134,7 +133,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getUserRestrictions(UserHandle userHandle) {
+  protected Bundle getUserRestrictions(UserHandle userHandle) {
     return getUserRestrictionsForUser(userHandle);
   }
 
@@ -148,7 +147,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public long getSerialNumberForUser(UserHandle userHandle) {
+  protected long getSerialNumberForUser(UserHandle userHandle) {
     Long result = userProfiles.get(userHandle);
     return result == null ? -1L : result;
   }
@@ -165,7 +164,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public UserHandle getUserForSerialNumber(long serialNumber) {
+  protected UserHandle getUserForSerialNumber(long serialNumber) {
     return userProfiles.inverse().get(serialNumber);
   }
 
@@ -181,7 +180,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = N_MR1)
-  public boolean isDemoUser() {
+  protected boolean isDemoUser() {
     return isDemoUser;
   }
 
@@ -194,7 +193,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public boolean isUserRunning(UserHandle handle) {
+  protected boolean isUserRunning(UserHandle handle) {
     checkPermissions();
     UserState state = userState.get(handle);
 
@@ -208,7 +207,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public boolean isUserRunningOrStopping(UserHandle handle) {
+  protected boolean isUserRunningOrStopping(UserHandle handle) {
     checkPermissions();
     UserState state = userState.get(handle);
 
@@ -250,7 +249,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public List<UserInfo> getUsers() {
+  protected List<UserInfo> getUsers() {
     // Implement this - return empty list to avoid NPE from call to getUserCount()
     return ImmutableList.of();
   }
