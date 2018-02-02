@@ -14,5 +14,7 @@ dependencies {
     testRuntime AndroidSdk.MAX_SDK.coordinates
     testCompile("com.android.support.test:runner:1.0.2-alpha1")
     testCompile("com.android.support.test:rules:1.0.2-alpha1")
+    testCompile("com.android.support.test.espresso:espresso-intents:3.0.2-alpha1")
+    testCompile("com.android.support.test.espresso:espresso-core:3.0.2-alpha1")
     testCompile "com.google.truth:truth:0.36"
 }

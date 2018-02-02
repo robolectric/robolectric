@@ -123,17 +123,31 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivity_shouldDelegateToStartActivityForResult() {
-    final List<String> transcript = new ArrayList<>();
-    Activity activity = new Activity() {
-      @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
-      }
-    };
+
+    TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
+
     activity.startActivity(new Intent().setType("image/*"));
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    assertThat(transcript).containsExactly("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+    assertThat(activity.transcript)
+        .containsExactly(
+            "onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+  }
+
+  public static class TranscriptActivity extends Activity {
+    final List<String> transcript = new ArrayList<>();
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      transcript.add(
+          "onActivityResult called with requestCode "
+              + requestCode
+              + ", resultCode "
+              + resultCode
+              + ", intent data "
+              + data.getData());
+    }
   }
 
   @Test
@@ -162,29 +176,20 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
-    final List<String> transcript = new ArrayList<>();
-    Activity activity = new Activity() {
-      @Override
-      protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
-      }
-    };
+    TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    assertThat(transcript).containsExactly("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
+    assertThat(activity.transcript)
+        .containsExactly(
+            "onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
   }
 
   @Test
   public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() throws Exception {
-    Activity activity = new Activity() {
-      @Override
-      protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        throw new IllegalStateException("should not be called");
-      }
-    };
+    ThrowOnResultActivity activity = Robolectric.buildActivity(ThrowOnResultActivity.class).get();
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
@@ -195,6 +200,13 @@ public class ShadowActivityTest {
       fail();
     } catch (Exception e) {
       assertThat(e.getMessage()).startsWith("No intent matches " + requestIntent);
+    }
+  }
+
+  public static class ThrowOnResultActivity extends Activity {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      throw new IllegalStateException("should not be called");
     }
   }
 
@@ -769,7 +781,7 @@ public class ShadowActivityTest {
 
   @Test
   public void canStartActivityFromFragment() {
-    final Activity activity = buildActivity(Activity.class).create().get();
+    final Activity activity = Robolectric.setupActivity(Activity.class);
 
     Intent intent = new Intent(Intent.ACTION_VIEW);
     activity.startActivityFromFragment(new Fragment(), intent, 4);
@@ -795,7 +807,7 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldUseAnimationOverride() {
-    Activity activity = buildActivity(Activity.class).create().get();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     Intent intent = new Intent(activity, OptionsMenuActivity.class);
 
     Bundle animationBundle = ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1).toBundle();
