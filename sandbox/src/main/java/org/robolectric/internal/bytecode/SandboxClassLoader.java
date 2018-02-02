@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.List;
 import java.util.ListIterator;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -64,8 +65,8 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
     classNodeProvider = new ClassNodeProvider() {
       @Override
-      byte[] getClassBytes(String className) throws ClassNotFoundException {
-        return getByteCode(className);
+      byte[] getClassBytes(String internalClassName) throws ClassNotFoundException {
+        return getByteCode(internalClassName);
       }
     };
   }
@@ -287,31 +288,35 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       return super.newClass(config.mappedTypeName(value));
     }
 
+    /**
+     * Returns the common super type of the two given types without actually loading
+     * the classes in the ClassLoader.
+     */
     @Override
     protected String getCommonSuperClass(final String type1, final String type2) {
       try {
-        ClassReader info1 = typeInfo(type1);
-        ClassReader info2 = typeInfo(type2);
-        if ((info1.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
+        ClassNode info1 = typeInfo(type1);
+        ClassNode info2 = typeInfo(type2);
+        if ((info1.access & Opcodes.ACC_INTERFACE) != 0) {
           if (typeImplements(type2, info2, type1)) {
             return type1;
           }
-          if ((info2.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
+          if ((info2.access & Opcodes.ACC_INTERFACE) != 0) {
             if (typeImplements(type1, info1, type2)) {
               return type2;
             }
           }
           return "java/lang/Object";
         }
-        if ((info2.getAccess() & Opcodes.ACC_INTERFACE) != 0) {
+        if ((info2.access & Opcodes.ACC_INTERFACE) != 0) {
           if (typeImplements(type1, info1, type2)) {
             return type2;
           } else {
             return "java/lang/Object";
           }
         }
-        StringBuilder b1 = typeAncestors(type1, info1);
-        StringBuilder b2 = typeAncestors(type2, info2);
+        String b1 = typeAncestors(type1, info1);
+        String b2 = typeAncestors(type2, info2);
         String result = "java/lang/Object";
         int end1 = b1.length();
         int end2 = b2.length();
@@ -333,24 +338,25 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
             return result;
           }
         }
-      } catch (IOException e) {
+      } catch (ClassNotFoundException e) {
         return "java/lang/Object"; // Handle classes that may be obfuscated
       }
     }
 
-    private StringBuilder typeAncestors(String type, ClassReader info) throws IOException {
+    private String typeAncestors(String type, ClassNode info) throws ClassNotFoundException {
       StringBuilder b = new StringBuilder();
       while (!"java/lang/Object".equals(type)) {
         b.append(';').append(type);
-        type = info.getSuperName();
+        type = info.superName;
         info = typeInfo(type);
       }
-      return b;
+      return b.toString();
     }
 
-    private boolean typeImplements(String type, ClassReader info, String itf) throws IOException {
+    private boolean typeImplements(String type, ClassNode info, String itf)
+        throws ClassNotFoundException {
       while (!"java/lang/Object".equals(type)) {
-        String[] itfs = info.getInterfaces();
+        List<String> itfs = info.interfaces;
         for (String itf2 : itfs) {
           if (itf2.equals(itf)) {
             return true;
@@ -361,21 +367,19 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
             return true;
           }
         }
-        type = info.getSuperName();
+        type = info.superName;
         info = typeInfo(type);
       }
       return false;
     }
 
-    private ClassReader typeInfo(final String type) throws IOException {
-      try (InputStream is = getClassBytesAsStreamPreferringLocalUrls(type + ".class")) {
-        return new ClassReader(is);
-      }
+    private ClassNode typeInfo(final String type) throws ClassNotFoundException {
+      return classNodeProvider.getClassNode(type);
     }
   }
 
   /**
-   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}
+   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}.
    */
   static class TryCatch {
     private final Label start;

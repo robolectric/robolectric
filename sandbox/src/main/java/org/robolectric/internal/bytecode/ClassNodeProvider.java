@@ -10,17 +10,17 @@ abstract class ClassNodeProvider {
 
   abstract byte[] getClassBytes(String className) throws ClassNotFoundException;
 
-  ClassNode getClassNode(String className) throws ClassNotFoundException {
-    ClassNode classNode = classNodes.get(className);
+  ClassNode getClassNode(String internalClassName) throws ClassNotFoundException {
+    ClassNode classNode = classNodes.get(internalClassName);
     if (classNode == null) {
-      classNode = createClassNode(className);
-      classNodes.put(className, classNode);
+      classNode = createClassNode(internalClassName);
+      classNodes.put(internalClassName, classNode);
     }
     return classNode;
   }
 
-  private ClassNode createClassNode(String className) throws ClassNotFoundException {
-    byte[] byteCode = getClassBytes(className);
+  private ClassNode createClassNode(String internalClassName) throws ClassNotFoundException {
+    byte[] byteCode = getClassBytes(internalClassName);
     ClassReader classReader = new ClassReader(byteCode);
     ClassNode classNode = new ClassNode();
     classReader.accept(classNode,
