@@ -9,12 +9,10 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.accounts.IAccountManager;
-import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -38,6 +36,7 @@ import android.os.Looper;
 import android.os.UserHandle;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
+import android.view.autofill.IAutoFillManager;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,6 +93,8 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
     SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
     SYSTEM_SERVICE_MAP.put(Context.USB_SERVICE, "android.hardware.usb.UsbManager");
+    SYSTEM_SERVICE_MAP.put(Context.AUTOFILL_MANAGER_SERVICE, "android.view.autofill.AutofillManager");
+    SYSTEM_SERVICE_MAP.put(Context.TEXT_CLASSIFICATION_SERVICE, "android.view.textclassifier.TextClassificationManager");
 
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
@@ -161,25 +162,12 @@ public class ShadowContextImpl {
                 ClassParameter.from(Handler.class, null));
           }
         } else if (serviceClassName.equals("android.app.SearchManager")
-            || serviceClassName.equals("android.app.ActivityManager")) {
+            || serviceClassName.equals("android.app.ActivityManager")
+            || serviceClassName.equals("android.app.WallpaperManager")) {
 
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(Handler.class, null));
-        } else if (serviceClassName.equals("android.app.WallpaperManager")) {
-          if (getApiLevel() <= O_MR1) {
-            service = ReflectionHelpers.callConstructor(clazz,
-                ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(Handler.class, null));
-          }
-          // BEGIN-INTERNAL
-          else {
-            service = ReflectionHelpers.callConstructor(clazz,
-                ClassParameter.from(IWallpaperManager.class, null),
-                ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(Handler.class, null));
-          }
-          // END-INTERNAL
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
         } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
@@ -234,6 +222,13 @@ public class ShadowContextImpl {
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(IFingerprintService.class, null));
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.view.autofill.AutofillManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IAutoFillManager.class, null));
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.view.textclassifier.TextClassificationManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else {
           service = newInstanceOf(clazz);
         }
