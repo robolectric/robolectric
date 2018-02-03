@@ -9,6 +9,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.robolectric.internal.bytecode.ClassInstrumentor.TryCatch;
 
 public class ShadowDecorator implements ClassInstrumentor.Decorator {
   private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
@@ -51,13 +52,13 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
 
       generator.loadThis();                                         // this
       generator.getField(mutableClass.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of this.__robo_data__
-      generator.instanceOf(mutableClass.classType);                      // __robo_data__, is instance of same class?
+      generator.instanceOf(mutableClass.classType);                 // __robo_data__, is instance of same class?
       generator.visitJumpInsn(Opcodes.IFEQ, notInstanceOfThis);     // jump if no (is not instance)
 
-      SandboxClassLoader.TryCatch tryCatchForProxyCall = generator.tryStart(THROWABLE_TYPE);
+      TryCatch tryCatchForProxyCall = generator.tryStart(THROWABLE_TYPE);
       generator.loadThis();                                         // this
       generator.getField(mutableClass.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of this.__robo_data__
-      generator.checkCast(mutableClass.classType);                       // __robo_data__ but cast to my class
+      generator.checkCast(mutableClass.classType);                  // __robo_data__ but cast to my class
       generator.loadArgs();                                         // __robo_data__ instance, [args]
 
       generator.visitMethodInsn(Opcodes.INVOKESPECIAL, mutableClass.internalClassName, originalMethod.name, originalMethod.desc, false);

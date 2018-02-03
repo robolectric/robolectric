@@ -12,6 +12,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -562,5 +563,31 @@ abstract class ClassInstrumentor {
 
     void decorateMethodPreClassHandler(MutableClass mutableClass, MethodNode originalMethod,
         String originalMethodName, RobolectricGeneratorAdapter generator);
+  }
+
+  /**
+   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}.
+   */
+  static class TryCatch {
+    private final Label start;
+    private final Label end;
+    private final Label handler;
+    private final GeneratorAdapter generatorAdapter;
+
+    TryCatch(GeneratorAdapter generatorAdapter, Type type) {
+      this.generatorAdapter = generatorAdapter;
+      this.start = generatorAdapter.mark();
+      this.end = new Label();
+      this.handler = new Label();
+      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
+    }
+
+    void end() {
+      generatorAdapter.mark(end);
+    }
+
+    void handler() {
+      generatorAdapter.mark(handler);
+    }
   }
 }

@@ -12,24 +12,16 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ListIterator;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.TypeInsnNode;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
 /**
- * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
+ * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
+ * shadow classes.
  */
-public class SandboxClassLoader extends URLClassLoader implements Opcodes {
+public class SandboxClassLoader extends URLClassLoader {
   private final ClassLoader systemClassLoader;
   private final ClassLoader urls;
   private final InstrumentationConfiguration config;
@@ -158,7 +150,9 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
     String classFilename = className.replace('.', '/') + ".class";
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
-      if (classBytesStream == null) throw new ClassNotFoundException(className);
+      if (classBytesStream == null) {
+        throw new ClassNotFoundException(className);
+      }
 
       return Util.readBytes(classBytesStream);
     } catch (IOException e) {
@@ -174,78 +168,6 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       if (pckg == null) {
         definePackage(pckgName, null, null, null, null, null, null, null);
       }
-    }
-  }
-
-  public static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
-    if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-      return;
-    }
-
-    if (Type.VOID_TYPE.equals(type)) {
-      instructions.add(new InsnNode(ACONST_NULL));
-    } else {
-      Type boxed = getBoxedType(type);
-      instructions.add(new TypeInsnNode(NEW, boxed.getInternalName()));
-      if (type.getSize() == 2) {
-        // Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
-        instructions.add(new InsnNode(DUP_X2));
-        instructions.add(new InsnNode(DUP_X2));
-        instructions.add(new InsnNode(POP));
-      } else {
-        // p -> po -> opo -> oop -> o
-        instructions.add(new InsnNode(DUP_X1));
-        instructions.add(new InsnNode(SWAP));
-      }
-      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V", false));
-    }
-  }
-
-  private static Type getBoxedType(final Type type) {
-    switch (type.getSort()) {
-      case Type.BYTE:
-        return Type.getObjectType("java/lang/Byte");
-      case Type.BOOLEAN:
-        return Type.getObjectType("java/lang/Boolean");
-      case Type.SHORT:
-        return Type.getObjectType("java/lang/Short");
-      case Type.CHAR:
-        return Type.getObjectType("java/lang/Character");
-      case Type.INT:
-        return Type.getObjectType("java/lang/Integer");
-      case Type.FLOAT:
-        return Type.getObjectType("java/lang/Float");
-      case Type.LONG:
-        return Type.getObjectType("java/lang/Long");
-      case Type.DOUBLE:
-        return Type.getObjectType("java/lang/Double");
-    }
-    return type;
-  }
-
-  /**
-   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}.
-   */
-  static class TryCatch {
-    private final Label start;
-    private final Label end;
-    private final Label handler;
-    private final GeneratorAdapter generatorAdapter;
-
-    TryCatch(GeneratorAdapter generatorAdapter, Type type) {
-      this.generatorAdapter = generatorAdapter;
-      this.start = generatorAdapter.mark();
-      this.end = new Label();
-      this.handler = new Label();
-      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
-    }
-
-    void end() {
-      generatorAdapter.mark(end);
-    }
-
-    void handler() {
-      generatorAdapter.mark(handler);
     }
   }
 

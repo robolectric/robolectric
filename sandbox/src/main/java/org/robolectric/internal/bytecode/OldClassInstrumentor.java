@@ -110,7 +110,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     generator.ifNull(directCall);
 
     // prepare for call to plan.run(Object instance, Object[] params)
-    SandboxClassLoader.TryCatch tryCatchForHandler = generator.tryStart(THROWABLE_TYPE);
+    TryCatch tryCatchForHandler = generator.tryStart(THROWABLE_TYPE);
     generator.loadLocal(planLocalVar); // plan
     generator.loadThisOrNull();        // instance
     generator.loadArgArray();          // params
@@ -156,7 +156,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
 
     if (!originalMethod.name.equals("<init>")) {
       generator.mark(directCall);
-      SandboxClassLoader.TryCatch tryCatchForDirect = generator.tryStart(THROWABLE_TYPE);
+      TryCatch tryCatchForDirect = generator.tryStart(THROWABLE_TYPE);
       generator.invokeMethod(mutableClass.classType.getInternalName(), originalMethod.name, originalMethod.desc);
       tryCatchForDirect.end();
       generator.returnValue();
@@ -203,19 +203,19 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       Type type = argumentTypes[i];
       int argWidth = type.getSize();
 
-      if (argWidth == 1) {                       // A B C []
+      if (argWidth == 1) {                               // A B C []
         instructions.add(new InsnNode(Opcodes.DUP_X1));  // A B [] C []
         instructions.add(new InsnNode(Opcodes.SWAP));    // A B [] [] C
-        instructions.add(new LdcInsnNode(i));    // A B [] [] C 2
+        instructions.add(new LdcInsnNode(i));            // A B [] [] C 2
         instructions.add(new InsnNode(Opcodes.SWAP));    // A B [] [] 2 C
-        SandboxClassLoader.box(type, instructions);                 // A B [] [] 2 (C)
+        box(type, instructions);                         // A B [] [] 2 (C)
         instructions.add(new InsnNode(Opcodes.AASTORE)); // A B [(C)]
-      } else if (argWidth == 2) {                // A B _C_ []
+      } else if (argWidth == 2) {                        // A B _C_ []
         instructions.add(new InsnNode(Opcodes.DUP_X2));  // A B [] _C_ []
         instructions.add(new InsnNode(Opcodes.DUP_X2));  // A B [] [] _C_ []
         instructions.add(new InsnNode(Opcodes.POP));     // A B [] [] _C_
-        SandboxClassLoader.box(type, instructions);                 // A B [] [] (C)
-        instructions.add(new LdcInsnNode(i));    // A B [] [] (C) 2
+        box(type, instructions);                         // A B [] [] (C)
+        instructions.add(new LdcInsnNode(i));            // A B [] [] (C) 2
         instructions.add(new InsnNode(Opcodes.SWAP));    // A B [] [] 2 (C)
         instructions.add(new InsnNode(Opcodes.AASTORE)); // A B [(C)]
       }
@@ -279,6 +279,55 @@ public class OldClassInstrumentor extends ClassInstrumentor {
         break;
       default:
         throw new RuntimeException("Not implemented: " + getClass().getName() + " cannot intercept methods with return type " + returnType.getClassName());
+    }
+  }
+
+  static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
+    if (type.getSort() == OBJECT || type.getSort() == ARRAY) {
+      return;
+    }
+
+    if (Type.VOID_TYPE.equals(type)) {
+      instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+    } else {
+      Type boxed = getBoxedType(type);
+      instructions.add(new TypeInsnNode(Opcodes.NEW, boxed.getInternalName()));
+      if (type.getSize() == 2) {
+        // Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
+        instructions.add(new InsnNode(Opcodes.DUP_X2));
+        instructions.add(new InsnNode(Opcodes.DUP_X2));
+        instructions.add(new InsnNode(Opcodes.POP));
+      } else {
+        // p -> po -> opo -> oop -> o
+        instructions.add(new InsnNode(Opcodes.DUP_X1));
+        instructions.add(new InsnNode(Opcodes.SWAP));
+      }
+      instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, boxed.getInternalName(),
+          "<init>", "(" + type.getDescriptor() + ")V", false));
+    }
+  }
+
+  private static Type getBoxedType(final Type type) {
+    switch (type.getSort()) {
+      case Type.BYTE:
+        return Type.getObjectType("java/lang/Byte");
+      case Type.BOOLEAN:
+        return Type.getObjectType("java/lang/Boolean");
+      case Type.SHORT:
+        return Type.getObjectType("java/lang/Short");
+      case Type.CHAR:
+        return Type.getObjectType("java/lang/Character");
+      case Type.INT:
+        return Type.getObjectType("java/lang/Integer");
+      case Type.FLOAT:
+        return Type.getObjectType("java/lang/Float");
+      case Type.LONG:
+        return Type.getObjectType("java/lang/Long");
+      case Type.DOUBLE:
+        return Type.getObjectType("java/lang/Double");
+      default:
+        // no boxing required
+        return type;
     }
   }
 }
