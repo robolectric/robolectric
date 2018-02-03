@@ -14,7 +14,7 @@ abstract class ClassValueMap<T> {
   protected abstract T computeValue(Class<?> type);
 
   @SuppressWarnings("Java8MapApi")
-  synchronized public T get(Class<?> type) {
+  public synchronized T get(Class<?> type) {
     T t = map.get(type);
     if (t == null) {
       if (!map.containsKey(type)) {

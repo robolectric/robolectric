@@ -36,12 +36,6 @@ abstract class ClassInstrumentor {
     this.decorator = decorator;
   }
 
-  public byte[] instrument(byte[] origBytes, InstrumentationConfiguration config,
-      ClassNodeProvider classNodeProvider) {
-    MutableClass mutableClass = analyzeClass(origBytes, config, classNodeProvider);
-    return instrumentToBytes(mutableClass);
-  }
-
   public MutableClass analyzeClass(
       byte[] origClassBytes,
       final InstrumentationConfiguration config,
@@ -80,6 +74,12 @@ abstract class ClassInstrumentor {
     return writer.toByteArray();
   }
 
+  public byte[] instrument(byte[] origBytes, InstrumentationConfiguration config,
+      ClassNodeProvider classNodeProvider) {
+    MutableClass mutableClass = analyzeClass(origBytes, config, classNodeProvider);
+    return instrumentToBytes(mutableClass);
+  }
+
   public void instrument(MutableClass mutableClass) {
     try {
       // no need to do anything to interfaces
@@ -102,9 +102,12 @@ abstract class ClassInstrumentor {
 
       // Attempt to make an instrumentable equals(), hashCode(), and toString() for all classes
       try {
-        createInstrumentableMethodIfNotAlreadyPresent(mutableClass, "equals", "(Ljava/lang/Object;)Z");
-        createInstrumentableMethodIfNotAlreadyPresent(mutableClass, "hashCode", "()I");
-        createInstrumentableMethodIfNotAlreadyPresent(mutableClass, "toString", "()Ljava/lang/String;");
+        createInstrumentableMethodIfNotAlreadyPresent(
+            mutableClass, "equals", "(Ljava/lang/Object;)Z");
+        createInstrumentableMethodIfNotAlreadyPresent(
+            mutableClass, "hashCode", "()I");
+        createInstrumentableMethodIfNotAlreadyPresent(
+            mutableClass, "toString", "()Ljava/lang/String;");
       } catch (ClassNotFoundException e) {
         System.err.println(
             "Won't make equals/hashCode/toString on "
@@ -151,7 +154,7 @@ abstract class ClassInstrumentor {
     }
   }
 
-  abstract protected void addDirectCallConstructor(MutableClass mutableClass);
+  protected abstract void addDirectCallConstructor(MutableClass mutableClass);
 
   /**
    * Generates code like this:
@@ -180,7 +183,7 @@ abstract class ClassInstrumentor {
     mutableClass.addMethod(initMethodNode);
   }
 
-  abstract protected void writeCallToInitializing(MutableClass mutableClass, RobolectricGeneratorAdapter generator);
+  protected abstract void writeCallToInitializing(MutableClass mutableClass, RobolectricGeneratorAdapter generator);
 
   private void doSpecialHandling(MutableClass mutableClass) {
     if (mutableClass.getName().equals("android.os.Build$VERSION")) {
@@ -367,6 +370,9 @@ abstract class ClassInstrumentor {
           ctor.visitInsn(Opcodes.RETURN);
           ctor.visitEnd();
           return removedInstructions;
+
+        default:
+          // nothing to do
       }
     }
 
@@ -515,7 +521,7 @@ abstract class ClassInstrumentor {
    * Decides to call through the appropriate method to intercept the method with an INVOKEVIRTUAL
    * Opcode, depending if the invokedynamic bytecode instruction is available (Java 7+).
    */
-  abstract protected void interceptInvokeVirtualMethod(
+  protected abstract void interceptInvokeVirtualMethod(
       MutableClass mutableClass, ListIterator<AbstractInsnNode> instructions,
       MethodInsnNode targetMethod);
 

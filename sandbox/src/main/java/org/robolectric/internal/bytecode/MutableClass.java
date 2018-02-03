@@ -49,10 +49,15 @@ public class MutableClass {
 
   public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
     String internalName = "L" + annotationClass.getName().replace('.', '/') + ";";
-    if (classNode.visibleAnnotations == null) return false;
+    if (classNode.visibleAnnotations == null) {
+      return false;
+    }
+
     for (Object visibleAnnotation : classNode.visibleAnnotations) {
       AnnotationNode annotationNode = (AnnotationNode) visibleAnnotation;
-      if (annotationNode.desc.equals(internalName)) return true;
+      if (annotationNode.desc.equals(internalName)) {
+        return true;
+      }
     }
     return false;
   }

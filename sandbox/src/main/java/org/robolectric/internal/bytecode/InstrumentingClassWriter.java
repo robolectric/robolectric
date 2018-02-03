@@ -11,8 +11,8 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public class InstrumentingClassWriter extends ClassWriter {
 
-  private ClassNodeProvider classNodeProvider;
-  private InstrumentationConfiguration config;
+  private final ClassNodeProvider classNodeProvider;
+  private final InstrumentationConfiguration config;
 
   /**
    * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
@@ -75,8 +75,8 @@ public class InstrumentingClassWriter extends ClassWriter {
       int end1 = b1.length();
       int end2 = b2.length();
       while (true) {
-        int start1 = b1.lastIndexOf(";", end1 - 1);
-        int start2 = b2.lastIndexOf(";", end2 - 1);
+        int start1 = b1.lastIndexOf(';', end1 - 1);
+        int start2 = b2.lastIndexOf(';', end2 - 1);
         if (start1 != -1 && start2 != -1
             && end1 - start1 == end2 - start2) {
           String p1 = b1.substring(start1 + 1, end1);

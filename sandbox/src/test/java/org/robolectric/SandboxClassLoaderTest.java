@@ -654,7 +654,7 @@ public class SandboxClassLoaderTest {
   }
 
   public static class MyClassHandler implements ClassHandler {
-    private static Object GENERATE_YOUR_OWN_VALUE = new Object();
+    private static final Object GENERATE_YOUR_OWN_VALUE = new Object();
     private List<String> transcript;
     private Object valueToReturn = GENERATE_YOUR_OWN_VALUE;
     private Object valueToReturnFromIntercept = null;
