@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.os.Parcel;
@@ -194,6 +195,11 @@ public class ShadowParcel {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
   }
 
+  @Implementation(minSdk = O_MR1)
+  protected static boolean nativeReadByteArray(long nativePtr, byte[] dest, int destLen) {
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray(dest, destLen);
+  }
+
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static int nativeReadInt(int nativePtr) {
@@ -369,6 +375,20 @@ public class ShadowParcel {
         array[i] = readByte();
       }
       return array;
+    }
+
+    /**
+     * Reads a byte array from the byte buffer based on the current data position
+     */
+    public boolean readByteArray(byte[] dest, int destLen) {
+      int length = readInt();
+      if (length >= 0 && length <= dataAvailable() && length == destLen) {
+        for (int i = 0; i < length; i++) {
+          dest[i] = readByte();
+        }
+        return true;
+      }
+      return false;
     }
 
     /**

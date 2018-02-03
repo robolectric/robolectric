@@ -29,7 +29,8 @@ public class Qualifiers {
     final ResTable_config config = new ResTable_config();
     if (!qualifiers.isEmpty()
         && !ConfigDescription.parse(qualifiers, config, applyVersionForCompat)) {
-      throw new IllegalArgumentException("failed to parse qualifiers '" + qualifiers + "'");
+      throw new IllegalArgumentException("failed to parse qualifiers '" + qualifiers + "'."
+          + " See https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules for expected format.");
     }
 
     return new Qualifiers(qualifiers, config);

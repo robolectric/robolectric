@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 
 import android.Manifest.permission;
 import android.content.Context;
@@ -20,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -32,6 +32,7 @@ public class ShadowUserManager {
 
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
+  private boolean isDemoUser = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
@@ -41,7 +42,7 @@ public class ShadowUserManager {
   private boolean enforcePermissions;
 
   @Implementation
-  public void __constructor__(Context context, IUserManager service) {
+  protected void __constructor__(Context context, IUserManager service) {
     this.context = context;
   }
 
@@ -58,7 +59,7 @@ public class ShadowUserManager {
    * package name and the method returns instantly.
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getApplicationRestrictions(String packageName) {
+  protected Bundle getApplicationRestrictions(String packageName) {
     Bundle bundle = applicationRestrictions.get(packageName);
     return bundle != null ? bundle : new Bundle();
   }
@@ -78,12 +79,12 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public List<UserHandle> getUserProfiles(){
+  protected List<UserHandle> getUserProfiles() {
     return ImmutableList.copyOf(userProfiles.keySet());
   }
 
   @Implementation(minSdk = N)
-  public boolean isUserUnlocked() {
+  protected boolean isUserUnlocked() {
     return userUnlocked;
   }
 
@@ -95,7 +96,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean isManagedProfile() {
+  protected boolean isManagedProfile() {
     if (enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException(
           "You need MANAGE_USERS permission to: check if specified user a " +
@@ -112,7 +113,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
+  protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
     Bundle bundle = userRestrictions.get(userHandle);
     return bundle != null && bundle.getBoolean(restrictionKey);
   }
@@ -132,7 +133,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getUserRestrictions(UserHandle userHandle) {
+  protected Bundle getUserRestrictions(UserHandle userHandle) {
     return getUserRestrictionsForUser(userHandle);
   }
 
@@ -146,7 +147,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public long getSerialNumberForUser(UserHandle userHandle) {
+  protected long getSerialNumberForUser(UserHandle userHandle) {
     Long result = userProfiles.get(userHandle);
     return result == null ? -1L : result;
   }
@@ -163,7 +164,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public UserHandle getUserForSerialNumber(long serialNumber) {
+  protected UserHandle getUserForSerialNumber(long serialNumber) {
     return userProfiles.inverse().get(serialNumber);
   }
 
@@ -178,8 +179,21 @@ public class ShadowUserManager {
     //                + "to: check " + name);throw new SecurityException();
   }
 
+  @Implementation(minSdk = N_MR1)
+  protected boolean isDemoUser() {
+    return isDemoUser;
+  }
+
+  /**
+   * Sets that the current user is a demo user; controls the return value of
+   * {@link UserManager.isDemoUser}.
+   */
+  public void setIsDemoUser(boolean isDemoUser) {
+    this.isDemoUser = isDemoUser;
+  }
+
   @Implementation
-  public boolean isUserRunning(UserHandle handle) {
+  protected boolean isUserRunning(UserHandle handle) {
     checkPermissions();
     UserState state = userState.get(handle);
 
@@ -193,7 +207,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public boolean isUserRunningOrStopping(UserHandle handle) {
+  protected boolean isUserRunningOrStopping(UserHandle handle) {
     checkPermissions();
     UserState state = userState.get(handle);
 
@@ -235,7 +249,7 @@ public class ShadowUserManager {
   }
 
   @Implementation
-  public List<UserInfo> getUsers() {
+  protected List<UserInfo> getUsers() {
     // Implement this - return empty list to avoid NPE from call to getUserCount()
     return ImmutableList.of();
   }

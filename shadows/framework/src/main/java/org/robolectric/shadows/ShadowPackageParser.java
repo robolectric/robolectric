@@ -92,7 +92,7 @@ public class ShadowPackageParser {
     boolean assetError = true;
     try {
       assmgr = new AssetManager();
-      int cookie = assmgr.addAssetPath(mArchiveSourcePath);
+      int cookie = mArchiveSourcePath != null ? assmgr.addAssetPath(mArchiveSourcePath) : 1;
       if (cookie != 0) {
         res = new Resources(assmgr, metrics, null);
         parser = assmgr.openXmlResourceParser(cookie, MANIFEST_FILE);

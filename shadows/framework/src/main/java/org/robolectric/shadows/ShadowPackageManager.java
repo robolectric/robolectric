@@ -34,7 +34,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
@@ -43,16 +42,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
-import android.content.pm.PackageParser.Activity;
 import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
-import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
 import android.content.pm.PackageUserState;
+import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -106,8 +103,8 @@ public class ShadowPackageManager {
   final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
   final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-  boolean queryIntentImplicitly = false;
   Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
   public Map<String, Resources> resources = new HashMap<>();
   private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
   private Set<String> deletedPackages = new HashSet<>();
@@ -141,31 +138,6 @@ public class ShadowPackageManager {
     return classString;
   }
 
-
-  static ResolveInfo getResolveInfo(Activity activity, IntentFilter intentFilter) {
-    ResolveInfo info = new ResolveInfo();
-    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
-    info.activityInfo = new ActivityInfo();
-    info.activityInfo.name = activity.info.name;
-    info.activityInfo.packageName = activity.info.packageName;
-    info.activityInfo.applicationInfo = activity.info.applicationInfo;
-    info.activityInfo.permission = activity.info.permission;
-    info.filter = new IntentFilter(intentFilter);
-    return info;
-  }
-
-  static ResolveInfo getResolveInfo(Service service, IntentFilter intentFilter) {
-    ResolveInfo info = new ResolveInfo();
-    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
-    info.serviceInfo = new ServiceInfo();
-    info.serviceInfo.name = service.info.name;
-    info.serviceInfo.packageName = service.info.packageName;
-    info.serviceInfo.applicationInfo = service.info.applicationInfo;
-    info.serviceInfo.permission = service.info.permission;
-    info.filter = new IntentFilter(intentFilter);
-    return info;
-  }
-
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     if (applicationInfo.sourceDir == null) {
@@ -188,94 +160,6 @@ public class ShadowPackageManager {
       applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
       applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
     }
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getPackageInfo(String, int)} instead.
-   */
-  @Deprecated
-  public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getApplicationInfo(String, int)} instead.
-   */
-  @Deprecated
-  public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getActivityInfo(ComponentName, int)} instead.
-   */
-  @Deprecated
-  public ActivityInfo getActivityInfo(ComponentName className, int flags) throws NameNotFoundException {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getReceiverInfo(ComponentName, int)} instead.
-   */
-  @Deprecated
-  public ActivityInfo getReceiverInfo(ComponentName className, int flags) throws NameNotFoundException {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getServiceInfo(ComponentName, int)} instead.
-   */
-  @Deprecated
-  public ServiceInfo getServiceInfo(ComponentName className, int flags) throws NameNotFoundException {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getInstalledPackages(int)} instead.
-   */
-  @Deprecated
-  public List<PackageInfo> getInstalledPackages(int flags) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#queryIntentActivities(Intent, int)} instead.
-   */
-  @Deprecated
-  public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#queryIntentServices(Intent, int)}  instead.
-   */
-  @Deprecated
-  public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#queryBroadcastReceivers(Intent, int)} instead.
-   */
-  @Deprecated
-  public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#resolveActivity(Intent, int)} instead.
-   */
-  @Deprecated
-  public ResolveInfo resolveActivity(Intent intent, int flags) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#resolveService(Intent, int)} instead.
-   */
-  @Deprecated
-  public ResolveInfo resolveService(Intent intent, int flags) {
-    throw new UnsupportedOperationException("Not implemented");
   }
 
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
@@ -301,18 +185,24 @@ public class ShadowPackageManager {
 
     for (Iterator<ResolveInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
-      if (resolveInfo.activityInfo.packageName.equals(packageName)) {
+      if (getPackageName(resolveInfo).equals(packageName)) {
         iterator.remove();
       }
     }
   }
 
-  public Drawable getActivityIcon(Intent intent) throws NameNotFoundException {
-    return drawableList.get(intent.getComponent());
-  }
-
-  public Drawable getActivityIcon(ComponentName componentName) throws NameNotFoundException {
-    return drawableList.get(componentName);
+  private static String getPackageName(ResolveInfo resolveInfo) {
+    if (resolveInfo.resolvePackageName != null) {
+      return resolveInfo.resolvePackageName;
+    } else if (resolveInfo.activityInfo != null) {
+      return resolveInfo.activityInfo.packageName;
+    } else if (resolveInfo.serviceInfo != null) {
+      return resolveInfo.serviceInfo.packageName;
+    } else if (resolveInfo.providerInfo != null) {
+      return resolveInfo.providerInfo.packageName;
+    }
+    throw new IllegalStateException(
+        "Could not find package name for ResolveInfo " + resolveInfo.toString());
   }
 
   public void addActivityIcon(ComponentName component, Drawable drawable) {
@@ -323,44 +213,8 @@ public class ShadowPackageManager {
     drawableList.put(intent.getComponent(), drawable);
   }
 
-  /**
-   * @deprecated Prefer {@link PackageManager#getApplicationIcon(String)} instead.
-   */
-  @Deprecated
-  public Drawable getApplicationIcon(String packageName) throws NameNotFoundException {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
   public void setApplicationIcon(String packageName, Drawable drawable) {
     applicationIcons.put(packageName, drawable);
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getLaunchIntentForPackage(String)} instead.
-   */
-  @Deprecated
-  public Intent getLaunchIntentForPackage(String packageName) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#getApplicationLabel(ApplicationInfo)} instead.
-   */
-  @Deprecated
-  public CharSequence getApplicationLabel(ApplicationInfo info) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#setComponentEnabledSetting(ComponentName, int, int)} instead.
-   */
-  @Deprecated
-  public void setComponentEnabledSetting(ComponentName componentName, int newState, int flags) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
-    applicationEnabledSettingMap.put(packageName, newState);
   }
 
   public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
@@ -409,15 +263,6 @@ public class ShadowPackageManager {
   }
 
   /**
-   * @deprecated Use {@link android.app.ApplicationPackageManager#getComponentEnabledSetting(ComponentName)} or
-   * {@link #getComponentEnabledSettingFlags(ComponentName)} instead. This method will be removed in Robolectric 3.5.
-   */
-  @Deprecated
-  public ComponentState getComponentState(ComponentName componentName) {
-    return componentList.get(componentName);
-  }
-
-  /**
    * Return the flags set in call to {@link android.app.ApplicationPackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
    *
    * @param componentName The component name.
@@ -461,17 +306,23 @@ public class ShadowPackageManager {
     extraPermissions.put(permissionInfo.name, permissionInfo);
   }
 
+  /**
+   * Allows overriding or adding permission-group elements. These would be otherwise specified by
+   * either the system
+   * (https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups)
+   * or by the app itself, as part of its manifest
+   * (https://developer.android.com/guide/topics/manifest/permission-group-element.html).
+   *
+   * PermissionGroups added through this method have precedence over those specified with the same
+   * name by one of the aforementioned methods.
+   */
+  public void addPermissionGroupInfo(PermissionGroupInfo permissionGroupInfo) {
+    extraPermissionGroups.put(permissionGroupInfo.name, permissionGroupInfo);
+  }
+
   public void removePackage(String packageName) {
     packages.remove(packageName);
     packageInfos.remove(packageName);
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#hasSystemFeature(String)} instead.
-   */
-  @Deprecated
-  public boolean hasSystemFeature(String name) {
-    throw new UnsupportedOperationException("Not implemented");
   }
 
   public void setSystemFeature(String name, boolean supported) {
@@ -480,36 +331,6 @@ public class ShadowPackageManager {
 
   public void addDrawableResolution(String packageName, int resourceId, Drawable drawable) {
     drawables.put(new Pair(packageName, resourceId), drawable);
-  }
-
-  public Drawable getDrawable(String packageName, int resourceId, ApplicationInfo applicationInfo) {
-    return drawables.get(new Pair(packageName, resourceId));
-  }
-
-  /**
-   * @deprecated Prefer {@link PackageManager#checkPermission(String, String)} instead.
-   */
-  @Deprecated
-  public int checkPermission(String permName, String pkgName) {
-    return 0;
-  }
-
-  /**
-   * @deprecated - this will be the default behaviour in Robolectric 3.7 and bring behaviour into line with that of
-   * other Android components (note this method only affects Activities)
-   */
-  @Deprecated
-  public boolean isQueryIntentImplicitly() {
-    return queryIntentImplicitly;
-  }
-
-  /**
-   * @deprecated - this will be the default behaviour in Robolectric 3.7 and bring behaviour into line with that of
-   * other Android components (note this method only affects Activities)
-   */
-  @Deprecated
-  public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
-    this.queryIntentImplicitly = queryIntentImplicitly;
   }
 
   public void setNameForUid(int uid, String name) {
@@ -569,17 +390,19 @@ public class ShadowPackageManager {
   }
 
   @Implementation
-  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, UserHandle userHandle) {
+  protected List<ResolveInfo> queryBroadcastReceiversAsUser(
+      Intent intent, int flags, UserHandle userHandle) {
     return null;
   }
 
   @Implementation
-  public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags, @UserIdInt int userId) {
+  protected List<ResolveInfo> queryBroadcastReceivers(
+      Intent intent, int flags, @UserIdInt int userId) {
     return null;
   }
 
   @Implementation
-  public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+  protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
@@ -600,12 +423,10 @@ public class ShadowPackageManager {
   }
 
   @Implementation
-  public void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {
-  }
+  protected void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {}
 
   @Implementation
-  public void freeStorage(long freeStorageSize, IntentSender pi) {
-  }
+  protected void freeStorage(long freeStorageSize, IntentSender pi) {}
 
   /**
    * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
@@ -650,7 +471,7 @@ public class ShadowPackageManager {
     return deletedPackages;
   }
 
-  protected List<ResolveInfo> queryIntent(Intent intent, int flags) {
+  protected List<ResolveInfo> queryOverriddenIntents(Intent intent, int flags) {
     List<ResolveInfo> result = resolveInfoForIntent.get(intent);
     if (result == null) {
       return Collections.emptyList();
@@ -798,11 +619,7 @@ public class ShadowPackageManager {
     }
   }
 
-  /**
-   * @deprecated Use {@link android.app.ApplicationPackageManager#getComponentEnabledSetting(ComponentName)} instead. This class will be made private in Robolectric 3.5.
-   */
-  @Deprecated
-  public static class ComponentState {
+  protected static class ComponentState {
     public int newState;
     public int flags;
 

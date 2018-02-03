@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.robolectric.integration_tests.atsl">
+
+  <uses-sdk
+      android:minSdkVersion="16"
+      android:targetSdkVersion="25"/>
+
+  <application>
+    <activity android:name="org.robolectric.integration_tests.atsl.ActivityTestRuleTest$MyActivity"/>
+  </application>
+
+  <instrumentation
+      android:name="android.support.test.runner.AndroidJUnitRunner"
+      android:targetPackage="org.robolectric.integration_tests.atsl"/>
+
+</manifest>

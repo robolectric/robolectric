@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.shadow.api.Shadow;
@@ -46,6 +47,9 @@ public class InstrumentationConfiguration {
   private final Set<String> packagesToNotInstrument;
   private int cachedHashCode;
 
+  private final TypeMapper typeMapper;
+  private final Set<MethodRef> methodsToIntercept;
+
   private InstrumentationConfiguration(
       Map<String, String> classNameTranslations,
       Collection<MethodRef> interceptedMethods,
@@ -64,6 +68,9 @@ public class InstrumentationConfiguration {
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.packagesToNotInstrument = ImmutableSet.copyOf(packagesToNotInstrument);
     this.cachedHashCode = 0;
+
+    this.typeMapper = new TypeMapper(classNameTranslations());
+    this.methodsToIntercept = ImmutableSet.copyOf(convertToSlashes(methodsToIntercept()));
   }
 
   /**
@@ -195,6 +202,36 @@ public class InstrumentationConfiguration {
     result = 31 * result + classesToNotAcquire.hashCode();
     cachedHashCode = result;
     return result;
+  }
+
+  public String remapParamType(String desc) {
+    return typeMapper.remapParamType(desc);
+  }
+
+  public String remapParams(String desc) {
+    return typeMapper.remapParams(desc);
+  }
+
+  public String mappedTypeName(String internalName) {
+    return typeMapper.mappedTypeName(internalName);
+  }
+
+  boolean shouldIntercept(MethodInsnNode targetMethod) {
+    if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
+    return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
+        || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
+  }
+
+  private static Set<MethodRef> convertToSlashes(Set<MethodRef> methodRefs) {
+    HashSet<MethodRef> transformed = new HashSet<>();
+    for (MethodRef methodRef : methodRefs) {
+      transformed.add(new MethodRef(internalize(methodRef.className), methodRef.methodName));
+    }
+    return transformed;
+  }
+
+  private static String internalize(String className) {
+    return className.replace('.', '/');
   }
 
   public static final class Builder {

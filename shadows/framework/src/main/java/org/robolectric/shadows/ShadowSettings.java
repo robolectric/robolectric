@@ -113,7 +113,7 @@ public class ShadowSettings {
     private static Map<String, Object> get(ContentResolver cr) {
       Map<String, Object> map = dataMap.get(cr);
       if (map == null) {
-        map = new HashMap<String, Object>();
+        map = new HashMap<>();
         dataMap.put(cr, map);
       }
       return map;
