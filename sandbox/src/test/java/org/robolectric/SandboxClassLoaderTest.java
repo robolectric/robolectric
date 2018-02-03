@@ -38,7 +38,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 import org.robolectric.internal.bytecode.ClassHandler;
-import org.robolectric.internal.bytecode.ClassInfo;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
@@ -46,6 +45,7 @@ import org.robolectric.internal.bytecode.InvocationProfile;
 import org.robolectric.internal.bytecode.InvokeDynamic;
 import org.robolectric.internal.bytecode.InvokeDynamicSupport;
 import org.robolectric.internal.bytecode.MethodRef;
+import org.robolectric.internal.bytecode.MutableClass;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowConstants;
@@ -130,7 +130,7 @@ public class SandboxClassLoaderTest {
   public void shouldDelegateClassLoadForUnacquiredClasses() throws Exception {
     InstrumentationConfiguration config = mock(InstrumentationConfiguration.class);
     when(config.shouldAcquire(anyString())).thenReturn(false);
-    when(config.shouldInstrument(any(ClassInfo.class))).thenReturn(false);
+    when(config.shouldInstrument(any(MutableClass.class))).thenReturn(false);
     ClassLoader classLoader = new SandboxClassLoader(config);
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());
