@@ -12,33 +12,18 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.List;
-import java.util.ListIterator;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.JSRInlinerAdapter;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.TypeInsnNode;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
 /**
- * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
+ * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
+ * shadow classes.
  */
-public class SandboxClassLoader extends URLClassLoader implements Opcodes {
+public class SandboxClassLoader extends URLClassLoader {
   private final ClassLoader systemClassLoader;
-  private final URLClassLoader urls;
+  private final ClassLoader urls;
   private final InstrumentationConfiguration config;
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
@@ -65,7 +50,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
 
     classNodeProvider = new ClassNodeProvider() {
       @Override
-      byte[] getClassBytes(String internalClassName) throws ClassNotFoundException {
+      protected byte[] getClassBytes(String internalClassName) throws ClassNotFoundException {
         return getByteCode(internalClassName);
       }
     };
@@ -128,16 +113,15 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
     final byte[] origClassBytes = getByteCode(className);
 
-    ClassNode classNode = PerfStatsCollector.getInstance().measure("analyze class",
-        () -> analyzeClass(origClassBytes)
+    MutableClass mutableClass = PerfStatsCollector.getInstance().measure("analyze class",
+        () -> classInstrumentor.analyzeClass(origClassBytes, config, classNodeProvider)
     );
 
     try {
       final byte[] bytes;
-      ClassInfo classInfo = new ClassInfo(className, classNode);
-      if (config.shouldInstrument(classInfo)) {
+      if (config.shouldInstrument(mutableClass)) {
         bytes = PerfStatsCollector.getInstance().measure("instrument class",
-            () -> getInstrumentedBytes(classNode, config.containsStubs(classInfo))
+            () -> classInstrumentor.instrumentToBytes(mutableClass)
         );
       } else {
         bytes = origClassBytes;
@@ -150,26 +134,6 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       System.err.println("[ERROR] couldn't load " + className + " in " + this);
       throw e;
     }
-  }
-
-  private ClassNode analyzeClass(byte[] origClassBytes) {
-    ClassNode classNode = new ClassNode(Opcodes.ASM4) {
-      @Override
-      public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        desc = config.remapParamType(desc);
-        return super.visitField(access, name, desc, signature, value);
-      }
-
-      @Override
-      public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor methodVisitor = super.visitMethod(access, name, config.remapParams(desc), signature, exceptions);
-        return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
-      }
-    };
-
-    final ClassReader classReader = new ClassReader(origClassBytes);
-    classReader.accept(classNode, 0);
-    return classNode;
   }
 
   @Override
@@ -186,7 +150,9 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
     String classFilename = className.replace('.', '/') + ".class";
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
-      if (classBytesStream == null) throw new ClassNotFoundException(className);
+      if (classBytesStream == null) {
+        throw new ClassNotFoundException(className);
+      }
 
       return Util.readBytes(classBytesStream);
     } catch (IOException e) {
@@ -202,205 +168,6 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       if (pckg == null) {
         definePackage(pckgName, null, null, null, null, null, null, null);
       }
-    }
-  }
-
-  private byte[] getInstrumentedBytes(ClassNode classNode, boolean containsStubs) {
-    classInstrumentor.instrument(classNode, config, classNodeProvider, containsStubs);
-    ClassWriter writer = new InstrumentingClassWriter(classNode);
-    classNode.accept(writer);
-    return writer.toByteArray();
-  }
-
-  public static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
-    if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-      return;
-    }
-
-    if (Type.VOID_TYPE.equals(type)) {
-      instructions.add(new InsnNode(ACONST_NULL));
-    } else {
-      Type boxed = getBoxedType(type);
-      instructions.add(new TypeInsnNode(NEW, boxed.getInternalName()));
-      if (type.getSize() == 2) {
-        // Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
-        instructions.add(new InsnNode(DUP_X2));
-        instructions.add(new InsnNode(DUP_X2));
-        instructions.add(new InsnNode(POP));
-      } else {
-        // p -> po -> opo -> oop -> o
-        instructions.add(new InsnNode(DUP_X1));
-        instructions.add(new InsnNode(SWAP));
-      }
-      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V", false));
-    }
-  }
-
-  private static Type getBoxedType(final Type type) {
-    switch (type.getSort()) {
-      case Type.BYTE:
-        return Type.getObjectType("java/lang/Byte");
-      case Type.BOOLEAN:
-        return Type.getObjectType("java/lang/Boolean");
-      case Type.SHORT:
-        return Type.getObjectType("java/lang/Short");
-      case Type.CHAR:
-        return Type.getObjectType("java/lang/Character");
-      case Type.INT:
-        return Type.getObjectType("java/lang/Integer");
-      case Type.FLOAT:
-        return Type.getObjectType("java/lang/Float");
-      case Type.LONG:
-        return Type.getObjectType("java/lang/Long");
-      case Type.DOUBLE:
-        return Type.getObjectType("java/lang/Double");
-    }
-    return type;
-  }
-
-  /**
-   * ClassWriter implementation that verifies classes by comparing type information obtained
-   * from loading the classes as resources. This was taken from the ASM ClassWriter unit tests.
-   */
-  private class InstrumentingClassWriter extends ClassWriter {
-
-    /**
-     * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
-     * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
-     *
-     * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
-     * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
-     * present in legacy bytecode.
-     */
-    public InstrumentingClassWriter(ClassNode classNode) {
-      super(classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS);
-    }
-
-    @Override
-    public int newNameType(String name, String desc) {
-      return super.newNameType(name, desc.charAt(0) == ')'
-          ? config.remapParams(desc)
-          : config.remapParamType(desc));
-    }
-
-    @Override
-    public int newClass(String value) {
-      return super.newClass(config.mappedTypeName(value));
-    }
-
-    /**
-     * Returns the common super type of the two given types without actually loading
-     * the classes in the ClassLoader.
-     */
-    @Override
-    protected String getCommonSuperClass(final String type1, final String type2) {
-      try {
-        ClassNode info1 = typeInfo(type1);
-        ClassNode info2 = typeInfo(type2);
-        if ((info1.access & Opcodes.ACC_INTERFACE) != 0) {
-          if (typeImplements(type2, info2, type1)) {
-            return type1;
-          }
-          if ((info2.access & Opcodes.ACC_INTERFACE) != 0) {
-            if (typeImplements(type1, info1, type2)) {
-              return type2;
-            }
-          }
-          return "java/lang/Object";
-        }
-        if ((info2.access & Opcodes.ACC_INTERFACE) != 0) {
-          if (typeImplements(type1, info1, type2)) {
-            return type2;
-          } else {
-            return "java/lang/Object";
-          }
-        }
-        String b1 = typeAncestors(type1, info1);
-        String b2 = typeAncestors(type2, info2);
-        String result = "java/lang/Object";
-        int end1 = b1.length();
-        int end2 = b2.length();
-        while (true) {
-          int start1 = b1.lastIndexOf(";", end1 - 1);
-          int start2 = b2.lastIndexOf(";", end2 - 1);
-          if (start1 != -1 && start2 != -1
-              && end1 - start1 == end2 - start2) {
-            String p1 = b1.substring(start1 + 1, end1);
-            String p2 = b2.substring(start2 + 1, end2);
-            if (p1.equals(p2)) {
-              result = p1;
-              end1 = start1;
-              end2 = start2;
-            } else {
-              return result;
-            }
-          } else {
-            return result;
-          }
-        }
-      } catch (ClassNotFoundException e) {
-        return "java/lang/Object"; // Handle classes that may be obfuscated
-      }
-    }
-
-    private String typeAncestors(String type, ClassNode info) throws ClassNotFoundException {
-      StringBuilder b = new StringBuilder();
-      while (!"java/lang/Object".equals(type)) {
-        b.append(';').append(type);
-        type = info.superName;
-        info = typeInfo(type);
-      }
-      return b.toString();
-    }
-
-    private boolean typeImplements(String type, ClassNode info, String itf)
-        throws ClassNotFoundException {
-      while (!"java/lang/Object".equals(type)) {
-        List<String> itfs = info.interfaces;
-        for (String itf2 : itfs) {
-          if (itf2.equals(itf)) {
-            return true;
-          }
-        }
-        for (String itf1 : itfs) {
-          if (typeImplements(itf1, typeInfo(itf1), itf)) {
-            return true;
-          }
-        }
-        type = info.superName;
-        info = typeInfo(type);
-      }
-      return false;
-    }
-
-    private ClassNode typeInfo(final String type) throws ClassNotFoundException {
-      return classNodeProvider.getClassNode(type);
-    }
-  }
-
-  /**
-   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}.
-   */
-  static class TryCatch {
-    private final Label start;
-    private final Label end;
-    private final Label handler;
-    private final GeneratorAdapter generatorAdapter;
-
-    TryCatch(GeneratorAdapter generatorAdapter, Type type) {
-      this.generatorAdapter = generatorAdapter;
-      this.start = generatorAdapter.mark();
-      this.end = new Label();
-      this.handler = new Label();
-      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
-    }
-
-    void end() {
-      generatorAdapter.mark(end);
-    }
-
-    void handler() {
-      generatorAdapter.mark(handler);
     }
   }
 

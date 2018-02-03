@@ -5,10 +5,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 
-abstract class ClassNodeProvider {
+public abstract class ClassNodeProvider {
   private final Map<String, ClassNode> classNodes = new ConcurrentHashMap<>();
 
-  abstract byte[] getClassBytes(String className) throws ClassNotFoundException;
+  protected abstract byte[] getClassBytes(String className) throws ClassNotFoundException;
 
   ClassNode getClassNode(String internalClassName) throws ClassNotFoundException {
     ClassNode classNode = classNodes.get(internalClassName);
