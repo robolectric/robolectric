@@ -42,31 +42,35 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
   }
 
   @Override
-  protected void addDirectCallConstructor(Subject subject) {
+  protected void addDirectCallConstructor(MutableClass mutableClass) {
     // not needed, for reasons.
   }
 
   @Override
-  protected void writeCallToInitializing(Subject subject, RobolectricGeneratorAdapter generator) {
-    generator.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, subject.classType), BOOTSTRAP_INIT);
+  protected void writeCallToInitializing(MutableClass mutableClass,
+      RobolectricGeneratorAdapter generator) {
+    generator.invokeDynamic("initializing",
+        Type.getMethodDescriptor(OBJECT_TYPE, mutableClass.classType), BOOTSTRAP_INIT);
   }
 
   @Override
-  protected void generateClassHandlerCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
-    generateInvokeDynamic(subject, originalMethod, originalMethodName, generator);
+  protected void generateClassHandlerCall(MutableClass mutableClass, MethodNode originalMethod,
+      String originalMethodName, RobolectricGeneratorAdapter generator) {
+    generateInvokeDynamic(mutableClass, originalMethod, originalMethodName, generator);
   }
 
   // todo javadocs
-  private void generateInvokeDynamic(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
+  private void generateInvokeDynamic(MutableClass mutableClass, MethodNode originalMethod,
+      String originalMethodName, RobolectricGeneratorAdapter generator) {
     Handle original =
-        new Handle(getTag(originalMethod), subject.classType.getInternalName(), originalMethod.name,
-            originalMethod.desc);
+        new Handle(getTag(originalMethod), mutableClass.classType.getInternalName(),
+            originalMethod.name, originalMethod.desc);
 
     if (generator.isStatic()) {
       generator.loadArgs();
       generator.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
     } else {
-      String desc = "(" + subject.classType.getDescriptor() + originalMethod.desc.substring(1);
+      String desc = "(" + mutableClass.classType.getDescriptor() + originalMethod.desc.substring(1);
       generator.loadThis();
       generator.loadArgs();
       generator.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original);
@@ -76,15 +80,17 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
   }
 
   @Override
-  protected void interceptInvokeVirtualMethod(Subject subject, ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  protected void interceptInvokeVirtualMethod(MutableClass mutableClass,
+      ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     interceptInvokeVirtualMethodWithInvokeDynamic(instructions, targetMethod);
   }
 
   /**
    * Intercepts the method using the invokedynamic bytecode instruction available in Java 7+.
-   * Should be called through interceptInvokeVirtualMethod, not directly
+   * Should be called through interceptInvokeVirtualMethod, not directly.
    */
-  private void interceptInvokeVirtualMethodWithInvokeDynamic(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  private void interceptInvokeVirtualMethodWithInvokeDynamic(
+      ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     instructions.remove();  // remove the method invocation
 
     Type type = Type.getObjectType(targetMethod.owner);
