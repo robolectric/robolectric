@@ -8,6 +8,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.MethodNode;
+import org.robolectric.internal.bytecode.ClassInstrumentor.TryCatch;
 
 /**
  * GeneratorAdapter implementation specific to generate code for Robolectric purposes
@@ -78,7 +79,7 @@ class RobolectricGeneratorAdapter extends GeneratorAdapter {
     }
   }
 
-  public SandboxClassLoader.TryCatch tryStart(Type exceptionType) {
-    return new SandboxClassLoader.TryCatch(this, exceptionType);
+  public TryCatch tryStart(Type exceptionType) {
+    return new TryCatch(this, exceptionType);
   }
 }

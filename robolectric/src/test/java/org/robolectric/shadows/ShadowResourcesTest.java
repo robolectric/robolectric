@@ -85,6 +85,11 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void getString_StringWithInlinedQuotesAreStripped() throws Exception {
+    assertThat(resources.getString(R.string.bad_example)).isEqualTo("This is a bad string.");
+  }
+
+  @Test
   public void getStringShouldStripNewLines() {
     assertThat(resources.getString(R.string.leading_and_trailing_new_lines)).isEqualTo("Some text");
   }
