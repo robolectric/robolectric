@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -38,6 +39,8 @@ import android.telephony.SubscriptionManager;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.CaptioningManager;
+import android.view.autofill.AutofillManager;
+import android.view.textclassifier.TextClassificationManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import java.util.List;
@@ -123,6 +126,17 @@ public class ShadowApplicationTest {
   @Config(minSdk = M)
   public void shouldProvideServicesIntroducedMarshmallow() throws Exception {
     checkSystemService(Context.FINGERPRINT_SERVICE, FingerprintManager.class);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldProvideServicesIntroducedOreo() throws Exception {
+    // Context.AUTOFILL_MANAGER_SERVICE is marked @hide and this is the documented way to obtain this
+    // service.
+    AutofillManager autofillManager = RuntimeEnvironment.application.getSystemService(AutofillManager.class);
+    assertThat(autofillManager).isNotNull();
+
+    checkSystemService(Context.TEXT_CLASSIFICATION_SERVICE, TextClassificationManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
