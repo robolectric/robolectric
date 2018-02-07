@@ -7,7 +7,7 @@ def getKey(jar):
     return key
 
 def getValue(jar):
-    return "../" + jar[jar.index("org_robolectric"):]
+    return "../../" + jar[jar.index("org_robolectric"):]
 
 def main(argv):
     for jar in argv[1:]:
