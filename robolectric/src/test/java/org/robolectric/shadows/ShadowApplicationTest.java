@@ -37,6 +37,7 @@ import android.os.UserManager;
 import android.print.PrintManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.CaptioningManager;
 import android.view.autofill.AutofillManager;
@@ -141,7 +142,7 @@ public class ShadowApplicationTest {
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
     Object systemService = RuntimeEnvironment.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
+    assertThat(systemService).isInstanceOf(LayoutInflater.class);
   }
 
   @Test
