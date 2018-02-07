@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.util.ArrayList;
@@ -212,7 +213,7 @@ public class ShadowAppWidgetManager {
   }
 
   private View createWidgetView(int widgetLayoutId) {
-    return new RoboLayoutInflater(RuntimeEnvironment.application).inflate(widgetLayoutId, null);
+    return LayoutInflater.from(RuntimeEnvironment.application).inflate(widgetLayoutId, null);
   }
 
   /**
