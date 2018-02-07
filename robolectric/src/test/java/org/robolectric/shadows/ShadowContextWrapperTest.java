@@ -390,8 +390,8 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void startActivities_shouldStartAllActivities() {
-    final Intent view = new Intent(Intent.ACTION_VIEW);
-    final Intent pick = new Intent(Intent.ACTION_PICK);
+    final Intent view = new Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick});
 
     assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
@@ -400,8 +400,8 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void startActivities_withBundle_shouldStartAllActivities() {
-    final Intent view = new Intent(Intent.ACTION_VIEW);
-    final Intent pick = new Intent(Intent.ACTION_PICK);
+    final Intent view = new Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
 
     assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);

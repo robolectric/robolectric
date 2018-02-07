@@ -471,7 +471,7 @@ public class ShadowApplicationTest {
     String action = "com.does.not.exist.android.app.v2.mobile";
 
     try {
-      application.startActivity(new Intent(action));
+      application.startActivity(new Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
       fail("Expected startActivity to throw ActivityNotFoundException!");
     } catch (ActivityNotFoundException e) {
       assertThat(e.getMessage()).contains(action);

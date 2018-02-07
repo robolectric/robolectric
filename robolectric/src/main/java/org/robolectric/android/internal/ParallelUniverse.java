@@ -296,12 +296,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   private Instrumentation createInstrumentation() {
-    // Use RoboInstrumentation if its parent class from optional dependency android.support.test is
+    // Use RoboMonitoringInstrumentation if its parent class from optional dependency
+    // android.support.test is
     // available. Otherwise use Instrumentation
     try {
       Class<? extends Instrumentation> roboInstrumentationClass =
-          Class.forName("org.robolectric.android.fakes.RoboInstrumentation").asSubclass(
-              Instrumentation.class);
+          Class.forName("org.robolectric.android.fakes.RoboMonitoringInstrumentation")
+              .asSubclass(Instrumentation.class);
       return ReflectionHelpers.newInstance(roboInstrumentationClass);
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       // fall through

@@ -262,11 +262,6 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void startActivity(Intent intent) {
-    ShadowApplication.getInstance().startActivity(intent);
-  }
-
-  @Implementation
   public void sendBroadcast(Intent intent) {
     ShadowApplication.getInstance().sendBroadcast(intent);
   }
@@ -380,25 +375,6 @@ public class ShadowContextImpl {
   @Implementation
   public boolean stopService(Intent name) {
     return ShadowApplication.getInstance().stopService(name);
-  }
-
-  @Implementation
-  public void startActivity(Intent intent, Bundle options) {
-    ShadowApplication.getInstance().startActivity(intent, options);
-  }
-
-  @Implementation
-  public void startActivities(Intent[] intents) {
-    for (int i = intents.length - 1; i >= 0; i--) {
-      startActivity(intents[i]);
-    }
-  }
-
-  @Implementation
-  public void startActivities(Intent[] intents, Bundle options) {
-    for (int i = intents.length - 1; i >= 0; i--) {
-      startActivity(intents[i], options);
-    }
   }
 
   @Implementation
