@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -196,5 +197,16 @@ public class ShadowSharedPreferencesTest {
     anotherSharedPreferences.edit().putString(testKey, "bar").commit();
 
     assertThat(transcript).containsExactly(testKey+ " called");
+  }
+
+  @Test
+  public void defaultSharedPreferences() throws Exception {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    sharedPreferences.edit().putString("foo", "bar").commit();
+
+    SharedPreferences anotherSharedPreferences = PreferenceManager
+        .getDefaultSharedPreferences(context);
+    String restored = anotherSharedPreferences.getString("foo", null);
+    assertThat(restored).isEqualTo("bar");
   }
 }
