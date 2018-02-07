@@ -20,7 +20,7 @@ public class ShadowRestrictionsManager {
   }
 
   @Implementation
-  public Bundle getApplicationRestrictions() {
+  protected Bundle getApplicationRestrictions() {
     return applicationRestrictions;
   }
 }

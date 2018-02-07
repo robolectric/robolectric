@@ -129,6 +129,7 @@ public final class R {
     public static final int test_permission_description = 0x7f020025;
     public static final int test_permission_label = 0x7f020026;
     public static final int string_with_spaces = 0x7f020027;
+    public static final int bad_example = 0x7f020028;
   }
 
   public static final class plurals {
@@ -309,6 +310,10 @@ public final class R {
     public static final int dialog_preferences = 0x7f0d0001;
     public static final int shortcuts = 0x7f0d0002;
     public static final int app_restrictions = 0x7f0d0003;
+    public static final int has_attribute_resource_value = 0x7f0d0004;
+    public static final int has_style_attribute_reference = 0x7f0d0005;
+    public static final int has_parent_style_reference = 0x7f0d0006;
+    public static final int has_id = 0x7f0d0007;
   }
 
   public static final class styleable {

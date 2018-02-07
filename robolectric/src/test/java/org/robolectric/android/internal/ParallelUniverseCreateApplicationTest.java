@@ -13,13 +13,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.FakeApp;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestApplication;
 import org.robolectric.TestFakeApp;
-import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
@@ -29,7 +27,6 @@ import org.robolectric.shadows.ShadowApplication;
 public class ParallelUniverseCreateApplicationTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private DefaultTestLifecycle defaultTestLifecycle = new DefaultTestLifecycle();
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
@@ -68,7 +65,6 @@ public class ParallelUniverseCreateApplicationTest {
             + "    </receiver>"
             + "</application>");
     Application application = ParallelUniverse.createApplication(appManifest, null);
-    shadowOf(application).bind(appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers).hasSize(1);

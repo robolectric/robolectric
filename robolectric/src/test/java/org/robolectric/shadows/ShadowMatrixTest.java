@@ -493,6 +493,36 @@ public class ShadowMatrixTest {
         .isEqualTo(new RectF(-4.0f, -6.0f, -2.0f, -3.0f));
   }
 
+  @Test
+  public void testMapPoints() {
+    final Matrix matrix = new Matrix();
+    matrix.postTranslate(-1.0f, -2.0f);
+    matrix.postScale(2.0f, 3.0f);
+    final float[] input = {
+        0.0f, 0.0f,
+        1.0f, 2.0f
+    };
+    final float[] output = new float[input.length];
+    matrix.mapPoints(output, input);
+    assertThat(output)
+        .containsExactly(-2.0f, -6.0f, 0.0f, 0.0f);
+  }
+
+  @Test
+  public void testMapVectors() {
+    final Matrix matrix = new Matrix();
+    matrix.postTranslate(-1.0f, -2.0f);
+    matrix.postScale(2.0f, 3.0f);
+    final float[] input = {
+        0.0f, 0.0f,
+        1.0f, 2.0f
+    };
+    final float[] output = new float[input.length];
+    matrix.mapVectors(output, input);
+    assertThat(output)
+        .containsExactly(0.0f, 0.0f, 2.0f, 6.0f);
+  }
+
   private static PointF mapPoint(Matrix matrix, float x, float y) {
     return shadowOf(matrix).mapPoint(x, y);
   }

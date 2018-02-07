@@ -6,12 +6,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.os.Build;
 import java.util.Locale;
 import libcore.icu.LocaleData;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowLocaleDataTest {
@@ -53,7 +55,6 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.groupingSeparator).isEqualTo(',');
     assertThat(localeData.patternSeparator).isEqualTo(';');
 
-    assertThat(localeData.perMill).isEqualTo('‰');
     assertThat(localeData.monetarySeparator).isEqualTo('.');
 
     assertThat(localeData.exponentSeparator).isEqualTo("E");
@@ -67,6 +68,14 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.integerPattern).isEqualTo("#,##0");
     assertThat(localeData.currencyPattern).isEqualTo("¤#,##0.00;(¤#,##0.00)");
     assertThat(localeData.percentPattern).isEqualTo("#,##0%");
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.O)
+  public void shouldSupportLocaleEn_US_perMill() throws Exception {
+    LocaleData localeData = LocaleData.get(Locale.US);
+    char perMillValue = ReflectionHelpers.getField(localeData, "perMill");
+    assertThat(perMillValue).isEqualTo('‰');
   }
 
   @Test
