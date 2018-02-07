@@ -64,7 +64,7 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "android.view.WindowManagerImpl");
     SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
     SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.SystemSensorManager");
-    SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "org.robolectric.fakes.RoboVibrator");
+    SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.SystemVibrator");
 
     // the rest are as mapped in docs...
     SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
