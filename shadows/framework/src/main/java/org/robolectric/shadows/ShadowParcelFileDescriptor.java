@@ -32,7 +32,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
-  public static ParcelFileDescriptor[] createPipe() throws IOException {
+  protected static ParcelFileDescriptor[] createPipe() throws IOException {
     File file = new File(RuntimeEnvironment.getTempDirectory().create(PIPE_TMP_DIR).toFile(), PIPE_FILE_NAME);
     if (!file.createNewFile()) {
       throw new IOException("Cannot create pipe file: " + file.getAbsolutePath());
