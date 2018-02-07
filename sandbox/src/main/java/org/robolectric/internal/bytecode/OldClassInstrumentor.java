@@ -40,33 +40,36 @@ public class OldClassInstrumentor extends ClassInstrumentor {
    * ```
    */
   @Override
-  protected void addDirectCallConstructor(Subject subject) {
+  protected void addDirectCallConstructor(MutableClass mutableClass) {
     MethodNode directCallConstructor = new MethodNode(Opcodes.ACC_PUBLIC,
-        "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + subject.classType.getDescriptor() + ")V", null, null);
+        "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + mutableClass.classType.getDescriptor() + ")V", null, null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
     generator.loadThis();
-    if (subject.classNode.superName.equals("java/lang/Object")) {
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.classNode.superName, "<init>", "()V", false);
+    String superName = mutableClass.classNode.superName;
+    if (superName.equals("java/lang/Object")) {
+      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", "()V", false);
     } else {
       generator.loadArgs();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, subject.classNode.superName,
-          "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + subject.classNode.superName + ";)V", false);
+      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, superName,
+          "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + "L" + superName + ";)V", false);
     }
     generator.loadThis();
     generator.loadArg(1);
-    generator.putField(subject.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+    generator.putField(mutableClass.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
     generator.returnValue();
-    subject.addMethod(directCallConstructor);
+    mutableClass.addMethod(directCallConstructor);
   }
 
   @Override
-  protected void writeCallToInitializing(Subject subject, RobolectricGeneratorAdapter generator) {
+  protected void writeCallToInitializing(MutableClass mutableClass,
+      RobolectricGeneratorAdapter generator) {
     generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
   }
 
   @Override
-  protected void generateClassHandlerCall(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
-    generateCallToClassHandler(subject, originalMethod, originalMethodName, generator);
+  protected void generateClassHandlerCall(MutableClass mutableClass, MethodNode originalMethod,
+      String originalMethodName, RobolectricGeneratorAdapter generator) {
+    generateCallToClassHandler(mutableClass, originalMethod, originalMethodName, generator);
   }
 
   /**
@@ -87,8 +90,9 @@ public class OldClassInstrumentor extends ClassInstrumentor {
    * }
    * ```
    */
-  private void generateCallToClassHandler(Subject subject, MethodNode originalMethod, String originalMethodName, RobolectricGeneratorAdapter generator) {
-    decorator.decorateMethodPreClassHandler(subject, originalMethod, originalMethodName, generator);
+  private void generateCallToClassHandler(MutableClass mutableClass, MethodNode originalMethod,
+      String originalMethodName, RobolectricGeneratorAdapter generator) {
+    decorator.decorateMethodPreClassHandler(mutableClass, originalMethod, originalMethodName, generator);
 
     int planLocalVar = generator.newLocal(PLAN_TYPE);
     int exceptionLocalVar = generator.newLocal(THROWABLE_TYPE);
@@ -96,9 +100,9 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     Label doReturn = new Label();
 
     // prepare for call to classHandler.methodInvoked(String signature, boolean isStatic)
-    generator.push(subject.classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
+    generator.push(mutableClass.classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
     generator.push(generator.isStatic());
-    generator.push(subject.classType);                                         // my class
+    generator.push(mutableClass.classType);                                         // my class
     generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_INVOKED_METHOD);
     generator.storeLocal(planLocalVar);
 
@@ -106,7 +110,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     generator.ifNull(directCall);
 
     // prepare for call to plan.run(Object instance, Object[] params)
-    SandboxClassLoader.TryCatch tryCatchForHandler = generator.tryStart(THROWABLE_TYPE);
+    TryCatch tryCatchForHandler = generator.tryStart(THROWABLE_TYPE);
     generator.loadLocal(planLocalVar); // plan
     generator.loadThisOrNull();        // instance
     generator.loadArgArray();          // params
@@ -152,8 +156,8 @@ public class OldClassInstrumentor extends ClassInstrumentor {
 
     if (!originalMethod.name.equals("<init>")) {
       generator.mark(directCall);
-      SandboxClassLoader.TryCatch tryCatchForDirect = generator.tryStart(THROWABLE_TYPE);
-      generator.invokeMethod(subject.classType.getInternalName(), originalMethod.name, originalMethod.desc);
+      TryCatch tryCatchForDirect = generator.tryStart(THROWABLE_TYPE);
+      generator.invokeMethod(mutableClass.classType.getInternalName(), originalMethod.name, originalMethod.desc);
       tryCatchForDirect.end();
       generator.returnValue();
 
@@ -170,19 +174,21 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   }
 
   /**
-   * Decides to call through the appropriate method to intercept the method with an INVOKEVIRTUAL Opcode,
-   * depending if the invokedynamic bytecode instruction is available (Java 7+)
+   * Decides to call through the appropriate method to intercept the method with an INVOKEVIRTUAL
+   * Opcode, depending if the invokedynamic bytecode instruction is available (Java 7+).
    */
   @Override
-  protected void interceptInvokeVirtualMethod(Subject subject, ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
-    interceptInvokeVirtualMethodWithoutInvokeDynamic(subject, instructions, targetMethod);
+  protected void interceptInvokeVirtualMethod(MutableClass mutableClass,
+      ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+    interceptInvokeVirtualMethodWithoutInvokeDynamic(mutableClass, instructions, targetMethod);
   }
 
   /**
    * Intercepts the method without using the invokedynamic bytecode instruction.
-   * Should be called through interceptInvokeVirtualMethod, not directly
+   * Should be called through interceptInvokeVirtualMethod, not directly.
    */
-  private void interceptInvokeVirtualMethodWithoutInvokeDynamic(Subject subject, ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  private void interceptInvokeVirtualMethodWithoutInvokeDynamic(MutableClass mutableClass,
+      ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     boolean isStatic = targetMethod.getOpcode() == Opcodes.INVOKESTATIC;
 
     instructions.remove(); // remove the method invocation
@@ -197,19 +203,19 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       Type type = argumentTypes[i];
       int argWidth = type.getSize();
 
-      if (argWidth == 1) {                       // A B C []
+      if (argWidth == 1) {                               // A B C []
         instructions.add(new InsnNode(Opcodes.DUP_X1));  // A B [] C []
         instructions.add(new InsnNode(Opcodes.SWAP));    // A B [] [] C
-        instructions.add(new LdcInsnNode(i));    // A B [] [] C 2
+        instructions.add(new LdcInsnNode(i));            // A B [] [] C 2
         instructions.add(new InsnNode(Opcodes.SWAP));    // A B [] [] 2 C
-        SandboxClassLoader.box(type, instructions);                 // A B [] [] 2 (C)
+        box(type, instructions);                         // A B [] [] 2 (C)
         instructions.add(new InsnNode(Opcodes.AASTORE)); // A B [(C)]
-      } else if (argWidth == 2) {                // A B _C_ []
+      } else if (argWidth == 2) {                        // A B _C_ []
         instructions.add(new InsnNode(Opcodes.DUP_X2));  // A B [] _C_ []
         instructions.add(new InsnNode(Opcodes.DUP_X2));  // A B [] [] _C_ []
         instructions.add(new InsnNode(Opcodes.POP));     // A B [] [] _C_
-        SandboxClassLoader.box(type, instructions);                 // A B [] [] (C)
-        instructions.add(new LdcInsnNode(i));    // A B [] [] (C) 2
+        box(type, instructions);                         // A B [] [] (C)
+        instructions.add(new LdcInsnNode(i));            // A B [] [] (C) 2
         instructions.add(new InsnNode(Opcodes.SWAP));    // A B [] [] 2 (C)
         instructions.add(new InsnNode(Opcodes.AASTORE)); // A B [(C)]
       }
@@ -226,7 +232,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     instructions.add(new InsnNode(Opcodes.DUP_X2));       // signature instance [] signature
     instructions.add(new InsnNode(Opcodes.POP));          // signature instance []
 
-    instructions.add(new LdcInsnNode(subject.classType)); // signature instance [] class
+    instructions.add(new LdcInsnNode(mutableClass.classType)); // signature instance [] class
     instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
         Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
         "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;",
@@ -237,7 +243,7 @@ public class OldClassInstrumentor extends ClassInstrumentor {
       case ARRAY:
         /* falls through */
       case OBJECT:
-        String remappedType = subject.typeMapper.mappedTypeName(returnType.getInternalName());
+        String remappedType = mutableClass.config.mappedTypeName(returnType.getInternalName());
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, remappedType));
         break;
       case VOID:
@@ -273,6 +279,55 @@ public class OldClassInstrumentor extends ClassInstrumentor {
         break;
       default:
         throw new RuntimeException("Not implemented: " + getClass().getName() + " cannot intercept methods with return type " + returnType.getClassName());
+    }
+  }
+
+  static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
+    if (type.getSort() == OBJECT || type.getSort() == ARRAY) {
+      return;
+    }
+
+    if (Type.VOID_TYPE.equals(type)) {
+      instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+    } else {
+      Type boxed = getBoxedType(type);
+      instructions.add(new TypeInsnNode(Opcodes.NEW, boxed.getInternalName()));
+      if (type.getSize() == 2) {
+        // Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
+        instructions.add(new InsnNode(Opcodes.DUP_X2));
+        instructions.add(new InsnNode(Opcodes.DUP_X2));
+        instructions.add(new InsnNode(Opcodes.POP));
+      } else {
+        // p -> po -> opo -> oop -> o
+        instructions.add(new InsnNode(Opcodes.DUP_X1));
+        instructions.add(new InsnNode(Opcodes.SWAP));
+      }
+      instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, boxed.getInternalName(),
+          "<init>", "(" + type.getDescriptor() + ")V", false));
+    }
+  }
+
+  private static Type getBoxedType(final Type type) {
+    switch (type.getSort()) {
+      case Type.BYTE:
+        return Type.getObjectType("java/lang/Byte");
+      case Type.BOOLEAN:
+        return Type.getObjectType("java/lang/Boolean");
+      case Type.SHORT:
+        return Type.getObjectType("java/lang/Short");
+      case Type.CHAR:
+        return Type.getObjectType("java/lang/Character");
+      case Type.INT:
+        return Type.getObjectType("java/lang/Integer");
+      case Type.FLOAT:
+        return Type.getObjectType("java/lang/Float");
+      case Type.LONG:
+        return Type.getObjectType("java/lang/Long");
+      case Type.DOUBLE:
+        return Type.getObjectType("java/lang/Double");
+      default:
+        // no boxing required
+        return type;
     }
   }
 }

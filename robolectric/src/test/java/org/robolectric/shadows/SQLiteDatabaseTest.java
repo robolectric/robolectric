@@ -27,7 +27,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.util.TempDirectory;
-import org.robolectric.util.TestUtil;
 
 @RunWith(RobolectricTestRunner.class)
 public class SQLiteDatabaseTest {

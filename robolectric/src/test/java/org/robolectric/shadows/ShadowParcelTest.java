@@ -221,6 +221,25 @@ public class ShadowParcelTest {
   }
 
   @Test
+  public void testWriteAndReadByteArray() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[bytes.length];
+    parcel.readByteArray(actualBytes);
+    assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWriteAndReadByteArray_badLength() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[0];
+    parcel.readByteArray(actualBytes);
+  }
+
+  @Test
   public void testReadWriteMultipleInts() {
     for (int i = 0; i < 10; ++i) {
       parcel.writeInt(i);

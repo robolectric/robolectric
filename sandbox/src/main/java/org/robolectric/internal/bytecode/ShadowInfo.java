@@ -7,6 +7,10 @@ public class ShadowInfo {
   public final String shadowedClassName;
   public final String shadowClassName;
   public final boolean callThroughByDefault;
+  /**
+   * @deprecated
+   */
+  @Deprecated
   public final boolean inheritImplementationMethods;
   public final boolean looseSignatures;
   private final int minSdk;
@@ -35,6 +39,10 @@ public class ShadowInfo {
 
   public boolean supportsSdk(int sdkInt) {
     return minSdk <= sdkInt && (maxSdk == -1 || maxSdk >= sdkInt);
+  }
+
+  public boolean isShadowOf(Class<?> clazz) {
+    return shadowedClassName.equals(clazz.getName());
   }
 
   @Override

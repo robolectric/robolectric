@@ -11,6 +11,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
 import java.nio.ByteBuffer;
@@ -420,6 +421,20 @@ public class ShadowBitmapTest {
     int[] pixelsReconstructed = new int[width * height];
     bitmapReconstructed.getPixels(pixelsReconstructed, 0, width, 0, 0, width, height);
     assertThat(Arrays.equals(pixelsOriginal, pixelsReconstructed)).isTrue();
+  }
+
+  @Config(sdk = Build.VERSION_CODES.O)
+  @Test
+  public void getBytesPerPixel_O() {
+    assertThat(ShadowBitmap.getBytesPerPixel(Bitmap.Config.RGBA_F16)).isEqualTo(8);
+  }
+
+  @Test
+  public void getBytesPerPixel_preO() {
+    assertThat(ShadowBitmap.getBytesPerPixel(Bitmap.Config.ARGB_8888)).isEqualTo(4);
+    assertThat(ShadowBitmap.getBytesPerPixel(Bitmap.Config.RGB_565)).isEqualTo(2);
+    assertThat(ShadowBitmap.getBytesPerPixel(Bitmap.Config.ARGB_4444)).isEqualTo(2);
+    assertThat(ShadowBitmap.getBytesPerPixel(Bitmap.Config.ALPHA_8)).isEqualTo(1);
   }
 
   @Test(expected = RuntimeException.class)
