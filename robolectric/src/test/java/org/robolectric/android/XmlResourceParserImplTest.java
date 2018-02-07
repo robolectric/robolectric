@@ -377,7 +377,7 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeEntityValue() throws Exception {
-    forgeAndOpenDocument("<foo bar=\"\\u201e&#34;\"/>");
+    forgeAndOpenDocument("<foo bar=\"\\u201e&#92;&#34;\"/>");
     assertThat(parser.getAttributeValue(0)).isEqualTo("„\"");
   }
 
@@ -389,7 +389,7 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetNodeTextEntityValue() throws Exception {
-    forgeAndOpenDocument("<foo>\\u201e&#34;</foo>");
+    forgeAndOpenDocument("<foo>\\u201e\\&#34;</foo>");
     assertThat(parser.getText()).isEqualTo("„\"");
   }
 
