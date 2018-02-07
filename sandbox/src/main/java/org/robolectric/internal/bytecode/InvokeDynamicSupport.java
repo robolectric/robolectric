@@ -1,14 +1,5 @@
 package org.robolectric.internal.bytecode;
 
-import org.robolectric.util.ReflectionHelpers;
-
-import java.lang.invoke.CallSite;
-import java.lang.invoke.ConstantCallSite;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.SwitchPoint;
-
 import static java.lang.invoke.MethodHandles.catchException;
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
@@ -19,6 +10,14 @@ import static java.lang.invoke.MethodHandles.throwException;
 import static java.lang.invoke.MethodType.methodType;
 import static org.robolectric.internal.bytecode.MethodCallSite.Kind.REGULAR;
 import static org.robolectric.internal.bytecode.MethodCallSite.Kind.STATIC;
+
+import java.lang.invoke.CallSite;
+import java.lang.invoke.ConstantCallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.SwitchPoint;
+import org.robolectric.util.ReflectionHelpers;
 
 public class InvokeDynamicSupport {
   @SuppressWarnings("unused")
@@ -58,7 +57,7 @@ public class InvokeDynamicSupport {
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrap(MethodHandles.Lookup caller, String name, MethodType type,
       MethodHandle original) throws IllegalAccessException {
-    MethodCallSite site = new MethodCallSite(type, caller.lookupClass(), name, original, REGULAR);
+    MethodCallSite site = new MethodCallSite(caller.lookupClass(), type, name, original, REGULAR);
 
     bindCallSite(site);
 
@@ -68,7 +67,7 @@ public class InvokeDynamicSupport {
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapStatic(MethodHandles.Lookup caller, String name, MethodType type,
       MethodHandle original) throws IllegalAccessException {
-    MethodCallSite site = new MethodCallSite(type, caller.lookupClass(), name, original, STATIC);
+    MethodCallSite site = new MethodCallSite(caller.lookupClass(), type, name, original, STATIC);
 
     bindCallSite(site);
 
@@ -112,13 +111,13 @@ public class InvokeDynamicSupport {
   }
 
   private static MethodHandle bindInitCallSite(RoboCallSite site) {
-    MethodHandle mh = RobolectricInternals.getShadowCreator(site.getCaller());
+    MethodHandle mh = RobolectricInternals.getShadowCreator(site.getTheClass());
     return bindWithFallback(mh, site, BIND_INIT_CALL_SITE);
   }
 
   private static MethodHandle bindCallSite(MethodCallSite site) throws IllegalAccessException {
     MethodHandle mh =
-        RobolectricInternals.findShadowMethod(site.getCaller(), site.getName(), site.type(),
+        RobolectricInternals.findShadowMethodHandle(site.getTheClass(), site.getName(), site.type(),
             site.isStatic());
 
     if (mh == null) {
@@ -137,13 +136,13 @@ public class InvokeDynamicSupport {
       // The error that bubbles up is currently not very helpful so we print any error messages
       // here
       t.printStackTrace();
-      System.err.println(site.getCaller());
+      System.err.println(site.getTheClass());
       throw t;
     }
   }
 
   private static MethodHandle bindWithFallback(MethodHandle mh, RoboCallSite site, MethodHandle fallback) {
-    SwitchPoint switchPoint = getInvalidator(site.getCaller());
+    SwitchPoint switchPoint = getInvalidator(site.getTheClass());
     MethodType type = site.type();
 
     MethodHandle boundFallback = foldArguments(exactInvoker(type), fallback.bindTo(site));

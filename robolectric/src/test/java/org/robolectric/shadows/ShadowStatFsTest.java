@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
-import android.os.StatFs;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
-import java.io.File;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.os.StatFs;
+import java.io.File;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowStatFsTest {
   @Test
   public void shouldRegisterStats() throws Exception {

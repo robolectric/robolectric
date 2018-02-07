@@ -1,5 +1,8 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
+
 import android.util.AttributeSet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -7,13 +10,10 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.res.AttributeResource;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
-
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}
  */
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class AttributeSetBuilderTest {
 
   private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
@@ -201,10 +201,10 @@ public class AttributeSetBuilderTest {
   @Test
   public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(R.attr.sugaryScale, "1234.456")
+        .addAttribute(R.attr.isSugary, "1234.456")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugaryScale", 78.9f)).isEqualTo(1234.456f);
+    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", 78.9f)).isEqualTo(1234.456f);
   }
 
   @Test
@@ -212,7 +212,7 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugaryScale", 78.9f)).isEqualTo(78.9f);
+    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", 78.9f)).isEqualTo(78.9f);
   }
 
   @Test
@@ -252,9 +252,9 @@ public class AttributeSetBuilderTest {
   @Test
   public void getAttributeNameResource() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(R.attr.sugaryScale, "1")
+        .addAttribute(R.attr.isSugary, "1")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(R.attr.sugaryScale);
+    assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(R.attr.isSugary);
   }
 }

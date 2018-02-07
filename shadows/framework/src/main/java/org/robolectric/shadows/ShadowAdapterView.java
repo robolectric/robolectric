@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)

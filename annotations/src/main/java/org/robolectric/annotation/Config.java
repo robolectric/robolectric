@@ -1,9 +1,6 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
-
-import javax.annotation.Nonnull;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -11,10 +8,13 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Configuration settings that can be used on a per-class or per-test basis.
@@ -23,10 +23,11 @@ import java.util.Set;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
+@SuppressWarnings(value = {"BadAnnotationImplementation", "ImmutableAnnotationChecker"})
 public @interface Config {
   /**
    * TODO(vnayar): Create named constants for default values instead of magic numbers.
-   * Array named contants must be avoided in order to dodge a JDK 1.7 bug.
+   * Array named constants must be avoided in order to dodge a JDK 1.7 bug.
    *   error: annotation Config is missing value for the attribute &lt;clinit&gt;
    * See <a href="https://bugs.openjdk.java.net/browse/JDK-8013485">JDK-8013485</a>.
    */
@@ -78,8 +79,11 @@ public @interface Config {
   /**
    * Reference to the BuildConfig class created by the Gradle build system.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
+   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
    * @return Reference to BuildConfig class.
    */
+  @Deprecated
   Class<?> constants() default Void.class;  // DEFAULT_CONSTANTS
 
   /**
@@ -106,14 +110,22 @@ public @interface Config {
    *
    * You do not typically have to set this, unless you are utilizing the ABI split feature.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
+   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
    * @return The ABI split to test with
    */
+  @Deprecated
   String abiSplit() default DEFAULT_ABI_SPLIT;
 
   /**
-   * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
+   * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
    *
-   * @return Qualifiers used for resource resolution.
+   * If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
+   * broadly-scoped qualifiers.
+   *
+   * See [Device Configuration](http://robolectric.org/device-configuration/) for details.
+   *
+   * @return Qualifiers used for device configuration and resource resolution.
    */
   String qualifiers() default DEFAULT_QUALIFIERS;
 
@@ -140,8 +152,11 @@ public @interface Config {
    *
    * If not specified, Robolectric defaults to {@code build}.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
+   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
    * @return Android build directory.
    */
+  @Deprecated
   String buildDir() default DEFAULT_BUILD_FOLDER;
 
   /**
@@ -517,7 +532,16 @@ public @interface Config {
         this.maxSdk = pick(this.maxSdk, overlayMaxSdk, DEFAULT_VALUE_INT);
       }
       this.manifest = pick(this.manifest, overlayConfig.manifest(), DEFAULT_VALUE_STRING);
-      this.qualifiers = pick(this.qualifiers, overlayConfig.qualifiers(), "");
+
+      String qualifiersOverlayValue = overlayConfig.qualifiers();
+      if (qualifiersOverlayValue != null && !qualifiersOverlayValue.equals("")) {
+        if (qualifiersOverlayValue.startsWith("+")) {
+          this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue;
+        } else {
+          this.qualifiers = qualifiersOverlayValue;
+        }
+      }
+
       this.packageName = pick(this.packageName, overlayConfig.packageName(), "");
       this.abiSplit = pick(this.abiSplit, overlayConfig.abiSplit(), "");
       this.resourceDir = pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
@@ -525,8 +549,7 @@ public @interface Config {
       this.buildDir = pick(this.buildDir, overlayConfig.buildDir(), Config.DEFAULT_BUILD_FOLDER);
       this.constants = pick(this.constants, overlayConfig.constants(), Void.class);
 
-      Set<Class<?>> shadows = new HashSet<>();
-      shadows.addAll(Arrays.asList(this.shadows));
+      List<Class<?>> shadows = new ArrayList<>(Arrays.asList(this.shadows));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
 

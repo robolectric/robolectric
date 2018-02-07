@@ -1,19 +1,19 @@
 package org.robolectric.shadows;
 
-import android.content.ContentResolver;
-import android.provider.Settings;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.content.ContentResolver;
+import android.provider.Settings;
+import android.text.format.DateFormat;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSettingsTest {
   private ContentResolver contentResolver;
 
@@ -86,5 +86,17 @@ public class ShadowSettingsTest {
   @Test(expected = Settings.SettingNotFoundException.class)
   public void testSystemGetFloat_exception() throws Exception {
     Settings.System.getFloat(contentResolver, "property");
+  }
+
+  @Test
+  public void testSet24HourMode_24() {
+    ShadowSettings.set24HourTimeFormat(true);
+    assertThat(DateFormat.is24HourFormat(RuntimeEnvironment.application.getBaseContext())).isTrue();
+  }
+
+  @Test
+  public void testSet24HourMode_12() {
+    ShadowSettings.set24HourTimeFormat(false);
+    assertThat(DateFormat.is24HourFormat(RuntimeEnvironment.application.getBaseContext())).isFalse();
   }
 }

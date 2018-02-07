@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
-import android.text.TextPaint;
-import android.text.TextUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.text.TextPaint;
+import android.text.TextUtils;
+import java.util.Arrays;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowTextUtilsTest {
   @Test
   public void testExpandTemplate() throws Exception {
@@ -81,7 +80,14 @@ public class ShadowTextUtilsTest {
 
   @Test public void testEllipsize() {
     TextPaint p = new TextPaint();
-    assertThat(TextUtils.ellipsize("apples", p, 100, TextUtils.TruncateAt.END).toString()).isEqualTo("apples");
+    assertThat(TextUtils.ellipsize("apples", p, 0, TextUtils.TruncateAt.END).toString())
+        .isEqualTo("");
+    assertThat(TextUtils.ellipsize("apples", p, -1, TextUtils.TruncateAt.END).toString())
+        .isEqualTo("");
+    assertThat(TextUtils.ellipsize("apples", p, 3, TextUtils.TruncateAt.END).toString())
+        .isEqualTo("app");
+    assertThat(TextUtils.ellipsize("apples", p, 100, TextUtils.TruncateAt.END).toString())
+        .isEqualTo("apples");
     assertThat(TextUtils.ellipsize("", p, 100, TextUtils.TruncateAt.END).toString()).isEqualTo("");
   }
 }

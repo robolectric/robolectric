@@ -1,18 +1,18 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.*;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowVideoViewTest {
 
   private VideoView view;
@@ -144,19 +144,19 @@ public class ShadowVideoViewTest {
     assertThat(view.getCurrentPosition()).isEqualTo(10000);
   }
 
-  private class TestPreparedListener implements MediaPlayer.OnPreparedListener {
+  private static class TestPreparedListener implements MediaPlayer.OnPreparedListener {
     @Override
     public void onPrepared(MediaPlayer mp) {}
   }
 
-  private class TestErrorListener implements MediaPlayer.OnErrorListener  {
+  private static class TestErrorListener implements MediaPlayer.OnErrorListener  {
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
       return false;
     }
   }
 
-  private class TestCompletionListener implements MediaPlayer.OnCompletionListener {
+  private static class TestCompletionListener implements MediaPlayer.OnCompletionListener {
     @Override
     public void onCompletion(MediaPlayer mp) {}
   }

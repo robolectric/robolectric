@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
+
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
@@ -10,13 +14,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowCameraTest {
 
   private Camera camera;
@@ -114,10 +115,10 @@ public class ShadowCameraTest {
     assertThat(callback.data).isNull();
 
     camera.setPreviewCallback(callback);
-    shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
 
     assertThat(callback.camera).isSameAs(camera);
-    assertThat(callback.data).isEqualTo("foobar".getBytes());
+    assertThat(callback.data).isEqualTo("foobar".getBytes(UTF_8));
   }
 
   @Test
@@ -127,10 +128,10 @@ public class ShadowCameraTest {
     assertThat(callback.data).isNull();
 
     camera.setOneShotPreviewCallback(callback);
-    shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
 
     assertThat(callback.camera).isSameAs(camera);
-    assertThat(callback.data).isEqualTo("foobar".getBytes());
+    assertThat(callback.data).isEqualTo("foobar".getBytes(UTF_8));
   }
 
   @Test
@@ -140,10 +141,10 @@ public class ShadowCameraTest {
     assertThat(callback.data).isNull();
 
     camera.setPreviewCallbackWithBuffer(callback);
-    shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
 
     assertThat(callback.camera).isSameAs(camera);
-    assertThat(callback.data).isEqualTo("foobar".getBytes());
+    assertThat(callback.data).isEqualTo("foobar".getBytes(UTF_8));
   }
 
   @Test
@@ -155,21 +156,21 @@ public class ShadowCameraTest {
     camera.setPreviewCallback(callback);
     camera.setPreviewCallback(null);
 
-    shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
     camera.setOneShotPreviewCallback(callback);
     camera.setOneShotPreviewCallback(null);
 
-    shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
     camera.setPreviewCallbackWithBuffer(callback);
     camera.setPreviewCallbackWithBuffer(null);
 
-    shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
   }
@@ -304,6 +305,7 @@ public class ShadowCameraTest {
     public boolean success;
     public Camera camera;
 
+    @Override
     public void onAutoFocus(boolean success, Camera camera) {
       this.success = success;
       this.camera = camera;

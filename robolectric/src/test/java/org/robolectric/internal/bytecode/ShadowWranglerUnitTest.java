@@ -1,5 +1,9 @@
 package org.robolectric.internal.bytecode;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,11 +12,6 @@ import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Function;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unchecked")
 @RunWith(JUnit4.class)
@@ -152,23 +151,23 @@ public class ShadowWranglerUnitTest {
   @Implements(value = DummyClass.class, minSdk = 19, maxSdk = 21)
   public static class ShadowDummyClass {
     @Implementation(minSdk = 20, maxSdk = 20)
-    public void __constructor__() {
+    protected void __constructor__() {
     }
     
     @Implementation
-    public void methodWithoutRange() {
+    protected void methodWithoutRange() {
     }
 
     @Implementation(minSdk = 20, maxSdk = 20)
-    public void methodFor20() {
+    protected void methodFor20() {
     }
 
     @Implementation(minSdk = 20)
-    public void methodMin20() {
+    protected void methodMin20() {
     }
 
     @Implementation(maxSdk = 20)
-    public void methodMax20() {
+    protected void methodMax20() {
     }
   }
 
@@ -178,22 +177,11 @@ public class ShadowWranglerUnitTest {
   @Implements(value = ChildOfDummyClass.class, minSdk = 20, maxSdk = 21)
   public static class ShadowChildOfDummyClass {
     @Implementation
-    public void methodWithoutRange() {
+    protected void methodWithoutRange() {
     }
   }
 
   ///////////////////////
-
-  private class WranglerBuilder extends ShadowMap.Builder {
-    ShadowWrangler wranglerFor(int apiLevel) {
-      return new ShadowWrangler(build(), apiLevel, interceptors);
-    }
-
-    @Override
-    public WranglerBuilder addShadowClasses(Class<?>... shadowClasses) {
-      return (WranglerBuilder) super.addShadowClasses(shadowClasses);
-    }
-  }
 
   private String internalName(Class clazz) {
     return clazz.getName().replaceAll("\\.", "/");

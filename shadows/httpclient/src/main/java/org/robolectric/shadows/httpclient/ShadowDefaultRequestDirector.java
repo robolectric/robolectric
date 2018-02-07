@@ -1,5 +1,9 @@
 package org.robolectric.shadows.httpclient;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
@@ -28,11 +32,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Util;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(DefaultRequestDirector.class)
 public class ShadowDefaultRequestDirector {
@@ -54,6 +53,7 @@ public class ShadowDefaultRequestDirector {
 
   org.robolectric.shadows.httpclient.DefaultRequestDirector redirector;
 
+  @Implementation
   public void __constructor__(
       Log log,
       HttpRequestExecutor requestExec,
@@ -103,6 +103,7 @@ public class ShadowDefaultRequestDirector {
     }
   }
 
+  @Implementation
   public void __constructor__(
       HttpRequestExecutor requestExec,
       ClientConnectionManager conman,

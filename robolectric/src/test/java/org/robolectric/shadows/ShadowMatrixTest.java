@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -7,14 +11,10 @@ import android.os.Build;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowMatrixTest {
   private static final float EPSILON = 1e-7f;
 
@@ -491,6 +491,36 @@ public class ShadowMatrixTest {
     matrix.mapRect(output2, input);
     assertThat(output2)
         .isEqualTo(new RectF(-4.0f, -6.0f, -2.0f, -3.0f));
+  }
+
+  @Test
+  public void testMapPoints() {
+    final Matrix matrix = new Matrix();
+    matrix.postTranslate(-1.0f, -2.0f);
+    matrix.postScale(2.0f, 3.0f);
+    final float[] input = {
+        0.0f, 0.0f,
+        1.0f, 2.0f
+    };
+    final float[] output = new float[input.length];
+    matrix.mapPoints(output, input);
+    assertThat(output)
+        .containsExactly(-2.0f, -6.0f, 0.0f, 0.0f);
+  }
+
+  @Test
+  public void testMapVectors() {
+    final Matrix matrix = new Matrix();
+    matrix.postTranslate(-1.0f, -2.0f);
+    matrix.postScale(2.0f, 3.0f);
+    final float[] input = {
+        0.0f, 0.0f,
+        1.0f, 2.0f
+    };
+    final float[] output = new float[input.length];
+    matrix.mapVectors(output, input);
+    assertThat(output)
+        .containsExactly(0.0f, 0.0f, 2.0f, 6.0f);
   }
 
   private static PointF mapPoint(Matrix matrix, float x, float y) {

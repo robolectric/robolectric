@@ -1,21 +1,20 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteOpenHelperTest {
 
   private TestOpenHelper helper;
@@ -222,7 +221,7 @@ public class SQLiteOpenHelperTest {
     assertThat(helper.onUpgradeCalled).isFalse();
   }
 
-  private class TestOpenHelper extends SQLiteOpenHelper {
+  private static class TestOpenHelper extends SQLiteOpenHelper {
     public boolean onCreateCalled;
     public boolean onUpgradeCalled;
     public boolean onOpenCalled;

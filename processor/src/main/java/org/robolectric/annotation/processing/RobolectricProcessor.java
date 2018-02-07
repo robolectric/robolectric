@@ -1,5 +1,19 @@
 package org.robolectric.annotation.processing;
 
+import com.google.common.annotations.VisibleForTesting;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
@@ -9,20 +23,6 @@ import org.robolectric.annotation.processing.validator.ImplementsValidator;
 import org.robolectric.annotation.processing.validator.RealObjectValidator;
 import org.robolectric.annotation.processing.validator.ResetterValidator;
 import org.robolectric.annotation.processing.validator.Validator;
-
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Annotation processor entry point for Robolectric annotations.
@@ -58,12 +58,13 @@ public class RobolectricProcessor extends AbstractProcessor {
    * @param options simulated options that would ordinarily
    *                be passed in the {@link ProcessingEnvironment}.
    */
-  RobolectricProcessor(Map<String, String> options) {
+  @VisibleForTesting
+  public RobolectricProcessor(Map<String, String> options) {
     processOptions(options);
   }
 
   @Override
-  public void init(ProcessingEnvironment environment) {
+  public synchronized void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
     model = new RobolectricModel(environment.getElementUtils(), environment.getTypeUtils());
@@ -109,6 +110,10 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.shadowPackage = options.get(PACKAGE_OPT);
       this.shouldInstrumentPackages =
           !"false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT));
+
+      if (this.shadowPackage == null) {
+        throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
+      }
     }
   }
 

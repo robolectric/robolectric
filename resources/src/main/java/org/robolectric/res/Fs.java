@@ -1,7 +1,6 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Join;
-import org.robolectric.util.Util;
+import static java.util.Arrays.asList;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -20,8 +19,8 @@ import java.util.NavigableSet;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import static java.util.Arrays.asList;
+import org.robolectric.util.Join;
+import org.robolectric.util.Util;
 
 abstract public class Fs {
   public static Fs fromJar(URL url) {
@@ -68,6 +67,10 @@ abstract public class Fs {
 
   public static FsFile newFile(File file) {
     return new FileFsFile(file);
+  }
+
+  public static FsFile newFile(String filePath) {
+    return new FileFsFile(filePath);
   }
 
   public static FsFile currentDirectory() {
@@ -156,9 +159,12 @@ abstract public class Fs {
 
       @Override public FsFile[] listFiles(Filter filter) {
         List<FsFile> filteredFsFiles = new ArrayList<>();
-        for (FsFile fsFile : listFiles()) {
-          if (filter.accept(fsFile)) {
-            filteredFsFiles.add(fsFile);
+        FsFile[] fsFiles = listFiles();
+        if (fsFiles != null) {
+          for (FsFile fsFile : fsFiles) {
+            if (filter.accept(fsFile)) {
+              filteredFsFiles.add(fsFile);
+            }
           }
         }
         return filteredFsFiles.toArray(new FsFile[filteredFsFiles.size()]);
@@ -202,7 +208,7 @@ abstract public class Fs {
       }
 
       @Override public String getPath() {
-        return "jar:" + getJarFileName() + "!/" + path;
+        return "jar:file:" + getJarFileName() + "!/" + path;
       }
 
       @Override

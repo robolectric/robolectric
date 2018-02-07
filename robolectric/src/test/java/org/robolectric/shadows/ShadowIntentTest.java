@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -17,23 +17,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowIntentTest {
   private static final String TEST_ACTIVITY_CLASS_NAME = "org.robolectric.shadows.TestActivity";
 
   @Test
-  @Config(manifest = "TestAndroidManifestForActivities.xml")
   public void resolveActivityInfo_shouldReturnActivityInfoForExistingActivity() {
       Context context = RuntimeEnvironment.application;
       PackageManager packageManager = context.getPackageManager();
@@ -78,15 +75,15 @@ public class ShadowIntentTest {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2d));
     assertEquals(2d, intent.getExtras().get("foo"));
-    assertEquals(2d, intent.getDoubleExtra("foo", -1));
+    assertThat(intent.getDoubleExtra("foo", -1)).isEqualTo(2d);
   }
 
   @Test
   public void testFloatExtra() throws Exception {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2f));
-    assertEquals(2f, intent.getExtras().get("foo"));
-    assertEquals(2f, intent.getFloatExtra("foo", -1));
+    assertThat(intent.getExtras().get("foo")).isEqualTo(2f);
+    assertThat(intent.getFloatExtra("foo", -1)).isEqualTo(2f);
   }
 
   @Test
@@ -493,7 +490,7 @@ public class ShadowIntentTest {
     }
   }
 
-  private class TestCharSequence implements CharSequence {
+  private static class TestCharSequence implements CharSequence {
     String s;
 
     public TestCharSequence(String s) {

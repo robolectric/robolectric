@@ -1,19 +1,21 @@
 package org.robolectric.shadows;
 
+import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowClipboardManagerTest {
 
   private ClipboardManager clipboardManager;

@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.graphics.drawable.Drawable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @Implements(className = "com.android.internal.policy.impl.PhoneWindow", maxSdk = LOLLIPOP_MR1)
 public class ShadowPhoneWindowFor22 extends ShadowPhoneWindow {

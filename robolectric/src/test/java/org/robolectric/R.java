@@ -129,6 +129,7 @@ public final class R {
     public static final int test_permission_description = 0x7f020025;
     public static final int test_permission_label = 0x7f020026;
     public static final int string_with_spaces = 0x7f020027;
+    public static final int bad_example = 0x7f020028;
   }
 
   public static final class plurals {
@@ -166,6 +167,9 @@ public final class R {
     public static final int list_separator = 0x7f05000c;
     public static final int custom_state_view_text_color = 0x7f05000d;
     public static final int typed_array_orange = 0x7f05000e;
+    public static final int test_ARGB8=0x7f05000f;
+    public static final int test_RGB4=0x7f050010;
+    public static final int test_RGB8=0x7f050011;
   }
 
   public static final class drawable {
@@ -291,6 +295,7 @@ public final class R {
     public static final int offsetY = 0x7f0b0021;
     public static final int textStyle2 = 0x7f0b0022;
     public static final int textStyle3 = 0x7f0b0023;
+    public static final int multiformat = 0x7f0b0024;
   }
 
   public static final class menu {
@@ -303,6 +308,12 @@ public final class R {
   public static final class xml {
     public static final int preferences = 0x7f0d0000;
     public static final int dialog_preferences = 0x7f0d0001;
+    public static final int shortcuts = 0x7f0d0002;
+    public static final int app_restrictions = 0x7f0d0003;
+    public static final int has_attribute_resource_value = 0x7f0d0004;
+    public static final int has_style_attribute_reference = 0x7f0d0005;
+    public static final int has_parent_style_reference = 0x7f0d0006;
+    public static final int has_id = 0x7f0d0007;
   }
 
   public static final class styleable {
@@ -424,5 +435,8 @@ public final class R {
 
   public static final class mipmap {
     public static final int robolectric = 0x7f140000;
+    public static final int mipmap_reference = 0x7f140001;
+    public static final int robolectric_xml = 0x7f140002;
+    public static final int mipmap_reference_xml = 0x7f140003;
   }
 }

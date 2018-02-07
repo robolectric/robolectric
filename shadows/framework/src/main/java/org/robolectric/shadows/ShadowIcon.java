@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
@@ -7,9 +10,6 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Icon.class, minSdk = M)

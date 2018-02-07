@@ -1,16 +1,14 @@
 package org.robolectric.shadows.httpclient;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Map;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.junit.Test;
-import org.robolectric.shadows.httpclient.ParamsParser;
-
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class ParamsParserTest {
   @Test

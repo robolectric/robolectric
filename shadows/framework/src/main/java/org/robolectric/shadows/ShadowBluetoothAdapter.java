@@ -1,18 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)

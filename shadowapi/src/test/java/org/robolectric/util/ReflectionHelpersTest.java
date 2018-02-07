@@ -1,15 +1,14 @@
 package org.robolectric.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+
+import java.lang.reflect.Field;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.lang.reflect.Field;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 @RunWith(JUnit4.class)
 public class ReflectionHelpersTest {
@@ -32,10 +31,10 @@ public class ReflectionHelpersTest {
   public void getFieldReflectively_givesHelpfulExceptions() {
     ExampleDescendant example = new ExampleDescendant();
     try {
-      ReflectionHelpers.getField(example, "nonExistant");
+      ReflectionHelpers.getField(example, "nonExistent");
       failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
-      if (!e.getMessage().contains("nonExistant")) {
+      if (!e.getMessage().contains("nonExistent")) {
         fail("poorly specified exception thrown", e);
       }
     }
@@ -61,10 +60,10 @@ public class ReflectionHelpersTest {
   public void setFieldReflectively_givesHelpfulExceptions() {
     ExampleDescendant example = new ExampleDescendant();
     try {
-      ReflectionHelpers.setField(example, "nonExistant", 6);
+      ReflectionHelpers.setField(example, "nonExistent", 6);
       failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
-      if (!e.getMessage().contains("nonExistant")) {
+      if (!e.getMessage().contains("nonExistent")) {
         fail("poorly specified exception thrown", e);
       }
     }
@@ -135,10 +134,10 @@ public class ReflectionHelpersTest {
   public void callInstanceMethodReflectively_givesHelpfulExceptions() {
     ExampleDescendant example = new ExampleDescendant();
     try {
-      ReflectionHelpers.callInstanceMethod(example, "nonExistant");
+      ReflectionHelpers.callInstanceMethod(example, "nonExistent");
       failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
-      if (!e.getMessage().contains("nonExistant")) {
+      if (!e.getMessage().contains("nonExistent")) {
         fail("poorly specified exception thrown", e);
       }
     }
@@ -280,7 +279,7 @@ public class ReflectionHelpersTest {
     private int notOverridden;
     protected int overridden;
 
-    private static final int BASE = new Integer(8);
+    private static final int BASE = 8;
 
     public int getNotOverridden() {
       return notOverridden;
@@ -297,8 +296,10 @@ public class ReflectionHelpersTest {
 
   @SuppressWarnings("unused")
   private static class ExampleDescendant extends ExampleBase {
+
     public static int DESCENDANT = 6;
 
+    @SuppressWarnings("HidingField")
     protected int overridden;
 
     private int returnNumber() {

@@ -1,7 +1,15 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
@@ -13,16 +21,6 @@ import org.robolectric.internal.bytecode.ShadowConstants;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.Pony;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 @RunWith(SandboxTestRunner.class)
 public class ShadowingTest {
@@ -67,7 +65,7 @@ public class ShadowingTest {
   @Implements(ClassWithProtectedMethod.class)
   public static class ShadowClassWithProtectedMethod {
     @Implementation
-    public String getName() {
+    protected String getName() {
       return "shadow name";
     }
   }
@@ -99,12 +97,12 @@ public class ShadowingTest {
     private int color;
 
     @Implementation
-    public void setColor(int color) {
+    protected void setColor(int color) {
       this.color = color;
     }
 
     @Implementation
-    public int getColor() {
+    protected int getColor() {
       return color;
     }
   }
@@ -115,10 +113,11 @@ public class ShadowingTest {
     public static boolean shadowDefaultConstructorImplementorCalled = false;
 
     public ShadowForClassWithNoDefaultConstructor() {
-      this.shadowDefaultConstructorCalled = true;
+      shadowDefaultConstructorCalled = true;
     }
 
-    public void __constructor__() {
+    @Implementation
+    protected void __constructor__() {
       shadowDefaultConstructorImplementorCalled = true;
     }
   }
@@ -187,8 +186,8 @@ public class ShadowingTest {
 
   @Implements(ClassWithSomeConstructors.class)
   public static class ShadowOfClassWithSomeConstructors {
-    @SuppressWarnings("UnusedDeclaration")
-    public void __constructor__(String s) {
+    @Implementation
+    protected void __constructor__(String s) {
     }
   }
 
@@ -232,7 +231,7 @@ public class ShadowingTest {
   @Implements(NonInstrumentedClass.class)
   public static class ShadowNonInstrumentedClass {
     @Implementation
-    public int plus(int x) {
+    protected int plus(int x) {
       return x + 2;
     }
   }

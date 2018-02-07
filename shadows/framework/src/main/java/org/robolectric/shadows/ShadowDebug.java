@@ -1,16 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+
 import android.os.Debug;
-
 import com.google.common.collect.ImmutableMap;
-
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.util.Map;
-
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.M;
 
 @Implements(Debug.class)
 public class ShadowDebug {

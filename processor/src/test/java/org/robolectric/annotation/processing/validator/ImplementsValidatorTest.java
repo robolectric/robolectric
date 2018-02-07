@@ -1,7 +1,7 @@
 package org.robolectric.annotation.processing.validator;
 
-import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertAbout;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 
 import org.junit.Test;
@@ -84,6 +84,20 @@ public class ImplementsValidatorTest {
       .failsToCompile()
       .withErrorContaining("Shadow type has type parameters but real type does not")
       .onLine(7);
+  }
+
+  @Test
+  public void constructorShadowWithoutImplementation_shouldNotCompile() {
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowWithImplementationlessShadowMethods";
+    assertAbout(singleClass())
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("Shadow methods must be annotated @Implementation")
+        .onLine(8)
+        .and()
+        .withErrorContaining("Shadow methods must be annotated @Implementation")
+        .onLine(10);
   }
 
   @Test

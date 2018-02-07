@@ -2,8 +2,6 @@ package org.robolectric.shadows.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
-import org.robolectric.res.Fs;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -20,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.robolectric.res.Fs;
 
 /**
  * Initializes sqlite native libraries.

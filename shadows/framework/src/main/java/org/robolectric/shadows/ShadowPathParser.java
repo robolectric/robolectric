@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
+
 import android.util.PathParser;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import static android.os.Build.VERSION_CODES.N;
 
 @Implements(value = PathParser.class, minSdk = N, isInAndroidSdk = false)
 public class ShadowPathParser {

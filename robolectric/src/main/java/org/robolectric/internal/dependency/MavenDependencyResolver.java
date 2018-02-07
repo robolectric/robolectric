@@ -1,15 +1,14 @@
 package org.robolectric.internal.dependency;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Hashtable;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
 import org.robolectric.RoboSettings;
 import org.robolectric.util.Util;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Hashtable;
 
 public class MavenDependencyResolver implements DependencyResolver {
   private final Project project = new Project();

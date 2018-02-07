@@ -1,10 +1,9 @@
 package org.robolectric.annotation.processing.generator;
 
 import com.google.common.base.Joiner;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.processing.RobolectricModel;
-import org.robolectric.annotation.processing.RobolectricProcessor;
-
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -16,9 +15,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.processing.RobolectricModel;
+import org.robolectric.annotation.processing.RobolectricProcessor;
 
 /**
  * Generator that creates the "ShadowProvider" implementation for a shadow package.
@@ -83,7 +82,7 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("@SuppressWarnings({\"unchecked\",\"deprecation\"})");
     writer.println("public class " + GEN_CLASS + " implements ShadowProvider {");
 
-    final int shadowSize = model.getAllShadowTypes().size();
+    final int shadowSize = model.getAllShadowTypes().size() + model.getExtraShadowTypes().size();
     writer.println("  private static final Map<String, String> SHADOW_MAP = new HashMap<>(" + shadowSize + ");");
     writer.println();
 
@@ -143,11 +142,12 @@ public class ShadowProviderGenerator extends Generator {
         writer.println("  @Deprecated");
       }
       writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
-      writer.println("    return (" + shadow + ") ShadowExtractor.extract(actual);");
+      writer.println("    return (" + shadow + ") Shadow.extract(actual);");
       writer.println("  }");
       writer.println();
     }
 
+    writer.println("  @Override");
     writer.println("  public void reset() {");
     for (Map.Entry<TypeElement, ExecutableElement> entry : model.getResetters().entrySet()) {
       Implements annotation = entry.getKey().getAnnotation(Implements.class);

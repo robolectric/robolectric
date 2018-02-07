@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
-import android.app.IntentService;
-import android.content.Intent;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.IntentService;
+import android.content.Intent;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowIntentServiceTest {
   @Test
   public void shouldSetIntentRedelivery() {
@@ -23,7 +22,7 @@ public class ShadowIntentServiceTest {
     assertThat(shadowIntentService.getIntentRedelivery()).isFalse();
   }
 
-  private class TestIntentService extends IntentService {
+  private static class TestIntentService extends IntentService {
     public TestIntentService() {
       super("TestIntentService");
     }

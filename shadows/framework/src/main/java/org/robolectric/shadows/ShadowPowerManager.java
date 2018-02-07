@@ -1,27 +1,27 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowApplication.getInstance;
+
 import android.os.PowerManager;
 import android.os.WorkSource;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowApplication.getInstance;
-
 @Implements(PowerManager.class)
 public class ShadowPowerManager {
   private boolean isScreenOn = true;
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
+  private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
   @Implementation
   public PowerManager.WakeLock newWakeLock(int flags, String tag) {
@@ -86,6 +86,16 @@ public class ShadowPowerManager {
    */
   public static PowerManager.WakeLock getLatestWakeLock() {
     return shadowOf(RuntimeEnvironment.application).getLatestWakeLock();
+  }
+
+  @Implementation(minSdk = M)
+  public boolean isIgnoringBatteryOptimizations(String packageName) {
+    Boolean result = ignoringBatteryOptimizations.get(packageName);
+    return result == null ? false : result;
+  }
+
+  public void setIgnoringBatteryOptimizations(String packageName, boolean value) {
+    ignoringBatteryOptimizations.put(packageName, Boolean.valueOf(value));
   }
 
   @Implements(PowerManager.WakeLock.class)

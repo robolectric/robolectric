@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
+import android.annotation.StyleableRes;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Build;
@@ -8,16 +12,12 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.util.Map;
-
-import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TypedArray.class)
@@ -52,6 +52,16 @@ public class ShadowTypedArray {
   }
 
   @Implementation
+  public String getNonResourceString(@StyleableRes int index) {
+    return directlyOn(realTypedArray, TypedArray.class).getString(index);
+  }
+
+  @Implementation
+  public String getNonConfigurationString(@StyleableRes int index, int allowedChangingConfigs) {
+    return directlyOn(realTypedArray, TypedArray.class).getString(index);
+  }
+
+  @Implementation
   public String getPositionDescription() {
     return positionDescription;
   }
@@ -79,7 +89,7 @@ public class ShadowTypedArray {
     System.out.println(result.toString());
   }
 
-  private static final Map<Integer, String> TYPE_MAP = ImmutableMap.<Integer, String>builder()
+  private static final ImmutableMap<Integer, String> TYPE_MAP = ImmutableMap.<Integer, String>builder()
           .put(TypedValue.TYPE_NULL, "TYPE_NULL")
           .put(TypedValue.TYPE_REFERENCE, "TYPE_REFERENCE")
           .put(TypedValue.TYPE_ATTRIBUTE, "TYPE_ATTRIBUTE")

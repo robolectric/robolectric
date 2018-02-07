@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PathEffect;
@@ -10,9 +13,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)
@@ -40,11 +40,13 @@ public class ShadowPaint {
   private float textSize;
   private Paint.Align textAlign = Paint.Align.LEFT;
 
+  @Implementation
   public void __constructor__(int flags) {
     this.flags = flags;
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(int.class, flags));
   }
 
+  @Implementation
   public void __constructor__(Paint otherPaint) {
     ShadowPaint otherShadowPaint = shadowOf(otherPaint);
     this.color = otherShadowPaint.color;

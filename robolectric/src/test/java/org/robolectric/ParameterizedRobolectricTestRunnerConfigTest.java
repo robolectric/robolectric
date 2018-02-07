@@ -1,17 +1,16 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.database.CursorWrapper;
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowCursorWrapper;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Parameterized tests using custom shadow classes.

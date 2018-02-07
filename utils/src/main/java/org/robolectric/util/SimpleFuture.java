@@ -8,7 +8,9 @@ import java.util.concurrent.TimeUnit;
  * A Future represents the result of an asynchronous computation.
  *
  * @param <T> The result type returned by this Future's get method.
+ * @deprecation This class can introduce deadlocks, since its lock is held while invoking run().
  */
+@Deprecated
 public class SimpleFuture<T> {
   private T result;
   private boolean hasRun;

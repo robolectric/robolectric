@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -15,16 +20,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.android.controller.ActivityController;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowThemeTest {
 
   private Resources resources;

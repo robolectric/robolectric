@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.InputFilter;
@@ -11,17 +13,14 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextView.class)

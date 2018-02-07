@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.graphics.drawable.Drawable;
 import android.view.Window;
-import com.android.internal.policy.PhoneWindow;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-
-@Implements(value = PhoneWindow.class, isInAndroidSdk = false, minSdk = M)
+@Implements(className = "com.android.internal.policy.PhoneWindow", isInAndroidSdk = false, minSdk = M)
 public class ShadowPhoneWindow extends ShadowWindow {
   @SuppressWarnings("UnusedDeclaration")
   protected @RealObject Window realWindow;

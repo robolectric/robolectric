@@ -1,27 +1,25 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.res.AssetManager;
+import android.graphics.FontFamily;
 import android.graphics.Typeface;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
+import android.util.ArrayMap;
+import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 
 @Implements(value = Typeface.class, looseSignatures = true)
 public class ShadowTypeface {
@@ -31,11 +29,13 @@ public class ShadowTypeface {
   @RealObject private Typeface realTypeface;
 
   @HiddenApi
+  @Implementation
   public void __constructor__(int fontId) {
     description = findById((long) fontId);
   }
 
   @HiddenApi
+  @Implementation
   public void __constructor__(long fontId) {
     description = findById(fontId);
   }
@@ -56,22 +56,17 @@ public class ShadowTypeface {
 
   @Implementation
   public static Typeface createFromAsset(AssetManager mgr, String path) {
-    AndroidManifest appManifest = Shadows.shadowOf(RuntimeEnvironment.application).getAppManifest();
-    ArrayList<String> paths = new ArrayList<>();
-    paths.add(getAssetsPath(appManifest, path));
-
-    List<AndroidManifest> libraryManifests = appManifest.getLibraryManifests();
-    for (AndroidManifest libraryManifest : libraryManifests) {
-      paths.add(getAssetsPath(libraryManifest, path));
-    }
-
-    for (String assetPath : paths) {
-      if (new File(assetPath).exists()) {
+    Collection<FsFile> assetDirs = shadowOf(mgr).getAllAssetsDirectories();
+    for (FsFile assetDir : assetDirs) {
+      // check if in zip file too?
+      FsFile[] files = assetDir.listFiles(new StartsWith(path));
+      FsFile assetFile = assetDir.join(path);
+      if (assetFile.exists() || files.length != 0) {
         return createUnderlyingTypeface(path, Typeface.NORMAL);
       }
     }
 
-    throw new RuntimeException("Font not found at " + paths);
+    throw new RuntimeException("Font not found at " + assetDirs);
   }
 
   @Implementation
@@ -115,10 +110,6 @@ public class ShadowTypeface {
     } else {
       return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(int.class, (int) thisFontId));
     }
-  }
-
-  private static String getAssetsPath(AndroidManifest appManifest, String fontName) {
-    return appManifest.getAssetsDirectory().join(fontName).toString();
   }
 
   private synchronized static FontDesc findById(long fontId) {
@@ -173,6 +164,19 @@ public class ShadowTypeface {
 
     public int getStyle() {
       return style;
+    }
+  }
+
+  private static class StartsWith implements FsFile.Filter {
+    private final String contains;
+
+    public StartsWith(String contains) {
+      this.contains = contains;
+    }
+
+    @Override
+    public boolean accept(FsFile file) {
+      return file.getName().startsWith(contains);
     }
   }
 }

@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
+import android.media.AudioAttributes;
 import android.media.SoundPool;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-
-import android.media.AudioAttributes;
-
-import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @Implements(SoundPool.class)
 public class ShadowSoundPool {

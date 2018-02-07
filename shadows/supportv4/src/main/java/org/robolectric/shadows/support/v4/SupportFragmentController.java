@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.widget.LinearLayout;
-
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ComponentController;
@@ -24,7 +23,7 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
   }
 
   protected SupportFragmentController(F fragment, Class<? extends FragmentActivity> activityClass, Intent intent) {
-    super(Robolectric.getShadowsAdapter(), fragment, intent);
+    super(fragment, intent);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass, intent);
   }
@@ -122,23 +121,6 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
       @Override
       public void run() {
         activityController.visible();
-      }
-    });
-    return this;
-  }
-
-  /**
-   * @deprecated Use {@link #of(Fragment, Class, Intent)} instead.
-   *
-   * This method will be removed in Robolectric 3.4.
-   */
-  @Deprecated
-  @Override
-  public SupportFragmentController<F> withIntent(final Intent intent) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.withIntent(intent);
       }
     });
     return this;

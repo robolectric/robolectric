@@ -1,5 +1,11 @@
 package org.robolectric.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -7,18 +13,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.gradleapp.BuildConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.res.FsFile;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.joinPath;
-import static org.robolectric.util.TestUtil.newFile;
 
 @RunWith(JUnit4.class)
 public class GradleManifestFactoryTest {
@@ -195,12 +195,13 @@ public class GradleManifestFactoryTest {
   @Test
   public void rClassShouldBeInTheSamePackageAsBuildConfig() throws Exception {
     File manifestFile = new File(
-        joinPath("build", "intermediates", "manifests", "full",
-            org.robolectric.gradleapp.BuildConfig.FLAVOR,
-            org.robolectric.gradleapp.BuildConfig.BUILD_TYPE),
+        "build/intermediates/manifests/full" +
+            org.robolectric.gradleapp.BuildConfig.FLAVOR +
+            org.robolectric.gradleapp.BuildConfig.BUILD_TYPE,
         "AndroidManifest.xml");
     manifestFile.getParentFile().mkdirs();
-    newFile(manifestFile, "<manifest package=\"something\"/>");
+
+    Files.write("<manifest package=\"something\"/>", manifestFile, Charsets.UTF_8);
 
     AndroidManifest manifest = createManifest(
         configBuilder.setConstants(BuildConfig.class).build());
@@ -221,7 +222,7 @@ public class GradleManifestFactoryTest {
   ////////////////////////////////
 
   private AndroidManifest createManifest(Config config) {
-    return factory.create(factory.identify(config));
+    return RobolectricTestRunner.createAndroidManifest(factory.identify(config));
   }
 
   private static FsFile file(String path) {

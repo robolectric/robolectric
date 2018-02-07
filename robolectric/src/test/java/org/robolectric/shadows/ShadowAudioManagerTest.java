@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
-import android.media.AudioManager;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.media.AudioManager;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAudioManagerTest {
   private final AudioManager audioManager = new AudioManager(RuntimeEnvironment.application);
   private final ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager);
@@ -191,5 +190,19 @@ public class ShadowAudioManagerTest {
     assertThat(audioManager.isMicrophoneMute()).isFalse();
     audioManager.setMicrophoneMute(true);
     assertThat(audioManager.isMicrophoneMute()).isTrue();
+  }
+
+  @Test
+  public void setBluetoothScoOn() {
+    assertThat(audioManager.isBluetoothScoOn()).isFalse();
+    audioManager.setBluetoothScoOn(true);
+    assertThat(audioManager.isBluetoothScoOn()).isTrue();
+  }
+
+  @Test
+  public void isMusicActive() {
+    assertThat(audioManager.isMusicActive()).isFalse();
+    shadowAudioManager.setIsMusicActive(true);
+    assertThat(audioManager.isMusicActive()).isTrue();
   }
 }

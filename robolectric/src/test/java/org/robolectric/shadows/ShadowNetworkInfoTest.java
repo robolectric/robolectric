@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
-import android.net.NetworkInfo;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.shadow.api.Shadow;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.net.NetworkInfo;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadow.api.Shadow;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowNetworkInfoTest {
 
   @Test

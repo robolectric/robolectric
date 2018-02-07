@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import android.os.SystemClock;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
 
 /**
  * Robolectric's concept of current time is base on the current time of the UI Scheduler for

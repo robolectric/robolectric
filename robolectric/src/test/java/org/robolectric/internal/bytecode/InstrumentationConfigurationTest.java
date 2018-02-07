@@ -1,15 +1,15 @@
 package org.robolectric.internal.bytecode;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class InstrumentationConfigurationTest {
@@ -121,8 +121,22 @@ public class InstrumentationConfigurationTest {
     assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isFalse();
   }
 
-  private ClassInfo wrap(final String className) {
-    ClassInfo info = mock(ClassInfo.class);
+  @Test
+  public void shouldNotInstrumentPackages() throws Exception {
+    String includedClass = "android.foo.Bar";
+    String excludedClass = "android.support.test.foo.Bar";
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder()
+            .addInstrumentedPackage("android.")
+            .doNotInstrumentPackage("android.support.test.")
+            .build();
+
+    assertThat(customConfig.shouldInstrument(wrap(includedClass))).isTrue();
+    assertThat(customConfig.shouldInstrument(wrap(excludedClass))).isFalse();
+  }
+
+  private MutableClass wrap(final String className) {
+    MutableClass info = mock(MutableClass.class);
     when(info.getName()).thenReturn(className);
     return info;
   }

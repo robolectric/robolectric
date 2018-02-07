@@ -1,24 +1,23 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TabHost;
-import android.widget.TabHost.TabContentFactory;
 import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowTabSpecTest {
   Drawable icon1;
 
@@ -67,12 +66,10 @@ public class ShadowTabSpecTest {
   @Test
   public void shouldSetTheContentView() throws Exception {
     TabHost.TabSpec foo = new TabHost(RuntimeEnvironment.application).newTabSpec("Foo").setContent(
-        new TabContentFactory() {
-          public View createTabContent(String tag) {
-            TextView tv = new TextView(RuntimeEnvironment.application);
-            tv.setText("The Text of " + tag);
-            return tv;
-          }
+        tag -> {
+          TextView tv = new TextView(RuntimeEnvironment.application);
+          tv.setText("The Text of " + tag);
+          return tv;
         });
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
@@ -93,7 +90,7 @@ public class ShadowTabSpecTest {
     assertThat(viewId).isEqualTo(R.id.title);
   }
 
-  private class TestIcon extends Drawable {
+  private static class TestIcon extends Drawable {
 
     @Override
     public void draw(Canvas canvas) {

@@ -1,13 +1,12 @@
 package org.robolectric.shadows.support.v4;
 
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.shadows.ShadowViewGroup;
-
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowViewGroup;
 
 @Implements(SwipeRefreshLayout.class)
 public class ShadowSwipeRefreshLayout extends ShadowViewGroup {

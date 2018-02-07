@@ -1,19 +1,18 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
-import android.nfc.NfcAdapter;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.Activity;
+import android.nfc.NfcAdapter;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowNfcAdapterTest {
 
   @Test

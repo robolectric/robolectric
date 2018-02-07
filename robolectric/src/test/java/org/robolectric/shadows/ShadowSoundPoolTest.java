@@ -1,18 +1,18 @@
 package org.robolectric.shadows;
 
-import android.media.AudioManager;
-import android.media.SoundPool;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.media.AudioManager;
+import android.media.SoundPool;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowSoundPoolTest {
 
   @Test

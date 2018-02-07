@@ -1,9 +1,9 @@
 package org.robolectric.res;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 public class StaxStyleLoader extends StaxLoader {
   private String name;

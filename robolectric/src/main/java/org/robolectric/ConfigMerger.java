@@ -1,11 +1,8 @@
 package org.robolectric;
 
-import com.google.common.annotations.VisibleForTesting;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.robolectric.annotation.Config;
-import org.robolectric.util.Join;
+import static com.google.common.collect.Lists.reverse;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -15,8 +12,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import static com.google.common.collect.Lists.reverse;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.robolectric.annotation.Config;
+import org.robolectric.util.Join;
 
 public class ConfigMerger {
   private final Map<String, Config> packageConfigCache = new LinkedHashMap<String, Config>() {

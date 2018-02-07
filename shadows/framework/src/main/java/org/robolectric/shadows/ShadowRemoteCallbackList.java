@@ -4,14 +4,13 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import java.util.HashMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import java.util.HashMap;
-
 @Implements(RemoteCallbackList.class)
 public class ShadowRemoteCallbackList<E extends IInterface> {
-  private HashMap<IBinder, Callback> callbacks = new HashMap<>();
+  private final HashMap<IBinder, Callback> callbacks = new HashMap<>();
   private Object[] activeBroadcast;
   private int broadcastCount = -1;
   private boolean killed = false;

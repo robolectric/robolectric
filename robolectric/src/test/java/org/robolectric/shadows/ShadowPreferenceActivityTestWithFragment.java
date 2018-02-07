@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
 /**
  * Current Android examples show adding a PreferenceFragment as part of the
@@ -20,7 +20,7 @@ import org.robolectric.TestRunners;
  * trying to access a Context while inflating the Preference objects defined in
  * xml. This class tests that path.
  */
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowPreferenceActivityTestWithFragment {
   private TestPreferenceActivity activity = Robolectric.setupActivity(TestPreferenceActivity.class);
   private TestPreferenceFragment fragment;
@@ -45,7 +45,6 @@ public class ShadowPreferenceActivityTestWithFragment {
   }
 
   private static class TestPreferenceActivity extends Activity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -56,8 +55,7 @@ public class ShadowPreferenceActivityTestWithFragment {
     }
   }
 
-  private static class TestPreferenceFragment extends PreferenceFragment {
-
+  public static class TestPreferenceFragment extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);

@@ -2,13 +2,12 @@ package org.robolectric.shadows;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
+import java.util.Map;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.Map;
 
 @Implements(ContentProviderOperation.class)
 public class ShadowContentProviderOperation {
@@ -22,34 +21,34 @@ public class ShadowContentProviderOperation {
 
   @HiddenApi @Implementation
   public int getType() {
-    return getFieldReflectively("mType");
+    return getFieldReflectively("mType", Integer.class);
   }
 
   public String getSelection() {
-    return getFieldReflectively("mSelection");
+    return getFieldReflectively("mSelection", String.class);
   }
   public String[] getSelectionArgs() {
-    return getFieldReflectively("mSelectionArgs");
+    return getFieldReflectively("mSelectionArgs", String[].class);
   }
 
   public ContentValues getContentValues() {
-    return getFieldReflectively("mValues");
+    return getFieldReflectively("mValues", ContentValues.class);
   }
 
   public Integer getExpectedCount() {
-    return getFieldReflectively("mExpectedCount");
+    return getFieldReflectively("mExpectedCount", Integer.class);
   }
 
   public ContentValues getValuesBackReferences() {
-    return getFieldReflectively("mValuesBackReferences");
+    return getFieldReflectively("mValuesBackReferences", ContentValues.class);
   }
 
   @SuppressWarnings("unchecked")
   public Map<Integer, Integer> getSelectionArgsBackReferences() {
-    return getFieldReflectively("mSelectionArgsBackReferences");
+    return getFieldReflectively("mSelectionArgsBackReferences", Map.class);
   }
 
-  private <T> T getFieldReflectively(String fieldName) {
-    return ReflectionHelpers.getField(realOperation, fieldName);
+  private <T> T getFieldReflectively(String fieldName, Class<T> clazz) {
+    return clazz.cast(ReflectionHelpers.getField(realOperation, fieldName));
   }
 }

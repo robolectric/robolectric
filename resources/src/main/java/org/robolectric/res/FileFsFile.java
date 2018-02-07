@@ -1,9 +1,6 @@
 package org.robolectric.res;
 
 import com.google.common.annotations.VisibleForTesting;
-import javax.annotation.Nonnull;
-import org.robolectric.util.Util;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -11,12 +8,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
+import org.robolectric.util.Util;
 
 public class FileFsFile implements FsFile {
   @VisibleForTesting
   static String FILE_SEPARATOR = File.separator;
 
-  private File canonicalFile;
   private final File file;
 
   FileFsFile(File file) {
@@ -119,12 +117,12 @@ public class FileFsFile implements FsFile {
 
     FileFsFile fsFile = (FileFsFile) o;
 
-    return getCanonicalFile().equals(fsFile.getCanonicalFile());
+    return file.equals(fsFile.file);
   }
 
   @Override
   public int hashCode() {
-    return getCanonicalFile().hashCode();
+    return file.hashCode();
   }
 
   @Override
@@ -146,27 +144,6 @@ public class FileFsFile implements FsFile {
       fsFiles[i] = Fs.newFile(files[i]);
     }
     return fsFiles;
-  }
-
-  /**
-   * Canonical file queries can be expensive, so perform them lazily. In
-   * practice, this should only happen for raw resources, AndroidManifest.xml,
-   * and project.properties.
-   */
-  private synchronized File getCanonicalFile() {
-    if (canonicalFile == null) {
-      try {
-        // Android library references in project.properties are all
-        // relative paths, so using a canonical path guarantees that
-        // there won't be duplicates.
-        this.canonicalFile = file.getCanonicalFile();
-      } catch (IOException e) {
-        // In a case where file system queries are failing, it makes
-        // sense for the test to fail.
-        throw new RuntimeException(e);
-      }
-    }
-    return canonicalFile;
   }
 
   /**

@@ -1,17 +1,16 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.SandboxConfig;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SandboxConfig(shadows={ RobolectricInternalsTest.ShadowConstructors.class })
 @RunWith(SandboxTestRunner.class)
@@ -79,7 +78,7 @@ public class RobolectricInternalsTest {
   }
 
   private static ShadowConstructors shadowOf(Constructors realObject) {
-    Object shadow = ShadowExtractor.extract(realObject);
+    Object shadow = Shadow.extract(realObject);
     assertThat(shadow).isNotNull().isInstanceOf(ShadowConstructors.class);
     return (ShadowConstructors) shadow;
   }
@@ -129,23 +128,23 @@ public class RobolectricInternalsTest {
     public Long   shadowParam33 = null;
     
     @Implementation
-    public void __constructor__() {
+    protected void __constructor__() {
       shadowConstructorCalled = true;
     }
 
     @Implementation
-    public void __constructor__(String param) {
+    protected void __constructor__(String param) {
       shadowParam11 = param;
     }
 
     @Implementation
-    public void __constructor__(String param1, Byte param2) {
+    protected void __constructor__(String param1, Byte param2) {
       shadowParam21 = param1;
       shadowParam22 = param2;
     }
 
     @Implementation
-    public void __constructor__(String param1, Byte param2, Long param3) {
+    protected void __constructor__(String param1, Byte param2, Long param3) {
       shadowParam31 = param1;
       shadowParam32 = param2;
       shadowParam33 = param3;

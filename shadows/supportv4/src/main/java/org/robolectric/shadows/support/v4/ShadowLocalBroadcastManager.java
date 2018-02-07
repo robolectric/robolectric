@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
-
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -14,10 +16,6 @@ import org.robolectric.shadows.Provider;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 @Implements(LocalBroadcastManager.class)
 public class ShadowLocalBroadcastManager {

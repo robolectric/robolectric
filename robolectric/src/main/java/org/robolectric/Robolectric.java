@@ -2,14 +2,19 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.Service;
 import android.app.IntentService;
+import android.app.Service;
 import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
-
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
+import java.util.ServiceLoader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -19,40 +24,20 @@ import org.robolectric.android.controller.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.*;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.ServiceLoader;
-
 public class Robolectric {
-  private static ShadowsAdapter shadowsAdapter = null;
-  private static Iterable<ShadowProvider> providers;
 
+  /**
+   * This method is internal and shouldn't be called by developers.
+   */
+  @Deprecated
   public static void reset() {
-    if (providers == null) {
-      providers = ServiceLoader.load(ShadowProvider.class);
-    }
-    for (ShadowProvider provider : providers) {
-      provider.reset();
-    }
-    RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setRobolectricPackageManager(null);
-    RuntimeEnvironment.setActivityThread(null);
-  }
-
-  public static ShadowsAdapter getShadowsAdapter() {
-    synchronized (ShadowsAdapter.class) {
-      if (shadowsAdapter == null) {
-        shadowsAdapter = instantiateShadowsAdapter();
-      }
-    }
-    return shadowsAdapter;
+    // No-op- is now handled in the test runner. Users should not be calling this method anyway.
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
@@ -60,7 +45,7 @@ public class Robolectric {
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass, Intent intent) {
-    return ServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass), intent);
+    return ServiceController.of(ReflectionHelpers.callConstructor(serviceClass), intent);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
@@ -72,7 +57,7 @@ public class Robolectric {
   }
 
   public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
-    return IntentServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
   }
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
@@ -96,7 +81,7 @@ public class Robolectric {
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass, Intent intent) {
-    return ActivityController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(activityClass), intent);
+    return ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
@@ -107,7 +92,13 @@ public class Robolectric {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass));
   }
 
-  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass) {
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), arguments);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass) {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass);
   }
 
@@ -115,8 +106,29 @@ public class Robolectric {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), intent);
   }
 
-  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass, Intent intent) {
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Intent intent,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), intent, arguments);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass,
+                                                                         Intent intent) {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, arguments);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass,
+                                                                         Class<? extends Activity> activityClass,
+                                                                         Intent intent,
+                                                                         Bundle arguments) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent, arguments);
   }
 
   public static <T extends BackupAgent> BackupAgentController<T> buildBackupAgent(Class<T> backupAgentClass) {
@@ -124,7 +136,7 @@ public class Robolectric {
   }
 
   public static <T extends BackupAgent> T setupBackupAgent(Class<T> backupAgentClass) {
-    return buildBackupAgent(backupAgentClass).setUp().get();
+    return buildBackupAgent(backupAgentClass).create().get();
   }
 
   /**
@@ -186,7 +198,6 @@ public class Robolectric {
     }
   }
 
-
   /**
    * Return the foreground scheduler (e.g. the UI thread scheduler).
    *
@@ -217,21 +228,5 @@ public class Robolectric {
    */
   public static void flushBackgroundThreadScheduler() {
     getBackgroundThreadScheduler().advanceToLastPostedRunnable();
-  }
-
-  private static ShadowsAdapter instantiateShadowsAdapter() {
-    ShadowsAdapter result = null;
-    for (ShadowsAdapter adapter : ServiceLoader.load(ShadowsAdapter.class)) {
-      if (result == null) {
-        result = adapter;
-      } else {
-        throw new RuntimeException("Multiple " + ShadowsAdapter.class.getCanonicalName() + "s found.  Robolectric has loaded multiple core shadow modules for some reason.");
-      }
-    }
-    if (result == null) {
-      throw new RuntimeException("No shadows modules found containing a " + ShadowsAdapter.class.getCanonicalName());
-    } else {
-      return result;
-    }
   }
 }

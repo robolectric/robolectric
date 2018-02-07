@@ -1,10 +1,9 @@
 package org.robolectric.shadows.httpclient;
 
+import java.util.List;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-
-import java.util.List;
 
 /**
  * Collection of static methods used interact with HTTP requests / responses.

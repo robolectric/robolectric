@@ -3,12 +3,11 @@ package org.robolectric.shadows;
 import android.os.Build;
 import android.system.ErrnoException;
 import android.system.StructStat;
+import java.io.File;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.io.File;
 
 @Implements(className = "libcore.io.Posix", maxSdk = Build.VERSION_CODES.N_MR1, isInAndroidSdk = false)
 public class ShadowPosix {

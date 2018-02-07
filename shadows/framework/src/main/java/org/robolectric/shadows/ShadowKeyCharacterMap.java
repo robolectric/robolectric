@@ -2,13 +2,11 @@ package org.robolectric.shadows;
 
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Implements(KeyCharacterMap.class)
 public class ShadowKeyCharacterMap {

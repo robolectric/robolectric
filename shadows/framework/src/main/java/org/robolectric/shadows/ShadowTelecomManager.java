@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
@@ -7,24 +11,16 @@ import android.os.Bundle;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
-
 import com.google.common.collect.ImmutableList;
-
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static android.os.Build.VERSION_CODES.M;
 
 @Implements(value = TelecomManager.class, minSdk = LOLLIPOP)
 public class ShadowTelecomManager {
@@ -34,8 +30,8 @@ public class ShadowTelecomManager {
 
   private PhoneAccountHandle simCallManager;
   private LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap();
-  private List<CallRecord> incomingCalls = new LinkedList<>();
-  private List<CallRecord> unknownCalls = new LinkedList<>();
+  private List<CallRecord> incomingCalls = new ArrayList<>();
+  private List<CallRecord> unknownCalls = new ArrayList<>();
   private String defaultDialerPackageName;
 
   @Implementation
@@ -69,7 +65,7 @@ public class ShadowTelecomManager {
 
   @Implementation
   public List<PhoneAccountHandle> getPhoneAccountsSupportingScheme(String uriScheme) {
-    List<PhoneAccountHandle> result = new LinkedList<>();
+    List<PhoneAccountHandle> result = new ArrayList<>();
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
       PhoneAccount phoneAccount = accounts.get(handle);
@@ -87,7 +83,7 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = M)
   public List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
-    List<PhoneAccountHandle> result = new LinkedList<>();
+    List<PhoneAccountHandle> result = new ArrayList<>();
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
       PhoneAccount phoneAccount = accounts.get(handle);
@@ -103,7 +99,7 @@ public class ShadowTelecomManager {
   public List<PhoneAccountHandle> getPhoneAccountsForPackage() {
     Context context = ReflectionHelpers.getField(realObject, "mContext");
 
-    List<PhoneAccountHandle> results = new LinkedList<>();
+    List<PhoneAccountHandle> results = new ArrayList<>();
     for (PhoneAccountHandle handle : accounts.keySet()) {
       if (handle.getComponentName().getPackageName().equals(context.getPackageName())) {
         results.add(handle);
@@ -294,7 +290,7 @@ public class ShadowTelecomManager {
     this.simCallManager = simCallManager;
   }
 
-  public class CallRecord {
+  public static class CallRecord {
     public final PhoneAccountHandle phoneAccount;
     public final Bundle bundle;
 

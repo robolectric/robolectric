@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
+import static org.junit.Assert.assertEquals;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowResultReceiverTest {
   @Test
   public void callingSend_shouldCallOverridenOnReceiveResultWithTheSameArguments() throws Exception {

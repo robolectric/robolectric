@@ -1,16 +1,15 @@
 package org.robolectric.shadows.support.v4;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.TestRunnerWithManifest;
-
-import static org.mockito.Mockito.mock;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
 
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowSwipeRefreshLayoutTest {

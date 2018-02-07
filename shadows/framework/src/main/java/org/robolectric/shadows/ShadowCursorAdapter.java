@@ -16,16 +16,15 @@
 
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.util.List;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 /**
  * @deprecated This class will be removed in Robolectric 3.5. The real

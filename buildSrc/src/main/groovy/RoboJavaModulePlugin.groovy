@@ -40,16 +40,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             test.compileClasspath += project.configurations.compileOnly
         }
 
-        def mavenArtifactName = {
-            def projNameParts = project.name.split(/\//) as List
-            if (projNameParts[0] == "shadows") {
-                projNameParts = projNameParts.drop(1)
-                return projNameParts.join("-")
-            } else {
-                return project.name
-            }
-        }()
-        ext.mavenArtifactName = mavenArtifactName
+        ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")
 
         task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
             File outDir = project.sourceSets['test'].output.resourcesDir
@@ -69,8 +60,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 events = ["failed", "skipped"]
             }
 
-            minHeapSize = "2048m"
-            maxHeapSize = "4096m"
+            minHeapSize = "1024m"
+            maxHeapSize = "3172m"
+
+            if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
+                maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
+            }
 
             def forwardedSystemProperties = System.properties
                     .findAll { k,v -> k.startsWith("robolectric.") }
@@ -97,7 +92,10 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 from sourceSets.main.allJava
             }
 
-            javadoc.failOnError = false
+            javadoc {
+                failOnError = false
+                source = sourceSets.main.allJava
+            }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {
                 classifier "javadoc"
@@ -162,8 +160,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                                 "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                         repository(url: url) {
                             authentication(
-                                    userName: System.properties["sonatype-login"],
-                                    password: System.properties["sonatype-password"]
+                                    userName: System.properties["sonatype-login"] ?: System.env['sonatypeLogin'],
+                                    password: System.properties["sonatype-password"] ?: System.env['sonatypePassword']
                             )
                         }
 

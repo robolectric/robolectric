@@ -2,11 +2,11 @@ package org.robolectric.res;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import javax.annotation.Nonnull;
-import org.robolectric.res.builder.XmlBlock;
-
 import java.io.IOException;
 import java.io.InputStream;
+import javax.annotation.Nonnull;
+import org.robolectric.res.android.ResTable_config;
+import org.robolectric.res.builder.XmlBlock;
 
 /**
  * A {@link ResourceTable} for a single package, e.g: "android" / ox01
@@ -25,6 +25,7 @@ public class PackageResourceTable implements ResourceTable {
     this.packageName = packageName;
   }
 
+  @Override
   public String getPackageName() {
     return packageName;
   }
@@ -45,17 +46,17 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   @Override
-  public TypedResource getValue(@Nonnull ResName resName, String qualifiers) {
-    return resources.get(resName, qualifiers);
+  public TypedResource getValue(@Nonnull ResName resName, ResTable_config config) {
+    return resources.get(resName, config);
   }
 
   @Override
-  public TypedResource getValue(int resId, String qualifiers) {
-    return resources.get(getResName(resId), qualifiers);
+  public TypedResource getValue(int resId, ResTable_config config) {
+    return resources.get(getResName(resId), config);
   }
 
-  @Override public XmlBlock getXml(ResName resName, String qualifiers) {
-    FileTypedResource fileTypedResource = getFileResource(resName, qualifiers);
+  @Override public XmlBlock getXml(ResName resName, ResTable_config config) {
+    FileTypedResource fileTypedResource = getFileResource(resName, config);
     if (fileTypedResource == null || !fileTypedResource.isXml()) {
       return null;
     } else {
@@ -63,8 +64,8 @@ public class PackageResourceTable implements ResourceTable {
     }
   }
 
-  @Override public InputStream getRawValue(ResName resName, String qualifiers) {
-    FileTypedResource fileTypedResource = getFileResource(resName, qualifiers);
+  @Override public InputStream getRawValue(ResName resName, ResTable_config config) {
+    FileTypedResource fileTypedResource = getFileResource(resName, config);
     if (fileTypedResource == null) {
       return null;
     } else {
@@ -77,8 +78,8 @@ public class PackageResourceTable implements ResourceTable {
     }
   }
 
-  private FileTypedResource getFileResource(ResName resName, String qualifiers) {
-    TypedResource typedResource = resources.get(resName, qualifiers);
+  private FileTypedResource getFileResource(ResName resName, ResTable_config config) {
+    TypedResource typedResource = resources.get(resName, config);
     if (!(typedResource instanceof FileTypedResource)) {
       return null;
     } else {
@@ -87,8 +88,8 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   @Override
-  public InputStream getRawValue(int resId, String qualifiers) {
-    return getRawValue(getResName(resId), qualifiers);
+  public InputStream getRawValue(int resId, ResTable_config config) {
+    return getRawValue(getResName(resId), config);
   }
 
   @Override

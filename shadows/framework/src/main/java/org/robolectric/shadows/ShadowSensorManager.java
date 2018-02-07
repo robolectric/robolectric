@@ -1,18 +1,21 @@
 package org.robolectric.shadows;
 
-import android.hardware.*;
+import static android.os.Build.VERSION_CODES.O;
+
+import android.hardware.Sensor;
+import android.hardware.SensorDirectChannel;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.MemoryFile;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import static android.os.Build.VERSION_CODES.O;
 
 @Implements(value = SensorManager.class, looseSignatures = true)
 public class ShadowSensorManager {

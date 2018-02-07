@@ -1,14 +1,13 @@
 package org.robolectric.shadows.httpclient;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class HttpEntityStub implements HttpEntity {
   @Override public boolean isRepeatable() {

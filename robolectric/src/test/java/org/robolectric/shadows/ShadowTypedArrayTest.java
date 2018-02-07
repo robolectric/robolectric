@@ -1,23 +1,22 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.res.AttributeResource;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowTypedArrayTest {
   private Context context;
 
@@ -112,7 +111,7 @@ public class ShadowTypedArrayTest {
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.keycode, "@array/greetings")
             .build(),
-        new int[]{R.attr.items});
+        new int[]{R.attr.animalStyle});
     assertNull(typedArray.getTextArray(0));
   }
 
@@ -138,16 +137,16 @@ public class ShadowTypedArrayTest {
   @Test public void hasValue_withoutValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         null,
-        new int[]{R.attr.items});
+        new int[]{R.attr.animalStyle});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 
   @Test public void hasValue_withNullValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
-            .addAttribute(R.attr.items, AttributeResource.NULL_VALUE)
+            .addAttribute(R.attr.animalStyle, AttributeResource.NULL_VALUE)
             .build(),
-        new int[]{R.attr.items});
+        new int[]{R.attr.animalStyle});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 

@@ -15,7 +15,6 @@ public class ActivityData {
   private static final String EXPORTED = "exported";
   private static final String FINISH_ON_TASK_LAUNCH = "finishOnTaskLaunch";
   private static final String HARDWARE_ACCELERATED = "hardwareAccelerated";
-  private static final String ICON = "icon";
   private static final String LABEL = "label";
   private static final String LAUNCH_MODE = "launchMode";
   private static final String MULTIPROCESS = "multiprocess";
@@ -86,7 +85,7 @@ public class ActivityData {
   }
 
   public boolean isExported() {
-    boolean defaultValue = false;
+    boolean defaultValue = !intentFilters.isEmpty();
     return getBooleanAttr(withXMLNS(EXPORTED), defaultValue);
   }
 

@@ -1,27 +1,44 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
+import java.util.Locale;
 import libcore.icu.ICU;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowICUTest {
   @Test
   public void getBestDateTimePattern_returnsReasonableValue() {
     assertThat(ICU.getBestDateTimePattern("hm", null)).isEqualTo("hm");
   }
+
+  @Test
+  public void getBestDateTimePattern_returns_jmm_US() {
+    assertThat(ICU.getBestDateTimePattern("jmm", Locale.US)).isEqualTo("h:mm a");
+  }
+
+  @Test
+  public void getBestDateTimePattern_returns_jmm_UK() {
+    assertThat(ICU.getBestDateTimePattern("jmm", Locale.UK)).isEqualTo("H:mm");
+  }
+
+  @Test
+  public void getBestDateTimePattern_returns_jmm_ptBR() {
+    assertThat(ICU.getBestDateTimePattern("jmm", new Locale("pt", "BR"))).isEqualTo("H:mm");
+  }
+
 
   @Test
   public void datePickerShouldNotCrashWhenAskingForBestDateTimePattern() {

@@ -11,7 +11,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Scheduler;
 

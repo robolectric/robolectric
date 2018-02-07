@@ -32,7 +32,8 @@ public class SdkEnvironment extends Sandbox {
       Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
       Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
       return new ResourcePath(androidRClass,
-          systemResFs.join("res"), systemResFs.join("assets"),
+          systemResFs.join("raw-res/res"),
+          systemResFs.join("raw-res/assets"),
           androidInternalRClass);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

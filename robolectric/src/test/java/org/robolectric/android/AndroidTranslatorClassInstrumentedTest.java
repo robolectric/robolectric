@@ -1,19 +1,19 @@
 package org.robolectric.android;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.NEWEST_SDK)
 public class AndroidTranslatorClassInstrumentedTest {
 
   @Test
@@ -64,7 +64,7 @@ public class AndroidTranslatorClassInstrumentedTest {
   @Implements(ClassWithPrivateConstructor.class)
   public static class ShadowClassWithPrivateConstructor {
     @Implementation
-    public int getInt() {
+    protected int getInt() {
       return 42;
     }
   }
@@ -74,12 +74,12 @@ public class AndroidTranslatorClassInstrumentedTest {
     private int color;
 
     @Implementation
-    public void setColor(int color) {
+    protected void setColor(int color) {
       this.color = color;
     }
 
     @Implementation
-    public int getColor() {
+    protected int getColor() {
       return color;
     }
   }
@@ -104,12 +104,12 @@ public class AndroidTranslatorClassInstrumentedTest {
 
     @Override
     @Implementation
-    public int getColor() {
+    protected int getColor() {
       return 10;
     }
 
     @Implementation
-    public String getColorName() {
+    protected String getColorName() {
       return "rainbow";
     }
   }

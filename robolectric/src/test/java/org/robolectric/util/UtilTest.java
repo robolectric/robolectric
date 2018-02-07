@@ -1,12 +1,11 @@
 package org.robolectric.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.net.URL;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.net.URL;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Vyacheslav Mayorov

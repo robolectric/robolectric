@@ -1,28 +1,28 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static org.robolectric.RuntimeEnvironment.castNativePtr;
+
 import android.os.Parcel;
 import android.text.TextUtils;
 import android.util.Pair;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.RuntimeEnvironment.castNativePtr;
+import java.util.Objects;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Parcel.class)
 @SuppressWarnings("unchecked")
@@ -193,6 +193,11 @@ public class ShadowParcel {
   @Implementation(minSdk = LOLLIPOP)
   public static byte[] nativeCreateByteArray(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
+  }
+
+  @Implementation(minSdk = O_MR1)
+  protected static boolean nativeReadByteArray(long nativePtr, byte[] dest, int destLen) {
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray(dest, destLen);
   }
 
   @HiddenApi
@@ -370,6 +375,20 @@ public class ShadowParcel {
         array[i] = readByte();
       }
       return array;
+    }
+
+    /**
+     * Reads a byte array from the byte buffer based on the current data position
+     */
+    public boolean readByteArray(byte[] dest, int destLen) {
+      int length = readInt();
+      if (length >= 0 && length <= dataAvailable() && length == destLen) {
+        for (int i = 0; i < length; i++) {
+          dest[i] = readByte();
+        }
+        return true;
+      }
+      return false;
     }
 
     /**

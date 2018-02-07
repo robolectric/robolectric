@@ -1,17 +1,17 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
-
-import java.util.Arrays;
-import java.util.Properties;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.robolectric.annotation.Config.DEFAULT_VALUE_INT;
+import org.robolectric.annotation.Config.Builder;
 
 @RunWith(JUnit4.class)
 public class ConfigTest {
@@ -104,6 +104,33 @@ public class ConfigTest {
   }
 
   @Test
+  public void withOverlay_withShadows_maintainsOrder() throws Exception {
+    Config.Implementation base = new Config.Builder().build();
+
+    Config withString = overlay(base, new Builder().setShadows(new Class[]{String.class}).build());
+    assertThat(withString.shadows()).containsExactly(String.class);
+
+    Config withMore = overlay(withString,
+        new Builder().setShadows(new Class[]{Map.class, String.class}).build());
+    assertThat(withMore.shadows()).containsExactly(String.class, Map.class, String.class);
+  }
+
+  @Test
+  public void shouldAppendQualifiersStartingWithPlus() throws Exception {
+    Config config = new Config.Builder().setQualifiers("w100dp").build();
+    config = overlay(config, new Config.Builder().setQualifiers("w101dp").build());
+    assertThat(config.qualifiers()).isEqualTo("w101dp");
+
+    config = overlay(config, new Config.Builder().setQualifiers("+w102dp").build());
+    config = overlay(config, new Config.Builder().setQualifiers("+w103dp").build());
+    assertThat(config.qualifiers()).isEqualTo("w101dp +w102dp +w103dp");
+
+    config = overlay(config, new Config.Builder().setQualifiers("+w104dp").build());
+    config = overlay(config, new Config.Builder().setQualifiers("w105dp").build());
+    assertThat(config.qualifiers()).isEqualTo("w105dp");
+  }
+
+  @Test
   public void sdksFromProperties() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("sdk", "1, 2, ALL_SDKS, TARGET_SDK, OLDEST_SDK, NEWEST_SDK, 666");
@@ -155,7 +182,7 @@ public class ConfigTest {
   }
 
   @Nonnull
-  private Config overlay(Config.Implementation base, Config.Implementation build) {
+  private Config overlay(Config base, Config.Implementation build) {
     return new Config.Builder(base).overlay(build).build();
   }
 }

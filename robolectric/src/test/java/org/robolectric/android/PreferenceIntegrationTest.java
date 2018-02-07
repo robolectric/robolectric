@@ -1,20 +1,27 @@
 package org.robolectric.android;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.*;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceScreen;
+import android.preference.RingtonePreference;
 import android.util.MutableBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class PreferenceIntegrationTest {
 
   @Test
@@ -112,17 +119,17 @@ public class PreferenceIntegrationTest {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference preference = screen.findPreference("preference");
 
-    final MutableBoolean clicked = new MutableBoolean(false);
+    boolean[] holder = new boolean[1];
     preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
       @Override
       public boolean onPreferenceClick(Preference preference) {
-        clicked.value = true;
+        holder[0] = true;
         return true;
       }
     });
 
     shadowOf(preference).click();
-    assertThat(clicked.value).isTrue();
+    assertThat(holder[0]).isTrue();
   }
 
   private PreferenceScreen inflatePreferenceActivity() {
@@ -130,8 +137,8 @@ public class PreferenceIntegrationTest {
     return activity.getPreferenceScreen();
   }
 
+  @SuppressWarnings("FragmentInjection")
   private static class TestPreferenceActivity extends PreferenceActivity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);

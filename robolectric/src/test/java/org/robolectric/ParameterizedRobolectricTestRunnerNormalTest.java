@@ -1,13 +1,12 @@
 package org.robolectric;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 /**
  * Parameterized tests using basic java classes.

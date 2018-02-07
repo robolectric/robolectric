@@ -1,15 +1,14 @@
 package org.robolectric.res.builder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import javax.annotation.Nullable;
-import org.robolectric.res.FsFile;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
+import org.robolectric.res.FsFile;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * An XML block is a parsed representation of a resource XML file. Similar in nature

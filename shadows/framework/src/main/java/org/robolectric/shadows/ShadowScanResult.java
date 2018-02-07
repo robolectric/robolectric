@@ -23,7 +23,7 @@ public class ShadowScanResult {
 
   @Override @Implementation
   public String toString() {
-    return new StringBuffer()
+    return new StringBuilder()
         .append("SSID: ").append(valueOrNone(realObject.SSID))
         .append(", BSSID: ").append(valueOrNone(realObject.BSSID))
         .append(", capabilities: ").append(valueOrNone(realObject.capabilities))

@@ -1,19 +1,19 @@
 package org.robolectric.android;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.Intent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
-import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.ShadowPackageManager.IntentComparator;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class DefaultPackageManagerIntentComparatorTest {
 
   @Test
   public void validCompareResult() {
-    final DefaultPackageManager.IntentComparator intentComparator = new DefaultPackageManager.IntentComparator();
+    final IntentComparator intentComparator = new IntentComparator();
 
     assertThat(intentComparator.compare(null, null)).isEqualTo(0);
     assertThat(intentComparator.compare(new Intent(), null)).isEqualTo(1);
@@ -27,7 +27,7 @@ public class DefaultPackageManagerIntentComparatorTest {
 
   @Test
   public void canSustainConcurrentModification() {
-    final DefaultPackageManager.IntentComparator intentComparator = new DefaultPackageManager.IntentComparator();
+    final IntentComparator intentComparator = new IntentComparator();
 
     Intent intent1 = new Intent("actionstring0");
     Intent intent2 = new Intent("actionstring1");

@@ -1,21 +1,20 @@
 package org.robolectric.internal;
 
+import java.util.ServiceLoader;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestLifecycle;
+import org.robolectric.android.fakes.RoboCharsets;
+import org.robolectric.android.fakes.RoboExtendedResponseCache;
+import org.robolectric.android.fakes.RoboResponseSource;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
-import org.robolectric.android.fakes.RoboCharsets;
-import org.robolectric.android.fakes.RoboExtendedResponseCache;
-import org.robolectric.android.fakes.RoboResponseSource;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
-
-import java.util.ServiceLoader;
 
 public class AndroidConfigurer {
   public static void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
@@ -72,10 +71,13 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("kotlin.")
         .doNotAcquirePackage("com.almworks.sqlite4java"); // Fix #958: SQLite native library must be loaded once.
 
-    builder.addClassNameTranslation("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
+    builder
+        .addClassNameTranslation(
+            "java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
         .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
         .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName())
-        .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName());
+        .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
+        .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName());
 
     // Instrumenting these classes causes a weird failure.
     builder.doNotInstrumentClass("android.R")
@@ -89,6 +91,7 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
+    builder.doNotInstrumentPackage("android.support.test");
 
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
       for (String packagePrefix : provider.getProvidedPackageNames()) {

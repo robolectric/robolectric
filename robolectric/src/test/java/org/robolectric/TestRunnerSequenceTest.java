@@ -1,11 +1,19 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.robolectric.util.TestUtil.resourceFile;
+
 import android.app.Application;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.internal.TextListener;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
@@ -19,18 +27,6 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {
@@ -47,9 +43,6 @@ public class TestRunnerSequenceTest {
     assertNoFailures(run(new Runner(SimpleTest.class)));
     assertThat(StateHolder.transcript).containsExactly(
         "configureShadows",
-//                "resetStaticState", // no longer an overridable hook
-//                "setupApplicationState", // no longer an overridable hook
-        "createApplication",
         "application.onCreate",
         "beforeTest",
         "application.beforeTest",
@@ -76,7 +69,6 @@ public class TestRunnerSequenceTest {
     }));
     assertThat(StateHolder.transcript).containsExactly(
         "configureShadows",
-        "createApplication",
         "application.onCreate",
         "beforeTest",
         "application.beforeTest",
@@ -109,6 +101,7 @@ public class TestRunnerSequenceTest {
     assertThat(methods).isNotEmpty();
   }
 
+  @Config(application = TestRunnerSequenceTest.MyApplication.class)
   public static class SimpleTest {
     @Test public void shouldDoNothingMuch() throws Exception {
       StateHolder.transcript.add("TEST!");
@@ -168,10 +161,6 @@ public class TestRunnerSequenceTest {
 
   @DoNotInstrument
   public static class MyTestLifecycle extends DefaultTestLifecycle {
-    @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
-      StateHolder.transcript.add("createApplication");
-      return new MyApplication();
-    }
 
     @Override public void beforeTest(Method method) {
       StateHolder.transcript.add("beforeTest");
@@ -187,27 +176,27 @@ public class TestRunnerSequenceTest {
       StateHolder.transcript.add("afterTest");
       super.afterTest(method);
     }
+  }
 
-    private static class MyApplication extends Application implements TestLifecycleApplication {
-      @Override public void onCreate() {
-        StateHolder.transcript.add("application.onCreate");
-      }
+  public static class MyApplication extends Application implements TestLifecycleApplication {
+    @Override public void onCreate() {
+      StateHolder.transcript.add("application.onCreate");
+    }
 
-      @Override public void beforeTest(Method method) {
-        StateHolder.transcript.add("application.beforeTest");
-      }
+    @Override public void beforeTest(Method method) {
+      StateHolder.transcript.add("application.beforeTest");
+    }
 
-      @Override public void prepareTest(Object test) {
-        StateHolder.transcript.add("application.prepareTest");
-      }
+    @Override public void prepareTest(Object test) {
+      StateHolder.transcript.add("application.prepareTest");
+    }
 
-      @Override public void afterTest(Method method) {
-        StateHolder.transcript.add("application.afterTest");
-      }
+    @Override public void afterTest(Method method) {
+      StateHolder.transcript.add("application.afterTest");
+    }
 
-      @Override public void onTerminate() {
-        StateHolder.transcript.add("application.onTerminate");
-      }
+    @Override public void onTerminate() {
+      StateHolder.transcript.add("application.onTerminate");
     }
   }
 }

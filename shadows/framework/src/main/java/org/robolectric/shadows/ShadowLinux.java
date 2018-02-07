@@ -3,11 +3,10 @@ package org.robolectric.shadows;
 import android.os.Build;
 import android.system.ErrnoException;
 import android.system.StructStat;
+import java.io.File;
 import libcore.io.Linux;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import java.io.File;
 
 @Implements(value = Linux.class, minSdk = Build.VERSION_CODES.O, isInAndroidSdk = false)
 public class ShadowLinux {

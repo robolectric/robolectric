@@ -1,5 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -8,29 +18,18 @@ import android.content.DialogInterface;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
 import org.robolectric.android.CustomView;
+import org.robolectric.annotation.Config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowAlertDialogTest {
 
   @Test
@@ -200,7 +199,7 @@ public class ShadowAlertDialogTest {
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
     assertThat(shadowAlertDialog.getTitle().toString()).isEqualTo("title");
     assertThat(shadowAlertDialog.getItems().length).isEqualTo(2);
-    assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
+    assertThat(shadowAlertDialog.getItems()[0]).isEqualTo("Aloha");
     assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog())).isSameAs(shadowAlertDialog);
     assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
   }
@@ -225,8 +224,8 @@ public class ShadowAlertDialogTest {
 
     assertTrue(alert.isShowing());
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-    assertEquals(shadowAlertDialog.getAdapter().getCount(), 3);
-    assertEquals(shadowAlertDialog.getAdapter().getItem(0), 99);
+    assertThat(shadowAlertDialog.getAdapter().getCount()).isEqualTo(3);
+    assertThat(shadowAlertDialog.getAdapter().getItem(0)).isEqualTo(99);
   }
 
   @Test
@@ -317,6 +316,7 @@ public class ShadowAlertDialogTest {
   private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
     private final ArrayList<String> transcript = new ArrayList<>();
 
+    @Override
     public void onClick(DialogInterface dialog, int item) {
       transcript.add("clicked on " + item);
     }

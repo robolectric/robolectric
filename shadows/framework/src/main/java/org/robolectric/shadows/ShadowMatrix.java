@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,11 +12,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Matrix.class)
@@ -37,6 +35,7 @@ public class ShadowMatrix {
 
   private SimpleMatrix mMatrix = SimpleMatrix.IDENTITY;
 
+  @Implementation
   public void __constructor__(Matrix src) {
     set(src);
   }
@@ -273,7 +272,7 @@ public class ShadowMatrix {
     final SimpleMatrix inverseMatrix = mMatrix.invert();
     if (inverseMatrix != null) {
       if (inverse != null) {
-        final ShadowMatrix shadowInverse = (ShadowMatrix) ShadowExtractor.extract(inverse);
+        final ShadowMatrix shadowInverse = Shadow.extract(inverse);
         shadowInverse.mMatrix = inverseMatrix;
       }
       return true;
@@ -302,6 +301,33 @@ public class ShadowMatrix {
   }
 
   @Implementation
+  protected void mapPoints(float[] dst, int dstIndex, float[] src, int srcIndex, int pointCount) {
+    for (int i = 0; i < pointCount; i++) {
+      final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
+      dst[dstIndex + i * 2] = mapped.x;
+      dst[dstIndex + i * 2 + 1] = mapped.y;
+    }
+  }
+
+  @Implementation
+  protected void mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount) {
+    final float transX = mMatrix.mValues[Matrix.MTRANS_X];
+    final float transY = mMatrix.mValues[Matrix.MTRANS_Y];
+
+    mMatrix.mValues[Matrix.MTRANS_X] = 0;
+    mMatrix.mValues[Matrix.MTRANS_Y] = 0;
+
+    for (int i = 0; i < vectorCount; i++) {
+      final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
+      dst[dstIndex + i * 2] = mapped.x;
+      dst[dstIndex + i * 2 + 1] = mapped.y;
+    }
+
+    mMatrix.mValues[Matrix.MTRANS_X] = transX;
+    mMatrix.mValues[Matrix.MTRANS_Y] = transY;
+  }
+
+  @Implementation
   @Override
   public boolean equals(Object obj) {
     final float[] values;
@@ -323,7 +349,7 @@ public class ShadowMatrix {
   }
 
   private static SimpleMatrix getSimpleMatrix(Matrix matrix) {
-    final ShadowMatrix otherMatrix = (ShadowMatrix) ShadowExtractor.extract(matrix);
+    final ShadowMatrix otherMatrix = Shadow.extract(matrix);
     return otherMatrix.mMatrix;
   }
 
@@ -369,7 +395,7 @@ public class ShadowMatrix {
       final float m01 = mValues[1];
       final float m10 = mValues[3];
       final float m11 = mValues[4];
-      return m00 == 0 && m11 == 0 && m01 != 0 && m10 != 0 || m00 != 0 && m11 != 0 && m01 == 0 && m10 == 0;
+      return (m00 == 0 && m11 == 0 && m01 != 0 && m10 != 0) || (m00 != 0 && m11 != 0 && m01 == 0 && m10 == 0);
     }
 
     public void getValues(float[] values) {
@@ -491,9 +517,10 @@ public class ShadowMatrix {
 
     @Override
     public boolean equals(Object o) {
-      return this == o || o instanceof SimpleMatrix && equals((SimpleMatrix) o);
+      return this == o || (o instanceof SimpleMatrix && equals((SimpleMatrix) o));
     }
 
+    @SuppressWarnings("NonOverridingEquals")
     public boolean equals(SimpleMatrix matrix) {
       if (matrix == null) {
         return false;

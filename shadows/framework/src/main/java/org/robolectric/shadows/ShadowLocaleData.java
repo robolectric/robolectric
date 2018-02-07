@@ -1,19 +1,18 @@
 package org.robolectric.shadows;
 
-import java.util.Locale;
-
-import libcore.icu.LocaleData;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
+import java.util.Locale;
+import libcore.icu.LocaleData;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Robolectric only supports en_US regardless of the default locale set in the JVM.
@@ -93,7 +92,7 @@ public class ShadowLocaleData {
       ReflectionHelpers.setField(localeData, "percent", '%');
     }
 
-    localeData.perMill = 0x2030;
+      ReflectionHelpers.setField(localeData, "perMill", '‰');
     localeData.monetarySeparator = '.';
 
     if (getApiLevel() >= LOLLIPOP) {

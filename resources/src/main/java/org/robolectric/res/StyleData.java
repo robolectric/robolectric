@@ -1,10 +1,10 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Strings;
-
+import com.google.common.base.Strings;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class StyleData implements Style {
@@ -79,9 +79,9 @@ public class StyleData implements Style {
     }
     StyleData other = (StyleData) obj;
 
-    return Strings.equals(packageName, other.packageName)
-        && Strings.equals(name, other.name)
-        && Strings.equals(parent, other.parent)
+    return Objects.equals(packageName, other.packageName)
+        && Objects.equals(name, other.name)
+        && Objects.equals(parent, other.parent)
         && items.size() == other.items.size();
   }
 

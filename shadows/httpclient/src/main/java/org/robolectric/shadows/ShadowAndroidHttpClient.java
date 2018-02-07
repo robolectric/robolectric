@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.net.http.AndroidHttpClient;
+import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -17,8 +18,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.io.IOException;
 
 @Implements(AndroidHttpClient.class)
 public class ShadowAndroidHttpClient {

@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.net.wifi.p2p.WifiP2pGroup;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 @Implements(WifiP2pGroup.class)
 public class ShadowWifiP2pGroup {

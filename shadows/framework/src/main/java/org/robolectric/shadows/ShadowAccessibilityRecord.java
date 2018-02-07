@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.os.Parcelable;
 import android.view.View;
 import android.view.accessibility.AccessibilityRecord;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

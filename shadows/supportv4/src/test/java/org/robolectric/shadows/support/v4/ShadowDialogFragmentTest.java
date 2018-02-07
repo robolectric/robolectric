@@ -1,5 +1,11 @@
 package org.robolectric.shadows.support.v4;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
@@ -10,23 +16,16 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowDialogFragmentTest {
@@ -178,6 +177,6 @@ public class ShadowDialogFragmentTest {
   }
 
   private static ShadowDialog shadowOf(Dialog dialog) {
-    return (ShadowDialog) ShadowExtractor.extract(dialog);
+    return (ShadowDialog) Shadow.extract(dialog);
   }
 }

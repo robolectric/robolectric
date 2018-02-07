@@ -1,6 +1,17 @@
 package org.robolectric.shadows;
 
-import android.content.res.*;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.ResourcesImpl;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -10,17 +21,6 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.res.*;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,20 +29,28 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.res.Plural;
+import org.robolectric.res.PluralRules;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceTable;
+import org.robolectric.res.TypedResource;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(Resources.class)
 public class ShadowResources {
   private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
 
-  private float density = 1.0f;
-  private DisplayMetrics displayMetrics;
-  private Display display;
   @RealObject Resources realResources;
 
   @Resetter
@@ -102,7 +110,7 @@ public class ShadowResources {
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
 
-    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, RuntimeEnvironment.getQualifiers());
+    TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, shadowAssetManager.config);
     if (typedResource != null && typedResource instanceof PluralRules) {
       PluralRules pluralRules = (PluralRules) typedResource;
       Plural plural = pluralRules.find(quantity);
@@ -113,7 +121,7 @@ public class ShadowResources {
 
       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
           new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
-          RuntimeEnvironment.getQualifiers(), resId);
+          shadowAssetManager.config, resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
       return null;
@@ -122,8 +130,9 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ResourceTable resourceTable = shadowOf(realResources.getAssets()).getResourceTable();
-    InputStream inputStream = resourceTable.getRawValue(id, RuntimeEnvironment.getQualifiers());
+    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+    InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
     if (inputStream == null) {
       throw newNotFoundException(id);
     } else {
@@ -173,36 +182,29 @@ public class ShadowResources {
     }
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setDensity(float density) {
-    this.density = density;
-    if (displayMetrics != null) {
-      displayMetrics.density = density;
-    }
+    realResources.getDisplayMetrics().density = density;
   }
 
+  /**
+   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setScaledDensity(float scaledDensity) {
-    if (displayMetrics != null) {
-      displayMetrics.scaledDensity = scaledDensity;
-    }
+    realResources.getDisplayMetrics().scaledDensity = scaledDensity;
   }
 
+  /**
+   * @deprecated Set up display using {@link Config#qualifiers()} instead.
+   */
+  @Deprecated
   public void setDisplay(Display display) {
-    this.display = display;
-    displayMetrics = null;
-  }
-
-  @Implementation
-  public DisplayMetrics getDisplayMetrics() {
-    if (displayMetrics == null) {
-      if (display == null) {
-        display = ReflectionHelpers.callConstructor(Display.class);
-      }
-
-      displayMetrics = new DisplayMetrics();
-      display.getMetrics(displayMetrics);
-    }
-    displayMetrics.density = this.density;
-    return displayMetrics;
+    DisplayMetrics displayMetrics = realResources.getDisplayMetrics();
+    display.getMetrics(displayMetrics);
   }
 
   @HiddenApi @Implementation
@@ -223,7 +225,7 @@ public class ShadowResources {
     long getNativePtr() {
       if (RuntimeEnvironment.getApiLevel() >= N) {
         ResourcesImpl.ThemeImpl themeImpl = ReflectionHelpers.getField(realTheme, "mThemeImpl");
-        return ((ShadowResourcesImpl.ShadowThemeImpl) ShadowExtractor.extract(themeImpl)).getNativePtr();
+        return ((ShadowResourcesImpl.ShadowThemeImpl) Shadow.extract(themeImpl)).getNativePtr();
       } else {
         return ((Number) ReflectionHelpers.getField(realTheme, "mTheme")).longValue();
       }
@@ -271,11 +273,11 @@ public class ShadowResources {
 
   static void setCreatedFromResId(Resources resources, int id, Drawable drawable) {
     // todo: this kinda sucks, find some better way...
-    if (drawable != null) {
+    if (drawable != null && Shadow.extract(drawable) instanceof ShadowDrawable) {
       shadowOf(drawable).createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        if (bitmap != null) {
+        if (bitmap != null  && Shadow.extract(bitmap) instanceof ShadowBitmap) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
             shadowBitmap.setCreatedFromResId(id, shadowOf(resources.getAssets()).getResourceName(id));
@@ -291,9 +293,10 @@ public class ShadowResources {
 
     private String message;
 
-    public void __constructor__() {
-    }
+    @Implementation
+    public void __constructor__() {}
 
+    @Implementation
     public void __constructor__(String name) {
       this.message = name;
     }

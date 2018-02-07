@@ -9,15 +9,14 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.DuplicateClickableBoundsViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.TouchTargetSizeViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.robolectric.annotation.AccessibilityChecks;
-import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.robolectric.annotation.AccessibilityChecks;
+import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
 
 /**
  * Utility class for checking Views for accessibility.

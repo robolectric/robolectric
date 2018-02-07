@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import android.net.wifi.WifiInfo;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
-
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
-  public static void __staticInitializer__() {
-  }
+  @Implementation
+  public static void __staticInitializer__() {}
 
   private String macAddress = "02:00:00:00:00:00"; // WifiInfo.DEFAULT_MAC_ADDRESS (@hide)
   private String ssid = "<unknown ssid>"; // WifiSsid.NONE (@hide)

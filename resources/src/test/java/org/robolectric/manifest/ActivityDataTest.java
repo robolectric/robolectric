@@ -1,13 +1,12 @@
 package org.robolectric.manifest;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JUnit4.class)
 public class ActivityDataTest {

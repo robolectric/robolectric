@@ -1,18 +1,18 @@
 package org.robolectric.fakes;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.graphics.drawable.Drawable;
+import android.view.MenuItem;
 import android.view.View;
 import org.junit.Before;
 import org.junit.Test;
-import android.view.MenuItem;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class RoboMenuItemTest {
   private MenuItem item;
   private TestOnActionExpandListener listener;
@@ -162,7 +162,7 @@ public class RoboMenuItemTest {
     assertThat(item.setOnActionExpandListener(listener)).isSameAs(item);
   }
 
-  class TestOnActionExpandListener implements MenuItem.OnActionExpandListener {
+  static class TestOnActionExpandListener implements MenuItem.OnActionExpandListener {
     private boolean expanded = false;
 
     @Override

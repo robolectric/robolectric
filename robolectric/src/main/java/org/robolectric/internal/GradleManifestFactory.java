@@ -1,14 +1,14 @@
 package org.robolectric.internal;
 
-import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FileFsFile;
-import org.robolectric.res.FsFile;
-import org.robolectric.util.Logger;
-import org.robolectric.util.ReflectionHelpers;
-
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.robolectric.annotation.Config;
+import org.robolectric.res.FileFsFile;
+import org.robolectric.util.Logger;
+import org.robolectric.util.ReflectionHelpers;
 
 public class GradleManifestFactory implements ManifestFactory {
   @Override
@@ -69,22 +69,22 @@ public class GradleManifestFactory implements ManifestFactory {
     return new ManifestIdentifier(manifest, res, assets, packageName, null);
   }
 
-  @Override
-  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
-    FsFile manifestFile = manifestIdentifier.getManifestFile();
-    FsFile resDir = manifestIdentifier.getResDir();
-    FsFile assetDir = manifestIdentifier.getAssetDir();
-    final String packageName = manifestIdentifier.getPackageName();
-
-    Logger.debug("Robolectric assets directory: " + assetDir.getPath());
-    Logger.debug("   Robolectric res directory: " + resDir.getPath());
-    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
-    Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
-  }
-
   private static String getBuildOutputDir(Config config) {
-    return config.buildDir() + File.separator + "intermediates";
+    Path buildDir = Paths.get(config.buildDir(), "intermediates");
+    if (!Files.exists(buildDir)) {
+      // By default build dir is a relative path. However, the build dir lookup may fail if the
+      // working directory of the test configuration in Android Studio is not set to the module
+      // root directory (e.g it is set to the entire project root directory). Attempt to locate it
+      // relative to the constants class, which is generated in the build output directory.
+      String moduleRoot = config.constants().getResource("").toString().replace("file:", "");
+      int idx = moduleRoot.lastIndexOf(File.separator + "intermediates");
+      if (idx > 0) {
+        buildDir = Paths.get(moduleRoot.substring(0, idx), "intermediates");
+      } else {
+        Logger.error("Failed to locate build dir");
+      }
+    }
+    return buildDir.toString();
   }
 
   private static String getType(Config config) {

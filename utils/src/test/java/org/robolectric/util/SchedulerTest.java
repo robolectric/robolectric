@@ -1,16 +1,17 @@
 package org.robolectric.util;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
+import static org.robolectric.util.Scheduler.IdleState.PAUSED;
+import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.Scheduler.IdleState.*;
 
 @RunWith(JUnit4.class)
 public class SchedulerTest {

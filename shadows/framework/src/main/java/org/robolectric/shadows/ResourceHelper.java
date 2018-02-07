@@ -17,24 +17,24 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.ResName;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.res.ResName;
 
 /**
  * Helper class to provide various conversion method used in handling android resources.
  */
 public final class ResourceHelper {
 
-  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
+  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]*(?:\\.[0-9]+)?)(.*)");
   private final static float[] sFloatOut = new float[1];
 
   private final static TypedValue mValue = new TypedValue();
 
   /**
    * Returns the color value represented by the given string value
+   *
    * @param value the color value
    * @return the color as an int
    * @throws NumberFormatException if the conversion failed.
@@ -83,6 +83,29 @@ public final class ResourceHelper {
     }
 
     throw new NumberFormatException();
+  }
+
+  /**
+   * Returns the TypedValue color type represented by the given string value
+   *
+   * @param value the color value
+   * @return the color as an int. For backwards compatibility, will return a default of ARGB8 if
+   *   value format is unrecognized.
+   */
+  public static int getColorType(String value) {
+    if (value != null && value.startsWith("#")) {
+      switch (value.length()) {
+        case 4:
+          return TypedValue.TYPE_INT_COLOR_RGB4;
+        case 5:
+          return TypedValue.TYPE_INT_COLOR_ARGB4;
+        case 7:
+          return TypedValue.TYPE_INT_COLOR_RGB8;
+        case 9:
+          return TypedValue.TYPE_INT_COLOR_ARGB8;
+      }
+    }
+    return TypedValue.TYPE_INT_COLOR_ARGB8;
   }
 
   public static int getInternalResourceId(String idName) {

@@ -1,19 +1,18 @@
 package org.robolectric.shadows;
 
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.PopupMenu;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.PopupMenu;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowPopupMenuTest {
 
   private PopupMenu popupMenu;

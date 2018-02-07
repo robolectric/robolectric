@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
 import android.content.ContentResolver;
 import android.provider.Settings;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
@@ -114,7 +113,7 @@ public class ShadowSettings {
     private static Map<String, Object> get(ContentResolver cr) {
       Map<String, Object> map = dataMap.get(cr);
       if (map == null) {
-        map = new HashMap<String, Object>();
+        map = new HashMap<>();
         dataMap.put(cr, map);
       }
       return map;
@@ -153,6 +152,6 @@ public class ShadowSettings {
    * @param use24HourTimeFormat new status for the time setting
    */
   public static void set24HourTimeFormat(boolean use24HourTimeFormat) {
-    Settings.System.putInt(RuntimeEnvironment.application.getContentResolver(), Settings.System.TIME_12_24, use24HourTimeFormat ? 24 : 12);
+    Settings.System.putString(RuntimeEnvironment.application.getContentResolver(), Settings.System.TIME_12_24, use24HourTimeFormat ? "24" : "12");
   }
 }

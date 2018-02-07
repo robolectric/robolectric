@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
 import com.android.internal.util.VirtualRefBasePtr;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = VirtualRefBasePtr.class, isInAndroidSdk = false)
 public class ShadowVirtualRefBasePtr {
@@ -18,8 +17,8 @@ public class ShadowVirtualRefBasePtr {
     return nativePtr;
   }
 
-  synchronized public static <T> T get(long nativePtr) {
-    return (T) POINTERS.get(nativePtr).nativeThing;
+  synchronized public static <T> T get(long nativePtr, Class<T> clazz) {
+    return clazz.cast(POINTERS.get(nativePtr).nativeThing);
   }
 
   @Implementation

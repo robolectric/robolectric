@@ -28,6 +28,13 @@
  */
 package org.robolectric.shadows.httpclient;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
@@ -84,14 +91,6 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpProcessor;
 import org.apache.http.protocol.HttpRequestExecutor;
-
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Default implementation of {@link RequestDirector}.

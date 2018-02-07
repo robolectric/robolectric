@@ -1,25 +1,28 @@
 package org.robolectric.shadows;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationChannelGroup;
-import android.app.NotificationManager;
-import android.os.Build;
-import android.service.notification.StatusBarNotification;
-import android.content.Context;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-
+import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
+import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationChannelGroup;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+import android.service.notification.StatusBarNotification;
+import com.google.common.collect.ImmutableList;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
 public class ShadowNotificationManagerTest {
   private NotificationManager notificationManager;
   private Notification notification1 = new Notification();
@@ -27,6 +30,16 @@ public class ShadowNotificationManagerTest {
 
   @Before public void setUp() {
     notificationManager = (NotificationManager) RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void getCurrentInterruptionFilter() {
+    // Sensible default
+    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_ALL);
+
+    notificationManager.setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY);
+    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_PRIORITY);
   }
 
   @Test
@@ -50,6 +63,70 @@ public class ShadowNotificationManagerTest {
     NotificationChannelGroup group = (NotificationChannelGroup)shadowOf(notificationManager)
         .getNotificationChannelGroup("id");
     assertThat(group.getName()).isEqualTo("name");
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannels() {
+    NotificationChannel channel1 = new NotificationChannel("id", "name", 1);
+    NotificationChannel channel2 = new NotificationChannel("id2", "name2", 1);
+
+    notificationManager.createNotificationChannels(ImmutableList.of(channel1, channel2));
+
+    assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(2);
+    NotificationChannel channel =
+        (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
+    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getImportance()).isEqualTo(1);
+    channel = (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id2");
+    assertThat(channel.getName()).isEqualTo("name2");
+    assertThat(channel.getImportance()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void deleteNotificationChannel() {
+    final String channelId = "channelId";
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
+    notificationManager.createNotificationChannel(new NotificationChannel(channelId, "name", 1));
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
+    notificationManager.deleteNotificationChannel(channelId);
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isTrue();
+    assertThat(notificationManager.getNotificationChannel(channelId)).isNull();
+    // Per documentation, recreating a deleted channel should have the same settings as the old
+    // deleted channel.
+    notificationManager.createNotificationChannel(
+        new NotificationChannel(channelId, "otherName", 2));
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
+    NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
+    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getImportance()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void deleteNotificationChannelGroup() {
+    final String channelId = "channelId";
+    final String channelGroupId = "channelGroupId";
+    notificationManager.createNotificationChannelGroup(
+        new NotificationChannelGroup(channelGroupId, "groupName"));
+    NotificationChannel channel = new NotificationChannel(channelId, "channelName", 1);
+    channel.setGroup(channelGroupId);
+    notificationManager.createNotificationChannel(channel);
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
+    notificationManager.deleteNotificationChannelGroup(channelGroupId);
+    assertThat(shadowOf(notificationManager).getNotificationChannelGroup(channelGroupId)).isNull();
+    // Per documentation, deleting a channel group also deletes all associated channels.
+    assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void areNotificationsEnabled() {
+    shadowOf(notificationManager).setNotificationsEnabled(true);
+    assertThat(notificationManager.areNotificationsEnabled()).isTrue();
+    shadowOf(notificationManager).setNotificationsEnabled(false);
+    assertThat(notificationManager.areNotificationsEnabled()).isFalse();
   }
 
   @Test

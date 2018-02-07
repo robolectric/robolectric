@@ -1,5 +1,8 @@
 package org.robolectric.android;
 
+import static org.mockito.Mockito.mock;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.graphics.Rect;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -16,9 +19,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
 import org.robolectric.util.TestRunnerWithManifest;
-
-import static org.mockito.Mockito.mock;
-import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Tests for accessibility checking. The checking relies on the Accessibility Test Framework for

@@ -1,31 +1,25 @@
 package org.robolectric.shadows;
 
-import android.content.IIntentSender;
-import android.content.IntentSender;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageInstaller;
-import android.os.Build;
-import android.os.Handler;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
-
-import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
-
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.content.IIntentSender;
+import android.content.IntentSender;
+import android.content.pm.PackageInstaller;
+import android.os.Handler;
+import java.io.OutputStream;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+
+@RunWith(RobolectricTestRunner.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowPackageInstallerTest {
 

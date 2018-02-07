@@ -1,45 +1,43 @@
 package org.robolectric.shadows;
 
-import android.os.OperationCanceledException;
+import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.CancellationSignal;
-
+import android.os.OperationCanceledException;
 import com.google.common.io.Files;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.res.FileFsFile;
-import org.robolectric.util.TempDirectory;
-import org.robolectric.util.TestUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.res.FileFsFile;
+import org.robolectric.util.TempDirectory;
 
-import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
     private List<SQLiteDatabase> openDatabases = new ArrayList<>();
     private static final String ANY_VALID_SQL = "SELECT 1";
+    private File databasePath;
 
     @Before
     public void setUp() throws Exception {
-        final File databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
+        databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
         databasePath.getParentFile().mkdirs();
 
         database = openOrCreateDatabase(databasePath);
@@ -612,18 +610,18 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() throws Exception {
-        File testDbOrig = ((FileFsFile) TestUtil.resourceFile("sqlite-db-dump.sql")).getFile();
-        File testDb = writableCopyOf(testDbOrig);
-        assertThat(testDb.exists()).isTrue();
-        SQLiteDatabase db = SQLiteDatabase.openDatabase(testDb.getAbsolutePath(), null, OPEN_READWRITE);
-        Cursor c = db.rawQuery("select * from test", null);
+
+        database.close();
+
+        SQLiteDatabase db = SQLiteDatabase.openDatabase(databasePath.getAbsolutePath(), null, OPEN_READWRITE);
+        Cursor c = db.rawQuery("select * from rawtable", null);
         assertThat(c).isNotNull();
         assertThat(c.getCount()).isEqualTo(2);
         assertThat(db.isOpen()).isTrue();
         db.close();
         assertThat(db.isOpen()).isFalse();
 
-        SQLiteDatabase reopened = SQLiteDatabase.openDatabase(testDb.getAbsolutePath(), null, OPEN_READWRITE);
+        SQLiteDatabase reopened = SQLiteDatabase.openDatabase(databasePath.getAbsolutePath(), null, OPEN_READWRITE);
         assertThat(reopened).isNotSameAs(db);
         assertThat(reopened.isOpen()).isTrue();
     }
@@ -921,17 +919,10 @@ public class SQLiteDatabaseTest {
         Cursor data = database.query("table_name", new String[]{"first_column"}, null, null, null, null, null);
         assertThat(data.getCount()).isEqualTo(1);
         data.moveToFirst();
-        assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes());
+        assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes(UTF_8));
     }
 
     /////////////////////
-
-    private File writableCopyOf(File testDbOrig) throws IOException {
-        Path tempDir = TempDirectory.create();
-        File testDb = tempDir.resolve("sqlite-db-dump.sql").toFile();
-        Files.copy(testDbOrig, testDb);
-        return testDb;
-    }
 
     private SQLiteDatabase openOrCreateDatabase(String name) {
         return openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath(name));

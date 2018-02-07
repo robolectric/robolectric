@@ -15,10 +15,8 @@ import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -28,7 +26,9 @@ public class ShadowContentProviderClient {
   private boolean released;
   private ContentProvider provider;
 
-  public void __constructor__(ContentResolver contentResolver, IContentProvider contentProvider, boolean stable) {
+  @Implementation
+  public void __constructor__(
+      ContentResolver contentResolver, IContentProvider contentProvider, boolean stable) {
     this.stable = stable;
   }
 

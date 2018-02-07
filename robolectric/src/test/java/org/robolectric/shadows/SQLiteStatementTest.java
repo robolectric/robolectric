@@ -1,21 +1,21 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
+import java.io.File;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 
-import java.io.File;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class SQLiteStatementTest {
   private SQLiteDatabase database;
 
@@ -151,6 +151,7 @@ public class SQLiteStatementTest {
     insertStatement.close();
     try {
       insertStatement.executeInsert();
+      fail();
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalStateException.class);
     }

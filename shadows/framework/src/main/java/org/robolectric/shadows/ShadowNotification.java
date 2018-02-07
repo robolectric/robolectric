@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
+
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -9,17 +13,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
-import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
 
 @Implements(Notification.class)
 public class ShadowNotification {
@@ -43,8 +42,7 @@ public class ShadowNotification {
     if (getApiLevel() >= N) {
       return realNotification.extras.getCharSequence(Notification.EXTRA_INFO_TEXT);
     } else {
-      String resourceName = getApiLevel() >= N ? "header_text" : "info";
-      return findText(applyContentView(), resourceName);
+      return findText(applyContentView(), "info");
     }
   }
 
@@ -72,8 +70,7 @@ public class ShadowNotification {
     if (getApiLevel() >= N) {
       return realNotification.extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT);
     } else {
-      String resourceName = getApiLevel() >= N ? "header_text" : "text";
-      return findText(applyBigContentView(), resourceName);
+      return findText(applyBigContentView(),  "text");
     }
   }
 

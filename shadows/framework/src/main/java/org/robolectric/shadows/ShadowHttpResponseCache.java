@@ -1,18 +1,17 @@
 package org.robolectric.shadows;
 
-import android.net.http.HttpResponseCache;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
+import android.net.http.HttpResponseCache;
 import java.io.File;
 import java.net.CacheResponse;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
-
-import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = HttpResponseCache.class, callThroughByDefault = false)

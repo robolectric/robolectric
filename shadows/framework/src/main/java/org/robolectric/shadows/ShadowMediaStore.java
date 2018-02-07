@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

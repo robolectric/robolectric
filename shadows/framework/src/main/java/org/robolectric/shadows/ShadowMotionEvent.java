@@ -1,12 +1,11 @@
 package org.robolectric.shadows;
 
 import android.view.MotionEvent;
+import java.lang.reflect.Constructor;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.lang.reflect.Constructor;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MotionEvent.class)

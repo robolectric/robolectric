@@ -1,13 +1,12 @@
 package org.robolectric.internal.dependency;
 
-import org.robolectric.res.FsFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
+import org.robolectric.res.FsFile;
 
 public class PropertiesDependencyResolver implements DependencyResolver {
   private final Properties properties;

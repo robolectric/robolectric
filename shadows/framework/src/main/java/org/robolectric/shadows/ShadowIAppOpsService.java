@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.os.IBinder;
 import com.android.internal.app.IAppOpsService;
 import org.robolectric.annotation.Implementation;

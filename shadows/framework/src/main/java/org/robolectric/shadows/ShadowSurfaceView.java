@@ -5,11 +5,10 @@ import android.graphics.Rect;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.HashSet;
 import java.util.Set;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(SurfaceView.class)
 @SuppressWarnings({"UnusedDeclaration"})

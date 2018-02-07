@@ -9,9 +9,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Looper;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,6 +19,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
@@ -454,7 +453,7 @@ public class ShadowLocationManager {
 
     int meterConversion = 1609;
 
-    return new Float(dist * meterConversion);
+    return (float) (dist * meterConversion);
   }
 
   public Map<PendingIntent, Criteria> getRequestLocationUdpateCriteriaPendingIntents() {
@@ -478,7 +477,7 @@ public class ShadowLocationManager {
     return providers;
   }
 
-  final private class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {
+  final private static class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {
     private Boolean enabled;
     private List<Criteria> criteria;
 

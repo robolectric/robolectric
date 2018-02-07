@@ -1,14 +1,13 @@
 package org.robolectric;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.net.Uri;
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Parameterized tests using an Android class.

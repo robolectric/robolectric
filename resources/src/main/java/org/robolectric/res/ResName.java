@@ -1,10 +1,9 @@
 package org.robolectric.res;
 
-import javax.annotation.Nonnull;
-
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 
 public class ResName {
   public static final String ID_TYPE = "id";
@@ -74,7 +73,7 @@ public class ResName {
       name = possiblyQualifiedResourceName.substring(indexOfSlash + 1);
     }
 
-    if ((type == null && defaultType == null) || packageName == null && defaultPackageName == null) {
+    if ((type == null && defaultType == null) || (packageName == null && defaultPackageName == null)) {
       return null;
     }
 

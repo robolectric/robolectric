@@ -5,23 +5,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import android.accounts.Account;
+import android.os.Bundle;
+import android.os.Parcel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import android.accounts.Account;
-import android.os.Bundle;
-import android.os.Parcel;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowParcelTest {
 
   private Parcel parcel;
@@ -220,6 +218,25 @@ public class ShadowParcelTest {
     parcel.setDataPosition(0);
     byte[] actualBytes = parcel.createByteArray();
     assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test
+  public void testWriteAndReadByteArray() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[bytes.length];
+    parcel.readByteArray(actualBytes);
+    assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWriteAndReadByteArray_badLength() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[0];
+    parcel.readByteArray(actualBytes);
   }
 
   @Test

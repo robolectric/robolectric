@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implements;
@@ -7,8 +9,6 @@ import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.testing.Pony;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(SandboxTestRunner.class)
 public class RealApisTest {

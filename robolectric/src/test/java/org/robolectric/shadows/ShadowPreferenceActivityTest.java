@@ -1,17 +1,17 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+
 import android.preference.PreferenceActivity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.RobolectricTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowPreferenceActivityTest {
 
   private TestPreferenceActivity activity;
@@ -52,6 +52,7 @@ public class ShadowPreferenceActivityTest {
     assertNotNull(activity.findPreference("preference_resource_key_value"));
   }
 
+  @SuppressWarnings("FragmentInjection")
   private static class TestPreferenceActivity extends PreferenceActivity {
   }
 }

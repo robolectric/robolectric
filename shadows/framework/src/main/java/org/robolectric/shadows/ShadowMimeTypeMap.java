@@ -1,21 +1,19 @@
 package org.robolectric.shadows;
 
 import android.webkit.MimeTypeMap;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {
   private final Map<String, String> extensionToMimeTypeMap = new HashMap<>();
   private final Map<String, String> mimeTypeToExtensionMap = new HashMap<>();
-  private static MimeTypeMap singleton = null;
+  private static volatile MimeTypeMap singleton = null;
   private static final Object singletonLock = new Object();
 
   @Implementation

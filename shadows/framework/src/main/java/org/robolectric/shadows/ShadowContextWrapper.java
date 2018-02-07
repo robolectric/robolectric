@@ -2,10 +2,8 @@ package org.robolectric.shadows;
 
 import android.content.ContextWrapper;
 import android.content.Intent;
-
-import org.robolectric.annotation.Implements;
-
 import java.util.List;
+import org.robolectric.annotation.Implements;
 
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {

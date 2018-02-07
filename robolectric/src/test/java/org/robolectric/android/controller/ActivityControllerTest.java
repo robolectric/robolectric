@@ -3,21 +3,9 @@ package org.robolectric.android.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.TestUtil.assertStringsInclude;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.android.runtime.RuntimeAdapter;
-import org.robolectric.android.runtime.RuntimeAdapterFactory;
-import org.robolectric.shadows.CoreShadowsAdapter;
-import org.robolectric.shadows.ShadowLooper;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -25,16 +13,24 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.ContextThemeWrapper;
 import android.view.Window;
 import android.widget.LinearLayout;
-import org.robolectric.util.ReflectionHelpers;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@RunWith(TestRunners.SelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ActivityControllerTest {
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyActivity.class.getName());
@@ -46,10 +42,10 @@ public class ActivityControllerTest {
   }
 
   @Test
-  @Config(manifest = Config.NONE)
   public void canCreateActivityNotListedInManifest() {
-    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
-    assertThat(activityController.setup()).isNotNull();
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity).isNotNull();
+    assertThat(activity.getThemeResId()).isEqualTo(R.style.Theme_Robolectric);
   }
 
   public static class TestDelayedPostActivity extends Activity {
@@ -102,7 +98,7 @@ public class ActivityControllerTest {
 
   @Test
   public void shouldSetIntentForGivenActivityInstance() throws Exception {
-    ActivityController<MyActivity> activityController = ActivityController.of(new CoreShadowsAdapter(), new MyActivity()).create();
+    ActivityController<MyActivity> activityController = ActivityController.of(new MyActivity()).create();
     assertThat(activityController.get().getIntent()).isNotNull();
   }
 
@@ -111,7 +107,7 @@ public class ActivityControllerTest {
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
-    assertStringsInclude(transcript, "finishedOnCreate", "onCreate");
+    assertThat(transcript).contains("finishedOnCreate", "onCreate");
   }
 
   @Test
@@ -119,10 +115,10 @@ public class ActivityControllerTest {
     ShadowLooper.pauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
-    assertStringsInclude(transcript, "finishedOnCreate");
+    assertThat(transcript).contains("finishedOnCreate");
 
     ShadowLooper.unPauseMainLooper();
-    assertStringsInclude(transcript, "onCreate");
+    assertThat(transcript).contains("onCreate");
   }
 
   @Test
@@ -134,80 +130,80 @@ public class ActivityControllerTest {
   @Test
   public void start_callsPerformStartWhilePaused() {
     controller.create().start();
-    assertStringsInclude(transcript, "finishedOnStart", "onStart");
+    assertThat(transcript).contains("finishedOnStart", "onStart");
   }
 
   @Test
   public void stop_callsPerformStopWhilePaused() {
     controller.create().start().stop();
-    assertStringsInclude(transcript, "finishedOnStop", "onStop");
+    assertThat(transcript).contains("finishedOnStop", "onStop");
   }
 
   @Test
   public void restart_callsPerformRestartWhilePaused() {
     controller.create().start().stop().restart();
-    assertStringsInclude(transcript, "finishedOnRestart", "onRestart");
+    assertThat(transcript).contains("finishedOnRestart", "onRestart");
   }
 
   @Test
   public void pause_callsPerformPauseWhilePaused() {
     controller.create().pause();
-    assertStringsInclude(transcript, "finishedOnPause", "onPause");
+    assertThat(transcript).contains("finishedOnPause", "onPause");
   }
 
   @Test
   public void resume_callsPerformResumeWhilePaused() {
     controller.create().start().resume();
-    assertStringsInclude(transcript, "finishedOnResume", "onResume");
+    assertThat(transcript).contains("finishedOnResume", "onResume");
   }
 
   @Test
   public void destroy_callsPerformDestroyWhilePaused() {
     controller.create().destroy();
-    assertStringsInclude(transcript, "finishedOnDestroy", "onDestroy");
+    assertThat(transcript).contains("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void postCreate_callsOnPostCreateWhilePaused() {
     controller.create().postCreate(new Bundle());
-    assertStringsInclude(transcript, "finishedOnPostCreate", "onPostCreate");
+    assertThat(transcript).contains("finishedOnPostCreate", "onPostCreate");
   }
 
   @Test
   public void postResume_callsOnPostResumeWhilePaused() {
     controller.create().postResume();
-    assertStringsInclude(transcript, "finishedOnPostResume", "onPostResume");
+    assertThat(transcript).contains("finishedOnPostResume", "onPostResume");
   }
 
   @Test
   public void restoreInstanceState_callsPerformRestoreInstanceStateWhilePaused() {
     controller.create().restoreInstanceState(new Bundle());
-    assertStringsInclude(transcript, "finishedOnRestoreInstanceState", "onRestoreInstanceState");
+    assertThat(transcript).contains("finishedOnRestoreInstanceState", "onRestoreInstanceState");
   }
 
   @Test
   public void newIntent_callsOnNewIntentWhilePaused() {
     controller.create().newIntent(new Intent(Intent.ACTION_VIEW));
-    assertStringsInclude(transcript, "finishedOnNewIntent", "onNewIntent");
+    assertThat(transcript).contains("finishedOnNewIntent", "onNewIntent");
   }
 
   @Test
   public void userLeaving_callsPerformUserLeavingWhilePaused() {
     controller.create().userLeaving();
-    assertStringsInclude(transcript, "finishedOnUserLeaveHint", "onUserLeaveHint");
+    assertThat(transcript).contains("finishedOnUserLeaveHint", "onUserLeaveHint");
   }
 
   @Test
   public void setup_callsLifecycleMethodsAndMakesVisible() {
     controller.setup();
-    assertStringsInclude(transcript, "onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript).contains("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }
 
   @Test
   public void setupWithBundle_callsLifecycleMethodsAndMakesVisible() {
     controller.setup(new Bundle());
-    assertStringsInclude(transcript, "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript).contains("onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }
 
@@ -219,55 +215,88 @@ public class ActivityControllerTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void shouldUseCorrectRuntimeAdapter() {
-    ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", 15);
-    MyActivity activity = Robolectric.buildActivity(MyActivity.class).setup().get();
-    assertThat(activity).isNotNull();
-    RuntimeAdapter adapter = RuntimeAdapterFactory.getInstance();
-    assertThat(adapter.getClass().getName()).isEqualTo("org.robolectric.android.runtime.Api19RuntimeAdapter");
-  }
-  
-  @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
-    
+
+    controller.setup();
+    transcript.clear();
     controller.configurationChange(config);
-    assertStringsInclude(
-        transcript, "onPause",
-        "onStop",
-        "onDestroy",
-        "onCreate",
-        "onStart",
-        "onRestoreInstanceState",
-        "onPostCreate",
-        "onResume");
+    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
-  
+
   @Test
   public void configurationChange_callsOnConfigurationChangedAndAppliesConfigWhenAllManaged() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
-    
-    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
     configController.configurationChange(config);
-    assertStringsInclude(transcript, "onConfigurationChanged");
+    assertThat(transcript).contains("onConfigurationChanged");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
-  
+
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     final int newOrientation = config.orientation = (config.orientation + 1) % 3;
-    
-    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
     configController.configurationChange(config);
-    assertStringsInclude(transcript, "onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
     assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void noArgsConfigurationChange_appliesChangedSystemConfiguration() throws Exception {
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    RuntimeEnvironment.setQualifiers("port");
+    configController.configurationChange();
+    assertThat(configController.get().newConfig.orientation)
+        .isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void configurationChange_restoresTheme() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    config.orientation = Configuration.ORIENTATION_PORTRAIT;
+
+    controller.get().setTheme(android.R.style.Theme_Black);
+    controller.setup();
+    transcript.clear();
+    controller.configurationChange(config);
+    int restoredTheme = shadowOf((ContextThemeWrapper) controller.get()).callGetThemeResId();
+    assertThat(restoredTheme).isEqualTo(android.R.style.Theme_Black);
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void configurationChange_reattachesRetainedFragments() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    config.orientation = Configuration.ORIENTATION_PORTRAIT;
+
+    ActivityController<NonConfigStateActivity> configController =
+        Robolectric.buildActivity(NonConfigStateActivity.class).setup();
+    NonConfigStateActivity activity = configController.get();
+    Fragment retainedFragment = activity.retainedFragment;
+    Fragment otherFragment = activity.nonRetainedFragment;
+    configController.configurationChange(config);
+    activity = configController.get();
+
+    assertThat(activity.retainedFragment).isNotNull();
+    assertThat(activity.retainedFragment).isSameAs(retainedFragment);
+    assertThat(activity.nonRetainedFragment).isNotNull();
+    assertThat(activity.nonRetainedFragment).isNotSameAs(otherFragment);
   }
 
   public static class MyActivity extends Activity {
@@ -356,7 +385,7 @@ public class ActivityControllerTest {
       transcribeWhilePaused("onUserLeaveHint");
       transcript.add("finishedOnUserLeaveHint");
     }
-    
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
       super.onConfigurationChanged(newConfig);
@@ -372,8 +401,51 @@ public class ActivityControllerTest {
       });
     }
   }
-  
+
   public static class ConfigAwareActivity extends MyActivity {
-	  
+
+    Configuration newConfig;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState != null) {
+        assertThat(savedInstanceState.getSerializable("test")).isNotNull();
+      }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      outState.putSerializable("test", new Exception());
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      this.newConfig = new Configuration(newConfig);
+      super.onConfigurationChanged(newConfig);
+    }
+  }
+
+  public static final class NonConfigStateActivity extends Activity {
+    Fragment retainedFragment;
+    Fragment nonRetainedFragment;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState == null) {
+        retainedFragment = new Fragment();
+        retainedFragment.setRetainInstance(true);
+        nonRetainedFragment = new Fragment();
+        getFragmentManager().beginTransaction()
+            .add(android.R.id.content, retainedFragment, "retained")
+            .add(android.R.id.content, nonRetainedFragment, "non-retained")
+            .commit();
+      } else {
+        retainedFragment = getFragmentManager().findFragmentByTag("retained");
+        nonRetainedFragment = getFragmentManager().findFragmentByTag("non-retained");
+      }
+    }
   }
 }

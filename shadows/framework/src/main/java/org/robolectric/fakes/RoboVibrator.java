@@ -1,9 +1,10 @@
 package org.robolectric.fakes;
 
-import android.os.Vibrator;
-import android.os.VibrationEffect;
-
 import android.media.AudioAttributes;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
@@ -16,6 +17,12 @@ public class RoboVibrator extends Vibrator {
   private long milliseconds;
   private long[] pattern;
   private int repeat;
+  private Handler handler = new Handler(Looper.myLooper());
+  private Runnable stopVibratingRunnable = new Runnable() {
+    @Override public void run() {
+      vibrating = false;
+    }
+  };
 
   @Override public boolean hasVibrator() {
     return true;
@@ -24,12 +31,22 @@ public class RoboVibrator extends Vibrator {
   public void vibrate(long milliseconds) {
     vibrating = true;
     this.milliseconds = milliseconds;
+    handler.removeCallbacks(stopVibratingRunnable);
+    handler.postDelayed(stopVibratingRunnable, milliseconds);
   }
 
   public void vibrate(long[] pattern, int repeat) {
     vibrating = true;
     this.pattern = pattern;
     this.repeat = repeat;
+    handler.removeCallbacks(stopVibratingRunnable);
+    if (repeat < 0) {
+      long endDelayMillis = 0;
+      for (long t : pattern) {
+        endDelayMillis += t;
+      }
+      handler.postDelayed(stopVibratingRunnable, endDelayMillis);
+    }
   }
 
   public void vibrate(int i, String s, long l, AudioAttributes audioAttributes) {
@@ -56,6 +73,7 @@ public class RoboVibrator extends Vibrator {
   @Override public void cancel() {
     cancelled = true;
     vibrating = false;
+    handler.removeCallbacks(stopVibratingRunnable);
   }
 
   public boolean isVibrating() {

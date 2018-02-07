@@ -1,28 +1,38 @@
 package org.robolectric.shadows;
 
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.util.DisplayMetrics;
-import android.view.Display;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
-
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.MultiApiSelfTest.class)
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.hardware.display.DisplayManagerGlobal;
+import android.util.DisplayMetrics;
+import android.view.Display;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(minSdk = JELLY_BEAN_MR1)
 public class ShadowDisplayTest {
+
+  private Display display;
+  private ShadowDisplay shadow;
+
+  @Before
+  public void setUp() throws Exception {
+    display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+    shadow = Shadows.shadowOf(display);
+  }
+
   @Test
   public void shouldProvideDisplayMetrics() throws Exception {
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadow = Shadows.shadowOf(display);
-
     shadow.setDensity(1.5f);
-    shadow.setDensityDpi(DisplayMetrics.DENSITY_MEDIUM);
+    shadow.setDensityDpi(DisplayMetrics.DENSITY_HIGH);
     shadow.setScaledDensity(1.6f);
     shadow.setWidth(1024);
     shadow.setHeight(600);
@@ -30,13 +40,14 @@ public class ShadowDisplayTest {
     shadow.setRealHeight(900);
     shadow.setXdpi(183.0f);
     shadow.setYdpi(184.0f);
+    shadow.setRefreshRate(123f);
 
     DisplayMetrics metrics = new DisplayMetrics();
 
     display.getMetrics(metrics);
 
     assertEquals(1.5f, metrics.density, 0.05);
-    assertEquals(DisplayMetrics.DENSITY_MEDIUM, metrics.densityDpi);
+    assertEquals(DisplayMetrics.DENSITY_HIGH, metrics.densityDpi);
     assertEquals(1.6f, metrics.scaledDensity, 0.05);
     assertEquals(1024, metrics.widthPixels);
     assertEquals(600, metrics.heightPixels);
@@ -48,12 +59,34 @@ public class ShadowDisplayTest {
     display.getRealMetrics(metrics);
 
     assertEquals(1.5f, metrics.density, 0.05);
-    assertEquals(DisplayMetrics.DENSITY_MEDIUM, metrics.densityDpi);
+    assertEquals(DisplayMetrics.DENSITY_HIGH, metrics.densityDpi);
     assertEquals(1.6f, metrics.scaledDensity, 0.05);
     assertEquals(1400, metrics.widthPixels);
     assertEquals(900, metrics.heightPixels);
     assertEquals(183.0f, metrics.xdpi, 0.05);
     assertEquals(184.0f, metrics.ydpi, 0.05);
+
+    assertEquals(0, 123f, display.getRefreshRate());
+  }
+
+  @Test
+  public void changedStateShouldApplyToOtherInstancesOfSameDisplay() throws Exception {
+    shadow.setName("another name");
+    shadow.setWidth(1024);
+    shadow.setHeight(600);
+
+    display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertEquals(1024, display.getWidth());
+    assertEquals(600, display.getHeight());
+    assertEquals("another name", display.getName());
+  }
+
+  @Test @Config(minSdk = LOLLIPOP)
+  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay_postKitKatFields() throws Exception {
+    shadow.setState(Display.STATE_DOZE_SUSPEND);
+
+    display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertEquals(Display.STATE_DOZE_SUSPEND, display.getState());
   }
 
   @Test
@@ -62,9 +95,6 @@ public class ShadowDisplayTest {
     Point outLargestSize = new Point();
     Point outSize = new Point();
     Rect outRect = new Rect();
-
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadow = Shadows.shadowOf(display);
 
     shadow.setWidth(400);
     shadow.setHeight(600);
@@ -91,18 +121,15 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void shouldProvideDisplayInformation() {
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadow = Shadows.shadowOf(display);
-
-    shadow.setDisplayId(42);
+  public void shouldProvideWeirdDisplayInformation() {
     shadow.setName("foo");
-    shadow.setFlags(8);
+    shadow.setFlags(123);
 
-    assertEquals(42, display.getDisplayId());
     assertEquals("foo", display.getName());
-    assertEquals(8, display.getFlags());
+    assertEquals(123, display.getFlags());
+
+    display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertEquals(123, display.getFlags());
   }
 
   /**
@@ -111,9 +138,8 @@ public class ShadowDisplayTest {
    */
   @Test
   public void deprecatedGetOrientation_returnsGetRotation() {
-    Display display = Shadow.newInstanceOf(Display.class);
     int testValue = 33;
-    Shadows.shadowOf(display).setRotation(testValue);
+    shadow.setRotation(testValue);
     assertEquals(testValue, display.getOrientation());
   }
 }

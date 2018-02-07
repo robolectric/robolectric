@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 import android.hardware.Camera;
 import android.media.MediaRecorder;
@@ -7,13 +8,11 @@ import android.view.Surface;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
 import org.robolectric.shadow.api.Shadow;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowMediaRecorderTest {
 
   private MediaRecorder mediaRecorder;
@@ -219,13 +218,13 @@ public class ShadowMediaRecorderTest {
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_RELEASED);
   }
 
-  private class TestErrorListener implements MediaRecorder.OnErrorListener {
+  private static class TestErrorListener implements MediaRecorder.OnErrorListener {
     @Override
     public void onError(MediaRecorder arg0, int arg1, int arg2) {
     }
   }
 
-  private class TestInfoListener implements MediaRecorder.OnInfoListener {
+  private static class TestInfoListener implements MediaRecorder.OnInfoListener {
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
     }

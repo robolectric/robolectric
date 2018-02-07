@@ -1,15 +1,19 @@
 package org.robolectric.shadows;
 
 import android.util.Log;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 @Implements(Log.class)
 public class ShadowLog {
@@ -164,11 +168,18 @@ public class ShadowLog {
    * Returns ordered list of all log items for a specific tag.
    *
    * @param tag The tag to get logs for
-   * @return The list of log items for the tag
+   * @return The list of log items for the tag or an empty list if no logs for that tag exist.
    */
-  public static List<LogItem> getLogsForTag( String tag ) {
+  public static List<LogItem> getLogsForTag(String tag) {
     Queue<LogItem> logs = logsByTag.get(tag);
-    return logs == null ? null : new ArrayList<>(logs);
+    return logs == null ? Collections.emptyList() : new ArrayList<>(logs);
+  }
+
+  /**
+   * Clear all accummulated logs.
+   */
+  public static void clear() {
+    reset();
   }
 
   @Resetter

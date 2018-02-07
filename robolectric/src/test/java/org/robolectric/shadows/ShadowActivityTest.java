@@ -1,5 +1,23 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Robolectric.setupActivity;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityOptions;
@@ -13,7 +31,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.media.AudioManager;
@@ -31,50 +48,22 @@ import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
-import org.robolectric.android.controller.ActivityController;
-import org.robolectric.util.TestRunnable;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.TestRunnable;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Robolectric.setupActivity;
-import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.MultiApiSelfTest.class)
+@RunWith(RobolectricTestRunner.class)
 public class ShadowActivityTest {
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Activity activity;
 
   @Test
@@ -413,6 +402,35 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN)
+  public void shouldCallFinishOnFinishAffinity() {
+    Activity activity = new Activity();
+    activity.finishAffinity();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldCallFinishOnFinishAndRemoveTask() {
+    Activity activity = new Activity();
+    activity.finishAndRemoveTask();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
+  public void shouldCallFinishOnFinish() {
+    Activity activity = new Activity();
+    activity.finish();
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertTrue(shadowActivity.isFinishing());
+  }
+
+  @Test
   public void shouldSupportCurrentFocus() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     ShadowActivity shadow = shadowOf(activity);
@@ -572,10 +590,9 @@ public class ShadowActivityTest {
     assertThat(root).isNotEqualTo(null);
     assertThat(decorView.getWidth()).isNotEqualTo(0);
     assertThat(decorView.getHeight()).isNotEqualTo(0);
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
-    assertThat(decorView.getWidth()).isEqualTo(shadowDisplay.getWidth());
-    assertThat(decorView.getHeight()).isEqualTo(shadowDisplay.getHeight());
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(decorView.getWidth()).isEqualTo(display.getWidth());
+    assertThat(decorView.getHeight()).isEqualTo(display.getHeight());
   }
 
   @Test
@@ -609,7 +626,7 @@ public class ShadowActivityTest {
     @Override
     public Object onRetainNonConfigurationInstance() {
       transcript.add("onRetainNonConfigurationInstance");
-      return new Integer(5);
+      return 5;
     }
 
     @Override
@@ -669,28 +686,23 @@ public class ShadowActivityTest {
 
   @Test
   public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
-    Activity parentActivity = new Activity() {
-    };
-    Activity activity = new Activity() {
-    };
+    Activity parentActivity = new Activity();
+    Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
     assertSame(parentActivity, activity.getParent());
   }
 
   @Test
   public void getAndSetRequestedOrientation_shouldRemember() throws Exception {
-    Activity activity = new Activity() {
-    };
+    Activity activity = new Activity();
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
   }
 
   @Test
   public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() throws Exception {
-    Activity parentActivity = new Activity() {
-    };
-    Activity activity = new Activity() {
-    };
+    Activity parentActivity = new Activity();
+    Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
     parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
@@ -719,13 +731,6 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
-  }
-
-  @Test public void shouldGetAttributeFromThemeSetOnActivity() throws Exception {
-    ShadowThemeTest.TestActivity activity = setupActivity(ShadowThemeTest.TestActivityWithAnotherTheme.class);
-    TypedArray a = activity.obtainStyledAttributes(R.styleable.AnotherTheme);
-
-    assertThat(a.hasValue(R.styleable.AnotherTheme_animalStyle)).isTrue();
   }
 
   @Test
@@ -863,21 +868,6 @@ public class ShadowActivityTest {
   }
 
   /////////////////////////////
-
-  public AndroidManifest newConfigWith(String contents) throws IOException {
-    return newConfigWith("org.robolectric", contents);
-  }
-
-  private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
-    String fileContents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-        "          package=\"" + packageName + "\">\n" +
-        "    " + contents + "\n" +
-        "</manifest>\n";
-    File f = temporaryFolder.newFile("whatever.xml");
-    Files.write(fileContents, f, Charsets.UTF_8);
-    return new AndroidManifest(Fs.newFile(f), null, null);
-  }
 
   private static class DialogCreatingActivity extends Activity {
     @Override
