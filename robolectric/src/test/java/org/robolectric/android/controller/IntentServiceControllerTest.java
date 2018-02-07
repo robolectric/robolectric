@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(RobolectricTestRunner.class)
@@ -53,7 +52,7 @@ public class IntentServiceControllerTest {
 
   @Test
   public void shouldSetIntentForGivenServiceInstance() throws Exception {
-    IntentServiceController<MyService> intentServiceController = IntentServiceController.of(new CoreShadowsAdapter(), new MyService(""), null).bind();
+    IntentServiceController<MyService> intentServiceController = IntentServiceController.of(new MyService(""), null).bind();
     assertThat(intentServiceController.get().boundIntent).isNotNull();
   }
 

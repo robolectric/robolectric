@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
 import org.robolectric.res.android.ResTable_config;
-import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
 public class StaxPluralsLoaderTest {
@@ -29,7 +28,7 @@ public class StaxPluralsLoaderTest {
 
   @Test
   public void testPluralsAreResolved() throws Exception {
-    ResName resName = new ResName(TestUtil.TEST_PACKAGE, "plurals", "beer");
+    ResName resName = new ResName("org.robolectric", "plurals", "beer");
     PluralRules pluralRules = (PluralRules) resourceTable.getValue(resName, new ResTable_config());
     assertThat(pluralRules.find(0).string).isEqualTo("@string/howdy");
     assertThat(pluralRules.find(1).string).isEqualTo("One beer");

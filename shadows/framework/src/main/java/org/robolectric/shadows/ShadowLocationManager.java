@@ -477,7 +477,7 @@ public class ShadowLocationManager {
     return providers;
   }
 
-  final private class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {
+  final private static class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {
     private Boolean enabled;
     private List<Criteria> criteria;
 

@@ -11,7 +11,6 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
@@ -104,6 +102,13 @@ public class ShadowAccessibilityNodeInfo {
 
   private static final int CAN_OPEN_POPUP_MASK = 0x00100000; //19
 
+  /**
+   * Uniquely identifies the origin of the AccessibilityNodeInfo for equality
+   * testing. Two instances that come from the same node info should have the
+   * same ID.
+   */
+  private long mOriginNodeId;
+
   private List<AccessibilityNodeInfo> children;
 
   private Rect boundsInScreen = new Rect();
@@ -167,8 +172,6 @@ public class ShadowAccessibilityNodeInfo {
   private AccessibilityNodeInfo traversalBefore; //22
 
   private OnPerformActionListener actionListener;
-  
-  private boolean visitedWhenCheckingChildren = false;
 
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
@@ -184,6 +187,9 @@ public class ShadowAccessibilityNodeInfo {
     final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
 
     sAllocationCount++;
+    if (shadowInfo.mOriginNodeId == 0) {
+      shadowInfo.mOriginNodeId = sAllocationCount;
+    }
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
     orderedInstances.put(sAllocationCount, wrapper);
@@ -208,10 +214,13 @@ public class ShadowAccessibilityNodeInfo {
      * of performed actions will not contain all actions performed on the
      * underlying view.
      */
-    shadowObtained.performedActionAndArgsList = new LinkedList<>();
+    shadowObtained.performedActionAndArgsList = new ArrayList<>();
 
     shadowObtained.view = view;
     sAllocationCount++;
+    if (shadowObtained.mOriginNodeId == 0) {
+      shadowObtained.mOriginNodeId = sAllocationCount;
+    }
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
     orderedInstances.put(sAllocationCount, wrapper);
@@ -917,42 +926,16 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   public boolean performAction(int action, Bundle arguments) {
     if (performedActionAndArgsList == null) {
-      performedActionAndArgsList = new LinkedList<>();
+      performedActionAndArgsList = new ArrayList<>();
     }
 
     performedActionAndArgsList.add(new Pair<>(action, arguments));
     return actionListener == null || actionListener.onPerformAccessibilityAction(action, arguments);
   }
 
-  private boolean childrenEqualityCheck(
-      ShadowAccessibilityNodeInfo otherShadow,
-      LinkedList<ShadowAccessibilityNodeInfo> visitedNodes) {
-    if (children == null) {
-      return otherShadow.getChildCount() == 0;
-    } else if (getChildCount() != otherShadow.getChildCount()) {
-      return false;
-    }
-    boolean childrenEquality = true;
-    for (int i = 0; i < children.size(); i++) {
-      AccessibilityNodeInfo child = children.get(i);
-      ShadowAccessibilityNodeInfo childShadow = shadowOf(child);
-      if (!childShadow.visitedWhenCheckingChildren) {
-        AccessibilityNodeInfo otherChild = otherShadow.children.get(i);
-        visitedNodes.add(childShadow);
-        childShadow.visitedWhenCheckingChildren = true;
-        if (!child.equals(otherChild)) {
-           childrenEquality = false;
-           break;
-        }
-        childrenEquality = childShadow.childrenEqualityCheck(shadowOf(otherChild), visitedNodes);
-      }
-    }
-    return childrenEquality;
-  }
-
   /**
-   * Equality check based on reference equality for mParent and mView and
-   * value equality for other fields.
+   * Equality check based on reference equality of the Views from which these instances were
+   * created, or the equality of their assigned IDs.
    */
   @Implementation
   @Override
@@ -964,119 +947,13 @@ public class ShadowAccessibilityNodeInfo {
     final AccessibilityNodeInfo info = (AccessibilityNodeInfo) object;
     final ShadowAccessibilityNodeInfo otherShadow = shadowOf(info);
 
-    boolean areEqual = true;
-    if (children == null) {
-      areEqual &= (otherShadow.children == null);
-    } else {
-      LinkedList<ShadowAccessibilityNodeInfo> visitedNodes = new LinkedList<>();
-      areEqual &=
-          (otherShadow.children != null) && childrenEqualityCheck(otherShadow, visitedNodes);
-      if (parent == null) {
-        areEqual &= (otherShadow.parent == null);
-      } else if (!shadowOf(parent).visitedWhenCheckingChildren){
-        areEqual &=
-            ((otherShadow.parent != null) && shadowOf(parent).equals(shadowOf(otherShadow.parent)));
-      }
-
-      while (!visitedNodes.isEmpty()) {
-        ShadowAccessibilityNodeInfo visitedNode = visitedNodes.remove();
-        visitedNode.visitedWhenCheckingChildren = false;
-      }
+    if (this.view != null) {
+      return this.view == otherShadow.view;
     }
-    areEqual &= (propertyFlags == otherShadow.propertyFlags);
-
-    if (getApiLevel() >= LOLLIPOP) {
-      boolean actionsArrayEquality = false;
-      if (actionsArray == null && otherShadow.actionsArray == null) {
-        actionsArrayEquality = true;
-      } else if (actionsArray == null || otherShadow.actionsArray == null) {
-        actionsArrayEquality = false;
-      } else {
-        actionsArrayEquality = actionsArray.equals(otherShadow.actionsArray);
-      }
-      areEqual &= actionsArrayEquality;
-      if (accessibilityWindowInfo == null) {
-        areEqual &= (otherShadow.accessibilityWindowInfo == null);
-      } else {
-        areEqual &= (otherShadow.accessibilityWindowInfo != null)
-            && accessibilityWindowInfo.equals(otherShadow.accessibilityWindowInfo);
-      }
-    } else {
-      areEqual &= (actionsMask == otherShadow.actionsMask);
+    if (this.mOriginNodeId != 0) {
+      return this.mOriginNodeId == otherShadow.mOriginNodeId;
     }
-
-    /*
-     * These checks have the potential to become infinite loops if there are
-     * loops in the labelFor or labeledBy logic. Rather than deal with this
-     * complexity, allow the failure since it will indicate a problem that
-     * needs addressing.
-     */
-    if (labelFor == null) {
-      areEqual &= (otherShadow.labelFor == null);
-    } else {
-      areEqual &= (labelFor.equals(otherShadow.labelFor));
-    }
-
-    if (labeledBy == null) {
-      areEqual &= (otherShadow.labeledBy == null);
-    } else {
-      areEqual &= (labeledBy.equals(otherShadow.labeledBy));
-    }
-
-    areEqual &= boundsInScreen.equals(otherShadow.boundsInScreen);
-    areEqual &= (TextUtils.equals(contentDescription, otherShadow.contentDescription));
-    areEqual &= (TextUtils.equals(text, otherShadow.text));
-
-    areEqual &= TextUtils.equals(className, otherShadow.className);
-    areEqual &= (view == otherShadow.view);
-    areEqual &= (textSelectionStart == otherShadow.textSelectionStart);
-    areEqual &= (textSelectionEnd == otherShadow.textSelectionEnd);
-
-    areEqual &= (refreshReturnValue == otherShadow.refreshReturnValue);
-    areEqual &= (movementGranularities == otherShadow.movementGranularities);
-    areEqual &= (TextUtils.isEmpty(packageName) == TextUtils.isEmpty(otherShadow.packageName));
-    if (!TextUtils.isEmpty(packageName)) {
-      areEqual &= (packageName.toString().equals(otherShadow.packageName.toString()));
-    }
-    if (getApiLevel() >= JELLY_BEAN_MR2) {
-      areEqual &= TextUtils.equals(viewIdResourceName, otherShadow.viewIdResourceName);
-    }
-    if (getApiLevel() >= KITKAT) {
-      if (collectionInfo == null) {
-        areEqual &= (otherShadow.collectionInfo == null);
-      } else {
-        areEqual &= (collectionInfo.equals(otherShadow.collectionInfo));
-      }
-      if (collectionItemInfo == null) {
-        areEqual &= (otherShadow.collectionItemInfo == null);
-      } else {
-        areEqual &= (collectionItemInfo.equals(otherShadow.collectionItemInfo));
-      }
-      areEqual &= (inputType == otherShadow.inputType);
-      areEqual &= (liveRegion == otherShadow.liveRegion);
-      if (rangeInfo == null) {
-        areEqual &= (otherShadow.rangeInfo == null);
-      } else {
-        areEqual &= (rangeInfo.equals(otherShadow.rangeInfo));
-      }
-    }
-    if (getApiLevel() >= LOLLIPOP) {
-      areEqual &= (maxTextLength == otherShadow.maxTextLength);
-      areEqual &= TextUtils.equals(error, otherShadow.error);
-    }
-    if (getApiLevel() >= LOLLIPOP_MR1) {
-      if (traversalAfter == null) {
-        areEqual &= (otherShadow.traversalAfter == null);
-      } else {
-        areEqual &= (traversalAfter.equals(otherShadow.traversalAfter));
-      }
-      if (traversalBefore == null) {
-        areEqual &= (otherShadow.traversalBefore == null);
-      } else {
-        areEqual &= (traversalBefore.equals(otherShadow.traversalBefore));
-      }
-    }
-    return areEqual;
+    throw new IllegalStateException("Node has neither an ID nor View");
   }
 
   @Implementation
@@ -1097,7 +974,7 @@ public class ShadowAccessibilityNodeInfo {
    */
   public void addChild(AccessibilityNodeInfo child) {
     if (children == null) {
-      children = new LinkedList<>();
+      children = new ArrayList<>();
     }
 
     children.add(child);
@@ -1121,11 +998,11 @@ public class ShadowAccessibilityNodeInfo {
    */
   public List<Integer> getPerformedActions() {
     if (performedActionAndArgsList == null) {
-      performedActionAndArgsList = new LinkedList<>();
+      performedActionAndArgsList = new ArrayList<>();
     }
 
     // Here we take the actions out of the pairs and stick them into a separate LinkedList to return
-    List<Integer> actionsOnly = new LinkedList<Integer>();
+    List<Integer> actionsOnly = new ArrayList<>();
     Iterator<Pair<Integer, Bundle>> iter = performedActionAndArgsList.iterator();
     while (iter.hasNext()) {
       actionsOnly.add(iter.next().first);
@@ -1139,7 +1016,7 @@ public class ShadowAccessibilityNodeInfo {
    */
   public List<Pair<Integer, Bundle>> getPerformedActionsWithArgs() {
     if (performedActionAndArgsList == null) {
-      performedActionAndArgsList = new LinkedList<>();
+      performedActionAndArgsList = new ArrayList<>();
     }
     return Collections.unmodifiableList(performedActionAndArgsList);
   }
@@ -1155,6 +1032,7 @@ public class ShadowAccessibilityNodeInfo {
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
     final ShadowAccessibilityNodeInfo newShadow = shadowOf(newInfo);
 
+    newShadow.mOriginNodeId = mOriginNodeId;
     newShadow.boundsInScreen = new Rect(boundsInScreen);
     newShadow.propertyFlags = propertyFlags;
     newShadow.contentDescription = contentDescription;
@@ -1162,6 +1040,7 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.performedActionAndArgsList = performedActionAndArgsList;
     newShadow.parent = parent;
     newShadow.className = className;
+    newShadow.labelFor = labelFor;
     newShadow.labeledBy = labeledBy;
     newShadow.view = view;
     newShadow.textSelectionStart = textSelectionStart;
@@ -1179,7 +1058,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     if (children != null) {
-      newShadow.children = new LinkedList<>();
+      newShadow.children = new ArrayList<>();
       newShadow.children.addAll(children);
     } else {
       newShadow.children = null;
@@ -1266,6 +1145,7 @@ public class ShadowAccessibilityNodeInfo {
 
     @Override
     @Implementation
+    @SuppressWarnings("EqualsHashCode")
     public boolean equals(Object other) {
       if (other == null) {
         return false;

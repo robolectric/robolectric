@@ -2,6 +2,7 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Util.isTruthy;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
@@ -14,30 +15,30 @@ import java.util.regex.Pattern;
  * https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/tools/aapt2/ConfigDescription.cpp
  */
 public class ConfigDescription {
-  public static int SDK_CUPCAKE = 3;
-  public static int SDK_DONUT = 4;
-  public static int SDK_ECLAIR = 5;
-  public static int SDK_ECLAIR_0_1 = 6;
-  public static int SDK_ECLAIR_MR1 = 7;
-  public static int SDK_FROYO = 8;
-  public static int SDK_GINGERBREAD = 9;
-  public static int SDK_GINGERBREAD_MR1 = 10;
-  public static int SDK_HONEYCOMB = 11;
-  public static int SDK_HONEYCOMB_MR1 = 12;
-  public static int SDK_HONEYCOMB_MR2 = 13;
-  public static int SDK_ICE_CREAM_SANDWICH = 14;
-  public static int SDK_ICE_CREAM_SANDWICH_MR1 = 15;
-  public static int SDK_JELLY_BEAN = 16;
-  public static int SDK_JELLY_BEAN_MR1 = 17;
-  public static int SDK_JELLY_BEAN_MR2 = 18;
-  public static int SDK_KITKAT = 19;
-  public static int SDK_KITKAT_WATCH = 20;
-  public static int SDK_LOLLIPOP = 21;
-  public static int SDK_LOLLIPOP_MR1 = 22;
-  public static int SDK_MNC = 23;
-  public static int SDK_NOUGAT = 24;
-  public static int SDK_NOUGAT_MR1 = 25;
-  public static int SDK_O = 26;
+  public static final int SDK_CUPCAKE = 3;
+  public static final int SDK_DONUT = 4;
+  public static final int SDK_ECLAIR = 5;
+  public static final int SDK_ECLAIR_0_1 = 6;
+  public static final int SDK_ECLAIR_MR1 = 7;
+  public static final int SDK_FROYO = 8;
+  public static final int SDK_GINGERBREAD = 9;
+  public static final int SDK_GINGERBREAD_MR1 = 10;
+  public static final int SDK_HONEYCOMB = 11;
+  public static final int SDK_HONEYCOMB_MR1 = 12;
+  public static final int SDK_HONEYCOMB_MR2 = 13;
+  public static final int SDK_ICE_CREAM_SANDWICH = 14;
+  public static final int SDK_ICE_CREAM_SANDWICH_MR1 = 15;
+  public static final int SDK_JELLY_BEAN = 16;
+  public static final int SDK_JELLY_BEAN_MR1 = 17;
+  public static final int SDK_JELLY_BEAN_MR2 = 18;
+  public static final int SDK_KITKAT = 19;
+  public static final int SDK_KITKAT_WATCH = 20;
+  public static final int SDK_LOLLIPOP = 21;
+  public static final int SDK_LOLLIPOP_MR1 = 22;
+  public static final int SDK_MNC = 23;
+  public static final int SDK_NOUGAT = 24;
+  public static final int SDK_NOUGAT_MR1 = 25;
+  public static final int SDK_O = 26;
 
   /**
    * Constant used to to represent MNC (Mobile Network Code) zero.
@@ -182,11 +183,11 @@ public class ConfigDescription {
       out.packRegion(region);
 
       Arrays.fill(out.localeScript, (byte) 0);
-      byte[] scriptBytes = script == null ? new byte[4] : script.getBytes();
+      byte[] scriptBytes = script == null ? new byte[4] : script.getBytes(Charsets.UTF_8);
       System.arraycopy(scriptBytes, 0, out.localeScript, 0, scriptBytes.length);
 
       Arrays.fill(out.localeVariant, (byte) 0);
-      byte[] variantBytes = variant == null ? new byte[8] : variant.getBytes();
+      byte[] variantBytes = variant == null ? new byte[8] : variant.getBytes(Charsets.UTF_8);
       System.arraycopy(variantBytes, 0, out.localeVariant, 0, variantBytes.length);
     }
   }
@@ -594,22 +595,22 @@ public class ConfigDescription {
   private static boolean parseOrientation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.orientation = out.ORIENTATION_ANY;
+        out.orientation = ResTable_config.ORIENTATION_ANY;
       }
       return true;
     } else if (Objects.equals(name, "port")) {
       if (out != null) {
-        out.orientation = out.ORIENTATION_PORT;
+        out.orientation = ResTable_config.ORIENTATION_PORT;
       }
       return true;
     } else if (Objects.equals(name, "land")) {
       if (out != null) {
-        out.orientation = out.ORIENTATION_LAND;
+        out.orientation = ResTable_config.ORIENTATION_LAND;
       }
       return true;
     } else if (Objects.equals(name, "square")) {
       if (out != null) {
-        out.orientation = out.ORIENTATION_SQUARE;
+        out.orientation = ResTable_config.ORIENTATION_SQUARE;
       }
       return true;
     }
@@ -772,22 +773,22 @@ public class ConfigDescription {
   private static boolean parseTouchscreen(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.touchscreen = out.TOUCHSCREEN_ANY;
+        out.touchscreen = ResTable_config.TOUCHSCREEN_ANY;
       }
       return true;
     } else if (Objects.equals(name, "notouch")) {
       if (out != null) {
-        out.touchscreen = out.TOUCHSCREEN_NOTOUCH;
+        out.touchscreen = ResTable_config.TOUCHSCREEN_NOTOUCH;
       }
       return true;
     } else if (Objects.equals(name, "stylus")) {
       if (out != null) {
-        out.touchscreen = out.TOUCHSCREEN_STYLUS;
+        out.touchscreen = ResTable_config.TOUCHSCREEN_STYLUS;
       }
       return true;
     } else if (Objects.equals(name, "finger")) {
       if (out != null) {
-        out.touchscreen = out.TOUCHSCREEN_FINGER;
+        out.touchscreen = ResTable_config.TOUCHSCREEN_FINGER;
       }
       return true;
     }
@@ -825,22 +826,22 @@ public class ConfigDescription {
   private static boolean parseKeyboard(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.keyboard = out.KEYBOARD_ANY;
+        out.keyboard = ResTable_config.KEYBOARD_ANY;
       }
       return true;
     } else if (Objects.equals(name, "nokeys")) {
       if (out != null) {
-        out.keyboard = out.KEYBOARD_NOKEYS;
+        out.keyboard = ResTable_config.KEYBOARD_NOKEYS;
       }
       return true;
     } else if (Objects.equals(name, "qwerty")) {
       if (out != null) {
-        out.keyboard = out.KEYBOARD_QWERTY;
+        out.keyboard = ResTable_config.KEYBOARD_QWERTY;
       }
       return true;
     } else if (Objects.equals(name, "12key")) {
       if (out != null) {
-        out.keyboard = out.KEYBOARD_12KEY;
+        out.keyboard = ResTable_config.KEYBOARD_12KEY;
       }
       return true;
     }
@@ -875,27 +876,27 @@ public class ConfigDescription {
   private static boolean parseNavigation(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.navigation = out.NAVIGATION_ANY;
+        out.navigation = ResTable_config.NAVIGATION_ANY;
       }
       return true;
     } else if (Objects.equals(name, "nonav")) {
       if (out != null) {
-        out.navigation = out.NAVIGATION_NONAV;
+        out.navigation = ResTable_config.NAVIGATION_NONAV;
       }
       return true;
     } else if (Objects.equals(name, "dpad")) {
       if (out != null) {
-        out.navigation = out.NAVIGATION_DPAD;
+        out.navigation = ResTable_config.NAVIGATION_DPAD;
       }
       return true;
     } else if (Objects.equals(name, "trackball")) {
       if (out != null) {
-        out.navigation = out.NAVIGATION_TRACKBALL;
+        out.navigation = ResTable_config.NAVIGATION_TRACKBALL;
       }
       return true;
     } else if (Objects.equals(name, "wheel")) {
       if (out != null) {
-        out.navigation = out.NAVIGATION_WHEEL;
+        out.navigation = ResTable_config.NAVIGATION_WHEEL;
       }
       return true;
     }
@@ -906,8 +907,8 @@ public class ConfigDescription {
   private static boolean parseScreenSize(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.screenWidth = out.SCREENWIDTH_ANY;
-        out.screenHeight = out.SCREENHEIGHT_ANY;
+        out.screenWidth = ResTable_config.SCREENWIDTH_ANY;
+        out.screenHeight = ResTable_config.SCREENHEIGHT_ANY;
       }
       return true;
     }
@@ -929,8 +930,8 @@ public class ConfigDescription {
   private static boolean parseVersion(String name, ResTable_config out) {
     if (Objects.equals(name, kWildcardName)) {
       if (out != null) {
-        out.sdkVersion = out.SDKVERSION_ANY;
-        out.minorVersion = out.MINORVERSION_ANY;
+        out.sdkVersion = ResTable_config.SDKVERSION_ANY;
+        out.minorVersion = ResTable_config.MINORVERSION_ANY;
       }
       return true;
     }

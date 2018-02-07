@@ -24,7 +24,7 @@ import org.robolectric.fakes.RoboWebSettings;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = WebView.class, inheritImplementationMethods = true)
+@Implements(value = WebView.class)
 public class ShadowWebView extends ShadowViewGroup {
   @RealObject
   private WebView realWebView;

@@ -1,8 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 
+import android.app.Activity;
 import android.app.KeyguardManager;
+import android.app.KeyguardManager.KeyguardDismissCallback;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -15,8 +19,12 @@ public class ShadowKeyguardManager {
   private KeyguardManager.KeyguardLock keyguardLock =
       Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
 
-  private boolean inRestrictedInputMode = false;
-  private boolean isKeyguardLocked = false;
+  private boolean inRestrictedInputMode;
+  private boolean isKeyguardLocked;
+  private boolean isDeviceLocked;
+  private boolean isKeyguardSecure;
+  private boolean isDeviceSecure;
+  private KeyguardManager.KeyguardDismissCallback callback;
 
   /**
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
@@ -25,8 +33,21 @@ public class ShadowKeyguardManager {
    * @see #setinRestrictedInputMode(boolean)
    */
   @Implementation
-  public boolean inKeyguardRestrictedInputMode() {
+  protected boolean inKeyguardRestrictedInputMode() {
     return inRestrictedInputMode;
+  }
+
+  @Implementation(minSdk = O)
+  protected void requestDismissKeyguard(
+      Activity activity, KeyguardManager.KeyguardDismissCallback callback) {
+    if (isKeyguardLocked) {
+      if (this.callback != null) {
+        callback.onDismissError();
+      }
+      this.callback = callback;
+    } else {
+      callback.onDismissError();
+    }
   }
 
   /**
@@ -36,17 +57,30 @@ public class ShadowKeyguardManager {
    * @see #setKeyguardLocked(boolean)
    */
   @Implementation
-  public boolean isKeyguardLocked() {
+  protected boolean isKeyguardLocked() {
     return isKeyguardLocked;
   }
 
   /**
-   * Sets the value to be returned by {@link #isKeyguardLocked()}.
+   * Sets whether the device keyguard is locked or not. This affects the value to be returned by
+   * {@link #isKeyguardLocked()} and also invokes callbacks set in
+   *  {@link KeyguardManager#requestDismissKeyguard()}.
    *
-   * @see #isKeyguardLocked()
-   */
+   *  @param isKeyguardLocked true to lock the keyguard. If a KeyguardDismissCallback is set will
+   *  fire {@link KeyguardDismissCallback#onDismissCancelled()} or false to unlock and dismiss the
+   *  keyguard firing {@link KeyguardDismissCallback#onDismissSucceeded()} if a
+   *  KeyguardDismissCallback is set.
+   *  */
   public void setKeyguardLocked(boolean isKeyguardLocked) {
     this.isKeyguardLocked = isKeyguardLocked;
+    if (callback != null) {
+      if (isKeyguardLocked) {
+        callback.onDismissCancelled();
+      } else {
+        callback.onDismissSucceeded();
+      }
+      callback = null;
+    }
   }
 
   /**
@@ -55,7 +89,7 @@ public class ShadowKeyguardManager {
    * @see ShadowKeyguardLock
    */
   @Implementation
-  public KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
+  protected KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
     return keyguardLock;
   }
 
@@ -68,29 +102,25 @@ public class ShadowKeyguardManager {
     inRestrictedInputMode = restricted;
   }
 
-  private boolean isKeyguardSecure;
-
   /**
-   * For tests on Android >=M, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or
-   * `false` by default.
+   * For tests, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or `false` by
+   * default.
    *
    * @see #setIsKeyguardSecure(boolean)
    */
-  @Implementation(minSdk = M)
-  public boolean isKeyguardSecure() {
+  @Implementation
+  protected boolean isKeyguardSecure() {
     return isKeyguardSecure;
   }
 
   /**
-   * For tests on Android >=M, sets the value to be returned by {@link #isKeyguardSecure()}.
+   * Sets the value to be returned by {@link #isKeyguardSecure()}.
    *
    * @see #isKeyguardSecure()
    */
   public void setIsKeyguardSecure(boolean secure) {
     isKeyguardSecure = secure;
   }
-
-  private boolean isDeviceSecure;
 
   /**
    * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(boolean)}, or
@@ -99,7 +129,7 @@ public class ShadowKeyguardManager {
    * @see #setIsDeviceSecure(boolean)
    */
   @Implementation(minSdk = M)
-  public boolean isDeviceSecure() {
+  protected boolean isDeviceSecure() {
     return isDeviceSecure;
   }
 
@@ -110,6 +140,20 @@ public class ShadowKeyguardManager {
    */
   public void setIsDeviceSecure(boolean isDeviceSecure) {
     this.isDeviceSecure = isDeviceSecure;
+  }
+
+  /**
+   * For tests on Android >=L MR1, sets the value to be returned by {@link #isDeviceLocked()}.
+   *
+   * @see #isDeviceLocked()
+   */
+  public void setIsDeviceLocked(boolean isDeviceLocked) {
+    this.isDeviceLocked = isDeviceLocked;
+  }
+
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected boolean isDeviceLocked() {
+    return isDeviceLocked;
   }
 
   /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */
@@ -123,7 +167,7 @@ public class ShadowKeyguardManager {
      * @see #isEnabled()
      */
     @Implementation
-    public void disableKeyguard() {
+    protected void disableKeyguard() {
       keyguardEnabled = false;
     }
 
@@ -133,7 +177,7 @@ public class ShadowKeyguardManager {
      * @see #isEnabled()
      */
     @Implementation
-    public void reenableKeyguard() {
+    protected void reenableKeyguard() {
       keyguardEnabled = true;
     }
 

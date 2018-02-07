@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowListViewAdapterViewBehaviorTest extends AdapterViewBehavior {

@@ -81,47 +81,47 @@ public class ShadowDownloadManager {
     }
 
     public Uri getUri() {
-      return getFieldReflectively("mUri", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mUri", realObject, Uri.class);
     }
 
     public Uri getDestination() {
-      return getFieldReflectively("mDestinationUri", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mDestinationUri", realObject, Uri.class);
     }
 
     public CharSequence getTitle() {
-      return getFieldReflectively("mTitle", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mTitle", realObject, CharSequence.class);
     }
 
     public CharSequence getDescription() {
-      return getFieldReflectively("mDescription", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mDescription", realObject, CharSequence.class);
     }
 
     public CharSequence getMimeType() {
-      return getFieldReflectively("mMimeType", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mMimeType", realObject, CharSequence.class);
     }
 
     public int getNotificationVisibility() {
-      return getFieldReflectively("mNotificationVisibility", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mNotificationVisibility", realObject, Integer.class);
     }
 
     public int getAllowedNetworkTypes() {
-      return getFieldReflectively("mAllowedNetworkTypes", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mAllowedNetworkTypes", realObject, Integer.class);
     }
 
     public boolean getAllowedOverRoaming() {
-      return getFieldReflectively("mRoamingAllowed", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mRoamingAllowed", realObject, Boolean.class);
     }
 
     public boolean getAllowedOverMetered() {
-      return getFieldReflectively("mMeteredAllowed", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mMeteredAllowed", realObject, Boolean.class);
     }
 
     public boolean getVisibleInDownloadsUi() {
-      return getFieldReflectively("mIsVisibleInDownloadsUi", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mIsVisibleInDownloadsUi", realObject, Boolean.class);
     }
 
     public List<Pair<String, String>> getRequestHeaders() {
-      return getFieldReflectively("mRequestHeaders", realObject, DownloadManager.Request.class);
+      return getFieldReflectively("mRequestHeaders", realObject, List.class);
     }
   }
 
@@ -130,11 +130,11 @@ public class ShadowDownloadManager {
     @RealObject DownloadManager.Query realObject;
 
     public long[] getIds() {
-      return getFieldReflectively("mIds", realObject, DownloadManager.Query.class);
+      return getFieldReflectively("mIds", realObject, long[].class);
     }
   }
 
-  private class ResultCursor extends BaseCursor {
+  private static class ResultCursor extends BaseCursor {
     private static final int COLUMN_INDEX_LOCAL_FILENAME = 0;
     private static final int COLUMN_INDEX_DESCRIPTION = 1;
     private static final int COLUMN_INDEX_REASON = 2;
@@ -266,7 +266,7 @@ public class ShadowDownloadManager {
     }
   }
 
-  private static <T> T getFieldReflectively(String fieldName, Object object, Class aClass) {
-    return ReflectionHelpers.getField(object, fieldName);
+  private static <T> T getFieldReflectively(String fieldName, Object object, Class<T> clazz) {
+    return clazz.cast(ReflectionHelpers.getField(object, fieldName));
   }
 }
