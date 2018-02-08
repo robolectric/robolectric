@@ -8,7 +8,7 @@ import android.support.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 
-public class RoboInstrumentation extends MonitoringInstrumentation {
+public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   protected void specifyDexMakerCacheProperty() {
@@ -46,5 +46,10 @@ public class RoboInstrumentation extends MonitoringInstrumentation {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
+  }
+
+  @Override
+  public void runOnMainSync(Runnable runner) {
+    runner.run();
   }
 }

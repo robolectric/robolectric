@@ -74,8 +74,8 @@ public class ShadowPendingIntentTest {
 
     pendingIntent.send();
     ShadowApplication application = shadowOf(RuntimeEnvironment.application);
-    assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
+    assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
   }
 
   @Test
@@ -89,8 +89,8 @@ public class ShadowPendingIntentTest {
 
     pendingIntent.send();
     ShadowApplication application = shadowOf(RuntimeEnvironment.application);
-    assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
+    assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
   }
 
   @Test
@@ -156,15 +156,15 @@ public class ShadowPendingIntentTest {
     pendingIntent.send(otherContext, 0, fillIntent);
 
     ShadowActivity shadowActivity = shadowOf(otherContext);
-    Intent first = shadowActivity.getNextStartedActivity();
-    assertThat(first).isNotNull();
-    assertThat(first).isSameAs(intents[0]);
-    assertThat(first.hasExtra("TEST")).isFalse();
-
     Intent second = shadowActivity.getNextStartedActivity();
     assertThat(second).isNotNull();
     assertThat(second).isSameAs(intents[1]);
     assertThat(second.getIntExtra("TEST", -1)).isEqualTo(23);
+
+    Intent first = shadowActivity.getNextStartedActivity();
+    assertThat(first).isNotNull();
+    assertThat(first).isSameAs(intents[0]);
+    assertThat(first.hasExtra("TEST")).isFalse();
   }
 
   @Test

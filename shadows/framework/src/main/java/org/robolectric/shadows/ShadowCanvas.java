@@ -188,6 +188,10 @@ public class ShadowCanvas {
     ovalPaintEvents.add(new OvalPaintHistoryEvent(oval, paint));
   }
 
+  @Implementation
+  public void restore() {
+  }
+
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 

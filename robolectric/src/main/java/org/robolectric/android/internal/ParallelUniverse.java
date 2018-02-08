@@ -296,12 +296,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   private Instrumentation createInstrumentation() {
-    // Use RoboInstrumentation if its parent class from optional dependency android.support.test is
+    // Use RoboMonitoringInstrumentation if its parent class from optional dependency
+    // android.support.test is
     // available. Otherwise use Instrumentation
     try {
       Class<? extends Instrumentation> roboInstrumentationClass =
-          Class.forName("org.robolectric.android.fakes.RoboInstrumentation").asSubclass(
-              Instrumentation.class);
+          Class.forName("org.robolectric.android.fakes.RoboMonitoringInstrumentation")
+              .asSubclass(Instrumentation.class);
       return ReflectionHelpers.newInstance(roboInstrumentationClass);
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       // fall through
@@ -387,7 +388,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private static String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
     String[] splits = receiverClassName.split("\\.");
     String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
-    if (splits[splits.length - 1].matches(staticInnerClassRegex)
+    if (splits.length > 1
+        && splits[splits.length - 1].matches(staticInnerClassRegex)
         && splits[splits.length - 2].matches(staticInnerClassRegex)) {
       int lastDotIndex = receiverClassName.lastIndexOf(".");
       StringBuilder buffer = new StringBuilder(receiverClassName);

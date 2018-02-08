@@ -408,7 +408,8 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getApplicationInfo_uninstalledApplication_includeUninstalled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
     ApplicationInfo info = packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), MATCH_UNINSTALLED_PACKAGES);
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
@@ -416,7 +417,8 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getApplicationInfo_uninstalledApplication_dontIncludeUninstalled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     try {
       packageManager.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
@@ -428,7 +430,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getApplicationInfo_disabledApplication_includeDisabled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(
+    packageManager.setApplicationEnabledSetting(
         RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
     ApplicationInfo info = packageManager.getApplicationInfo(
         RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
@@ -751,8 +753,8 @@ public class ShadowPackageManagerTest {
 
     shadowPackageManager.addActivityIcon(i, d);
 
-    assertThat(shadowPackageManager.getActivityIcon(i)).isSameAs(d);
-    assertThat(shadowPackageManager.getActivityIcon(i.getComponent())).isSameAs(d);
+    assertThat(packageManager.getActivityIcon(i)).isSameAs(d);
+    assertThat(packageManager.getActivityIcon(i.getComponent())).isSameAs(d);
   }
 
   @Test
@@ -884,7 +886,8 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPackageInfo_uninstalledPackage_includeUninstalled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
     PackageInfo info = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), MATCH_UNINSTALLED_PACKAGES);
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
@@ -892,7 +895,8 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPackageInfo_uninstalledPackage_dontIncludeUninstalled() {
-    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     try {
       packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), 0);
@@ -904,7 +908,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPackageInfo_disabledPackage_includeDisabled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(
+    packageManager.setApplicationEnabledSetting(
         RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
     PackageInfo info = packageManager.getPackageInfo(
         RuntimeEnvironment.application.getPackageName(), MATCH_DISABLED_COMPONENTS);
@@ -914,7 +918,8 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getInstalledPackages_uninstalledPackage_includeUninstalled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES)).isNotEmpty();
     assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES).get(0).packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
@@ -922,14 +927,15 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getInstalledPackages_uninstalledPackage_dontIncludeUninstalled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setApplicationEnabledSetting(
+        RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getInstalledPackages(0)).isEmpty();
   }
 
   @Test
   public void getInstalledPackages_disabledPackage_includeDisabled() throws Exception {
-    shadowPackageManager.setApplicationEnabledSetting(
+    packageManager.setApplicationEnabledSetting(
         RuntimeEnvironment.application.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS)).isNotEmpty();
@@ -972,7 +978,7 @@ public class ShadowPackageManagerTest {
   public void canResolveDrawableGivenPackageAndResourceId() throws Exception {
     Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     shadowPackageManager.addDrawableResolution("com.example.foo", 4334, drawable);
-    Drawable actual = shadowPackageManager.getDrawable("com.example.foo", 4334, null);
+    Drawable actual = packageManager.getDrawable("com.example.foo", 4334, null);
     assertThat(actual).isSameAs(drawable);
   }
 

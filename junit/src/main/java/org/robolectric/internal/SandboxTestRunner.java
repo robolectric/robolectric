@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 
 import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -142,8 +141,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   @Nonnull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-    ClassLoader sandboxClassLoader = new SandboxClassLoader(systemClassLoader, instrumentationConfiguration);
+    ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
     return new Sandbox(sandboxClassLoader);
   }
 

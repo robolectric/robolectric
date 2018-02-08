@@ -137,13 +137,19 @@ public class ShadowDevicePolicyManager {
     return uninstallBlockedPackages.contains(packageName);
   }
 
+  /**
+   * @see #setDeviceOwner(ComponentName)
+   */
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public String getDeviceOwner() {
+  protected String getDeviceOwner() {
     return deviceOwner != null ? deviceOwner.getPackageName() : null;
   }
 
+  /**
+   * @see #setProfileOwner(ComponentName)
+   */
   @Implementation(minSdk = LOLLIPOP)
-  public ComponentName getProfileOwner() {
+  protected ComponentName getProfileOwner() {
     return profileOwner;
   }
 
@@ -152,13 +158,21 @@ public class ShadowDevicePolicyManager {
         (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
   }
 
-  /** Sets the admin as active admin and device owner. */
+  /**
+   * Sets the admin as active admin and device owner.
+   *
+   * @see DevicePolicyManager#getDeviceOwner()
+   */
   public void setDeviceOwner(ComponentName admin) {
     setActiveAdmin(admin);
     deviceOwner = admin;
   }
 
-  /** Sets the admin as active admin and profile owner. */
+  /**
+   * Sets the admin as active admin and profile owner.
+   *
+   * @see DevicePolicyManager#getProfileOwner()
+   */
   public void setProfileOwner(ComponentName admin) {
     setActiveAdmin(admin);
     profileOwner = admin;

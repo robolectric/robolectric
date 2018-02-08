@@ -52,12 +52,12 @@ public class ShadowTypedArray {
   }
 
   @Implementation
-  public String getNonResourceString(@StyleableRes int index) {
+  protected String getNonResourceString(@StyleableRes int index) {
     return directlyOn(realTypedArray, TypedArray.class).getString(index);
   }
 
   @Implementation
-  public String getNonConfigurationString(@StyleableRes int index, int allowedChangingConfigs) {
+  protected String getNonConfigurationString(@StyleableRes int index, int allowedChangingConfigs) {
     return directlyOn(realTypedArray, TypedArray.class).getString(index);
   }
 
