@@ -1,12 +1,7 @@
 package org.robolectric.shadows;
 
-import android.media.AudioAttributes;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.VibrationEffect;
 import android.os.Vibrator;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 @Implements(Vibrator.class)
 public class ShadowVibrator {

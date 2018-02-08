@@ -15,7 +15,7 @@ import android.os.VibrationEffect;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(SystemVibrator.class)
+@Implements(value = SystemVibrator.class, isInAndroidSdk = false)
 public class ShadowSystemVibrator extends ShadowVibrator {
 
   private Handler handler = new Handler(Looper.myLooper());
