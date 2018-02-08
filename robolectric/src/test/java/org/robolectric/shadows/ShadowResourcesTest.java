@@ -525,16 +525,14 @@ public class ShadowResourcesTest {
 
   @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
   }
 
   @Test @Config(qualifiers = "hdpi")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
   }
 
   @Test
