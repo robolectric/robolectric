@@ -34,6 +34,7 @@ import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserManager;
+import android.os.Vibrator;
 import android.print.PrintManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
@@ -52,7 +53,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.util.Scheduler;
 
 @RunWith(RobolectricTestRunner.class)
@@ -81,7 +81,7 @@ public class ShadowApplicationTest {
     checkSystemService(Context.SEARCH_SERVICE, android.app.SearchManager.class);
     checkSystemService(Context.SENSOR_SERVICE, SystemSensorManager.class);
     checkSystemService(Context.STORAGE_SERVICE, android.os.storage.StorageManager.class);
-    checkSystemService(Context.VIBRATOR_SERVICE, RoboVibrator.class);
+    checkSystemService(Context.VIBRATOR_SERVICE, Vibrator.class);
     checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
     checkSystemService(Context.WIFI_SERVICE, android.net.wifi.WifiManager.class);
     checkSystemService(Context.AUDIO_SERVICE, android.media.AudioManager.class);
