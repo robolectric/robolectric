@@ -85,6 +85,11 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void getString_StringWithInlinedQuotesAreStripped() throws Exception {
+    assertThat(resources.getString(R.string.bad_example)).isEqualTo("This is a bad string.");
+  }
+
+  @Test
   public void getStringShouldStripNewLines() {
     assertThat(resources.getString(R.string.leading_and_trailing_new_lines)).isEqualTo("Some text");
   }
@@ -520,16 +525,14 @@ public class ShadowResourcesTest {
 
   @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
   }
 
   @Test @Config(qualifiers = "hdpi")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
   }
 
   @Test
