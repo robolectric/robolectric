@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -37,6 +38,22 @@ public class ShadowParcel {
   @RealObject private Parcel realObject;
   private static final Map<Long, ByteBuffer> NATIVE_PTR_TO_PARCEL = new LinkedHashMap<>();
   private static long nextNativePtr = 1; // this needs to start above 0, which is a magic number to Parcel
+
+  @Implementation(maxSdk = JELLY_BEAN_MR1) @SuppressWarnings("TypeParameterUnusedInFormals")
+  public <T extends Parcelable> T readParcelable(ClassLoader loader) {
+    // prior to JB MR2, readParcelableCreator() is inlined here.
+    Parcelable.Creator<?> creator = readParcelableCreator(loader);
+    if (creator == null) {
+      return null;
+    }
+
+    if (creator instanceof Parcelable.ClassLoaderCreator<?>) {
+      Parcelable.ClassLoaderCreator<?> classLoaderCreator =
+          (Parcelable.ClassLoaderCreator<?>) creator;
+      return (T) classLoaderCreator.createFromParcel(realObject, loader);
+    }
+    return (T) creator.createFromParcel(realObject);
+  }
 
   @Implementation
   @HiddenApi
