@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.net.ConnectivityManager;
+import android.net.ConnectivityManager.OnNetworkActiveListener;
 import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
@@ -81,6 +82,10 @@ public class ShadowConnectivityManager {
     return activeNetworkInfo;
   }
 
+  /**
+   * @see #setActiveNetworkInfo(NetworkInfo)
+   * @see #setNetworkInfo(int, NetworkInfo)
+   */
   @Implementation(minSdk = M)
   public Network getActiveNetwork() {
     if (defaultNetworkActive) {
@@ -89,8 +94,13 @@ public class ShadowConnectivityManager {
     return null;
   }
 
+  /**
+   * @see #setActiveNetworkInfo(NetworkInfo)
+   * @see #setNetworkInfo(int, NetworkInfo)
+   */
   @Implementation
   public NetworkInfo[] getAllNetworkInfo() {
+    // todo(xian): is `defaultNetworkActive` really relevant here?
     if (defaultNetworkActive) {
       return networkTypeToNetworkInfo
           .values()
@@ -131,10 +141,12 @@ public class ShadowConnectivityManager {
   }
 
   /**
-   * Count {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
+   * Counts {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
    * Other types will be considered unmetered.
    *
-   * @return True if the active network is metered.
+   * @return `true` if the active network is metered, otherwise `false`.
+   * @see #setActiveNetworkInfo(NetworkInfo)
+   * @see #setDefaultNetworkActive(boolean)
    */
   @Implementation
   public boolean isActiveNetworkMetered() {
@@ -220,14 +232,14 @@ public class ShadowConnectivityManager {
   /**
    * Sets the active state of the default network.
    *
-   * <p>By default this is true and controls the result of {@link
+   * By default this is true and affects the result of {@link
    * ConnectivityManager#isActiveNetworkMetered()}, {@link
-   * ConnectivityManager#isDefaultNetworkActivite()}, {@link ConnectivityManager#getActiveNetwork()}
+   * ConnectivityManager#isDefaultNetworkActive()}, {@link ConnectivityManager#getActiveNetwork()}
    * and {@link ConnectivityManager#getAllNetworkInfo()}.
    *
-   * <p>Calling this method with {@code true} after any listeners have been registered with {@link
-   * ConnectivityManager#addDefaultNetworkActiveListener()} will result in those listeners being
-   * fired.
+   * Calling this method with {@code true} after any listeners have been registered with {@link
+   * ConnectivityManager#addDefaultNetworkActiveListener(OnNetworkActiveListener)} will result in
+   * those listeners being fired.
    *
    * @param isActive The active state of the default network.
    */
@@ -242,18 +254,22 @@ public class ShadowConnectivityManager {
     }
   }
 
+  /**
+   * @return `true` by default, or the value specifed via {@link #setDefaultNetworkActive(boolean)}
+   * @see #setDefaultNetworkActive(boolean)
+   */
   @Implementation(minSdk = LOLLIPOP)
-  public boolean isDefaultNetworkActive() {
+  protected boolean isDefaultNetworkActive() {
     return defaultNetworkActive;
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public void addDefaultNetworkActiveListener(final ConnectivityManager.OnNetworkActiveListener l) {
+  protected void addDefaultNetworkActiveListener(final ConnectivityManager.OnNetworkActiveListener l) {
     onNetworkActiveListeners.add(l);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public void removeDefaultNetworkActiveListener(ConnectivityManager.OnNetworkActiveListener l) {
+  protected void removeDefaultNetworkActiveListener(ConnectivityManager.OnNetworkActiveListener l) {
     if (l == null) {
       throw new IllegalArgumentException("Invalid OnNetworkActiveListener");
     }

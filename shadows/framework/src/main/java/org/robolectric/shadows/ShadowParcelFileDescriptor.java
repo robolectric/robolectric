@@ -77,8 +77,9 @@ public class ShadowParcelFileDescriptor {
   }
 
   /**
-   * Overrides framework to avoid call to FileDescriptor#getInt$ which does not exist on JVM.
-   * Returns a fixed int (0).
+   * Overrides framework to avoid call to {@link FileDescriptor#getInt() which does not exist on JVM.
+   *
+   * @return a fixed int (`0`)
    */
   @Implementation
   public int getFd() {

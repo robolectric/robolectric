@@ -15,36 +15,36 @@ public class ShadowSystemProperties {
   private static Properties buildProperties = null;
 
   @Implementation
-  public static String native_get(String key) {
+  protected static String native_get(String key) {
     return native_get(key, "");
   }
 
   @Implementation
-  public static String native_get(String key, String def) {
+  protected static String native_get(String key, String def) {
     String value = getProperty(key);
     return value == null ? def : value;
   }
 
   @Implementation
-  public static int native_get_int(String key, int def) {
+  protected static int native_get_int(String key, int def) {
     String stringValue = getProperty(key);
     return stringValue == null ? def : Integer.parseInt(stringValue);
   }
 
   @Implementation
-  public static long native_get_long(String key, long def) {
+  protected static long native_get_long(String key, long def) {
     String stringValue = getProperty(key);
     return stringValue == null ? def : Long.parseLong(stringValue);
   }
 
   @Implementation
-  public static boolean native_get_boolean(String key, boolean def) {
+  protected static boolean native_get_boolean(String key, boolean def) {
     String stringValue = getProperty(key);
     return stringValue == null ? def : Boolean.parseBoolean(stringValue);
   }
 
   @Implementation
-  public static void native_set(String key, String val) {
+  protected static void native_set(String key, String val) {
     if (val == null) {
       loadProperties().remove(key);
     } else {

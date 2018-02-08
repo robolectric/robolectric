@@ -884,6 +884,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
+  /**
+   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
+   */
   @Implementation
   protected PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
@@ -902,6 +905,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     throw new NameNotFoundException(name);
   }
 
+  /**
+   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
+   */
   @Implementation
   protected List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
     ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
