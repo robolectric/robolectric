@@ -2,18 +2,25 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
+import android.app.IAlarmManager;
 import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.trust.ITrustManager;
 import android.content.Context;
+import android.content.IRestrictionsManager;
 import android.net.IConnectivityManager;
 import android.net.wifi.IWifiManager;
+import android.os.BatteryStats;
 import android.os.Binder;
+import android.os.IBatteryPropertiesRegistrar;
 import android.os.IBinder;
 import android.os.IInterface;
+import android.os.IPowerManager;
+import android.os.IUserManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 
+import com.android.internal.app.IBatteryStats;
 import com.android.internal.os.IDropBoxManagerService;
 
 import java.util.HashMap;
@@ -29,6 +36,24 @@ public class ShadowServiceManager {
   private static Map<String, IBinder> SERVICES =
       new HashMap<String, IBinder>() {
         {
+          put(
+              Context.ALARM_SERVICE,
+              createBinder(IAlarmManager.class, "android.app.IAlarmManager"));
+          put(
+              Context.POWER_SERVICE,
+              createBinder(IPowerManager.class, "android.os.IPowerManager"));
+          put(
+              Context.USER_SERVICE,
+              createBinder(IUserManager.class, "android.os.IUserManager"));
+          put(
+              Context.RESTRICTIONS_SERVICE,
+              createBinder(IRestrictionsManager.class, "android.content.IRestrictionsManager"));
+          put(
+              BatteryStats.SERVICE_NAME,
+              createBinder(IBatteryStats.class, "com.android.internal.app.IBatteryStats"));
+          put(
+              "batteryproperties",
+              createBinder(IBatteryPropertiesRegistrar.class, "android.os.IBatteryPropertiesRegistrar"));
           put(
               Context.DROPBOX_SERVICE,
               createBinder(IDropBoxManagerService.class, "com.android.internal.os.IDropBoxManagerService"));
