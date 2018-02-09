@@ -255,7 +255,7 @@ public class ShadowUserManager {
 
   /**
    * Describes the current state of the user. State can be set using
-   *  {@link UserManager#setUserState()}
+   * {@link #setUserState(UserHandle, UserState)}.
    */
   public enum UserState {
     // User is first coming up.
