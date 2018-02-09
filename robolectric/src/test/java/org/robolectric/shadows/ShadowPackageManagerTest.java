@@ -593,6 +593,55 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryIntentActivities_DisabledComponentExplicitIntent() throws Exception {
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+
+    ComponentName componentToDisable = new ComponentName(RuntimeEnvironment.application,
+        "org.robolectric.shadows.TestActivity");
+    packageManager.setComponentEnabledSetting(componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, 0);
+    assertThat(resolveInfos).isNotNull();
+    assertThat(resolveInfos).hasSize(0);
+  }
+
+  @Test
+  public void queryIntentActivities_DisabledComponentImplicitIntent() throws Exception {
+    Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
+    Intent i = new Intent(Intent.ACTION_VIEW);
+    i.addCategory(Intent.CATEGORY_DEFAULT);
+    i.setDataAndType(uri, "image/jpeg");
+
+    ComponentName componentToDisable = new ComponentName(RuntimeEnvironment.application,
+        "org.robolectric.shadows.TestActivity");
+    packageManager.setComponentEnabledSetting(componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, 0);
+    assertThat(resolveInfos).isNotNull();
+    assertThat(resolveInfos).hasSize(0);
+  }
+
+  @Test
+  public void queryIntentActivities_MatchDisabledComponents() throws Exception {
+    Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
+    Intent i = new Intent(Intent.ACTION_VIEW);
+    i.addCategory(Intent.CATEGORY_DEFAULT);
+    i.setDataAndType(uri, "image/jpeg");
+
+    ComponentName componentToDisable = new ComponentName(RuntimeEnvironment.application,
+        "org.robolectric.shadows.TestActivity");
+    packageManager.setComponentEnabledSetting(componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, PackageManager.MATCH_DISABLED_COMPONENTS);
+    assertThat(resolveInfos).isNotNull();
+    assertThat(resolveInfos).hasSize(1);
+  }
+
+  @Test
   public void resolveActivity_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo info = new ResolveInfo();

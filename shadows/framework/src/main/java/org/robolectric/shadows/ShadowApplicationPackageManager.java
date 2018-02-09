@@ -280,20 +280,37 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     // Create a copy of the list for filtering
     resolveInfoList = new ArrayList<>(resolveInfoList);
 
-    if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
-      for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
-        ResolveInfo resolveInfo = iterator.next();
-        if (resolveInfo.serviceInfo == null || resolveInfo.serviceInfo.applicationInfo == null) {
+    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
+      ResolveInfo resolveInfo = iterator.next();
+       if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
+         if (resolveInfo.serviceInfo == null || resolveInfo.serviceInfo.applicationInfo == null) {
+           // TODO: for backwards compatibility just skip filtering. In future should just remove
+           // invalid resolve infos from list
+           iterator.remove();
+         } else {
+           final int applicationFlags = resolveInfo.serviceInfo.applicationInfo.flags;
+           if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
+             iterator.remove();
+           }
+         }
+      } else if (((flags & PackageManager.MATCH_DISABLED_COMPONENTS) != PackageManager.MATCH_DISABLED_COMPONENTS)
+           && isValidComponentInfo(resolveInfo.serviceInfo)) {
+        ComponentName componentName = new ComponentName(
+            resolveInfo.serviceInfo.applicationInfo.packageName,
+            resolveInfo.serviceInfo.name);
+        if ((getComponentEnabledSetting(componentName) & PackageManager.COMPONENT_ENABLED_STATE_DISABLED) != 0) {
           iterator.remove();
-        } else {
-          final int applicationFlags = resolveInfo.serviceInfo.applicationInfo.flags;
-          if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
-            iterator.remove();
-          }
         }
       }
     }
     return resolveInfoList;
+  }
+
+  private boolean isValidComponentInfo(ComponentInfo componentInfo) {
+    return componentInfo != null
+        && componentInfo.applicationInfo != null
+        && componentInfo.applicationInfo.packageName != null
+        && componentInfo.name != null;
   }
 
   /** Behaves as {@link #queryIntentServices(Intent, int)} and currently ignores userId. */
@@ -330,9 +347,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     // Create a copy of the list for filtering
     resolveInfoList = new ArrayList<>(resolveInfoList);
 
-    if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
-      for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
-        ResolveInfo resolveInfo = iterator.next();
+    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
+      ResolveInfo resolveInfo = iterator.next();
+
+      if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
+        // TODO: for backwards compatibility only remove invalid components when MATCH_SYSTEM_ONLY
+        // In future should just remove all invalid resolve infos from list
         if (resolveInfo.activityInfo == null || resolveInfo.activityInfo.applicationInfo == null) {
           iterator.remove();
         } else {
@@ -341,8 +361,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             iterator.remove();
           }
         }
+      } else if (((flags & PackageManager.MATCH_DISABLED_COMPONENTS) != PackageManager.MATCH_DISABLED_COMPONENTS)
+          && isValidComponentInfo(resolveInfo.activityInfo)) {
+          ComponentName componentName = new ComponentName(
+              resolveInfo.activityInfo.applicationInfo.packageName,
+              resolveInfo.activityInfo.name);
+          if ((getComponentEnabledSetting(componentName)
+              & PackageManager.COMPONENT_ENABLED_STATE_DISABLED) != 0) {
+            iterator.remove();
+          }
+        }
       }
-    }
+
+
     return resolveInfoList;
   }
 
