@@ -165,7 +165,6 @@ public class ShadowApplicationTest {
   private void checkSystemService(String name, Class expectedClass) {
     Object systemService = RuntimeEnvironment.application.getSystemService(name);
     assertThat(systemService).isInstanceOf(expectedClass);
-    assertThat(systemService).isSameAs(RuntimeEnvironment.application.getSystemService(name));
   }
 
   @Test
