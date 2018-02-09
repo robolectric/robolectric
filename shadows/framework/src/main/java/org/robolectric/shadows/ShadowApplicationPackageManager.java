@@ -282,7 +282,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
       ResolveInfo resolveInfo = iterator.next();
-       if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
+       if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
          if (resolveInfo.serviceInfo == null || resolveInfo.serviceInfo.applicationInfo == null) {
            // TODO: for backwards compatibility just skip filtering. In future should just remove
            // invalid resolve infos from list
@@ -293,7 +293,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
              iterator.remove();
            }
          }
-      } else if (((flags & PackageManager.MATCH_DISABLED_COMPONENTS) != PackageManager.MATCH_DISABLED_COMPONENTS)
+      } else if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
            && isValidComponentInfo(resolveInfo.serviceInfo)) {
         ComponentName componentName = new ComponentName(
             resolveInfo.serviceInfo.applicationInfo.packageName,
@@ -306,7 +306,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return resolveInfoList;
   }
 
-  private boolean isValidComponentInfo(ComponentInfo componentInfo) {
+  private static boolean isFlagSet(int flags, int matchFlag) {
+    return (flags & matchFlag) == matchFlag;
+  }
+
+  private static boolean isValidComponentInfo(ComponentInfo componentInfo) {
     return componentInfo != null
         && componentInfo.applicationInfo != null
         && componentInfo.applicationInfo.packageName != null
