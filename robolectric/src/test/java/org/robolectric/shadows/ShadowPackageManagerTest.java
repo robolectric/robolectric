@@ -603,8 +603,7 @@ public class ShadowPackageManagerTest {
         PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
 
     List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, 0);
-    assertThat(resolveInfos).isNotNull();
-    assertThat(resolveInfos).hasSize(0);
+    assertThat(resolveInfos).isEmpty();
   }
 
   @Test
@@ -620,8 +619,7 @@ public class ShadowPackageManagerTest {
         PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
 
     List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, 0);
-    assertThat(resolveInfos).isNotNull();
-    assertThat(resolveInfos).hasSize(0);
+    assertThat(resolveInfos).isEmpty();
   }
 
   @Test
