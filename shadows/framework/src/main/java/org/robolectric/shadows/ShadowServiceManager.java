@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 
 import android.app.IAlarmManager;
 import android.app.ISearchManager;
@@ -8,6 +9,7 @@ import android.app.admin.IDevicePolicyManager;
 import android.app.trust.ITrustManager;
 import android.content.Context;
 import android.content.IRestrictionsManager;
+import android.location.ILocationManager;
 import android.net.IConnectivityManager;
 import android.net.wifi.IWifiManager;
 import android.os.BatteryStats;
@@ -19,9 +21,11 @@ import android.os.IPowerManager;
 import android.os.IUserManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.storage.IStorageManager;
 
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.os.IDropBoxManagerService;
+import com.android.internal.view.IInputMethodManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +40,21 @@ public class ShadowServiceManager {
   private static Map<String, IBinder> SERVICES =
       new HashMap<String, IBinder>() {
         {
+          if (RuntimeEnvironment.getApiLevel() < O) {
+            put(
+                "mount",
+                createBinder("android.os.storage.IMountService", "android.os.storage.IMountService"));
+          } else {
+            put(
+                "mount",
+                createBinder(IStorageManager.class, "android.os.storage.IStorageManager"));
+          }
+          put(
+              Context.LOCATION_SERVICE,
+              createBinder(ILocationManager.class, "android.location.ILocationManager"));
+          put(
+                  Context.INPUT_METHOD_SERVICE,
+              createBinder(IInputMethodManager .class, "com.android.internal.view.IInputMethodManager"));
           put(
               Context.ALARM_SERVICE,
               createBinder(IAlarmManager.class, "android.app.IAlarmManager"));
@@ -86,6 +105,18 @@ public class ShadowServiceManager {
   @Implementation
   public static IBinder getService(String name) {
     return SERVICES.get(name);
+  }
+
+  private static Binder createBinder(String className, String descriptor) {
+    Class<IInterface> clazz = null;
+    try {
+      clazz = (Class<IInterface>) Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    Binder binder = new Binder();
+    binder.attachInterface(ReflectionHelpers.createNullProxy(clazz), descriptor);
+    return binder;
   }
 
   private static Binder createBinder(Class<? extends IInterface> clazz, String descriptor) {
