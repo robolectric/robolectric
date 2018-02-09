@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.app.ISearchManager;
+import android.app.admin.IDevicePolicyManager;
 import android.app.trust.ITrustManager;
 import android.content.Context;
 import android.net.IConnectivityManager;
@@ -12,6 +13,9 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+
+import com.android.internal.os.IDropBoxManagerService;
+
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
@@ -25,6 +29,12 @@ public class ShadowServiceManager {
   private static Map<String, IBinder> SERVICES =
       new HashMap<String, IBinder>() {
         {
+          put(
+              Context.DROPBOX_SERVICE,
+              createBinder(IDropBoxManagerService.class, "com.android.internal.os.IDropBoxManagerService"));
+          put(
+              Context.DEVICE_POLICY_SERVICE,
+              createBinder(IDevicePolicyManager.class, "android.app.admin.IDevicePolicyManager"));
           put(
               Context.CONNECTIVITY_SERVICE,
               createBinder(IConnectivityManager.class, "android.net.IConnectivityManager"));
