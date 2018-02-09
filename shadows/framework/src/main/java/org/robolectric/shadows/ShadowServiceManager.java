@@ -5,6 +5,8 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.app.ISearchManager;
 import android.app.trust.ITrustManager;
 import android.content.Context;
+import android.net.IConnectivityManager;
+import android.net.wifi.IWifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -23,6 +25,12 @@ public class ShadowServiceManager {
   private static Map<String, IBinder> SERVICES =
       new HashMap<String, IBinder>() {
         {
+          put(
+              Context.CONNECTIVITY_SERVICE,
+              createBinder(IConnectivityManager.class, "android.net.IConnectivityManager"));
+          put(
+              Context.WIFI_SERVICE,
+              createBinder(IWifiManager.class, "android.net.wifi.IWifiManager"));
           put(
               Context.SEARCH_SERVICE,
               createBinder(ISearchManager.class, "android.app.ISearchManager"));

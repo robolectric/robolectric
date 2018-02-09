@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-@Implements(value = InputMethodManager.class, callThroughByDefault = false)
+@Implements(value = InputMethodManager.class)
 public class ShadowInputMethodManager {
   /**
    * Handler for receiving soft input visibility changed event.
