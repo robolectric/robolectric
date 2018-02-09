@@ -38,7 +38,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 #### build.gradle:
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.6.1"
+testCompile "org.robolectric:robolectric:3.7"
 ```
 
 ## Building And Contributing
