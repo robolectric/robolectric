@@ -5,33 +5,40 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.accounts.IAccountManager;
+import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IContentProvider;
+import android.content.IRestrictionsManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.hardware.SystemSensorManager;
+import android.hardware.fingerprint.IFingerprintService;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IUserManager;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
+import android.view.autofill.IAutoFillManager;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,7 +66,7 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "android.view.WindowManagerImpl");
     SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
     SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.SystemSensorManager");
-    SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "org.robolectric.fakes.RoboVibrator");
+    SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.SystemVibrator");
 
     // the rest are as mapped in docs...
     SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
@@ -88,6 +95,9 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
     SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
     SYSTEM_SERVICE_MAP.put(Context.USB_SERVICE, "android.hardware.usb.UsbManager");
+    SYSTEM_SERVICE_MAP.put(Context.AUTOFILL_MANAGER_SERVICE, "android.view.autofill.AutofillManager");
+    SYSTEM_SERVICE_MAP.put(Context.TEXT_CLASSIFICATION_SERVICE, "android.view.textclassifier.TextClassificationManager");
+
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
       SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
@@ -106,12 +116,22 @@ public class ShadowContextImpl {
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
       SYSTEM_SERVICE_MAP.put(Context.BATTERY_SERVICE, "android.os.BatteryManager");
+      SYSTEM_SERVICE_MAP.put(Context.RESTRICTIONS_SERVICE, "android.content.RestrictionsManager");
     }
     if (getApiLevel() >= LOLLIPOP_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");
     }
+    if (getApiLevel() >= M) {
+      SYSTEM_SERVICE_MAP.put(Context.FINGERPRINT_SERVICE, "android.hardware.fingerprint.FingerprintManager");
+    }
     if (getApiLevel() >= N_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.SHORTCUT_SERVICE, "android.content.pm.ShortcutManager");
+    }
+
+    if (getApiLevel() >= M) {
+      SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "com.android.internal.policy.PhoneLayoutInflater");
+    } else {
+      SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "com.android.internal.policy.impl.PhoneLayoutInflater");
     }
   }
 
@@ -119,10 +139,6 @@ public class ShadowContextImpl {
 
   @Implementation
   public Object getSystemService(String name) {
-    if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
-      return new RoboLayoutInflater(RuntimeEnvironment.application);
-    }
-
     Object service = systemServices.get(name);
     if (service == null) {
       String serviceClassName = SYSTEM_SERVICE_MAP.get(name);
@@ -134,7 +150,11 @@ public class ShadowContextImpl {
       try {
         Class<?> clazz = Class.forName(serviceClassName);
 
-        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+        if (serviceClassName.equals("android.content.RestrictionsManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IRestrictionsManager.class, null));
+        } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
           if (getApiLevel() >= N) {
             service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
@@ -146,12 +166,17 @@ public class ShadowContextImpl {
                 ClassParameter.from(Handler.class, null));
           }
         } else if (serviceClassName.equals("android.app.SearchManager")
-            || serviceClassName.equals("android.app.ActivityManager")
-            || serviceClassName.equals("android.app.WallpaperManager")) {
+            || serviceClassName.equals("android.app.ActivityManager")) {
 
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(Handler.class, null));
+        } else if (serviceClassName.equals("android.app.WallpaperManager")) {
+          if (getApiLevel() <= O_MR1) {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(Handler.class, null));
+          }
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
         } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
@@ -198,6 +223,24 @@ public class ShadowContextImpl {
         } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.view.accessibility.CaptioningManager")) {
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application));
+        } else if (serviceClassName.equals("android.os.UserManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IUserManager.class, null));
+        } else if (getApiLevel() >= M && serviceClassName.equals("android.hardware.fingerprint.FingerprintManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IFingerprintService.class, null));
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.view.autofill.AutofillManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IAutoFillManager.class, null));
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.view.textclassifier.TextClassificationManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
+        } else if (serviceClassName.equals("com.android.internal.policy.impl.PhoneLayoutInflater") || serviceClassName.equals("com.android.internal.policy.PhoneLayoutInflater")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else {
           service = newInstanceOf(clazz);
         }
@@ -228,11 +271,6 @@ public class ShadowContextImpl {
   @Implementation(minSdk = O)
   public ComponentName startForegroundService(Intent service) {
     return ShadowApplication.getInstance().startService(service);
-  }
-
-  @Implementation
-  public void startActivity(Intent intent) {
-    ShadowApplication.getInstance().startActivity(intent);
   }
 
   @Implementation
@@ -349,25 +387,6 @@ public class ShadowContextImpl {
   @Implementation
   public boolean stopService(Intent name) {
     return ShadowApplication.getInstance().stopService(name);
-  }
-
-  @Implementation
-  public void startActivity(Intent intent, Bundle options) {
-    ShadowApplication.getInstance().startActivity(intent, options);
-  }
-
-  @Implementation
-  public void startActivities(Intent[] intents) {
-    for (int i = intents.length - 1; i >= 0; i--) {
-      startActivity(intents[i]);
-    }
-  }
-
-  @Implementation
-  public void startActivities(Intent[] intents, Bundle options) {
-    for (int i = intents.length - 1; i >= 0; i--) {
-      startActivity(intents[i], options);
-    }
   }
 
   @Implementation

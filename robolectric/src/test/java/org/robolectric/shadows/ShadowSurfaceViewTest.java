@@ -10,8 +10,8 @@ import android.view.SurfaceView;
 import android.view.Window;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowSurfaceViewTest {

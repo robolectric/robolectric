@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -13,7 +13,7 @@ public class RoutingResourceTable implements ResourceTable {
   private final Map<String, PackageResourceTable> resourceTables;
 
   public RoutingResourceTable(PackageResourceTable... resourceTables) {
-    this.resourceTables = new HashMap<>();
+    this.resourceTables = new LinkedHashMap<>();
 
     for (PackageResourceTable resourceTable : resourceTables) {
       this.resourceTables.put(resourceTable.getPackageName(), resourceTable);
@@ -57,6 +57,11 @@ public class RoutingResourceTable implements ResourceTable {
     for (PackageResourceTable resourceTable : resourceTables.values()) {
       resourceTable.receive(visitor);
     }
+  }
+
+  @Override
+  public String getPackageName() {
+    return resourceTables.keySet().iterator().next();
   }
 
   private PackageResourceTable pickFor(int resId) {

@@ -76,7 +76,7 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   }
 
   private static Path getPath(long pathPtr) {
-    return get(pathPtr);
+    return get(pathPtr, Path.class);
   }
 
 
@@ -168,7 +168,7 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   }
 
   private static Group getGroup(long groupPtr) {
-    return get(groupPtr);
+    return get(groupPtr, Group.class);
   }
 
   @Implementation

@@ -143,7 +143,8 @@ public class RobolectricTest {
   @Test(expected = ActivityNotFoundException.class)
   public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
     ShadowApplication.getInstance().checkActivities(true);
-    context.startActivity(new Intent("i.dont.exist.activity"));
+    context.startActivity(
+        new Intent("i.dont.exist.activity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   }
 
   @Test @Config(sdk = 16)
@@ -159,7 +160,7 @@ public class RobolectricTest {
   @Implements(View.class)
   public static class TestShadowView {
     @Implementation
-    public Context getContext() {
+    protected Context getContext() {
       return null;
     }
   }

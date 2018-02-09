@@ -13,9 +13,9 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -108,11 +108,8 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldStartPostRun() {
-    Runnable testRun = new Runnable() {
-      public void run() {
-        //Do something...
-        return;
-      }
+    Runnable testRun = () -> {
+      //Do something...
     };
     assertThat(shadowWebView.getRunFlag()).isFalse();
     shadowWebView.post(testRun);

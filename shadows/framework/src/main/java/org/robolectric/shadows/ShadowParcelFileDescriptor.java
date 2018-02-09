@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
 import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -8,12 +11,27 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import org.robolectric.Shadows;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(ParcelFileDescriptor.class)
 public class ShadowParcelFileDescriptor {
+  private static final String PIPE_TMP_DIR = "ShadowParcelFileDescriptor";
+  private static final String PIPE_FILE_NAME = "pipe";
   private RandomAccessFile file;
+
+  private @RealObject ParcelFileDescriptor realObject;
+
+  @Implementation
+  public void __constructor__(ParcelFileDescriptor wrapped) {
+    invokeConstructor(ParcelFileDescriptor.class, realObject,
+        from(ParcelFileDescriptor.class, wrapped));
+    if (wrapped != null) {
+      this.file = Shadows.shadowOf(wrapped).file;
+    }
+  }
 
   @Implementation
   public static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
@@ -26,6 +44,18 @@ public class ShadowParcelFileDescriptor {
     }
     Shadows.shadowOf(pfd).file = new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
     return pfd;
+  }
+
+  @Implementation
+  protected static ParcelFileDescriptor[] createPipe() throws IOException {
+    File file = new File(RuntimeEnvironment.getTempDirectory().create(PIPE_TMP_DIR).toFile(), PIPE_FILE_NAME);
+    if (!file.createNewFile()) {
+      throw new IOException("Cannot create pipe file: " + file.getAbsolutePath());
+    }
+    ParcelFileDescriptor readSide = open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    ParcelFileDescriptor writeSide = open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    file.deleteOnExit();
+    return new ParcelFileDescriptor[]{readSide, writeSide};
   }
 
   @Implementation
@@ -44,6 +74,16 @@ public class ShadowParcelFileDescriptor {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Overrides framework to avoid call to {@link FileDescriptor#getInt() which does not exist on JVM.
+   *
+   * @return a fixed int (`0`)
+   */
+  @Implementation
+  public int getFd() {
+    return 0;
   }
 
   @Implementation

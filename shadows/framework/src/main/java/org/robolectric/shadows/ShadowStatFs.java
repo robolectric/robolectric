@@ -76,7 +76,6 @@ public class ShadowStatFs {
 
   /**
    * Robolectric always uses a block size of `4096`.
-   * @return
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public long getBlockSizeLong() {

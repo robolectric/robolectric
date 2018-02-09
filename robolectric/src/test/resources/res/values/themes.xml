@@ -50,7 +50,7 @@
     <item name="string2">string 2 from StyleReferredToByParentAttrReference</item>
   </style>
 
-  <style name="Theme.ThemeWithAttrReferenceAsParent" parent="@attr/parentStyleReference">
+  <style name="Theme.ThemeWithAttrReferenceAsParent" parent="@style/StyleReferredToByParentAttrReference">
     <item name="string1">string 1 from Theme.ThemeWithAttrReferenceAsParent</item>
   </style>
 
@@ -68,6 +68,11 @@
 
   <style name="MyCustomView">
     <item name="aspectRatioEnabled">true</item>
+  </style>
+
+  <style name="SomeStyleable">
+    <item name="snail">@style/Gastropod</item>
+    <item name="animalStyle">@style/Gastropod</item>
   </style>
 
   <style name="Sized">
@@ -94,7 +99,7 @@
     <item name="android:textAppearance">?android:attr/textAppearance</item>
   </style>
 
-  <style name="IndirectButtonStyle" parent="@android:attr/buttonStyle">
+  <style name="IndirectButtonStyle" parent="@android:style/Widget.Button">
     <item name="android:minHeight">12dp</item>
   </style>
 </resources>

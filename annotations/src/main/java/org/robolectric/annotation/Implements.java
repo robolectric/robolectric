@@ -47,10 +47,17 @@ public @interface Implements {
   boolean callThroughByDefault() default true;
 
   /**
-   * If true, Robolectric will invoke @Implementation methods from superclasses.
+   * If true, Robolectric will invoke `@Implementation` methods from superclasses regardless of
+   * what class the superclass `@Implement`s.
+   *
+   * This is inadvisable because Robolectric might pick an @Implementation method that's intended
+   * to implement a different class (e.g. an overridden method with the same signature from a
+   * superclass) than the one requested.
    *
    * @return True to invoke superclass methods.
+   * @deprecated Declare methods directly in your shadow class rather than relying on inheritance.
    */
+  @Deprecated
   boolean inheritImplementationMethods() default false;
 
   /**

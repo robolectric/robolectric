@@ -27,6 +27,18 @@ public class ShadowPorterDuffColorFilter {
   }
 
   @Override @Implementation
+  public boolean equals(Object object) {
+    if (this == object) {
+      return true;
+    }
+    if (object == null || !(object instanceof PorterDuffColorFilter)) {
+      return false;
+    }
+    final PorterDuffColorFilter other = (PorterDuffColorFilter) object;
+    return (color == other.getColor() && mode.nativeInt == other.getMode().nativeInt);
+  }
+
+  @Override @Implementation
   public int hashCode() {
     return 31 * mode.hashCode() + color;
   }

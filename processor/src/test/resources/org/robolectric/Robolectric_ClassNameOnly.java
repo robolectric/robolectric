@@ -25,7 +25,8 @@ public class Shadows implements ShadowProvider {
   public static ShadowDummy shadowOf(Dummy actual) {
     return (ShadowDummy) Shadow.extract(actual);
   }
-  
+
+  @Override
   public void reset() {
     ShadowClassNameOnly.anotherResetter();
     ShadowDummy.resetter_method();
