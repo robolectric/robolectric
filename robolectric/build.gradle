@@ -30,7 +30,7 @@ dependencies {
 
 //    // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
 //    //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
-//    compile project(":shadows:framework")
+    implementation project(path: ":shadows:framework",  configuration: 'default')
 
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk15on:1.52"

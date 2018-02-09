@@ -9,6 +9,14 @@ configurations {
 }
 
 android {
+    libraryVariants.all { variant ->
+        def javac = (com.android.build.gradle.tasks.factory.AndroidJavaCompile) variant.getJavaCompiler();
+        if (javac != null) {
+            javac.options.bootClasspath = "/home/jongerrish/.m2/repository/org/robolectric/android-all/8.1.0-robolectric-r4458339/android-all-8.1.0-robolectric-r4458339.jar"
+        }
+        print javac.options.bootClasspath
+    }
+
     defaultConfig {
         javaCompileOptions {
             annotationProcessorOptions {
@@ -24,6 +32,11 @@ android {
         unitTests {
             includeAndroidResources = true
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -51,6 +64,7 @@ task copyNatives(type: Copy) {
 //}
 
 dependencies {
+    annotationProcessor project(":processor")
     // Project dependencies
     implementation project(":annotations")
     implementation project(":resources")
@@ -60,7 +74,6 @@ dependencies {
     // Compile dependencies
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
     implementation "com.almworks.sqlite4java:sqlite4java:0.282"
-    compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     implementation "com.ibm.icu:icu4j:53.1"
     implementation "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
