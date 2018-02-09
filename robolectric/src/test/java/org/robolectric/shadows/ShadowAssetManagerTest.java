@@ -18,7 +18,6 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import com.google.common.io.CharStreams;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -122,9 +121,7 @@ public class ShadowAssetManagerTest {
   @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
-
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(6559);
+    assertThat(inputStream.available()).isEqualTo(6559);
   }
 
   @Test @Config(qualifiers = "hdpi")
@@ -134,7 +131,7 @@ public class ShadowAssetManagerTest {
     int expectedFileSize = 389;
 
     InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
-    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(expectedFileSize);
+    assertThat(inputStream.available()).isEqualTo(expectedFileSize);
   }
 
   @Test
@@ -170,18 +167,14 @@ public class ShadowAssetManagerTest {
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
-
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(8141);
+    assertThat(inputStream.available()).isEqualTo(8141);
   }
 
   @Test
   @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
-
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(23447);
+    assertThat(inputStream.available()).isEqualTo(23447);
   }
 
   @Test
