@@ -7,8 +7,10 @@ import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
 import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
+import android.app.job.IJobScheduler;
 import android.app.trust.ITrustManager;
 import android.content.Context;
+import android.content.IClipboard;
 import android.content.IRestrictionsManager;
 import android.content.pm.IShortcutService;
 import android.hardware.usb.IUsbManager;
@@ -16,6 +18,7 @@ import android.location.ILocationManager;
 import android.net.IConnectivityManager;
 import android.net.INetworkScoreService;
 import android.net.wifi.IWifiManager;
+import android.net.wifi.p2p.IWifiP2pManager;
 import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.IBatteryPropertiesRegistrar;
@@ -27,6 +30,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
 
+import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.view.IInputMethodManager;
@@ -56,6 +60,18 @@ public class ShadowServiceManager {
           put(
               Context.NETWORK_SCORE_SERVICE,
               createBinder(INetworkScoreService.class, "android.net.INetworkScoreService"));
+          put(
+              Context.JOB_SCHEDULER_SERVICE,
+              createBinder(IJobScheduler.class, "android.app.job.IJobScheduler"));
+          put(
+              Context.CLIPBOARD_SERVICE,
+              createBinder(IClipboard.class, "android.content.IClipboard"));
+          put(
+              Context.WIFI_P2P_SERVICE,
+              createBinder(IWifiP2pManager.class, "android.net.wifi.p2p.IWifiP2pManager"));
+          put(
+              Context.APP_OPS_SERVICE,
+              createBinder(IAppOpsService.class, "com.android.internal.app.IAppOpsService"));
           put(
               Context.ACCOUNT_SERVICE,
               createBinder(IAccountManager.class, "android.accounts.IAccountManager"));
