@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.view.View;
+import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.InputMethodManager;
 import com.google.common.base.Optional;
 import org.robolectric.annotation.HiddenApi;
@@ -106,6 +107,11 @@ public class ShadowInputMethodManager {
 
   @Implementation
   protected void onViewDetachedFromWindow(View view) {
+
+  }
+
+  @Implementation
+  protected void displayCompletions(View view, CompletionInfo[] completions) {
 
   }
 }

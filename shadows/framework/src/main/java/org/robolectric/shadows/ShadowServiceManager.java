@@ -3,14 +3,18 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 
+import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
 import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.trust.ITrustManager;
 import android.content.Context;
 import android.content.IRestrictionsManager;
+import android.content.pm.IShortcutService;
+import android.hardware.usb.IUsbManager;
 import android.location.ILocationManager;
 import android.net.IConnectivityManager;
+import android.net.INetworkScoreService;
 import android.net.wifi.IWifiManager;
 import android.os.BatteryStats;
 import android.os.Binder;
@@ -50,10 +54,22 @@ public class ShadowServiceManager {
                 createBinder(IStorageManager.class, "android.os.storage.IStorageManager"));
           }
           put(
+              Context.NETWORK_SCORE_SERVICE,
+              createBinder(INetworkScoreService.class, "android.net.INetworkScoreService"));
+          put(
+              Context.ACCOUNT_SERVICE,
+              createBinder(IAccountManager.class, "android.accounts.IAccountManager"));
+          put(
+              Context.SHORTCUT_SERVICE,
+              createBinder(IShortcutService.class, "android.content.pm.IShortcutService"));
+          put(
+              Context.USB_SERVICE,
+              createBinder(IUsbManager.class, "android.hardware.usb.IUsbManager"));
+          put(
               Context.LOCATION_SERVICE,
               createBinder(ILocationManager.class, "android.location.ILocationManager"));
           put(
-                  Context.INPUT_METHOD_SERVICE,
+              Context.INPUT_METHOD_SERVICE,
               createBinder(IInputMethodManager .class, "com.android.internal.view.IInputMethodManager"));
           put(
               Context.ALARM_SERVICE,
