@@ -80,4 +80,32 @@ public class ShadowInputMethodManager {
       visibilityChangeHandler.get().handleSoftInputVisibilityChange(softInputVisible);
     }
   }
+
+  @Implementation
+  protected void restartInput(View view) {  }
+
+  @Implementation
+  protected boolean isActive(View view) {
+    return false;
+  }
+
+  @Implementation
+  protected boolean isActive() {
+    return false;
+  }
+
+  @Implementation
+  protected boolean isFullscreenMode() {
+    return false;
+  }
+
+  @Implementation
+  protected void focusIn(View view) {
+
+  }
+
+  @Implementation
+  protected void onViewDetachedFromWindow(View view) {
+
+  }
 }
