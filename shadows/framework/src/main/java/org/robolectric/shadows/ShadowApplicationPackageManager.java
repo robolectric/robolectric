@@ -274,31 +274,33 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private List<ResolveInfo> filterResolvedServices(List<ResolveInfo> resolveInfoList, int flags) {
     // If the flag is set, no further filtering will happen.
-    if ((flags & PackageManager.MATCH_ALL) == PackageManager.MATCH_ALL) {
+    if (isFlagSet(flags, PackageManager.MATCH_ALL)) {
       return resolveInfoList;
     }
     // Create a copy of the list for filtering
     resolveInfoList = new ArrayList<>(resolveInfoList);
 
-    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
+    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
-       if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
-         if (resolveInfo.serviceInfo == null || resolveInfo.serviceInfo.applicationInfo == null) {
-           // TODO: for backwards compatibility just skip filtering. In future should just remove
-           // invalid resolve infos from list
-           iterator.remove();
-         } else {
-           final int applicationFlags = resolveInfo.serviceInfo.applicationInfo.flags;
-           if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
-             iterator.remove();
-           }
-         }
+      if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
+        if (resolveInfo.serviceInfo == null || resolveInfo.serviceInfo.applicationInfo == null) {
+          // TODO: for backwards compatibility just skip filtering. In future should just remove
+          // invalid resolve infos from list
+          iterator.remove();
+        } else {
+          final int applicationFlags = resolveInfo.serviceInfo.applicationInfo.flags;
+          if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
+            iterator.remove();
+          }
+        }
       } else if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
-           && isValidComponentInfo(resolveInfo.serviceInfo)) {
-        ComponentName componentName = new ComponentName(
-            resolveInfo.serviceInfo.applicationInfo.packageName,
-            resolveInfo.serviceInfo.name);
-        if ((getComponentEnabledSetting(componentName) & PackageManager.COMPONENT_ENABLED_STATE_DISABLED) != 0) {
+          && resolveInfo != null && isValidComponentInfo(resolveInfo.serviceInfo)) {
+        ComponentName componentName =
+            new ComponentName(
+                resolveInfo.serviceInfo.applicationInfo.packageName, resolveInfo.serviceInfo.name);
+        if ((getComponentEnabledSetting(componentName)
+                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+            != 0) {
           iterator.remove();
         }
       }
@@ -345,38 +347,39 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private List<ResolveInfo> filterResolvedActivities(List<ResolveInfo> resolveInfoList, int flags) {
     // If the flag is set, no further filtering will happen.
-    if ((flags & PackageManager.MATCH_ALL) == PackageManager.MATCH_ALL) {
+    if (isFlagSet(flags, PackageManager.MATCH_ALL)) {
       return resolveInfoList;
     }
     // Create a copy of the list for filtering
     resolveInfoList = new ArrayList<>(resolveInfoList);
 
-    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
+    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
 
-      if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
+      if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
         // TODO: for backwards compatibility only remove invalid components when MATCH_SYSTEM_ONLY
         // In future should just remove all invalid resolve infos from list
         if (resolveInfo.activityInfo == null || resolveInfo.activityInfo.applicationInfo == null) {
           iterator.remove();
         } else {
           final int applicationFlags = resolveInfo.activityInfo.applicationInfo.flags;
-          if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
+          if (!isFlagSet(applicationFlags, ApplicationInfo.FLAG_SYSTEM)) {
             iterator.remove();
           }
         }
-      } else if (((flags & PackageManager.MATCH_DISABLED_COMPONENTS) != PackageManager.MATCH_DISABLED_COMPONENTS)
-          && isValidComponentInfo(resolveInfo.activityInfo)) {
-          ComponentName componentName = new ComponentName(
-              resolveInfo.activityInfo.applicationInfo.packageName,
-              resolveInfo.activityInfo.name);
-          if ((getComponentEnabledSetting(componentName)
-              & PackageManager.COMPONENT_ENABLED_STATE_DISABLED) != 0) {
-            iterator.remove();
-          }
+      } else if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
+          && resolveInfo != null && isValidComponentInfo(resolveInfo.activityInfo)) {
+        ComponentName componentName =
+            new ComponentName(
+                resolveInfo.activityInfo.applicationInfo.packageName,
+                resolveInfo.activityInfo.name);
+        if ((getComponentEnabledSetting(componentName)
+                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+            != 0) {
+          iterator.remove();
         }
       }
-
+    }
 
     return resolveInfoList;
   }

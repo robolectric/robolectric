@@ -597,10 +597,12 @@ public class ShadowPackageManagerTest {
     Intent i = new Intent();
     i.setClassName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
 
-    ComponentName componentToDisable = new ComponentName(RuntimeEnvironment.application,
-        "org.robolectric.shadows.TestActivity");
-    packageManager.setComponentEnabledSetting(componentToDisable,
-        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+    ComponentName componentToDisable =
+        new ComponentName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+    packageManager.setComponentEnabledSetting(
+        componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
 
     List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, 0);
     assertThat(resolveInfos).isEmpty();
@@ -613,10 +615,12 @@ public class ShadowPackageManagerTest {
     i.addCategory(Intent.CATEGORY_DEFAULT);
     i.setDataAndType(uri, "image/jpeg");
 
-    ComponentName componentToDisable = new ComponentName(RuntimeEnvironment.application,
-        "org.robolectric.shadows.TestActivity");
-    packageManager.setComponentEnabledSetting(componentToDisable,
-        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+    ComponentName componentToDisable =
+        new ComponentName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+    packageManager.setComponentEnabledSetting(
+        componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
 
     List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, 0);
     assertThat(resolveInfos).isEmpty();
@@ -629,12 +633,15 @@ public class ShadowPackageManagerTest {
     i.addCategory(Intent.CATEGORY_DEFAULT);
     i.setDataAndType(uri, "image/jpeg");
 
-    ComponentName componentToDisable = new ComponentName(RuntimeEnvironment.application,
-        "org.robolectric.shadows.TestActivity");
-    packageManager.setComponentEnabledSetting(componentToDisable,
-        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+    ComponentName componentToDisable =
+        new ComponentName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+    packageManager.setComponentEnabledSetting(
+        componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
 
-    List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(i, PackageManager.MATCH_DISABLED_COMPONENTS);
+    List<ResolveInfo> resolveInfos =
+        packageManager.queryIntentActivities(i, PackageManager.MATCH_DISABLED_COMPONENTS);
     assertThat(resolveInfos).isNotNull();
     assertThat(resolveInfos).hasSize(1);
   }
