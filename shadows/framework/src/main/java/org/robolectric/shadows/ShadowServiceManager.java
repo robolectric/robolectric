@@ -61,9 +61,6 @@ public class ShadowServiceManager {
               Context.NETWORK_SCORE_SERVICE,
               createBinder(INetworkScoreService.class, "android.net.INetworkScoreService"));
           put(
-              Context.JOB_SCHEDULER_SERVICE,
-              createBinder(IJobScheduler.class, "android.app.job.IJobScheduler"));
-          put(
               Context.CLIPBOARD_SERVICE,
               createBinder(IClipboard.class, "android.content.IClipboard"));
           put(
@@ -130,6 +127,8 @@ public class ShadowServiceManager {
             put(
                 Context.TRUST_SERVICE,
                 createBinder(ITrustManager.class, "android.app.trust.ITrustManager"));
+            put(Context.JOB_SCHEDULER_SERVICE,
+                createBinder(IJobScheduler.class, "android.app.job.IJobScheduler"));
           }
         }
       };
