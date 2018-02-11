@@ -7,9 +7,11 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -62,6 +64,7 @@ import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(AssetManager.class)
 public class ShadowAssetManager {
@@ -415,11 +418,28 @@ public class ShadowAssetManager {
       throw new IOException("Unable to find resource for " + fileName);
     }
 
+    InputStream stream;
     if (accessMode == AssetManager.ACCESS_STREAMING) {
-      return typedResource.getFsFile().getInputStream();
+      stream = typedResource.getFsFile().getInputStream();
     } else {
-      return new ByteArrayInputStream(typedResource.getFsFile().getBytes());
+      stream = new ByteArrayInputStream(typedResource.getFsFile().getBytes());
     }
+
+    // BEGIN-INTERNAL
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+      // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
+      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
+          ClassParameter.from(AssetManager.class, realObject),
+          ClassParameter.from(long.class, 0));
+
+      ShadowAssetInputStream sais = shadowOf(ais);
+      sais.setDelegate(stream);
+      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
+      stream = ais;
+    }
+    // END-INTERNAL
+
+    return stream;
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {

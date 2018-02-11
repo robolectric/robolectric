@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -94,9 +95,21 @@ public class ShadowBitmapFactory {
 
   @Implementation
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
+    byte[] ninePatchChunk = null;
+    // BEGIN-INTERNAL
+    if (is instanceof AssetInputStream) {
+      ShadowAssetInputStream sais = Shadows.shadowOf((AssetInputStream) is);
+      is = sais.getDelegate();
+      if (sais.isNinePatch()) {
+        ninePatchChunk = new byte[0];
+      }
+    }
+    // END-INTERNAL
+
     String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
     Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
+    bitmap.setNinePatchChunk(ninePatchChunk);
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.createdFromStream = is;
     return bitmap;

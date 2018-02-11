@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -26,7 +27,7 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.hardware.SystemSensorManager;
-import android.net.wifi.IWifiManager;
+import android.hardware.fingerprint.IFingerprintService;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import android.os.Looper;
 import android.os.UserHandle;
 import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
+import android.view.autofill.IAutoFillManager;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -93,6 +95,8 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
     SYSTEM_SERVICE_MAP.put(Context.WIFI_P2P_SERVICE, "android.net.wifi.p2p.WifiP2pManager");
     SYSTEM_SERVICE_MAP.put(Context.USB_SERVICE, "android.hardware.usb.UsbManager");
+    SYSTEM_SERVICE_MAP.put(Context.AUTOFILL_MANAGER_SERVICE, "android.view.autofill.AutofillManager");
+    SYSTEM_SERVICE_MAP.put(Context.TEXT_CLASSIFICATION_SERVICE, "android.view.textclassifier.TextClassificationManager");
 
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
@@ -117,8 +121,17 @@ public class ShadowContextImpl {
     if (getApiLevel() >= LOLLIPOP_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SUBSCRIPTION_SERVICE, "android.telephony.SubscriptionManager");
     }
+    if (getApiLevel() >= M) {
+      SYSTEM_SERVICE_MAP.put(Context.FINGERPRINT_SERVICE, "android.hardware.fingerprint.FingerprintManager");
+    }
     if (getApiLevel() >= N_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.SHORTCUT_SERVICE, "android.content.pm.ShortcutManager");
+    }
+
+    if (getApiLevel() >= M) {
+      SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "com.android.internal.policy.PhoneLayoutInflater");
+    } else {
+      SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "com.android.internal.policy.impl.PhoneLayoutInflater");
     }
   }
 
@@ -226,7 +239,21 @@ public class ShadowContextImpl {
           service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
                 ClassParameter.from(IUserManager.class, null));
-	} else {
+        } else if (getApiLevel() >= M && serviceClassName.equals("android.hardware.fingerprint.FingerprintManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IFingerprintService.class, null));
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.view.autofill.AutofillManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
+              ClassParameter.from(IAutoFillManager.class, null));
+        } else if (getApiLevel() >= O && serviceClassName.equals("android.view.textclassifier.TextClassificationManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
+        } else if (serviceClassName.equals("com.android.internal.policy.impl.PhoneLayoutInflater") || serviceClassName.equals("com.android.internal.policy.PhoneLayoutInflater")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
+        } else {
           service = newInstanceOf(clazz);
         }
       } catch (ClassNotFoundException e) {
