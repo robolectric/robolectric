@@ -26,9 +26,13 @@ public class ShadowSystemServiceRegistry {
             staticApplicationServiceFetcherClass = classForName("android.app.SystemServiceRegistry$StaticOuterContextServiceFetcher");
         }
 
+        Class staticServiceFetcherClass = classForName("android.app.SystemServiceRegistry$StaticServiceFetcher");
+
         for (Object o : fetchers.values()) {
           if (staticApplicationServiceFetcherClass.isInstance(o)) {
             ReflectionHelpers.setField(staticApplicationServiceFetcherClass, o, "mCachedInstance", null);
+          } else if (staticServiceFetcherClass.isInstance(o)) {
+            ReflectionHelpers.setField(staticServiceFetcherClass, o, "mCachedInstance", null);
           }
         }
     }

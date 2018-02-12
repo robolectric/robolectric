@@ -1,45 +1,25 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.O_MR1;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
-import android.accounts.IAccountManager;
-import android.app.IWallpaperManager;
-import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IContentProvider;
-import android.content.IRestrictionsManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
-import android.hardware.SystemSensorManager;
-import android.hardware.fingerprint.IFingerprintService;
-import android.net.wifi.p2p.IWifiP2pManager;
-import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.IUserManager;
-import android.os.Looper;
 import android.os.UserHandle;
-import android.view.Display;
-import android.view.accessibility.AccessibilityManager;
-import android.view.autofill.IAutoFillManager;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -233,5 +213,19 @@ public class ShadowContextImpl {
     Object prefsDefaultValue = RuntimeEnvironment.getApiLevel() >= KITKAT ? null : new HashMap<>();
     Class<?> contextImplClass = ReflectionHelpers.loadClass(ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
     ReflectionHelpers.setStaticField(contextImplClass, prefsCacheFieldName, prefsDefaultValue);
+
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
+      HashMap<String, Object> fetchers = ReflectionHelpers.getStaticField(contextImplClass,
+          "SYSTEM_SERVICE_MAP");
+      Class staticServiceFetcherClass = ReflectionHelpers
+          .loadClass(ShadowContextImpl.class.getClassLoader(),
+              "android.app.ContextImpl$StaticServiceFetcher");
+
+      for (Object o : fetchers.values()) {
+        if (staticServiceFetcherClass.isInstance(o)) {
+          ReflectionHelpers.setField(staticServiceFetcherClass, o, "mCachedInstance", null);
+        }
+      }
+    }
   }
 }
