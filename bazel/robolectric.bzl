@@ -471,6 +471,6 @@ def robolectric_maven_dependencies():
     )
 
 
-def setup_robolectric():
+def robolectric_repositories():
     android_all_jars()
     robolectric_maven_dependencies()
