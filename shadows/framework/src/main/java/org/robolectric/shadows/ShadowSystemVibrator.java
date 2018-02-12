@@ -75,7 +75,7 @@ public class ShadowSystemVibrator extends ShadowVibrator {
 
       long timing;
       // BEGIN-INTERNAL
-      if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.P) {
+      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
         timing = oneShot.getDuration();
       } else {
         // END-INTERNAL

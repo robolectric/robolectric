@@ -502,6 +502,33 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void queryIntentActivitiesAsUser_EmptyResult() throws Exception {
+    Intent i = new Intent(Intent.ACTION_APP_ERROR, null);
+    i.addCategory(Intent.CATEGORY_APP_BROWSER);
+
+    List<ResolveInfo> activities = packageManager.queryIntentActivitiesAsUser(i, 0, -1);
+    assertThat(activities).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void queryIntentActivitiesAsUser_Match() throws Exception {
+    Intent i = new Intent(Intent.ACTION_MAIN, null);
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+
+    ResolveInfo info = new ResolveInfo();
+    info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+
+    shadowPackageManager.addResolveInfoForIntent(i, info);
+
+    List<ResolveInfo> activities = packageManager.queryIntentActivitiesAsUser(i, 0, -1);
+    assertThat(activities).isNotNull();
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
   public void queryIntentActivities_launcher() {
     Intent intent = new Intent(Intent.ACTION_MAIN);
     intent.addCategory(Intent.CATEGORY_LAUNCHER);

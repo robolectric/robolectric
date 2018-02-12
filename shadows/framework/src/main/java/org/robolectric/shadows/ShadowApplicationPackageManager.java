@@ -323,6 +323,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   /**
+   * Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
+    return queryIntentActivities(intent, flags);
+  }
+
+  /**
    * Returns true if intent has specified a specific component.
    */
   private static boolean isExplicitIntent(Intent intent) {
@@ -910,11 +918,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public ResolveInfo resolveActivityAsUser(Intent intent, int flags, int userId) {
-    return null;
-  }
-
-  @Implementation
-  public List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
     return null;
   }
 
