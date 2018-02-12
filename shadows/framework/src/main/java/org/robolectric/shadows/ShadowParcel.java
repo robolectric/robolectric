@@ -1,17 +1,24 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
+import android.os.BadParcelableException;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Pair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,9 +33,92 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(Parcel.class)
 @SuppressWarnings("unchecked")
 public class ShadowParcel {
+  private static final String TAG = "Parcel";
+
   @RealObject private Parcel realObject;
   private static final Map<Long, ByteBuffer> NATIVE_PTR_TO_PARCEL = new LinkedHashMap<>();
   private static long nextNativePtr = 1; // this needs to start above 0, which is a magic number to Parcel
+
+  @Implementation(maxSdk = JELLY_BEAN_MR1) @SuppressWarnings("TypeParameterUnusedInFormals")
+  public <T extends Parcelable> T readParcelable(ClassLoader loader) {
+    // prior to JB MR2, readParcelableCreator() is inlined here.
+    Parcelable.Creator<?> creator = readParcelableCreator(loader);
+    if (creator == null) {
+      return null;
+    }
+
+    if (creator instanceof Parcelable.ClassLoaderCreator<?>) {
+      Parcelable.ClassLoaderCreator<?> classLoaderCreator =
+          (Parcelable.ClassLoaderCreator<?>) creator;
+      return (T) classLoaderCreator.createFromParcel(realObject, loader);
+    }
+    return (T) creator.createFromParcel(realObject);
+  }
+
+  @Implementation
+  @HiddenApi
+  public Parcelable.Creator<?> readParcelableCreator(ClassLoader loader) {
+    //note: calling `readString` will also consume the string, and increment the data-pointer.
+    //which is exactly what we need, since we do not call the real `readParcelableCreator`.
+    final String name = realObject.readString();
+    if (name == null) {
+      return null;
+    }
+
+    Parcelable.Creator<?> creator;
+    try {
+      // If loader == null, explicitly emulate Class.forName(String) "caller
+      // classloader" behavior.
+      ClassLoader parcelableClassLoader =
+          (loader == null ? getClass().getClassLoader() : loader);
+      // Avoid initializing the Parcelable class until we know it implements
+      // Parcelable and has the necessary CREATOR field. http://b/1171613.
+      Class<?> parcelableClass = Class.forName(name, false /* initialize */,
+          parcelableClassLoader);
+      if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
+        throw new BadParcelableException("Parcelable protocol requires that the "
+            + "class implements Parcelable");
+      }
+      Field f = parcelableClass.getField("CREATOR");
+
+      // this is a fix for JDK8<->Android VM incompatibility:
+      // Apparently, JDK will not allow access to a public field if its
+      // class is not visible (private or package-private) from the call-site.
+      f.setAccessible(true);
+
+      if ((f.getModifiers() & Modifier.STATIC) == 0) {
+        throw new BadParcelableException("Parcelable protocol requires "
+            + "the CREATOR object to be static on class " + name);
+      }
+      Class<?> creatorType = f.getType();
+      if (!Parcelable.Creator.class.isAssignableFrom(creatorType)) {
+        // Fail before calling Field.get(), not after, to avoid initializing
+        // parcelableClass unnecessarily.
+        throw new BadParcelableException("Parcelable protocol requires a "
+            + "Parcelable.Creator object called "
+            + "CREATOR on class " + name);
+      }
+      creator = (Parcelable.Creator<?>) f.get(null);
+    } catch (IllegalAccessException e) {
+      Log.e(TAG, "Illegal access when unmarshalling: " + name, e);
+      throw new BadParcelableException(
+          "IllegalAccessException when unmarshalling: " + name);
+    } catch (ClassNotFoundException e) {
+      Log.e(TAG, "Class not found when unmarshalling: " + name, e);
+      throw new BadParcelableException(
+          "ClassNotFoundException when unmarshalling: " + name);
+    } catch (NoSuchFieldException e) {
+      throw new BadParcelableException("Parcelable protocol requires a "
+          + "Parcelable.Creator object called "
+          + "CREATOR on class " + name);
+    }
+    if (creator == null) {
+      throw new BadParcelableException("Parcelable protocol requires a "
+          + "non-null Parcelable.Creator object called "
+          + "CREATOR on class " + name);
+    }
+    return creator;
+  }
 
   @Implementation
   public void writeByteArray(byte[] b, int offset, int len) {
@@ -194,6 +284,11 @@ public class ShadowParcel {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
   }
 
+  @Implementation(minSdk = O_MR1)
+  protected static boolean nativeReadByteArray(long nativePtr, byte[] dest, int destLen) {
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray(dest, destLen);
+  }
+
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static int nativeReadInt(int nativePtr) {
@@ -312,7 +407,7 @@ public class ShadowParcel {
     ByteBuffer otherByteBuffer = NATIVE_PTR_TO_PARCEL.get(otherNativePtr);
     thisByteBuffer.appendFrom(otherByteBuffer, offset, length);
   }
-  
+
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static void nativeWriteInterfaceToken(int nativePtr, String interfaceName) {
@@ -369,6 +464,20 @@ public class ShadowParcel {
         array[i] = readByte();
       }
       return array;
+    }
+
+    /**
+     * Reads a byte array from the byte buffer based on the current data position
+     */
+    public boolean readByteArray(byte[] dest, int destLen) {
+      int length = readInt();
+      if (length >= 0 && length <= dataAvailable() && length == destLen) {
+        for (int i = 0; i < length; i++) {
+          dest[i] = readByte();
+        }
+        return true;
+      }
+      return false;
     }
 
     /**

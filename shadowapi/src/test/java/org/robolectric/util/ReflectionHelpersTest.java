@@ -31,10 +31,10 @@ public class ReflectionHelpersTest {
   public void getFieldReflectively_givesHelpfulExceptions() {
     ExampleDescendant example = new ExampleDescendant();
     try {
-      ReflectionHelpers.getField(example, "nonExistant");
+      ReflectionHelpers.getField(example, "nonExistent");
       failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
-      if (!e.getMessage().contains("nonExistant")) {
+      if (!e.getMessage().contains("nonExistent")) {
         fail("poorly specified exception thrown", e);
       }
     }
@@ -60,10 +60,10 @@ public class ReflectionHelpersTest {
   public void setFieldReflectively_givesHelpfulExceptions() {
     ExampleDescendant example = new ExampleDescendant();
     try {
-      ReflectionHelpers.setField(example, "nonExistant", 6);
+      ReflectionHelpers.setField(example, "nonExistent", 6);
       failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
-      if (!e.getMessage().contains("nonExistant")) {
+      if (!e.getMessage().contains("nonExistent")) {
         fail("poorly specified exception thrown", e);
       }
     }
@@ -134,10 +134,10 @@ public class ReflectionHelpersTest {
   public void callInstanceMethodReflectively_givesHelpfulExceptions() {
     ExampleDescendant example = new ExampleDescendant();
     try {
-      ReflectionHelpers.callInstanceMethod(example, "nonExistant");
+      ReflectionHelpers.callInstanceMethod(example, "nonExistent");
       failBecauseExceptionWasNotThrown(RuntimeException.class);
     } catch (RuntimeException e) {
-      if (!e.getMessage().contains("nonExistant")) {
+      if (!e.getMessage().contains("nonExistent")) {
         fail("poorly specified exception thrown", e);
       }
     }
@@ -296,8 +296,10 @@ public class ReflectionHelpersTest {
 
   @SuppressWarnings("unused")
   private static class ExampleDescendant extends ExampleBase {
+
     public static int DESCENDANT = 6;
 
+    @SuppressWarnings("HidingField")
     protected int overridden;
 
     private int returnNumber() {

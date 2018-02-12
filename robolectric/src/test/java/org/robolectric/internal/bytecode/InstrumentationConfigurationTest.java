@@ -135,8 +135,8 @@ public class InstrumentationConfigurationTest {
     assertThat(customConfig.shouldInstrument(wrap(excludedClass))).isFalse();
   }
 
-  private ClassInfo wrap(final String className) {
-    ClassInfo info = mock(ClassInfo.class);
+  private MutableClass wrap(final String className) {
+    MutableClass info = mock(MutableClass.class);
     when(info.getName()).thenReturn(className);
     return info;
   }

@@ -8,8 +8,10 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -21,10 +23,11 @@ import javax.annotation.Nonnull;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
+@SuppressWarnings(value = {"BadAnnotationImplementation", "ImmutableAnnotationChecker"})
 public @interface Config {
   /**
    * TODO(vnayar): Create named constants for default values instead of magic numbers.
-   * Array named contants must be avoided in order to dodge a JDK 1.7 bug.
+   * Array named constants must be avoided in order to dodge a JDK 1.7 bug.
    *   error: annotation Config is missing value for the attribute &lt;clinit&gt;
    * See <a href="https://bugs.openjdk.java.net/browse/JDK-8013485">JDK-8013485</a>.
    */
@@ -115,9 +118,14 @@ public @interface Config {
   String abiSplit() default DEFAULT_ABI_SPLIT;
 
   /**
-   * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
+   * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
    *
-   * @return Qualifiers used for resource resolution.
+   * If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
+   * broadly-scoped qualifiers.
+   *
+   * See [Device Configuration](http://robolectric.org/device-configuration/) for details.
+   *
+   * @return Qualifiers used for device configuration and resource resolution.
    */
   String qualifiers() default DEFAULT_QUALIFIERS;
 
@@ -524,7 +532,16 @@ public @interface Config {
         this.maxSdk = pick(this.maxSdk, overlayMaxSdk, DEFAULT_VALUE_INT);
       }
       this.manifest = pick(this.manifest, overlayConfig.manifest(), DEFAULT_VALUE_STRING);
-      this.qualifiers = pick(this.qualifiers, overlayConfig.qualifiers(), "");
+
+      String qualifiersOverlayValue = overlayConfig.qualifiers();
+      if (qualifiersOverlayValue != null && !qualifiersOverlayValue.equals("")) {
+        if (qualifiersOverlayValue.startsWith("+")) {
+          this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue;
+        } else {
+          this.qualifiers = qualifiersOverlayValue;
+        }
+      }
+
       this.packageName = pick(this.packageName, overlayConfig.packageName(), "");
       this.abiSplit = pick(this.abiSplit, overlayConfig.abiSplit(), "");
       this.resourceDir = pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
@@ -532,8 +549,7 @@ public @interface Config {
       this.buildDir = pick(this.buildDir, overlayConfig.buildDir(), Config.DEFAULT_BUILD_FOLDER);
       this.constants = pick(this.constants, overlayConfig.constants(), Void.class);
 
-      Set<Class<?>> shadows = new HashSet<>();
-      shadows.addAll(Arrays.asList(this.shadows));
+      List<Class<?>> shadows = new ArrayList<>(Arrays.asList(this.shadows));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
 

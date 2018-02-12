@@ -413,7 +413,7 @@ public class CppAssetManager {
       } else {
         if (config.language[0] != 0) {
 //          byte[] spec = new byte[RESTABLE_MAX_LOCALE_LEN];
-          String spec = config.getBcp47Locale();
+          String spec = config.getBcp47Locale(false);
           setLocaleLocked(spec);
         } else {
           updateResourceParamsLocked();

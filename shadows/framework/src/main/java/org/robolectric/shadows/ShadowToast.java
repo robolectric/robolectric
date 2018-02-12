@@ -21,6 +21,7 @@ public class ShadowToast {
   private int xOffset;
   private int yOffset;
   private View view;
+  private boolean cancelled;
 
   @RealObject Toast toast;
 
@@ -99,6 +100,11 @@ public class ShadowToast {
 
   @Implementation
   public void cancel() {
+    cancelled = true;
+  }
+
+  public boolean isCancelled() {
+    return cancelled;
   }
 
   /**

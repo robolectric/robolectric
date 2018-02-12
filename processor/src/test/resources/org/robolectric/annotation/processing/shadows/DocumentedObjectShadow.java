@@ -1,11 +1,9 @@
 package org.robolectric.annotation.processing.shadows;
 
+import java.util.Map;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
-
-import java.util.Map;
 
 /**
  * Robolectric Javadoc goes here!
@@ -16,7 +14,7 @@ public class DocumentedObjectShadow {
    * Docs for shadow method go here!
    */
   @Implementation
-  public String getSomething(int index, Map<String, String> defaultValue) {
+  protected String getSomething(int index, Map<String, String> defaultValue) {
     return null;
   }
 

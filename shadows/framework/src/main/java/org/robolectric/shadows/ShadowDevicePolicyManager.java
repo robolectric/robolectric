@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -135,18 +137,42 @@ public class ShadowDevicePolicyManager {
     return uninstallBlockedPackages.contains(packageName);
   }
 
+  /**
+   * @see #setDeviceOwner(ComponentName)
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected String getDeviceOwner() {
+    return deviceOwner != null ? deviceOwner.getPackageName() : null;
+  }
+
+  /**
+   * @see #setProfileOwner(ComponentName)
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected ComponentName getProfileOwner() {
+    return profileOwner;
+  }
+
   private ShadowUserManager getShadowUserManager() {
     return shadowOf(
         (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
   }
 
-  /** Sets the admin as active admin and device owner. */
+  /**
+   * Sets the admin as active admin and device owner.
+   *
+   * @see DevicePolicyManager#getDeviceOwner()
+   */
   public void setDeviceOwner(ComponentName admin) {
     setActiveAdmin(admin);
     deviceOwner = admin;
   }
 
-  /** Sets the admin as active admin and profile owner. */
+  /**
+   * Sets the admin as active admin and profile owner.
+   *
+   * @see DevicePolicyManager#getProfileOwner()
+   */
   public void setProfileOwner(ComponentName admin) {
     setActiveAdmin(admin);
     profileOwner = admin;

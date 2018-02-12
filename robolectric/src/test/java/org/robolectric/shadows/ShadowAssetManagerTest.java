@@ -21,6 +21,7 @@ import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManage
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Build.VERSION;
 import android.util.AttributeSet;
@@ -75,21 +76,25 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void assetsPathListing() throws IOException {
-    if (isLegacyAssetManager()) {
-      assertThat(assetManager.list("")).contains("assetsHome.txt", "deflatedAsset.xml", "docs", "myFont.ttf");
-    } else {
-      assertThat(assetManager.list("")).contains("assetsHome.txt", "deflatedAsset.xml", "docs", "myFont.ttf", "images", "webkit");
-    }
+    assertThat(assetManager.list(""))
+        .contains(
+            "assetsHome.txt",   // test/resources/assets
+            "docs",             // test/resources/assets
+            "myFont.ttf",       // test/resources/assets
+            "libFont.ttf",      // test/resources/lib1/assets
+            "file-in-lib2.txt"  // test/resources/lib2/assets + test/resources/lib2/assets (merged)
+            );
 
-    assertThat(assetManager.list("docs")).containsExactlyInAnyOrder("extra");
+    assertThat(assetManager.list("docs"))
+        .contains("extra");
 
-    assertThat(assetManager.list("docs/extra")).containsExactlyInAnyOrder("testing");
+    assertThat(assetManager.list("docs/extra"))
+        .contains("testing");
 
-    assertThat(assetManager.list("docs/extra/testing")).containsExactlyInAnyOrder("hello.txt");
+    assertThat(assetManager.list("docs/extra/testing"))
+        .contains("hello.txt");
 
-    assertThat(assetManager.list("assetsHome.txt")).isEmpty();
-
-    assertThat(assetManager.list("bogus.file")).isEmpty();
+    assertThat(assetManager.list("bogus-dir")).isEmpty();
   }
 
   @Test
@@ -97,6 +102,13 @@ public class ShadowAssetManagerTest {
     final String contents =
         CharStreams.toString(new InputStreamReader(assetManager.open("assetsHome.txt"), UTF_8));
     assertThat(contents).isEqualTo("assetsHome!");
+  }
+
+  @Test
+  public void open_shouldOpenFileInLib() throws IOException {
+    final String contents =
+        CharStreams.toString(new InputStreamReader(assetManager.open("file-in-lib2.txt"), UTF_8));
+    assertThat(contents).isEqualTo("asset in lib 2");
   }
 
   @Test
@@ -112,6 +124,14 @@ public class ShadowAssetManagerTest {
     assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
         .isEqualTo("assetsHome!");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
+  }
+
+  @Test
+  public void openFd_shouldProvideFileDescriptorForAssetInLib() throws Exception {
+    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("file-in-lib2.txt");
+    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
+        .isEqualTo("asset in lib 2");
+    assertThat(assetFileDescriptor.getLength()).isEqualTo(14);
   }
 
   @Test
@@ -197,6 +217,50 @@ public class ShadowAssetManagerTest {
 
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(23447);
+  }
+
+  @Test
+  public void multiFormatAttributes_integerDecimalValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "16").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
+  }
+
+  @Test
+  public void multiFormatAttributes_integerHexValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "0x10").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+  }
+
+  @Test
+  public void multiFormatAttributes_stringValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "Hello World").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
+  }
+
+  @Test
+  public void multiFormatAttributes_booleanValue() {
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(R.attr.multiformat, "true").build();
+    TypedArray typedArray =
+        resources.obtainAttributes(attributeSet, new int[] {R.attr.multiformat});
+    TypedValue outValue = new TypedValue();
+    typedArray.getValue(0, outValue);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
   }
 
   @Test

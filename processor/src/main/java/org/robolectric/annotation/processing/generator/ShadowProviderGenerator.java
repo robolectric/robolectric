@@ -82,7 +82,7 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("@SuppressWarnings({\"unchecked\",\"deprecation\"})");
     writer.println("public class " + GEN_CLASS + " implements ShadowProvider {");
 
-    final int shadowSize = model.getAllShadowTypes().size();
+    final int shadowSize = model.getAllShadowTypes().size() + model.getExtraShadowTypes().size();
     writer.println("  private static final Map<String, String> SHADOW_MAP = new HashMap<>(" + shadowSize + ");");
     writer.println();
 
@@ -147,6 +147,7 @@ public class ShadowProviderGenerator extends Generator {
       writer.println();
     }
 
+    writer.println("  @Override");
     writer.println("  public void reset() {");
     for (Map.Entry<TypeElement, ExecutableElement> entry : model.getResetters().entrySet()) {
       Implements annotation = entry.getKey().getAnnotation(Implements.class);

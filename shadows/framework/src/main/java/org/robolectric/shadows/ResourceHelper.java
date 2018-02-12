@@ -19,15 +19,13 @@ package org.robolectric.shadows;
 import android.util.TypedValue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.ResName;
 
 /**
  * Helper class to provide various conversion method used in handling android resources.
  */
 public final class ResourceHelper {
 
-  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
+  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]*(?:\\.[0-9]+)?)(.*)");
   private final static float[] sFloatOut = new float[1];
 
   private final static TypedValue mValue = new TypedValue();

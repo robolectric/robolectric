@@ -343,7 +343,7 @@ public class ShadowArscAssetManager {
     config.screenHeightDp = screenHeightDp;
     config.screenLayout = screenLayout;
     config.uiMode = uiMode;
-    config.colorMode = colorMode;
+    config.colorMode = (byte) colorMode;
     config.sdkVersion = sdkVersion;
     config.minorVersion = 0;
 

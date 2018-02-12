@@ -14,6 +14,7 @@ public class AttributeResource {
 
   public final @Nonnull ResName resName;
   public final @Nonnull String value;
+  public final @Nonnull String trimmedValue;
   public final @Nonnull String contextPackageName;
   private final Integer referenceResId;
 
@@ -27,20 +28,21 @@ public class AttributeResource {
 
     this.resName = resName;
     this.value = value;
+    this.trimmedValue = value.trim();
     this.contextPackageName = contextPackageName;
   }
 
   public boolean isResourceReference() {
-    return isResourceReference(value);
+    return isResourceReference(trimmedValue);
   }
 
   public @Nonnull ResName getResourceReference() {
     if (!isResourceReference()) throw new RuntimeException("not a resource reference: " + this);
-    return ResName.qualifyResName(deref(value).replace("+", ""), contextPackageName, "style");
+    return ResName.qualifyResName(deref(trimmedValue).replace("+", ""), contextPackageName, "style");
   }
 
   public boolean isStyleReference() {
-    return isStyleReference(value);
+    return isStyleReference(trimmedValue);
   }
 
   public ResName getStyleReference() {
@@ -49,11 +51,11 @@ public class AttributeResource {
   }
 
   public boolean isNull() {
-    return NULL_VALUE.equals(value);
+    return NULL_VALUE.equals(trimmedValue);
   }
 
   public boolean isEmpty() {
-    return EMPTY_VALUE.equals(value);
+    return EMPTY_VALUE.equals(trimmedValue);
   }
 
   @Override

@@ -4,14 +4,14 @@ import java.lang.invoke.MethodType;
 import java.lang.invoke.MutableCallSite;
 
 public class RoboCallSite extends MutableCallSite {
-  private final Class<?> caller;
+  private final Class<?> theClass;
 
-  public RoboCallSite(MethodType type, Class<?> caller) {
+  public RoboCallSite(MethodType type, Class<?> theClass) {
     super(type);
-    this.caller = caller;
+    this.theClass = theClass;
   }
 
-  public Class<?> getCaller() {
-    return caller;
+  public Class<?> getTheClass() {
+    return theClass;
   }
 }

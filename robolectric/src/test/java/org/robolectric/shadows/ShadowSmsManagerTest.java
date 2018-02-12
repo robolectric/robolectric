@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -19,6 +20,15 @@ public class ShadowSmsManagerTest {
   private SmsManager smsManager = SmsManager.getDefault();
   private final String scAddress = "serviceCenterAddress";
   private final String destAddress = "destinationAddress";
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void getForSubscriptionId() {
+    final int subId = 101;
+
+    smsManager = SmsManager.getSmsManagerForSubscriptionId(subId);
+    assertThat(smsManager.getSubscriptionId()).isEqualTo(subId);
+  }
 
   @Test
   public void sendTextMessage_shouldStoreLastSentTextParameters() {

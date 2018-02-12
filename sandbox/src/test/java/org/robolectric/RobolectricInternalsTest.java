@@ -128,23 +128,23 @@ public class RobolectricInternalsTest {
     public Long   shadowParam33 = null;
     
     @Implementation
-    public void __constructor__() {
+    protected void __constructor__() {
       shadowConstructorCalled = true;
     }
 
     @Implementation
-    public void __constructor__(String param) {
+    protected void __constructor__(String param) {
       shadowParam11 = param;
     }
 
     @Implementation
-    public void __constructor__(String param1, Byte param2) {
+    protected void __constructor__(String param1, Byte param2) {
       shadowParam21 = param1;
       shadowParam22 = param2;
     }
 
     @Implementation
-    public void __constructor__(String param1, Byte param2, Long param3) {
+    protected void __constructor__(String param1, Byte param2, Long param3) {
       shadowParam31 = param1;
       shadowParam32 = param2;
       shadowParam33 = param3;

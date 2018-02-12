@@ -19,8 +19,7 @@ public class StringResources {
 
   /**
    * Provides escaping of String resources as described
-   * <p>
-   * <a href="http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling">here</a>
+   * [here](http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling).
    *
    * @param text Text to escape.
    * @return Escaped text.
@@ -37,10 +36,10 @@ public class StringResources {
     while (true) {
       int j = text.indexOf('\\', i);
       if (j == -1) {
-        result.append(text.substring(i));
+        result.append(removeUnescapedDoubleQuotes(text.substring(i)));
         break;
       }
-      result.append(text.substring(i, j));
+      result.append(removeUnescapedDoubleQuotes(text.substring(i, j)));
       if (j == length - 1) {
         // dangling backslash
         break;
@@ -95,5 +94,9 @@ public class StringResources {
       // IllegalArgumentException of Character.toChars().
       throw new IllegalArgumentException("Invalid code point: \\u" + codePoint, e);
     }
+  }
+
+  private static String removeUnescapedDoubleQuotes(String input) {
+    return input.replaceAll("\"", "");
   }
 }

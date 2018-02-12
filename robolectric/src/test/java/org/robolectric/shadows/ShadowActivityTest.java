@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.drawable.ColorDrawable;
@@ -51,32 +50,22 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowActivityTest {
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Activity activity;
 
   @Test
@@ -136,17 +125,31 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivity_shouldDelegateToStartActivityForResult() {
-    final List<String> transcript = new ArrayList<>();
-    Activity activity = new Activity() {
-      @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
-      }
-    };
+
+    TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
+
     activity.startActivity(new Intent().setType("image/*"));
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    assertThat(transcript).containsExactly("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+    assertThat(activity.transcript)
+        .containsExactly(
+            "onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+  }
+
+  public static class TranscriptActivity extends Activity {
+    final List<String> transcript = new ArrayList<>();
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      transcript.add(
+          "onActivityResult called with requestCode "
+              + requestCode
+              + ", resultCode "
+              + resultCode
+              + ", intent data "
+              + data.getData());
+    }
   }
 
   @Test
@@ -175,29 +178,20 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
-    final List<String> transcript = new ArrayList<>();
-    Activity activity = new Activity() {
-      @Override
-      protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
-      }
-    };
+    TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    assertThat(transcript).containsExactly("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
+    assertThat(activity.transcript)
+        .containsExactly(
+            "onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
   }
 
   @Test
   public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() throws Exception {
-    Activity activity = new Activity() {
-      @Override
-      protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        throw new IllegalStateException("should not be called");
-      }
-    };
+    ThrowOnResultActivity activity = Robolectric.buildActivity(ThrowOnResultActivity.class).get();
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
@@ -208,6 +202,13 @@ public class ShadowActivityTest {
       fail();
     } catch (Exception e) {
       assertThat(e.getMessage()).startsWith("No intent matches " + requestIntent);
+    }
+  }
+
+  public static class ThrowOnResultActivity extends Activity {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      throw new IllegalStateException("should not be called");
     }
   }
 
@@ -603,10 +604,9 @@ public class ShadowActivityTest {
     assertThat(root).isNotEqualTo(null);
     assertThat(decorView.getWidth()).isNotEqualTo(0);
     assertThat(decorView.getHeight()).isNotEqualTo(0);
-    Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
-    assertThat(decorView.getWidth()).isEqualTo(shadowDisplay.getWidth());
-    assertThat(decorView.getHeight()).isEqualTo(shadowDisplay.getHeight());
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(decorView.getWidth()).isEqualTo(display.getWidth());
+    assertThat(decorView.getHeight()).isEqualTo(display.getHeight());
   }
 
   @Test
@@ -640,7 +640,7 @@ public class ShadowActivityTest {
     @Override
     public Object onRetainNonConfigurationInstance() {
       transcript.add("onRetainNonConfigurationInstance");
-      return new Integer(5);
+      return 5;
     }
 
     @Override
@@ -700,28 +700,23 @@ public class ShadowActivityTest {
 
   @Test
   public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
-    Activity parentActivity = new Activity() {
-    };
-    Activity activity = new Activity() {
-    };
+    Activity parentActivity = new Activity();
+    Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
     assertSame(parentActivity, activity.getParent());
   }
 
   @Test
   public void getAndSetRequestedOrientation_shouldRemember() throws Exception {
-    Activity activity = new Activity() {
-    };
+    Activity activity = new Activity();
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
   }
 
   @Test
   public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() throws Exception {
-    Activity parentActivity = new Activity() {
-    };
-    Activity activity = new Activity() {
-    };
+    Activity parentActivity = new Activity();
+    Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
     parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
@@ -750,13 +745,6 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
-  }
-
-  @Test public void shouldGetAttributeFromThemeSetOnActivity() throws Exception {
-    ShadowThemeTest.TestActivity activity = setupActivity(TestActivityWithAnotherTheme.class);
-    TypedArray a = activity.obtainStyledAttributes(R.styleable.CustomView);
-
-    assertThat(a.hasValue(R.styleable.CustomView_animalStyle)).isTrue();
   }
 
   @Test public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() throws Exception {
@@ -827,7 +815,7 @@ public class ShadowActivityTest {
 
   @Test
   public void canStartActivityFromFragment() {
-    final Activity activity = buildActivity(Activity.class).create().get();
+    final Activity activity = Robolectric.setupActivity(Activity.class);
 
     Intent intent = new Intent(Intent.ACTION_VIEW);
     activity.startActivityFromFragment(new Fragment(), intent, 4);
@@ -853,7 +841,7 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldUseAnimationOverride() {
-    Activity activity = buildActivity(Activity.class).create().get();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     Intent intent = new Intent(activity, OptionsMenuActivity.class);
 
     Bundle animationBundle = ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1).toBundle();
@@ -926,21 +914,6 @@ public class ShadowActivityTest {
   }
 
   /////////////////////////////
-
-  public AndroidManifest newConfigWith(String contents) throws IOException {
-    return newConfigWith("org.robolectric", contents);
-  }
-
-  private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
-    String fileContents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-        "          package=\"" + packageName + "\">\n" +
-        "    " + contents + "\n" +
-        "</manifest>\n";
-    File f = temporaryFolder.newFile("whatever.xml");
-    Files.write(fileContents, f, Charsets.UTF_8);
-    return new AndroidManifest(Fs.newFile(f), null, null);
-  }
 
   private static class DialogCreatingActivity extends Activity {
     @Override

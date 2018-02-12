@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -12,20 +11,31 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
@@ -51,13 +61,14 @@ import org.robolectric.res.StyleData;
 import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = AssetManager.class, hackyTerribleIgnore = true)
-public final class ShadowAssetManager {
+public class ShadowAssetManager {
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
   public static final int STYLE_DATA = 1;
@@ -65,6 +76,19 @@ public final class ShadowAssetManager {
   public static final int STYLE_RESOURCE_ID = 3;
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
+
+  public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
+      Ordering.explicit(
+          "reference",
+          "color",
+          "boolean",
+          "integer",
+          "fraction",
+          "dimension",
+          "float",
+          "enum",
+          "flag",
+          "string");
 
   static boolean strictErrors = false;
 
@@ -75,6 +99,9 @@ public final class ShadowAssetManager {
   public static ShadowAssetManager legacyShadowOf(AssetManager assetManager) {
     return Shadow.extract(assetManager);
   }
+
+  ResTable_config config = new ResTable_config();
+  private Set<FsFile> assetDirs = new CopyOnWriteArraySet<>();
 
   class NativeTheme {
     private ThemeStyleSet themeStyleSet;
@@ -91,7 +118,7 @@ public final class ShadowAssetManager {
   @RealObject
   AssetManager realObject;
 
-  private void convertAndFill(AttributeResource attribute, TypedValue outValue, String qualifiers, boolean resolveRefs) {
+  private void convertAndFill(AttributeResource attribute, TypedValue outValue, ResTable_config config, boolean resolveRefs) {
     if (attribute.isNull()) {
       outValue.type = TypedValue.TYPE_NULL;
       outValue.data = TypedValue.DATA_NULL_UNDEFINED;
@@ -104,6 +131,7 @@ public final class ShadowAssetManager {
 
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = Converter.getNextStringCookie();
+    outValue.changingConfigurations = 0;
 
     // TODO: Handle resource and style references
     if (attribute.isStyleReference()) {
@@ -131,7 +159,7 @@ public final class ShadowAssetManager {
 
       outValue.resourceId = resourceId;
 
-      TypedResource dereferencedRef = resourceTable.getValue(resName, qualifiers);
+      TypedResource dereferencedRef = resourceTable.getValue(resName, config);
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
         return;
@@ -161,11 +189,12 @@ public final class ShadowAssetManager {
       return;
     }
 
-    TypedResource attrTypeData = resourceTable.getValue(attribute.resName, qualifiers);
+    TypedResource attrTypeData = getAttrTypeData(attribute.resName);
     if (attrTypeData != null) {
       AttrData attrData = (AttrData) attrTypeData.getData();
       String format = attrData.getFormat();
       String[] types = format.split("\\|");
+      Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE);
       for (String type : types) {
         if ("reference".equals(type)) continue; // already handled above
         Converter converter = Converter.getConverterFor(attrData, type);
@@ -189,6 +218,10 @@ public final class ShadowAssetManager {
     }
   }
 
+  public TypedResource getAttrTypeData(ResName resName) {
+    return resourceTable.getValue(resName, config);
+  }
+
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
@@ -205,7 +238,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public CharSequence getResourceText(int ident) {
-    TypedResource value = getAndResolve(ident, RuntimeEnvironment.getQualifiers(), true);
+    TypedResource value = getAndResolve(ident, config, true);
     if (value == null) return null;
     return (CharSequence) value.getData();
   }
@@ -240,7 +273,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public boolean getResourceValue(int ident, int density, TypedValue outValue, boolean resolveRefs) {
-    TypedResource value = getAndResolve(ident, RuntimeEnvironment.getQualifiers(), resolveRefs);
+    TypedResource value = getAndResolve(ident, config, resolveRefs);
     if (value == null) return false;
 
     getConverter(value).fillTypedValue(value.getData(), outValue);
@@ -258,12 +291,12 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public CharSequence[] getResourceTextArray(int resId) {
-    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
+    TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
     List<TypedResource> items = getConverter(value).getItems(value);
     CharSequence[] charSequences = new CharSequence[items.size()];
     for (int i = 0; i < items.size(); i++) {
-      TypedResource typedResource = resolve(items.get(i), RuntimeEnvironment.getQualifiers(), resId);
+      TypedResource typedResource = resolve(items.get(i), config, resId);
       charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
     }
     return charSequences;
@@ -289,7 +322,7 @@ public final class ShadowAssetManager {
       attrValue = themeStyleSet.getAttrValue(attrResName);
     }
     if (attrValue != null) {
-      convertAndFill(attrValue, outValue, RuntimeEnvironment.getQualifiers(), resolveRefs);
+      convertAndFill(attrValue, outValue, config, resolveRefs);
       return true;
     }
     return false;
@@ -301,22 +334,33 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final InputStream open(String fileName) throws IOException {
-    return getAssetsDirectory().join(fileName).getInputStream();
+    return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
-    return getAssetsDirectory().join(fileName).getInputStream();
+    return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(getAssetsDirectory().join(fileName).getPath());
+    File file = new File(findAssetFile(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
     }
     ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
+  }
+
+  private FsFile findAssetFile(String fileName) throws IOException {
+    for (FsFile assetDir : getAllAssetsDirectories()) {
+      FsFile assetFile = assetDir.join(fileName);
+      if (assetFile.exists()) {
+        return assetFile;
+      }
+    }
+
+    throw new FileNotFoundException("Asset file " + fileName + " not found");
   }
 
   /**
@@ -327,7 +371,7 @@ public final class ShadowAssetManager {
   private static File getFileFromZip(File file) {
     File fileFromZip = null;
     String pathString = file.getPath();
-    String zipFile = pathString.substring(pathString.indexOf(":") + 1, pathString.indexOf("!"));
+    String zipFile = pathString.substring(pathString.lastIndexOf(":") + 1, pathString.indexOf("!"));
     String filePathInsideZip = pathString.split("!")[1].substring(1);
     byte[] buffer = new byte[1024];
     try {
@@ -360,16 +404,21 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final String[] list(String path) throws IOException {
-    FsFile file;
-    if (path.isEmpty()) {
-      file = getAssetsDirectory();
-    } else {
-      file = getAssetsDirectory().join(path);
+    List<String> assetFiles = new ArrayList<>();
+
+    for (FsFile assetsDir : getAllAssetsDirectories()) {
+      FsFile file;
+      if (path.isEmpty()) {
+        file = assetsDir;
+      } else {
+        file = assetsDir.join(path);
+      }
+
+      if (file.isDirectory()) {
+        Collections.addAll(assetFiles, file.listFileNames());
+      }
     }
-    if (file.isDirectory()) {
-      return file.listFileNames();
-    }
-    return new String[0];
+    return assetFiles.toArray(new String[assetFiles.size()]);
   }
 
   @HiddenApi @Implementation
@@ -377,7 +426,7 @@ public final class ShadowAssetManager {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
 
     final FileTypedResource typedResource =
-        (FileTypedResource) resourceTable.getValue(resName, RuntimeEnvironment.getQualifiers());
+        (FileTypedResource) resourceTable.getValue(resName, config);
 
     if (typedResource == null) {
       throw new IOException("Unable to find resource for " + fileName);
@@ -397,7 +446,7 @@ public final class ShadowAssetManager {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
-      return ResName.qualifyFromFilePath(ShadowApplication.getInstance().getAppManifest().getPackageName(), fileName);
+      return ResName.qualifyFromFilePath(RuntimeEnvironment.application.getPackageName(), fileName);
     }
   }
 
@@ -408,22 +457,22 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), "fixme");
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
-    return getXmlResourceParser(null, xmlBlock, "fixme");
+    return getXmlResourceParser(resourceTable, xmlBlock, resourceTable.getPackageName());
   }
 
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     ResName resName = getResName(resId);
-    ResName resolvedResName = resolveResName(resName, RuntimeEnvironment.getQualifiers());
+    ResName resolvedResName = resolveResName(resName, config);
     if (resolvedResName == null) {
       throw new RuntimeException("couldn't resolve " + resName.getFullyQualifiedName());
     }
     resName = resolvedResName;
 
-    XmlBlock block = resourceTable.getXml(resName, RuntimeEnvironment.getQualifiers());
+    XmlBlock block = resourceTable.getXml(resName, config);
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
@@ -440,7 +489,21 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
+    assetDirs.add(getFsFileFromPath(path));
     return 1;
+  }
+
+  private FsFile getFsFileFromPath(String property) {
+    if (property.startsWith("jar")) {
+      try {
+        URL url = new URL(property);
+        return Fs.fromURL(url);
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      return Fs.fileFromPath(property);
+    }
   }
 
   @HiddenApi @Implementation
@@ -464,32 +527,75 @@ public final class ShadowAssetManager {
       int keyboardHidden, int navigation, int screenWidth, int screenHeight,
       int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
       int screenLayout, int uiMode, int majorVersion) {
+    setConfiguration(mcc, mnc, locale,
+        orientation, touchscreen, density, keyboard,
+        keyboardHidden, navigation, screenWidth, screenHeight,
+        smallestScreenWidthDp, screenWidthDp, screenHeightDp,
+        screenLayout, uiMode, 0, majorVersion);
   }
 
-  @HiddenApi
-  @Implementation(minSdk = O)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.O)
   public void setConfiguration(int mcc, int mnc, String locale,
       int orientation, int touchscreen, int density, int keyboard,
       int keyboardHidden, int navigation, int screenWidth, int screenHeight,
       int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-      int screenLayout, int uiMode, int colorMode, int sdkVersion) {
+      int screenLayout, int uiMode, int colorMode, int majorVersion) {
+    // AssetManager* am = assetManagerForJavaObject(env, clazz);
+
+    ResTable_config config = new ResTable_config();
+
+    // Constants duplicated from Java class android.content.res.Configuration.
+    final int kScreenLayoutRoundMask = 0x300;
+    final int kScreenLayoutRoundShift = 8;
+
+    config.mcc = mcc;
+    config.mnc = mnc;
+    config.orientation = orientation;
+    config.touchscreen = touchscreen;
+    config.density = density;
+    config.keyboard = keyboard;
+    config.inputFlags = keyboardHidden;
+    config.navigation = navigation;
+    config.screenWidth = screenWidth;
+    config.screenHeight = screenHeight;
+    config.smallestScreenWidthDp = smallestScreenWidthDp;
+    config.screenWidthDp = screenWidthDp;
+    config.screenHeightDp = screenHeightDp;
+    config.screenLayout = screenLayout;
+    config.uiMode = uiMode;
+    // config.colorMode = colorMode; // todo
+    config.sdkVersion = majorVersion;
+    config.minorVersion = 0;
+
+    // In Java, we use a 32bit integer for screenLayout, while we only use an 8bit integer
+    // in C++. We must extract the round qualifier out of the Java screenLayout and put it
+    // into screenLayout2.
+    config.screenLayout2 =
+            (byte)((screenLayout & kScreenLayoutRoundMask) >> kScreenLayoutRoundShift);
+
+    if (locale != null) {
+      config.setBcp47Locale(locale);
+    }
+    // am->setConfiguration(config, locale8);
+
+    this.config = config;
   }
 
   @HiddenApi @Implementation
   public int[] getArrayIntResource(int resId) {
-    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
+    TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
     List<TypedResource> items = getConverter(value).getItems(value);
     int[] ints = new int[items.size()];
     for (int i = 0; i < items.size(); i++) {
-      TypedResource typedResource = resolve(items.get(i), RuntimeEnvironment.getQualifiers(), resId);
+      TypedResource typedResource = resolve(items.get(i), config, resId);
       ints[i] = getConverter(typedResource).asInt(typedResource);
     }
     return ints;
   }
 
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
-    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
+    TypedResource value = getAndResolve(resId, config, true);
     if (value == null) {
       return null;
     }
@@ -521,7 +627,7 @@ public final class ShadowAssetManager {
             typedResource.getXmlContext().getPackageName(), null);
         typedValue.resourceId = resourceTable.getResourceId(refResName);
         typedValue.data = typedValue.resourceId;
-        typedResource = resolve(typedResource, RuntimeEnvironment.getQualifiers(), typedValue.resourceId);
+        typedResource = resolve(typedResource, config, typedValue.resourceId);
 
         if (typedResource != null) {
           // Reclassify to a non-reference type.
@@ -658,34 +764,35 @@ public final class ShadowAssetManager {
   }
 
   private Style resolveStyle(@Nonnull ResName themeStyleName, Style themeStyleSet) {
-    TypedResource themeStyleResource = resourceTable.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
+    TypedResource themeStyleResource = resourceTable.getValue(themeStyleName, config);
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
-    return new StyleResolver(resourceTable, legacyShadowOf(AssetManager.getSystem()).getResourceTable(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
+    return new StyleResolver(resourceTable, legacyShadowOf(AssetManager.getSystem()).getResourceTable(),
+        themeStyleData, themeStyleSet, themeStyleName, config);
   }
 
-  private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
-    TypedResource value = resourceTable.getValue(resId, qualifiers);
+  private TypedResource getAndResolve(int resId, ResTable_config config, boolean resolveRefs) {
+    TypedResource value = resourceTable.getValue(resId, config);
     if (resolveRefs) {
-      value = resolve(value, qualifiers, resId);
+      value = resolve(value, config, resId);
     }
     return value;
   }
 
-  TypedResource resolve(TypedResource value, String qualifiers, int resId) {
-    return resolveResourceValue(value, qualifiers, resId);
+  TypedResource resolve(TypedResource value, ResTable_config config, int resId) {
+    return resolveResourceValue(value, config, resId);
   }
 
-  public ResName resolveResName(ResName resName, String qualifiers) {
-    TypedResource value = resourceTable.getValue(resName, qualifiers);
-    return resolveResource(value, qualifiers, resName);
+  public ResName resolveResName(ResName resName, ResTable_config config) {
+    TypedResource value = resourceTable.getValue(resName, config);
+    return resolveResource(value, config, resName);
   }
 
   // todo: DRY up #resolveResource vs #resolveResourceValue
-  private ResName resolveResource(TypedResource value, String qualifiers, ResName resName) {
+  private ResName resolveResource(TypedResource value, ResTable_config config, ResName resName) {
     while (value != null && value.isReference()) {
       String s = value.asString();
       if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
@@ -693,14 +800,14 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = resourceTable.getValue(resName, qualifiers);
+        value = resourceTable.getValue(resName, config);
       }
     }
 
     return resName;
   }
 
-  private TypedResource resolveResourceValue(TypedResource value, String qualifiers, ResName resName) {
+  private TypedResource resolveResourceValue(TypedResource value, ResTable_config config, ResName resName) {
     while (value != null && value.isReference()) {
       String s = value.asString();
       if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
@@ -708,16 +815,16 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = resourceTable.getValue(resName, qualifiers);
+        value = resourceTable.getValue(resName, config);
       }
     }
 
     return value;
   }
 
-  public TypedResource resolveResourceValue(TypedResource value, String qualifiers, int resId) {
+  public TypedResource resolveResourceValue(TypedResource value, ResTable_config config, int resId) {
     ResName resName = getResName(resId);
-    return resolveResourceValue(value, qualifiers, resName);
+    return resolveResourceValue(value, config, resName);
   }
 
   private TypedValue buildTypedValue(AttributeSet set, int resId, int defStyleAttr, Style themeStyleSet, int defStyleRes) {
@@ -810,7 +917,7 @@ public final class ShadowAssetManager {
       return null;
     } else {
       TypedValue typedValue = new TypedValue();
-      convertAndFill(attribute, typedValue, RuntimeEnvironment.getQualifiers(), true);
+      convertAndFill(attribute, typedValue, config, true);
       return typedValue;
     }
   }
@@ -914,8 +1021,8 @@ public final class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  private FsFile getAssetsDirectory() {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
+  Collection<FsFile> getAllAssetsDirectories() {
+    return assetDirs;
   }
 
   @Nonnull private ResName getResName(int id) {

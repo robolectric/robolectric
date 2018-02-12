@@ -3,46 +3,55 @@ package org.robolectric.res;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.robolectric.util.Logger;
+import org.robolectric.util.PerfStatsCollector;
 
 public class ResourceTableFactory {
-  /**
-   * Builds an Android framework resource table in the "android" package space.
-   */
+  /** Builds an Android framework resource table in the "android" package space. */
   public PackageResourceTable newFrameworkResourceTable(ResourcePath resourcePath) {
-    PackageResourceTable resourceTable = new PackageResourceTable("android");
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "load legacy framework resources",
+            () -> {
+              PackageResourceTable resourceTable = new PackageResourceTable("android");
 
-    if (resourcePath.getRClass() != null) {
-      addRClassValues(resourceTable, resourcePath.getRClass());
-      addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
-    }
-    if (resourcePath.getInternalRClass() != null) {
-      addRClassValues(resourceTable, resourcePath.getInternalRClass());
-      addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
-    }
+              if (resourcePath.getRClass() != null) {
+                addRClassValues(resourceTable, resourcePath.getRClass());
+                addMissingStyleableAttributes(resourceTable, resourcePath.getRClass());
+              }
+              if (resourcePath.getInternalRClass() != null) {
+                addRClassValues(resourceTable, resourcePath.getInternalRClass());
+                addMissingStyleableAttributes(resourceTable, resourcePath.getInternalRClass());
+              }
 
-    parseResourceFiles(resourcePath, resourceTable);
+              parseResourceFiles(resourcePath, resourceTable);
 
-    return resourceTable;
+              return resourceTable;
+            });
   }
 
   /**
-   * Creates an application resource table which can be constructed with multiple resources paths representing
-   * overlayed resource libraries.
+   * Creates an application resource table which can be constructed with multiple resources paths
+   * representing overlayed resource libraries.
    */
   public PackageResourceTable newResourceTable(String packageName, ResourcePath... resourcePaths) {
-    PackageResourceTable resourceTable = new PackageResourceTable(packageName);
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "load legacy app resources",
+            () -> {
+              PackageResourceTable resourceTable = new PackageResourceTable(packageName);
 
-    for (ResourcePath resourcePath : resourcePaths) {
-      if (resourcePath.getRClass() != null) {
-        addRClassValues(resourceTable, resourcePath.getRClass());
-      }
-    }
+              for (ResourcePath resourcePath : resourcePaths) {
+                if (resourcePath.getRClass() != null) {
+                  addRClassValues(resourceTable, resourcePath.getRClass());
+                }
+              }
 
-    for (ResourcePath resourcePath : resourcePaths) {
-      parseResourceFiles(resourcePath, resourceTable);
-    }
+              for (ResourcePath resourcePath : resourcePaths) {
+                parseResourceFiles(resourcePath, resourceTable);
+              }
 
-    return resourceTable;
+              return resourceTable;
+            });
   }
 
   private void addRClassValues(PackageResourceTable resourceTable, Class<?> rClass) {

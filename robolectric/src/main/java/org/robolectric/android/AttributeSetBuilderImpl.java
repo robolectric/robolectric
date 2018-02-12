@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttrData.Pair;
 import org.robolectric.res.AttributeResource;
@@ -185,9 +184,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     public void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
         TypedValue outValue) {
       ShadowAssetManager shadowAssetManager = Shadow.extract(context.getResources().getAssets());
-      ResourceTable resourceTable1 = shadowAssetManager.getResourceTable();
-      TypedResource attrTypeData = resourceTable1.getValue(attribute.resName,
-          RuntimeEnvironment.getQualifiers());
+      TypedResource attrTypeData = shadowAssetManager.getAttrTypeData(attribute.resName);
       if (attrTypeData != null) {
         AttrData attrData = (AttrData) attrTypeData.getData();
         String format = attrData.getFormat();
