@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.CompletionInfo;
@@ -13,9 +16,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(value = InputMethodManager.class)
 public class ShadowInputMethodManager {
+
   /**
    * Handler for receiving soft input visibility changed event.
    *
@@ -26,6 +31,7 @@ public class ShadowInputMethodManager {
    * of the soft input change.
    */
   public interface SoftInputVisibilityChangeHandler {
+
     void handleSoftInputVisibilityChange(boolean softInputVisible);
   }
 
@@ -50,7 +56,7 @@ public class ShadowInputMethodManager {
 
   @Implementation
   public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
-                       ResultReceiver resultReceiver) {
+      ResultReceiver resultReceiver) {
     setSoftInputVisibility(false);
     return true;
   }
@@ -81,7 +87,8 @@ public class ShadowInputMethodManager {
   }
 
   @Implementation
-  protected void restartInput(View view) {  }
+  protected void restartInput(View view) {
+  }
 
   @Implementation
   protected boolean isActive(View view) {
@@ -111,6 +118,19 @@ public class ShadowInputMethodManager {
   @Implementation
   protected void displayCompletions(View view, CompletionInfo[] completions) {
 
+  }
+
+  @Implementation(maxSdk = LOLLIPOP_MR1)
+  protected static InputMethodManager peekInstance() {
+    // Android has a bug pre M where peekInstance was dereferenced without a null check:-
+    // https://github.com/aosp-mirror/platform_frameworks_base/commit/a046faaf38ad818e6b5e981a39fd7394cf7cee03
+    // So for earlier versions, just call through directly to getInstance()
+    if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN_MR1) {
+      return ReflectionHelpers.callStaticMethod(InputMethodManager.class, "getInstance", ClassParameter.from(Looper.class, Looper.getMainLooper()));
+    } else if (RuntimeEnvironment.getApiLevel() <= LOLLIPOP_MR1) {
+      return InputMethodManager.getInstance();
+    }
+    return directlyOn(InputMethodManager.class, "peekInstance");
   }
 
   @Resetter
