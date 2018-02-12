@@ -1,15 +1,18 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.InputMethodManager;
 import com.google.common.base.Optional;
-import org.robolectric.annotation.HiddenApi;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = InputMethodManager.class)
 public class ShadowInputMethodManager {
@@ -28,11 +31,6 @@ public class ShadowInputMethodManager {
 
   private boolean softInputVisible;
   private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.absent();
-
-  @HiddenApi @Implementation
-  static public InputMethodManager peekInstance() {
-    return Shadow.newInstanceOf(InputMethodManager.class);
-  }
 
   @Implementation
   public boolean showSoftInput(View view, int flags) {
@@ -113,5 +111,11 @@ public class ShadowInputMethodManager {
   @Implementation
   protected void displayCompletions(View view, CompletionInfo[] completions) {
 
+  }
+
+  @Resetter
+  public static void reset() {
+    String instanceFieldName = RuntimeEnvironment.getApiLevel() <= JELLY_BEAN_MR1 ? "mInstance" : "sInstance";
+    ReflectionHelpers.setStaticField(InputMethodManager.class, instanceFieldName, null);
   }
 }
