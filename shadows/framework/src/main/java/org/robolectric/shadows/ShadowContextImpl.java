@@ -226,6 +226,15 @@ public class ShadowContextImpl {
           ReflectionHelpers.setField(staticServiceFetcherClass, o, "mCachedInstance", null);
         }
       }
+
+      if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
+        Class serviceFetcherClass = ReflectionHelpers
+            .loadClass(ShadowContextImpl.class.getClassLoader(),
+                "android.app.ContextImpl$ServiceFetcher");
+
+        Object windowServiceFetcher = fetchers.get(Context.WINDOW_SERVICE);
+        ReflectionHelpers.setField(windowServiceFetcher.getClass(), windowServiceFetcher, "mDefaultDisplay", null);
+      }
     }
   }
 }
