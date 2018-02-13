@@ -384,6 +384,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return resolveInfoList;
   }
 
+  /** Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId. */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
+    return queryIntentActivities(intent, flags);
+  }
+
   /**
    * Returns true if intent has specified a specific component.
    */
@@ -1070,16 +1076,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
-    return null;
-  }
-
-  @Implementation
   protected List<ResolveInfo> queryIntentActivityOptions(
       ComponentName caller, Intent[] specifics, Intent intent, int flags) {
     return null;
   }
-
   @Implementation
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
     return null;
