@@ -350,7 +350,7 @@ public class ShadowPackageManagerTest {
         new PermissionGroup(pkg, storagePermissionGroupInfoApp1);
     pkg.permissionGroups.add(storagePermissionGroupApp1);
 
-    shadowPackageManager.addPackage(pkg);
+    shadowPackageManager.addPackageInternal(pkg);
 
     // Package 2, contains one permission group that is the same
     Package pkg2 = new Package(TEST_PACKAGE2_NAME);
@@ -370,7 +370,7 @@ public class ShadowPackageManagerTest {
         new PermissionGroup(pkg2, calendarPermissionGroupInfoApp2);
     pkg2.permissionGroups.add(calendarPermissionGroupApp2);
 
-    shadowPackageManager.addPackage(pkg2);
+    shadowPackageManager.addPackageInternal(pkg2);
 
     // Make sure that the duplicate permission group does not show up in the list
     // Total list should be: contacts, storage, calendar, "org.robolectric.package_permission_group"
