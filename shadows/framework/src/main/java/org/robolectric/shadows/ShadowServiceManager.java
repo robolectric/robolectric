@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.accounts.IAccountManager;
@@ -48,18 +52,6 @@ public class ShadowServiceManager {
   private static Map<String, IBinder> SERVICES =
       new HashMap<String, IBinder>() {
         {
-          if (RuntimeEnvironment.getApiLevel() < O) {
-            put(
-                "mount",
-                createBinder("android.os.storage.IMountService", "android.os.storage.IMountService"));
-          } else {
-            put(
-                "mount",
-                createBinder(IStorageManager.class, "android.os.storage.IStorageManager"));
-          }
-          put(
-              Context.NETWORK_SCORE_SERVICE,
-              createBinder(INetworkScoreService.class, "android.net.INetworkScoreService"));
           put(
               Context.CLIPBOARD_SERVICE,
               createBinder(IClipboard.class, "android.content.IClipboard"));
@@ -67,14 +59,8 @@ public class ShadowServiceManager {
               Context.WIFI_P2P_SERVICE,
               createBinder(IWifiP2pManager.class, "android.net.wifi.p2p.IWifiP2pManager"));
           put(
-              Context.APP_OPS_SERVICE,
-              createBinder(IAppOpsService.class, "com.android.internal.app.IAppOpsService"));
-          put(
               Context.ACCOUNT_SERVICE,
               createBinder(IAccountManager.class, "android.accounts.IAccountManager"));
-          put(
-              Context.SHORTCUT_SERVICE,
-              createBinder(IShortcutService.class, "android.content.pm.IShortcutService"));
           put(
               Context.USB_SERVICE,
               createBinder(IUsbManager.class, "android.hardware.usb.IUsbManager"));
@@ -91,17 +77,8 @@ public class ShadowServiceManager {
               Context.POWER_SERVICE,
               createBinder(IPowerManager.class, "android.os.IPowerManager"));
           put(
-              Context.USER_SERVICE,
-              createBinder(IUserManager.class, "android.os.IUserManager"));
-          put(
-              Context.RESTRICTIONS_SERVICE,
-              createBinder(IRestrictionsManager.class, "android.content.IRestrictionsManager"));
-          put(
               BatteryStats.SERVICE_NAME,
               createBinder(IBatteryStats.class, "com.android.internal.app.IBatteryStats"));
-          put(
-              "batteryproperties",
-              createBinder(IBatteryPropertiesRegistrar.class, "android.os.IBatteryPropertiesRegistrar"));
           put(
               Context.DROPBOX_SERVICE,
               createBinder(IDropBoxManagerService.class, "com.android.internal.os.IDropBoxManagerService"));
@@ -123,12 +100,47 @@ public class ShadowServiceManager {
           put(
               Context.NETWORK_POLICY_SERVICE,
               createBinder(ISearchManager.class, "android.net.INetworkPolicyManager"));
+          if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
+            put(
+                Context.USER_SERVICE,
+                createBinder(IUserManager.class, "android.os.IUserManager"));
+          }
+          if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
+            put(
+                Context.APP_OPS_SERVICE,
+                createBinder(IAppOpsService.class, "com.android.internal.app.IAppOpsService"));
+          }
+          if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
+            put(
+                "batteryproperties",
+                createBinder(IBatteryPropertiesRegistrar.class, "android.os.IBatteryPropertiesRegistrar"));
+          }
           if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+            put(
+                Context.RESTRICTIONS_SERVICE,
+                createBinder(IRestrictionsManager.class, "android.content.IRestrictionsManager"));
             put(
                 Context.TRUST_SERVICE,
                 createBinder(ITrustManager.class, "android.app.trust.ITrustManager"));
             put(Context.JOB_SCHEDULER_SERVICE,
                 createBinder(IJobScheduler.class, "android.app.job.IJobScheduler"));
+            put(
+                Context.NETWORK_SCORE_SERVICE,
+                createBinder(INetworkScoreService.class, "android.net.INetworkScoreService"));
+          }
+          if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
+            put(
+                Context.SHORTCUT_SERVICE,
+                createBinder(IShortcutService.class, "android.content.pm.IShortcutService"));
+          }
+          if (RuntimeEnvironment.getApiLevel() >= O) {
+            put(
+                "mount",
+                createBinder(IStorageManager.class, "android.os.storage.IStorageManager"));
+          } else {
+            put(
+                "mount",
+                createBinder("android.os.storage.IMountService", "android.os.storage.IMountService"));
           }
         }
       };
