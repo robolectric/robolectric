@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
-import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
@@ -10,7 +9,6 @@ import android.os.Build;
 import android.os.Looper;
 import android.util.MergedConfiguration;
 import android.view.Display;
-import android.view.DisplayCutout.ParcelableWrapper;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import java.util.ArrayList;
