@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -111,6 +112,15 @@ public class ActivityController<T extends Activity> extends ComponentController<
       ((ShadowViewRootImpl) extract(root)).callDispatchResized();
     }
 
+    return this;
+  }
+
+  public ActivityController<T> windowFocusChanged(boolean hasFocus) {
+    ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
+
+    ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
+        from(boolean.class, hasFocus), /* hasFocus */
+        from(boolean.class, false) /* inTouchMode */);
     return this;
   }
 

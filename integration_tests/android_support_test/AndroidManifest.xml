@@ -9,6 +9,7 @@
 
   <application>
     <activity android:name="org.robolectric.integration_tests.atsl.ActivityTestRuleTest$MyActivity"/>
+    <activity android:name="org.robolectric.integration_tests.atsl.EspressoTest$ActivityFixture"/>
   </application>
 
   <instrumentation

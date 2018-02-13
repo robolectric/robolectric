@@ -83,6 +83,12 @@ public class ActivityTestRuleTest {
       super.onDestroy();
       callbacks.add("onDestroy");
     }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+      super.onWindowFocusChanged(hasFocus);
+      callbacks.add("onWindowFocusChanged " + hasFocus);
+    }
   }
 
   @Before
@@ -96,6 +102,7 @@ public class ActivityTestRuleTest {
     assertThat(activity).isNotNull();
     assertThat(callbacks)
         .containsExactly(
-            "beforeActivityLaunched", "onCreate", "onStart", "onResume", "afterActivityLaunched");
+            "beforeActivityLaunched", "onCreate", "onStart", "onResume",
+            "onWindowFocusChanged true", "afterActivityLaunched");
   }
 }
