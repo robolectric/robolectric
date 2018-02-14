@@ -175,7 +175,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private ConfigMerger createConfigMerger() {
     ServiceLoader<ConfigMerger> serviceLoader = ServiceLoader.load(ConfigMerger.class);
     ConfigMerger merger;
-    if (serviceLoader.iterator().hasNext()) {
+    if (serviceLoader != null && serviceLoader.iterator().hasNext()) {
       merger = Iterators.getOnlyElement(serviceLoader.iterator());
     } else {
       merger = new ConfigMerger();
@@ -276,7 +276,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * Returns the ResourceProvider for the compile time SDK.
    */
   @Nonnull
-  private static PackageResourceTable getCompiletimeSdkResourceTable() {
+  protected PackageResourceTable getCompileTimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
       ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
       compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
@@ -301,8 +301,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
-    return SandboxFactory.INSTANCE.getSdkEnvironment(
+    return getSandboxFactory().getSdkEnvironment(
         createClassLoaderConfig(method), getJarResolver(), sdkConfig);
+  }
+
+  protected SandboxFactory getSandboxFactory() {
+    return SandboxFactory.INSTANCE;
   }
 
   @Override
@@ -334,7 +338,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         bootstrappedMethod,
         appManifest,
         roboMethod.config,
-        new RoutingResourceTable(appResourceTable, getCompiletimeSdkResourceTable()),
+        new RoutingResourceTable(appResourceTable, getCompileTimeSdkResourceTable()),
         new RoutingResourceTable(appResourceTable, systemResourceTable),
         new RoutingResourceTable(systemResourceTable));
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);

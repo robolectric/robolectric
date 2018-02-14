@@ -8,12 +8,15 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.media.AudioAttributes;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemVibrator;
 import android.os.VibrationEffect;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = SystemVibrator.class, isInAndroidSdk = false)
 public class ShadowSystemVibrator extends ShadowVibrator {
@@ -69,7 +72,11 @@ public class ShadowSystemVibrator extends ShadowVibrator {
 
     } else {
       VibrationEffect.OneShot oneShot = (VibrationEffect.OneShot) effect;
-      recordVibrate(oneShot.getTiming());
+
+      long timing;
+        timing = ReflectionHelpers.callInstanceMethod(oneShot, "getTiming");
+
+      recordVibrate(timing);
     }
   }
 
