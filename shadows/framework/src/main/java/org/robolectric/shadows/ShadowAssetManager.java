@@ -5,12 +5,15 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -66,6 +69,7 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(value = AssetManager.class, hackyTerribleIgnore = true)
 public class ShadowAssetManager {
@@ -420,7 +424,7 @@ public class ShadowAssetManager {
     }
     return assetFiles.toArray(new String[assetFiles.size()]);
   }
-
+ 
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
@@ -432,11 +436,15 @@ public class ShadowAssetManager {
       throw new IOException("Unable to find resource for " + fileName);
     }
 
+    InputStream stream;
     if (accessMode == AssetManager.ACCESS_STREAMING) {
-      return typedResource.getFsFile().getInputStream();
+      stream = typedResource.getFsFile().getInputStream();
     } else {
-      return new ByteArrayInputStream(typedResource.getFsFile().getBytes());
+      stream = new ByteArrayInputStream(typedResource.getFsFile().getBytes());
     }
+
+
+    return stream;
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {
@@ -594,6 +602,7 @@ public class ShadowAssetManager {
     return ints;
   }
 
+
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) {
@@ -743,7 +752,8 @@ public class ShadowAssetManager {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
     nativeTheme.themeStyleSet.apply(style, force);
-}
+  }
+
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
@@ -756,6 +766,7 @@ public class ShadowAssetManager {
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
+
 
   /////////////////////////
 
@@ -1063,4 +1074,5 @@ public class ShadowAssetManager {
   public static void reset() {
     ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
   }
+
 }

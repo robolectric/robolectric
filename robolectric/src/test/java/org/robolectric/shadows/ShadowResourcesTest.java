@@ -526,27 +526,6 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void openRawResource_shouldLoadRawResourcesFromLibraries() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).contains("from lib");
-  }
-
-  @Test
-  public void openRawResource_shouldLoadRawResourcesFromSecondaryLibraries() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_2);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib2");
-  }
-
-  @Test
-  public void openRawResource_shouldLoadRawResourcesFromTertiaryLibraries() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_3);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib3");
-  }
-
-  @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
