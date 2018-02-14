@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+import static org.robolectric.shadows.ShadowArscAssetManager.USE_LEGACY;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.ActivityThread;
@@ -40,6 +41,7 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
@@ -118,8 +120,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ApplicationInfo applicationInfo = null;
     if (appManifest.getAndroidManifestFile() != null
         && appManifest.getAndroidManifestFile().exists()) {
-      if (Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
-        parsedPackage = ShadowPackageParser.callParsePackage(appManifest.getAndroidManifestFile());
+      if (!USE_LEGACY || Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
+        // FsFile packageFile = appManifest.getAndroidManifestFile();
+        // todo get elsewhere?
+        FsFile packageFile = Fs.fromURL(getClass().getResource("/resources.ap_"));
+        parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
       } else {
         parsedPackage = LegacyManifestParser.createPackage(appManifest);
       }
@@ -141,6 +146,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
     // "-dataDir").toAbsolutePath().toString());
     setUpPackageStorage(applicationInfo);
+
+    if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
+      applicationInfo.publicSourceDir = ReflectionHelpers.getField(parsedPackage, "mPath");
+    } else {
+      applicationInfo.publicSourceDir = parsedPackage.codePath;
+    }
 
     // Bit of a hack... Context.createPackageContext() is called before the application is created.
     // It calls through
@@ -198,7 +209,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, displayMetrics);
-      populateAssetPaths(appResources.getAssets(), appManifest);
+      // populateAssetPaths(appResources.getAssets(), appManifest);
 
       initInstrumentation(activityThread, applicationInfo);
 

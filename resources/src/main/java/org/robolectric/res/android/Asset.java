@@ -11,7 +11,10 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /*
  * Instances of this class provide read-only operations on a byte stream.
@@ -308,7 +311,9 @@ public abstract class Asset {
    */
   static Asset createFromFile(final String fileName, AccessMode mode)
   {
-    throw new UnsupportedOperationException();
+    _CompressedAsset compressedAsset = new _CompressedAsset();
+    return compressedAsset;
+
     // _FileAsset pAsset;
     // int result;
     // long length;
@@ -1027,6 +1032,25 @@ static Asset createFromCompressedMap(FileMap dataMap,
       registerAsset(this);
     }
 
+    ZipFile zipFile;
+    String entryName;
+
+    // @Override
+    // public byte[] getBuffer(boolean wordAligned) {
+    //   ZipEntry zipEntry = zipFile.getEntry(entryName);
+    //   int size = (int) zipEntry.getSize();
+    //   byte[] buf = new byte[size];
+    //   try (InputStream in = zipFile.getInputStream(zipEntry)) {
+    //     if (in.read(buf) != size) {
+    //       throw new IOException(
+    //           "Failed to read " + size + " bytes from " + zipFile + "!" + entryName);
+    //     }
+    //     return buf;
+    //   } catch (IOException e) {
+    //     throw new RuntimeException(e);
+    //   }
+    // }
+
     /*
      * Destructor.  Release resources.
      */
@@ -1185,7 +1209,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * The first time this is called, we expand the compressed data into a
      * buffer.
      */
-    public final byte[] getBuffer(boolean wordAligned) {
+    public byte[] getBuffer(boolean wordAligned) {
       return mBuf = mMap.getDataPtr();
       // unsigned String buf = null;
       //

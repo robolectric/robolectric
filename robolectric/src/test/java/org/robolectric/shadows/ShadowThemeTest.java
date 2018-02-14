@@ -7,10 +7,12 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.util.Xml;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,14 +33,6 @@ public class ShadowThemeTest {
   @Test
   public void withEmptyTheme_returnsEmptyAttributes() throws Exception {
     assertThat(resources.newTheme().obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
-  }
-
-  @Test public void obtainStyledAttributes_findsAttributeValueDefinedInDependencyLibrary() throws Exception {
-    Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleWithReferenceInLib1, false);
-
-    TypedArray a  = theme.obtainStyledAttributes(new int[]{org.robolectric.R.attr.attrFromLib1});
-    assertThat(a.getString(0)).isEqualTo("value for attribute defined in lib1");
   }
 
   @Test public void shouldGetValuesFromAttributeReference() throws Exception {
@@ -215,29 +209,31 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReference").build(),
-        new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
-
-    assertThat(theme.obtainStyledAttributes(
         Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(),
         new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+        .isEqualTo("string 2 from YetAnotherStyle");
+
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().setStyleAttribute("?parentStyleReference").build(),
+        new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from YetAnotherStyle");
   }
 
   @Test
-  public void whenStyleSpecifiesAttrWithoutExplicitType_obtainStyledAttribute_findsCorrectValue() throws Exception {
+  public void xml_whenStyleSpecifiesAttr_obtainStyledAttribute_findsCorrectValue() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReferenceWithoutExplicitType").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+        Xml.asAttributeSet(resources.getXml(R.xml.temp)),
+        new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from YetAnotherStyle");
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?styleReferenceWithoutExplicitType").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+        Xml.asAttributeSet(resources.getXml(R.xml.temp_parent)),
+        new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from YetAnotherStyle");
   }
 
   @Test

@@ -283,9 +283,6 @@ public class ShadowPackageManager {
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
 
-    // ?
-    applicationInfo.sourceDir = "build/resources/test/resources.ap_"; // todo get this from AndroidManifest
-
     applicationInfo.packageName = packageName;
     setUpPackageStorage(applicationInfo);
     packageInfo.applicationInfo = applicationInfo;
