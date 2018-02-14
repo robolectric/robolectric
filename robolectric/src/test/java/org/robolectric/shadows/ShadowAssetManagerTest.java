@@ -63,13 +63,8 @@ public class ShadowAssetManagerTest {
   @Test
   public void assetsPathListing() throws IOException {
     assertThat(assetManager.list(""))
-        .contains(
-            "assetsHome.txt",   // test/resources/assets
-            "docs",             // test/resources/assets
-            "myFont.ttf",       // test/resources/assets
-            "libFont.ttf",      // test/resources/lib1/assets
-            "file-in-lib2.txt"  // test/resources/lib2/assets + test/resources/lib2/assets (merged)
-            );
+        .contains("assetsHome.txt", "docs", "myFont.ttf");
+
     assertThat(assetManager.list("docs"))
         .contains("extra");
 
@@ -90,13 +85,6 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void open_shouldOpenFileInLib() throws IOException {
-    final String contents =
-        CharStreams.toString(new InputStreamReader(assetManager.open("file-in-lib2.txt"), UTF_8));
-    assertThat(contents).isEqualTo("asset in lib 2");
-  }
-
-  @Test
   public void open_withAccessMode_shouldOpenFile() throws IOException {
     final String contents = CharStreams.toString(
         new InputStreamReader(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER), UTF_8));
@@ -109,14 +97,6 @@ public class ShadowAssetManagerTest {
     assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
         .isEqualTo("assetsHome!");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
-  }
-
-  @Test
-  public void openFd_shouldProvideFileDescriptorForAssetInLib() throws Exception {
-    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("file-in-lib2.txt");
-    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
-        .isEqualTo("asset in lib 2");
-    assertThat(assetFileDescriptor.getLength()).isEqualTo(14);
   }
 
   @Test
