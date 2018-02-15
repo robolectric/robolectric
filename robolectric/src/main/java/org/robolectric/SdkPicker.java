@@ -110,7 +110,8 @@ public class SdkPicker {
     return sdkConfigs;
   }
 
-  protected int decodeSdk(int value, int defaultSdk, int appMinSdk, int appTargetSdk, int appMaxSdk) {
+  protected int decodeSdk(
+      int value, int defaultSdk, int appMinSdk, int appTargetSdk, int appMaxSdk) {
     if (value == Config.DEFAULT_VALUE_INT) {
       return defaultSdk;
     } else if (value == Config.NEWEST_SDK) {
@@ -139,7 +140,8 @@ public class SdkPicker {
     }
 
     if (sdkConfigs.isEmpty()) {
-      throw new IllegalArgumentException("No matching SDKs found for minSdk=" + minSdk + ", maxSdk=" + maxSdk);
+      throw new IllegalArgumentException(
+          "No matching SDKs found for minSdk=" + minSdk + ", maxSdk=" + maxSdk);
     }
 
     return sdkConfigs;
