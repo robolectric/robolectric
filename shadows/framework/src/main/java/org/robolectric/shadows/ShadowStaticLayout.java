@@ -24,4 +24,5 @@ public class ShadowStaticLayout {
             Object recycleBreaks, Object recycleWidths, Object recycleFlags, Object recycleLength) {
     return 1;
   }
+
 }

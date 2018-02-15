@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.INSTALL_PARSE_FAILED_NOT_APK;
 import static android.content.pm.PackageManager.INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION;
 import static android.content.pm.PackageParser.PARSE_COLLECT_CERTIFICATES;
-import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -17,7 +16,6 @@ import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Trace;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Slog;
@@ -135,8 +133,6 @@ public class ShadowPackageParser {
 
     parser.close();
     assmgr.close();
-
-    pkg.mSignatures = null;
 
     return pkg;
   }
@@ -263,7 +259,6 @@ public class ShadowPackageParser {
       }
 
       pkg.baseCodePath = apkPath;
-      pkg.mSignatures = null;
 
       return pkg;
     } catch (Exception e) {
@@ -304,51 +299,28 @@ public class ShadowPackageParser {
       final Resources res = new Resources(assets, metrics, null);
       parser = assets.openXmlResourceParser(cookie, MANIFEST_FILE);
 
-      final Signature[] signatures;
-      final Certificate[][] certificates;
+      Signature[] signatures = null;
+      Certificate[][] certificates = null;
       if ((flags & PARSE_COLLECT_CERTIFICATES) != 0) {
         // TODO: factor signature related items out of Package object
         final Package tempPkg = ReflectionHelpers.newInstance(Package.class);
 
-        try {
-          directlyOn(
-              PackageParser.class,
-              "collectCertificates",
-              ReflectionHelpers.ClassParameter.from(Package.class, tempPkg),
-              ReflectionHelpers.ClassParameter.from(File.class, apkFile),
-              ReflectionHelpers.ClassParameter.from(int.class, 0 /*parseFlags*/));
-        } finally {
-          Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
+        directlyOn(
+            PackageParser.class,
+            "collectCertificates",
+            ReflectionHelpers.ClassParameter.from(Package.class, tempPkg),
+            ReflectionHelpers.ClassParameter.from(File.class, apkFile),
+            ReflectionHelpers.ClassParameter.from(int.class, 0 /*parseFlags*/));
+
+        if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.O_MR1) {
+          signatures = ReflectionHelpers.getField(tempPkg, "mSignatures");
+          certificates = ReflectionHelpers.getField(tempPkg, "mCertificates");
         }
-        signatures = tempPkg.mSignatures;
-        certificates = tempPkg.mCertificates;
-      } else {
-        signatures = null;
-        certificates = null;
       }
 
       final AttributeSet attrs = parser;
 
-      if (RuntimeEnvironment.getApiLevel() >= 27) {
-        return directlyOn(
-            PackageParser.class,
-            "parseApkLite",
-            ReflectionHelpers.ClassParameter.from(String.class, apkPath),
-            ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
-            ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
-            ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
-            ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
-      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
-        return directlyOn(
-            PackageParser.class,
-            "parseApkLite",
-            ReflectionHelpers.ClassParameter.from(String.class, apkPath),
-            ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
-            ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
-            ReflectionHelpers.ClassParameter.from(int.class, flags),
-            ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
-            ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
-      } else {
+      if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.N_MR1) {
         return directlyOn(
             PackageParser.class,
             "parseApkLite",
@@ -357,6 +329,25 @@ public class ShadowPackageParser {
             ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
             ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
             ReflectionHelpers.ClassParameter.from(int.class, flags),
+            ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
+            ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
+      } else if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.O) {
+        return directlyOn(
+            PackageParser.class,
+            "parseApkLite",
+            ReflectionHelpers.ClassParameter.from(String.class, apkPath),
+            ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
+            ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
+            ReflectionHelpers.ClassParameter.from(int.class, flags),
+            ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
+            ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
+      } else if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.O_MR1) {
+        return directlyOn(
+            PackageParser.class,
+            "parseApkLite",
+            ReflectionHelpers.ClassParameter.from(String.class, apkPath),
+            ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
+            ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
             ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
             ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
       }

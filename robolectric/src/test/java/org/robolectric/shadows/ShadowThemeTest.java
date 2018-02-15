@@ -100,13 +100,6 @@ public class ShadowThemeTest {
     assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
   }
 
-  @Test public void obtainStyledAttributes_findsAttributeValueDefinedInDependencyLibrary() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
-
-    TypedArray a  = activity.getTheme().obtainStyledAttributes(new int[]{org.robolectric.R.attr.attrFromLib1});
-    assertThat(a.getString(0)).isEqualTo("value from theme");
-  }
-
   @Test public void shouldGetValuesFromAttributeReference() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
 
