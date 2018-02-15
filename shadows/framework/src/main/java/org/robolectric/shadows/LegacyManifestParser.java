@@ -496,14 +496,16 @@ public class LegacyManifestParser {
     Bundle bundle = new Bundle();
 
     for (Map.Entry<String, Object> entry : meta.entrySet()) {
-      if (Boolean.class.isInstance(entry.getValue())) {
-        bundle.putBoolean(entry.getKey(), (Boolean) entry.getValue());
-      } else if (Float.class.isInstance(entry.getValue())) {
-        bundle.putFloat(entry.getKey(), (Float) entry.getValue());
-      } else if (Integer.class.isInstance(entry.getValue())) {
-        bundle.putInt(entry.getKey(), (Integer) entry.getValue());
+      String key = entry.getKey();
+      Object value = entry.getValue();
+      if (Boolean.class.isInstance(value)) {
+        bundle.putBoolean(key, (Boolean) value);
+      } else if (Float.class.isInstance(value)) {
+        bundle.putFloat(key, (Float) value);
+      } else if (Integer.class.isInstance(value)) {
+        bundle.putInt(key, (Integer) value);
       } else {
-        bundle.putString(entry.getKey(), entry.getValue().toString());
+        bundle.putString(key, value == null ? null : value.toString());
       }
     }
     return bundle;
