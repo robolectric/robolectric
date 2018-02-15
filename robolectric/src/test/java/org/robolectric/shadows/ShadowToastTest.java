@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.view.Gravity;
 import android.view.View;
@@ -9,8 +10,8 @@ import android.widget.Toast;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowToastTest {
@@ -98,5 +99,13 @@ public class ShadowToastTest {
     toast.show();
     toast.show();
     assertThat(ShadowToast.shownToastCount()).isEqualTo(2);
+  }
+
+  @Test
+  public void shouldBeCancelled() throws Exception {
+    Toast toast = Toast.makeText(RuntimeEnvironment.application, "short toast", Toast.LENGTH_SHORT);
+    toast.cancel();
+    ShadowToast shadowToast = shadowOf(toast);
+    assertThat(shadowToast.isCancelled()).isTrue();
   }
 }

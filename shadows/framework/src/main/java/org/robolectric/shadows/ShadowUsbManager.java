@@ -5,11 +5,9 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.ParcelFileDescriptor;
 import com.google.common.base.Preconditions;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,7 +19,7 @@ public class ShadowUsbManager {
 
   /** Returns true if the caller has permission to access the device. */
   @Implementation
-  public boolean hasPermission(UsbDevice device) {
+  protected boolean hasPermission(UsbDevice device) {
     return usbDevicesPermissionMap.containsKey(device)
         ? usbDevicesPermissionMap.get(device)
         : false;
@@ -33,7 +31,7 @@ public class ShadowUsbManager {
    * is inactive or unsupported.
    */
   @Implementation
-  public HashMap<String, UsbDevice> getDeviceList() {
+  protected HashMap<String, UsbDevice> getDeviceList() {
     HashMap<String, UsbDevice> usbDeviceMap = new HashMap<>();
     for (UsbDevice usbDevice : usbDevicesPermissionMap.keySet()) {
       usbDeviceMap.put(usbDevice.getDeviceName(), usbDevice);
@@ -62,11 +60,9 @@ public class ShadowUsbManager {
     usbDevicesPermissionMap.remove(usbDevice);
   }
 
-  /**
-   * Opens a file descriptor from a temporary file.
-   */
+  /** Opens a file descriptor from a temporary file. */
   @Implementation
-  public ParcelFileDescriptor openAccessory(UsbAccessory accessory) {
+  protected ParcelFileDescriptor openAccessory(UsbAccessory accessory) {
     try {
       File tmpUsbDir =
           RuntimeEnvironment.getTempDirectory().createIfNotExists("usb-accessory").toFile();

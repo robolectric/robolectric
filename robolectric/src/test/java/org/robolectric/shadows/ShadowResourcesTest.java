@@ -23,7 +23,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
-import android.view.Display;
 import java.io.File;
 import java.io.InputStream;
 import org.assertj.core.data.Offset;
@@ -32,12 +31,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -87,6 +85,11 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void getString_StringWithInlinedQuotesAreStripped() throws Exception {
+    assertThat(resources.getString(R.string.bad_example)).isEqualTo("This is a bad string.");
+  }
+
+  @Test
   public void getStringShouldStripNewLines() {
     assertThat(resources.getString(R.string.leading_and_trailing_new_lines)).isEqualTo("Some text");
   }
@@ -132,12 +135,10 @@ public class ShadowResourcesTest {
 
   @Test
   public void obtainTypedArray() throws Exception {
-    final Display display = Shadow.newInstanceOf(Display.class);
-    final ShadowDisplay shadowDisplay = shadowOf(display);
-    // Standard xxhdpi screen
-    shadowDisplay.setDensityDpi(480);
     final DisplayMetrics displayMetrics = new DisplayMetrics();
-    display.getMetrics(displayMetrics);
+    displayMetrics.density = 1;
+    displayMetrics.scaledDensity = 1;
+    displayMetrics.xdpi = 160;
 
     final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
     assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
@@ -217,10 +218,10 @@ public class ShadowResourcesTest {
   public void getDimension() throws Exception {
     assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
     assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
-    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 240);
-    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 240)));
+    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 160);
+    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 160)));
     assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
-    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12 / 0.3f);
+    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12f * 160 / 72);
     assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
@@ -228,10 +229,10 @@ public class ShadowResourcesTest {
   public void getDimensionPixelSize() throws Exception {
     assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen)).isEqualTo(20);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 240);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(397);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(265);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(40);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(27);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
@@ -239,10 +240,10 @@ public class ShadowResourcesTest {
   public void getDimensionPixelOffset() throws Exception {
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen)).isEqualTo(20);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 240);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(396);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(264);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(40);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(26);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
@@ -335,7 +336,7 @@ public class ShadowResourcesTest {
 
   @Test(expected = Resources.NotFoundException.class)
   public void testGetColor_Missing() {
-    resources.getColor(R.color.test_color_1);
+    resources.getColor(11234);
   }
 
   @Test
@@ -427,8 +428,8 @@ public class ShadowResourcesTest {
 
   @Test
   public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(470);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(320);
   }
 
   @Test
@@ -502,38 +503,15 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void openRawResource_shouldLoadRawResourcesFromLibraries() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
-  }
-
-  @Test
-  public void openRawResource_shouldLoadRawResourcesFromSecondaryLibraries() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_2);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib2");
-  }
-
-  @Test
-  public void openRawResource_shouldLoadRawResourcesFromTertiaryLibraries() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_3);
-    assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib3");
-  }
-
-  @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable.png image\n");
   }
 
   @Test @Config(qualifiers = "hdpi")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
-    InputStream resourceStream = resources.openRawResource(R.drawable.text_file_posing_as_image);
+    InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     assertThat(resourceStream).isNotNull();
-    assertThat(TestUtil.readString(resourceStream)).isEqualTo("drawable-hdpi.png image\n");
   }
 
   @Test
@@ -646,6 +624,15 @@ public class ShadowResourcesTest {
         .addAttribute(android.R.attr.id, "@android:id/mask").build();
     TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[]{android.R.attr.id});
     assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
+  }
+
+  @Test
+  public void obtainAttributes() {
+    TypedArray typedArray = resources.obtainAttributes(Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.styleReference, "@xml/shortcuts")
+        .build(), new int[]{R.attr.styleReference});
+    assertThat(typedArray).isNotNull();
+    assertThat(typedArray.peekValue(0).resourceId).isEqualTo(R.xml.shortcuts);
   }
 
   @Test
@@ -828,13 +815,13 @@ public class ShadowResourcesTest {
     assertThat(outValue.assetCookie).isNotEqualTo(0);
 
     resources.getValue(R.color.blue, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
     assertThat(outValue.data).isEqualTo(ResourceHelper.getColor("#0000ff"));
     assertThat(outValue.string).isNull();
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
 
     resources.getValue(R.integer.loneliest_number, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
     assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
@@ -881,6 +868,31 @@ public class ShadowResourcesTest {
     // this differs from actual Android behavior, which collapses whitespace as "Up to 25 USD"
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25   USD");
+  }
+
+  @Test
+  public void getResourceTypeName_mipmap() {
+    assertThat(resources.getResourceTypeName(R.mipmap.mipmap_reference)).isEqualTo("mipmap");
+    assertThat(resources.getResourceTypeName(R.mipmap.robolectric)).isEqualTo("mipmap");
+  }
+
+  @Test
+  public void getDrawable_mipmapReferencesResolve() {
+    Drawable reference = resources.getDrawable(R.mipmap.mipmap_reference);
+    Drawable original = resources.getDrawable(R.mipmap.robolectric);
+
+    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
+    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getDrawable_mipmapReferencesResolveXml() {
+    Drawable reference = resources.getDrawable(R.mipmap.robolectric_xml);
+    Drawable original = resources.getDrawable(R.mipmap.mipmap_reference_xml);
+
+    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
+    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

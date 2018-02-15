@@ -164,7 +164,7 @@ public class RobolectricModel {
   };
 
   public static AnnotationValue getAnnotationValue(AnnotationMirror annotationMirror, String key) {
-    for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror.getElementValues().entrySet() ) {
+    for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror.getElementValues().entrySet()) {
       if (entry.getKey().getSimpleName().toString().equals(key)) {
         return entry.getValue();
       }

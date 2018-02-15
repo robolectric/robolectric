@@ -64,7 +64,7 @@ public class AndroidTranslatorClassInstrumentedTest {
   @Implements(ClassWithPrivateConstructor.class)
   public static class ShadowClassWithPrivateConstructor {
     @Implementation
-    public int getInt() {
+    protected int getInt() {
       return 42;
     }
   }
@@ -74,12 +74,12 @@ public class AndroidTranslatorClassInstrumentedTest {
     private int color;
 
     @Implementation
-    public void setColor(int color) {
+    protected void setColor(int color) {
       this.color = color;
     }
 
     @Implementation
-    public int getColor() {
+    protected int getColor() {
       return color;
     }
   }
@@ -104,12 +104,12 @@ public class AndroidTranslatorClassInstrumentedTest {
 
     @Override
     @Implementation
-    public int getColor() {
+    protected int getColor() {
       return 10;
     }
 
     @Implementation
-    public String getColorName() {
+    protected String getColorName() {
       return "rainbow";
     }
   }

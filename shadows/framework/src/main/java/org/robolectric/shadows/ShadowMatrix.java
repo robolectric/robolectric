@@ -301,6 +301,33 @@ public class ShadowMatrix {
   }
 
   @Implementation
+  protected void mapPoints(float[] dst, int dstIndex, float[] src, int srcIndex, int pointCount) {
+    for (int i = 0; i < pointCount; i++) {
+      final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
+      dst[dstIndex + i * 2] = mapped.x;
+      dst[dstIndex + i * 2 + 1] = mapped.y;
+    }
+  }
+
+  @Implementation
+  protected void mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount) {
+    final float transX = mMatrix.mValues[Matrix.MTRANS_X];
+    final float transY = mMatrix.mValues[Matrix.MTRANS_Y];
+
+    mMatrix.mValues[Matrix.MTRANS_X] = 0;
+    mMatrix.mValues[Matrix.MTRANS_Y] = 0;
+
+    for (int i = 0; i < vectorCount; i++) {
+      final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
+      dst[dstIndex + i * 2] = mapped.x;
+      dst[dstIndex + i * 2 + 1] = mapped.y;
+    }
+
+    mMatrix.mValues[Matrix.MTRANS_X] = transX;
+    mMatrix.mValues[Matrix.MTRANS_Y] = transY;
+  }
+
+  @Implementation
   @Override
   public boolean equals(Object obj) {
     final float[] values;
@@ -493,6 +520,7 @@ public class ShadowMatrix {
       return this == o || (o instanceof SimpleMatrix && equals((SimpleMatrix) o));
     }
 
+    @SuppressWarnings("NonOverridingEquals")
     public boolean equals(SimpleMatrix matrix) {
       if (matrix == null) {
         return false;

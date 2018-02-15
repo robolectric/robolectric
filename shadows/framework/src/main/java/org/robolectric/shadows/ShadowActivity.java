@@ -5,14 +5,12 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.R;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
@@ -47,7 +45,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Activity.class)
@@ -60,8 +57,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Intent resultIntent;
   private Activity parent;
   private boolean finishWasCalled;
-  private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
-  private Map<Intent.FilterComparison, Integer> intentRequestCodeMap = new HashMap<>();
   private int requestedOrientation = -1;
   private View currentFocus;
   private Integer lastShownDialogId = null;
@@ -77,39 +72,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
   private ComponentName callingActivity;
 
-  @Implementation
-  public void __constructor__() {
-    invokeConstructor(Activity.class, realActivity);
-  }
-
   public void setApplication(Application application) {
     ReflectionHelpers.setField(realActivity, "mApplication", application);
   }
 
-  private String getActivityTitle() {
-    String title = null;
-
-    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
-
-    if (appManifest == null) return null;
-    String labelRef = appManifest.getActivityLabel(realActivity.getClass().getName());
-
-    if (labelRef != null) {
-      if (labelRef.startsWith("@")) {
-        /* Label refers to a string value, get the resource identifier */
-        int labelRes = RuntimeEnvironment.application.getResources().getIdentifier(labelRef.replace("@", ""), "string", appManifest.getPackageName());
-        /* Get the resource ID, use the activity to look up the actual string */
-        title = RuntimeEnvironment.application.getString(labelRes);
-      } else {
-        title = labelRef; /* Label isn't an identifier, use it directly as the title */
-      }
-    }
-
-    return title;
-  }
-
   public void callAttach(Intent intent) {
-    String activityTitle = getActivityTitle();
     int apiLevel = RuntimeEnvironment.getApiLevel();
     Application application = RuntimeEnvironment.application;
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
@@ -122,11 +89,19 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       throw new RuntimeException();
     }
 
+    CharSequence activityTitle = activityInfo.loadLabel(baseContext.getPackageManager());
+
+    Instrumentation instrumentation =
+        ((ActivityThread) RuntimeEnvironment.getActivityThread()).getInstrumentation();
     if (apiLevel <= Build.VERSION_CODES.KITKAT) {
-      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+      ReflectionHelpers.callInstanceMethod(
+          Activity.class,
+          realActivity,
+          "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
-          ReflectionHelpers.ClassParameter.from(ActivityThread.class, RuntimeEnvironment.getActivityThread()),
-          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(
+              ActivityThread.class, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, instrumentation),
           ReflectionHelpers.ClassParameter.from(IBinder.class, null),
           ReflectionHelpers.ClassParameter.from(int.class, 0),
           ReflectionHelpers.ClassParameter.from(Application.class, application),
@@ -136,12 +111,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
           ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
-          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()));
+          ReflectionHelpers.ClassParameter.from(
+              Configuration.class, application.getResources().getConfiguration()));
     } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
-      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+      ReflectionHelpers.callInstanceMethod(
+          Activity.class,
+          realActivity,
+          "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
-          ReflectionHelpers.ClassParameter.from(ActivityThread.class, RuntimeEnvironment.getActivityThread()),
-          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(
+              ActivityThread.class, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, instrumentation),
           ReflectionHelpers.ClassParameter.from(IBinder.class, null),
           ReflectionHelpers.ClassParameter.from(int.class, 0),
           ReflectionHelpers.ClassParameter.from(Application.class, application),
@@ -151,13 +131,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
           ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
-          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
-          ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null));              // ADDED
+          ReflectionHelpers.ClassParameter.from(
+              Configuration.class, application.getResources().getConfiguration()),
+          ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null)); // ADDED
     } else if (apiLevel <= Build.VERSION_CODES.M) {
-      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+      ReflectionHelpers.callInstanceMethod(
+          Activity.class,
+          realActivity,
+          "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
-          ReflectionHelpers.ClassParameter.from(ActivityThread.class, RuntimeEnvironment.getActivityThread()),
-          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(
+              ActivityThread.class, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, instrumentation),
           ReflectionHelpers.ClassParameter.from(IBinder.class, null),
           ReflectionHelpers.ClassParameter.from(int.class, 0),
           ReflectionHelpers.ClassParameter.from(Application.class, application),
@@ -167,14 +152,20 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
           ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
-          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
+          ReflectionHelpers.ClassParameter.from(
+              Configuration.class, application.getResources().getConfiguration()),
           ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
-          ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null)); // SAME AS LOLLIPOP ---------------------------
+          ReflectionHelpers.ClassParameter.from(
+              IVoiceInteractor.class, null)); // SAME AS LOLLIPOP ---------------------------
     } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
-      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+      ReflectionHelpers.callInstanceMethod(
+          Activity.class,
+          realActivity,
+          "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
-          ReflectionHelpers.ClassParameter.from(ActivityThread.class, RuntimeEnvironment.getActivityThread()),
-          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(
+              ActivityThread.class, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, instrumentation),
           ReflectionHelpers.ClassParameter.from(IBinder.class, null),
           ReflectionHelpers.ClassParameter.from(int.class, 0),
           ReflectionHelpers.ClassParameter.from(Application.class, application),
@@ -184,16 +175,21 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
           ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
-          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
+          ReflectionHelpers.ClassParameter.from(
+              Configuration.class, application.getResources().getConfiguration()),
           ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
           ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null),
           ReflectionHelpers.ClassParameter.from(Window.class, null) // ADDED
-      );
+          );
     } else if (apiLevel >= Build.VERSION_CODES.O) {
-      ReflectionHelpers.callInstanceMethod(Activity.class, realActivity, "attach",
+      ReflectionHelpers.callInstanceMethod(
+          Activity.class,
+          realActivity,
+          "attach",
           ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
-          ReflectionHelpers.ClassParameter.from(ActivityThread.class, RuntimeEnvironment.getActivityThread()),
-          ReflectionHelpers.ClassParameter.from(Instrumentation.class, new Instrumentation()),
+          ReflectionHelpers.ClassParameter.from(
+              ActivityThread.class, RuntimeEnvironment.getActivityThread()),
+          ReflectionHelpers.ClassParameter.from(Instrumentation.class, instrumentation),
           ReflectionHelpers.ClassParameter.from(IBinder.class, null),
           ReflectionHelpers.ClassParameter.from(int.class, 0),
           ReflectionHelpers.ClassParameter.from(Application.class, application),
@@ -203,16 +199,22 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
           ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
-          ReflectionHelpers.ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
+          ReflectionHelpers.ClassParameter.from(
+              Configuration.class, application.getResources().getConfiguration()),
           ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
           ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null),
           ReflectionHelpers.ClassParameter.from(Window.class, null),
-          ReflectionHelpers.ClassParameter.from(ViewRootImpl.ActivityConfigCallback.class, null) // ADDED
-      );
+          ReflectionHelpers.ClassParameter.from(
+              ViewRootImpl.ActivityConfigCallback.class, null) // ADDED
+          );
     } else {
       throw new RuntimeException("Could not find AndroidRuntimeAdapter for API level: " + apiLevel);
     }
-    setThemeFromManifest();
+
+    int theme = activityInfo.getThemeResource();
+    if (theme != 0) {
+      realActivity.setTheme(theme);
+    }
   }
 
   private Class<?> getNonConfigurationClass() {
@@ -221,21 +223,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public boolean setThemeFromManifest() {
-    ShadowApplication shadowApplication = shadowOf(realActivity.getApplication());
-    AndroidManifest appManifest = shadowApplication.getAppManifest();
-    if (appManifest == null) return false;
-
-    String themeRef = appManifest.getThemeRef(realActivity.getClass().getName());
-
-    if (themeRef != null) {
-      int themeRes = realActivity.getResources().getIdentifier(themeRef.replace("@", ""), "style", appManifest.getPackageName());
-      realActivity.setTheme(themeRes);
-      return true;
-    }
-    return false;
   }
 
   public void setCallingActivity(ComponentName activityName) {
@@ -436,11 +423,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    *         an {@link ShadowActivity.IntentForResult} object
    */
   public IntentForResult getNextStartedActivityForResult() {
-    if (startedActivitiesForResults.isEmpty()) {
-      return null;
-    } else {
-      return startedActivitiesForResults.remove(0);
-    }
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = shadowOf(activityThread.getInstrumentation());
+    return shadowInstrumentation.getNextStartedActivityForResult();
   }
 
   /**
@@ -451,11 +436,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    *         an {@link ShadowActivity.IntentForResult} object
    */
   public IntentForResult peekNextStartedActivityForResult() {
-    if (startedActivitiesForResults.isEmpty()) {
-      return null;
-    } else {
-      return startedActivitiesForResults.get(0);
-    }
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = shadowOf(activityThread.getInstrumentation());
+    return shadowInstrumentation.peekNextStartedActivityForResult();
   }
 
   @Implementation
@@ -541,32 +524,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
   }
 
-  @Implementation
-  public void startActivities(Intent[] intents, Bundle options) {
-    for (int i = intents.length - 1; i >= 0; i--) {
-      ShadowApplication.getInstance().startActivity(intents[i], options);
-    }
-  }
-
-  @Implementation
-  public void startActivityForResult(Intent intent, int requestCode) {
-    intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
-    startedActivitiesForResults.add(new IntentForResult(intent, requestCode));
-    ShadowApplication.getInstance().startActivity(intent);
-  }
-
-  @Implementation
-  public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
-    intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
-    startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
-    ShadowApplication.getInstance().startActivity(intent);
-  }
-
   public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {
-    Integer requestCode = intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent));
-    if (requestCode == null) {
-      throw new RuntimeException("No intent matches " + requestIntent + " among " + intentRequestCodeMap.keySet());
-    }
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = shadowOf(activityThread.getInstrumentation());
+    int requestCode = shadowInstrumentation.getRequestCodeForIntent(requestIntent);
 
     final ActivityInvoker invoker = new ActivityInvoker();
     invoker.call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
@@ -691,15 +652,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return streamType;
   }
 
-  @Implementation
-  public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode) {
-    startActivityForResult(intent, requestCode);
-  }
-
-  @Implementation
-  public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode, Bundle options) {
-    startActivityForResult(intent, requestCode, options);
-  }
 
   @Implementation(minSdk = M)
   public final void requestPermissions(String[] permissions, int requestCode) {

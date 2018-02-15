@@ -134,7 +134,7 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
+        typedValue.type =  ResourceHelper.getColorType(data);
         typedValue.data = ResourceHelper.getColor(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -149,8 +149,6 @@ public class Converter<T> {
       return ResourceHelper.getColor(typedResource.asString().trim());
     }
   }
-
-
 
   public static class FromFilePath extends Converter<String> {
     @Override
@@ -174,7 +172,11 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        typedValue.type = TypedValue.TYPE_INT_HEX;
+        if (data.startsWith("0x")) {
+          typedValue.type = TypedValue.TYPE_INT_HEX;
+        } else {
+          typedValue.type = TypedValue.TYPE_INT_DEC;
+        }
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -197,12 +199,12 @@ public class Converter<T> {
     }
   }
 
-  private static class FromFile extends Converter<FsFile> {
+  private static class FromFile extends Converter<Object> {
     @Override
-    public boolean fillTypedValue(FsFile data, TypedValue typedValue) {
+    public boolean fillTypedValue(Object data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
-      typedValue.string = data.getPath();
+      typedValue.string = data instanceof FsFile ? ((FsFile) data).getPath() : (CharSequence) data;
       typedValue.assetCookie = getNextStringCookie();
       return true;
     }
@@ -224,17 +226,12 @@ public class Converter<T> {
 
       if ("true".equalsIgnoreCase(data)) {
         typedValue.data = 1;
+        return true;
       } else if ("false".equalsIgnoreCase(data)) {
         typedValue.data = 0;
-      } else {
-        try {
-          int intValue = Integer.parseInt(data);
-          typedValue.data = intValue == 0 ? 0 : 1;
-        } catch (NumberFormatException e) {
-          return false;
-        }
+        return true;
       }
-      return true;
+      return false;
     }
   }
 

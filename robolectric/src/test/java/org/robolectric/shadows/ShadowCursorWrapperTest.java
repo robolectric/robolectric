@@ -18,8 +18,8 @@ import java.util.HashMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowCursorWrapperTest {

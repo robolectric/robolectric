@@ -2,29 +2,26 @@ package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+import java.util.Locale;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 
 @RunWith(RobolectricTestRunner.class)
 public class ResourceLoaderTest {
-
-  @Test
-  @Config(qualifiers = "doesnotexist-land-xlarge")
-  public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
-    TextView textView = (TextView) view.findViewById(android.R.id.text1);
-    assertThat(textView.getText().toString()).isEqualTo("land");
-  }
 
   @Test
   @Config(qualifiers="w0dp")
@@ -49,10 +46,21 @@ public class ResourceLoaderTest {
   }
 
   private void checkForPollutionHelper() {
+    assertThat(RuntimeEnvironment.getQualifiers())
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
+
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
-    TextView textView = (TextView) view.findViewById(android.R.id.text1);
+    TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
-    RuntimeEnvironment.setQualifiers("land"); // testing if this pollutes the other test
+    RuntimeEnvironment.setQualifiers("fr-land"); // testing if this pollutes the other test
+    Configuration configuration = Resources.getSystem().getConfiguration();
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
+      configuration.locale = new Locale("fr", "FR");
+    } else {
+      configuration.setLocale(new Locale("fr", "FR"));
+    }
+    configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+    Resources.getSystem().updateConfiguration(configuration, null);
   }
 
   @Test

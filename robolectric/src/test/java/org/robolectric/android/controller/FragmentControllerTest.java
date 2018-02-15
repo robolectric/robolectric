@@ -135,6 +135,18 @@ public class FragmentControllerTest {
   }
 
   @Test
+  public void withArguments() {
+    final LoginFragment fragment = new LoginFragment();
+
+    Bundle arguments = new Bundle();
+    arguments.putString("test_argument", "test_value");
+    FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class, arguments).create();
+
+    Bundle argumentsInFragment = controller.get().getArguments();
+    assertThat(argumentsInFragment.getString("test_argument")).isEqualTo("test_value");
+  }
+
+  @Test
   public void visible() {
     final LoginFragment fragment = new LoginFragment();
     final FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class);
@@ -148,7 +160,7 @@ public class FragmentControllerTest {
     assertThat(fragment.isVisible()).isTrue();
   }
 
-  private static class LoginFragment extends Fragment {
+  public static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);

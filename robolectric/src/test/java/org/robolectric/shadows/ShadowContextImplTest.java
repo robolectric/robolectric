@@ -18,9 +18,9 @@ import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestApplication;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -88,9 +88,14 @@ public class ShadowContextImplTest {
 
   @Test
   public void startIntentSender_activityIntent() throws IntentSender.SendIntentException {
-    PendingIntent intent = PendingIntent.getActivity(context, 0,
-        new Intent().setClassName(RuntimeEnvironment.application, "ActivityIntent"),
-        PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent intent =
+        PendingIntent.getActivity(
+            context,
+            0,
+            new Intent()
+                .setClassName(RuntimeEnvironment.application, "ActivityIntent")
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_UPDATE_CURRENT);
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 

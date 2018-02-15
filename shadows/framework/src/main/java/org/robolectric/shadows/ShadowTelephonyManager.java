@@ -47,6 +47,7 @@ public class ShadowTelephonyManager {
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
   private String incomingPhoneNumber = null;
+  private boolean isSmsCapable = true;
 
   @Implementation
   public void listen(PhoneStateListener listener, int flags) {
@@ -282,5 +283,18 @@ public class ShadowTelephonyManager {
             return (phoneStateRegistrations.get(input) & flags) != 0;
           }
         });
+  }
+
+  /**
+   * @return `true` by default, or the value specified via {@link #setIsSmsCapable(boolean)}
+   */
+  @Implementation
+  protected boolean isSmsCapable() {
+    return isSmsCapable;
+  }
+
+  /** Sets the value returned by {@link TelephonyManager#isSmsCapable()}. */
+  public void setIsSmsCapable(boolean isSmsCapable) {
+    this.isSmsCapable = isSmsCapable;
   }
 }

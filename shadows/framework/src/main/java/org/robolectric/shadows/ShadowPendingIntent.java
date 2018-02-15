@@ -8,12 +8,15 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.NonNull;
+import android.app.Activity;
+import android.app.ActivityThread;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
+import android.os.IBinder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -82,6 +85,7 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
+  @SuppressWarnings("ReferenceEquality")
   public void cancel() {
     for (Iterator<PendingIntent> i = createdIntents.iterator(); i.hasNext(); ) {
       PendingIntent pendingIntent = i.next();
@@ -109,9 +113,12 @@ public class ShadowPendingIntent {
       getSavedIntent().fillIn(intent, 0);
     }
 
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = shadowOf(activityThread.getInstrumentation());
     if (isActivityIntent()) {
       for (Intent savedIntent : savedIntents) {
-        context.startActivity(savedIntent);
+        shadowInstrumentation.execStartActivity(context, (IBinder)null, (IBinder)null, (Activity)null,
+            savedIntent, 0, (Bundle)null);
       }
     } else if (isBroadcastIntent()) {
       for (Intent savedIntent : savedIntents) {

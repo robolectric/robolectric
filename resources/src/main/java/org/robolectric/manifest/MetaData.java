@@ -6,6 +6,7 @@ import java.util.Map;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.android.ResTable_config;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -45,7 +46,7 @@ public final class MetaData {
               break;
             case VALUE:
               // Was provided by value attribute, need to inferFromValue it
-              TypedResource<?> typedRes = resourceTable.getValue(resName, "");
+              TypedResource<?> typedRes = resourceTable.getValue(resName, new ResTable_config());
               // The typed resource's data is always a String, so need to inferFromValue the value.
               if (typedRes == null) {
                 throw new RoboNotFoundException(resName.getFullyQualifiedName());

@@ -11,6 +11,7 @@ import java.util.List;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.res.StringResources;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -167,7 +168,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     if (currentNode == null) {
       return "";
     }
-    return currentNode.getTextContent();
+    return StringResources.processStringResources(currentNode.getTextContent());
   }
 
   @Override
@@ -326,7 +327,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     } else if (AttributeResource.isStyleReference(value)) {
       return "?" + ResName.qualifyResourceName(value.substring(1), packageName, "attr");
     } else {
-      return value;
+      return StringResources.processStringResources(value);
     }
   }
 

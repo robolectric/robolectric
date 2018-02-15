@@ -10,21 +10,22 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.Function;
+import org.robolectric.util.Logger;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ShadowWrangler implements ClassHandler {
@@ -36,7 +37,7 @@ public class ShadowWrangler implements ClassHandler {
   };
   public static final Plan DO_NOTHING_PLAN = new Plan() {
     @Override
-    public Object run(Object instance, Object roboData, Object[] params) throws Exception {
+    public Object run(Object instance, Object[] params) throws Exception {
       return null;
     }
 
@@ -46,17 +47,30 @@ public class ShadowWrangler implements ClassHandler {
     }
   };
   public static final Plan CALL_REAL_CODE_PLAN = null;
-  public static final MethodHandle CALL_REAL_CODE = null;
+  public static final Method CALL_REAL_CODE = null;
   public static final MethodHandle DO_NOTHING = constant(Void.class, null).asType(methodType(void.class));
+  public static final Method DO_NOTHING_METHOD;
+
+  static {
+    try {
+      DO_NOTHING_METHOD = ShadowWrangler.class.getDeclaredMethod("doNothing");
+      DO_NOTHING_METHOD.setAccessible(true);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static final Implementation IMPLEMENTATION_DEFAULTS =
+      ReflectionHelpers.defaultsFor(Implementation.class);
+
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
   private static final boolean STRIP_SHADOW_STACK_TRACES = true;
-  private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false, -1, -1);
+  private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
   private final Interceptors interceptors;
   private final int apiLevel;
-  private final Map<Class, MetaShadow> metaShadowMap = new HashMap<>();
   private final Map<String, Plan> planCache =
       Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
         @Override
@@ -64,10 +78,20 @@ public class ShadowWrangler implements ClassHandler {
           return size() > 500;
         }
       });
-  private final Map<Class, ShadowConfig> shadowConfigCache = new ConcurrentHashMap<>();
-  private final ClassValue<ShadowConfig> shadowConfigs = new ClassValue<ShadowConfig>() {
-    @Override protected ShadowConfig computeValue(Class<?> type) {
-      return shadowMap.get(type);
+
+  /** key is instrumented class */
+  private final ClassValueMap<ShadowInfo> cachedShadowInfos = new ClassValueMap<ShadowInfo>() {
+    @Override protected ShadowInfo computeValue(Class<?> type) {
+      return shadowMap.getShadowInfo(type, apiLevel);
+    }
+  };
+
+  /** key is shadow class */
+  private final ClassValueMap<ShadowMetadata> cachedShadowMetadata = new ClassValueMap<ShadowMetadata>() {
+    @Nonnull
+    @Override
+    protected ShadowMetadata computeValue(Class<?> type) {
+      return new ShadowMetadata(type);
     }
   };
 
@@ -105,22 +129,28 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public void classInitializing(Class clazz) {
-    Class<?> shadowClass = findDirectShadowClass(clazz);
-    if (shadowClass != null) {
-      try {
-        Method method = shadowClass.getMethod(ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
-        if (!Modifier.isStatic(method.getModifiers())) {
-          throw new RuntimeException(shadowClass.getName() + "." + method.getName() + " is not static");
-        }
-        method.setAccessible(true);
-        method.invoke(null);
-      } catch (NoSuchMethodException e) {
-        RobolectricInternals.performStaticInitialization(clazz);
-      } catch (InvocationTargetException | IllegalAccessException e) {
-        throw new RuntimeException(e);
+    try {
+      Method method = pickShadowMethod(clazz,
+          ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
+
+      // if we got back DO_NOTHING_METHOD that means the shadow is `callThroughByDefault = false`;
+      // for backwards compatibility we'll still perform static initialization though for now.
+      if (method == DO_NOTHING_METHOD) {
+        method = null;
       }
-    } else {
-      RobolectricInternals.performStaticInitialization(clazz);
+
+      if (method != null) {
+        if (!Modifier.isStatic(method.getModifiers())) {
+          throw new RuntimeException(
+              method.getDeclaringClass().getName() + "." + method.getName() + " is not static");
+        }
+
+        method.invoke(null);
+      } else {
+        RobolectricInternals.performStaticInitialization(clazz);
+      }
+    } catch (InvocationTargetException | IllegalAccessException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -131,173 +161,183 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+    Plan plan;
     if (planCache.containsKey(signature)) {
-      return planCache.get(signature);
+      plan = planCache.get(signature);
+    } else {
+      plan = calculatePlan(signature, isStatic, theClass);
+      planCache.put(signature, plan);
     }
-    Plan plan = calculatePlan(signature, isStatic, theClass);
-    planCache.put(signature, plan);
     return plan;
   }
 
-  @Override public MethodHandle findShadowMethod(Class<?> caller, String name, MethodType type,
-      boolean isStatic) throws IllegalAccessException {
-    ShadowConfig shadowConfig = shadowConfigs.get(caller);
-    if (shadowConfig == null) return CALL_REAL_CODE;
-
-    ClassLoader classLoader = caller.getClassLoader();
-    MethodType actualType = isStatic ? type : type.dropParameterTypes(0, 1);
-    Method method = findShadowMethod(classLoader, shadowConfig, name, actualType.parameterArray());
-    if (method == null) {
-      return shadowConfig.callThroughByDefault ? CALL_REAL_CODE : DO_NOTHING;
-    }
-
-    Class<?> declaredShadowedClass = getShadowedClass(method);
-    if (declaredShadowedClass.equals(Object.class)) {
-      // e.g. for equals(), hashCode(), toString()
-      return CALL_REAL_CODE;
-    }
-
-    boolean shadowClassMismatch = !declaredShadowedClass.equals(caller);
-    if (shadowClassMismatch && !shadowConfig.inheritImplementationMethods) {
-      return CALL_REAL_CODE;
-    } else {
-      MethodHandle mh = LOOKUP.unreflect(method);
-
-      // Robolectric doesn't actually look for static, this for example happens
-      // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
-      if (!isStatic && Modifier.isStatic(method.getModifiers())) {
-        return dropArguments(mh, 0, Object.class);
-      } else {
-        return mh;
-      }
-    }
-  }
-
-  private Plan calculatePlan(String signature, boolean isStatic, Class<?> theClass) {
-    final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, theClass.getClassLoader());
-    ShadowConfig shadowConfig = getShadowConfig(theClass);
-
-    if (shadowConfig == null || !shadowConfig.supportsSdk(apiLevel)) {
-      return CALL_REAL_CODE_PLAN;
-    } else {
+  private Plan calculatePlan(String signature, boolean isStatic, Class<?> definingClass) {
+    return PerfStatsCollector.getInstance().measure("find shadow method", () -> {
+      final ClassLoader classLoader = definingClass.getClassLoader();
+      final InvocationProfile invocationProfile =
+          new InvocationProfile(signature, isStatic, classLoader);
       try {
-        final ClassLoader classLoader = theClass.getClassLoader();
         Class<?>[] types = invocationProfile.getParamClasses(classLoader);
-        Method shadowMethod = findShadowMethod(classLoader, shadowConfig, invocationProfile.methodName, types);
-        if (shadowMethod == null) {
-          return shadowConfig.callThroughByDefault
-              ? CALL_REAL_CODE_PLAN
-              : strict(invocationProfile) ? CALL_REAL_CODE_PLAN : DO_NOTHING_PLAN;
-        }
-
-        final Class<?> declaredShadowedClass = getShadowedClass(shadowMethod);
-
-        if (declaredShadowedClass.equals(Object.class)) {
-          // e.g. for equals(), hashCode(), toString()
+        Method shadowMethod = pickShadowMethod(definingClass, invocationProfile.methodName, types);
+        if (shadowMethod == CALL_REAL_CODE) {
           return CALL_REAL_CODE_PLAN;
-        }
-
-        boolean shadowClassMismatch = !declaredShadowedClass.equals(invocationProfile.clazz);
-        if (shadowClassMismatch && (!shadowConfig.inheritImplementationMethods || strict(invocationProfile))) {
-          return CALL_REAL_CODE_PLAN;
+        } else if (shadowMethod == DO_NOTHING_METHOD){
+          return DO_NOTHING_PLAN;
         } else {
           return new ShadowMethodPlan(shadowMethod);
         }
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
-    }
+    });
   }
 
-  private Method findShadowMethod(ClassLoader classLoader, ShadowConfig config, String name, Class<?>[] types) {
-    try {
-      Class<?> shadowClass = Class.forName(config.shadowClassName, false, classLoader);
-      Method method = findShadowMethodInternal(shadowClass, name, types);
-      if (method == null && config.looseSignatures) {
-        Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
-        method = findShadowMethodInternal(shadowClass, name, genericTypes);
+  @Override public MethodHandle findShadowMethodHandle(Class<?> definingClass, String name,
+      MethodType methodType, boolean isStatic) throws IllegalAccessException {
+    return PerfStatsCollector.getInstance().measure("find shadow method handle", () -> {
+      MethodType actualType = isStatic ? methodType : methodType.dropParameterTypes(0, 1);
+      Class<?>[] paramTypes = actualType.parameterArray();
+
+      Method shadowMethod = pickShadowMethod(definingClass, name, paramTypes);
+
+      if (shadowMethod == CALL_REAL_CODE) {
+        return null;
+      } else if (shadowMethod == DO_NOTHING_METHOD) {
+        return DO_NOTHING;
       }
 
-      return method;
-    } catch (ClassNotFoundException e) {
-      throw new IllegalStateException(e);
-    }
+      MethodHandle mh = LOOKUP.unreflect(shadowMethod);
+
+      // Robolectric doesn't actually look for static, this for example happens
+      // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
+      if (!isStatic && Modifier.isStatic(shadowMethod.getModifiers())) {
+        return dropArguments(mh, 0, Object.class);
+      } else {
+        return mh;
+      }
+    });
   }
 
-  @SuppressWarnings("ReferenceEquality")
-  private ShadowConfig getShadowConfig(Class clazz) {
-    ShadowConfig shadowConfig = shadowConfigCache.get(clazz);
-    if (shadowConfig == null) {
-      shadowConfig = shadowMap.get(clazz);
-      shadowConfigCache.put(clazz, shadowConfig == null ? NO_SHADOW_CONFIG : shadowConfig);
-      return shadowConfig;
+  private Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
+    ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
+    if (shadowInfo == null) {
+      return CALL_REAL_CODE;
     } else {
-      return (shadowConfig == NO_SHADOW_CONFIG) ? null : shadowConfig;
+      ClassLoader classLoader = definingClass.getClassLoader();
+      Class<?> shadowClass;
+      try {
+        shadowClass = Class.forName(shadowInfo.shadowClassName, false, classLoader);
+      } catch (ClassNotFoundException e) {
+        throw new IllegalStateException(e);
+      }
+
+      Method method = findShadowMethod(definingClass, name, paramTypes, shadowInfo, shadowClass,
+          shadowInfo.inheritImplementationMethods);
+      if (method == null) {
+        return shadowInfo.callThroughByDefault ? CALL_REAL_CODE : DO_NOTHING_METHOD;
+      } else {
+        return method;
+      }
     }
   }
 
-  private boolean isAndroidSupport(InvocationProfile invocationProfile) {
-    return invocationProfile.clazz.getName().startsWith("android.support");
+  /**
+   * Searches for an `@Implementation` method on a given shadow class.
+   *
+   * If the shadow class allows loose signatures, search for them.
+   *
+   * If the shadow class doesn't have such a method, but does hav a superclass which implements
+   * the same class as it, recursively call {@link #findShadowMethod(Class, String, Class[],
+   * ShadowInfo, Class, boolean)} with the shadow superclass.
+   *
+   * `inheritImplementationMethods` is deprecated but supported for now.
+   */
+  private Method findShadowMethod(Class<?> definingClass, String name, Class<?>[] types,
+      ShadowInfo shadowInfo, Class<?> shadowClass, boolean inheritImplementationMethods) {
+    Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
+
+    if (method == null && shadowInfo.looseSignatures) {
+      Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
+      method = findShadowMethodDeclaredOnClass(shadowClass, name, genericTypes);
+    }
+
+    if (method != null) {
+      return method;
+    } else {
+      // if the shadow's superclass shadows the same class as this shadow, then recurse.
+      // Buffalo buffalo buffalo buffalo buffalo buffalo buffalo.
+      Class<?> shadowSuperclass = shadowClass.getSuperclass();
+      if (shadowSuperclass != null && !shadowSuperclass.equals(Object.class)) {
+        ShadowInfo shadowSuperclassInfo = ShadowMap.obtainShadowInfo(shadowSuperclass, true);
+        if (inheritImplementationMethods || (
+            shadowSuperclassInfo != null
+                && shadowSuperclassInfo.isShadowOf(definingClass)
+                && shadowSuperclassInfo.supportsSdk(apiLevel))) {
+          if (inheritImplementationMethods && shadowSuperclassInfo == null) {
+            // we might inherit methods from a class with no @Implements annotation, that's okay
+            shadowSuperclassInfo = shadowInfo;
+          }
+
+          method = findShadowMethod(definingClass, name, types, shadowSuperclassInfo,
+              shadowSuperclass, inheritImplementationMethods);
+        }
+      }
+    }
+
+    return method;
   }
 
-  private boolean strict(InvocationProfile invocationProfile) {
-    return isAndroidSupport(invocationProfile) || invocationProfile.isDeclaredOnObject();
-  }
-
-  private Method findShadowMethodInternal(Class<?> shadowClass, String methodName, Class<?>[] paramClasses) throws ClassNotFoundException {
+  private Method findShadowMethodDeclaredOnClass(
+      Class<?> shadowClass, String methodName, Class<?>[] paramClasses) {
     try {
-      Method method = shadowClass.getMethod(methodName, paramClasses);
-      Implementation implementation = getImplementationAnnotation(method);
-      return matchesSdk(implementation) ? method : null;
+      Method method = shadowClass.getDeclaredMethod(methodName, paramClasses);
 
       // todo: allow per-version overloading
-//      if (method == null) {
-//        String methodPrefix = name + "$$";
-//        for (Method candidateMethod : shadowClass.getMethods()) {
-//          if (candidateMethod.getName().startsWith(methodPrefix)) {
-//
-//          }
-//        }
-//      }
+      // if (method == null) {
+      //   String methodPrefix = name + "$$";
+      //   for (Method candidateMethod : shadowClass.getDeclaredMethods()) {
+      //     if (candidateMethod.getName().startsWith(methodPrefix)) {
+      //
+      //     }
+      //   }
+      // }
+
+      if (isValidShadowMethod(method)) {
+        method.setAccessible(true);
+        return method;
+      } else {
+        return null;
+      }
 
     } catch (NoSuchMethodException e) {
       return null;
     }
   }
 
+  private boolean isValidShadowMethod(Method method) {
+    int modifiers = method.getModifiers();
+    if (!Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers)) {
+      return false;
+    }
+
+    Implementation implementation = getImplementationAnnotation(method);
+    return matchesSdk(implementation);
+  }
+
   private boolean matchesSdk(Implementation implementation) {
     return implementation.minSdk() <= apiLevel && (implementation.maxSdk() == -1 || implementation.maxSdk() >= apiLevel);
   }
 
-  private Class<?> getShadowedClass(Method shadowMethod) {
-    Class<?> shadowingClass = shadowMethod.getDeclaringClass();
-    if (shadowingClass.equals(Object.class)) {
-      return Object.class;
-    }
-
-    Implements implementsAnnotation = shadowingClass.getAnnotation(Implements.class);
-    if (implementsAnnotation == null) {
-      throw new RuntimeException(shadowingClass + " has no @" + Implements.class.getSimpleName() + " annotation");
-    }
-    String shadowedClassName = implementsAnnotation.className();
-    if (shadowedClassName.isEmpty()) {
-      return implementsAnnotation.value();
-    } else {
-      try {
-        return shadowingClass.getClassLoader().loadClass(shadowedClassName);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  private Implementation getImplementationAnnotation(Method method) {
+  private static Implementation getImplementationAnnotation(Method method) {
     if (method == null) {
       return null;
     }
     Implementation implementation = method.getAnnotation(Implementation.class);
+    if (implementation == null) {
+      Logger.warn("No @Implementation annotation on " + method);
+    }
     return implementation == null
-        ? ReflectionHelpers.defaultsFor(Implementation.class)
+        ? IMPLEMENTATION_DEFAULTS
         : implementation;
   }
 
@@ -353,91 +393,76 @@ public class ShadowWrangler implements ClassHandler {
     return throwable;
   }
 
-  public Object createShadowFor(Object instance) {
-    String shadowClassName = getShadowClassName(instance.getClass());
+  Object createShadowFor(Object instance) {
+    Class<?> theClass = instance.getClass();
+    Object shadow = createShadowFor(theClass);
+    injectRealObjectOn(shadow, instance);
+    return shadow;
+  }
 
-    if (shadowClassName == null) return NO_SHADOW;
-
-    try {
-      Class<?> shadowClass = loadClass(shadowClassName, instance.getClass().getClassLoader());
-      Object shadow = shadowClass.newInstance();
-      injectRealObjectOn(shadow, shadowClass, instance);
-
-      return shadow;
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException("Could not instantiate shadow, missing public empty constructor.", e);
+  private Object createShadowFor(Class<?> theClass) {
+    ShadowInfo shadowInfo = getShadowInfo(theClass);
+    if (shadowInfo == null) {
+      return NO_SHADOW;
+    } else {
+      try {
+        Class<?> shadowClass = loadClass(shadowInfo.shadowClassName, theClass.getClassLoader());
+        ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
+        return shadowMetadata.constructor.newInstance();
+      } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName + " for " + theClass, e);
+      }
     }
   }
 
-  @Override public MethodHandle getShadowCreator(Class<?> caller) {
-    String shadowClassName = getShadowClassNameInvoke(caller);
+  private ShadowMetadata getShadowMetadata(Class<?> shadowClass) {
+    return cachedShadowMetadata.get(shadowClass);
+  }
 
-    if (shadowClassName == null) return dropArguments(NO_SHADOW_HANDLE, 0, caller);
+  @Override public MethodHandle getShadowCreator(Class<?> theClass) {
+    ShadowInfo shadowInfo = getShadowInfo(theClass);
+    if (shadowInfo == null) return dropArguments(NO_SHADOW_HANDLE, 0, theClass);
+    String shadowClassName = shadowInfo.shadowClassName;
 
     try {
-      Class<?> shadowClass = Class.forName(shadowClassName, false, caller.getClassLoader());
-      MethodHandle constructor = LOOKUP.findConstructor(shadowClass, methodType(void.class));
-      MetaShadow metaShadow = getMetaShadow(shadowClass);
+      Class<?> shadowClass = Class.forName(shadowClassName, false, theClass.getClassLoader());
+      ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
 
       MethodHandle mh = identity(shadowClass); // (instance)
-      mh = dropArguments(mh, 1, caller); // (instance)
-      for (Field field : metaShadow.realObjectFields) {
+      mh = dropArguments(mh, 1, theClass); // (instance)
+      for (Field field : shadowMetadata.realObjectFields) {
         MethodHandle setter = LOOKUP.unreflectSetter(field);
         MethodType setterType = mh.type().changeReturnType(void.class);
         mh = foldArguments(mh, setter.asType(setterType));
       }
-      mh = foldArguments(mh, constructor);  // (shadow, instance)
+      mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
 
       return mh; // (instance)
-    } catch (NoSuchMethodException | IllegalAccessException e) {
-      throw new RuntimeException("Could not instantiate shadow, missing public empty constructor.", e);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Could not instantiate shadow", e);
+    } catch (IllegalAccessException | ClassNotFoundException e) {
+      throw new RuntimeException("Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
     }
   }
 
-  private String getShadowClassNameInvoke(Class<?> cl) {
-    Class clazz = cl;
-    ShadowConfig shadowConfig = null;
-    while (shadowConfig == null && clazz != null) {
-      shadowConfig = shadowConfigs.get(clazz);
-      clazz = clazz.getSuperclass();
-    }
-    return shadowConfig == null ? null : shadowConfig.shadowClassName;
-  }
-
-  private String getShadowClassName(Class<?> cl) {
-    Class clazz = cl;
-    ShadowConfig shadowConfig = null;
-    while ((shadowConfig == null || !shadowConfig.supportsSdk(apiLevel)) && clazz != null) {
-      shadowConfig = getShadowConfig(clazz);
-      clazz = clazz.getSuperclass();
-    }
-    return shadowConfig == null ? null : shadowConfig.shadowClassName;
-  }
-
-  private void injectRealObjectOn(Object shadow, Class<?> shadowClass, Object instance) {
-    MetaShadow metaShadow = getMetaShadow(shadowClass);
-    for (Field realObjectField : metaShadow.realObjectFields) {
-      writeField(shadow, instance, realObjectField);
+  private void injectRealObjectOn(Object shadow, Object instance) {
+    ShadowMetadata shadowMetadata = getShadowMetadata(shadow.getClass());
+    for (Field realObjectField : shadowMetadata.realObjectFields) {
+      setField(shadow, instance, realObjectField);
     }
   }
 
-  private MetaShadow getMetaShadow(Class<?> shadowClass) {
-    synchronized (metaShadowMap) {
-      return metaShadowMap.computeIfAbsent(shadowClass, MetaShadow::new);
+  private ShadowInfo getShadowInfo(Class<?> clazz) {
+    ShadowInfo shadowInfo = null;
+    for (; shadowInfo == null && clazz != null; clazz = clazz.getSuperclass()) {
+      shadowInfo = getExactShadowInfo(clazz);
     }
+    return shadowInfo;
   }
 
-  private Class<?> findDirectShadowClass(Class<?> originalClass) {
-    ShadowConfig shadowConfig = getShadowConfig(originalClass);
-    if (shadowConfig == null || !shadowConfig.supportsSdk(apiLevel)) {
-      return null;
-    }
-    return loadClass(shadowConfig.shadowClassName, originalClass.getClassLoader());
+  private ShadowInfo getExactShadowInfo(Class<?> clazz) {
+    return cachedShadowInfos.get(clazz);
   }
 
-  private static void writeField(Object target, Object value, Field realObjectField) {
+  private static void setField(Object target, Object value, Field realObjectField) {
     try {
       realObjectField.set(target, value);
     } catch (IllegalAccessException e) {
@@ -453,9 +478,9 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     @Override
-    public Object run(Object instance, Object roboData, Object[] params) throws Throwable {
-      //noinspection UnnecessaryLocalVariable
-      Object shadow = roboData;
+    public Object run(Object instance, Object[] params) throws Throwable {
+      ShadowedObject shadowedObject = (ShadowedObject) instance;
+      Object shadow = shadowedObject == null ? null : shadowedObject.$$robo$getData();
       try {
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {
@@ -472,10 +497,17 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  private static class MetaShadow {
+  private static class ShadowMetadata {
+    final Constructor<?> constructor;
     final List<Field> realObjectFields = new ArrayList<>();
 
-    public MetaShadow(Class<?> shadowClass) {
+    public ShadowMetadata(Class<?> shadowClass) {
+      try {
+        this.constructor = shadowClass.getConstructor();
+      } catch (NoSuchMethodException e) {
+        throw new RuntimeException("Missing public empty constructor on " + shadowClass, e);
+      }
+
       while (shadowClass != null) {
         for (Field field : shadowClass.getDeclaredFields()) {
           if (field.isAnnotationPresent(RealObject.class)) {
@@ -492,4 +524,9 @@ public class ShadowWrangler implements ClassHandler {
       }
     }
   }
+
+  @SuppressWarnings("unused")
+  private static void doNothing() {
+  }
+
 }

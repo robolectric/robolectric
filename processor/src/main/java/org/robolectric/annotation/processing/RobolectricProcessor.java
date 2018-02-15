@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +58,8 @@ public class RobolectricProcessor extends AbstractProcessor {
    * @param options simulated options that would ordinarily
    *                be passed in the {@link ProcessingEnvironment}.
    */
-  RobolectricProcessor(Map<String, String> options) {
+  @VisibleForTesting
+  public RobolectricProcessor(Map<String, String> options) {
     processOptions(options);
   }
 
@@ -108,6 +110,10 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.shadowPackage = options.get(PACKAGE_OPT);
       this.shouldInstrumentPackages =
           !"false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT));
+
+      if (this.shadowPackage == null) {
+        throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
+      }
     }
   }
 

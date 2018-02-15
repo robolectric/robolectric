@@ -51,7 +51,8 @@ public class Shadows implements ShadowProvider {
   public static ShadowUniqueInnerDummy shadowOf(UniqueInnerDummy actual) {
     return (ShadowUniqueInnerDummy) Shadow.extract(actual);
   }
-  
+
+  @Override
   public void reset() {
     ShadowDummy.resetter_method();
   }
