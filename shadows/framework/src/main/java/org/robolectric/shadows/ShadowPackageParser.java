@@ -353,15 +353,14 @@ public class ShadowPackageParser {
       }
 
     } catch (Exception e) {
-      // fall through
+      throw new RuntimeException(
+          "Failed to parse "
+              + apkPath
+              + "Error code: "
+              + INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION);
     } finally {
       IoUtils.closeQuietly(parser);
       IoUtils.closeQuietly(assets);
     }
-    throw new RuntimeException(
-        "Failed to parse "
-            + apkPath
-            + "Error code: "
-            + INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION);
   }
 }
