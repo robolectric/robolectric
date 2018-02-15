@@ -64,9 +64,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = AssetManager.class, looseSignatures = true)
 public class ShadowArscAssetManager {
 
-  public static final boolean USE_LEGACY = "legacy".equals(System.getProperty("robolectric.resources"));
-  static {
-    System.out.println("USE_LEGACY = " + USE_LEGACY);
+  {
+    System.out.println("new AssetManager: USE_LEGACY = " + RuntimeEnvironment.useLegacyResources());
   }
 
   private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
@@ -87,7 +86,7 @@ public class ShadowArscAssetManager {
 
   @Implementation
   public void __constructor__() {
-    if (USE_LEGACY) {
+    if (RuntimeEnvironment.useLegacyResources()) {
       ShadowAssetManager shadowAssetManager = new ShadowAssetManager();
       replaceShadow(shadowAssetManager);
       shadowAssetManager.__constructor__();
@@ -98,7 +97,7 @@ public class ShadowArscAssetManager {
 
   @Implementation
   public void __constructor__(boolean isSystem) {
-    if (USE_LEGACY) {
+    if (RuntimeEnvironment.useLegacyResources()) {
       ShadowAssetManager shadowAssetManager = new ShadowAssetManager();
       replaceShadow(shadowAssetManager);
       shadowAssetManager.__constructor__(isSystem);
@@ -379,7 +378,7 @@ public class ShadowArscAssetManager {
   }
 
   private static boolean shouldDelegateToLegacyShadow(long themePtr) {
-    return USE_LEGACY;
+    return RuntimeEnvironment.useLegacyResources();
   }
 
   @Implementation

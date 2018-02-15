@@ -62,7 +62,7 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   public FileDescriptor getFileDescriptor() {
-    if (ShadowArscAssetManager.USE_LEGACY) {
+    if (RuntimeEnvironment.useLegacyResources()) {
       try {
         return file.getFD();
       } catch (IOException e) {

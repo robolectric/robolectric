@@ -30,6 +30,8 @@ public class RuntimeEnvironment {
   private static String androidFrameworkJar;
   public static FsFile compileTimeSystemResourcesFile;
 
+  private static boolean useLegacyResources;
+
   /**
    * Tests if the given thread is currently set as the main thread.
    *
@@ -208,5 +210,25 @@ public class RuntimeEnvironment {
 
   public static String getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
+  }
+
+  /**
+   * Internal only.
+   *
+   * @deprecated Do not use.
+   */
+  @Deprecated
+  public static boolean useLegacyResources() {
+    return useLegacyResources;
+  }
+
+  /**
+   * Internal only.
+   *
+   * @deprecated Do not use.
+   */
+  @Deprecated
+  public static void setUseLegacyResources(boolean useLegacyResources) {
+    RuntimeEnvironment.useLegacyResources = useLegacyResources;
   }
 }

@@ -132,10 +132,11 @@ public class RobolectricTestRunnerTest {
   public static class MyParallelUniverse extends ParallelUniverse {
 
     @Override
-    public void setUpApplicationState(Method method,  AndroidManifest appManifest,
-        DependencyResolver jarResolver,Config config, ResourceTable compileTimeResourceTable,
+    public void setUpApplicationState(Method method, AndroidManifest appManifest,
+        DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
         ResourceTable appResourceTable,
-        ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile) {
+        ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile,
+        boolean legacyResources) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }

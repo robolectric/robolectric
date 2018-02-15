@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import static org.robolectric.shadows.ShadowArscAssetManager.USE_LEGACY;
-
 import android.app.Application;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -75,7 +73,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
-  
+
   private static final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
   private static PackageResourceTable compiletimeSdkResourceTable;
@@ -262,6 +260,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         for (SdkConfig sdkConfig : sdksToRun) {
           last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config);
           children.add(last);
+          children.add(new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config, true));
         }
         if (last != null) {
           last.dontIncludeApiLevelInName();
@@ -334,7 +333,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         () -> resetStaticState());
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
-    if (USE_LEGACY) {
+
+    if (roboMethod.legacyResources) {
       PackageResourceTable systemResourceTable = sdkEnvironment
           .getSystemResourceTable(getJarResolver());
       PackageResourceTable appResourceTable = getAppResourceTable(appManifest);
@@ -347,7 +347,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           new RoutingResourceTable(appResourceTable, getCompileTimeSdkResourceTable()),
           new RoutingResourceTable(appResourceTable, systemResourceTable),
           new RoutingResourceTable(systemResourceTable),
-          null);
+          null,
+          roboMethod.legacyResources);
       roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
     } else {
       ResourceTable nullResourceTable = new NullResourceTable();
@@ -359,7 +360,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           nullResourceTable,
           nullResourceTable,
           nullResourceTable,
-          sdkEnvironment.getCompileTimeSystemResourcesFile(getJarResolver()));
+          sdkEnvironment.getCompileTimeSystemResourcesFile(getJarResolver()),
+          roboMethod.legacyResources);
     }
   }
 
@@ -601,23 +603,33 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     private final @Nonnull AndroidManifest appManifest;
     final @Nonnull SdkConfig sdkConfig;
     final @Nonnull Config config;
+    private final boolean legacyResources;
     private boolean includeApiLevelInName = true;
     TestLifecycle testLifecycle;
     ParallelUniverseInterface parallelUniverseInterface;
 
     RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest, @Nonnull SdkConfig sdkConfig, @Nonnull Config config) {
+      this(method, appManifest, sdkConfig, config, false);
+    }
+
+    RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest, @Nonnull SdkConfig sdkConfig, @Nonnull Config config, boolean legacyResources) {
       super(method);
       this.appManifest = appManifest;
       this.sdkConfig = sdkConfig;
       this.config = config;
+      this.legacyResources = legacyResources;
+
+      System.out.println(System.identityHashCode(this) + " legacyResources = " + legacyResources);
     }
 
     @Override
     public String getName() {
       // IDE focused test runs rely on preservation of the test name; we'll use the
       //   latest supported SDK for focused test runs
-      return super.getName() +
-          (includeApiLevelInName ? "[" + sdkConfig.getApiLevel() + "]" : "");
+      return super.getName()
+          + (includeApiLevelInName ? "[" + sdkConfig.getApiLevel() + "]" : "")
+          + (legacyResources ? "[legacy]" : "")
+          ;
     }
 
     void dontIncludeApiLevelInName() {
@@ -637,14 +649,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
       RobolectricFrameworkMethod that = (RobolectricFrameworkMethod) o;
 
-      return sdkConfig.equals(that.sdkConfig);
+      return sdkConfig.equals(that.sdkConfig) && legacyResources == that.legacyResources;
     }
 
     @Override
     public int hashCode() {
       int result = super.hashCode();
       result = 31 * result + sdkConfig.hashCode();
+      result = 31 * result + (legacyResources ? 1 : 0);
       return result;
+    }
+
+    @Override
+    public String toString() {
+      return getName();
     }
   }
 

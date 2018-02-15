@@ -17,8 +17,8 @@ public interface ParallelUniverseInterface {
       ResourceTable compileTimeResourceTable,
       ResourceTable appResourceTable,
       ResourceTable systemResourceTable,
-      FsFile compileTimeSystemResourcesFile
-  );
+      FsFile compileTimeSystemResourcesFile,
+      boolean legacyResources);
 
   Thread getMainThread();
 

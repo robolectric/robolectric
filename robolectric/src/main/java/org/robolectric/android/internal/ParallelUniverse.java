@@ -2,7 +2,6 @@ package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
-import static org.robolectric.shadows.ShadowArscAssetManager.USE_LEGACY;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.ActivityThread;
@@ -63,10 +62,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
 
-  public void setUpApplicationState(Method method,  AndroidManifest appManifest,
-                                    DependencyResolver jarResolver,Config config, ResourceTable compileTimeResourceTable,
-                                    ResourceTable appResourceTable,
-                                    ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile) {
+  public void setUpApplicationState(Method method, AndroidManifest appManifest,
+      DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
+      ResourceTable appResourceTable,
+      ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile,
+      boolean legacyResources) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -81,6 +81,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.compileTimeSystemResourcesFile = compileTimeSystemResourcesFile;
     RuntimeEnvironment.setAndroidFrameworkJarPath(
         jarResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
+    RuntimeEnvironment.setUseLegacyResources(legacyResources);
 
     if (!loggingInitialized) {
       ShadowLog.setupLogging();
@@ -120,7 +121,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ApplicationInfo applicationInfo = null;
     if (appManifest.getAndroidManifestFile() != null
         && appManifest.getAndroidManifestFile().exists()) {
-      if (!USE_LEGACY || Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
+      if (!legacyResources || Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
         // FsFile packageFile = appManifest.getAndroidManifestFile();
         // todo get elsewhere?
         FsFile packageFile = Fs.fromURL(getClass().getResource("/resources.ap_"));

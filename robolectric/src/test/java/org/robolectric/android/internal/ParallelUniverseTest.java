@@ -94,7 +94,8 @@ public class ParallelUniverseTest {
         sdkResourceProvider,
         routingResourceTable,
         RuntimeEnvironment.getSystemResourceTable(),
-        null);
+        null,
+        RuntimeEnvironment.useLegacyResources());
   }
 
   private AndroidManifest dummyManifest() {
