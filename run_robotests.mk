@@ -62,7 +62,7 @@ my_instrument_source_dirs := $(if $(LOCAL_INSTRUMENT_SOURCE_DIRS),\
 # Used by base_rules.mk. #
 ##########################
 
-LOCAL_MODULE_CLASS := FAKE
+LOCAL_MODULE_CLASS := ROBOLECTRIC
 # This is actually a phony target that is never built.
 LOCAL_BUILT_MODULE_STEM := test.fake
 # Since it is not built, it cannot be installed. But we will define our own
