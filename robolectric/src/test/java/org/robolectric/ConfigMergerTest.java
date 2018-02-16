@@ -19,7 +19,6 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(JUnit4.class)
 public class ConfigMergerTest {

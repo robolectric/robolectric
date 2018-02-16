@@ -1,4 +1,4 @@
-package org.robolectric.shadows.testing;
+package org.robolectric;
 
 import android.app.Application;
 

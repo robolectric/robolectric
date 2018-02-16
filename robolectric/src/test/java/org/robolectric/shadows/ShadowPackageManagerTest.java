@@ -180,6 +180,7 @@ public class ShadowPackageManagerTest {
     assertThat((flags & FLAG_SUPPORTS_NORMAL_SCREENS)).isEqualTo(FLAG_SUPPORTS_NORMAL_SCREENS);
     assertThat((flags & FLAG_SUPPORTS_SCREEN_DENSITIES)).isEqualTo(FLAG_SUPPORTS_SCREEN_DENSITIES);
     assertThat((flags & FLAG_SUPPORTS_SMALL_SCREENS)).isEqualTo(FLAG_SUPPORTS_SMALL_SCREENS);
+    assertThat((flags & FLAG_TEST_ONLY)).isEqualTo(FLAG_TEST_ONLY);
     assertThat((flags & FLAG_VM_SAFE_MODE)).isEqualTo(FLAG_VM_SAFE_MODE);
   }
 
@@ -877,18 +878,19 @@ public class ShadowPackageManagerTest {
     PackageInfo packageInfo = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
-    assertThat(providers.length).isEqualTo(2);
+    assertThat(providers.length).isEqualTo(3);
     assertThat(providers[0].packageName).isEqualTo("org.robolectric");
     assertThat(providers[1].packageName).isEqualTo("org.robolectric");
+    assertThat(providers[2].packageName).isEqualTo("org.robolectric");
   }
 
   @Test
   public void getProviderInfo_shouldReturnProviderInfos() throws Exception {
-    ProviderInfo providerInfo1 = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, ".shadows.testing.TestContentProvider1"), 0);
+    ProviderInfo providerInfo1 = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, ".tester.FullyQualifiedClassName"), 0);
     assertThat(providerInfo1.packageName).isEqualTo("org.robolectric");
     assertThat(providerInfo1.authority).isEqualTo("org.robolectric.authority1");
 
-    ProviderInfo providerInfo2 = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.shadows.testing.TestContentProvider2"), 0);
+    ProviderInfo providerInfo2 = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.tester.PartiallyQualifiedClassName"), 0);
     assertThat(providerInfo2.packageName).isEqualTo("org.robolectric");
     assertThat(providerInfo2.authority).isEqualTo("org.robolectric.authority2");
   }
@@ -896,7 +898,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void getProviderInfo_packageNotFoundShouldThrowException() {
     try {
-      packageManager.getProviderInfo(new ComponentName("non.existent.package", ".tester.DoesntExist"), 0);
+      packageManager.getProviderInfo(new ComponentName("non.existent.package", ".tester.FullyQualifiedClassName"), 0);
       fail("should have thrown NameNotFoundException");
     } catch (NameNotFoundException e) {
       // expected
@@ -905,8 +907,8 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
-    ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.shadows.testing.TestContentProvider1"), 0);
-    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority1");
+    ProviderInfo providerInfo = packageManager.getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"), 0);
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.my_content_provider_authority");
 
     assertThat(providerInfo.readPermission).isEqualTo("READ_PERMISSION");
     assertThat(providerInfo.writePermission).isEqualTo("WRITE_PERMISSION");
@@ -925,9 +927,9 @@ public class ShadowPackageManagerTest {
         packageManager.getProviderInfo(
             new ComponentName(
                 RuntimeEnvironment.application,
-                "org.robolectric.shadows.testing.TestContentProvider1"),
+                "org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"),
             PackageManager.GET_META_DATA);
-    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority1");
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.my_content_provider_authority");
 
     assertThat(providerInfo.metaData.getString("greeting")).isEqualTo("Hello");
   }
@@ -1064,14 +1066,14 @@ public class ShadowPackageManagerTest {
   @Test
   public void shouldAssignTheApplicationClassNameFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
-    assertThat(applicationInfo.className).isEqualTo("org.robolectric.shadows.testing.TestApplication");
+    assertThat(applicationInfo.className).isEqualTo("org.robolectric.TestApplication");
   }
 
   @Test
   @Config(minSdk = N_MR1)
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
-    assertThat(applicationInfo.name).isEqualTo("org.robolectric.shadows.testing.TestApplication");
+    assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
   }
 
   @Test
