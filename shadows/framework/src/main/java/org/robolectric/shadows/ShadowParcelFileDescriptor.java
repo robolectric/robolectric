@@ -11,12 +11,15 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import org.robolectric.Shadows;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 @Implements(ParcelFileDescriptor.class)
 public class ShadowParcelFileDescriptor {
+  private static final String PIPE_TMP_DIR = "ShadowParcelFileDescriptor";
+  private static final String PIPE_FILE_NAME = "pipe";
   private RandomAccessFile file;
 
   private @RealObject ParcelFileDescriptor realObject;
@@ -44,6 +47,18 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
+  protected static ParcelFileDescriptor[] createPipe() throws IOException {
+    File file = new File(RuntimeEnvironment.getTempDirectory().create(PIPE_TMP_DIR).toFile(), PIPE_FILE_NAME);
+    if (!file.createNewFile()) {
+      throw new IOException("Cannot create pipe file: " + file.getAbsolutePath());
+    }
+    ParcelFileDescriptor readSide = open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    ParcelFileDescriptor writeSide = open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    file.deleteOnExit();
+    return new ParcelFileDescriptor[]{readSide, writeSide};
+  }
+
+  @Implementation
   public FileDescriptor getFileDescriptor() {
     try {
       return file.getFD();
@@ -62,8 +77,9 @@ public class ShadowParcelFileDescriptor {
   }
 
   /**
-   * Overrides framework to avoid call to FileDescriptor#getInt$ which does not exist on JVM.
-   * Returns a fixed int (0).
+   * Overrides framework to avoid call to {@link FileDescriptor#getInt() which does not exist on JVM.
+   *
+   * @return a fixed int (`0`)
    */
   @Implementation
   public int getFd() {

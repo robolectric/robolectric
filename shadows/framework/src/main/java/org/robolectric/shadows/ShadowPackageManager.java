@@ -308,13 +308,15 @@ public class ShadowPackageManager {
 
   /**
    * Allows overriding or adding permission-group elements. These would be otherwise specified by
-   * either the system
-   * (https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups)
-   * or by the app itself, as part of its manifest
-   * (https://developer.android.com/guide/topics/manifest/permission-group-element.html).
+   * either (the system)[https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups]
+   * or by (the app itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html],
+   * as part of its manifest
    *
-   * PermissionGroups added through this method have precedence over those specified with the same
-   * name by one of the aforementioned methods.
+   * {@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
+   * precedence over those specified with the same name by one of the aforementioned methods.
+   *
+   * @see PackageManager#getAllPermissionGroups(int)
+   * @see PackageManager#getPermissionGroupInfo(String, int)
    */
   public void addPermissionGroupInfo(PermissionGroupInfo permissionGroupInfo) {
     extraPermissionGroups.put(permissionGroupInfo.name, permissionGroupInfo);
@@ -480,7 +482,11 @@ public class ShadowPackageManager {
     }
   }
 
-  public void addPackage(Package appPackage) {
+  /**
+   * Internal use only.
+   * @param appPackage
+   */
+  public void addPackageInternal(Package appPackage) {
     int flags =
         GET_ACTIVITIES
             | GET_RECEIVERS

@@ -24,6 +24,11 @@ public class MavenDependencyResolver implements DependencyResolver {
     this.repositoryId = repositoryId;
   }
 
+  @Override
+  public URL[] getLocalArtifactUrls(DependencyJar dependency) {
+    return getLocalArtifactUrls(new DependencyJar[] {dependency});
+  }
+
   /**
    * Get an array of local artifact URLs for the given dependencies. The order of the URLs is guaranteed to be the
    * same as the input order of dependencies, i.e., urls[i] is the local artifact URL for dependencies[i].

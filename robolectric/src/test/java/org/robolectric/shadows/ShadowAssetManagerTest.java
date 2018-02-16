@@ -18,7 +18,6 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import com.google.common.io.CharStreams;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -63,13 +62,8 @@ public class ShadowAssetManagerTest {
   @Test
   public void assetsPathListing() throws IOException {
     assertThat(assetManager.list(""))
-        .contains(
-            "assetsHome.txt",   // test/resources/assets
-            "docs",             // test/resources/assets
-            "myFont.ttf",       // test/resources/assets
-            "libFont.ttf",      // test/resources/lib1/assets
-            "file-in-lib2.txt"  // test/resources/lib2/assets + test/resources/lib2/assets (merged)
-            );
+        .contains("assetsHome.txt", "docs", "myFont.ttf");
+
     assertThat(assetManager.list("docs"))
         .contains("extra");
 
@@ -90,13 +84,6 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void open_shouldOpenFileInLib() throws IOException {
-    final String contents =
-        CharStreams.toString(new InputStreamReader(assetManager.open("file-in-lib2.txt"), UTF_8));
-    assertThat(contents).isEqualTo("asset in lib 2");
-  }
-
-  @Test
   public void open_withAccessMode_shouldOpenFile() throws IOException {
     final String contents = CharStreams.toString(
         new InputStreamReader(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER), UTF_8));
@@ -112,19 +99,9 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void openFd_shouldProvideFileDescriptorForAssetInLib() throws Exception {
-    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("file-in-lib2.txt");
-    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
-        .isEqualTo("asset in lib 2");
-    assertThat(assetFileDescriptor.getLength()).isEqualTo(14);
-  }
-
-  @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
-
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(6559);
+    assertThat(inputStream.available()).isEqualTo(6559);
   }
 
   @Test @Config(qualifiers = "hdpi")
@@ -134,7 +111,7 @@ public class ShadowAssetManagerTest {
     int expectedFileSize = 389;
 
     InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
-    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(expectedFileSize);
+    assertThat(inputStream.available()).isEqualTo(expectedFileSize);
   }
 
   @Test
@@ -170,18 +147,14 @@ public class ShadowAssetManagerTest {
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
-
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(8141);
+    assertThat(inputStream.available()).isEqualTo(8141);
   }
 
   @Test
   @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
-
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(23447);
+    assertThat(inputStream.available()).isEqualTo(23447);
   }
 
   @Test

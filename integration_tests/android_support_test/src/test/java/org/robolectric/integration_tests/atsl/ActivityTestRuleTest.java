@@ -20,7 +20,7 @@ public class ActivityTestRuleTest {
   private static Collection<String> callbacks = new ArrayList<>();
 
   @Rule
-  public ActivityTestRule<MyActivity> mRule =
+  public ActivityTestRule<MyActivity> rule =
       new ActivityTestRule<MyActivity>(MyActivity.class, false, false) {
         @Override
         protected void beforeActivityLaunched() {
@@ -92,7 +92,7 @@ public class ActivityTestRuleTest {
 
   @Test
   public void launchActivity_callbackSequence() {
-    MyActivity activity = mRule.launchActivity(null);
+    MyActivity activity = rule.launchActivity(null);
     assertThat(activity).isNotNull();
     assertThat(callbacks)
         .containsExactly(

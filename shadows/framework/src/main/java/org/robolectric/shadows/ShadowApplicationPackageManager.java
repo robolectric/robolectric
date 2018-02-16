@@ -274,16 +274,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private List<ResolveInfo> filterResolvedServices(List<ResolveInfo> resolveInfoList, int flags) {
     // If the flag is set, no further filtering will happen.
-    if ((flags & PackageManager.MATCH_ALL) == PackageManager.MATCH_ALL) {
+    if (isFlagSet(flags, PackageManager.MATCH_ALL)) {
       return resolveInfoList;
     }
     // Create a copy of the list for filtering
     resolveInfoList = new ArrayList<>(resolveInfoList);
 
-    if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
-      for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
-        ResolveInfo resolveInfo = iterator.next();
+    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
+      ResolveInfo resolveInfo = iterator.next();
+      if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
         if (resolveInfo.serviceInfo == null || resolveInfo.serviceInfo.applicationInfo == null) {
+          // TODO: for backwards compatibility just skip filtering. In future should just remove
+          // invalid resolve infos from list
           iterator.remove();
         } else {
           final int applicationFlags = resolveInfo.serviceInfo.applicationInfo.flags;
@@ -291,9 +293,30 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             iterator.remove();
           }
         }
+      } else if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
+          && resolveInfo != null && isValidComponentInfo(resolveInfo.serviceInfo)) {
+        ComponentName componentName =
+            new ComponentName(
+                resolveInfo.serviceInfo.applicationInfo.packageName, resolveInfo.serviceInfo.name);
+        if ((getComponentEnabledSetting(componentName)
+                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+            != 0) {
+          iterator.remove();
+        }
       }
     }
     return resolveInfoList;
+  }
+
+  private static boolean isFlagSet(int flags, int matchFlag) {
+    return (flags & matchFlag) == matchFlag;
+  }
+
+  private static boolean isValidComponentInfo(ComponentInfo componentInfo) {
+    return componentInfo != null
+        && componentInfo.applicationInfo != null
+        && componentInfo.applicationInfo.packageName != null
+        && componentInfo.name != null;
   }
 
   /** Behaves as {@link #queryIntentServices(Intent, int)} and currently ignores userId. */
@@ -324,26 +347,47 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private List<ResolveInfo> filterResolvedActivities(List<ResolveInfo> resolveInfoList, int flags) {
     // If the flag is set, no further filtering will happen.
-    if ((flags & PackageManager.MATCH_ALL) == PackageManager.MATCH_ALL) {
+    if (isFlagSet(flags, PackageManager.MATCH_ALL)) {
       return resolveInfoList;
     }
     // Create a copy of the list for filtering
     resolveInfoList = new ArrayList<>(resolveInfoList);
 
-    if ((flags & PackageManager.MATCH_SYSTEM_ONLY) == PackageManager.MATCH_SYSTEM_ONLY) {
-      for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext();) {
-        ResolveInfo resolveInfo = iterator.next();
+    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
+      ResolveInfo resolveInfo = iterator.next();
+
+      if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
+        // TODO: for backwards compatibility only remove invalid components when MATCH_SYSTEM_ONLY
+        // In future should just remove all invalid resolve infos from list
         if (resolveInfo.activityInfo == null || resolveInfo.activityInfo.applicationInfo == null) {
           iterator.remove();
         } else {
           final int applicationFlags = resolveInfo.activityInfo.applicationInfo.flags;
-          if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
+          if (!isFlagSet(applicationFlags, ApplicationInfo.FLAG_SYSTEM)) {
             iterator.remove();
           }
         }
+      } else if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
+          && resolveInfo != null && isValidComponentInfo(resolveInfo.activityInfo)) {
+        ComponentName componentName =
+            new ComponentName(
+                resolveInfo.activityInfo.applicationInfo.packageName,
+                resolveInfo.activityInfo.name);
+        if ((getComponentEnabledSetting(componentName)
+                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+            != 0) {
+          iterator.remove();
+        }
       }
     }
+
     return resolveInfoList;
+  }
+
+  /** Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId. */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
+    return queryIntentActivities(intent, flags);
   }
 
   /**
@@ -884,6 +928,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
+  /**
+   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
+   */
   @Implementation
   protected PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
@@ -902,6 +949,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     throw new NameNotFoundException(name);
   }
 
+  /**
+   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
+   */
   @Implementation
   protected List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
     ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
@@ -1026,16 +1076,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
-    return null;
-  }
-
-  @Implementation
   protected List<ResolveInfo> queryIntentActivityOptions(
       ComponentName caller, Intent[] specifics, Intent intent, int flags) {
     return null;
   }
-
   @Implementation
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
     return null;

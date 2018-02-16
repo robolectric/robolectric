@@ -157,13 +157,19 @@ public class ShadowNotificationManager {
     }
   }
 
+  /**
+   * @return {@link NotificationManager#INTERRUPTION_FILTER_ALL} by default, or the value specified
+   *         via {@link #setInterruptionFilter(int)}
+   */
   @Implementation(minSdk = M)
-  public final int getCurrentInterruptionFilter() {
+  protected final int getCurrentInterruptionFilter() {
     return currentInteruptionFilter;
   }
 
   /**
    * Currently does not support checking for granted policy access.
+   *
+   * @see NotificationManager#getCurrentInterruptionFilter()
    */
   @Implementation(minSdk = M)
   public final void setInterruptionFilter(int interruptionFilter) {
