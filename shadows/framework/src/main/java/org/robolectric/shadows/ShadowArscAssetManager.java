@@ -76,12 +76,8 @@ public class ShadowArscAssetManager {
   private CppAssetManager cppAssetManager;
   private ResTable compileTimeResTable;
 
-  public static boolean isLegacyAssetManager(AssetManager assets) {
-    return Shadow.extract(assets) instanceof ShadowAssetManager;
-  }
-
   public static boolean isLegacyAssetManager() {
-    return isLegacyAssetManager(RuntimeEnvironment.application.getAssets());
+    return RuntimeEnvironment.useLegacyResources();
   }
 
   @Implementation

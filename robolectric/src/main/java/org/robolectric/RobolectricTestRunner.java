@@ -322,6 +322,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         new AndroidMetadata(
             ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel())));
 
+    System.out.println(
+        "[Robolectric] " + roboMethod.getDeclaringClass().getName() + "."
+            + roboMethod.getMethod().getName() + ": sdk=" + sdkConfig.getApiLevel());
+
     roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
     Class<TestLifecycle> cl = sdkEnvironment.bootstrappedClass(getTestLifecycleClass());
     roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
@@ -618,8 +622,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       this.sdkConfig = sdkConfig;
       this.config = config;
       this.legacyResources = legacyResources;
-
-      System.out.println(System.identityHashCode(this) + " legacyResources = " + legacyResources);
     }
 
     @Override

@@ -567,7 +567,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
-    if (isLegacyAssetManager(resources.getAssets())) {
+    if (isLegacyAssetManager()) {
       assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
     } else {
       assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNotNull();
@@ -803,7 +803,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void getValueShouldClearTypedArrayBetweenCalls() throws Exception {
-    if (!isLegacyAssetManager(resources.getAssets())) {
+    if (!isLegacyAssetManager()) {
       return;
     }
     TypedValue outValue = new TypedValue();
@@ -849,7 +849,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void getXml_shouldHavePackageContextForReferenceResolution() throws Exception {
-    if (!isLegacyAssetManager(resources.getAssets())) {
+    if (!isLegacyAssetManager()) {
       return;
     }
     XmlResourceParserImpl xmlResourceParser =
@@ -879,7 +879,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void stringWithSpacesWithOldResourceLoader() throws Exception {
-    if (!isLegacyAssetManager(resources.getAssets())) return;
+    if (!isLegacyAssetManager()) return;
 
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25   USD");
@@ -887,7 +887,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void stringWithSpaces() throws Exception {
-    if (isLegacyAssetManager(resources.getAssets())) return;
+    if (isLegacyAssetManager()) return;
 
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25 USD");

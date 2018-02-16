@@ -175,7 +175,7 @@ public class ShadowAssetManagerTest {
   @Test
   public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched()
       throws IOException {
-    if (!isLegacyAssetManager(assetManager)) return;
+    if (!isLegacyAssetManager()) return;
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android]");
 
@@ -186,7 +186,7 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
-    if (!isLegacyAssetManager(assetManager)) return;
+    if (!isLegacyAssetManager()) return;
 
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(8141);
@@ -195,7 +195,7 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
-    if (!isLegacyAssetManager(assetManager)) return;
+    if (!isLegacyAssetManager()) return;
 
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(23447);
@@ -247,7 +247,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void attrsToTypedArray_shouldAllowMockedAttributeSets() throws Exception {
-    if (!isLegacyAssetManager(assetManager)) return;
+    if (!isLegacyAssetManager()) return;
 
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
     when(mockAttributeSet.getAttributeCount()).thenReturn(1);
@@ -267,7 +267,7 @@ public class ShadowAssetManagerTest {
 
  @Test
  public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage() throws Exception {
-   if (!isLegacyAssetManager(assetManager)) return;
+   if (!isLegacyAssetManager()) return;
 
    expectedException.expect(RuntimeException.class);
    expectedException.expectMessage(

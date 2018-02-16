@@ -101,7 +101,11 @@ public class ShadowAssetManager {
   private ResourceTable resourceTable;
 
   public static ShadowAssetManager legacyShadowOf(AssetManager assetManager) {
-    return Shadow.extract(assetManager);
+    Object extract = Shadow.extract(assetManager);
+    if (!(extract instanceof ShadowAssetManager)) {
+      System.out.println("huh? = " + extract);
+    }
+    return (ShadowAssetManager) extract;
   }
 
   ResTable_config config = new ResTable_config();

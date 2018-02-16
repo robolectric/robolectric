@@ -48,8 +48,7 @@ public class ShadowTypedArray {
 
   @HiddenApi @Implementation
   public CharSequence loadStringValueAt(int index) {
-    if (ShadowArscAssetManager.isLegacyAssetManager(
-        shadowOf(realTypedArray.getResources()).realResources.getAssets())) {
+    if (ShadowArscAssetManager.isLegacyAssetManager()) {
       return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
     } else {
       return directlyOn(realTypedArray, TypedArray.class, "loadStringValueAt",
@@ -69,8 +68,7 @@ public class ShadowTypedArray {
 
   @Implementation
   public String getPositionDescription() {
-    if (ShadowArscAssetManager.isLegacyAssetManager(
-        shadowOf(realTypedArray.getResources()).realResources.getAssets())) {
+    if (ShadowArscAssetManager.isLegacyAssetManager()) {
       return positionDescription;
     } else {
       return directlyOn(realTypedArray, TypedArray.class, "getPositionDescription");
