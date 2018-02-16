@@ -58,4 +58,6 @@ public class InstrumentationRegistryTest {
     }
   }
 
+  // this is a test comment
+
 }
