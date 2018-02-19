@@ -37,15 +37,9 @@ public class AssetManagerTest {
   @Test
   public void assetsPathListing() throws IOException {
     assertThat(assetManager.list("")).asList()
-        .containsAllOf("assetsHome.txt", "docs", "myFont.ttf");
+        .containsAllOf("assetsHome.txt", "robolectric.png", "myFont.ttf");
 
-    assertThat(assetManager.list("docs")).asList()
-        .contains("extra");
-
-    assertThat(assetManager.list("docs/extra")).asList()
-        .contains("testing");
-
-    assertThat(assetManager.list("docs/extra/testing")).asList()
+    assertThat(assetManager.list("testing")).asList()
         .contains("hello.txt");
 
     assertThat(assetManager.list("bogus-dir")).isEmpty();

@@ -116,7 +116,7 @@ public class ResourcesTest {
     // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
     // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
     assertThat(resources.getText(R.layout.different_screen_sizes, "value").toString())
-        .containsMatch("res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml$");
+        .containsMatch("layout" + File.separator + "different_screen_sizes.xml$");
   }
 
   @Test
@@ -374,7 +374,8 @@ public class ResourcesTest {
     String string = resources.getString(R.string.hello);
     assertThat(string).isEqualTo("Hello");
 
-    int id = resources.getIdentifier("hello", "string", "org.robolectric");
+
+    int id = resources.getIdentifier("hello", "string", context.getPackageName());
     assertThat(id).isEqualTo(R.string.hello);
 
     String hello = resources.getString(id);
@@ -383,7 +384,7 @@ public class ResourcesTest {
 
   @Test
   public void getIdentifier_nonExistantResource() {
-    int id = resources.getIdentifier("just_alot_of_crap", "string", "org.robolectric");
+    int id = resources.getIdentifier("just_alot_of_crap", "string", context.getPackageName());
     assertThat(id).isEqualTo(0);
   }
 
@@ -849,16 +850,16 @@ public class ResourcesTest {
   @Test
   public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
     assertThat(
-        resources.getIdentifier("id_declared_in_item_tag", "id", "org.robolectric"))
+        resources.getIdentifier("id_declared_in_item_tag", "id", context.getPackageName()))
         .isEqualTo(R.id.id_declared_in_item_tag);
     assertThat(
-        resources.getIdentifier("id/id_declared_in_item_tag", null, "org.robolectric"))
+        resources.getIdentifier("id/id_declared_in_item_tag", null, context.getPackageName()))
         .isEqualTo(R.id.id_declared_in_item_tag);
     assertThat(
-        resources.getIdentifier("org.robolectric:id_declared_in_item_tag", "id", null))
+        resources.getIdentifier(context.getPackageName() + ":id_declared_in_item_tag", "id", null))
         .isEqualTo(R.id.id_declared_in_item_tag);
     assertThat(
-        resources.getIdentifier("org.robolectric:id/id_declared_in_item_tag", "other", "other"))
+        resources.getIdentifier(context.getPackageName() + ":id/id_declared_in_item_tag", "other", "other"))
         .isEqualTo(R.id.id_declared_in_item_tag);
   }
 
@@ -908,35 +909,35 @@ public class ResourcesTest {
   whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout()
       throws Exception {
     assertThat(
-        resources.getIdentifier("id_declared_in_layout", "id", "org.robolectric"))
+        resources.getIdentifier("id_declared_in_layout", "id", context.getPackageName()))
         .isEqualTo(R.id.id_declared_in_layout);
   }
 
   @Test
   public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturn0() throws Exception {
     assertThat(
-        resources.getIdentifier("fictitiousDrawable", "drawable", "org.robolectric"))
+        resources.getIdentifier("fictitiousDrawable", "drawable", context.getPackageName()))
         .isEqualTo(0);
   }
 
   @Test
   public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturnId() throws Exception {
     assertThat(
-        resources.getIdentifier("an_image", "drawable", "org.robolectric"))
+        resources.getIdentifier("an_image", "drawable", context.getPackageName()))
         .isEqualTo(R.drawable.an_image);
   }
 
   @Test
   public void whenResourceIsXml_getResourceIdentifier_shouldReturnId() throws Exception {
     assertThat(
-        resources.getIdentifier("preferences", "xml", "org.robolectric"))
+        resources.getIdentifier("preferences", "xml", context.getPackageName()))
         .isEqualTo(R.xml.preferences);
   }
 
   @Test
   public void whenResourceIsRaw_getResourceIdentifier_shouldReturnId() throws Exception {
     assertThat(
-        resources.getIdentifier("raw_resource", "raw", "org.robolectric"))
+        resources.getIdentifier("raw_resource", "raw", context.getPackageName()))
         .isEqualTo(R.raw.raw_resource);
   }
 
