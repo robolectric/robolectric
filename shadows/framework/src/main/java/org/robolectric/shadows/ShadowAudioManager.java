@@ -10,7 +10,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AudioManager.class)
 public class ShadowAudioManager {
-  public static final int MAX_VOLUME_MUSIC_DTMF = 15;
+  public static final int MAX_VOLUME_MUSIC_DTMF_ACCESSIBILITY = 15;
   public static final int DEFAULT_MAX_VOLUME = 7;
   public static final int DEFAULT_VOLUME = 7;
   public static final int INVALID_VOLUME = 0;
@@ -22,7 +22,8 @@ public class ShadowAudioManager {
       AudioManager.STREAM_RING,
       AudioManager.STREAM_SYSTEM,
       AudioManager.STREAM_VOICE_CALL,
-      AudioManager.STREAM_DTMF
+      AudioManager.STREAM_DTMF,
+      AudioManager.STREAM_ACCESSIBILITY
   };
 
   private AudioFocusRequest lastAudioFocusRequest;
@@ -42,8 +43,9 @@ public class ShadowAudioManager {
     for (int stream : ALL_STREAMS) {
       streamStatus.put(stream, new AudioStream(DEFAULT_VOLUME, DEFAULT_MAX_VOLUME, FLAG_NO_ACTION));
     }
-    streamStatus.get(AudioManager.STREAM_MUSIC).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
-    streamStatus.get(AudioManager.STREAM_DTMF).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
+    streamStatus.get(AudioManager.STREAM_MUSIC).setMaxVolume(MAX_VOLUME_MUSIC_DTMF_ACCESSIBILITY);
+    streamStatus.get(AudioManager.STREAM_DTMF).setMaxVolume(MAX_VOLUME_MUSIC_DTMF_ACCESSIBILITY);
+    streamStatus.get(AudioManager.STREAM_ACCESSIBILITY).setMaxVolume(MAX_VOLUME_MUSIC_DTMF_ACCESSIBILITY);
   }
 
   @Implementation
