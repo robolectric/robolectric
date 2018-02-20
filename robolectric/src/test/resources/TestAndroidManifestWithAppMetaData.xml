@@ -3,7 +3,7 @@
     package="org.robolectric">
 
   <uses-sdk android:targetSdkVersion="18"/>
-  <application android:name="org.robolectric.TestApplication"
+  <application android:name="org.robolectric.shadows.testing.TestApplication"
                android:label="App Label">
     <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
     <meta-data android:name="org.robolectric.metaName2" android:value="metaValue2" />

@@ -14,7 +14,6 @@ import org.robolectric.annotation.Implements;
 
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
-  public static final String CLASS_NAME = "android.app.ActivityThread";
   private static ApplicationInfo applicationInfo;
 
   @Implementation
@@ -63,6 +62,12 @@ public class ShadowActivityThread {
     return RuntimeEnvironment.getActivityThread();
   }
 
+  /**
+   * Internal use only.
+   *
+   * @deprecated do not use
+   */
+  @Deprecated
   public static void setApplicationInfo(ApplicationInfo applicationInfo) {
     ShadowActivityThread.applicationInfo = applicationInfo;
   }

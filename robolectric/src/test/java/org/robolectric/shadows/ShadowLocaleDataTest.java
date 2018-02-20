@@ -78,6 +78,7 @@ public class ShadowLocaleDataTest {
     assertThat(perMillValue).isEqualTo('‰');
   }
 
+
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
   public void shouldSupportLocaleEn_US_percentPost22() throws Exception {

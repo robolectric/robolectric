@@ -7,9 +7,9 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
+import android.app.ActivityThread;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -59,7 +59,6 @@ import org.robolectric.util.Scheduler;
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
-  private List<Intent> startedActivities = new ArrayList<>();
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
   private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
   private List<Intent> broadcastIntents = new ArrayList<>();
@@ -88,7 +87,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   AppWidgetManager appWidgetManager;
   private List<String> unbindableActions = new ArrayList<>();
 
-  private boolean checkActivities;
+
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
 
@@ -163,18 +162,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   public Context getApplicationContext() {
     return realApplication;
-  }
-
-  @Implementation
-  public void startActivity(Intent intent) {
-    verifyActivityInManifest(intent);
-    startedActivities.add(intent);
-  }
-
-  @Implementation
-  public void startActivity(Intent intent, Bundle options) {
-    verifyActivityInManifest(intent);
-    startedActivities.add(intent);
   }
 
   @Implementation
@@ -258,34 +245,6 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public List<ServiceConnection> getUnboundServiceConnections() {
     return unboundServiceConnections;
-  }
-  /**
-   * Consumes the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} and returns it.
-   *
-   * @return the most recently started {@code Intent}
-   */
-  @Override
-  public Intent getNextStartedActivity() {
-    if (startedActivities.isEmpty()) {
-      return null;
-    } else {
-      return startedActivities.remove(0);
-    }
-  }
-
-  /**
-   * Returns the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} without
-   * consuming it.
-   *
-   * @return the most recently started {@code Intent}
-   */
-  @Override
-  public Intent peekNextStartedActivity() {
-    if (startedActivities.isEmpty()) {
-      return null;
-    } else {
-      return startedActivities.get(0);
-    }
   }
 
   /**
@@ -543,12 +502,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     return processStickyIntents(filter, receiver, context);
   }
 
-  private void verifyActivityInManifest(Intent intent) {
-    if (checkActivities && realApplication.getPackageManager().resolveActivity(intent, -1) == null) {
-      throw new ActivityNotFoundException(intent.getAction());
-    }
-  }
-
   private Intent processStickyIntents(IntentFilter filter, BroadcastReceiver receiver, Context context) {
     Intent result = null;
     for (Intent stickyIntent : stickyIntents.values()) {
@@ -703,7 +656,9 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @param checkActivities True to validate activities.
    */
   public void checkActivities(boolean checkActivities) {
-    this.checkActivities = checkActivities;
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = shadowOf(activityThread.getInstrumentation());
+    shadowInstrumentation.checkActivities(checkActivities);
   }
 
   public ShadowPopupMenu getLatestPopupMenu() {

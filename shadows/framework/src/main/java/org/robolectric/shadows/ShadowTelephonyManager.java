@@ -32,7 +32,7 @@ public class ShadowTelephonyManager {
 
   private String deviceId;
   private String groupIdLevel1;
-  private String networkOperatorName;
+  private String networkOperatorName = "";
   private String networkCountryIso;
   private String networkOperator = "";
   private String simOperator;
@@ -285,12 +285,15 @@ public class ShadowTelephonyManager {
         });
   }
 
+  /**
+   * @return `true` by default, or the value specified via {@link #setIsSmsCapable(boolean)}
+   */
   @Implementation
-  public boolean isSmsCapable() {
+  protected boolean isSmsCapable() {
     return isSmsCapable;
   }
 
-  /** Override the result of {@link TelephonyManager#isSmsCapable()} */
+  /** Sets the value returned by {@link TelephonyManager#isSmsCapable()}. */
   public void setIsSmsCapable(boolean isSmsCapable) {
     this.isSmsCapable = isSmsCapable;
   }

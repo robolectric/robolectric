@@ -1,0 +1,12 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <org.robolectric.shadows.testing.TestDialogPreference
+      android:key="dialog"
+      android:title="Dialog Preference"
+      android:summary="This is the dialog summary"
+      android:dialogMessage="This is the dialog message"
+      android:positiveButtonText="YES"
+      android:negativeButtonText="NO"/>
+
+</PreferenceScreen>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<org.robolectric.android.CustomStateView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:text="Some text"
+    android:textColor="@color/custom_state_view_text_color"
+    />

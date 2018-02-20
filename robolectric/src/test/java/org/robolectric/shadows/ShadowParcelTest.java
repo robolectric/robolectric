@@ -412,6 +412,42 @@ public class ShadowParcelTest {
   }
 
   @Test
+  public void testParcelableWithPackageProtected() throws Exception {
+    TestParcelablePackage normal = new TestParcelablePackage(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelablePackage rehydrated = parcel.readParcelable(TestParcelablePackage.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
+  public void testParcelableWithBase() throws Exception {
+    TestParcelableImpl normal = new TestParcelableImpl(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelableImpl rehydrated = parcel.readParcelable(TestParcelableImpl.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
+  public void testParcelableWithPublicClass() throws Exception {
+    TestParcelable normal = new TestParcelable(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelable rehydrated = parcel.readParcelable(TestParcelable.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
   public void testReadAndWriteStringList() throws Exception {
     ArrayList<String> original = new ArrayList<>();
     List<String> rehydrated = new ArrayList<>();
