@@ -16,12 +16,12 @@ import org.junit.runner.RunWith;
 import org.robolectric.FakeApp;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadows.testing.TestApplication;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(RobolectricTestRunner.class)
 public class ParallelUniverseCreateApplicationTest {

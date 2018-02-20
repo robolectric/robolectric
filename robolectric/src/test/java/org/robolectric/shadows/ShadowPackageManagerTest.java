@@ -10,7 +10,6 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;

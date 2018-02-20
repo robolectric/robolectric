@@ -3,31 +3,19 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
 import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.util.Xml;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,8 +26,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.TestUtil;
-import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowResourcesTest {
