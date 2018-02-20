@@ -29,6 +29,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -398,6 +399,7 @@ public class ResourcesTest {
   @Test
   // @Config(sdk = Build.VERSION_CODES.LOLLIPOP) // android:color/secondary_text_material_dark was added in API 21
   @SdkSuppress(minSdkVersion = LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void shouldGenerateIdsForResourcesThatAreMissingRValues() throws Exception {
     int identifier_missing_from_r_file = resources.getIdentifier("secondary_text_material_dark", "color", "android");
 
@@ -667,6 +669,7 @@ public class ResourcesTest {
 
   @Test
   @SdkSuppress(minSdkVersion = LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void whenAttrIsDefinedInRuntimeSdk_getResourceName_findsResource() {
     assertThat(context.getResources().getResourceName(android.R.attr.viewportHeight))
         .isEqualTo("android:attr/viewportHeight");
@@ -674,6 +677,7 @@ public class ResourcesTest {
 
   @Test
   @SdkSuppress(minSdkVersion = KITKAT)
+  @Config(minSdk = KITKAT)
   @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
@@ -832,6 +836,7 @@ public class ResourcesTest {
 
   @Test
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.O)
+  @Config(minSdk = Build.VERSION_CODES.O)
   public void getDrawable_mipmapReferencesResolveXml() {
     Drawable reference = resources.getDrawable(R.mipmap.robolectric_xml);
     Drawable original = resources.getDrawable(R.mipmap.mipmap_reference_xml);
