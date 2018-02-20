@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="example_item_drawable" type="drawable">@drawable/an_image</item>
+</resources>

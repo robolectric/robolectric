@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <bool name="value_only_present_in_w320dp">true</bool>
+</resources>

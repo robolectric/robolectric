@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    >
+
+  <include android:id="@+id/include_id" layout="@layout/snippet"/>
+
+  <View
+      android:layout_width="fill_parent"
+      android:layout_height="10dip"
+      />
+
+  <TextView
+      android:id="@+id/time"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="14dip"
+      android:textColor="#fff"
+      android:text="Media Layout"
+      />
+
+  <TextView
+      android:id="@+id/title"
+      android:layout_width="138dip"
+      android:layout_height="wrap_content"
+      android:maxHeight="46dip"
+      android:singleLine="false"
+      android:gravity="center_horizontal"
+      android:textSize="18dip"
+      android:textStyle="bold"
+      android:textColor="#fff"
+      />
+
+  <TextView
+      android:id="@+id/subtitle"
+      android:layout_width="138dip"
+      android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
+      android:maxHeight="36dip"
+      android:textSize="14dip"
+      android:textColor="#fff"
+      android:visibility="gone"
+      />
+
+</LinearLayout>

@@ -1,28 +1,19 @@
 package org.robolectric.shadows;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.robolectric.R.color.test_ARGB8;
-import static org.robolectric.R.color.test_RGB8;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,56 +37,6 @@ public class ShadowAssetManagerTest {
   public void setUp() throws Exception {
     assetManager = Robolectric.buildActivity(Activity.class).create().get().getAssets();
     resources = RuntimeEnvironment.application.getResources();
-  }
-
-  @Test
-  public void assertGetAssetsNotNull() {
-    assertNotNull(assetManager);
-
-    assetManager = RuntimeEnvironment.application.getAssets();
-    assertNotNull(assetManager);
-
-    assetManager = resources.getAssets();
-    assertNotNull(assetManager);
-  }
-
-  @Test
-  public void assetsPathListing() throws IOException {
-    assertThat(assetManager.list(""))
-        .contains("assetsHome.txt", "docs", "myFont.ttf");
-
-    assertThat(assetManager.list("docs"))
-        .contains("extra");
-
-    assertThat(assetManager.list("docs/extra"))
-        .contains("testing");
-
-    assertThat(assetManager.list("docs/extra/testing"))
-        .contains("hello.txt");
-
-    assertThat(assetManager.list("bogus-dir")).isEmpty();
-  }
-
-  @Test
-  public void open_shouldOpenFile() throws IOException {
-    final String contents =
-        CharStreams.toString(new InputStreamReader(assetManager.open("assetsHome.txt"), UTF_8));
-    assertThat(contents).isEqualTo("assetsHome!");
-  }
-
-  @Test
-  public void open_withAccessMode_shouldOpenFile() throws IOException {
-    final String contents = CharStreams.toString(
-        new InputStreamReader(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER), UTF_8));
-    assertThat(contents).isEqualTo("assetsHome!");
-  }
-
-  @Test
-  public void openFd_shouldProvideFileDescriptorForAsset() throws Exception {
-    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("assetsHome.txt");
-    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
-        .isEqualTo("assetsHome!");
-    assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
   }
 
   @Test
@@ -157,6 +98,7 @@ public class ShadowAssetManagerTest {
     assertThat(inputStream.available()).isEqualTo(23447);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_integerDecimalValue() {
     AttributeSet attributeSet =
@@ -168,6 +110,7 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_integerHexValue() {
     AttributeSet attributeSet =
@@ -179,6 +122,7 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_stringValue() {
     AttributeSet attributeSet =
@@ -190,6 +134,7 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_booleanValue() {
     AttributeSet attributeSet =
@@ -213,13 +158,6 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void forUntouchedThemes_copyTheme_shouldCopyNothing() throws Exception {
-    Resources.Theme theme1 = resources.newTheme();
-    Resources.Theme theme2 = resources.newTheme();
-    theme2.setTo(theme1);
-  }
-
-  @Test
   public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage()
       throws Exception {
     expectedException.expect(RuntimeException.class);
@@ -240,130 +178,5 @@ public class ShadowAssetManagerTest {
             0,
             shadowOf(theme).getNativePtr(),
             0);
-  }
-
-  @Test
-  public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id_declared_in_item_tag", "id", "org.robolectric"))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id/id_declared_in_item_tag", null, "org.robolectric"))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("org.robolectric:id_declared_in_item_tag", "id", null))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier(
-                    "org.robolectric:id/id_declared_in_item_tag", "other", "other"))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-  }
-
-  @Test
-  public void whenPackageIsUnknown_getResourceIdentifier_shouldReturnZero() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("whatever", "id", "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id/whatever", null, "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:whatever", "id", null))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
-        .isEqualTo(0);
-
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("whatever", "drawable", "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("drawable/whatever", null, "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:whatever", "drawable", null))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
-        .isEqualTo(0);
-  }
-
-  @Test
-  @Ignore(
-      "currently ids are always automatically assigned a value; to fix this we'd need to check "
-      + "layouts for +@id/___, which is expensive")
-  public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero()
-      throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier(
-                    "org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))
-        .isEqualTo(0);
-  }
-
-  @Test
-  public void
-      whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout()
-          throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id_declared_in_layout", "id", "org.robolectric"))
-        .isEqualTo(R.id.id_declared_in_layout);
-  }
-
-  @Test
-  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturn0() throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("fictitiousDrawable", "drawable", "org.robolectric"))
-        .isEqualTo(0);
-  }
-
-  @Test
-  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturnId() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("an_image", "drawable", "org.robolectric"))
-        .isEqualTo(R.drawable.an_image);
-  }
-
-  @Test
-  public void whenResourceIsXml_getResourceIdentifier_shouldReturnId() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("preferences", "xml", "org.robolectric"))
-        .isEqualTo(R.xml.preferences);
-  }
-
-  @Test
-  public void whenResourceIsRaw_getResourceIdentifier_shouldReturnId() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("raw_resource", "raw", "org.robolectric"))
-        .isEqualTo(R.raw.raw_resource);
-  }
-
-  @Test
-  public void getResourceValue_colorARGB8() {
-    TypedValue outValue = new TypedValue();
-    resources.getValue(test_ARGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
-    assertThat(Color.blue(outValue.data)).isEqualTo(2);
-  }
-
-  @Test
-  public void getResourceValue_colorRGB8() {
-    TypedValue outValue = new TypedValue();
-    resources.getValue(test_RGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
-    assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
 }

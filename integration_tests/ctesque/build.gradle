@@ -1,0 +1,35 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.13"
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 27
+
+    android {
+
+        lintOptions {
+            abortOnError false
+        }
+        testOptions {
+            unitTests {
+                includeAndroidResources = true
+            }
+        }
+    }
+
+}
+
+dependencies {
+    implementation project(":robolectric")
+    implementation project(path: ':testapp', configuration: 'default')
+    implementation "junit:junit:4.12"
+    implementation("com.android.support.test:monitor:1.0.2-alpha1")
+
+    // Testing dependencies
+    testImplementation("com.android.support.test:runner:1.0.2-alpha1")
+    testImplementation("com.android.support.test:rules:1.0.2-alpha1")
+    testImplementation "com.google.truth:truth:0.36"
+    testImplementation "com.google.guava:guava:20.0"
+}

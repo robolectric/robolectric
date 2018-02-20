@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.FakeApp;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestApplication;
+import org.robolectric.shadows.testing.TestApplication;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
@@ -43,7 +43,7 @@ public class ParallelUniverseCreateApplicationTest {
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
     assertThat(ParallelUniverse.createApplication(
-        newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"), null))
+        newConfigWith("<application android:name=\"org.robolectric.shadows.testing.TestApplication\"/>"), null))
         .isExactlyInstanceOf(TestApplication.class);
   }
 
