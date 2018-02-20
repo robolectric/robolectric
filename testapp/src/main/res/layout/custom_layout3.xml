@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<view class="org.robolectric.shadows.ShadowLayoutInflaterTest$CustomView3" android:text="Hello bonjour"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    />

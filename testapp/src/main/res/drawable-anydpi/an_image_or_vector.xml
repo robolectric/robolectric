@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24.0"
+        android:viewportHeight="24.0">
+    <group
+            android:name="icon_null"
+            android:translateX="24"
+            android:translateY="24"
+            android:scaleX="0.2"
+            android:scaleY="0.2">
+        <group
+                android:name="check"
+                android:scaleX="7.5"
+                android:scaleY="7.5">
+            <path
+                    android:name="check_path_merged"
+                    android:pathData="M 7.0,-9.0 c 0.0,0.0 -14.0,0.0 -14.0,0.0 c -1.1044921875,0.0 -2.0,0.8955078125 -2.0,2.0 c 0.0,0.0 0.0,14.0 0.0,14.0 c 0.0,1.1044921875 0.8955078125,2.0 2.0,2.0 c 0.0,0.0 14.0,0.0 14.0,0.0 c 1.1044921875,0.0 2.0,-0.8955078125 2.0,-2.0 c 0.0,0.0 0.0,-14.0 0.0,-14.0 c 0.0,-1.1044921875 -0.8955078125,-2.0 -2.0,-2.0 c 0.0,0.0 0.0,0.0 0.0,0.0 Z M -2.0,5.00001525879 c 0.0,0.0 -5.0,-5.00001525879 -5.0,-5.00001525879 c 0.0,0.0 1.41409301758,-1.41409301758 1.41409301758,-1.41409301758 c 0.0,0.0 3.58590698242,3.58601379395 3.58590698242,3.58601379395 c 0.0,0.0 7.58590698242,-7.58601379395 7.58590698242,-7.58601379395 c 0.0,0.0 1.41409301758,1.41409301758 1.41409301758,1.41409301758 c 0.0,0.0 -9.0,9.00001525879 -9.0,9.00001525879 Z"
+                    android:fillColor="#FF000000" />
+        </group>
+        <group
+                android:name="box_dilate"
+                android:scaleX="7.5"
+                android:scaleY="7.5">
+            <path
+                    android:fillColor="#FFFF0000"
+                    android:pathData="M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z"/>
+        </group>
+    </group>
+</vector>
