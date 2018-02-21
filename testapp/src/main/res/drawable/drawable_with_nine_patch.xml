@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"> <!-- default -->
+  <item>
+    <nine-patch android:src="@drawable/nine_patch_drawable">
+    </nine-patch>
+  </item>
+</layer-list>

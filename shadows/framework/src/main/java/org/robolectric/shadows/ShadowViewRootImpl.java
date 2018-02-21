@@ -97,7 +97,7 @@ public class ShadowViewRootImpl {
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false));
-    } else if (apiLevel >= Build.VERSION_CODES.O) {
+    } else if (apiLevel <= Build.VERSION_CODES.O_MR1) {
       ReflectionHelpers.callInstanceMethod(
           ViewRootImpl.class,
           component,

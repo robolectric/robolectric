@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Manifest for instrumentation tests
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.robolectric.test">
+  <uses-sdk android:targetSdkVersion="27"/>
+
+  <instrumentation
+      android:name="android.support.test.runner.AndroidJUnitRunner"
+      android:targetPackage="org.robolectric">
+  </instrumentation>
+
+</manifest>

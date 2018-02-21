@@ -67,7 +67,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> restart() {
-    invokeWhilePaused("performRestart");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performRestart");
+    }
     return this;
   }
 
@@ -87,7 +89,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> resume() {
-    invokeWhilePaused("performResume");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performResume");
+    }
     return this;
   }
 
@@ -298,7 +302,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          }
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onPostResume");
           // TODO: Call visible() too.
         }

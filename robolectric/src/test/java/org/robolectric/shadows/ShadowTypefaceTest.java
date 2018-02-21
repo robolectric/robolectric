@@ -67,10 +67,10 @@ public class ShadowTypefaceTest {
 
   @Test
   public void createFromAsset_shouldCreateTypeface() {
-    Typeface typeface = Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "libFont.ttf");
+    Typeface typeface = Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "myFont.ttf");
 
     assertThat(typeface.getStyle()).isEqualTo(Typeface.NORMAL);
-    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("libFont.ttf");
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("myFont.ttf");
     assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.NORMAL);
   }
 

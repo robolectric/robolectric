@@ -32,9 +32,9 @@ public class ShadowTelephonyManager {
 
   private String deviceId;
   private String groupIdLevel1;
-  private String networkOperatorName;
+  private String networkOperatorName = "";
   private String networkCountryIso;
-  private String networkOperator;
+  private String networkOperator = "";
   private String simOperator;
   private String simOperatorName;
   private boolean readPhoneStatePermission = true;

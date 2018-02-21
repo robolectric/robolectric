@@ -31,14 +31,19 @@ public class SandboxFactory {
 
     SdkEnvironment sdkEnvironment = sdkToEnvironment.get(key);
     if (sdkEnvironment == null) {
-      URL url = dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency());
+      URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getAndroidSdkDependency());
 
-      ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, url);
-      sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);
+      ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, urls);
+      sdkEnvironment = createSdkEnvironment(sdkConfig, robolectricClassLoader);
 
       sdkToEnvironment.put(key, sdkEnvironment);
     }
     return sdkEnvironment;
+  }
+
+  protected SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig,
+      ClassLoader robolectricClassLoader) {
+    return new SdkEnvironment(sdkConfig, robolectricClassLoader);
   }
 
   @Nonnull

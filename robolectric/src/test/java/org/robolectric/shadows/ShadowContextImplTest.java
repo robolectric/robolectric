@@ -20,8 +20,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestApplication;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContextImplTest {
