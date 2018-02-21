@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.app.ISearchManager;
 import android.app.trust.ITrustManager;
 import android.content.Context;
-import android.hardware.input.IInputManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -33,10 +32,6 @@ public class ShadowServiceManager {
           put(
               Context.NETWORK_POLICY_SERVICE,
               createBinder(ISearchManager.class, "android.net.INetworkPolicyManager"));
-          put(
-              Context.INPUT_SERVICE,
-              createBinder(IInputManager.class, "android.net.IInputManager"));
-
           if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
             put(
                 Context.TRUST_SERVICE,
