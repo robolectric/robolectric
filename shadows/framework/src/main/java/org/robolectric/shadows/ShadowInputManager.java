@@ -14,7 +14,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowInputManager {
 
   @Implementation
-  public boolean injectInputEvent(InputEvent event, int mode) {
+  protected boolean injectInputEvent(InputEvent event, int mode) {
     // ignore
     return true;
   }

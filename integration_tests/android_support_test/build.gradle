@@ -8,15 +8,11 @@ android {
     compileSdkVersion 27
 
     android {
-
-        lintOptions {
-            abortOnError false
-        }
         testOptions {
             unitTests {
                 includeAndroidResources = true
                 // Temporarily turn off JVM verification as workaround. Should be removed once
-                // espresso 3.0.2-alpha2 is available
+                // espresso 3.0.2-alpha2 is available.
                 all {
                    jvmArgs '-noverify'
                 }
