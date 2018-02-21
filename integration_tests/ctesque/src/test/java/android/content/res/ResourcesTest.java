@@ -2,6 +2,8 @@ package android.content.res;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.util.TypedValue.*;
+import static android.util.TypedValue.applyDimension;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.R.color.test_ARGB8;
@@ -22,6 +24,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
+import com.google.common.collect.Range;
 import java.io.File;
 import java.io.InputStream;
 import org.junit.Before;
@@ -154,10 +157,13 @@ public class ResourcesTest {
     assertThat(valuesTypedArray.getDimension(6, 0.0f)).isEqualTo(12.0f);
     assertThat(valuesTypedArray.getDimension(7, 0.0f)).isEqualTo(6.0f);
     assertThat(valuesTypedArray.getDimension(8, 0.0f)).isEqualTo(
-        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 3.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(9, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_IN, 4.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(10, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 36.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(11, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PT, 18.0f, displayMetrics));
+        applyDimension(COMPLEX_UNIT_MM, 3.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(9, 0.0f)).isEqualTo(
+        applyDimension(COMPLEX_UNIT_IN, 4.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(10, 0.0f)).isEqualTo(
+        applyDimension(COMPLEX_UNIT_SP, 36.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(11, 0.0f)).isEqualTo(
+        applyDimension(COMPLEX_UNIT_PT, 18.0f, displayMetrics));
 
     final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
     assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
@@ -209,39 +215,64 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void getDimension() throws Exception {
-    assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
-    assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
-    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 160);
-    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 160)));
+    assertThat(resources.getDimension(R.dimen.test_dip_dimen))
+        .isEqualTo(20f * resources.getDisplayMetrics().density);
+    assertThat(resources.getDimension(R.dimen.test_dp_dimen))
+        .isEqualTo(8f * resources.getDisplayMetrics().density);
+    assertThat(resources.getDimension(R.dimen.test_in_dimen))
+        .isEqualTo(99f * 160 * resources.getDisplayMetrics().density);
+    assertThat(resources.getDimension(R.dimen.test_mm_dimen))
+        .isEqualTo(((float) (42f / 25.4 * 160 * resources.getDisplayMetrics().density)));
     assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
-    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12f * 160 / 72);
-    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5f);
+    assertThat(resources.getDimension(R.dimen.test_pt_dimen))
+        .isEqualTo(12f * 160 / 72 * resources.getDisplayMetrics().density);
+    assertThat(resources.getDimension(R.dimen.test_sp_dimen))
+        .isEqualTo(5f * resources.getDisplayMetrics().density);
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void getDimensionPixelSize() throws Exception {
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(265);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(27);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_DIP, 20)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen))
+        .isEqualTo(Math.round(8 * resources.getDisplayMetrics().density));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_IN, 99)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_MM, 42.0f)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_PX, 15)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_PT, 12)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_SP, 5)));
+  }
+
+  private static Range<Integer> onePixelOf(int i) {
+    return Range.closed(i - 1, i + 1);
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void getDimensionPixelOffset() throws Exception {
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(264);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(26);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_DIP, 20.0f));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen))
+        .isEqualTo(Math.round (8 * resources.getDisplayMetrics().density));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_IN, 99.0f));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_MM, 42.0f));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_PX, 15.0f));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_PT, 12.0f));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_SP, 5.0f));
+  }
+
+  private int convertDimension(int unit, float value) {
+    return (int) applyDimension(unit, value, resources.getDisplayMetrics());
   }
 
   @Test
@@ -565,7 +596,7 @@ public class ResourcesTest {
     theme.applyStyle(R.style.MyBlackTheme, false);
 
     theme.resolveAttribute(android.R.attr.windowBackground, out, false);
-    assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
+    assertThat(out.type).isEqualTo(TYPE_REFERENCE);
     assertThat(out.data).isEqualTo(android.R.color.black);
   }
 
@@ -597,8 +628,8 @@ public class ResourcesTest {
     arr.getValue(0, value);
     arr.recycle();
 
-    assertThat(value.type).isAtLeast(TypedValue.TYPE_FIRST_COLOR_INT);
-    assertThat(value.type).isAtMost(TypedValue.TYPE_LAST_INT);
+    assertThat(value.type).isAtLeast(TYPE_FIRST_COLOR_INT);
+    assertThat(value.type).isAtMost(TYPE_LAST_INT);
   }
 
   // @Test
@@ -767,28 +798,28 @@ public class ResourcesTest {
     TypedValue outValue = new TypedValue();
 
     resources.getValue(R.string.hello, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
+    assertThat(outValue.type).isEqualTo(TYPE_STRING);
     assertThat(outValue.string).isEqualTo(resources.getString(R.string.hello));
-    assertThat(outValue.data).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.data).isEqualTo(DATA_NULL_UNDEFINED);
     assertThat(outValue.assetCookie).isNotEqualTo(0);
 
     resources.getValue(R.color.blue, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_RGB8);
     assertThat(outValue.data).isEqualTo(0xFF0000FF);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
 
     resources.getValue(R.integer.loneliest_number, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_DEC);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
 
     resources.getValue(R.bool.true_bool_value, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_BOOLEAN);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
   }
 
   @Test
@@ -950,7 +981,7 @@ public class ResourcesTest {
   public void getResourceValue_colorARGB8() {
     TypedValue outValue = new TypedValue();
     resources.getValue(test_ARGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_ARGB8);
     assertThat(Color.blue(outValue.data)).isEqualTo(2);
   }
 
@@ -958,7 +989,7 @@ public class ResourcesTest {
   public void getResourceValue_colorRGB8() {
     TypedValue outValue = new TypedValue();
     resources.getValue(test_RGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_RGB8);
     assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
 
