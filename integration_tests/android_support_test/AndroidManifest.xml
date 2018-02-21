@@ -8,8 +8,7 @@
       android:targetSdkVersion="25"/>
 
   <application>
-    <activity android:name="org.robolectric.integration_tests.atsl.ActivityTestRuleTest$TranscriptActivity"/>
-    <activity android:name="org.robolectric.integration_tests.atsl.EspressoTest$ActivityFixture"/>
+    <activity android:name="org.robolectric.integration_tests.atsl.ActivityTestRuleTest$MyActivity"/>
   </application>
 
   <instrumentation

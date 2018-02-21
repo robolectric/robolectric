@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  Manifest for ATSL integration tests
--->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.integration.atsl">
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="27"/>
-</manifest>
