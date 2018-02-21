@@ -24,7 +24,7 @@
         <item>@drawable/an_image</item>
         <item>@color/typed_array_orange</item>
         <item>?attr/animalStyle</item>
-        <item>@array/typed_array_values</item>
+        <item>@array/string_array_values</item>
         <item>@style/Theme.Robolectric</item>
     </array>
 
@@ -32,4 +32,19 @@
         <item>@id/id_declared_in_item_tag</item>
         <item>@id/id_declared_in_layout</item>
     </array>
+
+    <string-array name="string_array_values">
+        <item>abcdefg</item>
+        <item>3875</item>
+        <item>2.0</item>
+        <item>#ffff00ff</item>
+        <item>#00ffff</item>
+        <item>8px</item>
+        <item>12dp</item>
+        <item>6dip</item>
+        <item>3mm</item>
+        <item>4in</item>
+        <item>36sp</item>
+        <item>18pt</item>
+    </string-array>
 </resources>
