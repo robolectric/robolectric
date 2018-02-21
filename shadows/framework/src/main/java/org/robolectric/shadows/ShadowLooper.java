@@ -13,6 +13,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -126,6 +127,11 @@ public class ShadowLooper {
       realObject.notifyAll();
       getScheduler().reset();
     }
+  }
+  
+  @HiddenApi @Implementation
+  public int postSyncBarrier() {
+    return 1;
   }
 
   public boolean hasQuit() {
@@ -325,11 +331,11 @@ public class ShadowLooper {
   }
 
   public void resetScheduler() {
-    ShadowMessageQueue shadowMessageQueue = shadowOf(realObject.getQueue());
+    ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
     if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
-      shadowMessageQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
+      sQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
     } else {
-      shadowMessageQueue.setScheduler(new Scheduler());
+      sQueue.setScheduler(new Scheduler());
     }
   }
 
