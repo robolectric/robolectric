@@ -119,15 +119,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return this;
   }
 
-  public ActivityController<T> windowFocusChanged(boolean hasFocus) {
-    ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
-
-    ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
-        from(boolean.class, hasFocus), /* hasFocus */
-        from(boolean.class, false) /* inTouchMode */);
-    return this;
-  }
-
   public ActivityController<T> userLeaving() {
     invokeWhilePaused("performUserLeaving");
     return this;
