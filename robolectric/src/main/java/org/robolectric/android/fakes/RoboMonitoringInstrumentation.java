@@ -41,7 +41,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       controller.postCreate(new Bundle());
       callActivityOnStart(activity);
       callActivityOnResume(activity);
-      controller.visible();
+      controller.visible().windowFocusChanged(true);
       return activity;
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);

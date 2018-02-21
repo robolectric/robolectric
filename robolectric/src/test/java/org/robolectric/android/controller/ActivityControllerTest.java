@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ContextThemeWrapper;
+import android.view.ViewRootImpl;
 import android.view.Window;
 import android.widget.LinearLayout;
 import java.util.ArrayList;
@@ -124,7 +125,9 @@ public class ActivityControllerTest {
   @Test
   public void visible_addsTheDecorViewToTheWindowManager() {
     controller.create().visible();
-    assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
+    assertThat(
+        controller.get().getWindow().getDecorView().getParent().getClass()).isEqualTo(
+        ViewRootImpl.class);
   }
 
   @Test
@@ -197,14 +200,16 @@ public class ActivityControllerTest {
   public void setup_callsLifecycleMethodsAndMakesVisible() {
     controller.setup();
     assertThat(transcript).contains("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
-    assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
+    assertThat(controller.get().getWindow().getDecorView().getParent().getClass()).isEqualTo(
+        ViewRootImpl.class);
   }
 
   @Test
   public void setupWithBundle_callsLifecycleMethodsAndMakesVisible() {
     controller.setup(new Bundle());
     assertThat(transcript).contains("onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
-    assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
+    assertThat(controller.get().getWindow().getDecorView().getParent().getClass()).isEqualTo(
+        ViewRootImpl.class);
   }
 
   @Test
@@ -297,6 +302,20 @@ public class ActivityControllerTest {
     assertThat(activity.retainedFragment).isSameAs(retainedFragment);
     assertThat(activity.nonRetainedFragment).isNotNull();
     assertThat(activity.nonRetainedFragment).isNotSameAs(otherFragment);
+  }
+
+  @Test
+  public void windowFocusChanged() {
+    controller.setup();
+    assertThat(transcript).doesNotContain("finishedOnWindowFocusChanged");
+    assertThat(controller.get().hasWindowFocus()).isFalse();
+
+    transcript.clear();
+
+    controller.windowFocusChanged(true);
+    assertThat(transcript).containsExactly("finishedOnWindowFocusChanged");
+    assertThat(controller.get().hasWindowFocus()).isTrue();
+
   }
 
   public static class MyActivity extends Activity {
@@ -392,6 +411,13 @@ public class ActivityControllerTest {
       transcribeWhilePaused("onConfigurationChanged");
       transcript.add("finishedOnConfigurationChanged");
     }
+
+    @Override
+    public void onWindowFocusChanged(boolean newFocus) {
+      super.onWindowFocusChanged(newFocus);
+      transcript.add("finishedOnWindowFocusChanged");
+    }
+
 
     private void transcribeWhilePaused(final String event) {
       runOnUiThread(new Runnable() {
