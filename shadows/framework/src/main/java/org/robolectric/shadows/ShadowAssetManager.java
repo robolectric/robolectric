@@ -1014,8 +1014,7 @@ public class ShadowAssetManager {
   @Nonnull private ResName getResName(int id) {
     ResName resName = resourceTable.getResName(id);
     if (resName == null) {
-      throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id)
-          + " in packages " + resourceTable);
+      throw new Resources.NotFoundException("Resource ID #0x" + Integer.toHexString(id));
     }
     return resName;
   }
