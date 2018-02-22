@@ -19,6 +19,11 @@ public class ShadowInputManager {
     return true;
   }
 
+  @Implementation
+  protected boolean[] deviceHasKeys(int id, int[] keyCodes) {
+    return new boolean[keyCodes.length];
+  }
+
   @Resetter
   public static void reset() {
     ReflectionHelpers.setStaticField(InputManager.class, "sInstance", null);
