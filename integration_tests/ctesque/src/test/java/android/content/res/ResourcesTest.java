@@ -2,6 +2,22 @@ package android.content.res;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+import static android.util.TypedValue.COMPLEX_UNIT_IN;
+import static android.util.TypedValue.COMPLEX_UNIT_MM;
+import static android.util.TypedValue.COMPLEX_UNIT_PT;
+import static android.util.TypedValue.COMPLEX_UNIT_PX;
+import static android.util.TypedValue.COMPLEX_UNIT_SP;
+import static android.util.TypedValue.DATA_NULL_UNDEFINED;
+import static android.util.TypedValue.TYPE_FIRST_COLOR_INT;
+import static android.util.TypedValue.TYPE_INT_BOOLEAN;
+import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
+import static android.util.TypedValue.TYPE_INT_COLOR_RGB8;
+import static android.util.TypedValue.TYPE_INT_DEC;
+import static android.util.TypedValue.TYPE_LAST_INT;
+import static android.util.TypedValue.TYPE_REFERENCE;
+import static android.util.TypedValue.TYPE_STRING;
+import static android.util.TypedValue.applyDimension;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.R.color.test_ARGB8;
@@ -19,9 +35,9 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
+import com.google.common.collect.Range;
 import java.io.File;
 import java.io.InputStream;
 import org.junit.Before;
@@ -136,13 +152,7 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void obtainTypedArray() throws Exception {
-    final DisplayMetrics displayMetrics = new DisplayMetrics();
-    displayMetrics.density = 1;
-    displayMetrics.scaledDensity = 1;
-    displayMetrics.xdpi = 160;
-
     final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
     assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
     assertThat(valuesTypedArray.getInt(1, 0)).isEqualTo(3875);
@@ -150,14 +160,20 @@ public class ResourcesTest {
     assertThat(valuesTypedArray.getFloat(2, 0.0f)).isEqualTo(2.0f);
     assertThat(valuesTypedArray.getColor(3, Color.BLACK)).isEqualTo(Color.MAGENTA);
     assertThat(valuesTypedArray.getColor(4, Color.BLACK)).isEqualTo(Color.parseColor("#00ffff"));
-    assertThat(valuesTypedArray.getDimension(5, 0.0f)).isEqualTo(8.0f);
-    assertThat(valuesTypedArray.getDimension(6, 0.0f)).isEqualTo(12.0f);
-    assertThat(valuesTypedArray.getDimension(7, 0.0f)).isEqualTo(6.0f);
-    assertThat(valuesTypedArray.getDimension(8, 0.0f)).isEqualTo(
-        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 3.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(9, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_IN, 4.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(10, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 36.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(11, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PT, 18.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(5, 0.0f))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_PX, 8, resources.getDisplayMetrics()));
+    assertThat(valuesTypedArray.getDimension(6, 0.0f))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_DIP, 12, resources.getDisplayMetrics()));
+    assertThat(valuesTypedArray.getDimension(7, 0.0f))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_DIP, 6, resources.getDisplayMetrics()));
+    assertThat(valuesTypedArray.getDimension(8, 0.0f))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_MM, 3, resources.getDisplayMetrics()));
+    assertThat(valuesTypedArray.getDimension(9, 0.0f))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_IN, 4, resources.getDisplayMetrics()));
+    assertThat(valuesTypedArray.getDimension(10, 0.0f))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_SP, 36, resources.getDisplayMetrics()));
+    assertThat(valuesTypedArray.getDimension(11, 0.0f))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_PT, 18, resources.getDisplayMetrics()));
 
     final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
     assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
@@ -165,8 +181,7 @@ public class ResourcesTest {
     assertThat(refsTypedArray.getInt(2, 0)).isEqualTo(5);
     assertThat(refsTypedArray.getBoolean(3, false)).isTrue();
 
-
-    assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.typed_array_values);
+    assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.string_array_values);
     assertThat(refsTypedArray.getTextArray(8))
         .asList().containsAllOf("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
         "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
@@ -209,39 +224,65 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void getDimension() throws Exception {
-    assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
-    assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
-    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 160);
-    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 160)));
-    assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
-    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12f * 160 / 72);
-    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5f);
+    assertThat(resources.getDimension(R.dimen.test_dip_dimen))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_DIP, 20, resources.getDisplayMetrics()));
+    assertThat(resources.getDimension(R.dimen.test_dp_dimen))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_DIP, 8, resources.getDisplayMetrics()));
+    assertThat(resources.getDimension(R.dimen.test_in_dimen))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_IN, 99, resources.getDisplayMetrics()));
+    assertThat(resources.getDimension(R.dimen.test_mm_dimen))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_MM, 42, resources.getDisplayMetrics()));
+    assertThat(resources.getDimension(R.dimen.test_px_dimen))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_PX, 15, resources.getDisplayMetrics()));
+    assertThat(resources.getDimension(R.dimen.test_pt_dimen))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_PT, 12, resources.getDisplayMetrics()));
+    assertThat(resources.getDimension(R.dimen.test_sp_dimen))
+        .isEqualTo(applyDimension(COMPLEX_UNIT_SP, 5, resources.getDisplayMetrics()));
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void getDimensionPixelSize() throws Exception {
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(265);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(27);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_DIP, 20)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_DIP, 8)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_IN, 99)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_MM, 42)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_PX, 15)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_PT, 12)));
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen))
+        .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_SP, 5)));
+  }
+
+  private static Range<Integer> onePixelOf(int i) {
+    return Range.closed(i - 1, i + 1);
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void getDimensionPixelOffset() throws Exception {
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(264);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(26);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_DIP, 20));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_DIP, 8));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_IN, 99));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_MM, 42));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_PX, 15));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_PT, 12));
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen))
+        .isEqualTo(convertDimension(COMPLEX_UNIT_SP, 5));
+  }
+
+  private int convertDimension(int unit, float value) {
+    return (int) applyDimension(unit, value, resources.getDisplayMetrics());
   }
 
   @Test
@@ -411,13 +452,6 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    assertThat(context.getResources().getDisplayMetrics().heightPixels).isEqualTo(470);
-    assertThat(context.getResources().getDisplayMetrics().widthPixels).isEqualTo(320);
-  }
-
-  @Test
   public void getSystemShouldReturnSystemResources() throws Exception {
     assertThat(Resources.getSystem()).isInstanceOf(Resources.class);
   }
@@ -565,7 +599,7 @@ public class ResourcesTest {
     theme.applyStyle(R.style.MyBlackTheme, false);
 
     theme.resolveAttribute(android.R.attr.windowBackground, out, false);
-    assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
+    assertThat(out.type).isEqualTo(TYPE_REFERENCE);
     assertThat(out.data).isEqualTo(android.R.color.black);
   }
 
@@ -597,8 +631,8 @@ public class ResourcesTest {
     arr.getValue(0, value);
     arr.recycle();
 
-    assertThat(value.type).isAtLeast(TypedValue.TYPE_FIRST_COLOR_INT);
-    assertThat(value.type).isAtMost(TypedValue.TYPE_LAST_INT);
+    assertThat(value.type).isAtLeast(TYPE_FIRST_COLOR_INT);
+    assertThat(value.type).isAtMost(TYPE_LAST_INT);
   }
 
   // @Test
@@ -676,14 +710,13 @@ public class ResourcesTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = KITKAT)
-  @Config(minSdk = KITKAT)
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
+  @SdkSuppress(maxSdkVersion = KITKAT)
+  @Config(maxSdk = KITKAT)
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
     //   numberPickerStyle from com.internal.android.R
     assertThat(context.getResources().getResourceName(android.R.attr.viewportHeight))
-        .isEqualTo("android:attr/numberPickerStyle");
+        .isNotEqualTo("android:attr/viewportHeight");
 
     assertThat(context.getResources().getIdentifier("viewportHeight", "attr", "android")).isEqualTo(0);
   }
@@ -767,28 +800,28 @@ public class ResourcesTest {
     TypedValue outValue = new TypedValue();
 
     resources.getValue(R.string.hello, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
+    assertThat(outValue.type).isEqualTo(TYPE_STRING);
     assertThat(outValue.string).isEqualTo(resources.getString(R.string.hello));
-    assertThat(outValue.data).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.data).isEqualTo(DATA_NULL_UNDEFINED);
     assertThat(outValue.assetCookie).isNotEqualTo(0);
 
     resources.getValue(R.color.blue, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_RGB8);
     assertThat(outValue.data).isEqualTo(0xFF0000FF);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
 
     resources.getValue(R.integer.loneliest_number, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_DEC);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
 
     resources.getValue(R.bool.true_bool_value, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_BOOLEAN);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
   }
 
   @Test
@@ -801,13 +834,12 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void whenMissingXml_loadXmlResourceParser() throws Exception {
+  public void whenMissingXml_throwNotFoundException() throws Exception {
     try {
-      resources.getXml(R.id.ungulate);
+      resources.getXml(0x3038);
       fail();
     } catch (Resources.NotFoundException e) {
-      assertThat(e.getMessage()).contains("org.robolectric:id/ungulate");
+      assertThat(e.getMessage()).contains("Resource ID #0x3038");
     }
   }
 
@@ -950,7 +982,7 @@ public class ResourcesTest {
   public void getResourceValue_colorARGB8() {
     TypedValue outValue = new TypedValue();
     resources.getValue(test_ARGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_ARGB8);
     assertThat(Color.blue(outValue.data)).isEqualTo(2);
   }
 
@@ -958,7 +990,7 @@ public class ResourcesTest {
   public void getResourceValue_colorRGB8() {
     TypedValue outValue = new TypedValue();
     resources.getValue(test_RGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
+    assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_RGB8);
     assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
 

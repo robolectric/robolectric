@@ -1,15 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -47,86 +43,6 @@ public class ShadowResourcesTest {
     // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
     // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
     assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith("res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
-  }
-
-  @Test
-  public void obtainTypedArray() throws Exception {
-    final DisplayMetrics displayMetrics = new DisplayMetrics();
-    displayMetrics.density = 1;
-    displayMetrics.scaledDensity = 1;
-    displayMetrics.xdpi = 160;
-
-    final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
-    assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
-    assertThat(valuesTypedArray.getInt(1, 0)).isEqualTo(3875);
-    assertThat(valuesTypedArray.getInteger(1, 0)).isEqualTo(3875);
-    assertThat(valuesTypedArray.getFloat(2, 0.0f)).isEqualTo(2.0f);
-    assertThat(valuesTypedArray.getColor(3, Color.BLACK)).isEqualTo(Color.MAGENTA);
-    assertThat(valuesTypedArray.getColor(4, Color.BLACK)).isEqualTo(Color.parseColor("#00ffff"));
-    assertThat(valuesTypedArray.getDimension(5, 0.0f)).isEqualTo(8.0f);
-    assertThat(valuesTypedArray.getDimension(6, 0.0f)).isEqualTo(12.0f);
-    assertThat(valuesTypedArray.getDimension(7, 0.0f)).isEqualTo(6.0f);
-    assertThat(valuesTypedArray.getDimension(8, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 3.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(9, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_IN, 4.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(10, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 36.0f, displayMetrics));
-    assertThat(valuesTypedArray.getDimension(11, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PT, 18.0f, displayMetrics));
-
-    final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
-    assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
-    assertThat(refsTypedArray.getString(1)).isEqualTo("banana");
-    assertThat(refsTypedArray.getInt(2, 0)).isEqualTo(5);
-    assertThat(refsTypedArray.getBoolean(3, false)).isTrue();
-
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      assertThat(refsTypedArray.getType(4)).isEqualTo(TypedValue.TYPE_NULL);
-    }
-
-    assertThat(shadowOf(refsTypedArray.getDrawable(5)).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
-    assertThat(refsTypedArray.getColor(6, Color.BLACK)).isEqualTo(Color.parseColor("#ff5c00"));
-
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);
-    }
-
-    assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.typed_array_values);
-    assertThat(refsTypedArray.getTextArray(8))
-        .containsExactly("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
-            "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
-
-    assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
-  }
-
-  @Test
-  public void getDimension() throws Exception {
-    assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
-    assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
-    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 160);
-    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 160)));
-    assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
-    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12f * 160 / 72);
-    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5);
-  }
-
-  @Test
-  public void getDimensionPixelSize() throws Exception {
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(265);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(27);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
-  }
-
-  @Test
-  public void getDimensionPixelOffset() throws Exception {
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(264);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(26);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test
@@ -171,12 +87,6 @@ public class ShadowResourcesTest {
 
     Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
-  }
-
-  @Test
-  public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(470);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(320);
   }
 
   @Test
@@ -303,17 +213,6 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  @Config(sdk = KITKAT)
-  public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
-    // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
-    //   numberPickerStyle from com.internal.android.R
-    assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
-        .isEqualTo("android:attr/numberPickerStyle");
-
-    assertThat(RuntimeEnvironment.application.getResources().getIdentifier("viewportHeight", "attr", "android")).isEqualTo(0);
-  }
-
-  @Test
   public void getValueShouldClearTypedArrayBetweenCalls() throws Exception {
     TypedValue outValue = new TypedValue();
 
@@ -351,16 +250,6 @@ public class ShadowResourcesTest {
     xmlResourceParser =
         (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
-  }
-
-  @Test
-  public void whenMissingXml_loadXmlResourceParser() throws Exception {
-    try {
-      resources.getXml(R.id.ungulate);
-      fail();
-    } catch (Resources.NotFoundException e) {
-      assertThat(e.getMessage()).contains("org.robolectric:id/ungulate");
-    }
   }
 
   @Test
