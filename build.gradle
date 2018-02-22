@@ -21,6 +21,7 @@ allprojects {
     repositories {
         mavenLocal()
         jcenter()
+        google()
     }
 
     group = "org.robolectric"
