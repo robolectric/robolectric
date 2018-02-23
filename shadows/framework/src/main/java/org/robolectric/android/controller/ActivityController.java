@@ -71,14 +71,25 @@ public class ActivityController<T extends Activity> extends ComponentController<
       invokeWhilePaused("performRestart");
     } else {
       // BEGIN-INTERNAL
-      invokeWhilePaused("performRestart", from(boolean.class, true));
+      invokeWhilePaused(
+        "performRestart",
+        /* start= */ from(boolean.class, true),
+        /* reason= */ from(String.class, "restart()"));
       // END-INTERNAL
     }
     return this;
   }
 
   public ActivityController<T> start() {
-    invokeWhilePaused("performStart");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performStart");
+    } else {
+      // BEGIN-INTERNAL
+      invokeWhilePaused(
+        "performStart",
+        /* reason= */ from(String.class, "start()"));
+      // END-INTERNAL
+    }
     return this;
   }
 
@@ -97,7 +108,10 @@ public class ActivityController<T extends Activity> extends ComponentController<
       invokeWhilePaused("performResume");
     } else {
       // BEGIN-INTERNAL
-      invokeWhilePaused("performResume", from(boolean.class, false));
+      invokeWhilePaused(
+        "performResume",
+        /* followedByPause= */ from(boolean.class, false),
+        /* reason= */ from(String.class, "resume()"));
       // END-INTERNAL
     }
     return this;
@@ -145,8 +159,15 @@ public class ActivityController<T extends Activity> extends ComponentController<
   public ActivityController<T> stop() {
     if (RuntimeEnvironment.getApiLevel() <= M) {
       invokeWhilePaused("performStop");
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
       invokeWhilePaused("performStop", from(boolean.class, true));
+    } else {
+      // BEGIN-INTERNAL
+      invokeWhilePaused(
+        "performStop",
+        /* preserveWindow= */ from(boolean.class, true),
+        /* reason= */ from(String.class, "stop()"));
+      // END-INTERNAL
     }
     return this;
   }
