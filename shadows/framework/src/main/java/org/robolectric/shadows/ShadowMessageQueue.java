@@ -14,6 +14,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.MessageQueue;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -63,6 +65,19 @@ public class ShadowMessageQueue {
   @Implementation(minSdk = LOLLIPOP)
   public static boolean nativeIsIdling(long ptr) {
     return false;
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static void nativePollOnce(int ptr, int timeoutMillis) {
+    nativePollOnce((long) ptr, timeoutMillis);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected static void nativePollOnce(long ptr, int timeoutMillis) {
+    if (timeoutMillis > 0) {
+      ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(timeoutMillis, TimeUnit.MILLISECONDS);
+    }
   }
 
   public Scheduler getScheduler() {
