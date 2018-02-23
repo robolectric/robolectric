@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeFalse;
 import static org.robolectric.res.android.ResourceTypes.ANDROID_NS;
 import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +18,12 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = Build.VERSION_CODES.N_MR1)
 public class XmlPullParserTest {
 
   // emulator output:
@@ -34,6 +39,8 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
 
   @Test
   public void xmlParser() throws IOException, XmlPullParserException {
+    assumeFalse(useLegacy());
+
     Resources resources = RuntimeEnvironment.application.getResources();
     XmlResourceParser parser = resources.getXml(R.xml.xml_attrs);
     assertThat(parser).isNotNull();
@@ -45,51 +52,44 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
 
     assertThat(parser.getName()).isEqualTo("whatever");
     int attributeCount = parser.getAttributeCount();
+    dumpAttrs(parser, attributeCount);
 
     List<String> attrNames = new ArrayList<>();
     for (int i = 0; i < attributeCount; i++) {
-      String namespace = parser.getAttributeNamespace(i);
-      if (!"http://www.w3.org/2000/xmlns/".equals(namespace)) {
-        attrNames.add(namespace + ":" + parser.getAttributeName(i));
-      }
+      attrNames.add(parser.getAttributeNamespace(i) + ":" + parser.getAttributeName(i));
     }
 
-    assertThat(attrNames).containsExactlyInAnyOrder(
+    assertThat(attrNames).containsExactly(
         ANDROID_NS + ":id",
         ANDROID_NS + ":height",
         ANDROID_NS + ":width",
         ANDROID_NS + ":title",
-        ANDROID_NS + ":scrollbarFadeDuration",
+//            ANDROID_NS + ":scrollbarFadeDuration",
         AUTO_NS + ":title",
         ":style",
         ":class",
         ":id"
     );
 
-    if (!RuntimeEnvironment.useLegacyResources()) {
-      // doesn't work in legacy mode, sorry
-      assertAttribute(parser,
-          ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
-      assertAttribute(parser,
-          ANDROID_NS, "height", android.R.attr.height, "@" + android.R.dimen.app_icon_size,
-          android.R.dimen.app_icon_size);
-      assertAttribute(parser,
-          ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
-      assertAttribute(parser,
-          "", "style", 0, "@android:style/TextAppearance.Small",
-          android.R.style.TextAppearance_Small);
-    }
-    assertAttribute(parser,
+    int idx = 0;
+    assertAttribute(parser, idx++,
+        ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
+    assertAttribute(parser, idx++,
+        ANDROID_NS, "height", android.R.attr.height, "@" + android.R.dimen.app_icon_size,
+        android.R.dimen.app_icon_size);
+    assertAttribute(parser, idx++,
+        ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
+    assertAttribute(parser, idx++,
         ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
-    assertAttribute(parser,
-        ANDROID_NS, "scrollbarFadeDuration", android.R.attr.scrollbarFadeDuration, "1111", -1);
-    assertAttribute(parser,
+//        assertAttribute(parser, idx++,
+//            ANDROID_NS, "scrollbarFadeDuration", android.R.attr.scrollbarFadeDuration, "1234px", -1);
+    assertAttribute(parser, idx++,
         AUTO_NS, "title", R.attr.title, "App Title", -1);
+    assertAttribute(parser, idx++,
+        "", "style", 0, "@android:style/TextAppearance.Small",
+        android.R.style.TextAppearance_Small);
 
-    if (!RuntimeEnvironment.useLegacyResources()) {
-      // doesn't work in legacy mode, sorry
-      assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
-    }
+    assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
     assertThat(parser.getIdAttribute()).isEqualTo("@android:id/text2");
     assertThat(parser.getClassAttribute()).isEqualTo("none");
   }
@@ -110,6 +110,7 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
 
     assertThat(parser.getName()).isEqualTo("dummy");
     int attributeCount = parser.getAttributeCount();
+    dumpAttrs(parser, attributeCount);
 
     List<String> attrNames = new ArrayList<>();
     for (int i = 0; i < attributeCount; i++) {
@@ -127,45 +128,45 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
         ":id"
     );
 
-    assertAttribute(parser,
+    int idx = 0;
+    assertAttribute(parser, idx++,
         ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
-    assertAttribute(parser,
+    assertAttribute(parser, idx++,
         ANDROID_NS, "height", android.R.attr.height, "@" + android.R.dimen.app_icon_size,
         android.R.dimen.app_icon_size);
-    assertAttribute(parser,
+    assertAttribute(parser, idx++,
         ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
-    assertAttribute(parser,
+    assertAttribute(parser, idx++,
+        ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
+    assertAttribute(parser, idx++,
+        ANDROID_NS, "scrollbarFadeDuration", android.R.attr.scrollbarFadeDuration, "1111", -1);
+    assertAttribute(parser, idx++,
+        AUTO_NS, "title", R.attr.title, "App Title", -1);
+    assertAttribute(parser, idx++,
         "", "style", 0, "@android:style/TextAppearance.Small",
         android.R.style.TextAppearance_Small);
-    assertAttribute(parser,
-        ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
-    assertAttribute(parser,
-        ANDROID_NS, "scrollbarFadeDuration", android.R.attr.scrollbarFadeDuration, "1111", -1);
-    assertAttribute(parser,
-        AUTO_NS, "title", R.attr.title, "App Title", -1);
 
     assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
     assertThat(parser.getIdAttribute()).isEqualTo("@android:id/text2");
     assertThat(parser.getClassAttribute()).isEqualTo("none");
   }
 
-  void assertAttribute(XmlResourceParser parser,
+  private void dumpAttrs(XmlResourceParser parser, int attributeCount) {
+    for (int i = 0; i < attributeCount; i++) {
+      System.out.println(format(parser, i));
+    }
+  }
+
+  void assertAttribute(XmlResourceParser parser, int attrIndex,
       String attrNs, String attrName, int resId, String value, int valueResId) {
-    assertThat(format(parser, attrNs, attrName))
+    assertThat(format(parser, attrIndex))
         .isEqualTo(format(attrNs, attrName, resId, "CDATA", value, valueResId));
   }
 
-  private String format(XmlResourceParser parser, String namespace, String name) {
-    int attributeCount = parser.getAttributeCount();
-    for (int i = 0; i < attributeCount; i++) {
-      if (namespace.equals(parser.getAttributeNamespace(i))
-          && name.equals(parser.getAttributeName(i))) {
-        return format(parser.getAttributeNamespace(i), parser.getAttributeName(i),
-            parser.getAttributeNameResource(i), parser.getAttributeType(i),
-            parser.getAttributeValue(i), parser.getAttributeResourceValue(i, -1));
-      }
-    }
-    throw new RuntimeException("not found: " + namespace + ":" + name);
+  private String format(XmlResourceParser parser, int i) {
+    return format(parser.getAttributeNamespace(i), parser.getAttributeName(i),
+        parser.getAttributeNameResource(i), parser.getAttributeType(i),
+        parser.getAttributeValue(i), parser.getAttributeResourceValue(i, -1));
   }
 
   private String format(String attrNs, String attrName,

@@ -3,10 +3,8 @@ package org.robolectric.android;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import android.content.res.XmlResourceParser;
 import java.io.ByteArrayInputStream;
@@ -269,8 +267,6 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testIsWhitespace() throws Exception {
-    assumeTrue(RuntimeEnvironment.useLegacyResources());
-
     XmlResourceParserImpl parserImpl = (XmlResourceParserImpl) parser;
     assertThat(parserImpl.isWhitespace("bar")).isFalse();
     assertThat(parserImpl.isWhitespace(" ")).isTrue();
@@ -294,11 +290,9 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetName_atStart() throws Exception {
-    assertThat(parser.getName()).isEqualTo(null);
+    assertThat(parser.getName()).isEqualTo("");
     parseUntilNext(XmlResourceParser.START_DOCUMENT);
-    assertThat(parser.getName()).isEqualTo(null);
-    parseUntilNext(XmlResourceParser.START_TAG);
-    assertThat(parser.getName()).isEqualTo("PreferenceScreen");
+    assertThat(parser.getName()).isEqualTo("");
   }
 
   @Test
@@ -323,14 +317,11 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeName() throws Exception {
-    assertThatThrownBy(() -> parser.getAttributeName(0))
-        .isInstanceOf(IndexOutOfBoundsException.class);
+    assertThat(parser.getAttributeName(0)).isNull();
 
     forgeAndOpenDocument("<foo bar=\"bar\"/>");
     assertThat(parser.getAttributeName(0)).isEqualTo("bar");
-
-    assertThatThrownBy(() -> parser.getAttributeName(attributeIndexOutOfIndex()))
-        .isInstanceOf(IndexOutOfBoundsException.class);
+    assertThat(parser.getAttributeName(attributeIndexOutOfIndex())).isNull();
   }
 
   @Test

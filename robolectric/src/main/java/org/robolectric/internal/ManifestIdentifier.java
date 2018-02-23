@@ -13,23 +13,15 @@ public class ManifestIdentifier {
   private final FsFile assetDir;
   private final String packageName;
   private final List<ManifestIdentifier> libraries;
-  private final FsFile apkFile;
 
   public ManifestIdentifier(String packageName,
       FsFile manifestFile, FsFile resDir, FsFile assetDir,
       List<ManifestIdentifier> libraries) {
-    this(packageName, manifestFile, resDir, assetDir, libraries, null);
-  }
-
-  public ManifestIdentifier(String packageName,
-      FsFile manifestFile, FsFile resDir, FsFile assetDir,
-      List<ManifestIdentifier> libraries, FsFile apkFile) {
     this.manifestFile = manifestFile;
     this.resDir = resDir;
     this.assetDir = assetDir;
     this.packageName = packageName;
     this.libraries = libraries == null ? Collections.emptyList() : libraries;
-    this.apkFile = apkFile;
   }
 
   /**
@@ -55,7 +47,6 @@ public class ManifestIdentifier {
       }
     }
     this.libraries = Collections.unmodifiableList(libraries);
-    this.apkFile = null;
   }
 
   public FsFile getManifestFile() {
@@ -79,38 +70,19 @@ public class ManifestIdentifier {
     return libraries;
   }
 
-  public FsFile getApkFile() {
-    return apkFile;
-  }
-
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
 
     ManifestIdentifier that = (ManifestIdentifier) o;
 
-    if (manifestFile != null ? !manifestFile.equals(that.manifestFile)
-        : that.manifestFile != null) {
-      return false;
-    }
-    if (resDir != null ? !resDir.equals(that.resDir) : that.resDir != null) {
-      return false;
-    }
-    if (assetDir != null ? !assetDir.equals(that.assetDir) : that.assetDir != null) {
-      return false;
-    }
-    if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) {
-      return false;
-    }
-    if (libraries != null ? !libraries.equals(that.libraries) : that.libraries != null) {
-      return false;
-    }
-    return apkFile != null ? apkFile.equals(that.apkFile) : that.apkFile == null;
+    if (manifestFile != null ? !manifestFile.equals(that.manifestFile) : that.manifestFile != null) return false;
+    if (resDir != null ? !resDir.equals(that.resDir) : that.resDir != null) return false;
+    if (assetDir != null ? !assetDir.equals(that.assetDir) : that.assetDir != null) return false;
+    if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) return false;
+    return libraries != null ? libraries.equals(that.libraries) : that.libraries == null;
+
   }
 
   @Override
@@ -120,7 +92,6 @@ public class ManifestIdentifier {
     result = 31 * result + (assetDir != null ? assetDir.hashCode() : 0);
     result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
     result = 31 * result + (libraries != null ? libraries.hashCode() : 0);
-    result = 31 * result + (apkFile != null ? apkFile.hashCode() : 0);
     return result;
   }
 
@@ -132,7 +103,6 @@ public class ManifestIdentifier {
         ", assetDir=" + assetDir +
         ", packageName='" + packageName + '\'' +
         ", libraries=" + libraries +
-        ", apkFile=" + apkFile +
         '}';
   }
 }

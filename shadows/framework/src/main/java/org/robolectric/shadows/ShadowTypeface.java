@@ -63,6 +63,7 @@ public class ShadowTypeface {
     ShadowAssetManager shadowAssetManager = Shadow.extract(mgr);
     Collection<FsFile> assetDirs = shadowAssetManager.getAllAssetDirs();
     for (FsFile assetDir : assetDirs) {
+      // check if in zip file too?
       FsFile[] files = assetDir.listFiles(new StartsWith(path));
       FsFile assetFile = assetDir.join(path);
       if (assetFile.exists() || files.length != 0) {

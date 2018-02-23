@@ -15,6 +15,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build.VERSION_CODES;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -31,6 +32,7 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.AccessibilityUtil;
 import org.robolectric.annotation.Config;
@@ -38,6 +40,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -66,6 +69,13 @@ public class ShadowView {
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
   private Rect globalVisibleRect;
+
+  @Resetter
+  public static void reset() {
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.JELLY_BEAN_MR1) {
+      ReflectionHelpers.setStaticField(View.class, "sNextGeneratedId", new AtomicInteger(1));
+    }
+  }
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it

@@ -24,7 +24,6 @@ public class DefaultManifestFactory implements ManifestFactory {
     FsFile resourcesDir = getFsFileFromPath(properties.getProperty("android_merged_resources"));
     FsFile assetsDir = getFsFileFromPath(properties.getProperty("android_merged_assets"));
     String packageName = properties.getProperty("android_custom_package");
-    FsFile apkFile = getFsFileFromPath(properties.getProperty("android_resource_apk"));
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
@@ -45,13 +44,12 @@ public class DefaultManifestFactory implements ManifestFactory {
       packageName = config.packageName();
     }
 
-    List<ManifestIdentifier> libraryDirs = emptyList();
+    List<FsFile> libraryDirs = emptyList();
     if (config.libraries().length > 0) {
       Logger.info("@Config(libraries) specified while using Build System API, ignoring");
     }
 
-    return new ManifestIdentifier(packageName, manifestFile, resourcesDir, assetsDir, libraryDirs,
-        apkFile);
+    return new ManifestIdentifier(manifestFile, resourcesDir, assetsDir, packageName, libraryDirs);
   }
 
   private FsFile resolveFile(String manifestConfig) {
@@ -64,9 +62,6 @@ public class DefaultManifestFactory implements ManifestFactory {
   }
 
   private FsFile getFsFileFromPath(String property) {
-    if (property == null) {
-      return null;
-    }
     if (property.startsWith("jar")) {
       try {
         URL url = new URL(property);

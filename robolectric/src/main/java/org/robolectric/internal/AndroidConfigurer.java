@@ -1,7 +1,6 @@
 package org.robolectric.internal;
 
 import java.util.ServiceLoader;
-import org.robolectric.ApkLoader;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestLifecycle;
 import org.robolectric.android.fakes.RoboCharsets;
@@ -53,7 +52,6 @@ public class AndroidConfigurer {
         .doNotAcquireClass(ShadowFactory.class)
         .doNotAcquireClass(ResourcePath.class)
         .doNotAcquireClass(ResourceTable.class)
-        .doNotAcquireClass(ApkLoader.class)
         .doNotAcquireClass(XmlBlock.class);
 
     builder

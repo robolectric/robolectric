@@ -33,7 +33,6 @@ public class AndroidManifest {
   private final FsFile assetsDirectory;
   private final String overridePackageName;
   private final List<AndroidManifest> libraryManifests;
-  private final FsFile apkFile;
 
   private boolean manifestIsParsed;
 
@@ -58,8 +57,6 @@ public class AndroidManifest {
   private final List<String> usedPermissions = new ArrayList<>();
   private final Map<String, String> applicationAttributes = new HashMap<>();
   private MetaData applicationMetaData;
-
-  private Boolean supportsBinaryResourcesMode;
 
   /**
    * Creates a Robolectric configuration using specified locations.
@@ -96,17 +93,6 @@ public class AndroidManifest {
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
       @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName) {
-    this(
-        androidManifestFile,
-        resDirectory,
-        assetsDirectory,
-        libraryManifests,
-        overridePackageName,
-        null);
-  }
-
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
-      @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName, FsFile apkFile) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
@@ -114,7 +100,6 @@ public class AndroidManifest {
     this.libraryManifests = libraryManifests;
 
     this.packageName = overridePackageName;
-    this.apkFile = apkFile;
   }
 
   public String getThemeRef(String activityClassName) {
@@ -707,36 +692,18 @@ public class AndroidManifest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
 
     AndroidManifest that = (AndroidManifest) o;
 
-    if (androidManifestFile != null ? !androidManifestFile.equals(that.androidManifestFile)
-        : that.androidManifestFile != null) {
+    if (androidManifestFile != null ? !androidManifestFile.equals(that.androidManifestFile) : that.androidManifestFile != null)
       return false;
-    }
-    if (resDirectory != null ? !resDirectory.equals(that.resDirectory)
-        : that.resDirectory != null) {
+    if (assetsDirectory != null ? !assetsDirectory.equals(that.assetsDirectory) : that.assetsDirectory != null)
       return false;
-    }
-    if (assetsDirectory != null ? !assetsDirectory.equals(that.assetsDirectory)
-        : that.assetsDirectory != null) {
-      return false;
-    }
-    if (overridePackageName != null ? !overridePackageName.equals(that.overridePackageName)
-        : that.overridePackageName != null) {
-      return false;
-    }
-    if (libraryManifests != null ? !libraryManifests.equals(that.libraryManifests)
-        : that.libraryManifests != null) {
-      return false;
-    }
-    return apkFile != null ? apkFile.equals(that.apkFile) : that.apkFile == null;
+    if (resDirectory != null ? !resDirectory.equals(that.resDirectory) : that.resDirectory != null) return false;
+    if (overridePackageName != null ? !overridePackageName.equals(that.overridePackageName) : that.overridePackageName != null) return false;
+    return true;
   }
 
   @Override
@@ -745,8 +712,6 @@ public class AndroidManifest {
     result = 31 * result + (resDirectory != null ? resDirectory.hashCode() : 0);
     result = 31 * result + (assetsDirectory != null ? assetsDirectory.hashCode() : 0);
     result = 31 * result + (overridePackageName != null ? overridePackageName.hashCode() : 0);
-    result = 31 * result + (libraryManifests != null ? libraryManifests.hashCode() : 0);
-    result = 31 * result + (apkFile != null ? apkFile.hashCode() : 0);
     return result;
   }
 
@@ -794,24 +759,5 @@ public class AndroidManifest {
       }
     }
     return null;
-  }
-
-  public FsFile getApkFile() {
-    return apkFile;
-  }
-
-  /** @deprecated Do not use. */
-  @Deprecated
-  public boolean supportsLegacyResourcesMode() {
-    return true;
-  }
-
-  /** @deprecated Do not use. */
-  @Deprecated
-  synchronized public boolean supportsBinaryResourcesMode() {
-    if (supportsBinaryResourcesMode == null) {
-      supportsBinaryResourcesMode = apkFile != null && apkFile.exists();
-    }
-    return supportsBinaryResourcesMode;
   }
 }
