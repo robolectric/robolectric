@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
@@ -1318,4 +1319,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
     return null;
   }
+
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = P)
+  public String getSystemTextClassifierPackageName() {
+    return "";
+  }
+  // END-INTERNAL
 }
