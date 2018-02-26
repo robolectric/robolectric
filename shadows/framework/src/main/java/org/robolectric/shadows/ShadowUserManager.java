@@ -15,15 +15,18 @@ import android.os.IUserManager;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
+
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
@@ -34,6 +37,7 @@ public class ShadowUserManager {
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
   private boolean isDemoUser = false;
+  private boolean isAdminUser = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
@@ -82,6 +86,16 @@ public class ShadowUserManager {
   @Implementation(minSdk = LOLLIPOP)
   public List<UserHandle> getUserProfiles(){
     return ImmutableList.copyOf(userProfiles.keySet());
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected List<UserInfo> getProfiles(int userHandle) {
+    return Collections.emptyList();
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected UserInfo getProfileParent(int userHandle) {
+    return null;
   }
 
   @Implementation(minSdk = N)
@@ -187,10 +201,23 @@ public class ShadowUserManager {
 
   /**
    * Sets that the current user is a demo user; controls the return value of
-   * {@link UserManager.isDemoUser}.
+   * {@link UserManager#isDemoUser}.
    */
   public void setIsDemoUser(boolean isDemoUser) {
     this.isDemoUser = isDemoUser;
+  }
+
+  @Implementation(minSdk = N_MR1)
+  public boolean isAdminUser() {
+    return isAdminUser;
+  }
+
+  /**
+   * Sets that the current user is an admin user; controls the return value of
+   * {@link UserManager#isAdminUser}.
+   */
+  public void setIsAdminUser(boolean isAdminUser) {
+    this.isAdminUser = isAdminUser;
   }
 
   @Implementation

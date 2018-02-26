@@ -28,7 +28,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void acquire_shouldAcquireAndReleaseReferenceCountedLock() throws Exception {
+  public void acquire_shouldAcquireAndReleaseReferenceCountedLock() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     assertThat(lock.isHeld()).isFalse();
     lock.acquire();
@@ -58,7 +58,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void acquire_shouldLogLatestWakeLock() throws Exception {
+  public void acquire_shouldLogLatestWakeLock() {
     ShadowPowerManager.reset();
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNull();
 
@@ -80,12 +80,12 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void newWakeLock_shouldCreateWakeLock() throws Exception {
+  public void newWakeLock_shouldCreateWakeLock() {
     assertThat(powerManager.newWakeLock(0, "TAG")).isNotNull();
   }
 
   @Test
-  public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() throws Exception {
+  public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     lock.setReferenceCounted(false);
 
@@ -101,7 +101,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() throws Exception {
+  public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     lock.release();
   }
@@ -114,7 +114,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void isReferenceCounted_shouldGetAndSet() throws Exception {
+  public void isReferenceCounted_shouldGetAndSet() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
     assertThat(shadowLock.isReferenceCounted()).isTrue();
@@ -137,12 +137,18 @@ public class ShadowPowerManagerTest {
   @Config(minSdk = KITKAT_WATCH)
   public void isPowerSaveMode_shouldGetAndSet() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
-    shadowPowerManager.setIsPowerSaveMode(true);
+
+    // first-party apps use this @hide API to adjust power-save mode
+    shadowPowerManager.setPowerSaveMode(true);
     assertThat(powerManager.isPowerSaveMode()).isTrue();
+
+    // third-party apps use this API to adjust power-save mode
+    shadowPowerManager.setIsPowerSaveMode(false);
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
   }
 
   @Test
-  public void workSource_shouldGetAndSet() throws Exception {
+  public void workSource_shouldGetAndSet() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
     WorkSource workSource = new WorkSource();

@@ -166,6 +166,19 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = N_MR1)
+  public void isAdminUser() {
+    // All methods are based on the current user, so no need to pass a UserHandle.
+    assertThat(userManager.isAdminUser()).isFalse();
+
+    shadowOf(userManager).setIsAdminUser(true);
+    assertThat(userManager.isAdminUser()).isTrue();
+
+    shadowOf(userManager).setIsAdminUser(false);
+    assertThat(userManager.isAdminUser()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void isUserRunning() {
     UserHandle userHandle = newUserHandle(0);
