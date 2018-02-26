@@ -247,8 +247,23 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return DefaultTestLifecycle.class;
   }
 
+  enum ResourcesMode {
+    legacy,
+    binary,
+    both;
+
+    public boolean includeLegacy() {
+      return this == legacy || this == both;
+    }
+
+    public boolean includeBinary() {
+      return this == binary || this == both;
+    }
+  }
+
   @Override
   protected List<FrameworkMethod> getChildren() {
+    ResourcesMode resourcesMode = getResourcesMode();
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
@@ -258,9 +273,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
-          children.add(new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config));
-          last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config, true);
-          children.add(last);
+          if (resourcesMode.includeLegacy()) {
+            children.add(
+                last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
+                    sdkConfig, config, true));
+          }
+          if (resourcesMode.includeBinary()) {
+            children.add(
+                last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
+                    sdkConfig, config, false));
+          }
         }
         if (last != null) {
           last.dontIncludeApiLevelInName();
@@ -272,6 +294,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
     }
     return children;
+  }
+
+  private ResourcesMode getResourcesMode() {
+    String resourcesMode = System.getProperty("robolectric.resources-mode");
+    return resourcesMode == null ? ResourcesMode.legacy : ResourcesMode.valueOf(resourcesMode);
   }
 
   /**
