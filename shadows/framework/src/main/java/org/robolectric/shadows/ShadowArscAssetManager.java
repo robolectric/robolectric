@@ -68,7 +68,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
 
   {
-    System.out.println("new AssetManager: USE_LEGACY = " + RuntimeEnvironment.useLegacyResources());
+    System.out.println("new AssetManager: resources mode: "
+        + (RuntimeEnvironment.useLegacyResources() ? "legacy" : "binary"));
   }
 
   private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
