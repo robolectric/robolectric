@@ -167,15 +167,32 @@ my_coverage_file := $(my_coverage_dir)/jacoco.exec
 
 # List of packages to exclude jacoco from running
 my_jacoco_excludes := \
-    org.robolectric.*:org.mockito.*:org.junit.*:org.objectweb.*:com.thoughtworks.xstream.*
+    org.robolectric.* \
+    org.mockito.* \
+    org.junit.* \
+    org.objectweb.* \
+    com.thoughtworks.xstream.*
 # The Jacoco agent JAR.
 my_jacoco_agent_jar := $(call java-lib-files,jvm-jacoco-agent,true)
+# Using Jacoco with Robolectric is broken in 0.7.3 <= version < 0.7.6.
+# In 0.7.6 or above, the parameter "inclnolocationclasses" is needed.
+# See https://github.com/jacoco/jacoco/pull/288 for more
+# In JDK9, if "inclnolocationclasses" is used, we also need to specify
+# exclclassloader=jdk.internal.reflect.DelegatingClassLoader
+# https://github.com/jacoco/jacoco/issues/16
+my_jacoco_agent_args = \
+    destfile=$(my_coverage_file) \
+    excludes=$(call normalize-path-list, $(my_jacoco_excludes)) \
+    inclnolocationclasses=true \
+    exclclassloader=jdk.internal.reflect.DelegatingClassLoader \
+    append=false
 my_java_args := \
-    -javaagent:$(my_jacoco_agent_jar)=destfile=$(my_coverage_file),excludes=$(my_jacoco_excludes)
+    -javaagent:$(my_jacoco_agent_jar)=$(call normalize-comma-list, $(my_jacoco_agent_args))
 include $(my_robolectric_script_path)/robotest-internal.mk
 # Clear temporary variables
 my_failure_fatal :=
 my_jacoco_agent_jar :=
+my_jacoco_agent_args :=
 my_jacoco_excludes :=
 my_java_args :=
 my_robolectric_jars :=
