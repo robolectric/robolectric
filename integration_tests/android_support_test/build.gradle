@@ -28,6 +28,7 @@ dependencies {
     implementation("com.android.support.test:runner:1.0.2-alpha1")
 
     // Testing dependencies
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testImplementation("com.android.support.test:runner:1.0.2-alpha1")
     testImplementation("com.android.support.test:rules:1.0.2-alpha1")
     testImplementation("com.android.support.test.espresso:espresso-intents:3.0.2-alpha1")

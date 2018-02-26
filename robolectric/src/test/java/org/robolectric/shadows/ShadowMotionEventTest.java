@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.view.InputDevice;
 import android.view.MotionEvent;
+import android.view.MotionEvent.PointerCoords;
+import android.view.MotionEvent.PointerProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,5 +83,70 @@ public class ShadowMotionEventTest {
     shadowMotionEvent.setLocation(10.0f, 20.0f);
     assertEquals(10.0f, event.getX(), 0.0f);
     assertEquals(20.0f, event.getY(), 0.0f);
+  }
+
+  /** Test the expanded obtain method */
+  @Test
+  public void obtain_expanded() {
+    MotionEvent.PointerCoords[] pointerCoords = {new MotionEvent.PointerCoords()};
+    pointerCoords[0].clear();
+    pointerCoords[0].x = 25;
+    pointerCoords[0].y = 50;
+    pointerCoords[0].pressure = 0;
+    pointerCoords[0].size = 1;
+
+    MotionEvent.PointerProperties[] pointerProperties = {new PointerProperties()};
+    pointerProperties[0].id = 1;
+    pointerProperties[0].toolType = 3;
+
+    MotionEvent motionEvent =  MotionEvent.obtain(
+        50, // downTime
+        100, // evenTime
+        MotionEvent.ACTION_DOWN, // action
+        1, // pointerCount
+        pointerProperties,
+        pointerCoords,
+        1, // metaState
+        MotionEvent.BUTTON_PRIMARY, // buttonState,
+        15, // xPrecision,
+        15, // yPrecision
+        2, // deviceId
+        3, // edgeFlags
+        InputDevice.SOURCE_TOUCHSCREEN, // source,
+        4); // flags
+
+    assertThat(motionEvent.getDownTime()).isEqualTo(50);
+    assertThat(motionEvent.getEventTime()).isEqualTo(100);
+    assertThat(motionEvent.getAction()).isEqualTo(MotionEvent.ACTION_DOWN);
+    assertThat(motionEvent.getPointerCount()).isEqualTo(1);
+
+    PointerProperties actualPointerProps = new PointerProperties();
+    motionEvent.getPointerProperties(0, actualPointerProps);
+    assertThat(actualPointerProps.id).isEqualTo(pointerProperties[0].id);
+    assertThat(actualPointerProps.toolType).isEqualTo(pointerProperties[0].toolType);
+
+    PointerCoords actualPointerCoords = new PointerCoords();
+    motionEvent.getPointerCoords(0, actualPointerCoords);
+    assertThat(actualPointerCoords.pressure).isEqualTo(pointerCoords[0].pressure);
+    assertThat(actualPointerCoords.size).isEqualTo(pointerCoords[0].size);
+    assertThat(actualPointerCoords.x).isEqualTo(pointerCoords[0].x);
+    assertThat(actualPointerCoords.y).isEqualTo(pointerCoords[0].y);
+    assertThat(actualPointerCoords.orientation).isEqualTo(pointerCoords[0].orientation);
+    assertThat(actualPointerCoords.toolMajor).isEqualTo(pointerCoords[0].toolMajor);
+    assertThat(actualPointerCoords.toolMinor).isEqualTo(pointerCoords[0].toolMinor);
+    assertThat(actualPointerCoords.touchMajor).isEqualTo(pointerCoords[0].touchMajor);
+    assertThat(actualPointerCoords.touchMinor).isEqualTo(pointerCoords[0].touchMinor);
+
+    assertThat(motionEvent.getX()).isEqualTo(25.0f);
+
+
+    assertThat(motionEvent.getMetaState()).isEqualTo(1);
+    assertThat(motionEvent.getButtonState()).isEqualTo(MotionEvent.BUTTON_PRIMARY);
+    assertThat(motionEvent.getXPrecision()).isEqualTo(15);
+    assertThat(motionEvent.getYPrecision()).isEqualTo(15);
+    assertThat(motionEvent.getDeviceId()).isEqualTo(2);
+    assertThat(motionEvent.getEdgeFlags()).isEqualTo(3);
+    assertThat(motionEvent.getSource()).isEqualTo(InputDevice.SOURCE_TOUCHSCREEN);
+    assertThat(motionEvent.getFlags()).isEqualTo(4);
   }
 }

@@ -22,8 +22,8 @@ public class RoboUiController implements android.support.test.espresso.UiControl
       return false;
     }
     ViewRootImpl viewRoot = viewRoots.get(0);
-    return viewRoot.getView().dispatchTouchEvent(event);
-    // return false;
+    viewRoot.getView().dispatchTouchEvent(event);
+    return true;
   }
 
   @Override

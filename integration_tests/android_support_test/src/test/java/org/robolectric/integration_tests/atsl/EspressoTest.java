@@ -28,12 +28,14 @@ import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 
 /**
  * Simple tests to verify espresso APIs can be used on Robolectric.
  */
 @RunWith(AndroidJUnit4.class)
+@Config(sdk = 27)
 public final class EspressoTest {
 
   /**
