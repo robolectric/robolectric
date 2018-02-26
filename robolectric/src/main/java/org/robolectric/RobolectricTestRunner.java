@@ -258,9 +258,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
-          last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config);
+          children.add(new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config));
+          last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config, true);
           children.add(last);
-          children.add(new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest, sdkConfig, config, true));
         }
         if (last != null) {
           last.dontIncludeApiLevelInName();
@@ -630,7 +630,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       //   latest supported SDK for focused test runs
       return super.getName()
           + (includeApiLevelInName ? "[" + sdkConfig.getApiLevel() + "]" : "")
-          + (legacyResources ? "[legacy]" : "")
+          + (!legacyResources ? "[binary]" : "")
           ;
     }
 

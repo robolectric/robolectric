@@ -47,12 +47,7 @@ public class FileFsFile implements FsFile {
 
   @Override
   public FsFile[] listFiles(final Filter filter) {
-    return asFsFiles(file.listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        return filter.accept(new FileFsFile(pathname));
-      }
-    }));
+    return asFsFiles(file.listFiles(pathname -> filter.accept(new FileFsFile(pathname))));
   }
 
   @Override

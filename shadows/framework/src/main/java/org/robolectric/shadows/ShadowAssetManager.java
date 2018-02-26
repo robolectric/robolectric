@@ -5,15 +5,12 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -69,10 +66,9 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(value = AssetManager.class, hackyTerribleIgnore = true)
-public class ShadowAssetManager {
+public class ShadowAssetManager extends ShadowAssetManagerCommon {
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
   public static final int STYLE_DATA = 1;
@@ -100,12 +96,12 @@ public class ShadowAssetManager {
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
   private ResourceTable resourceTable;
 
+  public static ShadowAssetManagerCommon commonShadowOf(AssetManager assetManager) {
+    return (ShadowAssetManagerCommon) Shadow.extract(assetManager);
+  }
+
   public static ShadowAssetManager legacyShadowOf(AssetManager assetManager) {
-    Object extract = Shadow.extract(assetManager);
-    if (!(extract instanceof ShadowAssetManager)) {
-      System.out.println("huh? = " + extract);
-    }
-    return (ShadowAssetManager) extract;
+    return (ShadowAssetManager) Shadow.extract(assetManager);
   }
 
   ResTable_config config = new ResTable_config();
@@ -361,7 +357,7 @@ public class ShadowAssetManager {
   }
 
   private FsFile findAssetFile(String fileName) throws IOException {
-    for (FsFile assetDir : getAllAssetsDirectories()) {
+    for (FsFile assetDir : getAllAssetDirs()) {
       FsFile assetFile = assetDir.join(fileName);
       if (assetFile.exists()) {
         return assetFile;
@@ -414,7 +410,7 @@ public class ShadowAssetManager {
   public final String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
 
-    for (FsFile assetsDir : getAllAssetsDirectories()) {
+    for (FsFile assetsDir : getAllAssetDirs()) {
       FsFile file;
       if (path.isEmpty()) {
         file = assetsDir;
@@ -1036,7 +1032,7 @@ public class ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
-  Collection<FsFile> getAllAssetsDirectories() {
+  Collection<FsFile> getAllAssetDirs() {
     return assetDirs;
   }
 

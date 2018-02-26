@@ -34,6 +34,7 @@ import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
+
   private static final boolean kIsDebug = false;
 
   enum FileType {
@@ -50,8 +51,7 @@ public class CppAssetManager {
 
 
   // transliterated from https://cs.corp.google.com/android/frameworks/base/libs/androidfw/include/androidfw/AssetManager.h
-  private static class asset_path
-  {
+  private static class asset_path {
 //    asset_path() : path(""), type(kFileTypeRegular), idmap(""),
 //      isSystemOverlay(false), isSystemAsset(false) {}
 
@@ -100,19 +100,20 @@ public class CppAssetManager {
   private ResTable_config mConfig = new ResTable_config();
 
 
-//  static final boolean kIsDebug = false;
+  //  static final boolean kIsDebug = false;
 //  
   static final String kAssetsRoot = "assets";
   static final String kAppZipName = null; //"classes.jar";
   static final String kSystemAssets = "android.jar";
-//  static final char* kResourceCache = "resource-cache";
+  //  static final char* kResourceCache = "resource-cache";
 //  
   static final String kExcludeExtension = ".EXCLUDE";
 //  
 
   // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
   static final Asset kExcludedAsset = Asset.EXCLUDED_ASSET;
-//  
+
+  //
 //  static volatile int gCount = 0;
 //  
 //  final char* RESOURCES_FILENAME = "resources.arsc";
@@ -126,7 +127,7 @@ public class CppAssetManager {
 //  namespace {
 //  
   String8 idmapPathForPackagePath(final String8 pkgPath) {
-        // TODO: implement this?
+    // TODO: implement this?
     return pkgPath;
 //      final char* root = getenv("ANDROID_DATA");
 //      LOG_ALWAYS_FATAL_IF(root == null, "ANDROID_DATA not set");
@@ -209,68 +210,69 @@ public class CppAssetManager {
   }
 
   public boolean addAssetPath(
-          final String8 path, @Nullable  Ref<Integer> cookie, boolean appAsLib, boolean isSystemAsset) {
-      synchronized (mLock) {
+      final String8 path, @Nullable Ref<Integer> cookie, boolean appAsLib, boolean isSystemAsset) {
+    synchronized (mLock) {
 
-        asset_path ap = new asset_path();
+      asset_path ap = new asset_path();
 
-        String8 realPath = path;
-        if (kAppZipName != null) {
-          realPath.appendPath(kAppZipName);
-        }
-        ap.type = getFileType(realPath.string());
-        if (ap.type == FileType.kFileTypeRegular) {
-          ap.path = realPath;
-        } else {
-          ap.path = path;
-          ap.type = getFileType(path.string());
-          if (ap.type != kFileTypeDirectory && ap.type != FileType.kFileTypeRegular) {
-            ALOGW("Asset path %s is neither a directory nor file (type=%s).",
-                path.toString(), ap.type.name());
-            return false;
-          }
-        }
-
-        // Skip if we have it already.
-        for (int i = 0; i < mAssetPaths.size(); i++) {
-          if (mAssetPaths.get(i).path.equals(ap.path)) {
-            if (cookie != null) {
-                  cookie.set(i + 1);
-            }
-            return true;
-          }
-        }
-
-        ALOGV("In %s Asset %s path: %s", this,
-            ap.type.name(), ap.path.toString());
-
-        ap.isSystemAsset = isSystemAsset;
-        mAssetPaths.add(ap);
-
-        // new paths are always added at the end
-        if (cookie != null) {
-          cookie.set(mAssetPaths.size());
-        }
-
-        // TODO: implement this?
-  //#ifdef __ANDROID__
-        // Load overlays, if any
-        //asset_path oap;
-        //for (int idx = 0; mZipSet.getOverlay(ap.path, idx, & oap)
-        //  ; idx++){
-        //  oap.isSystemAsset = isSystemAsset;
-        //  mAssetPaths.add(oap);
-       // }
-  //#endif
-
-        if (mResources != null) {
-          appendPathToResTable(ap, appAsLib);
-        }
-
-        return true;
+      String8 realPath = path;
+      if (kAppZipName != null) {
+        realPath.appendPath(kAppZipName);
       }
+      ap.type = getFileType(realPath.string());
+      if (ap.type == FileType.kFileTypeRegular) {
+        ap.path = realPath;
+      } else {
+        ap.path = path;
+        ap.type = getFileType(path.string());
+        if (ap.type != kFileTypeDirectory && ap.type != FileType.kFileTypeRegular) {
+          ALOGW("Asset path %s is neither a directory nor file (type=%s).",
+              path.toString(), ap.type.name());
+          return false;
+        }
+      }
+
+      // Skip if we have it already.
+      for (int i = 0; i < mAssetPaths.size(); i++) {
+        if (mAssetPaths.get(i).path.equals(ap.path)) {
+          if (cookie != null) {
+            cookie.set(i + 1);
+          }
+          return true;
+        }
+      }
+
+      ALOGV("In %s Asset %s path: %s", this,
+          ap.type.name(), ap.path.toString());
+
+      ap.isSystemAsset = isSystemAsset;
+      mAssetPaths.add(ap);
+
+      // new paths are always added at the end
+      if (cookie != null) {
+        cookie.set(mAssetPaths.size());
+      }
+
+      // TODO: implement this?
+      //#ifdef __ANDROID__
+      // Load overlays, if any
+      //asset_path oap;
+      //for (int idx = 0; mZipSet.getOverlay(ap.path, idx, & oap)
+      //  ; idx++){
+      //  oap.isSystemAsset = isSystemAsset;
+      //  mAssetPaths.add(oap);
+      // }
+      //#endif
+
+      if (mResources != null) {
+        appendPathToResTable(ap, appAsLib);
+      }
+
+      return true;
+    }
   }
-//  
+
+  //
 //  boolean addOverlayPath(final String8 packagePath, Ref<Integer> cookie)
 //  {
 //      final String8 idmapPath = idmapPathForPackagePath(packagePath);
@@ -373,8 +375,8 @@ public class CppAssetManager {
 //  }
 //  
   public boolean addDefaultAssets(String systemAssetsPath) {
-      String8 path = new String8(systemAssetsPath);
-      return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
+    String8 path = new String8(systemAssetsPath);
+    return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
   }
 //  
 //  int nextAssetPath(final int cookie) final
@@ -394,18 +396,16 @@ public class CppAssetManager {
 //      return String8();
 //  }
 
-  void setLocaleLocked(final String locale)
-  {
+  void setLocaleLocked(final String locale) {
 //      if (mLocale != null) {
 //          delete[] mLocale;
 //      }
 
-      mLocale = /*strdupNew*/(locale);
-      updateResourceParamsLocked();
+    mLocale = /*strdupNew*/(locale);
+    updateResourceParamsLocked();
   }
 
-  public void setConfiguration(final ResTable_config config, final String locale)
-  {
+  public void setConfiguration(final ResTable_config config, final String locale) {
     synchronized (mLock) {
       mConfig = config;
       if (isTruthy(locale)) {
@@ -423,8 +423,7 @@ public class CppAssetManager {
   }
 
   @VisibleForTesting
-  public void getConfiguration(Ref<ResTable_config> outConfig)
-  {
+  public void getConfiguration(Ref<ResTable_config> outConfig) {
     synchronized (mLock) {
       outConfig.set(mConfig);
     }
@@ -442,39 +441,38 @@ public class CppAssetManager {
    * We should probably reject requests for "illegal" filenames, e.g. those
    * with illegal characters or "../" backward relative paths.
    */
-public Asset open(final String fileName, AccessMode mode) {
-  synchronized (mLock) {
+  public Asset open(final String fileName, AccessMode mode) {
+    synchronized (mLock) {
 
-    LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
 
-    String8 assetName = new String8(kAssetsRoot);
-    assetName.appendPath(fileName);
+      String8 assetName = new String8(kAssetsRoot);
+      assetName.appendPath(fileName);
       /*
        * For each top-level asset path, search for the asset.
        */
-    int i = mAssetPaths.size();
-    while (i > 0) {
-      i--;
-      ALOGV("Looking for asset '%s' in '%s'\n",
-          assetName.string(), mAssetPaths.get(i).path.string());
-      Asset pAsset = openNonAssetInPathLocked(assetName.string(), mode,
-          mAssetPaths.get(i));
-      if (pAsset != null) {
-        return Objects.equals(pAsset, kExcludedAsset) ? null : pAsset;
+      int i = mAssetPaths.size();
+      while (i > 0) {
+        i--;
+        ALOGV("Looking for asset '%s' in '%s'\n",
+            assetName.string(), mAssetPaths.get(i).path.string());
+        Asset pAsset = openNonAssetInPathLocked(assetName.string(), mode,
+            mAssetPaths.get(i));
+        if (pAsset != null) {
+          return Objects.equals(pAsset, kExcludedAsset) ? null : pAsset;
+        }
       }
-    }
 
-    return null;
+      return null;
+    }
   }
-}
 
   /*
    * Open a non-asset file as if it were an asset.
    *
    * The "fileName" is the partial path starting from the application name.
    */
-  public Asset openNonAsset(final String fileName, AccessMode mode, Ref<Integer> outCookie)
-  {
+  public Asset openNonAsset(final String fileName, AccessMode mode, Ref<Integer> outCookie) {
     synchronized (mLock) {
 //      AutoMutex _l(mLock);
 
@@ -492,7 +490,9 @@ public Asset open(final String fileName, AccessMode mode) {
         Asset pAsset = openNonAssetInPathLocked(
             fileName, mode, mAssetPaths.get(i));
         if (pAsset != null) {
-          if (outCookie != null) outCookie.set(i + 1);
+          if (outCookie != null) {
+            outCookie.set(i + 1);
+          }
           return pAsset != kExcludedAsset ? pAsset : null;
         }
       }
@@ -501,8 +501,7 @@ public Asset open(final String fileName, AccessMode mode) {
     }
   }
 
-  public Asset openNonAsset(final int cookie, final String fileName, AccessMode mode)
-  {
+  public Asset openNonAsset(final int cookie, final String fileName, AccessMode mode) {
     final int which = cookie - 1;
 
     synchronized (mLock) {
@@ -580,48 +579,48 @@ public Asset open(final String fileName, AccessMode mode) {
 //    }
 //    return false;
 
-      // skip those ap's that correspond to system overlays
-      if (ap.isSystemOverlay) {
-          return true;
-      }
+    // skip those ap's that correspond to system overlays
+    if (ap.isSystemOverlay) {
+      return true;
+    }
 
-      Asset ass = null;
-      ResTable sharedRes = null;
-      boolean shared = true;
-      boolean onlyEmptyResources = true;
+    Asset ass = null;
+    ResTable sharedRes = null;
+    boolean shared = true;
+    boolean onlyEmptyResources = true;
 //      ATRACE_NAME(ap.path.string());
-      Asset idmap = openIdmapLocked(ap);
-      int nextEntryIdx = mResources.getTableCount();
-      ALOGV("Looking for resource asset in '%s'\n", ap.path.string());
-      if (ap.type != kFileTypeDirectory) {
-          if (nextEntryIdx == 0) {
-              // The first item is typically the framework resources,
-              // which we want to avoid parsing every time.
-              sharedRes = mZipSet.getZipResourceTable(ap.path);
-              if (sharedRes != null) {
-                  // skip ahead the number of system overlay packages preloaded
-                  nextEntryIdx = sharedRes.getTableCount();
-              }
+    Asset idmap = openIdmapLocked(ap);
+    int nextEntryIdx = mResources.getTableCount();
+    ALOGV("Looking for resource asset in '%s'\n", ap.path.string());
+    if (ap.type != kFileTypeDirectory) {
+      if (nextEntryIdx == 0) {
+        // The first item is typically the framework resources,
+        // which we want to avoid parsing every time.
+        sharedRes = mZipSet.getZipResourceTable(ap.path);
+        if (sharedRes != null) {
+          // skip ahead the number of system overlay packages preloaded
+          nextEntryIdx = sharedRes.getTableCount();
+        }
+      }
+      if (sharedRes == null) {
+        ass = mZipSet.getZipResourceTableAsset(ap.path);
+        if (ass == null) {
+          ALOGV("loading resource table %s\n", ap.path.string());
+          ass = openNonAssetInPathLocked("resources.arsc",
+              AccessMode.ACCESS_BUFFER,
+              ap);
+          if (ass != null && ass != kExcludedAsset) {
+            ass = mZipSet.setZipResourceTableAsset(ap.path, ass);
           }
-          if (sharedRes == null) {
-              ass = mZipSet.getZipResourceTableAsset(ap.path);
-              if (ass == null) {
-                  ALOGV("loading resource table %s\n", ap.path.string());
-                  ass = openNonAssetInPathLocked("resources.arsc",
-                                               AccessMode.ACCESS_BUFFER,
-                                               ap);
-                  if (ass != null && ass != kExcludedAsset) {
-                      ass = mZipSet.setZipResourceTableAsset(ap.path, ass);
-                  }
-              }
+        }
 
-              if (nextEntryIdx == 0 && ass != null) {
-                  // If this is the first resource table in the asset
-                  // manager, then we are going to cache it so that we
-                  // can quickly copy it out for others.
-                  ALOGV("Creating shared resources for %s", ap.path.string());
-                  sharedRes = new ResTable();
-                  sharedRes.add(ass, idmap, nextEntryIdx + 1, false, false, false);
+        if (nextEntryIdx == 0 && ass != null) {
+          // If this is the first resource table in the asset
+          // manager, then we are going to cache it so that we
+          // can quickly copy it out for others.
+          ALOGV("Creating shared resources for %s", ap.path.string());
+          sharedRes = new ResTable();
+          sharedRes.add(ass, idmap, nextEntryIdx + 1, false, false, false);
 //  #ifdef __ANDROID__
 //                  final char* data = getenv("ANDROID_DATA");
 //                  LOG_ALWAYS_FATAL_IF(data == null, "ANDROID_DATA not set");
@@ -630,40 +629,40 @@ public Asset open(final String fileName, AccessMode mode) {
 //                  overlaysListPath.appendPath("overlays.list");
 //                  addSystemOverlays(overlaysListPath.string(), ap.path, sharedRes, nextEntryIdx);
 //  #endif
-                  sharedRes = mZipSet.setZipResourceTable(ap.path, sharedRes);
-              }
-          }
-      } else {
-          ALOGV("loading resource table %s\n", ap.path.string());
-          ass = openNonAssetInPathLocked("resources.arsc",
-                                       AccessMode.ACCESS_BUFFER,
-                                       ap);
-          shared = false;
+          sharedRes = mZipSet.setZipResourceTable(ap.path, sharedRes);
+        }
       }
+    } else {
+      ALOGV("loading resource table %s\n", ap.path.string());
+      ass = openNonAssetInPathLocked("resources.arsc",
+          AccessMode.ACCESS_BUFFER,
+          ap);
+      shared = false;
+    }
 
-      if ((ass != null || sharedRes != null) && ass != kExcludedAsset) {
-          ALOGV("Installing resource asset %s in to table %s\n", ass, mResources);
-          if (sharedRes != null) {
-              ALOGV("Copying existing resources for %s", ap.path.string());
-              mResources.add(sharedRes, ap.isSystemAsset);
-          } else {
-              ALOGV("Parsing resources for %s", ap.path.string());
-              mResources.add(ass, idmap, nextEntryIdx + 1, !shared, appAsLib, ap.isSystemAsset);
-          }
-          onlyEmptyResources = false;
+    if ((ass != null || sharedRes != null) && ass != kExcludedAsset) {
+      ALOGV("Installing resource asset %s in to table %s\n", ass, mResources);
+      if (sharedRes != null) {
+        ALOGV("Copying existing resources for %s", ap.path.string());
+        mResources.add(sharedRes, ap.isSystemAsset);
+      } else {
+        ALOGV("Parsing resources for %s", ap.path.string());
+        mResources.add(ass, idmap, nextEntryIdx + 1, !shared, appAsLib, ap.isSystemAsset);
+      }
+      onlyEmptyResources = false;
 
 //          if (!shared) {
 //              delete ass;
 //          }
-      } else {
-          ALOGV("Installing empty resources in to table %s\n", mResources);
-          mResources.addEmpty(nextEntryIdx + 1);
-      }
+    } else {
+      ALOGV("Installing empty resources in to table %s\n", mResources);
+      mResources.addEmpty(nextEntryIdx + 1);
+    }
 
 //      if (idmap != null) {
 //          delete idmap;
 //      }
-      return onlyEmptyResources;
+    return onlyEmptyResources;
   }
 
   final ResTable getResTable(boolean required) {
@@ -689,7 +688,7 @@ public Asset open(final String fileName, AccessMode mode) {
 
       boolean onlyEmptyResources = true;
       final int N = mAssetPaths.size();
-      for (int i=0; i<N; i++) {
+      for (int i = 0; i < N; i++) {
         boolean empty = appendPathToResTable(mAssetPaths.get(i), false);
         onlyEmptyResources = onlyEmptyResources && empty;
       }
@@ -700,7 +699,9 @@ public Asset open(final String fileName, AccessMode mode) {
         mResources = null;
       }
 
-      System.out.println("Loading resources took " + ((System.nanoTime() - startedAt) / 1000000.0) + "ms - " + mAssetPaths);
+      System.out.println(
+          "Loading resources took " + ((System.nanoTime() - startedAt) / 1000000.0) + "ms - "
+              + mAssetPaths);
       return mResources;
     }
   }
@@ -721,18 +722,17 @@ public Asset open(final String fileName, AccessMode mode) {
     res.setParameters(mConfig);
   }
 
-  Asset openIdmapLocked(asset_path ap)
-  {
-      Asset ass = null;
-      if (ap.idmap.length() != 0) {
-          ass = openAssetFromFileLocked(ap.idmap, AccessMode.ACCESS_BUFFER);
-        if (isTruthy(ass)) {
-          ALOGV("loading idmap %s\n", ap.idmap.string());
-        } else {
-          ALOGW("failed to load idmap %s\n", ap.idmap.string());
-        }
+  Asset openIdmapLocked(asset_path ap) {
+    Asset ass = null;
+    if (ap.idmap.length() != 0) {
+      ass = openAssetFromFileLocked(ap.idmap, AccessMode.ACCESS_BUFFER);
+      if (isTruthy(ass)) {
+        ALOGV("loading idmap %s\n", ap.idmap.string());
+      } else {
+        ALOGW("failed to load idmap %s\n", ap.idmap.string());
       }
-      return ass;
+    }
+    return ass;
   }
 
 //  void addSystemOverlays(final char* pathOverlaysList,
@@ -792,11 +792,11 @@ public Asset open(final String fileName, AccessMode mode) {
   }
 
   final ResTable getResources(boolean required) {
-      final ResTable rt = getResTable(required);
-      return rt;
+    final ResTable rt = getResTable(required);
+    return rt;
   }
 
-//  boolean isUpToDate()
+  //  boolean isUpToDate()
 //  {
 //      AutoMutex _l(mLock);
 //      return mZipSet.isUpToDate();
@@ -818,50 +818,49 @@ public Asset open(final String fileName, AccessMode mode) {
    * be used.
    */
   Asset openNonAssetInPathLocked(final String fileName, AccessMode mode,
-      final asset_path ap)
-  {
-      Asset pAsset = null;
+      final asset_path ap) {
+    Asset pAsset = null;
 
       /* look at the filesystem on disk */
-      if (ap.type == kFileTypeDirectory) {
-          String8 path = new String8(ap.path);
-          path.appendPath(fileName);
+    if (ap.type == kFileTypeDirectory) {
+      String8 path = new String8(ap.path);
+      path.appendPath(fileName);
 
-          pAsset = openAssetFromFileLocked(path, mode);
+      pAsset = openAssetFromFileLocked(path, mode);
 
-          if (pAsset == null) {
+      if (pAsset == null) {
               /* try again, this time with ".gz" */
-              path.append(".gz");
-              pAsset = openAssetFromFileLocked(path, mode);
-          }
+        path.append(".gz");
+        pAsset = openAssetFromFileLocked(path, mode);
+      }
 
-          if (pAsset != null) {
-              //printf("FOUND NA '%s' on disk\n", fileName);
-              pAsset.setAssetSource(path);
-          }
+      if (pAsset != null) {
+        //printf("FOUND NA '%s' on disk\n", fileName);
+        pAsset.setAssetSource(path);
+      }
 
       /* look inside the zip file */
-      } else {
-          String8 path = new String8(fileName);
+    } else {
+      String8 path = new String8(fileName);
 
           /* check the appropriate Zip file */
-          ZipFileRO pZip = getZipFileLocked(ap);
-          if (pZip != null) {
-              //printf("GOT zip, checking NA '%s'\n", (final char*) path);
-              ZipEntryRO entry = pZip.findEntryByName(path.string());
-              if (entry != null) {
-                  //printf("FOUND NA in Zip file for %s\n", appName ? appName : kAppCommon);
-                pAsset = openAssetFromZipLocked(pZip, entry, mode, path);
-                pZip.releaseEntry(entry);
-              }
-          }
-
-          if (pAsset != null) {
-              /* create a "source" name, for debug/display */
-              pAsset.setAssetSource(
-                      createZipSourceNameLocked(ap.path, new String8(), new String8(fileName)));
-          }
+      ZipFileRO pZip = getZipFileLocked(ap);
+      if (pZip != null) {
+        //printf("GOT zip, checking NA '%s'\n", (final char*) path);
+        ZipEntryRO entry = pZip.findEntryByName(path.string());
+        if (entry != null) {
+          //printf("FOUND NA in Zip file for %s\n", appName ? appName : kAppCommon);
+          pAsset = openAssetFromZipLocked(pZip, entry, mode, path);
+          pZip.releaseEntry(entry);
+        }
       }
+
+      if (pAsset != null) {
+              /* create a "source" name, for debug/display */
+        pAsset.setAssetSource(
+            createZipSourceNameLocked(ap.path, new String8(), new String8(fileName)));
+      }
+    }
 
     return pAsset;
   }
@@ -870,37 +869,36 @@ public Asset open(final String fileName, AccessMode mode) {
    * Create a "source name" for a file from a Zip archive.
    */
   String8 createZipSourceNameLocked(final String8 zipFileName,
-      final String8 dirName, final String8 fileName)
-  {
-      String8 sourceName = new String8("zip:");
-      sourceName.append(zipFileName.string());
-      sourceName.append(":");
-      if (dirName.length() > 0) {
-          sourceName.appendPath(dirName.string());
-      }
-      sourceName.appendPath(fileName.string());
-      return sourceName;
+      final String8 dirName, final String8 fileName) {
+    String8 sourceName = new String8("zip:");
+    sourceName.append(zipFileName.string());
+    sourceName.append(":");
+    if (dirName.length() > 0) {
+      sourceName.appendPath(dirName.string());
+    }
+    sourceName.appendPath(fileName.string());
+    return sourceName;
   }
 
   /*
    * Create a path to a loose asset (asset-base/app/rootDir).
    */
-  String8 createPathNameLocked(final asset_path ap, final String rootDir)
-  {
-      String8 path = new String8(ap.path);
-      if (rootDir != null) path.appendPath(rootDir);
-      return path;
+  String8 createPathNameLocked(final asset_path ap, final String rootDir) {
+    String8 path = new String8(ap.path);
+    if (rootDir != null) {
+      path.appendPath(rootDir);
+    }
+    return path;
   }
 
   /*
    * Return a pointer to one of our open Zip archives.  Returns null if no
    * matching Zip file exists.
    */
-  ZipFileRO getZipFileLocked(final asset_path ap)
-  {
-      ALOGV("getZipFileLocked() in %s\n", this);
+  ZipFileRO getZipFileLocked(final asset_path ap) {
+    ALOGV("getZipFileLocked() in %s\n", this);
 
-      return mZipSet.getZip(ap.path.string());
+    return mZipSet.getZip(ap.path.string());
   }
 
   /*
@@ -916,19 +914,18 @@ public Asset open(final String fileName, AccessMode mode) {
    * claims to be a ".gz" but isn't.
    */
   Asset openAssetFromFileLocked(final String8 pathName,
-      AccessMode mode)
-  {
-      Asset pAsset = null;
+      AccessMode mode) {
+    Asset pAsset = null;
 
-      if (pathName.getPathExtension().toLowerCase().equals(".gz")) {
-          //printf("TRYING '%s'\n", (final char*) pathName);
-          pAsset = Asset.createFromCompressedFile(pathName.string(), mode);
-      } else {
-          //printf("TRYING '%s'\n", (final char*) pathName);
-          pAsset = Asset.createFromFile(pathName.string(), mode);
-      }
+    if (pathName.getPathExtension().toLowerCase().equals(".gz")) {
+      //printf("TRYING '%s'\n", (final char*) pathName);
+      pAsset = Asset.createFromCompressedFile(pathName.string(), mode);
+    } else {
+      //printf("TRYING '%s'\n", (final char*) pathName);
+      pAsset = Asset.createFromFile(pathName.string(), mode);
+    }
 
-      return pAsset;
+    return pAsset;
   }
 
   /*
@@ -984,19 +981,18 @@ public Asset open(final String fileName, AccessMode mode) {
    *
    * Pass in "" for the root dir.
    */
-  public AssetDir openDir(final String dirName)
-  {
-      synchronized (mLock) {
+  public AssetDir openDir(final String dirName) {
+    synchronized (mLock) {
 
-        AssetDir pDir = null;
-          Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
+      AssetDir pDir = null;
+      Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
 
-        LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
-        Preconditions.checkNotNull(dirName);
+      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+      Preconditions.checkNotNull(dirName);
 
-        //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
+      //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
 
-        pDir = new AssetDir();
+      pDir = new AssetDir();
 
       /*
        * Scan the various directories, merging what we find into a single
@@ -1007,20 +1003,20 @@ public Asset open(final String fileName, AccessMode mode) {
        *
        * We start with Zip archives, then do loose files.
        */
-        pMergedInfo = new Ref<>(new SortedVector<AssetDir.FileInfo>());
+      pMergedInfo = new Ref<>(new SortedVector<AssetDir.FileInfo>());
 
-        int i = mAssetPaths.size();
-        while (i > 0) {
-          i--;
-          final asset_path ap = mAssetPaths.get(i);
-          if (ap.type == FileType.kFileTypeRegular) {
-            ALOGV("Adding directory %s from zip %s", dirName, ap.path.string());
-            scanAndMergeZipLocked(pMergedInfo, ap, kAssetsRoot, dirName);
-          } else {
-            ALOGV("Adding directory %s from dir %s", dirName, ap.path.string());
-            scanAndMergeDirLocked(pMergedInfo, ap, kAssetsRoot, dirName);
-          }
+      int i = mAssetPaths.size();
+      while (i > 0) {
+        i--;
+        final asset_path ap = mAssetPaths.get(i);
+        if (ap.type == FileType.kFileTypeRegular) {
+          ALOGV("Adding directory %s from zip %s", dirName, ap.path.string());
+          scanAndMergeZipLocked(pMergedInfo, ap, kAssetsRoot, dirName);
+        } else {
+          ALOGV("Adding directory %s from dir %s", dirName, ap.path.string());
+          scanAndMergeDirLocked(pMergedInfo, ap, kAssetsRoot, dirName);
         }
+      }
 
 //  #if 0
 //        printf("FILE LIST:\n");
@@ -1031,12 +1027,12 @@ public Asset open(final String fileName, AccessMode mode) {
 //        }
 //  #endif
 
-        pDir.setFileList(pMergedInfo.get());
-        return pDir;
-      }
+      pDir.setFileList(pMergedInfo.get());
+      return pDir;
+    }
   }
 
-//  
+  //
 //  /*
 //   * Open a directory in the non-asset namespace.
 //   *
@@ -1094,63 +1090,63 @@ public Asset open(final String fileName, AccessMode mode) {
    * Returns "false" if we found nothing to contribute.
    */
   boolean scanAndMergeDirLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
-      final asset_path ap, final String rootDir, final String dirName)
-  {
-      SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
-      assert(pMergedInfo != null);
+      final asset_path ap, final String rootDir, final String dirName) {
+    SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
+    assert (pMergedInfo != null);
 
-      //printf("scanAndMergeDir: %s %s %s\n", ap.path.string(), rootDir, dirName);
+    //printf("scanAndMergeDir: %s %s %s\n", ap.path.string(), rootDir, dirName);
 
-      String8 path = createPathNameLocked(ap, rootDir);
-      if (dirName.charAt(0) != '\0')
-          path.appendPath(dirName);
+    String8 path = createPathNameLocked(ap, rootDir);
+    if (dirName.charAt(0) != '\0') {
+      path.appendPath(dirName);
+    }
 
-      SortedVector<AssetDir.FileInfo> pContents = scanDirLocked(path);
-      if (pContents == null)
-          return false;
+    SortedVector<AssetDir.FileInfo> pContents = scanDirLocked(path);
+    if (pContents == null) {
+      return false;
+    }
 
-      // if we wanted to do an incremental cache fill, we would do it here
+    // if we wanted to do an incremental cache fill, we would do it here
 
       /*
        * Process "exclude" directives.  If we find a filename that ends with
        * ".EXCLUDE", we look for a matching entry in the "merged" set, and
        * remove it if we find it.  We also delete the "exclude" entry.
        */
-      int i, count, exclExtLen;
+    int i, count, exclExtLen;
 
-      count = pContents.size();
-      exclExtLen = kExcludeExtension.length();
-      for (i = 0; i < count; i++) {
-          final String name;
-          int nameLen;
+    count = pContents.size();
+    exclExtLen = kExcludeExtension.length();
+    for (i = 0; i < count; i++) {
+      final String name;
+      int nameLen;
 
-          name = pContents.itemAt(i).getFileName().string();
-          nameLen = name.length();
-          if (name.endsWith(kExcludeExtension))
-          {
-              String8 match = new String8(name, nameLen - exclExtLen);
-              int matchIdx;
+      name = pContents.itemAt(i).getFileName().string();
+      nameLen = name.length();
+      if (name.endsWith(kExcludeExtension)) {
+        String8 match = new String8(name, nameLen - exclExtLen);
+        int matchIdx;
 
-              matchIdx = AssetDir.FileInfo.findEntry(pMergedInfo, match);
-              if (matchIdx > 0) {
-                  ALOGV("Excluding '%s' [%s]\n",
-                      pMergedInfo.itemAt(matchIdx).getFileName().string(),
-                      pMergedInfo.itemAt(matchIdx).getSourceName().string());
-                  pMergedInfo.removeAt(matchIdx);
-              } else {
-                  //printf("+++ no match on '%s'\n", (final char*) match);
-              }
+        matchIdx = AssetDir.FileInfo.findEntry(pMergedInfo, match);
+        if (matchIdx > 0) {
+          ALOGV("Excluding '%s' [%s]\n",
+              pMergedInfo.itemAt(matchIdx).getFileName().string(),
+              pMergedInfo.itemAt(matchIdx).getSourceName().string());
+          pMergedInfo.removeAt(matchIdx);
+        } else {
+          //printf("+++ no match on '%s'\n", (final char*) match);
+        }
 
-              ALOGD("HEY: size=%d removing %d\n", (int)pContents.size(), i);
-              pContents.removeAt(i);
-              i--;        // adjust "for" loop
-              count--;    //  and loop limit
-          }
+        ALOGD("HEY: size=%d removing %d\n", (int) pContents.size(), i);
+        pContents.removeAt(i);
+        i--;        // adjust "for" loop
+        count--;    //  and loop limit
       }
+    }
 
-      mergeInfoLocked(pMergedInfoRef, pContents);
+    mergeInfoLocked(pMergedInfoRef, pContents);
 
-      return true;
+    return true;
   }
 
   /*
@@ -1164,26 +1160,27 @@ public Asset open(final String fileName, AccessMode mode) {
    *
    * Returns null if the specified directory doesn't exist.
    */
-  SortedVector<AssetDir.FileInfo> scanDirLocked(final String8 path)
-  {
+  SortedVector<AssetDir.FileInfo> scanDirLocked(final String8 path) {
 
-      String8 pathCopy = new String8(path);
-      SortedVector<AssetDir.FileInfo> pContents = null;
-      //DIR* dir;
+    String8 pathCopy = new String8(path);
+    SortedVector<AssetDir.FileInfo> pContents = null;
+    //DIR* dir;
     File dir;
-      FileType fileType;
+    FileType fileType;
 
-      ALOGV("Scanning dir '%s'\n", path.string());
+    ALOGV("Scanning dir '%s'\n", path.string());
 
-      dir = new File(path.string());
-      if (!dir.exists())
-          return null;
+    dir = new File(path.string());
+    if (!dir.exists()) {
+      return null;
+    }
 
-      pContents = new SortedVector<AssetDir.FileInfo>();
+    pContents = new SortedVector<AssetDir.FileInfo>();
 
-      for (File entry : dir.listFiles()) {
-          if (entry == null)
-              break;
+    for (File entry : dir.listFiles()) {
+      if (entry == null) {
+        break;
+      }
 
 //          if (strcmp(entry.d_name, ".") == 0 ||
 //              strcmp(entry.d_name, "..") == 0)
@@ -1197,23 +1194,24 @@ public Asset open(final String fileName, AccessMode mode) {
 //          else
 //              fileType = kFileTypeUnknown;
 //  #else
-          // stat the file
-          fileType = getFileType(pathCopy.appendPath(entry.getName()).string());
+      // stat the file
+      fileType = getFileType(pathCopy.appendPath(entry.getName()).string());
 //  #endif
 
-          if (fileType != FileType.kFileTypeRegular && fileType != kFileTypeDirectory)
-              continue;
-
-          AssetDir.FileInfo info = new AssetDir.FileInfo();
-          info.set(new String8(entry.getName()), fileType);
-          if (info.getFileName().getPathExtension().equalsIgnoreCase(".gz"))
-              info.setFileName(info.getFileName().getBasePath());
-          info.setSourceName(pathCopy.appendPath(info.getFileName().string()));
-          pContents.add(info);
+      if (fileType != FileType.kFileTypeRegular && fileType != kFileTypeDirectory) {
+        continue;
       }
 
+      AssetDir.FileInfo info = new AssetDir.FileInfo();
+      info.set(new String8(entry.getName()), fileType);
+      if (info.getFileName().getPathExtension().equalsIgnoreCase(".gz")) {
+        info.setFileName(info.getFileName().getBasePath());
+      }
+      info.setSourceName(pathCopy.appendPath(info.getFileName().string()));
+      pContents.add(info);
+    }
 
-      return pContents;
+    return pContents;
   }
 
   /*
@@ -1284,8 +1282,8 @@ public Asset open(final String fileName, AccessMode mode) {
 
 //      System.out.printf("Comparing %s in %s?\n", nameBuf.get(), dirName.string());
       if (!nameBuf.get().startsWith(dirName.string() + '/')) {
-          // not matching
-          continue;
+        // not matching
+        continue;
       }
       if (dirNameLen == 0 || nameBuf.get().charAt(dirNameLen) == '/') {
         int cp = 0;
@@ -1303,8 +1301,8 @@ public Asset open(final String fileName, AccessMode mode) {
           /* this is a file in the requested directory */
           String8 fileName = new String8(nameBuf.get()).getPathLeaf();
           if (fileName.string().isEmpty()) {
-              // ignore
-              continue;
+            // ignore
+            continue;
           }
           AssetDir.FileInfo info = new FileInfo();
           info.set(fileName, FileType.kFileTypeRegular);
@@ -1384,48 +1382,46 @@ public Asset open(final String fileName, AccessMode mode) {
        * (We should probably use a SortedVector interface that allows us to
        * just stuff items in, trusting us to maintain the sort order.)
        */
-      SortedVector<AssetDir.FileInfo> pNewSorted;
-      int mergeMax, contMax;
-      int mergeIdx, contIdx;
+    SortedVector<AssetDir.FileInfo> pNewSorted;
+    int mergeMax, contMax;
+    int mergeIdx, contIdx;
 
-      SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
-      pNewSorted = new SortedVector<AssetDir.FileInfo>();
-      mergeMax = pMergedInfo.size();
-      contMax = pContents.size();
-      mergeIdx = contIdx = 0;
+    SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
+    pNewSorted = new SortedVector<AssetDir.FileInfo>();
+    mergeMax = pMergedInfo.size();
+    contMax = pContents.size();
+    mergeIdx = contIdx = 0;
 
-      while (mergeIdx < mergeMax || contIdx < contMax) {
-          if (mergeIdx == mergeMax) {
+    while (mergeIdx < mergeMax || contIdx < contMax) {
+      if (mergeIdx == mergeMax) {
               /* hit end of "merge" list, copy rest of "contents" */
-              pNewSorted.add(pContents.itemAt(contIdx));
-              contIdx++;
-          } else if (contIdx == contMax) {
+        pNewSorted.add(pContents.itemAt(contIdx));
+        contIdx++;
+      } else if (contIdx == contMax) {
               /* hit end of "cont" list, copy rest of "merge" */
-              pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
-              mergeIdx++;
-          } else if (pMergedInfo.itemAt(mergeIdx) == pContents.itemAt(contIdx))
-          {
+        pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
+        mergeIdx++;
+      } else if (pMergedInfo.itemAt(mergeIdx) == pContents.itemAt(contIdx)) {
               /* items are identical, add newer and advance both indices */
-              pNewSorted.add(pContents.itemAt(contIdx));
-              mergeIdx++;
-              contIdx++;
-          } else if (pMergedInfo.itemAt(mergeIdx).isLessThan(pContents.itemAt(contIdx)))
-          {
+        pNewSorted.add(pContents.itemAt(contIdx));
+        mergeIdx++;
+        contIdx++;
+      } else if (pMergedInfo.itemAt(mergeIdx).isLessThan(pContents.itemAt(contIdx))) {
               /* "merge" is lower, add that one */
-              pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
-              mergeIdx++;
-          } else {
+        pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
+        mergeIdx++;
+      } else {
               /* "cont" is lower, add that one */
-              assert(pContents.itemAt(contIdx).isLessThan(pMergedInfo.itemAt(mergeIdx)));
-              pNewSorted.add(pContents.itemAt(contIdx));
-              contIdx++;
-          }
+        assert (pContents.itemAt(contIdx).isLessThan(pMergedInfo.itemAt(mergeIdx)));
+        pNewSorted.add(pContents.itemAt(contIdx));
+        contIdx++;
       }
+    }
 
       /*
        * Overwrite the "merged" list with the new stuff.
        */
-      pMergedInfoRef.set(pNewSorted);
+    pMergedInfoRef.set(pNewSorted);
 
 //  #if 0       // for Vector, rather than SortedVector
 //      int i, j;
@@ -1455,7 +1451,8 @@ public Asset open(final String fileName, AccessMode mode) {
    * ===========================================================================
    */
 
-  static class SharedZip /*: public RefBase */{
+  static class SharedZip /*: public RefBase */ {
+
     String mPath;
     ZipFileRO mZipFile;
     long mModWhen;
@@ -1508,21 +1505,18 @@ public Asset open(final String fileName, AccessMode mode) {
 
     }
 
-    ZipFileRO getZip()
-    {
+    ZipFileRO getZip() {
       return mZipFile;
     }
 
-    Asset getResourceTableAsset()
-    {
+    Asset getResourceTableAsset() {
       synchronized (gLock) {
         ALOGV("Getting from SharedZip %s resource asset %s\n", this, mResourceTableAsset);
         return mResourceTableAsset;
       }
     }
 
-    Asset setResourceTableAsset(Asset asset)
-    {
+    Asset setResourceTableAsset(Asset asset) {
       synchronized (gLock) {
         if (mResourceTableAsset == null) {
           // This is not thread safe the first time it is called, so
@@ -1535,14 +1529,12 @@ public Asset open(final String fileName, AccessMode mode) {
       return mResourceTableAsset;
     }
 
-    ResTable getResourceTable()
-    {
+    ResTable getResourceTable() {
       ALOGV("Getting from SharedZip %s resource table %s\n", this, mResourceTable);
       return mResourceTable;
     }
 
-    ResTable setResourceTable(ResTable res)
-    {
+    ResTable setResourceTable(ResTable res) {
       synchronized (gLock) {
         if (mResourceTable == null) {
           mResourceTable = res;
@@ -1594,7 +1586,7 @@ public Asset open(final String fileName, AccessMode mode) {
       String id = Integer.toString(System.identityHashCode(this), 16);
       return "SharedZip{mPath='" + mPath + "\', id=0x" + id + "}";
     }
-  };
+  }
 
 
   /*
@@ -1619,18 +1611,17 @@ public Asset open(final String fileName, AccessMode mode) {
      * Destructor.  Close any open archives.
      */
 //  ZipSet.~ZipSet(void)
-    protected void finalize()
-    {
+    protected void finalize() {
       int N = mZipFile.size();
-      for (int i = 0; i < N; i++)
+      for (int i = 0; i < N; i++) {
         closeZip(i);
+      }
     }
 
     /*
      * Close a Zip file and reset the entry.
      */
-    void closeZip(int idx)
-    {
+    void closeZip(int idx) {
       mZipFile.set(idx, null);
     }
 
@@ -1638,8 +1629,7 @@ public Asset open(final String fileName, AccessMode mode) {
     /*
      * Retrieve the appropriate Zip file from the set.
      */
-    synchronized ZipFileRO getZip(final String path)
-    {
+    synchronized ZipFileRO getZip(final String path) {
       int idx = getIndex(path);
       SharedZip zip = mZipFile.get(idx);
       if (zip == null) {
@@ -1649,8 +1639,7 @@ public Asset open(final String fileName, AccessMode mode) {
       return zip.getZip();
     }
 
-    synchronized Asset getZipResourceTableAsset(final String8 path)
-    {
+    synchronized Asset getZipResourceTableAsset(final String8 path) {
       int idx = getIndex(path.string());
       SharedZip zip = mZipFile.get(idx);
       if (zip == null) {
@@ -1667,8 +1656,7 @@ public Asset open(final String fileName, AccessMode mode) {
       return zip.setResourceTableAsset(asset);
     }
 
-    synchronized ResTable getZipResourceTable(final String8 path)
-    {
+    synchronized ResTable getZipResourceTable(final String8 path) {
       int idx = getIndex(path.string());
       SharedZip zip = mZipFile.get(idx);
       if (zip == null) {
@@ -1691,10 +1679,10 @@ public Asset open(final String fileName, AccessMode mode) {
      *
      * Returns something like "common/en-US-noogle.jar".
      */
-    static String8 getPathName(final String zipPath)
-    {
+    static String8 getPathName(final String zipPath) {
       return new String8(zipPath);
     }
+
     //
 //  boolean ZipSet.isUpToDate()
 //  {
@@ -1729,10 +1717,9 @@ public Asset open(final String fileName, AccessMode mode) {
    * "appName", "locale", and "vendor" should be set to null to indicate the
    * default directory.
    */
-    int getIndex(final String zip)
-    {
+    int getIndex(final String zip) {
       final int N = mZipPath.size();
-      for (int i=0; i<N; i++) {
+      for (int i = 0; i < N; i++) {
         if (Objects.equals(mZipPath.get(i), zip)) {
           return i;
         }
@@ -1741,7 +1728,7 @@ public Asset open(final String fileName, AccessMode mode) {
       mZipPath.add(zip);
       mZipFile.add(null);
 
-      return mZipPath.size()-1;
+      return mZipPath.size() - 1;
     }
 
   }
@@ -1754,20 +1741,24 @@ public Asset open(final String fileName, AccessMode mode) {
     }
   }
 
-  public static class AssetPath {
-    public final FsFile file;
-    public final boolean isSystem;
-
-    public AssetPath(FsFile file, boolean isSystem) {
-      this.file = file;
-      this.isSystem = isSystem;
-    }
-  }
-
   public List<AssetPath> getAssetPaths() {
     synchronized (mLock) {
       return mAssetPaths.stream()
-          .map(asset_path -> new AssetPath(Fs.newFile(asset_path.path.string()), asset_path.isSystemAsset))
+          .map(asset_path -> {
+            FsFile fsFile;
+            switch (asset_path.type) {
+              case kFileTypeDirectory:
+                fsFile = Fs.newFile(asset_path.path.string());
+                break;
+              case kFileTypeRegular:
+                fsFile = Fs.newJarFile(new File(asset_path.path.string()));
+                break;
+              default:
+                throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "
+                    + asset_path.path.string());
+            }
+            return new AssetPath(fsFile, asset_path.isSystemAsset);
+          })
           .collect(Collectors.toList());
     }
   }

@@ -28,6 +28,8 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
@@ -36,12 +38,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir;
+import org.robolectric.res.android.AssetPath;
 import org.robolectric.res.android.BagAttributeFinder;
 import org.robolectric.res.android.CppAssetManager;
-import org.robolectric.res.android.CppAssetManager.AssetPath;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.DynamicRefTable;
 import org.robolectric.res.android.Ref;
@@ -62,7 +65,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 // native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/core/jni/android_util_AssetManager.cpp
 @Implements(value = AssetManager.class, looseSignatures = true)
-public class ShadowArscAssetManager {
+public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
 
   {
     System.out.println("new AssetManager: USE_LEGACY = " + RuntimeEnvironment.useLegacyResources());
@@ -2068,31 +2071,31 @@ public class ShadowArscAssetManager {
 
   static ParcelFileDescriptor returnParcelFileDescriptor(Asset a, long[] outOffsets)
       throws FileNotFoundException {
-   Ref<Long> startOffset = new Ref<Long>(-1L);
-   Ref<Long> length = new Ref<Long>(-1L);;
-   FileDescriptor fd = a.openFileDescriptor(startOffset, length);
+    Ref<Long> startOffset = new Ref<Long>(-1L);
+    Ref<Long> length = new Ref<Long>(-1L);;
+    FileDescriptor fd = a.openFileDescriptor(startOffset, length);
 
-   if (fd == null) {
-     throw new FileNotFoundException(
-         "This file can not be opened as a file descriptor; it is probably compressed");
-   }
+    if (fd == null) {
+      throw new FileNotFoundException(
+          "This file can not be opened as a file descriptor; it is probably compressed");
+    }
 
-   long[] offsets = outOffsets;
-   if (offsets == null) {
-     // fd.close();
-     return null;
-   }
+    long[] offsets = outOffsets;
+    if (offsets == null) {
+      // fd.close();
+      return null;
+    }
 
-   offsets[0] = startOffset.get();
-   offsets[1] = length.get();
+    offsets[0] = startOffset.get();
+    offsets[1] = length.get();
 
-   // FileDescriptor fileDesc = jniCreateFileDescriptor(fd);
-   // if (fileDesc == null) {
-     // close(fd);
-     // return null;
-   // }
+    // FileDescriptor fileDesc = jniCreateFileDescriptor(fd);
+    // if (fileDesc == null) {
+    // close(fd);
+    // return null;
+    // }
 
-   // return newParcelFileDescriptor(fileDesc);
+    // return newParcelFileDescriptor(fileDesc);
     return new ParcelFileDescriptor(fd);
   }
 
@@ -2111,5 +2114,14 @@ public class ShadowArscAssetManager {
     }
 
     return compileTimeResTable;
+  }
+
+  @Override
+  Collection<FsFile> getAllAssetDirs() {
+    ArrayList<FsFile> fsFiles = new ArrayList<>();
+    for (AssetPath assetPath : cppAssetManager.getAssetPaths()) {
+      fsFiles.add(assetPath.file);
+    }
+    return fsFiles;
   }
 }

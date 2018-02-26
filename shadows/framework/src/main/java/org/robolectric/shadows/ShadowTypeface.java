@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.commonShadowOf;
 
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
@@ -55,7 +55,7 @@ public class ShadowTypeface {
 
   @Implementation
   public static Typeface createFromAsset(AssetManager mgr, String path) {
-    Collection<FsFile> assetDirs = legacyShadowOf(mgr).getAllAssetsDirectories();
+    Collection<FsFile> assetDirs = commonShadowOf(mgr).getAllAssetDirs();
     for (FsFile assetDir : assetDirs) {
       // check if in zip file too?
       FsFile[] files = assetDir.listFiles(new StartsWith(path));
@@ -65,7 +65,7 @@ public class ShadowTypeface {
       }
     }
 
-    throw new RuntimeException("Font not found at " + assetDirs);
+    throw new RuntimeException("Font asset not found " + path);
   }
 
   @Implementation
