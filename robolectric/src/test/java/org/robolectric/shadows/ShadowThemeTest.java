@@ -2,17 +2,18 @@ package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.buildActivity;
 
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
-import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.util.Xml;
+import android.view.View;
+import android.widget.Button;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowThemeTest {
@@ -30,81 +32,72 @@ public class ShadowThemeTest {
     resources = RuntimeEnvironment.application.getResources();
   }
 
-  @Test
-  public void withEmptyTheme_returnsEmptyAttributes() throws Exception {
-    assertThat(resources.newTheme().obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
+  @Test public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    activity.setTheme(R.style.Theme_Robolectric);
+    Button theButton = (Button) activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xffff0000);
   }
 
-  @Test public void shouldGetValuesFromAttributeReference() throws Exception {
+  @Test public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme() throws Exception {
+    ActivityController<TestActivityWithAnotherTheme> activityController = buildActivity(TestActivityWithAnotherTheme.class);
+    TestActivity activity = activityController.get();
+    activity.setTheme(R.style.Theme_Robolectric);
+    activityController.create();
+    Button theButton = (Button) activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xff00ff00);
+  }
+
+  @Test public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    Button theButton = (Button) activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xffff0000);
+  }
+
+  @Test public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() throws Exception {
+    TestActivity activity = buildActivity(TestActivity.class).create().get();
+    Button theButton = (Button) activity.findViewById(R.id.button);
+    ColorDrawable background = (ColorDrawable) theButton.getBackground();
+    assertThat(background.getColor()).isEqualTo(0xff00ff00);
+  }
+
+  @Test public void shouldResolveReferencesThatStartWithAQuestionMark() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    Button theButton = (Button) activity.findViewById(R.id.button);
+    assertThat(theButton.getMinWidth()).isEqualTo(8);
+    assertThat(theButton.getMinHeight()).isEqualTo(8);
+  }
+
+  @Test public void shouldApplyStylesFromResourceReference() throws Exception {
     Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleWithAttributeReference, false);
-
-    TypedValue value1 = new TypedValue();
-    TypedValue value2 = new TypedValue();
-    boolean resolved1 = theme.resolveAttribute(R.attr.anAttribute, value1, true);
-    boolean resolved2 = theme.resolveAttribute(R.attr.attributeReferencingAnAttribute, value2, true);
-
-    assertThat(resolved1).isTrue();
-    assertThat(resolved2).isTrue();
-    assertThat(value1.resourceId).isEqualTo(R.string.hello);
-    assertThat(value2.resourceId).isEqualTo(R.string.hello);
-    assertThat(value1.coerceToString()).isEqualTo(value2.coerceToString());
-  }
-
-  @Test public void withResolveRefsFalse_shouldNotResolveResource() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleWithReference, true);
-
-    TypedValue value = new TypedValue();
-    boolean resolved = theme.resolveAttribute(R.attr.stringReference, value, false);
-
-    assertThat(resolved).isTrue();
-    assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(value.data).isEqualTo(R.string.hello);
-  }
-
-  @Test public void withResolveRefsTrue_shouldResolveResource() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleWithReference, true);
-
-    TypedValue value = new TypedValue();
-    boolean resolved = theme.resolveAttribute(R.attr.stringReference, value, true);
-
-    assertThat(resolved).isTrue();
-    assertThat(value.type).isEqualTo(TypedValue.TYPE_STRING);
-    assertThat(value.resourceId).isEqualTo(R.string.hello);
-    assertThat(value.string).isEqualTo("Hello");
-  }
-
-  @Test public void failToResolveCircularReference() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleWithCircularReference, true);
-
-    TypedValue value = new TypedValue();
-    boolean resolved = theme.resolveAttribute(R.attr.circularReference, value, false);
-
-    assertThat(resolved).isFalse();
-  }
-
-  @Test public void canResolveAttrReferenceToDifferentPackage() throws Exception {
-    Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
+    TypedArray a = theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
 
-    TypedValue value = new TypedValue();
-    boolean resolved = theme.resolveAttribute(R.attr.styleReference, value, false);
-
-    assertThat(resolved).isTrue();
-    assertThat(value.type).isEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(value.data).isEqualTo(R.style.Widget_AnotherTheme_Button);
+    int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
+    assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
+    assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
   }
 
-  @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
+  @Test public void shouldApplyStylesFromAttributeReference() throws Exception {
+    Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_ThirdTheme, true);
+    TypedArray a = theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
+
+    int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
+    assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
+    assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
+  }
+
+  @Test public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric_EmptyParent, true);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
-  @Test public void applyStyle() throws Exception {
+  @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.SimpleParent, true);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
@@ -282,58 +275,11 @@ public class ShadowThemeTest {
     }
   }
 
-  @Test
-  public void shouldFindInheritedAndroidAttributeInTheme() throws Exception {
-    RuntimeEnvironment.application.setTheme(R.style.Theme_AnotherTheme);
-    Resources.Theme theme1 = RuntimeEnvironment.application.getTheme();
-
-//    Resources.Theme theme1 = resources.newTheme();
-//    theme1.setTo(RuntimeEnvironment.application.getTheme());
-//    theme1.applyStyle(R.style.Theme_AnotherTheme, false);
-
-    TypedArray typedArray = theme1.obtainStyledAttributes(
-        new int[]{R.attr.typeface, android.R.attr.buttonStyle});
-    assertThat(typedArray.hasValue(0)).isTrue(); // animalStyle
-    assertThat(typedArray.hasValue(1)).isTrue(); // layout_height
-  }
-
   public static class TestActivity extends Activity {
     @Override protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.styles_button_layout);
     }
-  }
-
-  @Test
-  public void setTo_stylesShouldBeApplyableAcrossResources() throws Exception {
-    Resources.Theme themeFromSystem = Resources.getSystem().newTheme();
-    themeFromSystem.applyStyle(android.R.style.Theme_Light, true);
-
-    Resources.Theme themeFromApp = RuntimeEnvironment.application.getResources().newTheme();
-    themeFromApp.applyStyle(android.R.style.Theme, true);
-
-    // themeFromSystem is Theme_Light, which has a white background...
-    assertThat(themeFromSystem.obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
-        .isEqualTo(Color.WHITE);
-
-    // themeFromApp is Theme, which has a black background...
-    assertThat(themeFromApp.obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
-        .isEqualTo(Color.BLACK);
-
-    themeFromApp.setTo(themeFromSystem);
-
-    // themeFromApp now has style values from themeFromSystem, so now it has a black background...
-    assertThat(themeFromApp.obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
-        .isEqualTo(Color.WHITE);
-  }
-
-  @Test
-  public void styleResolutionShouldIgnoreThemes() throws Exception {
-    Resources.Theme themeFromSystem = resources.newTheme();
-    themeFromSystem.applyStyle(android.R.style.Theme_DeviceDefault, true);
-    themeFromSystem.applyStyle(R.style.ThemeWithSelfReferencingTextAttr, true);
-    assertThat(themeFromSystem.obtainStyledAttributes(new int[]{android.R.attr.textAppearance})
-        .getResourceId(0, 0)).isEqualTo(0);
   }
 
   @Test
@@ -362,19 +308,13 @@ public class ShadowThemeTest {
     assertThat(typedArray.getString(0)).isEqualTo("string 1 from style A");
   }
 
-  @Test public void obtainStyledAttributes_shouldFindAttributeInDefaultStyleBeforeTheme() throws Exception {
-    Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleB, false); // string1 is also defined in StyleB but default style gets precedence over themes
-
-    TypedArray typedArray = theme.obtainStyledAttributes(R.style.StyleA, new int[]{R.attr.string1});
-    assertThat(typedArray.getString(0)).isEqualTo("string 1 from style A");
+  public static class TestActivityWithAnotherTheme extends TestActivity {
   }
 
-  @Test public void shouldApplyFromStyleAttributes() throws Exception {
-    // TODO: Instead of using activity create a AttributeSet with a style attribute to keep the test more focused.
-//    TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
-//    View button = activity.findViewById(R.id.button);
-//    assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
+  @Test public void shouldApplyFromStyleAttribute() throws Exception {
+    TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
+    View button = activity.findViewById(R.id.button);
+    assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
   }
 
   public static class TestWithStyleAttrActivity extends Activity {

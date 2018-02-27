@@ -485,7 +485,11 @@ public class ShadowPackageManager {
     }
   }
 
-  public void addPackage(Package appPackage) {
+  /**
+   * Internal use only.
+   * @param appPackage
+   */
+  public void addPackageInternal(Package appPackage) {
     int flags =
         GET_ACTIVITIES
             | GET_RECEIVERS

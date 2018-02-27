@@ -66,7 +66,7 @@ public class ParallelUniverseTest {
   @Before
   public void setUp() throws InitializationError {
     pu = new ParallelUniverse();
-    pu.setSdkConfig(new SdkConfig(Build.VERSION.SDK_INT));
+    pu.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
   }
 
   public void dummyMethodForTest() {}

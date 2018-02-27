@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -66,7 +67,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> restart() {
-    invokeWhilePaused("performRestart");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performRestart");
+    }
     return this;
   }
 
@@ -86,7 +89,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> resume() {
-    invokeWhilePaused("performResume");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performResume");
+    }
     return this;
   }
 
@@ -111,6 +116,15 @@ public class ActivityController<T extends Activity> extends ComponentController<
       ((ShadowViewRootImpl) extract(root)).callDispatchResized();
     }
 
+    return this;
+  }
+
+  public ActivityController<T> windowFocusChanged(boolean hasFocus) {
+    ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
+
+    ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
+        from(boolean.class, hasFocus), /* hasFocus */
+        from(boolean.class, false) /* inTouchMode */);
     return this;
   }
 
@@ -288,7 +302,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          }
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onPostResume");
           // TODO: Call visible() too.
         }

@@ -11,10 +11,12 @@ import android.util.MergedConfiguration;
 import android.view.Display;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
+import java.util.ArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -95,7 +97,7 @@ public class ShadowViewRootImpl {
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false));
-    } else if (apiLevel >= Build.VERSION_CODES.O) {
+    } else if (apiLevel <= Build.VERSION_CODES.O_MR1) {
       ReflectionHelpers.callInstanceMethod(
           ViewRootImpl.class,
           component,
@@ -125,5 +127,13 @@ public class ShadowViewRootImpl {
           .getSystemService(Context.WINDOW_SERVICE);
       return windowManager.getDefaultDisplay();
     }
+  }
+
+  @Resetter
+  public static void reset() {
+     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sRunQueues", new ThreadLocal<>());
+     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sFirstDrawHandlers", new ArrayList<>());
+     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sFirstDrawComplete", false);
+     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sConfigCallbacks", new ArrayList<>());
   }
 }

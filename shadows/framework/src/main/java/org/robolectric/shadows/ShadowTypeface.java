@@ -96,6 +96,7 @@ public class ShadowTypeface {
     return null;
   }
 
+
   @Resetter
   synchronized public static void reset() {
     FONTS.clear();

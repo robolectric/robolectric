@@ -4,19 +4,25 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.view.Display;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowDisplay;
+import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunner.class) @Config(sdk = Config.ALL_SDKS)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = Config.ALL_SDKS)
 public class LoadWeirdClassesTest {
-  @Test @Config(sdk = KITKAT)
+
+  @Test
+  @Config(sdk = KITKAT)
   public void shouldLoadDisplay() throws Exception {
-    ReflectionHelpers.callInstanceMethod(Display.class, ShadowDisplay.getDefaultDisplay(), "getDisplayAdjustments");
+    ReflectionHelpers.callInstanceMethod(Display.class, ShadowDisplay.getDefaultDisplay(),
+        "getDisplayAdjustments");
   }
 
   @Test
@@ -27,5 +33,12 @@ public class LoadWeirdClassesTest {
   @Test
   public void shadowOf_shouldCompile() throws Exception {
     shadowOf(Robolectric.setupActivity(Activity.class));
+  }
+
+  @Test
+  public void packageManager() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "test.package";
+    shadowOf(RuntimeEnvironment.application.getPackageManager()).addPackage(packageInfo);
   }
 }
