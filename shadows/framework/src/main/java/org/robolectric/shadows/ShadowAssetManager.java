@@ -996,6 +996,13 @@ public class ShadowAssetManager extends ShadowAssetManagerCommon {
             Integer referenceResId = null;
             if (AttributeResource.isResourceReference(attributeValue)) {
               referenceResId = attributeSet.getAttributeResourceValue(i, -1);
+              // binary AttributeSet references have a string value of @resId rather than fully qualified resource name
+              if (referenceResId != 0) {
+                ResName refResName = resourceTable.getResName(referenceResId);
+                if (refResName != null) {
+                  attributeValue = "@" + refResName.getFullyQualifiedName();
+                }
+              }
             }
             return new AttributeResource(resName, attributeValue, "fixme!!!", referenceResId);
           }

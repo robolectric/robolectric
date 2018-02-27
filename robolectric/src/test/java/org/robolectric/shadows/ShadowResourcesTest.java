@@ -16,7 +16,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
-import java.io.File;
 import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,21 +43,6 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void getText_withLayoutId() throws Exception {
-    // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a String resource type
-    // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
-    // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
-    if (isLegacyAssetManager()) {
-      assertThat(resources.getText(R.layout.different_screen_sizes, "value"))
-          .endsWith("res" + File.separator + "layout-xlarge" + File.separator + "different_screen_sizes.xml");
-    } else {
-      assertThat(resources.getText(R.layout.different_screen_sizes, "value"))
-          .endsWith("res" + File.separator + "layout-xlarge-v4" + File.separator + "different_screen_sizes.xml");
-    }
-  }
-
-  @Test
-  //@Config(sdk = 16) // todo: unpin
   public void getDimension() throws Exception {
     DisplayMetrics dm = RuntimeEnvironment.application.getResources().getDisplayMetrics();
     assertThat(dm.density).isEqualTo(1.0f);
@@ -223,7 +207,7 @@ public class ShadowResourcesTest {
         .obtainAttributes(attributes, new int[]{android.R.attr.height,
             android.R.attr.width, android.R.attr.title});
 
-    assertThat(typedArray.getDimension(0, 0)).isEqualTo(240f);
+    assertThat(typedArray.getDimension(0, 0)).isEqualTo(160f);
     assertThat(typedArray.getDimension(1, 0)).isEqualTo(12f);
     assertThat(typedArray.getString(2)).isEqualTo("A title!");
     typedArray.recycle();
@@ -279,57 +263,20 @@ public class ShadowResourcesTest {
     // resource ID values in the AttributeSet before checking the theme.
 
     AttributeSet attributes = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.viewportWidth, "@integer/test_integer1")
-        .addAttribute(android.R.attr.viewportHeight, "@integer/test_integer2")
+        .addAttribute(android.R.attr.viewportWidth, "@dimen/dimen20px")
+        .addAttribute(android.R.attr.viewportHeight, "@dimen/dimen30px")
         .build();
 
     TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
         android.R.attr.viewportWidth,
         android.R.attr.viewportHeight
     }, 0, 0);
-    assertThat(typedArray.getFloat(0, 0)).isEqualTo(2000);
-    assertThat(typedArray.getFloat(1, 0)).isEqualTo(9);
+    assertThat(typedArray.getDimension(0, 0)).isEqualTo(20f);
+    assertThat(typedArray.getDimension(1, 0)).isEqualTo(30f);
     typedArray.recycle();
   }
 
   @Test
-  public void getValueShouldClearTypedArrayBetweenCalls() throws Exception {
-    if (!isLegacyAssetManager()) {
-      return;
-    }
-    TypedValue outValue = new TypedValue();
-
-    resources.getValue(R.string.hello, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
-    assertThat(outValue.string).isEqualTo(resources.getString(R.string.hello));
-    assertThat(outValue.data).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
-    assertThat(outValue.assetCookie).isNotEqualTo(0);
-
-    resources.getValue(R.color.blue, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
-    assertThat(outValue.data).isEqualTo(ResourceHelper.getColor("#0000ff"));
-    assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
-
-    resources.getValue(R.integer.loneliest_number, outValue, true);
-    if (isLegacyAssetManager()) {
-      assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
-    } else {
-      // wtf?
-      assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
-    }
-    assertThat(outValue.data).isEqualTo(1);
-    assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
-
-    resources.getValue(R.bool.true_bool_value, outValue, true);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
-    assertThat(outValue.data).isEqualTo(1);
-    assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
-  }
-
-  @Test @Config(sdk = 25)
   public void getXml() throws Exception {
     XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
     assertThat(xmlResourceParser).isNotNull();

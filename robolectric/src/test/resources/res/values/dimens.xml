@@ -9,4 +9,7 @@
   <dimen name="test_in_dimen">99in</dimen>
 
   <dimen name="ref_to_px_dimen">@dimen/test_px_dimen</dimen>
+
+  <dimen name="dimen20px">20px</dimen>
+  <dimen name="dimen30px">30px</dimen>
 </resources>
