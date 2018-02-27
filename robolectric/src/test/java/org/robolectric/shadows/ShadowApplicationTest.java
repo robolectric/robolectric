@@ -167,6 +167,7 @@ public class ShadowApplicationTest {
     assertThat(systemService).isSameAs(RuntimeEnvironment.application.getSystemService(name));
   }
 
+  @Test
   public void bindServiceShouldCallOnServiceConnectedWithDefaultValues() {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
