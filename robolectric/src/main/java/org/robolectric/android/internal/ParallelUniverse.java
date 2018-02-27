@@ -150,7 +150,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     setUpPackageStorage(applicationInfo);
 
     if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
-      applicationInfo.publicSourceDir = ReflectionHelpers.getField(parsedPackage, "mPath");
+      String sourcePath = ReflectionHelpers.getField(parsedPackage, "mPath");
+      applicationInfo.publicSourceDir = sourcePath;
+      applicationInfo.sourceDir = sourcePath;
     } else {
       applicationInfo.publicSourceDir = parsedPackage.codePath;
     }

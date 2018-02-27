@@ -15,6 +15,7 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.PatternMatcher.PATTERN_LITERAL;
 import static android.os.PatternMatcher.PATTERN_PREFIX;
 import static android.os.PatternMatcher.PATTERN_SIMPLE_GLOB;
@@ -64,6 +65,7 @@ import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.TempDirectory;
 
 /** Creates a {@link PackageInfo} from a {@link AndroidManifest} */
 public class LegacyManifestParser {
@@ -261,6 +263,16 @@ public class LegacyManifestParser {
         service.intents.add(outInfo);
       }
       pkg.services.add(service);
+    }
+
+    String codePath = RuntimeEnvironment.getTempDirectory()
+        .createIfNotExists(pkg.packageName + "-codePath")
+        .toAbsolutePath()
+        .toString();
+    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+      pkg.codePath = codePath;
+    } else {
+      ReflectionHelpers.setField(Package.class, pkg, "mPath", codePath);
     }
 
     return pkg;

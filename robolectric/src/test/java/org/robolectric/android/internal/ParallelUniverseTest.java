@@ -175,7 +175,7 @@ public class ParallelUniverseTest {
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
     assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("notlong-notround-large-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
+        .contains("large-notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
