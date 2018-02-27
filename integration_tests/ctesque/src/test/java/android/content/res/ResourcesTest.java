@@ -841,11 +841,16 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void stringWithSpaces() throws Exception {
     // this differs from actual Android behavior, which collapses whitespace as "Up to 25 USD"
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
-        .isEqualTo("Up to 25   USD");
+        .isEqualTo("Up to 25 USD");
+  }
+
+  @Test
+  public void internalWhiteSpaceShouldBeCollapsed() throws Exception {
+    assertThat(resources.getString(R.string.internal_whitespace_blocks)).isEqualTo("Whitespace in the middle");
+    assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
   }
 
   @Test

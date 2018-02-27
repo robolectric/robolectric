@@ -255,11 +255,4 @@ public class ShadowResourcesTest {
         (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
   }
-
-  @Test
-  public void stringWithSpaces() throws Exception {
-    // this differs from actual Android behavior, which collapses whitespace as "Up to 25 USD"
-    assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
-        .isEqualTo("Up to 25   USD");
-  }
 }
