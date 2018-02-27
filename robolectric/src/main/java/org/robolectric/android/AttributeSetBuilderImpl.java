@@ -281,7 +281,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
           String value = entry.getValue();
           DataType type;
-          int valueInt = 0;
+          int valueInt;
 
           if (attrResName != null) {
             TypedValue outValue = parse(attrId, attrResName, value, packageName);

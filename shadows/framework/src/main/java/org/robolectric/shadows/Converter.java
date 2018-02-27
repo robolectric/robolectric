@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.util.TypedValue;
 import java.util.ArrayList;
 import java.util.List;
@@ -265,11 +266,15 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-      typedValue.type = TypedValue.TYPE_INT_HEX;
-        typedValue.data = findValueFor(data);
-      typedValue.assetCookie = 0;
-      typedValue.string = null;
-      return true;
+        typedValue.type = TypedValue.TYPE_INT_HEX;
+        try {
+          typedValue.data = findValueFor(data);
+        } catch (Resources.NotFoundException e) {
+          typedValue.data = Integer.decode(data);
+        }
+        typedValue.assetCookie = 0;
+        typedValue.string = null;
+        return true;
       } catch (Exception e) {
         return false;
       }
@@ -283,10 +288,16 @@ public class Converter<T> {
 
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
-      try {
       int flags = 0;
-      for (String key : data.split("\\|")) {
+
+      try {
+        for (String key : data.split("\\|")) {
           flags |= findValueFor(key);
+        }
+      } catch (Resources.NotFoundException e) {
+        flags = Integer.decode(data);
+      } catch (Exception e) {
+        return false;
       }
 
       typedValue.type = TypedValue.TYPE_INT_HEX;
@@ -294,9 +305,6 @@ public class Converter<T> {
       typedValue.assetCookie = 0;
       typedValue.string = null;
       return true;
-      } catch (Exception e) {
-        return false;
-      }
     }
   }
 
@@ -314,7 +322,7 @@ public class Converter<T> {
         if (attrData.isValue(key)) {
           valueFor = key;
         } else {
-          throw new RuntimeException("no value found for " + key);
+          throw new Resources.NotFoundException("no value found for " + key);
         }
       }
       return Util.parseInt(valueFor);

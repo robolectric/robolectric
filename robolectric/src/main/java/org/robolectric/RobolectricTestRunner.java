@@ -351,7 +351,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     System.out.println(
         "[Robolectric] " + roboMethod.getDeclaringClass().getName() + "."
-            + roboMethod.getMethod().getName() + ": sdk=" + sdkConfig.getApiLevel());
+            + roboMethod.getMethod().getName() + ": sdk=" + sdkConfig.getApiLevel()
+            + "; resources=" + (roboMethod.legacyResources ? "legacy" : "binary"));
 
     roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
     Class<TestLifecycle> cl = sdkEnvironment.bootstrappedClass(getTestLifecycleClass());
