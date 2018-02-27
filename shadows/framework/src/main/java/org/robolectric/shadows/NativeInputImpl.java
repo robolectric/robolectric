@@ -219,7 +219,7 @@ public class NativeInputImpl {
 //     }
 //     return -1;
 //   }
-//   void MotionEvent::offsetLocation(float xOffset, float yOffset) {
+//   void MotionEvent::shaation(float xOffset, float yOffset) {
 //     mXOffset += xOffset;
 //     mYOffset += yOffset;
 //   }

@@ -61,11 +61,9 @@ public class ShadowMotionEvent {
       long downTimeNanos, long eventTimeNanos,
       int pointerCount, PointerProperties[] pointerPropertiesObjArray, PointerCoords[] pointerCoordsObjArray) {
 
-    if (!validatePointerCount(pointerCount)
-        || !validatePointerPropertiesArray(pointerPropertiesObjArray, pointerCount)
-        || !validatePointerCoordsObjArray(pointerCoordsObjArray, pointerCount)) {
-      return 0;
-    }
+    validatePointerCount(pointerCount);
+    validatePointerPropertiesArray(pointerPropertiesObjArray, pointerCount);
+    validatePointerCoordsObjArray(pointerCoordsObjArray, pointerCount);
 
     NativeInput.MotionEvent event;
     if (nativePtr > 0) {
@@ -113,19 +111,19 @@ public class ShadowMotionEvent {
 //     jfieldID toolType;
 //   } gPointerPropertiesClassInfo;
 // // ----------------------------------------------------------------------------
-//   MotionEvent* getNativePtr(JNIEnv* env, jobject eventObj) {
+//   MotionEvent* getNativePtr(jobject eventObj) {
 //     if (!eventObj) {
 //       return NULL;
 //     }
 //     return reinterpret_cast<MotionEvent*>(
 //         env.GetLongField(eventObj, gMotionEventClassInfo.mNativePtr));
 //   }
-//   static void setNativePtr(JNIEnv* env, jobject eventObj,
+//   static void setNativePtr(jobject eventObj,
 //       MotionEvent* event) {
 //     env.SetLongField(eventObj, gMotionEventClassInfo.mNativePtr,
 //         reinterpret_cast<long>(event));
 //   }
-//   jobject obtainAsCopy(JNIEnv* env, const MotionEvent* event) {
+//   jobject obtainAsCopy(const MotionEvent* event) {
 //     jobject eventObj = env.CallStaticObjectMethod(gMotionEventClassInfo.clazz,
 //         gMotionEventClassInfo.obtain);
 //     if (env.ExceptionCheck() || !eventObj) {
@@ -142,7 +140,7 @@ public class ShadowMotionEvent {
 //     destEvent.copyFrom(event, true);
 //     return eventObj;
 //   }
-//   status_t recycle(JNIEnv* env, jobject eventObj) {
+//   status_t recycle(jobject eventObj) {
 //     env.CallVoidMethod(eventObj, gMotionEventClassInfo.recycle);
 //     if (env.ExceptionCheck()) {
 //       ALOGW("An exception occurred while recycling a motion event.");
@@ -156,59 +154,39 @@ public class ShadowMotionEvent {
 
   private static final int HISTORY_CURRENT = -0x80000000;
 
-  private static boolean validatePointerCount(int pointerCount) {
+  private static void validatePointerCount(int pointerCount) {
     checkState(pointerCount >= 1, "pointerCount must be at least 1");
-    return true;
   }
 
-  private static boolean validatePointerPropertiesArray(PointerProperties[] pointerPropertiesObjArray,
+  private static void validatePointerPropertiesArray(PointerProperties[] pointerPropertiesObjArray,
       int pointerCount) {
     checkNotNull(pointerPropertiesObjArray, "pointerProperties array must not be null");
     checkState(pointerPropertiesObjArray.length >= pointerCount,
           "pointerProperties array must be large enough to hold all pointers");
-    return true;
   }
 
-  private static boolean validatePointerCoordsObjArray(PointerCoords[] pointerCoordsObjArray,
+  private static void validatePointerCoordsObjArray(PointerCoords[] pointerCoordsObjArray,
       int pointerCount) {
     checkNotNull(pointerCoordsObjArray,
           "pointerCoords array must not be null");
     checkState(pointerCoordsObjArray.length >= pointerCount, "pointerCoords array must be large enough to hold all pointers");
-    return true;
   }
 
-//   static bool validatePointerIndex(JNIEnv* env, int pointerIndex, size_t pointerCount) {
-//     if (pointerIndex < 0 || size_t(pointerIndex) >= pointerCount) {
-//       jniThrowException(env, "java/lang/IllegalArgumentException",
-//           "pointerIndex out of range");
-//       return false;
-//     }
-//     return true;
-//   }
-//   static bool validateHistoryPos(JNIEnv* env, int historyPos, size_t historySize) {
-//     if (historyPos < 0 || size_t(historyPos) >= historySize) {
-//       jniThrowException(env, "java/lang/IllegalArgumentException",
-//           "historyPos out of range");
-//       return false;
-//     }
-//     return true;
-//   }
-//   static bool validatePointerCoords(JNIEnv* env, jobject pointerCoordsObj) {
-//     if (!pointerCoordsObj) {
-//       jniThrowException(env, "java/lang/IllegalArgumentException",
-//           "pointerCoords must not be null");
-//       return false;
-//     }
-//     return true;
-//   }
-//   static bool validatePointerProperties(JNIEnv* env, jobject pointerPropertiesObj) {
-//     if (!pointerPropertiesObj) {
-//       jniThrowException(env, "java/lang/IllegalArgumentException",
-//           "pointerProperties must not be null");
-//       return false;
-//     }
-//     return true;
-//   }
+  static void validatePointerIndex(int pointerIndex, int pointerCount) {
+    checkState(pointerIndex >=0 && pointerIndex < pointerCount, 
+          "pointerIndex out of range");
+  }
+  static void validateHistoryPos(int historyPos, int historySize) {
+    checkState(historyPos >= 0 && historyPos < historySize,
+          "historyPos out of range");
+  }
+  static void validatePointerCoords(PointerCoords pointerCoordsObj) {
+    checkNotNull(pointerCoordsObj, "pointerCoords must not be null");
+  }
+  static void validatePointerProperties(PointerProperties pointerPropertiesObj) {
+    checkNotNull(pointerPropertiesObj,
+          "pointerProperties must not be null");
+  }
   
   static NativeInput.PointerCoords pointerCoordsToNative(PointerCoords pointerCoordsObj,
       float xOffset, float yOffset) {
@@ -251,7 +229,7 @@ public class ShadowMotionEvent {
     return outRawPointerCoords;
   }
 
-//   static floatArray obtainPackedAxisValuesArray(JNIEnv* env, uint32_t minSize,
+//   static floatArray obtainPackedAxisValuesArray(uint32_t minSize,
 //       jobject outPointerCoordsObj) {
 //     floatArray outValuesArray = floatArray(env.GetObjectField(outPointerCoordsObj,
 //         gPointerCoordsClassInfo.mPackedAxisValues));
@@ -271,7 +249,7 @@ public class ShadowMotionEvent {
 //         gPointerCoordsClassInfo.mPackedAxisValues, outValuesArray);
 //     return outValuesArray;
 //   }
-//   static void pointerCoordsFromNative(JNIEnv* env, const PointerCoords* rawPointerCoords,
+//   static void pointerCoordsFromNative(const PointerCoords* rawPointerCoords,
 //       float xOffset, float yOffset, jobject outPointerCoordsObj) {
 //     env.SetFloatField(outPointerCoordsObj, gPointerCoordsClassInfo.x,
 //         rawPointerCoords.getAxisValue(AMOTION_EVENT_AXIS_X) + xOffset);
@@ -324,7 +302,7 @@ public class ShadowMotionEvent {
 //   }
 
 //   // ----------------------------------------------------------------------------
-//   static long nativeInitialize(JNIEnv* env, jclass clazz,
+//   static long nativeInitialize(
 //       long nativePtr,
 //       int deviceId, int source, int action, int flags, int edgeFlags,
 //       int metaState, int buttonState,
@@ -370,12 +348,12 @@ public class ShadowMotionEvent {
 //     }
 //     return 0;
 //   }
-//   static void nativeDispose(JNIEnv* env, jclass clazz,
+//   static void nativeDispose(
 //       long nativePtr) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     delete event;
 //   }
-//   static void nativeAddBatch(JNIEnv* env, jclass clazz,
+//   static void nativeAddBatch(
 //       long nativePtr, long eventTimeNanos, jobjectArray pointerCoordsObjArray,
 //       int metaState) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
@@ -397,7 +375,7 @@ public class ShadowMotionEvent {
 //     event.addSample(eventTimeNanos, rawPointerCoords);
 //     event.setMetaState(event.getMetaState() | metaState);
 //   }
-//   static void nativeGetPointerCoords(JNIEnv* env, jclass clazz,
+//   static void nativeGetPointerCoords(
 //       long nativePtr, int pointerIndex, int historyPos, jobject outPointerCoordsObj) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     size_t pointerCount = event.getPointerCount();
@@ -418,18 +396,18 @@ public class ShadowMotionEvent {
 //     pointerCoordsFromNative(env, rawPointerCoords, event.getXOffset(), event.getYOffset(),
 //         outPointerCoordsObj);
 //   }
-//   static void nativeGetPointerProperties(JNIEnv* env, jclass clazz,
-//       long nativePtr, int pointerIndex, jobject outPointerPropertiesObj) {
-//     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
-//     size_t pointerCount = event.getPointerCount();
-//     if (!validatePointerIndex(env, pointerIndex, pointerCount)
-//         || !validatePointerProperties(env, outPointerPropertiesObj)) {
-//       return;
-//     }
-//     const PointerProperties* pointerProperties = event.getPointerProperties(pointerIndex);
-//     pointerPropertiesFromNative(env, pointerProperties, outPointerPropertiesObj);
-//   }
-//   static long nativeReadFromParcel(JNIEnv* env, jclass clazz,
+  static void nativeGetPointerProperties(
+      long nativePtr, int pointerIndex, PointerProperties outPointerPropertiesObj) {
+    NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
+    int pointerCount = event.getPointerCount();
+    validatePointerIndex(pointerIndex, pointerCount);
+    validatePointerProperties(outPointerPropertiesObj);
+
+    PointerProperties pointerProperties = event.getPointerProperties(pointerIndex);
+    //pointerPropertiesFromNative(env, pointerProperties, outPointerPropertiesObj);
+    outPointerPropertiesObj.copyFrom(pointerProperties);
+  }
+//   static long nativeReadFromParcel(
 //       long nativePtr, jobject parcelObj) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     if (!event) {
@@ -446,7 +424,7 @@ public class ShadowMotionEvent {
 //     }
 //     return reinterpret_cast<long>(event);
 //   }
-//   static void nativeWriteToParcel(JNIEnv* env, jclass clazz,
+//   static void nativeWriteToParcel(
 //       long nativePtr, jobject parcelObj) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     Parcel* parcel = parcelForJavaObject(env, parcelObj);
@@ -455,17 +433,17 @@ public class ShadowMotionEvent {
 //       jniThrowRuntimeException(env, "Failed to write MotionEvent parcel.");
 //     }
 //   }
-//   static jstring nativeAxisToString(JNIEnv* env, jclass clazz,
+//   static jstring nativeAxisToString(
 //       int axis) {
 //     return env.NewStringUTF(MotionEvent::getLabel(static_cast<int32_t>(axis)));
 //   }
-//   static int nativeAxisFromString(JNIEnv* env, jclass clazz,
+//   static int nativeAxisFromString(
 //       jstring label) {
 //     ScopedUtfChars axisLabel(env, label);
 //     return static_cast<int>(MotionEvent::getAxisFromLabel(axisLabel.c_str()));
 //   }
 //   // ---------------- @FastNative ----------------------------------
-//   static int nativeGetPointerId(JNIEnv* env, jclass clazz,
+//   @Implementation @HiddenApi protected static int nativeGetPointerId(
 //       long nativePtr, int pointerIndex) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     size_t pointerCount = event.getPointerCount();
@@ -474,7 +452,7 @@ public class ShadowMotionEvent {
 //     }
 //     return event.getPointerId(pointerIndex);
 //   }
-//   static int nativeGetToolType(JNIEnv* env, jclass clazz,
+//   @Implementation @HiddenApi protected static int nativeGetToolType(
 //       long nativePtr, int pointerIndex) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     size_t pointerCount = event.getPointerCount();
@@ -483,20 +461,18 @@ public class ShadowMotionEvent {
 //     }
 //     return event.getToolType(pointerIndex);
 //   }
-//   static long nativeGetEventTimeNanos(JNIEnv* env, jclass clazz,
-//       long nativePtr, int historyPos) {
-//     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
-//     if (historyPos == HISTORY_CURRENT) {
-//       return event.getEventTime();
-//     } else {
-//       size_t historySize = event.getHistorySize();
-//       if (!validateHistoryPos(env, historyPos, historySize)) {
-//         return 0;
-//       }
-//       return event.getHistoricalEventTime(historyPos);
-//     }
-//   }
-//   static float nativeGetRawAxisValue(JNIEnv* env, jclass clazz,
+  @Implementation @HiddenApi protected static long nativeGetEventTimeNanos(
+      long nativePtr, int historyPos) {
+    NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
+    if (historyPos == HISTORY_CURRENT) {
+      return event.getEventTime();
+    } else {
+      int historySize = event.getHistorySize();
+      validateHistoryPos(historyPos, historySize);
+      return event.getHistoricalEventTime(historyPos);
+    }
+  }
+//   @Implementation @HiddenApi protected static float nativeGetRawAxisValue(
 //       long nativePtr, int axis,
 //       int pointerIndex, int historyPos) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
@@ -514,7 +490,7 @@ public class ShadowMotionEvent {
 //       return event.getHistoricalRawAxisValue(axis, pointerIndex, historyPos);
 //     }
 //   }
-//   static float nativeGetAxisValue(JNIEnv* env, jclass clazz,
+//   @Implementation @HiddenApi protected static float nativeGetAxisValue(
 //       long nativePtr, int axis, int pointerIndex, int historyPos) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     size_t pointerCount = event.getPointerCount();
@@ -532,7 +508,7 @@ public class ShadowMotionEvent {
 //     }
 //   }
 //   // ----------------- @CriticalNative ------------------------------
-//   @Implementation @HiddenApi static long nativeCopy(long destNativePtr, long sourceNativePtr,
+//   @Implementation @HiddenApi protected static long nativeCopy(long destNativePtr, long sourceNativePtr,
 //       boolean keepHistory) {
 //     MotionEvent* destEvent = reinterpret_cast<MotionEvent*>(destNativePtr);
 //     if (!destEvent) {
@@ -542,112 +518,112 @@ public class ShadowMotionEvent {
 //     destEvent.copyFrom(sourceEvent, keepHistory);
 //     return reinterpret_cast<long>(destEvent);
 //   }
-  @Implementation @HiddenApi static int nativeGetDeviceId(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetDeviceId(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getDeviceId();
   }
-  @Implementation @HiddenApi static int nativeGetSource(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetSource(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getSource();
   }
-  @Implementation @HiddenApi static void nativeSetSource(long nativePtr, int source) {
+  @Implementation @HiddenApi protected static void nativeSetSource(long nativePtr, int source) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     event.setSource(source);
   }
-  @Implementation @HiddenApi static int nativeGetAction(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetAction(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getAction();
   }
-  @Implementation @HiddenApi static void nativeSetAction(long nativePtr, int action) {
+  @Implementation @HiddenApi protected static void nativeSetAction(long nativePtr, int action) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     event.setAction(action);
   }
-  @Implementation @HiddenApi static int nativeGetActionButton(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetActionButton(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getActionButton();
   }
-  @Implementation @HiddenApi static void nativeSetActionButton(long nativePtr, int button) {
+  @Implementation @HiddenApi protected static void nativeSetActionButton(long nativePtr, int button) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     event.setActionButton(button);
   }
-  @Implementation @HiddenApi static boolean nativeIsTouchEvent(long nativePtr) {
+  @Implementation @HiddenApi protected static boolean nativeIsTouchEvent(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.isTouchEvent();
   }
-  @Implementation @HiddenApi static int nativeGetFlags(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetFlags(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getFlags();
   }
-  @Implementation @HiddenApi static void nativeSetFlags(long nativePtr, int flags) {
+  @Implementation @HiddenApi protected static void nativeSetFlags(long nativePtr, int flags) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     event.setFlags(flags);
   }
-  @Implementation @HiddenApi static int nativeGetEdgeFlags(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetEdgeFlags(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getEdgeFlags();
   }
-  @Implementation @HiddenApi static void nativeSetEdgeFlags(long nativePtr, int edgeFlags) {
+  @Implementation @HiddenApi protected static void nativeSetEdgeFlags(long nativePtr, int edgeFlags) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     event.setEdgeFlags(edgeFlags);
   }
-  @Implementation @HiddenApi static int nativeGetMetaState(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetMetaState(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getMetaState();
   }
-  @Implementation @HiddenApi static int nativeGetButtonState(long nativePtr) {
+  @Implementation @HiddenApi protected static int nativeGetButtonState(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getButtonState();
   }
-  @Implementation @HiddenApi static void nativeSetButtonState(long nativePtr, int buttonState) {
+  @Implementation @HiddenApi protected static void nativeSetButtonState(long nativePtr, int buttonState) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     event.setButtonState(buttonState);
   }
-  @Implementation @HiddenApi static void nativeOffsetLocation(long nativePtr, float deltaX,
+  @Implementation @HiddenApi protected static void nativeOffsetLocation(long nativePtr, float deltaX,
       float deltaY) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
-    return event.offsetLocation(deltaX, deltaY);
+    event.offsetLocation(deltaX, deltaY);
   }
-  @Implementation @HiddenApi static float nativeGetXOffset(long nativePtr) {
+  @Implementation @HiddenApi protected static float nativeGetXOffset(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getXOffset();
   }
-  @Implementation @HiddenApi static float nativeGetYOffset(long nativePtr) {
+  @Implementation @HiddenApi protected static float nativeGetYOffset(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getYOffset();
   }
-  @Implementation @HiddenApi static float nativeGetXPrecision(long nativePtr) {
+  @Implementation @HiddenApi protected static float nativeGetXPrecision(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getXPrecision();
   }
-  @Implementation @HiddenApi static float nativeGetYPrecision(long nativePtr) {
+  @Implementation @HiddenApi  protected static float nativeGetYPrecision(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getYPrecision();
   }
-  @Implementation @HiddenApi protected static long nativeGetDownTimeNanos(long nativePtr) {
+  @Implementation @HiddenApi  protected static long nativeGetDownTimeNanos(long nativePtr) {
     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
     return event.getDownTime();
   }
-//   @Implementation @HiddenApi static void nativeSetDownTimeNanos(long nativePtr, long downTimeNanos) {
+//   @Implementation @HiddenApi protected static void nativeSetDownTimeNanos(long nativePtr, long downTimeNanos) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     event.setDownTime(downTimeNanos);
 //   }
-//   @Implementation @HiddenApi static int nativeGetPointerCount(long nativePtr) {
-//     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
-//     return int(event.getPointerCount());
-//   }
-//   @Implementation @HiddenApi static int nativeFindPointerIndex(long nativePtr, int pointerId) {
+  @Implementation @HiddenApi protected static int nativeGetPointerCount(long nativePtr) {
+    NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
+    return event.getPointerCount();
+  }
+//   @Implementation @HiddenApi protected static int nativeFindPointerIndex(long nativePtr, int pointerId) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     return int(event.findPointerIndex(pointerId));
 //   }
-//   @Implementation @HiddenApi static int nativeGetHistorySize(long nativePtr) {
+//   @Implementation @HiddenApi protected static int nativeGetHistorySize(long nativePtr) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     return int(event.getHistorySize());
 //   }
-//   @Implementation @HiddenApi static void nativeScale(long nativePtr, float scale) {
+//   @Implementation @HiddenApi protected static void nativeScale(long nativePtr, float scale) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     event.scale(scale);
 //   }
-//   @Implementation @HiddenApi static void nativeTransform(long nativePtr, long matrixPtr) {
+//   @Implementation @HiddenApi protected static void nativeTransform(long nativePtr, long matrixPtr) {
 //     NativeInput.MotionEvent event = nativeObjRegistry.getNativeObject(nativePtr);
 //     SkMatrix* matrix = reinterpret_cast<SkMatrix*>(matrixPtr);
 //     static_assert(SkMatrix::kMScaleX == 0, "SkMatrix unexpected index");

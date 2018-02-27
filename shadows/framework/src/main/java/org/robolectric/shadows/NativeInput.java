@@ -1,6 +1,15 @@
 package org.robolectric.shadows;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.robolectric.shadows.NativeAndroidInput.AINPUT_SOURCE_CLASS_POINTER;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_CANCEL;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_DOWN;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_MASK;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_MOVE;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_OUTSIDE;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_POINTER_DOWN;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_POINTER_UP;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_UP;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_X;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_Y;
 
@@ -332,17 +341,18 @@ public class NativeInput {
        float getYPrecision()  { return mYPrecision; }
          long getDownTime() { return mDownTime; }
 //        void setDownTime(nsecs_t downTime) { mDownTime = downTime; }
-//        size_t getPointerCount()  { return mPointerProperties.size(); }
-//         PointerProperties* getPointerProperties(size_t pointerIndex)  {
-//         return &mPointerProperties[pointerIndex];
-//       }
+        int getPointerCount()  { return mPointerProperties.size(); }
+    PointerProperties getPointerProperties(int pointerIndex)  {
+        return mPointerProperties.get(pointerIndex);
+      }
 //        int getPointerId(size_t pointerIndex)  {
 //         return mPointerProperties[pointerIndex].id;
 //       }
 //        int getToolType(size_t pointerIndex)  {
 //         return mPointerProperties[pointerIndex].toolType;
 //       }
-//        nsecs_t getEventTime()  { return mSampleEventTimes[getHistorySize()]; }
+        long getEventTime()  { return mSampleEventTimes.get(getHistorySize()); }
+
 //      PointerCoords* getRawPointerCoords(size_t pointerIndex) ;
 //     float getRawAxisValue(int axis, size_t pointerIndex) ;
 //      float getRawX(size_t pointerIndex)  {
@@ -379,10 +389,12 @@ public class NativeInput {
 //      float getOrientation(size_t pointerIndex)  {
 //       return getAxisValue(AMOTION_EVENT_AXIS_ORIENTATION, pointerIndex);
 //     }
-//      size_t getHistorySize()  { return mSampleEventTimes.size() - 1; }
-//      nsecs_t getHistoricalEventTime(size_t historicalIndex)  {
-//       return mSampleEventTimes[historicalIndex];
-//     }
+      int getHistorySize()  { return mSampleEventTimes.size() - 1; }
+
+     long getHistoricalEventTime(int historicalIndex)  {
+      return mSampleEventTimes.get(historicalIndex);
+    }
+
 //      PointerCoords* getHistoricalRawPointerCoords(
 //         size_t pointerIndex, size_t historicalIndex) ;
 //     float getHistoricalRawAxisValue(int axis, size_t pointerIndex,
@@ -468,14 +480,22 @@ public class NativeInput {
       mPointerProperties.addAll(Arrays.asList(pointerProperties));
       mSampleEventTimes.clear();
       mSamplePointerCoords.clear();
-      //addSample(eventTime, pointerCoords);
+      addSample(eventTime, pointerCoords);
     }
 
 //     void copyFrom( MotionEvent* other, bool keepHistory);
-//     void addSample(
-//         nsecs_t eventTime,
-//              PointerCoords* pointerCoords);
-//     void offsetLocation(float xOffset, float yOffset);
+  void addSample(
+      long eventTime,
+        PointerCoords[] pointerCoords) {
+    mSampleEventTimes.add(eventTime);
+    //mSamplePointerCoords.addAll(Arrays.asList(pointerCoords, getPointerCount());
+    mSamplePointerCoords.addAll(Arrays.asList(pointerCoords));
+   }
+
+  void offsetLocation(float xOffset, float yOffset) {
+    mXOffset += xOffset;
+    mYOffset += yOffset;
+  }
 //     void scale(float scaleFactor);
 //     // Apply 3x3 perspective matrix transformation.
 //     // Matrix is in row-major form and compatible with SkMatrix.
@@ -484,14 +504,31 @@ public class NativeInput {
 //     status_t readFromParcel(Parcel* parcel);
 //     status_t writeToParcel(Parcel* parcel) ;
 // #endif
-//     static bool isTouchEvent(int source, int action);
-//      bool isTouchEvent()  {
-//       return isTouchEvent(mSource, mAction);
-//     }
+  private static boolean isTouchEvent(int source, int action) {
+    if ((source & AINPUT_SOURCE_CLASS_POINTER) != 0) {
+      // Specifically excludes HOVER_MOVE and SCROLL.
+      switch (action & AMOTION_EVENT_ACTION_MASK) {
+        case AMOTION_EVENT_ACTION_DOWN:
+        case AMOTION_EVENT_ACTION_MOVE:
+        case AMOTION_EVENT_ACTION_UP:
+        case AMOTION_EVENT_ACTION_POINTER_DOWN:
+        case AMOTION_EVENT_ACTION_POINTER_UP:
+        case AMOTION_EVENT_ACTION_CANCEL:
+        case AMOTION_EVENT_ACTION_OUTSIDE:
+          return true;
+      }
+    }
+    return false;
+  }
+
+      boolean isTouchEvent()  {
+       return isTouchEvent(getSource(), mAction);
+     }
+
 //     // Low-level accessors.
-//       PointerProperties* getPointerProperties()  {
-//       return mPointerProperties.array();
-//     }
+      List<PointerProperties> getPointerProperties()  {
+      return mPointerProperties;
+    }
 //       nsecs_t* getSampleEventTimes()  { return mSampleEventTimes.array(); }
 //       PointerCoords* getSamplePointerCoords()  {
 //       return mSamplePointerCoords.array();

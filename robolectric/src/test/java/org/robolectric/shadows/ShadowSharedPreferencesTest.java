@@ -209,4 +209,16 @@ public class ShadowSharedPreferencesTest {
     String restored = anotherSharedPreferences.getString("foo", null);
     assertThat(restored).isEqualTo("bar");
   }
+
+  @Test
+  public void robolectricBug() {
+    PreferenceManager.getDefaultSharedPreferences(RuntimeEnvironment.application)
+        .edit()
+        .putBoolean("foo", true)
+        .apply();
+    PreferenceManager.getDefaultSharedPreferences(RuntimeEnvironment.application)
+        .edit()
+        .putBoolean("bar", true)
+        .commit();
+  }
 }
