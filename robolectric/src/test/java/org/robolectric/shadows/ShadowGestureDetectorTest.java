@@ -53,7 +53,7 @@ public class ShadowGestureDetectorTest {
   public void canAnswerLastGestureDetector() throws Exception {
     GestureDetector newDetector = new GestureDetector(RuntimeEnvironment.application, new TestOnGestureListener());
     assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
-    newDetector.onTouchEvent(Shadow.newInstanceOf(MotionEvent.class));
+    newDetector.onTouchEvent(motionEvent);
     assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
   }
 
