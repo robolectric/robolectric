@@ -18,6 +18,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Looper;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -27,6 +28,9 @@ import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -1481,5 +1485,29 @@ public class ShadowMediaPlayerTest {
     } catch (Exception e) {
       Assertions.fail("Unexpected exception", e);
     }
+  }
+
+  @Test
+  public void instantiateOnBackgroundThread() throws ExecutionException, InterruptedException {
+    ShadowMediaPlayer shadowMediaPlayer =
+        Executors.newSingleThreadExecutor()
+            .submit(
+                () -> {
+                  // This thread does not have a prepared looper, so the main looper is used
+                  MediaPlayer mediaPlayer = Shadow.newInstanceOf(MediaPlayer.class);
+                  return shadowOf(mediaPlayer);
+                })
+            .get();
+    AtomicBoolean ran = new AtomicBoolean(false);
+    shadowMediaPlayer.postEvent(
+        new MediaEvent() {
+          @Override
+          public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+            assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
+            ran.set(true);
+          }
+        });
+    scheduler.advanceToLastPostedRunnable();
+    assertThat(ran.get()).isTrue();
   }
 }
