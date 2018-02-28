@@ -2,14 +2,12 @@ package org.robolectric.integration_tests.atsl;
 
 import static android.support.test.espresso.action.ViewActions.click;
 
-import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
 import android.view.View;
 import org.hamcrest.Matcher;
 
-/**
- * Created by brettchabot on 2/23/18.
- */
+/** Created by brettchabot on 2/23/18. */
 class RoboViewAction implements ViewAction {
 
   static ViewAction roboClick() {
@@ -36,5 +34,4 @@ class RoboViewAction implements ViewAction {
   public void perform(UiController uiController, View view) {
     viewActionDelegate.perform(new RoboUiController(), view);
   }
-
 }

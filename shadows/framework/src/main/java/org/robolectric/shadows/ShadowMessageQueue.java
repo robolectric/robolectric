@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -15,7 +15,6 @@ import android.os.Message;
 import android.os.MessageQueue;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -76,7 +75,9 @@ public class ShadowMessageQueue {
   @Implementation(minSdk = LOLLIPOP)
   protected static void nativePollOnce(long ptr, int timeoutMillis) {
     if (timeoutMillis > 0) {
-      ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(timeoutMillis, TimeUnit.MILLISECONDS);
+      ShadowApplication.getInstance()
+          .getForegroundThreadScheduler()
+          .advanceBy(timeoutMillis, TimeUnit.MILLISECONDS);
     }
   }
 

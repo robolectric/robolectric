@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 /**
  * Transliteration of native BitSet64.
  *
- * Unlike the native code stores value inline as opposed to a manipulating data via series of
+ * <p>Unlike the native code stores value inline as opposed to a manipulating data via series of
  * static methods passed values by reference.
  *
  * @see system/core/libutils/include/utils/BitSet.h
@@ -16,20 +16,23 @@ public class NativeBitSet64 {
     this.value = value;
   }
 
+  NativeBitSet64(NativeBitSet64 other) {
+    this.value = other.value;
+  }
+
   NativeBitSet64() {
     this(0);
   }
 
-  // _t value;
-  //
-  // inline BitSet64() : value(0ULL) { }
-  // explicit inline BitSet64(uint64_t value) : value(value) { }
-  //
-  // // Gets the value associated with a particular bit index.
-  static long valueForBit(int n) { return 0x8000000000000000L >> n; }
-  //
-  // Clears the bit set.
-  void clear() { value = 0; }
+  // Gets the value associated with a particular bit index.
+  static long valueForBit(int n) {
+    return 0x8000000000000000L >>> n;
+  }
+
+  /** Clears the bit set. */
+  void clear() {
+    value = 0;
+  }
 
   //
   // static inline void clear(uint64_t& value) { value = 0ULL; }
@@ -37,7 +40,7 @@ public class NativeBitSet64 {
   // // Returns the number of marked bits in the set.
   int count() {
     int count = 0;
-    for (int n=0; n < 64; n++) {
+    for (int n = 0; n < 64; n++) {
       if (hasBit(n)) {
         count++;
       }
@@ -50,17 +53,19 @@ public class NativeBitSet64 {
   // // Returns true if the bit set does not contain any marked bits.
   // inline bool isEmpty() const { return isEmpty(value); }
   //
-  boolean isEmpty() { return value != 0; }
+  boolean isEmpty() {
+    return value == 0;
+  }
   //
   // // Returns true if the bit set does not contain any unmarked bits.
   // inline bool isFull() const { return isFull(value); }
   //
   // static inline bool isFull(uint64_t value) { return value == 0xffffffffffffffffULL; }
   //
-  // // Returns true if the specified bit is marked.
-  // inline bool hasBit(uint32_t n) const { return hasBit(value, n); }
-  //
-  boolean hasBit(int n) { return (value & valueForBit(n)) != 0; }
+  // Returns true if the specified bit is marked.
+  boolean hasBit(int n) {
+    return (value & valueForBit(n)) != 0;
+  }
 
   // Marks the specified bit.
   void markBit(int n) {
@@ -68,12 +73,14 @@ public class NativeBitSet64 {
   }
 
   // Clears the specified bit.
-  void clearBit(int n) { value &= ~ valueForBit(n); }
+  void clearBit(int n) {
+    value &= ~valueForBit(n);
+  }
 
   // Finds the first marked bit in the set.
   // Result is undefined if all bits are unmarked.
   int firstMarkedBit() {
-    for (int n=0; n < 64; n++) {
+    for (int n = 0; n < 64; n++) {
       if (hasBit(n)) {
         return n;
       }
@@ -126,16 +133,20 @@ public class NativeBitSet64 {
   //   clearBit(value, n);
   //   return n;
   // }
-  //
+
   // Gets the index of the specified bit in the set, which is the number of
   // marked bits that appear before the specified bit.
   int getIndexOfBit(int n) {
-    return (int)(value & ~(0xffffffffffffffffL >> n));
+    // return __builtin_popcountll(value & ~(0xffffffffffffffffULL >> n));
+    int numMarkedBits = 0;
+    for (int i = 0; i < n; i++) {
+      if (hasBit(i)) {
+        numMarkedBits++;
+      }
+    }
+    return numMarkedBits;
   }
-  //
-  // static inline uint32_t getIndexOfBit(uint64_t value, uint32_t n) {
-  //   return __builtin_popcountll(value & ~(0xffffffffffffffffULL >> n));
-  // }
+
   //
   // inline bool operator== (const BitSet64& other) const { return value == other.value; }
   // inline bool operator!= (const BitSet64& other) const { return value != other.value; }

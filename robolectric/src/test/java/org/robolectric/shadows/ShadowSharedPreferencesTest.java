@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

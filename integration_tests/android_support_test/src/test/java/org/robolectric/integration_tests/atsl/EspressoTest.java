@@ -4,7 +4,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.integration_tests.atsl.RoboViewAction.roboClick;
+//import static org.robolectric.integration_tests.atsl.RoboViewAction.roboClick;
 
 import android.app.Activity;
 import android.os.Build.VERSION;
@@ -28,14 +28,14 @@ import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
+//import org.robolectric.annotation.Config;
 
 
 /**
  * Simple tests to verify espresso APIs can be used on Robolectric.
  */
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = 27)
+//@Config(sdk = 27)
 public final class EspressoTest {
 
   /**
@@ -122,7 +122,7 @@ public final class EspressoTest {
   @Test
   public void buttonClick_espresso() throws Exception {
     ActivityFixture activity = activityRule.getActivity();
-    onView(withId(activity.buttonViewId)).perform(roboClick());
+    //onView(withId(activity.buttonViewId)).perform(roboClick());
     //onView(withId(activity.buttonViewId)).perform(click());
     assertThat(activity.buttonClicked).isTrue();
   }

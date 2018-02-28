@@ -16,7 +16,7 @@ public class NativeObjRegistry<T> {
 
   public synchronized long getNativeObjectId(T o) {
     Preconditions.checkNotNull(o);
-    Long nativeId  = nativeObjToIdMap.inverse().get(o);
+    Long nativeId = nativeObjToIdMap.inverse().get(o);
     if (nativeId == null) {
       nativeId = ids;
       nativeObjToIdMap.put(nativeId, o);
@@ -33,9 +33,7 @@ public class NativeObjRegistry<T> {
     return nativeObjToIdMap.get(nativeId);
   }
 
-  /**
-   * WARNING -- dangerous! Call {@link #unregister(long)} instead!
-   */
+  /** WARNING -- dangerous! Call {@link #unregister(long)} instead! */
   public synchronized void clear() {
     ids = INITIAL_ID;
     nativeObjToIdMap.clear();
