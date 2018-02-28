@@ -690,10 +690,10 @@ public class NativeInput {
       mYPrecision = yPrecision;
       mDownTime = downTime;
       mPointerProperties.clear();
-      mPointerProperties.addAll(Arrays.asList(pointerProperties));
+      mPointerProperties.addAll(Arrays.asList(pointerProperties).subList(0, pointerCount));
       mSampleEventTimes.clear();
       mSamplePointerCoords.clear();
-      addSample(eventTime, pointerCoords);
+      addSample(eventTime, Arrays.asList(pointerCoords).subList(0, pointerCount));
     }
 
     public void copyFrom(MotionEvent other, boolean keepHistory) {
@@ -710,24 +710,26 @@ public class NativeInput {
       mYPrecision = other.mYPrecision;
       mDownTime = other.mDownTime;
       mPointerProperties = other.mPointerProperties;
+      mSampleEventTimes.clear();
+      mSamplePointerCoords.clear();
       if (keepHistory) {
-        mSampleEventTimes = other.mSampleEventTimes;
-        mSamplePointerCoords = other.mSamplePointerCoords;
-      } else {
-        mSampleEventTimes.clear();
-        mSampleEventTimes.add(other.getEventTime());
-        mSamplePointerCoords.clear();
-        // int pointerCount = other.getPointerCount();
-        // int historySize = other.getHistorySize();
+        mSampleEventTimes.addAll(other.mSampleEventTimes);
         mSamplePointerCoords.addAll(other.mSamplePointerCoords);
-        // + (historySize * pointerCount), pointerCount);
+      } else {
+        mSampleEventTimes.add(other.getEventTime());
+        int pointerCount = other.getPointerCount();
+        int historySize = other.getHistorySize();
+        mSamplePointerCoords.addAll(other.mSamplePointerCoords.subList(historySize * pointerCount, pointerCount));
       }
     }
 
     public void addSample(long eventTime, PointerCoords[] pointerCoords) {
+      addSample(eventTime, Arrays.asList(pointerCoords));
+    }
+
+    public void addSample(long eventTime, List<PointerCoords> pointerCoords) {
       mSampleEventTimes.add(eventTime);
-      // mSamplePointerCoords.addAll(Arrays.asList(pointerCoords, getPointerCount());
-      mSamplePointerCoords.addAll(Arrays.asList(pointerCoords));
+      mSamplePointerCoords.addAll(pointerCoords);
     }
 
     public void offsetLocation(float xOffset, float yOffset) {
