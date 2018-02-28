@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.view.MotionEvent;
+import android.view.MotionEvent.PointerCoords;
+import android.view.MotionEvent.PointerProperties;
 import android.view.VelocityTracker;
 import org.junit.Before;
 import org.junit.Test;
@@ -131,14 +133,30 @@ public class VelocityTrackerTest {
    */
   private static MotionEvent doMotion(
       long time, float pointer1X, float pointer1Y, float pointer2X, float pointer2Y) {
-    MotionEvent event =
-        MotionEvent.obtain(0, time, MotionEvent.ACTION_MOVE, pointer2X, pointer2Y, 0);
-    ShadowMotionEvent shadowEvent = Shadows.shadowOf(event);
-    shadowEvent.setPointer2(pointer1X, pointer1Y);
-    shadowEvent.setPointerIndex(0);
     // we put our active pointer (the second one down) first, so flip the IDs so that they match up
-    // properly
-    shadowEvent.setPointerIds(1, 0);
+    // // properly
+    PointerCoords[] coords = new PointerCoords[2];
+    coords[0] = new PointerCoords();
+    coords[1] = new PointerCoords();
+    coords[0].x = pointer2X;
+    coords[0].y = pointer2Y;
+    coords[1].x = pointer1X;
+    coords[1].y = pointer1Y;
+
+    PointerProperties[] properties = new PointerProperties[2];
+    properties[0] = new PointerProperties();
+    properties[0].id = 1;
+    properties[1] = new PointerProperties();
+    properties[1].id = 0;
+    MotionEvent event =
+        MotionEvent.obtain(0, time, MotionEvent.ACTION_MOVE, 2, properties, coords, 0, 0, 0, 0, 0, 0, 0, 0);
+
+    // ShadowMotionEvent shadowEvent = Shadows.shadowOf(event);
+    // shadowEvent.setPointer2(pointer1X, pointer1Y);
+    // shadowEvent.setPointerIndex(0);
+    // // we put our active pointer (the second one down) first, so flip the IDs so that they match up
+    // // properly
+    // shadowEvent.setPointerIds(1, 0);
 
     return event;
   }
