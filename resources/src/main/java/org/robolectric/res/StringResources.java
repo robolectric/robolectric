@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import static com.google.common.base.CharMatcher.whitespace;
+
 import com.google.common.annotations.VisibleForTesting;
 import org.robolectric.util.Logger;
 
@@ -14,7 +16,7 @@ public class StringResources {
    * 3) Escapes
    */
   public static String processStringResources(String inputValue) {
-    return escape(inputValue.trim());
+    return escape(whitespace().collapseFrom(inputValue.trim(), ' '));
   }
 
   /**
