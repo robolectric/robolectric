@@ -24,6 +24,8 @@ import static org.robolectric.R.color.test_ARGB8;
 import static org.robolectric.R.color.test_RGB8;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;

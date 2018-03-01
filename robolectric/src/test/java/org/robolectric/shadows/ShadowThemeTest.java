@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.util.Xml;
 import android.view.View;
 import android.widget.Button;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,11 @@ public class ShadowThemeTest {
   @Before
   public void setUp() throws Exception {
     resources = RuntimeEnvironment.application.getResources();
+  }
+
+  @After
+  public void tearDown() {
+    ShadowAssetManager.strictErrors = false;
   }
 
   @Test public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() throws Exception {
@@ -264,7 +270,7 @@ public class ShadowThemeTest {
 
     try {
       theme.obtainStyledAttributes(
-          Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/noSuchAttr").build(),
+          Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?org.robolectric:attr/noSuchAttr").build(),
           new int[]{R.attr.string2}, 0, 0);
       fail();
     } catch (Exception e) {

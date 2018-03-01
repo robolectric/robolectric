@@ -310,7 +310,6 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           }
 
           Res_value resValue = new Res_value(type.code(), valueInt);
-          System.out.println(attrName + " resValue = " + resValue + " string: " + value);
 
           int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
           attr(resStringPoolWriter.string(attrNs), attrNameIndex,
