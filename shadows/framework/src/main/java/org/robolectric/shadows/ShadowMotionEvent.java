@@ -6,6 +6,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_POINTER_INDEX_MASK;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_PRESSURE;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_SIZE;
@@ -25,6 +27,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -909,8 +912,7 @@ public class ShadowMotionEvent {
   @Implementation
   protected final void transform(Matrix matrix) {
     checkNotNull(matrix);
-    long nativePtr = ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
 
     float[] m = new float[9];
@@ -918,29 +920,59 @@ public class ShadowMotionEvent {
     event.transform(m);
   }
 
+  private NativeInput.MotionEvent getNativeMotionEvent() {
+    long nativePtr = (long)ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
+    return nativeMotionEventRegistry.getNativeObject(nativePtr);
+  }
+
   // Testing API methods
 
-  // /**
-  //  * @deprecated use MotionEvent.obtain to create a MotionEvent with desired data
-  //  */
-  // @Deprecated
-  // public void setPointer2(float pointer1X, float pointer1Y) {
-  //   throw new UnsupportedOperationException();
-  // }
-  //
-  // /**
-  //  * @deprecated use MotionEvent.obtain to create a MotionEvent with desired data
-  //  */
-  // @Deprecated
-  // public void setPointerIndex(int pointerIndex) {
-  //   throw new UnsupportedOperationException();
-  // }
-  //
-  // /**
-  //  * @deprecated use MotionEvent.obtain to create a MotionEvent with desired data
-  //  */
-  // @Deprecated
-  // public void setPointerIds(int index0PointerId, int index1PointerId) {
-  //   throw new UnsupportedOperationException();
-  // }
+  /**
+   * @deprecated use MotionEvent.obtain or MotionEvent.addBatch to create a MotionEvent with desired
+   * data
+   */
+  @Deprecated
+  public void setPointer2(float pointer1X, float pointer1Y) {
+    NativeInput.MotionEvent event = getNativeMotionEvent();
+    List<NativeInput.PointerCoords> pointerCoords = event.getSamplePointerCoords();
+    List<PointerProperties> pointerProperties = event.getPointerProperties();
+    ensureTwoPointers(pointerCoords, pointerProperties);
+
+    pointerCoords.get(1).setAxisValue(AMOTION_EVENT_AXIS_X, pointer1X);
+    pointerCoords.get(1).setAxisValue(AMOTION_EVENT_AXIS_Y, pointer1Y);
+  }
+
+  private static void ensureTwoPointers(List<NativeInput.PointerCoords> pointerCoords,
+      List<PointerProperties> pointerProperties) {
+    if (pointerCoords.size() < 2) {
+      pointerCoords.add(new NativeInput.PointerCoords());
+    }
+    if (pointerProperties.size() < 2) {
+      pointerProperties.add(new PointerProperties());
+    }
+  }
+
+  /**
+   * @deprecated use MotionEvent.obtain to create a MotionEvent with desired data
+   */
+  @Deprecated
+  public void setPointerIndex(int pointerIndex) {
+    NativeInput.MotionEvent event = getNativeMotionEvent();
+    // pointer index is stored in upper two bytes of action
+    event.setAction(event.getAction() | ((pointerIndex & 0xff) << AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT));
+  }
+
+  /**
+   * @deprecated use MotionEvent.obtain to create a MotionEvent with desired data
+   */
+  @Deprecated
+  public void setPointerIds(int index0PointerId, int index1PointerId) {
+    NativeInput.MotionEvent event = getNativeMotionEvent();
+    List<NativeInput.PointerCoords> pointerCoords = event.getSamplePointerCoords();
+    List<PointerProperties> pointerProperties = event.getPointerProperties();
+    ensureTwoPointers(pointerCoords, pointerProperties);
+
+    pointerProperties.get(0).id = index0PointerId;
+    pointerProperties.get(1).id = index1PointerId;
+  }
 }
