@@ -55,10 +55,28 @@ function normalize-path-list() {
 function junit() {
   # This adds the lib folder to the cp.
   local classpath="$(strip "$(normalize-path-list "${PRIVATE_JARS}")")"
+  # Setting the DEBUG_ROBOLECTRIC environment variable will print additional logging from
+  # Robolectric and also make it wait for a debugger to be connected.
+  # For Android Studio / IntelliJ the debugger can be connected via the "remote" configuration:
+  #     https://www.jetbrains.com/help/idea/2016.2/run-debug-configuration-remote.html
+  # From command line the debugger can be connected via
+  #     jdb -attach localhost:5005
+  if [ -n ${DEBUG_ROBOLECTRIC:-""} ]; then
+    # The arguments to the JVM needed to debug the tests.
+    # - server: wait for connection rather than connecting to a debugger
+    # - transport: how to accept debugger connections (sockets)
+    # - address: the port on which to accept debugger connections
+    # - timeout: how long (in ms) to wait for a debugger to connect
+    # - suspend: do not start running any code until the debugger connects
+    local debug_java_args="-Drobolectric.logging.enabled=true \
+        -Xdebug -agentlib:jdwp=server=y,transport=dt_socket,address=localhost:5005,suspend=y"
+    # Remove the timeout so Robolectric doesn't get killed while debugging
+    local debug_timeout="0"
+  fi
   local command=(
     "${PRIVATE_ROBOLECTRIC_SCRIPT_PATH}/java-timeout"
-    "${PRIVATE_TIMEOUT}"
-    ${PRIVATE_JAVA_ARGS}
+    "${debug_timeout:-${PRIVATE_TIMEOUT}}"
+    ${debug_java_args:-${PRIVATE_JAVA_ARGS}}
     -Drobolectric.dependency.dir="${PRIVATE_ROBOLECTRIC_PATH}"
     -Drobolectric.offline=true
     -Drobolectric.logging=stdout
