@@ -108,6 +108,7 @@ public class ShadowShortcutManager {
     return manifestShortcuts;
   }
 
+  /** Sets the value returned by {@link #getManifestShortcuts()}. */
   public void setManifestShortcuts(List<ShortcutInfo> manifestShortcuts) {
     this.manifestShortcuts = manifestShortcuts;
   }
@@ -117,6 +118,7 @@ public class ShadowShortcutManager {
     return maxShortcutCountPerActivity;
   }
 
+  /** Sets the value returned by {@link #getMaxShortcutCountPerActivity()} . */
   public void setMaxShortcutCountPerActivity(int value) {
     maxShortcutCountPerActivity = value;
   }
