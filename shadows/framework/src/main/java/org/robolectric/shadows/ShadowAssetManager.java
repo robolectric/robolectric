@@ -2,9 +2,15 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
+
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.content.res.ApkAssets;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
@@ -17,6 +23,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+
 import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -62,9 +69,9 @@ import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(AssetManager.class)
 public class ShadowAssetManager {
@@ -217,12 +224,45 @@ public class ShadowAssetManager {
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
+    // BEGIN-InNTERNAL
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+      Shadow.invokeConstructor(AssetManager.class, realObject);
+    }
+    // END-INTERNAL
   }
 
   @Implementation
   public void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
+    // BEGIN-INTERNAL
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+      Shadow.invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
+    }
+    // END-INTERNAL
   }
+
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = P)
+  protected static long nativeCreate() {
+    return 1;
+  }
+
+  @Implementation(minSdk = P)
+  protected static void nativeVerifySystemIdmaps() {
+    // no-op.
+  }
+
+  @Implementation(minSdk = P)
+  protected static void loadStaticRuntimeOverlays(ArrayList<ApkAssets> outApkAssets) {
+    // no-op.
+  }
+
+  @Implementation(minSdk = P)
+  protected static void nativeSetApkAssets(long ptr, ApkAssets[] apkAssets,
+          boolean invalidateCaches) {
+    // no-op.
+  }
+  // END-INTERNAL
 
   public ResourceTable getResourceTable() {
     return resourceTable;
@@ -429,8 +469,8 @@ public class ShadowAssetManager {
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
       // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
       AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
-          ClassParameter.from(AssetManager.class, realObject),
-          ClassParameter.from(long.class, 0));
+          from(AssetManager.class, realObject),
+          from(long.class, 0));
 
       ShadowAssetInputStream sais = shadowOf(ais);
       sais.setDelegate(stream);
@@ -489,6 +529,16 @@ public class ShadowAssetManager {
     return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
         packageName, resourceProvider);
   }
+
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  public void setApkAssets(ApkAssets[] apkAssets, boolean invalidateCaches) {
+    for (ApkAssets apkAsset : apkAssets) {
+      assetDirs.add(Fs.newFile(apkAsset.getAssetPath()));
+    }
+    directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
+  }
+  // END-INTERNAL
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
@@ -570,7 +620,7 @@ public class ShadowAssetManager {
     this.config = config;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
@@ -582,6 +632,13 @@ public class ShadowAssetManager {
     }
     return ints;
   }
+
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = Build.VERSION_CODES.P)
+  protected int[] getResourceIntArray(int resId) {
+    return getArrayIntResource(resId);
+  }
+  // END-INTERNAL
 
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
     TypedResource value = getAndResolve(resId, config, true);
@@ -727,24 +784,38 @@ public class ShadowAssetManager {
     applyThemeStyle((long) themePtr, styleRes, force);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
     nativeTheme.themeStyleSet.apply(style, force);
-}
+  }
+
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = P)
+  protected void applyStyleToTheme(long themePtr, int resId, boolean force) {
+    applyThemeStyle(themePtr, resId, force);
+  }
+  // END-INTERNAL
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
     copyTheme((long) destPtr, (long) sourcePtr);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
     NativeTheme destNativeTheme = getNativeTheme(destPtr);
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
+
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = P)
+  protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
+    copyTheme(destPtr, sourcePtr);
+  }
+  // END-INTERNAL
 
   /////////////////////////
 
