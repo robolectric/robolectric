@@ -2,11 +2,8 @@ package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.view.InputDevice;
 import android.view.MotionEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +29,7 @@ public class ShadowMotionEventTest {
     assertThat(event.getY(0)).isEqualTo(10.0f);
     assertThat(event.getPointerCount()).isEqualTo(1);
 
-    shadowMotionEvent.setPointer2( 20.0f, 30.0f );
+    shadowMotionEvent.setPointer2(20.0f, 30.0f);
 
     assertThat(event.getX(1)).isEqualTo(20.0f);
     assertThat(event.getY(1)).isEqualTo(30.0f);
@@ -75,8 +72,4 @@ public class ShadowMotionEventTest {
     assertEquals(1, event.findPointerIndex(1));
     assertEquals(-1, event.findPointerIndex(3));
   }
-
-
-
 }
-

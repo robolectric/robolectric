@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.Shadows;
 
 @RunWith(RobolectricTestRunner.class)
 public class VelocityTrackerTest {
@@ -149,14 +148,8 @@ public class VelocityTrackerTest {
     properties[1] = new PointerProperties();
     properties[1].id = 0;
     MotionEvent event =
-        MotionEvent.obtain(0, time, MotionEvent.ACTION_MOVE, 2, properties, coords, 0, 0, 0, 0, 0, 0, 0, 0);
-
-    // ShadowMotionEvent shadowEvent = Shadows.shadowOf(event);
-    // shadowEvent.setPointer2(pointer1X, pointer1Y);
-    // shadowEvent.setPointerIndex(0);
-    // // we put our active pointer (the second one down) first, so flip the IDs so that they match up
-    // // properly
-    // shadowEvent.setPointerIds(1, 0);
+        MotionEvent.obtain(
+            0, time, MotionEvent.ACTION_MOVE, 2, properties, coords, 0, 0, 0, 0, 0, 0, 0, 0);
 
     return event;
   }

@@ -57,9 +57,7 @@ public class NativeInput {
   /*
    * Declare a concrete type for the NDK's input event forward declaration.
    */
-  static class AInputEvent {
-
-  }
+  static class AInputEvent {}
 
   /*
    * Pointer coordinate data.
@@ -603,11 +601,12 @@ public class NativeInput {
         mSampleEventTimes.add(other.getEventTime());
         int pointerCount = other.getPointerCount();
         int historySize = other.getHistorySize();
-        //mSamplePointerCoords.appendArray(other->mSamplePointerCoords.array()
+        // mSamplePointerCoords.appendArray(other->mSamplePointerCoords.array()
         //    + (historySize * pointerCount), pointerCount);
         int currentStartIndex = historySize * pointerCount;
-        mSamplePointerCoords.addAll(other.mSamplePointerCoords
-            .subList(currentStartIndex, currentStartIndex + pointerCount));
+        mSamplePointerCoords.addAll(
+            other.mSamplePointerCoords.subList(
+                currentStartIndex, currentStartIndex + pointerCount));
       }
     }
 
@@ -707,12 +706,13 @@ public class NativeInput {
       return (float) result;
     }
 
-
     public boolean readFromParcel(Parcel parcel) {
       int pointerCount = parcel.readInt();
       int sampleCount = parcel.readInt();
-      if (pointerCount == 0 || pointerCount > MAX_POINTERS ||
-          sampleCount == 0 || sampleCount > MAX_SAMPLES) {
+      if (pointerCount == 0
+          || pointerCount > MAX_POINTERS
+          || sampleCount == 0
+          || sampleCount > MAX_SAMPLES) {
         return false;
       }
       mDeviceId = parcel.readInt();
@@ -818,6 +818,5 @@ public class NativeInput {
     List<NativeInput.PointerCoords> getSamplePointerCoords() {
       return mSamplePointerCoords;
     }
-
   }
 }

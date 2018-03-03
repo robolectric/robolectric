@@ -65,10 +65,7 @@ public class NativeBitSet64 {
     value &= ~valueForBit(n);
   }
 
-  /**
-   * Finds the first marked bit in the set.
-   * Result is undefined if all bits are unmarked.
-   */
+  /** Finds the first marked bit in the set. Result is undefined if all bits are unmarked. */
   int firstMarkedBit() {
     for (int n = 0; n < 64; n++) {
       if (hasBit(n)) {
@@ -79,8 +76,8 @@ public class NativeBitSet64 {
   }
 
   /**
-   * Finds the first marked bit in the set and clears it.  Returns the bit index.
-   * Result is undefined if all bits are unmarked.
+   * Finds the first marked bit in the set and clears it. Returns the bit index. Result is undefined
+   * if all bits are unmarked.
    */
   int clearFirstMarkedBit() {
     int n = firstMarkedBit();
@@ -89,9 +86,9 @@ public class NativeBitSet64 {
   }
 
   /**
-   * Gets the index of the specified bit in the set, which is the number of
-   * marked bits that appear before the specified bit.
-    */
+   * Gets the index of the specified bit in the set, which is the number of marked bits that appear
+   * before the specified bit.
+   */
   int getIndexOfBit(int n) {
     // return __builtin_popcountll(value & ~(0xffffffffffffffffULL >> n));
     int numMarkedBits = 0;

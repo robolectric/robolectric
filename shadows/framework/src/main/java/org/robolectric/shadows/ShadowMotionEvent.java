@@ -5,8 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_POINTER_INDEX_MASK;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_PRESSURE;
@@ -25,7 +23,6 @@ import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -34,15 +31,18 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Shadow of MotionEvent.
+ *
  * <p>
+ *
  * <p>Original Android implementation stores motion events in a pool of native objects. All motion
  * event data is stored natively, and accessed via a series of static native methods following the
  * pattern nativeGetXXXX(mNativePtr, ...)
+ *
  * <p>
+ *
  * <p>This shadow mirrors this design, but has java equivalents of each native object. Most of the
  * contents of this class were transliterated from
  * frameworks/base/core/jni/android_view_MotionEvent.cpp
@@ -56,16 +56,17 @@ public class ShadowMotionEvent {
 
   private static final int HISTORY_CURRENT = -0x80000000;
 
-  @RealObject
-  private MotionEvent realMotionEvent;
+  @RealObject private MotionEvent realMotionEvent;
 
   @Resetter
   public static void reset() {
-    nativeMotionEventRegistry.clear();
+    // rely on MotionEvent finalizer to clear native objects
+    // nativeMotionEventRegistry.clear();
     ReflectionHelpers.setStaticField(MotionEvent.class, "gRecyclerTop", null);
     ReflectionHelpers.setStaticField(MotionEvent.class, "gSharedTempPointerCoords", null);
     ReflectionHelpers.setStaticField(MotionEvent.class, "gSharedTempPointerProperties", null);
     ReflectionHelpers.setStaticField(MotionEvent.class, "gRecyclerUsed", 0);
+    ReflectionHelpers.setStaticField(MotionEvent.class, "gSharedTempPointerIndexMap", null);
   }
 
   private static void validatePointerCount(int pointerCount) {
@@ -314,15 +315,15 @@ public class ShadowMotionEvent {
   @HiddenApi
   protected static void nativeAddBatch(
       long nativePtr, long eventTimeNanos, PointerCoords[] pointerCoordsObjArray, int metaState) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     int pointerCount = event.getPointerCount();
     validatePointerCoordsObjArray(pointerCoordsObjArray, pointerCount);
     NativeInput.PointerCoords[] rawPointerCoords = new NativeInput.PointerCoords[pointerCount];
     for (int i = 0; i < pointerCount; i++) {
       PointerCoords pointerCoordsObj = pointerCoordsObjArray[i];
       checkNotNull(pointerCoordsObj);
-      rawPointerCoords[i] = pointerCoordsToNative(pointerCoordsObj,
-          event.getXOffset(), event.getYOffset());
+      rawPointerCoords[i] =
+          pointerCoordsToNative(pointerCoordsObj, event.getXOffset(), event.getYOffset());
     }
     event.addSample(eventTimeNanos, rawPointerCoords);
     event.setMetaState(event.getMetaState() | metaState);
@@ -339,7 +340,7 @@ public class ShadowMotionEvent {
   @HiddenApi
   protected static void nativeGetPointerCoords(
       long nativePtr, int pointerIndex, int historyPos, PointerCoords outPointerCoordsObj) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     int pointerCount = event.getPointerCount();
     validatePointerIndex(pointerIndex, pointerCount);
     validatePointerCoords(outPointerCoordsObj);
@@ -367,7 +368,7 @@ public class ShadowMotionEvent {
   @HiddenApi
   protected static void nativeGetPointerProperties(
       long nativePtr, int pointerIndex, PointerProperties outPointerPropertiesObj) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     int pointerCount = event.getPointerCount();
     validatePointerIndex(pointerIndex, pointerCount);
     validatePointerProperties(outPointerPropertiesObj);
@@ -379,8 +380,8 @@ public class ShadowMotionEvent {
 
   @Implementation(maxSdk = KITKAT_WATCH)
   @HiddenApi
-  protected static long nativeReadFromParcel(int nativePtr, Parcel parcelObj) {
-    return nativeReadFromParcel((long) nativePtr, parcelObj);
+  protected static int nativeReadFromParcel(int nativePtr, Parcel parcelObj) {
+    return (int) nativeReadFromParcel((long) nativePtr, parcelObj);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -391,7 +392,7 @@ public class ShadowMotionEvent {
       event = new NativeInput.MotionEvent();
       nativePtr = nativeMotionEventRegistry.getNativeObjectId(event);
     } else {
-       event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+      event = nativeMotionEventRegistry.getNativeObject(nativePtr);
     }
     boolean status = event.readFromParcel(parcelObj);
     if (!status) {
@@ -412,7 +413,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeWriteToParcel(long nativePtr, Parcel parcel) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     if (!event.writeToParcel(parcel)) {
       throw new RuntimeException("Failed to write MotionEvent parcel.");
     }
@@ -462,7 +463,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetPointerId(long nativePtr, int pointerIndex) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     int pointerCount = event.getPointerCount();
     validatePointerIndex(pointerIndex, pointerCount);
     return event.getPointerId(pointerIndex);
@@ -477,7 +478,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetToolType(long nativePtr, int pointerIndex) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     int pointerCount = event.getPointerCount();
     validatePointerIndex(pointerIndex, pointerCount);
     return event.getToolType(pointerIndex);
@@ -492,7 +493,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static long nativeGetEventTimeNanos(long nativePtr, int historyPos) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     if (historyPos == HISTORY_CURRENT) {
       return event.getEventTime();
     } else {
@@ -513,7 +514,7 @@ public class ShadowMotionEvent {
   @HiddenApi
   protected static float nativeGetRawAxisValue(
       long nativePtr, int axis, int pointerIndex, int historyPos) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     int pointerCount = event.getPointerCount();
     validatePointerIndex(pointerIndex, pointerCount);
 
@@ -537,7 +538,7 @@ public class ShadowMotionEvent {
   @HiddenApi
   protected static float nativeGetAxisValue(
       long nativePtr, int axis, int pointerIndex, int historyPos) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     int pointerCount = event.getPointerCount();
     validatePointerIndex(pointerIndex, pointerCount);
 
@@ -564,8 +565,7 @@ public class ShadowMotionEvent {
       destEvent = new NativeInput.MotionEvent();
       destNativePtr = nativeMotionEventRegistry.getNativeObjectId(destEvent);
     }
-    NativeInput.MotionEvent sourceEvent = nativeMotionEventRegistry
-        .getNativeObject(sourceNativePtr);
+    NativeInput.MotionEvent sourceEvent = getNativeMotionEvent(sourceNativePtr);
     destEvent.copyFrom(sourceEvent, keepHistory);
     return destNativePtr;
   }
@@ -579,7 +579,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetDeviceId(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getDeviceId();
   }
 
@@ -592,7 +592,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetSource(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getSource();
   }
 
@@ -605,7 +605,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetSource(long nativePtr, int source) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setSource(source);
   }
 
@@ -618,7 +618,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetAction(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getAction();
   }
 
@@ -631,7 +631,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetAction(long nativePtr, int action) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setAction(action);
   }
 
@@ -644,7 +644,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetActionButton(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getActionButton();
   }
 
@@ -657,7 +657,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetActionButton(long nativePtr, int button) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setActionButton(button);
   }
 
@@ -670,7 +670,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static boolean nativeIsTouchEvent(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.isTouchEvent();
   }
 
@@ -683,7 +683,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetFlags(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getFlags();
   }
 
@@ -696,7 +696,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetFlags(long nativePtr, int flags) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setFlags(flags);
   }
 
@@ -709,7 +709,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetEdgeFlags(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getEdgeFlags();
   }
 
@@ -722,7 +722,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetEdgeFlags(long nativePtr, int edgeFlags) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setEdgeFlags(edgeFlags);
   }
 
@@ -735,7 +735,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetMetaState(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getMetaState();
   }
 
@@ -748,7 +748,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetButtonState(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getButtonState();
   }
 
@@ -761,7 +761,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetButtonState(long nativePtr, int buttonState) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setButtonState(buttonState);
   }
 
@@ -774,7 +774,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeOffsetLocation(long nativePtr, float deltaX, float deltaY) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.offsetLocation(deltaX, deltaY);
   }
 
@@ -787,7 +787,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static float nativeGetXOffset(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getXOffset();
   }
 
@@ -800,7 +800,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static float nativeGetYOffset(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getYOffset();
   }
 
@@ -813,7 +813,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static float nativeGetXPrecision(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getXPrecision();
   }
 
@@ -826,7 +826,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static float nativeGetYPrecision(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getYPrecision();
   }
 
@@ -839,7 +839,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static long nativeGetDownTimeNanos(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getDownTime();
   }
 
@@ -852,7 +852,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetDownTimeNanos(long nativePtr, long downTimeNanos) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setDownTime(downTimeNanos);
   }
 
@@ -865,7 +865,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetPointerCount(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getPointerCount();
   }
 
@@ -878,7 +878,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeFindPointerIndex(long nativePtr, int pointerId) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.findPointerIndex(pointerId);
   }
 
@@ -891,7 +891,7 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetHistorySize(long nativePtr) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getHistorySize();
   }
 
@@ -904,8 +904,19 @@ public class ShadowMotionEvent {
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeScale(long nativePtr, float scale) {
-    NativeInput.MotionEvent event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.scale(scale);
+  }
+
+  private static NativeInput.MotionEvent getNativeMotionEvent(long nativePtr) {
+    // check that MotionEvent was initialized properly. This can occur if MotionEvent was mocked
+    checkState(
+        nativePtr > 0,
+        "MotionEvent has not been initialized. "
+            + "Ensure MotionEvent.obtain was used to create it, instead of creating it directly or via "
+            + "a Mocking framework");
+
+    return nativeMotionEventRegistry.getNativeObject(nativePtr);
   }
 
   // shadow this directly as opposed to nativeTransform because need access to ShadowMatrix
@@ -921,7 +932,13 @@ public class ShadowMotionEvent {
   }
 
   private NativeInput.MotionEvent getNativeMotionEvent() {
-    long nativePtr = (long)ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
+    long nativePtr;
+    if (RuntimeEnvironment.getApiLevel() <= KITKAT_WATCH) {
+      Integer nativePtrInt = ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
+      nativePtr = nativePtrInt.longValue();
+    } else {
+      nativePtr = ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
+    }
     return nativeMotionEventRegistry.getNativeObject(nativePtr);
   }
 
@@ -929,10 +946,10 @@ public class ShadowMotionEvent {
 
   /**
    * @deprecated use MotionEvent.obtain or MotionEvent.addBatch to create a MotionEvent with desired
-   * data
+   *     data
    */
   @Deprecated
-  public void setPointer2(float pointer1X, float pointer1Y) {
+  public MotionEvent setPointer2(float pointer1X, float pointer1Y) {
     NativeInput.MotionEvent event = getNativeMotionEvent();
     List<NativeInput.PointerCoords> pointerCoords = event.getSamplePointerCoords();
     List<PointerProperties> pointerProperties = event.getPointerProperties();
@@ -940,10 +957,11 @@ public class ShadowMotionEvent {
 
     pointerCoords.get(1).setAxisValue(AMOTION_EVENT_AXIS_X, pointer1X);
     pointerCoords.get(1).setAxisValue(AMOTION_EVENT_AXIS_Y, pointer1Y);
+    return realMotionEvent;
   }
 
-  private static void ensureTwoPointers(List<NativeInput.PointerCoords> pointerCoords,
-      List<PointerProperties> pointerProperties) {
+  private static void ensureTwoPointers(
+      List<NativeInput.PointerCoords> pointerCoords, List<PointerProperties> pointerProperties) {
     if (pointerCoords.size() < 2) {
       pointerCoords.add(new NativeInput.PointerCoords());
     }
@@ -952,19 +970,16 @@ public class ShadowMotionEvent {
     }
   }
 
-  /**
-   * @deprecated use MotionEvent.obtain to create a MotionEvent with desired data
-   */
+  /** @deprecated use MotionEvent.obtain to create a MotionEvent with desired data */
   @Deprecated
   public void setPointerIndex(int pointerIndex) {
     NativeInput.MotionEvent event = getNativeMotionEvent();
     // pointer index is stored in upper two bytes of action
-    event.setAction(event.getAction() | ((pointerIndex & 0xff) << AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT));
+    event.setAction(
+        event.getAction() | ((pointerIndex & 0xff) << AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT));
   }
 
-  /**
-   * @deprecated use MotionEvent.obtain to create a MotionEvent with desired data
-   */
+  /** @deprecated use MotionEvent.obtain to create a MotionEvent with desired data */
   @Deprecated
   public void setPointerIds(int index0PointerId, int index1PointerId) {
     NativeInput.MotionEvent event = getNativeMotionEvent();

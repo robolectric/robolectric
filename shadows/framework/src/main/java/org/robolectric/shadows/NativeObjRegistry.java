@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
@@ -17,8 +16,8 @@ public class NativeObjRegistry<T> {
   private BiMap<Long, T> nativeObjToIdMap = HashBiMap.create();
 
   /**
-   * Retrieve the native id for given object.
-   * Assigns a new unique id to the object if not previously registered.
+   * Retrieve the native id for given object. Assigns a new unique id to the object if not
+   * previously registered.
    */
   public synchronized long getNativeObjectId(T o) {
     checkNotNull(o);
@@ -35,12 +34,13 @@ public class NativeObjRegistry<T> {
     nativeObjToIdMap.inverse().remove(removed);
   }
 
-  /**
-   * Retrieve the native object for given id. Throws if object with that id cannot be found
-   */
+  /** Retrieve the native object for given id. Throws if object with that id cannot be found */
   public synchronized T getNativeObject(long nativeId) {
-    return checkNotNull(nativeObjToIdMap.get(nativeId),
-        String.format("Could not find object with nativeId: %d. Currently registered ids: %s",
+    T object = nativeObjToIdMap.get(nativeId);
+    return checkNotNull(
+        object,
+        String.format(
+            "Could not find object with nativeId: %d. Currently registered ids: %s",
             nativeId, nativeObjToIdMap.keySet()));
   }
 
