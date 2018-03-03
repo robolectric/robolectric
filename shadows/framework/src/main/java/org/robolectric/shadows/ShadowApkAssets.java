@@ -9,7 +9,6 @@ import com.android.internal.util.Preconditions;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 @Implements(value = ApkAssets.class, minSdk = Build.VERSION_CODES.P, isInAndroidSdk = false)
@@ -24,19 +23,8 @@ public class ShadowApkAssets {
   }
 
   @Implementation
-  protected void __constructor__(FileDescriptor fd, String name, boolean system,
-      boolean forceSharedLib) throws IOException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Implementation
   protected String getAssetPath() {
     return assetPath;
-  }
-
-  @Implementation
-  protected CharSequence getStringFromPool(int idx) {
-    throw new UnsupportedOperationException();
   }
 }
 // END-INTERNAL
