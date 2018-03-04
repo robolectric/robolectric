@@ -23,6 +23,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
   robolectric-asm-tree-6.0 \
   robolectric-asm-commons-6.0 \
   robolectric-bouncycastle-1.46 \
+  robolectric-sqlite4java-0.282 \
   robolectric-hamcrest-core-1.3 \
   robolectric-hamcrest-library-1.3 \
   robolectric-host-org_apache_http_legacy

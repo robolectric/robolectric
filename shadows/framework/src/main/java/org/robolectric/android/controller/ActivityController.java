@@ -274,7 +274,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           if (RuntimeEnvironment.getApiLevel() <= M) {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
-          } else if (RuntimeEnvironment.getApiLevel() <= O_MR1){
+          } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
             ReflectionHelpers.callInstanceMethod(
                 Activity.class, component, "performStop", from(boolean.class, true));
           }
@@ -320,7 +320,15 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Create lifecycle
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
+          } else {
+            // BEGIN-INTERNAL
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart",
+                from(String.class, "configuration change"));
+            // END-INTERNAL
+          }
+
           ReflectionHelpers.callInstanceMethod(
               Activity.class,
               recreatedActivity,
@@ -334,7 +342,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
           } else {
             // BEGIN-INTERNAL
             ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume",
-                from(boolean.class, false));
+                from(boolean.class, false), from(String.class, "configuration change"));
             // END-INTERNAL
           }
 

@@ -11,6 +11,7 @@ import android.os.WorkSource;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -53,8 +54,13 @@ public class ShadowPowerManager {
     return isPowerSaveMode;
   }
 
-  public void setIsPowerSaveMode(boolean powerSaveMode) {
+  @HiddenApi @Implementation(minSdk = KITKAT_WATCH)
+  protected void setPowerSaveMode(boolean powerSaveMode) {
     isPowerSaveMode = powerSaveMode;
+  }
+
+  public void setIsPowerSaveMode(boolean powerSaveMode) {
+    setPowerSaveMode(powerSaveMode);
   }
 
   private Map<Integer, Boolean> supportedWakeLockLevels = new HashMap<>();
