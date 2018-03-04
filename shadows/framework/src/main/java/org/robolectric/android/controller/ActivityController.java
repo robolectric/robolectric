@@ -274,10 +274,16 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           if (RuntimeEnvironment.getApiLevel() <= M) {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
-          } else {
+          } else if (RuntimeEnvironment.getApiLevel() <= O_MR1){
             ReflectionHelpers.callInstanceMethod(
                 Activity.class, component, "performStop", from(boolean.class, true));
           }
+          // BEGIN-INTERNAL
+          else {
+            ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop",
+                from(boolean.class, true), from(String.class, "configuration change"));
+          }
+          // END-INTERNAL
 
           // This is the true and complete retained state, including loaders and retained
           // fragments.
