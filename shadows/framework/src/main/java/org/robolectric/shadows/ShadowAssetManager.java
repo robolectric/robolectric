@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O_MR1;
-import static android.os.Build.VERSION_CODES.P;
 
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
@@ -224,7 +223,7 @@ public class ShadowAssetManager {
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
-    // BEGIN-InNTERNAL
+    // BEGIN-INTERNAL
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
       Shadow.invokeConstructor(AssetManager.class, realObject);
     }
@@ -242,25 +241,10 @@ public class ShadowAssetManager {
   }
 
   // BEGIN-INTERNAL
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = VERSION_CODES.P)
   protected static long nativeCreate() {
+    // Return a fake pointer, must not be 0.
     return 1;
-  }
-
-  @Implementation(minSdk = P)
-  protected static void nativeVerifySystemIdmaps() {
-    // no-op.
-  }
-
-  @Implementation(minSdk = P)
-  protected static void loadStaticRuntimeOverlays(ArrayList<ApkAssets> outApkAssets) {
-    // no-op.
-  }
-
-  @Implementation(minSdk = P)
-  protected static void nativeSetApkAssets(long ptr, ApkAssets[] apkAssets,
-          boolean invalidateCaches) {
-    // no-op.
   }
   // END-INTERNAL
 
@@ -792,7 +776,7 @@ public class ShadowAssetManager {
   }
 
   // BEGIN-INTERNAL
-  @HiddenApi @Implementation(minSdk = P)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
   protected void applyStyleToTheme(long themePtr, int resId, boolean force) {
     applyThemeStyle(themePtr, resId, force);
   }
@@ -811,7 +795,7 @@ public class ShadowAssetManager {
   }
 
   // BEGIN-INTERNAL
-  @HiddenApi @Implementation(minSdk = P)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
   protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
     copyTheme(destPtr, sourcePtr);
   }
