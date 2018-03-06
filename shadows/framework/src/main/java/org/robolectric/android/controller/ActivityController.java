@@ -74,7 +74,10 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> start() {
-    invokeWhilePaused("performStart");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performStart");
+    } else {
+    }
     return this;
   }
 
@@ -146,8 +149,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
   public ActivityController<T> stop() {
     if (RuntimeEnvironment.getApiLevel() <= M) {
       invokeWhilePaused("performStop");
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
       invokeWhilePaused("performStop", from(boolean.class, true));
+    } else {
     }
     return this;
   }
@@ -254,9 +258,10 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           if (RuntimeEnvironment.getApiLevel() <= M) {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
+          } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop",
+                from(boolean.class, true));
           } else {
-            ReflectionHelpers.callInstanceMethod(
-                Activity.class, component, "performStop", from(boolean.class, true));
           }
 
           // This is the true and complete retained state, including loaders and retained
@@ -294,7 +299,10 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Create lifecycle
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
+          } else {
+          }
           ReflectionHelpers.callInstanceMethod(
               Activity.class,
               recreatedActivity,

@@ -1465,4 +1465,5 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
     return null;
   }
+
 }
