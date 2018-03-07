@@ -118,4 +118,28 @@ public class ShadowSystemPropertiesTest {
     SystemProperties.set("newkey", "true");
     assertThat(SystemProperties.getBoolean("newkey", false)).isTrue();
   }
+
+  @Test
+  public void getBoolean_returnsFalse_forUnsupportedValues() {
+    SystemProperties.set("newkey", "Y");
+    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
+
+    SystemProperties.set("newkey", "On");
+    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
+
+    SystemProperties.set("newkey", "ON");
+    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
+
+    SystemProperties.set("newkey", "Yes");
+    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
+
+    SystemProperties.set("newkey", "YES");
+    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
+
+    SystemProperties.set("newkey", "True");
+    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
+
+    SystemProperties.set("newkey", "TRUE");
+    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
+  }
 }

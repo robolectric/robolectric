@@ -15,18 +15,14 @@ import android.os.IUserManager;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
-
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
@@ -83,21 +79,37 @@ public class ShadowUserManager {
     setSerialNumberForUser(userHandle, nextUserSerial++);
   }
 
+  /**
+   * Returns a list of all user profiles.
+   *
+   * @see #addUserProfile(UserHandle)
+   */
   @Implementation(minSdk = LOLLIPOP)
   public List<UserHandle> getUserProfiles(){
     return ImmutableList.copyOf(userProfiles.keySet());
   }
 
+  /**
+   * Returns an empty list.
+   */
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserInfo> getProfiles(int userHandle) {
-    return Collections.emptyList();
+    return ImmutableList.of();
   }
 
+  /**
+   * Returns a null profile parent.
+   */
   @Implementation(minSdk = LOLLIPOP)
   protected UserInfo getProfileParent(int userHandle) {
     return null;
   }
 
+  /**
+   * Returns {@code true} if the user is unlocked.
+   *
+   * @see #setUserUnlocked(boolean)
+   */
   @Implementation(minSdk = N)
   public boolean isUserUnlocked() {
     return userUnlocked;
@@ -207,6 +219,9 @@ public class ShadowUserManager {
     this.isDemoUser = isDemoUser;
   }
 
+  /**
+   * @return {@code false} by default, or the value specified via {@link #setIsAdminUser(boolean)}
+   */
   @Implementation(minSdk = N_MR1)
   public boolean isAdminUser() {
     return isAdminUser;

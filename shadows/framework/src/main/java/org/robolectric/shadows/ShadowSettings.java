@@ -16,7 +16,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowSettings {
   @Implements(value = Settings.System.class)
   public static class ShadowSystem {
-    private static final WeakHashMap<ContentResolver, Map<String, String>> dataMap = new WeakHashMap<>();
+    private static final Map<ContentResolver, Map<String, String>> dataMap = new WeakHashMap<>();
 
     @Implementation(minSdk = JELLY_BEAN_MR1)
     public static boolean putStringForUser(ContentResolver cr, String name, String value,

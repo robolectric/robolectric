@@ -4,9 +4,13 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.Manifest.permission;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.os.WorkSource;
 import org.junit.Before;
@@ -138,13 +142,35 @@ public class ShadowPowerManagerTest {
   public void isPowerSaveMode_shouldGetAndSet() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
 
-    // first-party apps use this @hide API to adjust power-save mode
-    shadowPowerManager.setPowerSaveMode(true);
+    shadowPowerManager.setIsPowerSaveMode(true);
     assertThat(powerManager.isPowerSaveMode()).isTrue();
+  }
 
-    // third-party apps use this API to adjust power-save mode
-    shadowPowerManager.setIsPowerSaveMode(false);
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void setPowerSaveMode_failsWithoutPermission() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
+
+    try {
+      powerManager.setPowerSaveMode(true);
+      fail("Expected SecurityException");
+    } catch (SecurityException ignored) {}
+
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void setPowerSaveMode_succeedsWithPermission() throws Exception {
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
+
+    PackageInfo packageInfo = RuntimeEnvironment.application.getPackageManager()
+        .getPackageInfo(RuntimeEnvironment.application.getPackageName(),
+            PackageManager.GET_PERMISSIONS);
+    packageInfo.requestedPermissions = new String[] { permission.DEVICE_POWER };
+
+    powerManager.setPowerSaveMode(true);
+    assertThat(powerManager.isPowerSaveMode()).isTrue();
   }
 
   @Test
