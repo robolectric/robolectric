@@ -303,6 +303,11 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
               Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
               type = DataType.REFERENCE;
               valueInt = valueResId;
+            } else if (AttributeResource.isStyleReference(value)) {
+              ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
+              Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+              type = DataType.ATTRIBUTE;
+              valueInt = valueResId;
             } else {
               type = DataType.STRING;
               valueInt = resStringPoolWriter.string(value);

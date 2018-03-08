@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -23,6 +24,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowThemeTest {
@@ -208,12 +210,12 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(),
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReference").build(),
         new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 2 from YetAnotherStyle");
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?parentStyleReference").build(),
+        Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(),
         new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 2 from YetAnotherStyle");
   }
@@ -224,13 +226,11 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_Robolectric, false);
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
-    assertThat(theme.obtainStyledAttributes(
-        Xml.asAttributeSet(resources.getXml(R.xml.temp)),
+    assertThat(theme.obtainStyledAttributes(getFirstElementAttrSet(R.xml.temp),
         new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 2 from YetAnotherStyle");
 
-    assertThat(theme.obtainStyledAttributes(
-        Xml.asAttributeSet(resources.getXml(R.xml.temp_parent)),
+    assertThat(theme.obtainStyledAttributes(getFirstElementAttrSet(R.xml.temp_parent),
         new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 2 from YetAnotherStyle");
   }
@@ -312,6 +312,15 @@ public class ShadowThemeTest {
     Theme theme = resources.newTheme();
     TypedArray typedArray = theme.obtainStyledAttributes(R.style.StyleA, new int[]{R.attr.string1});
     assertThat(typedArray.getString(0)).isEqualTo("string 1 from style A");
+  }
+
+  ////////////////////////////
+
+  private XmlResourceParser getFirstElementAttrSet(int resId) throws Exception {
+    XmlResourceParser xml = resources.getXml(resId);
+    assertThat(xml.next()).isEqualTo(XmlPullParser.START_DOCUMENT);
+    assertThat(xml.nextTag()).isEqualTo(XmlPullParser.START_TAG);
+    return (XmlResourceParser) Xml.asAttributeSet(xml);
   }
 
   public static class TestActivityWithAnotherTheme extends TestActivity {
