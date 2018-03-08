@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
@@ -13,12 +15,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
+import android.os.SystemClock;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.Scheduler;
 
 @RunWith(RobolectricTestRunner.class)
@@ -180,5 +184,105 @@ public class ShadowMessageQueueTest {
     shadowQueue.reset();
     assertThat(handler.hasMessages(1234)).as("after-1234").isFalse();
     assertThat(handler.hasMessages(5678)).as("after-5678").isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void postAndRemoveSyncBarrierToken() {
+    int token = queue.postSyncBarrier();
+    queue.removeSyncBarrier(token);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void removeInvalidSyncBarrierToken() {
+    try {
+      queue.removeSyncBarrier(99);
+      fail("Expected excpetion when sync barrier not present on MessageQueue");
+    } catch (IllegalStateException expected) { }
+  }
+
+  @Test
+  //@Config(minSdk = M)
+  @Config(sdk = M) // todo unpin
+  public void postAndRemoveSyncBarrierToken_messageBefore() {
+    enqueueMessage(testMessage, SystemClock.uptimeMillis());
+    int token = queue.postSyncBarrier();
+    queue.removeSyncBarrier(token);
+
+    assertThat(shadowQueue.getHead()).isEqualTo(testMessage);
+  }
+
+  @Test
+  //@Config(minSdk = M)
+  @Config(sdk = M) // todo unpin
+  public void postAndRemoveSyncBarrierToken_messageBeforeConsumed() {
+    enqueueMessage(testMessage, SystemClock.uptimeMillis());
+    int token = queue.postSyncBarrier();
+    scheduler.advanceToLastPostedRunnable();
+    queue.removeSyncBarrier(token);
+    assertThat(shadowQueue.getHead()).isNull();
+    assertThat(handler.handled).as("handled:after").containsExactly(testMessage);
+  }
+
+  @Test
+  //@Config(minSdk = M)
+  @Config(sdk = M) // todo unpin
+  public void postAndRemoveSyncBarrierToken_messageAfter() {
+    enqueueMessage(testMessage, SystemClock.uptimeMillis() + 100);
+    int token = queue.postSyncBarrier();
+    queue.removeSyncBarrier(token);
+
+    assertThat(shadowQueue.getHead()).isEqualTo(testMessage);
+    scheduler.advanceToLastPostedRunnable();
+    assertThat(shadowQueue.getHead()).isNull();
+    assertThat(handler.handled).as("handled:after").containsExactly(testMessage);
+  }
+
+
+  @Test
+  //@Config(minSdk = M)
+  @Config(sdk = M) // todo unpin
+  public void postAndRemoveSyncBarrierToken_syncBefore() {
+    int token = queue.postSyncBarrier();
+    enqueueMessage(testMessage, SystemClock.uptimeMillis());
+    scheduler.advanceToLastPostedRunnable();
+    queue.removeSyncBarrier(token);
+    assertThat(shadowQueue.getHead()).isNull();
+    assertThat(handler.handled).as("handled:after").containsExactly(testMessage);
+  }
+
+  @Test
+  //@Config(minSdk = M)
+  @Config(sdk = M) // todo unpin
+  public void messageRecycling() {
+    Message msg = Message.obtain(handler);
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+
+        enqueueMessage(msg, 0);
+        System.out.println("background queued msg");
+      }
+    };
+
+    Runnable runnableHog = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          System.out.println("hog started");
+          Thread.sleep(1000);
+          System.out.println("hog ended");
+        } catch (InterruptedException e) {
+          // ignore
+        }
+      }
+    };
+
+    handler.postDelayed(runnableHog, 100);
+    t.start();
+    scheduler.advanceToLastPostedRunnable();
+
+
   }
 }
