@@ -79,7 +79,7 @@ public class ShadowAssetManagerTest {
   public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
     assumeTrue(isLegacyAssetManager());
 
-    expectedException.expect(FileNotFoundException.class);
+    expectedException.expect(IOException.class);
     expectedException.expectMessage(
         "./res/drawable/does_not_exist.png");
 
