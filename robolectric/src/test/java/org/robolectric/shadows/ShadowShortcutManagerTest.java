@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for ShadowShortcutManager. */
 @Config(minSdk = Build.VERSION_CODES.N_MR1)
@@ -169,6 +170,24 @@ public final class ShadowShortcutManagerTest {
     shortcutManager.requestPinShortcut(shortcut1, null /* resultIntent */);
     assertThat(shortcutManager.getPinnedShortcuts()).containsExactlyInAnyOrder(shortcut1);
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void testSetMaxShortcutCountPerActivity() {
+    ShadowShortcutManager shadowShortcutManager = Shadow.extract(shortcutManager);
+    shadowShortcutManager.setMaxShortcutCountPerActivity(42);
+    assertThat(shortcutManager.getMaxShortcutCountPerActivity()).isEqualTo(42);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void testSetManifestShortcuts() {
+    ImmutableList<ShortcutInfo> manifestShortcuts = ImmutableList.of(createShortcut("id1"));
+    ShadowShortcutManager shadowShortcutManager = Shadow.extract(shortcutManager);
+    shadowShortcutManager.setManifestShortcuts(manifestShortcuts);
+    assertThat(shortcutManager.getManifestShortcuts()).isEqualTo(manifestShortcuts);
+  }
+
 
   private static ShortcutInfo createShortcut(String id) {
     return createShortcut(id, false /* isImmutable */);

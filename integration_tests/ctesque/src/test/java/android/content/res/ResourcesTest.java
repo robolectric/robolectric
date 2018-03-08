@@ -8,7 +8,6 @@ import static android.util.TypedValue.COMPLEX_UNIT_MM;
 import static android.util.TypedValue.COMPLEX_UNIT_PT;
 import static android.util.TypedValue.COMPLEX_UNIT_PX;
 import static android.util.TypedValue.COMPLEX_UNIT_SP;
-import static android.util.TypedValue.DATA_NULL_UNDEFINED;
 import static android.util.TypedValue.TYPE_FIRST_COLOR_INT;
 import static android.util.TypedValue.TYPE_INT_BOOLEAN;
 import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
@@ -121,6 +120,16 @@ public class ResourcesTest {
   public void getStringShouldConvertCodePoints() {
     assertThat(resources.getString(R.string.non_breaking_space)).isEqualTo("Closing soon:\u00A05pm");
     assertThat(resources.getString(R.string.space)).isEqualTo("Closing soon: 5pm");
+  }
+
+  @Test
+  public void getMultilineLayoutResource_shouldResolveLayoutReferencesWithLineBreaks() {
+    // multiline_layout is a layout reference to activity_main layout.
+    TypedValue multilineLayoutValue = new TypedValue();
+    resources.getValue(R.layout.multiline_layout, multilineLayoutValue, true /* resolveRefs */);
+    TypedValue mainActivityLayoutValue = new TypedValue();
+    resources.getValue(R.layout.activity_main, mainActivityLayoutValue, false /* resolveRefs */);
+    assertThat(multilineLayoutValue.string).isEqualTo(mainActivityLayoutValue.string);
   }
 
   @Test
@@ -799,33 +808,31 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void getValueShouldClearTypedArrayBetweenCalls() throws Exception {
     TypedValue outValue = new TypedValue();
 
     resources.getValue(R.string.hello, outValue, true);
     assertThat(outValue.type).isEqualTo(TYPE_STRING);
     assertThat(outValue.string).isEqualTo(resources.getString(R.string.hello));
-    assertThat(outValue.data).isEqualTo(DATA_NULL_UNDEFINED);
+    // outValue.data is an index into the String block which we don't know for raw xml resources.
     assertThat(outValue.assetCookie).isNotEqualTo(0);
 
     resources.getValue(R.color.blue, outValue, true);
     assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_RGB8);
     assertThat(outValue.data).isEqualTo(0xFF0000FF);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
+    // outValue.assetCookie is not supported with raw XML
 
     resources.getValue(R.integer.loneliest_number, outValue, true);
     assertThat(outValue.type).isEqualTo(TYPE_INT_DEC);
     assertThat(outValue.data).isEqualTo(1);
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
 
     resources.getValue(R.bool.true_bool_value, outValue, true);
     assertThat(outValue.type).isEqualTo(TYPE_INT_BOOLEAN);
-    assertThat(outValue.data).isEqualTo(1);
+    assertThat(outValue.data).isNotEqualTo(0); // true == traditionally 0xffffffff, -1 in Java but
+    // tests should be checking for non-zero
     assertThat(outValue.string).isNull();
-    assertThat(outValue.assetCookie).isEqualTo(DATA_NULL_UNDEFINED);
   }
 
   @Test
@@ -848,11 +855,16 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   public void stringWithSpaces() throws Exception {
     // this differs from actual Android behavior, which collapses whitespace as "Up to 25 USD"
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
-        .isEqualTo("Up to 25   USD");
+        .isEqualTo("Up to 25 USD");
+  }
+
+  @Test
+  public void internalWhiteSpaceShouldBeCollapsed() throws Exception {
+    assertThat(resources.getString(R.string.internal_whitespace_blocks)).isEqualTo("Whitespace in the middle");
+    assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
   }
 
   @Test

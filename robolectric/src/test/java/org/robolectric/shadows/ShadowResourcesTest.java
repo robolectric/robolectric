@@ -277,15 +277,6 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void getXml() throws Exception {
-    XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
-    assertThat(xmlResourceParser).isNotNull();
-    assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_DOCUMENT);
-    assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_TAG);
-    assertThat(xmlResourceParser.getName()).isEqualTo("PreferenceScreen");
-  }
-
-  @Test
   public void getXml_shouldHavePackageContextForReferenceResolution() throws Exception {
     if (!isLegacyAssetManager()) {
       return;
@@ -297,59 +288,5 @@ public class ShadowResourcesTest {
     xmlResourceParser =
         (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
-  }
-
-  @Test
-  public void stringWithSpaces() throws Exception {
-    if (isLegacyAssetManager()) return;
-
-    assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
-        .isEqualTo("Up to 25 USD");
-  }
-
-  // todo: port to ResourcesTest
-  @Test
-  public void getResourceName() {
-    assertThat(resources.getResourceName(R.string.hello)).isEqualTo("org.robolectric:string/hello");
-  }
-
-  // todo: port to ResourcesTest
-  @Test
-  public void getResourceName_system() {
-    assertThat(resources.getResourceName(android.R.string.ok)).isEqualTo("android:string/ok");
-  }
-
-  // todo: port to ResourcesTest
-  @Test
-  public void getTextArray() {
-    assertThat(resources.getTextArray(R.array.more_items)).containsExactly("baz", "bang");
-  }
-
-  // todo: port to ResourcesTest
-  @Test
-  public void getResourceTypeName_mipmap() {
-    assertThat(resources.getResourceTypeName(R.mipmap.mipmap_reference)).isEqualTo("mipmap");
-    assertThat(resources.getResourceTypeName(R.mipmap.robolectric)).isEqualTo("mipmap");
-  }
-
-  // todo: port to ResourcesTest
-  @Test
-  public void getDrawable_mipmapReferencesResolve() {
-    Drawable reference = resources.getDrawable(R.mipmap.mipmap_reference);
-    Drawable original = resources.getDrawable(R.mipmap.robolectric);
-
-    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
-    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
-  }
-
-  // todo: port to ResourcesTest
-  @Test
-  @Config(minSdk = Build.VERSION_CODES.O)
-  public void getDrawable_mipmapReferencesResolveXml() {
-    Drawable reference = resources.getDrawable(R.mipmap.robolectric_xml);
-    Drawable original = resources.getDrawable(R.mipmap.mipmap_reference_xml);
-
-    assertThat(reference.getMinimumHeight()).isEqualTo(original.getMinimumHeight());
-    assertThat(reference.getMinimumWidth()).isEqualTo(original.getMinimumWidth());
   }
 }

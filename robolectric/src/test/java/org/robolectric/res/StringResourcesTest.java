@@ -42,6 +42,19 @@ public class StringResourcesTest {
   }
 
   @Test
+  public void shouldTrimWhitespace() {
+    assertThat(StringResources.processStringResources("    ")).isEmpty();
+    assertThat(StringResources.processStringResources("Trailingwhitespace    ")).isEqualTo("Trailingwhitespace");
+    assertThat(StringResources.processStringResources("Leadingwhitespace    ")).isEqualTo("Leadingwhitespace");
+  }
+
+  @Test
+  public void shouldCollapseInternalWhiteSpaces() {
+    assertThat(StringResources.processStringResources("Whitespace     in     the          middle")).isEqualTo("Whitespace in the middle");
+    assertThat(StringResources.processStringResources("Some\n\n\n\nNewlines")).isEqualTo("Some Newlines");
+  }
+
+  @Test
   public void escape_shouldRemoveUnescapedDoubleQuotes() {
     Map<String, String> tests = new HashMap<>();
     tests.put("a\\\"b", "a\"b");
