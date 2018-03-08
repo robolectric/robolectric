@@ -1,7 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING;
+import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE;
+import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY;
+import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER;
+import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE;
+import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -153,7 +160,6 @@ public final class ShadowDevicePolicyManagerTest {
     // THEN the method should return null
     assertThat(devicePolicyManager.getProfileOwner()).isNull();
   }
-
 
   @Test
   public void isAdminActiveShouldReturnFalseForNonAdminDevice() {
@@ -748,5 +754,65 @@ public final class ShadowDevicePolicyManagerTest {
 
     // THEN getAutoTimeRequired should return null
     assertThat(devicePolicyManager.getPermittedInputMethods(testComponent)).isNull();
+  }
+
+  @Test
+  public void getStorageEncryptionStatus_defaultValueIsUnsupported() {
+    final int status = devicePolicyManager.getStorageEncryptionStatus();
+    assertThat(status).isEqualTo(ENCRYPTION_STATUS_UNSUPPORTED);
+  }
+
+  @Test
+  public void setStorageEncryptionStatus_IllegalValue() {
+    try {
+      shadowDevicePolicyManager.setStorageEncryptionStatus(-1);
+      fail("Expected IllegalArgumentException");
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage()).isEqualTo("Unknown status: -1");
+    }
+  }
+
+  @Test
+  public void setStorageEncryptionStatus_Unsupported() {
+    shadowDevicePolicyManager.setStorageEncryptionStatus(ENCRYPTION_STATUS_UNSUPPORTED);
+    assertThat(devicePolicyManager.getStorageEncryptionStatus())
+        .isEqualTo(ENCRYPTION_STATUS_UNSUPPORTED);
+  }
+
+  @Test
+  public void setStorageEncryptionStatus_Active() {
+    shadowDevicePolicyManager.setStorageEncryptionStatus(ENCRYPTION_STATUS_ACTIVE);
+    assertThat(devicePolicyManager.getStorageEncryptionStatus())
+        .isEqualTo(ENCRYPTION_STATUS_ACTIVE);
+  }
+
+  @Test
+  public void setStorageEncryptionStatus_Inactive() {
+    shadowDevicePolicyManager.setStorageEncryptionStatus(ENCRYPTION_STATUS_INACTIVE);
+    assertThat(devicePolicyManager.getStorageEncryptionStatus())
+        .isEqualTo(ENCRYPTION_STATUS_INACTIVE);
+  }
+
+  @Test
+  public void setStorageEncryptionStatus_Activating() {
+    shadowDevicePolicyManager.setStorageEncryptionStatus(ENCRYPTION_STATUS_ACTIVATING);
+    assertThat(devicePolicyManager.getStorageEncryptionStatus())
+        .isEqualTo(ENCRYPTION_STATUS_ACTIVATING);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setStorageEncryptionStatus_ActiveDefaultKey() {
+    shadowDevicePolicyManager.setStorageEncryptionStatus(ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY);
+    assertThat(devicePolicyManager.getStorageEncryptionStatus())
+        .isEqualTo(ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setStorageEncryptionStatus_ActivePerUser() {
+    shadowDevicePolicyManager.setStorageEncryptionStatus(ENCRYPTION_STATUS_ACTIVE_PER_USER);
+    assertThat(devicePolicyManager.getStorageEncryptionStatus())
+        .isEqualTo(ENCRYPTION_STATUS_ACTIVE_PER_USER);
   }
 }
