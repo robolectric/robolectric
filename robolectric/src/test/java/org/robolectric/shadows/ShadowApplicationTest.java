@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -33,11 +34,15 @@ import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserManager;
+import android.os.Vibrator;
 import android.print.PrintManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.CaptioningManager;
+import android.view.autofill.AutofillManager;
+import android.view.textclassifier.TextClassificationManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import java.util.List;
@@ -48,7 +53,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.util.Scheduler;
 
 @RunWith(RobolectricTestRunner.class)
@@ -77,7 +81,7 @@ public class ShadowApplicationTest {
     checkSystemService(Context.SEARCH_SERVICE, android.app.SearchManager.class);
     checkSystemService(Context.SENSOR_SERVICE, SystemSensorManager.class);
     checkSystemService(Context.STORAGE_SERVICE, android.os.storage.StorageManager.class);
-    checkSystemService(Context.VIBRATOR_SERVICE, RoboVibrator.class);
+    checkSystemService(Context.VIBRATOR_SERVICE, Vibrator.class);
     checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
     checkSystemService(Context.WIFI_SERVICE, android.net.wifi.WifiManager.class);
     checkSystemService(Context.AUDIO_SERVICE, android.media.AudioManager.class);
@@ -125,9 +129,20 @@ public class ShadowApplicationTest {
     checkSystemService(Context.FINGERPRINT_SERVICE, FingerprintManager.class);
   }
 
+  @Test
+  @Config(minSdk = O)
+  public void shouldProvideServicesIntroducedOreo() throws Exception {
+    // Context.AUTOFILL_MANAGER_SERVICE is marked @hide and this is the documented way to obtain this
+    // service.
+    AutofillManager autofillManager = RuntimeEnvironment.application.getSystemService(AutofillManager.class);
+    assertThat(autofillManager).isNotNull();
+
+    checkSystemService(Context.TEXT_CLASSIFICATION_SERVICE, TextClassificationManager.class);
+  }
+
   @Test public void shouldProvideLayoutInflater() throws Exception {
     Object systemService = RuntimeEnvironment.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
+    assertThat(systemService).isInstanceOf(LayoutInflater.class);
   }
 
   @Test
@@ -457,7 +472,7 @@ public class ShadowApplicationTest {
     String action = "com.does.not.exist.android.app.v2.mobile";
 
     try {
-      application.startActivity(new Intent(action));
+      application.startActivity(new Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
       fail("Expected startActivity to throw ActivityNotFoundException!");
     } catch (ActivityNotFoundException e) {
       assertThat(e.getMessage()).contains(action);

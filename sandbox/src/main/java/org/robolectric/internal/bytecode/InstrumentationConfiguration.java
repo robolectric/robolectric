@@ -76,18 +76,18 @@ public class InstrumentationConfiguration {
   /**
    * Determine if {@link SandboxClassLoader} should instrument a given class.
    *
-   * @param   classInfo The class to check.
+   * @param   mutableClass The class to check.
    * @return  True if the class should be instrumented.
    */
-  public boolean shouldInstrument(ClassInfo classInfo) {
-    return !(classInfo.isInterface()
-            || classInfo.isAnnotation()
-            || classInfo.hasAnnotation(DoNotInstrument.class))
-        && (isInInstrumentedPackage(classInfo)
-            || instrumentedClasses.contains(classInfo.getName())
-            || classInfo.hasAnnotation(Instrument.class))
-        && !(classesToNotInstrument.contains(classInfo.getName()))
-        && !(isInPackagesToNotInstrument(classInfo));
+  public boolean shouldInstrument(MutableClass mutableClass) {
+    return !(mutableClass.isInterface()
+            || mutableClass.isAnnotation()
+            || mutableClass.hasAnnotation(DoNotInstrument.class))
+        && (isInInstrumentedPackage(mutableClass.getName())
+            || instrumentedClasses.contains(mutableClass.getName())
+            || mutableClass.hasAnnotation(Instrument.class))
+        && !(classesToNotInstrument.contains(mutableClass.getName()))
+        && !(isInPackagesToNotInstrument(mutableClass.getName()));
   }
 
   /**
@@ -148,12 +148,11 @@ public class InstrumentationConfiguration {
     return Collections.unmodifiableMap(classNameTranslations);
   }
 
-  public boolean containsStubs(ClassInfo classInfo) {
-    return classInfo.getName().startsWith("com.google.android.maps.");
+  public boolean containsStubs(String className) {
+    return className.startsWith("com.google.android.maps.");
   }
 
-  private boolean isInInstrumentedPackage(ClassInfo classInfo) {
-    final String className = classInfo.getName();
+  private boolean isInInstrumentedPackage(String className) {
     for (String instrumentedPackage : instrumentedPackages) {
       if (className.startsWith(instrumentedPackage)) {
         return true;
@@ -162,8 +161,7 @@ public class InstrumentationConfiguration {
     return false;
   }
 
-  private boolean isInPackagesToNotInstrument(ClassInfo classInfo) {
-    final String className = classInfo.getName();
+  private boolean isInPackagesToNotInstrument(String className) {
     for (String notInstrumentedPackage : packagesToNotInstrument) {
       if (className.startsWith(notInstrumentedPackage)) {
         return true;

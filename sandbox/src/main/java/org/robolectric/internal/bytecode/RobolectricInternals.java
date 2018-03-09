@@ -13,7 +13,7 @@ public class RobolectricInternals {
   private static ShadowInvalidator shadowInvalidator;
 
   @SuppressWarnings("UnusedDeclaration")
-  private static SandboxClassLoader classLoader;
+  private static ClassLoader classLoader;
 
   @SuppressWarnings("UnusedDeclaration")
   public static void classInitializing(Class clazz) throws Exception {

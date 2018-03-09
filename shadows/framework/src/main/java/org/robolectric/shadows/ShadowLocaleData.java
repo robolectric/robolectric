@@ -93,6 +93,7 @@ public class ShadowLocaleData {
     }
 
       ReflectionHelpers.setField(localeData, "perMill", '‰');
+
     localeData.monetarySeparator = '.';
 
     if (getApiLevel() >= LOLLIPOP) {

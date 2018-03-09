@@ -21,7 +21,7 @@ public class PackageResourceTable implements ResourceTable {
   private int packageIdentifier;
 
 
-  PackageResourceTable(String packageName) {
+  public PackageResourceTable(String packageName) {
     this.packageName = packageName;
   }
 

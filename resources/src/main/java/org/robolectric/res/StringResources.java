@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import static com.google.common.base.CharMatcher.whitespace;
+
 import com.google.common.annotations.VisibleForTesting;
 import org.robolectric.util.Logger;
 
@@ -14,7 +16,7 @@ public class StringResources {
    * 3) Escapes
    */
   public static String processStringResources(String inputValue) {
-    return escape(inputValue.trim());
+    return escape(whitespace().collapseFrom(inputValue.trim(), ' '));
   }
 
   /**
@@ -36,10 +38,10 @@ public class StringResources {
     while (true) {
       int j = text.indexOf('\\', i);
       if (j == -1) {
-        result.append(text.substring(i));
+        result.append(removeUnescapedDoubleQuotes(text.substring(i)));
         break;
       }
-      result.append(text.substring(i, j));
+      result.append(removeUnescapedDoubleQuotes(text.substring(i, j)));
       if (j == length - 1) {
         // dangling backslash
         break;
@@ -94,5 +96,9 @@ public class StringResources {
       // IllegalArgumentException of Character.toChars().
       throw new IllegalArgumentException("Invalid code point: \\u" + codePoint, e);
     }
+  }
+
+  private static String removeUnescapedDoubleQuotes(String input) {
+    return input.replaceAll("\"", "");
   }
 }

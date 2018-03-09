@@ -6,8 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 /**
- * Robolectric implementation of {@link android.view.LayoutInflater}.
+ * @deprecated Use {@link LayoutInflater#from(Context)} or
+ * {@link Context#getSystemService(String)} with {@link Context#LAYOUT_INFLATER_SERVICE} instead.
  */
+@Deprecated
 public class RoboLayoutInflater extends LayoutInflater {
   private static final String[] sClassPrefixList = {
       "android.widget.",

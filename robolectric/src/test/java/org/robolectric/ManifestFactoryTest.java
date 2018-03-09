@@ -1,77 +1,20 @@
 package org.robolectric;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.resourceFile;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
 public class ManifestFactoryTest {
-  @Test
-  public void shouldLoadLibraryManifests() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty("manifest", resourceFile("TestAndroidManifest.xml").toString());
-    properties.setProperty("libraries", "lib1");
-    Config config = Config.Implementation.fromProperties(properties);
-    RobolectricTestRunner testRunner = simulateTestRunnerWithoutBuildSystemAPI();
-    ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
-    AndroidManifest manifest = RobolectricTestRunner
-        .createAndroidManifest(manifestFactory.identify(config));
-
-    List<AndroidManifest> libraryManifests = manifest.getLibraryManifests();
-    assertEquals(1, libraryManifests.size());
-    assertEquals("org.robolectric.lib1", libraryManifests.get(0).getPackageName());
-  }
-
-  private static RobolectricTestRunner simulateTestRunnerWithoutBuildSystemAPI()
-      throws InitializationError {
-    return new RobolectricTestRunner(ManifestFactoryTest.class) {
-      @Override
-      Properties getBuildSystemApiProperties() {
-        // Even if the build system executing this test provides properties, pretend that it doesn't
-        // so we can test the old mechanism.
-        return null;
-      }
-    };
-  }
-
-  @Test
-  public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty("manifest", resourceFile("TestAndroidManifest.xml").toString());
-    properties.setProperty("resourceDir", "res");
-    properties.setProperty("assetDir", "assets");
-    Config config = Config.Implementation.fromProperties(properties);
-    RobolectricTestRunner testRunner = simulateTestRunnerWithoutBuildSystemAPI();
-    ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
-    AndroidManifest appManifest = RobolectricTestRunner
-        .createAndroidManifest(manifestFactory.identify(config));
-
-    // This intentionally loads from the non standard resources/project.properties
-    List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
-    String baseDir = "./" + TestUtil.resourcesBaseDir().getPath();
-    assertThat(resourcePaths).contains(
-        baseDir + "/res",
-        baseDir + "/lib1/res",
-        baseDir + "/lib1/../lib3/res",
-        baseDir + "/lib1/../lib2/res");
-  }
 
   @Test
   public void whenBuildSystemApiPropertiesFileIsPresent_shouldUseDefaultManifestFactory() throws Exception {
@@ -131,13 +74,5 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Fs.fileFromPath("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isEqualTo("another.package");
-  }
-
-  private List<String> stringify(Collection<ResourcePath> resourcePaths) {
-    List<String> resourcePathBases = new ArrayList<>();
-    for (ResourcePath resourcePath : resourcePaths) {
-      resourcePathBases.add(resourcePath.getResourceBase().toString());
-    }
-    return resourcePathBases;
   }
 }

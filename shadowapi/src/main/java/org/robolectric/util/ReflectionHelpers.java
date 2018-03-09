@@ -286,6 +286,8 @@ public class ReflectionHelpers {
         throw (Error) e.getTargetException();
       }
       throw new RuntimeException(e.getTargetException());
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException("no such method " + clazz + "." + methodName, e);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -370,12 +372,20 @@ public class ReflectionHelpers {
     }
   }
 
-  private static void makeFieldVeryAccessible(Field field) throws NoSuchFieldException, IllegalAccessException {
+  private static void makeFieldVeryAccessible(Field field) {
     field.setAccessible(true);
 
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+    try {
+      Field modifiersField = Field.class.getDeclaredField("modifiers");
+      modifiersField.setAccessible(true);
+      try {
+        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    } catch (NoSuchFieldException e) {
+      // ignore missing fields
+    }
   }
 
   public static Object defaultValueForType(String returnType) {

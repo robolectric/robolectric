@@ -9,12 +9,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestContentProvider1;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContentProviderTest {
   @Config(minSdk = KITKAT)
   @Test public void testSetCallingPackage() throws Exception {
-    ContentProvider provider = new ShadowContentResolverTest.TestContentProvider();
+    ContentProvider provider = new TestContentProvider1();
     shadowOf(provider).setCallingPackage("calling-package");
     assertThat(provider.getCallingPackage()).isEqualTo("calling-package");
   }
