@@ -13,12 +13,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-import org.robolectric.android.AndroidInterceptors;
-import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.bytecode.ClassNodeProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
-import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.OldClassInstrumentor;
 import org.robolectric.internal.bytecode.ShadowDecorator;
 import org.robolectric.util.Util;
@@ -158,7 +155,49 @@ public class JarInstrumentor {
             .doNotAcquirePackage("org.robolectric.util.")
             .doNotAcquirePackage("org.junit.");
 
-    AndroidConfigurer.configure(builder, new Interceptors(AndroidInterceptors.all()));
+    builder
+        .doNotAcquireClass("org.robolectric.TestLifecycle")
+        .doNotAcquireClass("org.robolectric.AndroidManifest")
+        .doNotAcquireClass("org.robolectric.RobolectricTestRunner")
+        .doNotAcquireClass("org.robolectric.RobolectricTestRunner%HelperTestRunner")
+        .doNotAcquireClass("org.robolectric.res.ResourcePath")
+        .doNotAcquireClass("org.robolectric.res.ResourceTable")
+        .doNotAcquireClass("org.robolectric.res.builder.XmlBlock");
+
+    builder
+        .doNotAcquirePackage("javax.")
+        .doNotAcquirePackage("org.junit")
+        .doNotAcquirePackage("org.hamcrest")
+        .doNotAcquirePackage("org.robolectric.annotation.")
+        .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.manifest.")
+        .doNotAcquirePackage("org.robolectric.res.")
+        .doNotAcquirePackage("org.robolectric.util.")
+        .doNotAcquirePackage("org.robolectric.RobolectricTestRunner$")
+        .doNotAcquirePackage("sun.")
+        .doNotAcquirePackage("com.sun.")
+        .doNotAcquirePackage("org.w3c.")
+        .doNotAcquirePackage("org.xml.")
+        .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
+        .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+        .doNotAcquirePackage("kotlin.")
+        // Fix #958: SQLite native library must be loaded once.
+        .doNotAcquirePackage("com.almworks.sqlite4java")
+        .doNotAcquirePackage("org.jacoco.");
+
+    // Instrumenting these classes causes a weird failure.
+    builder.doNotInstrumentClass("android.R")
+        .doNotInstrumentClass("android.R$styleable");
+
+    builder.addInstrumentedPackage("dalvik.")
+        .addInstrumentedPackage("libcore.")
+        .addInstrumentedPackage("android.")
+        .addInstrumentedPackage("com.android.internal.")
+        .addInstrumentedPackage("org.apache.http.")
+        .addInstrumentedPackage("org.ccil.cowan.tagsoup")
+        .addInstrumentedPackage("org.kxml2.");
+
+    builder.doNotInstrumentPackage("android.support.test");
     return builder.build();
   }
 }
