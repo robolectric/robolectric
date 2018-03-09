@@ -220,6 +220,11 @@ public class ShadowAssetManager {
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+      invokeConstructor(AssetManager.class, realObject);
+    }
+
   }
 
   @Implementation
@@ -429,6 +434,19 @@ public class ShadowAssetManager {
     }
 
 
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+      // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
+      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
+          ClassParameter.from(AssetManager.class, realObject),
+          ClassParameter.from(long.class, 0));
+
+      ShadowAssetInputStream sais = shadowOf(ais);
+      sais.setDelegate(stream);
+      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
+      stream = ais;
+    }
+
+
     return stream;
   }
 
@@ -587,6 +605,12 @@ public class ShadowAssetManager {
   }
 
 
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  public int[] getResourceIntArray(int resId) {
+    return getArrayIntResource(resId);
+  }
+
+
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) {
@@ -739,6 +763,12 @@ public class ShadowAssetManager {
   }
 
 
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  public void applyStyleToTheme(long themePtr, int styleRes, boolean force) {
+    applyThemeStyle(themePtr, styleRes, force);
+  }
+
+
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
     copyTheme((long) destPtr, (long) sourcePtr);
@@ -749,6 +779,12 @@ public class ShadowAssetManager {
     NativeTheme destNativeTheme = getNativeTheme(destPtr);
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
+  }
+
+
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  public static void nativeThemeCopy(long destPtr, long sourcePtr) {
+    copyTheme(destPtr, sourcePtr);
   }
 
 
@@ -1048,5 +1084,22 @@ public class ShadowAssetManager {
   public static void reset() {
     ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
   }
+
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  public static void createSystemAssetsInZygoteLocked() {
+    AssetManager system = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
+    if (system == null) {
+      system = ReflectionHelpers.callConstructor(AssetManager.class,
+          ClassParameter.from(boolean.class, true));
+      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", system);
+    }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  public static long nativeCreate() {
+    return 1;
+  }
+
 
 }

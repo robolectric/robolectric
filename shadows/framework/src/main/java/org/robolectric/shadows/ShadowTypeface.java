@@ -97,6 +97,11 @@ public class ShadowTypeface {
     return null;
   }
 
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
+  public static void buildSystemFallback(String xmlPath, String fontDir,
+      ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
+    fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
+  }
 
   @Resetter
   synchronized public static void reset() {

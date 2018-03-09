@@ -70,14 +70,14 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
       invokeWhilePaused("performRestart");
     }
+    else {
+      invokeWhilePaused("performRestart", from(boolean.class, true));
+    }
     return this;
   }
 
   public ActivityController<T> start() {
-    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused("performStart");
-    } else {
-    }
+    invokeWhilePaused("performStart");
     return this;
   }
 
@@ -94,6 +94,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
   public ActivityController<T> resume() {
     if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
       invokeWhilePaused("performResume");
+    } else {
+      invokeWhilePaused("performResume", from(boolean.class, true));
     }
     return this;
   }
@@ -149,9 +151,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
   public ActivityController<T> stop() {
     if (RuntimeEnvironment.getApiLevel() <= M) {
       invokeWhilePaused("performStop");
-    } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused("performStop", from(boolean.class, true));
     } else {
+      invokeWhilePaused("performStop", from(boolean.class, true));
     }
     return this;
   }
@@ -258,12 +259,10 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           if (RuntimeEnvironment.getApiLevel() <= M) {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
-          } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+          } else  {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop",
                 from(boolean.class, true));
-          } else {
           }
-
           // This is the true and complete retained state, including loaders and retained
           // fragments.
           final Object nonConfigInstance =
@@ -299,10 +298,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Create lifecycle
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
-          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
-          } else {
-          }
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
           ReflectionHelpers.callInstanceMethod(
               Activity.class,
               recreatedActivity,
@@ -312,6 +308,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
               Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
           if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
             ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          } else {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume",
+                from(boolean.class, true));
           }
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onPostResume");
           // TODO: Call visible() too.
