@@ -97,15 +97,6 @@ public class ShadowBitmapFactory {
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
     byte[] ninePatchChunk = null;
 
-    if (is instanceof AssetInputStream) {
-      ShadowAssetInputStream sais = Shadows.shadowOf((AssetInputStream) is);
-      is = sais.getDelegate();
-      if (sais.isNinePatch()) {
-        ninePatchChunk = new byte[0];
-      }
-    }
-
-
     String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
     Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);

@@ -1,3 +1,4 @@
+// BEGIN-INTERNAL
 package org.robolectric.shadows;
 
 import android.content.res.AssetManager.AssetInputStream;
@@ -76,3 +77,4 @@ public class ShadowAssetInputStream {
     return delegate.markSupported();
   }
 }
+// END-INTERNAL

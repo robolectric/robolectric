@@ -1,3 +1,4 @@
+// BEGIN-INTERNAL
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
@@ -29,3 +30,4 @@ public class ShadowFileUtils {
         from(long.class, count));
   }
 }
+// END-INTERNAL

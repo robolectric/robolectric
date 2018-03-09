@@ -74,12 +74,7 @@ public class ShadowSystemVibrator extends ShadowVibrator {
       VibrationEffect.OneShot oneShot = (VibrationEffect.OneShot) effect;
 
       long timing;
-
-      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
-        timing = oneShot.getDuration();
-      } else {
         timing = ReflectionHelpers.callInstanceMethod(oneShot, "getTiming");
-      }
 
       recordVibrate(timing);
     }

@@ -7,9 +7,9 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.content.res.ApkAssets;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
@@ -225,11 +225,6 @@ public class ShadowAssetManager {
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
-
-    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
-      invokeConstructor(AssetManager.class, realObject);
-    }
-
   }
 
   @Implementation
@@ -440,19 +435,6 @@ public class ShadowAssetManager {
     }
 
 
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
-      // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
-      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
-          from(AssetManager.class, realObject),
-          from(long.class, 0));
-
-      ShadowAssetInputStream sais = shadowOf(ais);
-      sais.setDelegate(stream);
-      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
-      stream = ais;
-    }
-
-
     return stream;
   }
 
@@ -598,7 +580,7 @@ public class ShadowAssetManager {
     this.config = config;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
@@ -610,6 +592,7 @@ public class ShadowAssetManager {
     }
     return ints;
   }
+
 
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
     TypedResource value = getAndResolve(resId, config, true);
@@ -755,24 +738,26 @@ public class ShadowAssetManager {
     applyThemeStyle((long) themePtr, styleRes, force);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
     nativeTheme.themeStyleSet.apply(style, force);
   }
 
+
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
     copyTheme((long) destPtr, (long) sourcePtr);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
     NativeTheme destNativeTheme = getNativeTheme(destPtr);
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
+
 
   /////////////////////////
 
