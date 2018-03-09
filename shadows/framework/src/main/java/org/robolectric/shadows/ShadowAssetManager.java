@@ -598,7 +598,7 @@ public class ShadowAssetManager {
     this.config = config;
   }
 
-  @HiddenApi @Implementation(maxSdk = O_MR1)
+  @HiddenApi @Implementation
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
@@ -610,13 +610,6 @@ public class ShadowAssetManager {
     }
     return ints;
   }
-
-
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  public int[] getResourceIntArray(int resId) {
-    return getArrayIntResource(resId);
-  }
-
 
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
     TypedResource value = getAndResolve(resId, config, true);
@@ -762,38 +755,24 @@ public class ShadowAssetManager {
     applyThemeStyle((long) themePtr, styleRes, force);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
     nativeTheme.themeStyleSet.apply(style, force);
   }
 
-
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  public void applyStyleToTheme(long themePtr, int styleRes, boolean force) {
-    applyThemeStyle(themePtr, styleRes, force);
-  }
-
-
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
     copyTheme((long) destPtr, (long) sourcePtr);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public static void copyTheme(long destPtr, long sourcePtr) {
     NativeTheme destNativeTheme = getNativeTheme(destPtr);
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
-
-
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  public static void nativeThemeCopy(long destPtr, long sourcePtr) {
-    copyTheme(destPtr, sourcePtr);
-  }
-
 
   /////////////////////////
 
