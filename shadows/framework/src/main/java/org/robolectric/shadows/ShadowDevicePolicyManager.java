@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -43,6 +44,7 @@ public class ShadowDevicePolicyManager {
   private CharSequence organizationName;
   private int organizationColor;
   private boolean isAutoTimeRequired;
+  private int storageEncryptionStatus;
 
   private final Set<String> hiddenPackages = new HashSet<>();
   private final Set<String> wasHiddenPackages = new HashSet<>();
@@ -52,6 +54,7 @@ public class ShadowDevicePolicyManager {
 
   public ShadowDevicePolicyManager() {
     organizationColor = DEFAULT_ORGANIZATION_COLOR;
+    storageEncryptionStatus = DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
   }
 
   @Implementation
@@ -360,5 +363,42 @@ public class ShadowDevicePolicyManager {
   public List<String> getPermittedInputMethods(ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return permittedInputMethods;
+  }
+
+  /**
+   * @return the previously set status; default is
+   * {@link DevicePolicyManager#ENCRYPTION_STATUS_UNSUPPORTED}
+   * @see #setStorageEncryptionStatus(int)
+   */
+  @Implementation
+  protected int getStorageEncryptionStatus() {
+    return storageEncryptionStatus;
+  }
+
+  /**
+   * Setter for {@link DevicePolicyManager#getStorageEncryptionStatus()}.
+   */
+  public void setStorageEncryptionStatus(int status) {
+    switch (status) {
+      case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE:
+      case DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE:
+      case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING:
+      case DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED:
+        break;
+      case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY:
+        if (RuntimeEnvironment.getApiLevel() < M) {
+          throw new IllegalArgumentException("status " + status + " requires API " + M);
+        }
+        break;
+      case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER:
+        if (RuntimeEnvironment.getApiLevel() < N) {
+          throw new IllegalArgumentException("status " + status + " requires API " + N);
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown status: " + status);
+    }
+
+    storageEncryptionStatus = status;
   }
 }

@@ -2,9 +2,12 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
+
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -18,6 +21,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+
 import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -65,9 +69,9 @@ import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(AssetManager.class)
 public class ShadowAssetManager {
@@ -231,6 +235,7 @@ public class ShadowAssetManager {
   public void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
   }
+
 
   public ResourceTable getResourceTable() {
     return resourceTable;
@@ -414,7 +419,7 @@ public class ShadowAssetManager {
     }
     return assetFiles.toArray(new String[assetFiles.size()]);
   }
- 
+
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
@@ -497,6 +502,7 @@ public class ShadowAssetManager {
     return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
         packageName, resourceProvider);
   }
+
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
@@ -591,7 +597,7 @@ public class ShadowAssetManager {
     this.config = config;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
@@ -755,7 +761,7 @@ public class ShadowAssetManager {
     applyThemeStyle((long) themePtr, styleRes, force);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
@@ -774,7 +780,7 @@ public class ShadowAssetManager {
     copyTheme((long) destPtr, (long) sourcePtr);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
     NativeTheme destNativeTheme = getNativeTheme(destPtr);
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
@@ -1085,7 +1091,6 @@ public class ShadowAssetManager {
     ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
   }
 
-
   @Implementation(minSdk = VERSION_CODES.P)
   public static void createSystemAssetsInZygoteLocked() {
     AssetManager system = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
@@ -1100,6 +1105,4 @@ public class ShadowAssetManager {
   public static long nativeCreate() {
     return 1;
   }
-
-
 }
