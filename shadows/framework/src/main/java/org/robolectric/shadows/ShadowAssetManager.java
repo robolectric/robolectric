@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.res.AssetFileDescriptor;
@@ -442,8 +443,8 @@ public class ShadowAssetManager {
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
       // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
       AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
-          ClassParameter.from(AssetManager.class, realObject),
-          ClassParameter.from(long.class, 0));
+          from(AssetManager.class, realObject),
+          from(long.class, 0));
 
       ShadowAssetInputStream sais = shadowOf(ais);
       sais.setDelegate(stream);
@@ -1096,7 +1097,7 @@ public class ShadowAssetManager {
     AssetManager system = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
     if (system == null) {
       system = ReflectionHelpers.callConstructor(AssetManager.class,
-          ClassParameter.from(boolean.class, true));
+          from(boolean.class, true));
       ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", system);
     }
   }
