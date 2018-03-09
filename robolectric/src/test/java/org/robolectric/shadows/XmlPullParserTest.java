@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeFalse;
 import static org.robolectric.res.android.ResourceTypes.ANDROID_NS;
 import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
+import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
@@ -37,6 +39,8 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
 
   @Test
   public void xmlParser() throws IOException, XmlPullParserException {
+    assumeFalse(isLegacyAssetManager());
+
     Resources resources = RuntimeEnvironment.application.getResources();
     XmlResourceParser parser = resources.getXml(R.xml.xml_attrs);
     assertThat(parser).isNotNull();
