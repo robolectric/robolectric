@@ -10,7 +10,6 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import java.io.File;
 import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,52 +29,6 @@ public class ShadowResourcesTest {
   @Before
   public void setup() throws Exception {
     resources = RuntimeEnvironment.application.getResources();
-  }
-
-  @Test
-  public void getText_withHtml() throws Exception {
-    assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
-  }
-
-  @Test
-  public void getText_withLayoutId() throws Exception {
-    // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a String resource type
-    // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
-    // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).endsWith("res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
-  }
-
-  @Test
-  public void getDimension() throws Exception {
-    assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
-    assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
-    assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 160);
-    assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 160)));
-    assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
-    assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12f * 160 / 72);
-    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5);
-  }
-
-  @Test
-  public void getDimensionPixelSize() throws Exception {
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(265);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(27);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
-  }
-
-  @Test
-  public void getDimensionPixelOffset() throws Exception {
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen)).isEqualTo(20);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen)).isEqualTo(8);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 160);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(264);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(26);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test

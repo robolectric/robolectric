@@ -11,6 +11,6 @@ dependencies {
 
     // Testing dependencies
     testRuntime AndroidSdk.MAX_SDK.coordinates
-    testCompile "org.assertj:assertj-core:2.0.0"
+    testImplementation "com.google.truth:truth:0.39"
     testCompile 'com.googlecode.libphonenumber:libphonenumber:8.0.0'
 }
