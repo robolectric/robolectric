@@ -711,7 +711,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       }
 
       /* adjust count if we're near EOF */
-      maxLen = Math.toIntExact(mLength - mOffset);
+      maxLen = toIntExact(mLength - mOffset);
       if (count > maxLen)
         count = maxLen;
 
@@ -723,13 +723,13 @@ static Asset createFromCompressedMap(FileMap dataMap,
           /* copy from mapped area */
         //printf("map read\n");
         // memcpy(buf, (String)mMap.getDataPtr() + mOffset, count);
-        System.arraycopy(mMap.getDataPtr(), Math.toIntExact(mOffset), buf, bufOffset, count);
+        System.arraycopy(mMap.getDataPtr(), toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else if (mBuf != null) {
           /* copy from buffer */
         //printf("buf read\n");
         // memcpy(buf, (String)mBuf + mOffset, count);
-        System.arraycopy(mBuf, Math.toIntExact(mOffset), buf, bufOffset, count);
+        System.arraycopy(mBuf, toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else {
           /* read from the file */
@@ -841,7 +841,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
           /* zero-length files are allowed; not sure about zero-len allocs */
           /* (works fine with gcc + x86linux) */
-        allocLen = Math.toIntExact(mLength);
+        allocLen = toIntExact(mLength);
         if (mLength == 0)
           allocLen = 1;
 
@@ -859,7 +859,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
             // fseek(mFp, mStart, SEEK_SET);
             mFp.seek(mStart);
             // if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
-            if (mFp.read(buf, 0, Math.toIntExact(mLength)) != (int) mLength) {
+            if (mFp.read(buf, 0, toIntExact(mLength)) != (int) mLength) {
               ALOGE("failed reading %ld bytes\n", (long) mLength);
               // delete[] buf;
               return null;
@@ -880,7 +880,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
         map = new FileMap();
         // if (!map.create(null, fileno(mFp), mStart, mLength, true)) {
-        if (!map.create(null, -1, mStart, Math.toIntExact(mLength), true)) {
+        if (!map.create(null, -1, mStart, toIntExact(mLength), true)) {
           // delete map;
           return null;
         }
@@ -1141,7 +1141,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       assert(mBuf != null);
 
       /* adjust count if we're near EOF */
-      maxLen = Math.toIntExact(mUncompressedLen - mOffset);
+      maxLen = toIntExact(mUncompressedLen - mOffset);
       if (count > maxLen)
         count = maxLen;
 
@@ -1151,7 +1151,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       /* copy from buffer */
       //printf("comp buf read\n");
 //      memcpy(buf, (String)mBuf + mOffset, count);
-      System.arraycopy(mBuf, Math.toIntExact(mOffset), buf, bufOffset, count);
+      System.arraycopy(mBuf, toIntExact(mOffset), buf, bufOffset, count);
       actual = count;
 //       }
 
@@ -1267,5 +1267,13 @@ static Asset createFromCompressedMap(FileMap dataMap,
           "mMap=" + mMap +
           '}';
     }
+  }
+
+  // todo: remove when Android supports this
+  static int toIntExact(long value) {
+    if ((int)value != value) {
+      throw new ArithmeticException("integer overflow");
+    }
+    return (int)value;
   }
 }

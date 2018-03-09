@@ -177,7 +177,7 @@ public class ResTable {
       }
 
       for (Integer typeId : srcPg.types.keySet()) {
-        List<Type> typeList = pg.types.computeIfAbsent(typeId, k -> new ArrayList<>());
+        List<Type> typeList = computeIfAbsent(pg.types, typeId, key -> new ArrayList<>());
         typeList.addAll(srcPg.types.get(typeId));
       }
       pg.dynamicRefTable.addMappings(srcPg.dynamicRefTable);
@@ -490,7 +490,7 @@ public class ResTable {
       final ResTable_config config,
       Entry outEntry)
   {
-    final List<Type> typeList = packageGroup.types.getOrDefault(typeIndex, Collections.emptyList());
+    final List<Type> typeList = getOrDefault(packageGroup.types, typeIndex, Collections.emptyList());
     if (typeList.isEmpty()) {
       ALOGV("Skipping entry type index 0x%02x because type is NULL!\n", typeIndex);
       return BAD_TYPE;
@@ -833,7 +833,7 @@ public class ResTable {
           typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
         }
 
-        List<Type> typeList = group.types.computeIfAbsent((int) typeIndex, k -> new ArrayList<>());
+        List<Type> typeList = computeIfAbsent(group.types, (int) typeIndex, k -> new ArrayList<>());
         if (!typeList.isEmpty()) {
           final Type existingType = typeList.get(0);
           if (existingType.entryCount != newEntryCount && idmapEntry == null) {
@@ -900,7 +900,7 @@ public class ResTable {
           typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
         }
 
-        List<Type> typeList = group.types.getOrDefault((int) typeIndex, Collections.emptyList());
+        List<Type> typeList = getOrDefault(group.types, (int) typeIndex, Collections.emptyList());
         if (typeList.isEmpty()) {
           ALOGE("No TypeSpec for type %d", type.id);
           return (mError=BAD_TYPE);
@@ -1172,7 +1172,7 @@ public class ResTable {
   }
 
   int findEntry(PackageGroup group, int typeIndex, String name, Ref<Integer> outTypeSpecFlags) {
-    List<Type> typeList = group.types.getOrDefault(typeIndex, Collections.emptyList());
+    List<Type> typeList = getOrDefault(group.types, typeIndex, Collections.emptyList());
     for (Type type : typeList) {
       int ei = type._package_.keyStrings.indexOfString(name);
       if (ei < 0) {
@@ -2640,7 +2640,7 @@ public class ResTable {
       return BAD_INDEX;
     }
 
-    final List<Type> typeConfigs = grp.types.getOrDefault(t, Collections.emptyList());
+    final List<Type> typeConfigs = getOrDefault(grp.types, t, Collections.emptyList());
     if (typeConfigs.isEmpty()) {
       ALOGW("Type identifier 0x%x does not exist.", t+1);
       return BAD_INDEX;
@@ -2952,5 +2952,23 @@ public class ResTable {
     public String toString() {
       return packageName.trim() + '@' + type + ':' + name;
     }
+  }
+
+  private interface Function<K, V> {
+    V apply(K key);
+  }
+
+  static <K, V> V computeIfAbsent(Map<K, V> map, K key, Function<K, V> vFunction) {
+    V v = map.get(key);
+    if (v == null) {
+      v = vFunction.apply(key);
+      map.put(key, v);
+    }
+    return v;
+  }
+
+  static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultValue) {
+    V v;
+    return (((v = map.get(key)) != null) || map.containsKey(key)) ? v : defaultValue;
   }
 }

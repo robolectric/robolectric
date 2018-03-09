@@ -6,7 +6,9 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.commonShadowOf;
 
 import android.content.res.AssetManager;
+import android.graphics.FontFamily;
 import android.graphics.Typeface;
+import android.util.ArrayMap;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;

@@ -1,5 +1,6 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.Util.ALOGV;
 
 import java.io.FileInputStream;
@@ -170,7 +171,7 @@ public class FileMap {
     //mBaseLength = adjLength;
     mDataOffset = offset;
     //mDataPtr = mBasePtr + adjust;
-    mDataLength = Math.toIntExact(entry.getSize());
+    mDataLength = toIntExact(entry.getSize());
 
     //assert(mBasePtr != 0);
 

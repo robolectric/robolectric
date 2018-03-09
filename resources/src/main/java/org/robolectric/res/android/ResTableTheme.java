@@ -5,6 +5,7 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.ResTable.Res_GETENTRY;
 import static org.robolectric.res.android.ResTable.Res_GETPACKAGE;
 import static org.robolectric.res.android.ResTable.Res_GETTYPE;
+import static org.robolectric.res.android.ResTable.getOrDefault;
 import static org.robolectric.res.android.ResourceTypes.Res_value.TYPE_ATTRIBUTE;
 import static org.robolectric.res.android.ResourceTypes.Res_value.TYPE_NULL;
 import static org.robolectric.res.android.Util.ALOGE;
@@ -220,7 +221,7 @@ public class ResTableTheme {
         curEntries = curPI.types[t] != null ? curPI.types[t].entries: null;
         if (curEntries == null) {
           final PackageGroup grp = mTable.mPackageGroups.get(curPackageIndex);
-          final List<Type> typeList = grp.types.getOrDefault(t, Collections.emptyList());
+          final List<Type> typeList = getOrDefault(grp.types, t, Collections.emptyList());
           int cnt = typeList.isEmpty() ? 0 : typeList.get(0).entryCount;
           curEntries = new theme_entry[cnt];
           curPI.types[t] = new type_info();

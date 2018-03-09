@@ -1,5 +1,6 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.Util.ALOGD;
 import static org.robolectric.res.android.Util.ALOGE;
@@ -962,7 +963,7 @@ public class CppAssetManager {
       ALOGV("Opened uncompressed entry %s in zip %s mode %s: %s", entryName.string(),
           pZipFile.mFileName, mode, pAsset);
     } else {
-      pAsset = Asset.createFromCompressedMap(dataMap, Math.toIntExact(uncompressedLen.get()), mode);
+      pAsset = Asset.createFromCompressedMap(dataMap, toIntExact(uncompressedLen.get()), mode);
       ALOGV("Opened compressed entry %s in zip %s mode %s: %s", entryName.string(),
           pZipFile.mFileName, mode, pAsset);
     }
@@ -1743,23 +1744,23 @@ public class CppAssetManager {
 
   public List<AssetPath> getAssetPaths() {
     synchronized (mLock) {
-      return mAssetPaths.stream()
-          .map(asset_path -> {
-            FsFile fsFile;
-            switch (asset_path.type) {
-              case kFileTypeDirectory:
-                fsFile = Fs.newFile(asset_path.path.string());
-                break;
-              case kFileTypeRegular:
-                fsFile = Fs.newJarFile(new File(asset_path.path.string()));
-                break;
-              default:
-                throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "
-                    + asset_path.path.string());
-            }
-            return new AssetPath(fsFile, asset_path.isSystemAsset);
-          })
-          .collect(Collectors.toList());
+      ArrayList<AssetPath> assetPaths = new ArrayList<>(mAssetPaths.size());
+      for (asset_path asset_path : mAssetPaths) {
+        FsFile fsFile;
+        switch (asset_path.type) {
+          case kFileTypeDirectory:
+            fsFile = Fs.newFile(asset_path.path.string());
+            break;
+          case kFileTypeRegular:
+            fsFile = Fs.newJarFile(new File(asset_path.path.string()));
+            break;
+          default:
+            throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "
+                + asset_path.path.string());
+        }
+        assetPaths.add(new AssetPath(fsFile, asset_path.isSystemAsset));
+      }
+      return assetPaths;
     }
   }
 }

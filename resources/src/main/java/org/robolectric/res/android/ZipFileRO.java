@@ -1,5 +1,6 @@
 package org.robolectric.res.android;
 
+import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.Errors.NAME_NOT_FOUND;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGW;
@@ -134,7 +135,7 @@ public class ZipFileRO {
       //        pOffset = ze.offset;
     }
     if (pModWhen != null) {
-        pModWhen.set(ze.getLastModifiedTime().toMillis());
+        // todo pModWhen.set(ze.getLastModifiedTime().toMillis());
     }
     if (pCrc32 != null) {
       pCrc32.set(ze.getCrc());
@@ -257,9 +258,9 @@ public class ZipFileRO {
     int actualLen = 0;
 
     if (ze.getMethod() == kCompressStored) {
-      actualLen = Math.toIntExact(ze.getSize());
+      actualLen = toIntExact(ze.getSize());
     } else {
-      actualLen = Math.toIntExact(ze.getCompressedSize());
+      actualLen = toIntExact(ze.getCompressedSize());
     }
 
     FileMap newMap = new FileMap();
