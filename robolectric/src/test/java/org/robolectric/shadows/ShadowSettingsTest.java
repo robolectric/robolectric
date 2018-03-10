@@ -18,73 +18,52 @@ public class ShadowSettingsTest {
   private ContentResolver contentResolver;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     contentResolver = RuntimeEnvironment.application.getContentResolver();
   }
 
   @Test
-  public void testSystemGetInt() {
+  public void testSystemGetInt() throws Exception {
     assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.System.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
     Settings.System.putInt(contentResolver, "property", 1);
     assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
-
-    Settings.System.putString(contentResolver, "property", "11");
-    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(11);
   }
 
   @Test
-  public void testSecureGetInt() {
+  public void testSecureGetInt() throws Exception {
     assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.Secure.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
     Settings.Secure.putInt(contentResolver, "property", 1);
     assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(1);
-
-    Settings.Secure.putString(contentResolver, "property", "11");
-    assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(11);
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void testGlobalGetInt() {
+  public void testGlobalGetInt() throws Exception {
     assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.Global.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
     Settings.Global.putInt(contentResolver, "property", 1);
     assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(1);
-
-    Settings.Global.putString(contentResolver, "property", "11");
-    assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(11);
   }
 
   @Test
-  public void testSystemGetString() {
+  public void testSystemGetString() throws Exception {
     assertThat(Settings.System.getString(contentResolver, "property")).isNull();
 
     Settings.System.putString(contentResolver, "property", "value");
     assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("value");
-
-    Settings.System.putInt(contentResolver, "property", 123);
-    assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("123");
-
-    Settings.System.putLong(contentResolver, "property", 456L);
-    assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("456");
-
-    Settings.System.putFloat(contentResolver, "property", 7.89f);
-    assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("7.89");
   }
 
   @Test
-  public void testSystemGetLong() throws Settings.SettingNotFoundException {
+  public void testSystemGetLong() throws Exception {
     assertThat(Settings.System.getLong(contentResolver, "property", 10L)).isEqualTo(10L);
     Settings.System.putLong(contentResolver, "property", 42L);
     assertThat(Settings.System.getLong(contentResolver, "property")).isEqualTo(42L);
     assertThat(Settings.System.getLong(contentResolver, "property", 10L)).isEqualTo(42L);
-
-    Settings.System.putString(contentResolver, "property", "11");
-    assertThat(Settings.System.getLong(contentResolver, "property", 0)).isEqualTo(11L);
   }
 
   @Test
@@ -92,35 +71,32 @@ public class ShadowSettingsTest {
     assertThat(Settings.System.getFloat(contentResolver, "property", 23.23f)).isEqualTo(23.23f);
     Settings.System.putFloat(contentResolver, "property", 42.42f);
     assertThat(Settings.System.getFloat(contentResolver, "property", 10L)).isEqualTo(42.42f);
-
-    Settings.System.putString(contentResolver, "property", "11.2");
-    assertThat(Settings.System.getFloat(contentResolver, "property", 0)).isEqualTo(11.2f);
   }
 
   @Test(expected = Settings.SettingNotFoundException.class)
-  public void testSystemGetLong_exception() throws Settings.SettingNotFoundException {
+  public void testSystemGetLong_exception() throws Exception {
     Settings.System.getLong(contentResolver, "property");
   }
 
   @Test(expected = Settings.SettingNotFoundException.class)
-  public void testSystemGetInt_exception() throws Settings.SettingNotFoundException {
+  public void testSystemGetInt_exception() throws Exception {
     Settings.System.getInt(contentResolver, "property");
   }
 
   @Test(expected = Settings.SettingNotFoundException.class)
-  public void testSystemGetFloat_exception() throws Settings.SettingNotFoundException {
+  public void testSystemGetFloat_exception() throws Exception {
     Settings.System.getFloat(contentResolver, "property");
   }
 
   @Test
   public void testSet24HourMode_24() {
     ShadowSettings.set24HourTimeFormat(true);
-    assertThat(DateFormat.is24HourFormat(RuntimeEnvironment.application)).isTrue();
+    assertThat(DateFormat.is24HourFormat(RuntimeEnvironment.application.getBaseContext())).isTrue();
   }
 
   @Test
   public void testSet24HourMode_12() {
     ShadowSettings.set24HourTimeFormat(false);
-    assertThat(DateFormat.is24HourFormat(RuntimeEnvironment.application)).isFalse();
+    assertThat(DateFormat.is24HourFormat(RuntimeEnvironment.application.getBaseContext())).isFalse();
   }
 }

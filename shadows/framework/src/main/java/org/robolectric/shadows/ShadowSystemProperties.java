@@ -4,6 +4,7 @@ import android.os.SystemProperties;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -39,20 +40,7 @@ public class ShadowSystemProperties {
   @Implementation
   protected static boolean native_get_boolean(String key, boolean def) {
     String stringValue = getProperty(key);
-    if (stringValue == null) {
-      return def;
-    }
-
-    switch (stringValue) {
-      case "1":
-      case "y":
-      case "on":
-      case "yes":
-      case "true":
-        return true;
-      default:
-        return false;
-    }
+    return stringValue == null ? def : Boolean.parseBoolean(stringValue);
   }
 
   @Implementation
@@ -76,6 +64,7 @@ public class ShadowSystemProperties {
     if (buildProperties == null) {
       // load the prop from classpath
       ClassLoader cl = SystemProperties.class.getClassLoader();
+      URL urlFromCl = cl.getResource("build.prop");
       try (InputStream is = cl.getResourceAsStream("build.prop")) {
         Preconditions.checkNotNull(is, "could not find build.prop");
         buildProperties = new Properties();
@@ -99,7 +88,7 @@ public class ShadowSystemProperties {
     buildProperties.setProperty("ro.hardware", "robolectric");
     buildProperties.setProperty("ro.build.characteristics", "robolectric");
 
-    // for backwards-compatibility reasons, set CPUS to unknown/ARM
+    // for backwards-compatiblity reasons, set CPUS to unknown/ARM
     buildProperties.setProperty("ro.product.cpu.abi", "unknown");
     buildProperties.setProperty("ro.product.cpu.abi2", "unknown");
     buildProperties.setProperty("ro.product.cpu.abilist", "armeabi-v7a");
