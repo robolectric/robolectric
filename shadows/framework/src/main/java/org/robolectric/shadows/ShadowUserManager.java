@@ -33,6 +33,7 @@ public class ShadowUserManager {
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
   private boolean isDemoUser = false;
+  private boolean isAdminUser = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
@@ -82,11 +83,37 @@ public class ShadowUserManager {
     return serialNumber;
   }
 
+  /**
+   * Returns a list of all user profiles.
+   *
+   * @see #addUserProfile(UserHandle)
+   */
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserHandle> getUserProfiles() {
     return ImmutableList.copyOf(userProfiles.keySet());
   }
 
+  /**
+   * Returns an empty list.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected List<UserInfo> getProfiles(int userHandle) {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Returns a null profile parent.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected UserInfo getProfileParent(int userHandle) {
+    return null;
+  }
+
+  /**
+   * Returns {@code true} if the user is unlocked.
+   *
+   * @see #setUserUnlocked(boolean)
+   */
   @Implementation(minSdk = N)
   protected boolean isUserUnlocked() {
     return userUnlocked;
@@ -104,7 +131,7 @@ public class ShadowUserManager {
    * doesn't have the {@link android.Manifest.permission#MANAGE_USERS} permission, throws a
    * {@link SecurityManager} exception.
    *
-   * @return `false` by default, or the value specified via {@link #setManagedProfile(boolean)}
+   * @return {@code false} by default or the value specified via {@link #setManagedProfile(boolean)}
    * @see #enforcePermissionChecks(boolean)
    * @see #setManagedProfile(boolean)
    */
@@ -203,7 +230,7 @@ public class ShadowUserManager {
   }
 
   /**
-   * @return `false` by default, or the value specified via {@link #setIsDemoUser(boolean)}
+   * @return {@code false} by default, or the value specified via {@link #setIsDemoUser(boolean)}
    */
   @Implementation(minSdk = N_MR1)
   protected boolean isDemoUser() {
@@ -212,10 +239,26 @@ public class ShadowUserManager {
 
   /**
    * Sets that the current user is a demo user; controls the return value of
-   * {@link UserManager#isDemoUser()}.
+   * {@link UserManager#isDemoUser}.
    */
   public void setIsDemoUser(boolean isDemoUser) {
     this.isDemoUser = isDemoUser;
+  }
+
+  /**
+   * @return {@code false} by default, or the value specified via {@link #setIsAdminUser(boolean)}
+   */
+  @Implementation(minSdk = N_MR1)
+  public boolean isAdminUser() {
+    return isAdminUser;
+  }
+
+  /**
+   * Sets that the current user is an admin user; controls the return value of
+   * {@link UserManager#isAdminUser}.
+   */
+  public void setIsAdminUser(boolean isAdminUser) {
+    this.isAdminUser = isAdminUser;
   }
 
   /**

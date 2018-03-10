@@ -4,9 +4,13 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.Manifest.permission;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.os.WorkSource;
 import org.junit.Before;
@@ -28,7 +32,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void acquire_shouldAcquireAndReleaseReferenceCountedLock() throws Exception {
+  public void acquire_shouldAcquireAndReleaseReferenceCountedLock() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     assertThat(lock.isHeld()).isFalse();
     lock.acquire();
@@ -58,7 +62,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void acquire_shouldLogLatestWakeLock() throws Exception {
+  public void acquire_shouldLogLatestWakeLock() {
     ShadowPowerManager.reset();
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNull();
 
@@ -80,12 +84,12 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void newWakeLock_shouldCreateWakeLock() throws Exception {
+  public void newWakeLock_shouldCreateWakeLock() {
     assertThat(powerManager.newWakeLock(0, "TAG")).isNotNull();
   }
 
   @Test
-  public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() throws Exception {
+  public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     lock.setReferenceCounted(false);
 
@@ -100,10 +104,15 @@ public class ShadowPowerManagerTest {
     assertThat(lock.isHeld()).isFalse();
   }
 
-  @Test(expected = RuntimeException.class)
-  public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() throws Exception {
+  @Test
+  public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-    lock.release();
+    try {
+      lock.release();
+      fail("Expected RuntimeException");
+    } catch (RuntimeException ignored) {
+      // expected
+    }
   }
 
   @Test
@@ -114,7 +123,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void isReferenceCounted_shouldGetAndSet() throws Exception {
+  public void isReferenceCounted_shouldGetAndSet() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
     assertThat(shadowLock.isReferenceCounted()).isTrue();
@@ -137,12 +146,42 @@ public class ShadowPowerManagerTest {
   @Config(minSdk = KITKAT_WATCH)
   public void isPowerSaveMode_shouldGetAndSet() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
+
     shadowPowerManager.setIsPowerSaveMode(true);
     assertThat(powerManager.isPowerSaveMode()).isTrue();
   }
 
   @Test
-  public void workSource_shouldGetAndSet() throws Exception {
+  @Config(minSdk = KITKAT_WATCH)
+  public void setPowerSaveMode_failsWithoutPermission() {
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
+
+    try {
+      powerManager.setPowerSaveMode(true);
+      fail("Expected SecurityException");
+    } catch (SecurityException ignored) {
+      // expected
+    }
+
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void setPowerSaveMode_succeedsWithPermission() throws Exception {
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
+
+    PackageInfo packageInfo = RuntimeEnvironment.application.getPackageManager()
+        .getPackageInfo(RuntimeEnvironment.application.getPackageName(),
+            PackageManager.GET_PERMISSIONS);
+    packageInfo.requestedPermissions = new String[] { permission.DEVICE_POWER };
+
+    powerManager.setPowerSaveMode(true);
+    assertThat(powerManager.isPowerSaveMode()).isTrue();
+  }
+
+  @Test
+  public void workSource_shouldGetAndSet() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
     WorkSource workSource = new WorkSource();

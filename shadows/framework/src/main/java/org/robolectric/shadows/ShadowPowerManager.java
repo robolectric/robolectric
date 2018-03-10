@@ -6,11 +6,15 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
+import android.Manifest.permission;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.os.WorkSource;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -53,6 +57,22 @@ public class ShadowPowerManager {
     return isPowerSaveMode;
   }
 
+  @HiddenApi @Implementation(minSdk = KITKAT_WATCH)
+  protected void setPowerSaveMode(boolean powerSaveMode) {
+    final Context context = RuntimeEnvironment.application;
+    final int perm = context.getPackageManager()
+        .checkPermission(permission.DEVICE_POWER, context.getPackageName());
+    if (perm != PackageManager.PERMISSION_GRANTED) {
+      throw new SecurityException(
+          "You need DEVICE_POWER permission to: set the device power-save mode");
+    }
+    isPowerSaveMode = powerSaveMode;
+  }
+
+  /**
+   * Alters the power-save mode without verifying that the package under test has the required
+   * permission.
+   */
   public void setIsPowerSaveMode(boolean powerSaveMode) {
     isPowerSaveMode = powerSaveMode;
   }
