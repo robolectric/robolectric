@@ -1070,19 +1070,4 @@ public class ShadowAssetManager {
   public static void reset() {
     ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
   }
-
-  @Implementation(minSdk = VERSION_CODES.P)
-  public static void createSystemAssetsInZygoteLocked() {
-    AssetManager system = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
-    if (system == null) {
-      system = ReflectionHelpers.callConstructor(AssetManager.class,
-          from(boolean.class, true));
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", system);
-    }
-  }
-
-  @Implementation(minSdk = VERSION_CODES.P)
-  public static long nativeCreate() {
-    return 1;
-  }
 }
