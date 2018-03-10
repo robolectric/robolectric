@@ -80,9 +80,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> start() {
-    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused("performStart");
-    }
+    invokeWhilePaused("performStart");
     return this;
   }
 
@@ -305,9 +303,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Create lifecycle
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
-          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
-          }
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
           ReflectionHelpers.callInstanceMethod(
               Activity.class,
               recreatedActivity,
