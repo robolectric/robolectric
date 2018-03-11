@@ -176,6 +176,11 @@ public class ShadowContextImpl {
             service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
                 ClassParameter.from(Handler.class, null));
+          } else {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(IWallpaperManager.class, null),
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(Handler.class, null));
           }
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
