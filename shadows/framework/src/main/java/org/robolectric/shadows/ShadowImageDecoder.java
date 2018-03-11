@@ -42,7 +42,7 @@ public class ShadowImageDecoder {
   }
 
   @Implementation
-  public Bitmap decodeBitmapInternal() throws IOException {
+  public Bitmap decodeBitmap() throws IOException {
     final InputStream stream = ReflectionHelpers.getField(realObject, "mInputStream");
     if (stream != null) {
       return BitmapFactory.decodeStream(stream);
