@@ -105,7 +105,6 @@ public class ShadowBitmapFactory {
       }
     }
 
-
     String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
     Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);

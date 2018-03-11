@@ -264,7 +264,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           if (RuntimeEnvironment.getApiLevel() <= M) {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
-          } else  {
+          }
+          else {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop",
                 from(boolean.class, true));
           }
@@ -303,7 +304,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Create lifecycle
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
           ReflectionHelpers.callInstanceMethod(
               Activity.class,
               recreatedActivity,

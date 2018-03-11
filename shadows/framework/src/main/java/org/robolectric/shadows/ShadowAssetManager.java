@@ -229,7 +229,6 @@ public class ShadowAssetManager {
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
       invokeConstructor(AssetManager.class, realObject);
     }
-
   }
 
   @Implementation
@@ -611,6 +610,7 @@ public class ShadowAssetManager {
     return ints;
   }
 
+
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) {
@@ -762,6 +762,7 @@ public class ShadowAssetManager {
     nativeTheme.themeStyleSet.apply(style, force);
   }
 
+
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
     copyTheme((long) destPtr, (long) sourcePtr);
@@ -773,6 +774,7 @@ public class ShadowAssetManager {
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
+
 
   /////////////////////////
 

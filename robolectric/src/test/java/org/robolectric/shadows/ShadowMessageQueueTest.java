@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
@@ -13,12 +15,16 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
+import android.os.SystemClock;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 @RunWith(RobolectricTestRunner.class)
@@ -180,5 +186,80 @@ public class ShadowMessageQueueTest {
     shadowQueue.reset();
     assertThat(handler.hasMessages(1234)).as("after-1234").isFalse();
     assertThat(handler.hasMessages(5678)).as("after-5678").isFalse();
+  }
+
+  @Test
+  public void postAndRemoveSyncBarrierToken() {
+    int token = postSyncBarrier(queue);
+    removeSyncBarrier(queue, token);
+  }
+
+  @Test
+  // TODO(b/74402484): enable once workaround is removed
+  @Ignore
+  public void removeInvalidSyncBarrierToken() {
+    try {
+      removeSyncBarrier(queue, 99);
+      fail("Expected exception when sync barrier not present on MessageQueue");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  public void postAndRemoveSyncBarrierToken_messageBefore() {
+    enqueueMessage(testMessage, SystemClock.uptimeMillis());
+    int token = postSyncBarrier(queue);
+    removeSyncBarrier(queue, token);
+
+    assertThat(shadowQueue.getHead()).isEqualTo(testMessage);
+  }
+
+  @Test
+  public void postAndRemoveSyncBarrierToken_messageBeforeConsumed() {
+    enqueueMessage(testMessage, SystemClock.uptimeMillis());
+    int token = postSyncBarrier(queue);
+    scheduler.advanceToLastPostedRunnable();
+    removeSyncBarrier(queue, token);
+    assertThat(shadowQueue.getHead()).isNull();
+    assertThat(handler.handled).as("handled:after").containsExactly(testMessage);
+  }
+
+  @Test
+  public void postAndRemoveSyncBarrierToken_messageAfter() {
+    enqueueMessage(testMessage, SystemClock.uptimeMillis() + 100);
+    int token = postSyncBarrier(queue);
+    removeSyncBarrier(queue, token);
+
+    assertThat(shadowQueue.getHead()).isEqualTo(testMessage);
+    scheduler.advanceToLastPostedRunnable();
+    assertThat(shadowQueue.getHead()).isNull();
+    assertThat(handler.handled).as("handled:after").containsExactly(testMessage);
+  }
+
+  @Test
+  public void postAndRemoveSyncBarrierToken_syncBefore() {
+    int token = postSyncBarrier(queue);
+    enqueueMessage(testMessage, SystemClock.uptimeMillis());
+    scheduler.advanceToLastPostedRunnable();
+    removeSyncBarrier(queue, token);
+    assertThat(shadowQueue.getHead()).isNull();
+    assertThat(handler.handled).as("handled:after").containsExactly(testMessage);
+  }
+
+  private static void removeSyncBarrier(MessageQueue queue, int token) {
+    ReflectionHelpers.callInstanceMethod(
+        MessageQueue.class, queue, "removeSyncBarrier", from(int.class, token));
+  }
+
+  private static int postSyncBarrier(MessageQueue queue) {
+    if (RuntimeEnvironment.getApiLevel() >= M) {
+      return queue.postSyncBarrier();
+    } else {
+      return ReflectionHelpers.callInstanceMethod(
+          MessageQueue.class,
+          queue,
+          "enqueueSyncBarrier",
+          from(long.class, SystemClock.uptimeMillis()));
+    }
   }
 }

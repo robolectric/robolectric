@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -18,6 +18,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.Logger;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -144,6 +145,17 @@ public class ShadowMessageQueue {
       } else {
         callInstanceMethod(msg, "recycle");
       }
+    }
+  }
+
+  @Implementation
+  @HiddenApi
+  protected void removeSyncBarrier(int token) {
+    // TODO(b/74402484): workaround scheduler corruption of message queue
+    try {
+      directlyOn(realQueue, MessageQueue.class, "removeSyncBarrier", from(int.class, token));
+    } catch (IllegalStateException e) {
+      Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
     }
   }
 }
