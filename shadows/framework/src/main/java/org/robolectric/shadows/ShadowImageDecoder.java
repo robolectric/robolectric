@@ -20,16 +20,16 @@ public class ShadowImageDecoder {
   @RealObject private ImageDecoder realObject;
 
   @Implementation
-  public static ImageDecoder nCreate(long asset) {
+  protected static ImageDecoder nCreate(long asset) {
     return ReflectionHelpers.callConstructor(ImageDecoder.class,
         ClassParameter.from(long.class, 1),
         ClassParameter.from(int.class, 0),
         ClassParameter.from(int.class, 0),
         ClassParameter.from(boolean.class, false));
   }
-  
+
   @Implementation
-  public static ImageDecoder nCreate(InputStream is, byte[] storage) {
+  protected static ImageDecoder nCreate(InputStream is, byte[] storage) {
     final Point size = ImageUtil.getImageSizeFromStream(is);
     final int width = size == null ? 0 : size.x;
     final int height = size == null ? 0 : size.y;
@@ -42,12 +42,12 @@ public class ShadowImageDecoder {
   }
 
   @Implementation
-  public Bitmap decodeBitmap() throws IOException {
+  protected Bitmap decodeBitmap() throws IOException {
     final InputStream stream = ReflectionHelpers.getField(realObject, "mInputStream");
     if (stream != null) {
       return BitmapFactory.decodeStream(stream);
     }
-
     return null;
   }
+
 }
