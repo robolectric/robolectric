@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.res.AssetFileDescriptor;
@@ -224,6 +225,10 @@ public class ShadowAssetManager {
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+      invokeConstructor(AssetManager.class, realObject);
+    }
   }
 
   @Implementation
@@ -434,6 +439,19 @@ public class ShadowAssetManager {
     }
 
 
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+      // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
+      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
+          from(AssetManager.class, realObject),
+          from(long.class, 0));
+
+      ShadowAssetInputStream sais = shadowOf(ais);
+      sais.setDelegate(stream);
+      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
+      stream = ais;
+    }
+
+
     return stream;
   }
 
@@ -579,7 +597,7 @@ public class ShadowAssetManager {
     this.config = config;
   }
 
-  @HiddenApi @Implementation(maxSdk = O_MR1)
+  @HiddenApi @Implementation
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
@@ -737,7 +755,7 @@ public class ShadowAssetManager {
     applyThemeStyle((long) themePtr, styleRes, force);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
@@ -750,7 +768,7 @@ public class ShadowAssetManager {
     copyTheme((long) destPtr, (long) sourcePtr);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public static void copyTheme(long destPtr, long sourcePtr) {
     NativeTheme destNativeTheme = getNativeTheme(destPtr);
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
