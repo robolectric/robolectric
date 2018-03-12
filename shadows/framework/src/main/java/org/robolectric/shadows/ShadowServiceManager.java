@@ -24,6 +24,7 @@ import android.net.INetworkScoreService;
 import android.net.wifi.IWifiManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.os.BatteryStats;
+import android.hardware.input.IInputManager;
 import android.os.Binder;
 import android.os.IBatteryPropertiesRegistrar;
 import android.os.IBinder;
@@ -100,6 +101,9 @@ public class ShadowServiceManager {
           put(
               Context.NETWORK_POLICY_SERVICE,
               createBinder(ISearchManager.class, "android.net.INetworkPolicyManager"));
+          put(
+              Context.INPUT_SERVICE,
+              createBinder(IInputManager.class, "android.net.IInputManager"));
           if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
             put(
                 Context.USER_SERVICE,

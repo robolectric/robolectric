@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="test_non_integer">This is not an integer</string>
+  <integer name="test_integer1">2000</integer>
+  <integer name="test_integer2">9</integer>
+  <integer name="test_large_hex">0xFFFF0000</integer>
+  <integer name="test_value_with_zero">07210</integer>
+  <integer name="scrollbar_style_ordinal_outside_overlay">0x02000000</integer>
+  <integer name="typed_array_5">5</integer>
+</resources>

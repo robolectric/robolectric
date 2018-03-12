@@ -20,8 +20,8 @@ public class ActivityTestRuleTest {
   private static Collection<String> callbacks = new ArrayList<>();
 
   @Rule
-  public ActivityTestRule<MyActivity> rule =
-      new ActivityTestRule<MyActivity>(MyActivity.class, false, false) {
+  public ActivityTestRule<TranscriptActivity> rule =
+      new ActivityTestRule<TranscriptActivity>(TranscriptActivity.class, false, false) {
         @Override
         protected void beforeActivityLaunched() {
           super.beforeActivityLaunched();
@@ -41,7 +41,7 @@ public class ActivityTestRuleTest {
         }
       };
 
-  public static class MyActivity extends Activity {
+  public static class TranscriptActivity extends Activity {
     @Override
     public void onCreate(Bundle args) {
       super.onCreate(args);
@@ -83,6 +83,12 @@ public class ActivityTestRuleTest {
       super.onDestroy();
       callbacks.add("onDestroy");
     }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+      super.onWindowFocusChanged(hasFocus);
+      callbacks.add("onWindowFocusChanged " + hasFocus);
+    }
   }
 
   @Before
@@ -92,10 +98,11 @@ public class ActivityTestRuleTest {
 
   @Test
   public void launchActivity_callbackSequence() {
-    MyActivity activity = rule.launchActivity(null);
+    TranscriptActivity activity = rule.launchActivity(null);
     assertThat(activity).isNotNull();
     assertThat(callbacks)
         .containsExactly(
-            "beforeActivityLaunched", "onCreate", "onStart", "onResume", "afterActivityLaunched");
+            "beforeActivityLaunched", "onCreate", "onStart", "onResume",
+            "onWindowFocusChanged true", "afterActivityLaunched");
   }
 }

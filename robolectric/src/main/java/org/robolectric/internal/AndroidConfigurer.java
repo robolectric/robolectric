@@ -69,7 +69,9 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
         .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
-        .doNotAcquirePackage("com.almworks.sqlite4java"); // Fix #958: SQLite native library must be loaded once.
+         // Fix #958: SQLite native library must be loaded once.
+        .doNotAcquirePackage("com.almworks.sqlite4java")
+        .doNotAcquirePackage("org.jacoco.");
 
     builder
         .addClassNameTranslation(

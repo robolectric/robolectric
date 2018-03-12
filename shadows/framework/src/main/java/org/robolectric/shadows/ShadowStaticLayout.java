@@ -24,4 +24,28 @@ public class ShadowStaticLayout {
             Object recycleBreaks, Object recycleWidths, Object recycleFlags, Object recycleLength) {
     return 1;
   }
+
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
+  @HiddenApi
+  public static int nComputeLineBreaks(
+      Object nativePtr,
+      Object text,
+      Object measuredTextPtr,
+      Object length,
+      Object firstWidth,
+      Object firstWidthLineCount,
+      Object restWidth,
+      Object variableTabStops,
+      Object defaultTabStop,
+      Object indentsOffset,
+      Object recycle,
+      Object recycleLength,
+      Object recycleBreaks,
+      Object recycleWidths,
+      Object recycleAscents,
+      Object recycleDescents,
+      Object recycleFlags,
+      Object charWidths) {
+    return 1;
+  }
 }

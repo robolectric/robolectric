@@ -2,19 +2,27 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
+
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+
 import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -62,6 +70,7 @@ import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -216,12 +225,17 @@ public class ShadowAssetManager {
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+      invokeConstructor(AssetManager.class, realObject);
+    }
   }
 
   @Implementation
   public void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
   }
+
 
   public ResourceTable getResourceTable() {
     return resourceTable;
@@ -417,11 +431,28 @@ public class ShadowAssetManager {
       throw new IOException("Unable to find resource for " + fileName);
     }
 
+    InputStream stream;
     if (accessMode == AssetManager.ACCESS_STREAMING) {
-      return typedResource.getFsFile().getInputStream();
+      stream = typedResource.getFsFile().getInputStream();
     } else {
-      return new ByteArrayInputStream(typedResource.getFsFile().getBytes());
+      stream = new ByteArrayInputStream(typedResource.getFsFile().getBytes());
     }
+
+
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+      // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
+      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
+          from(AssetManager.class, realObject),
+          from(long.class, 0));
+
+      ShadowAssetInputStream sais = shadowOf(ais);
+      sais.setDelegate(stream);
+      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
+      stream = ais;
+    }
+
+
+    return stream;
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {
@@ -471,6 +502,7 @@ public class ShadowAssetManager {
     return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
         packageName, resourceProvider);
   }
+
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
@@ -577,6 +609,7 @@ public class ShadowAssetManager {
     }
     return ints;
   }
+
 
  protected TypedArray getTypedArrayResource(Resources resources, int resId) {
     TypedResource value = getAndResolve(resId, config, true);
@@ -727,7 +760,8 @@ public class ShadowAssetManager {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
     nativeTheme.themeStyleSet.apply(style, force);
-}
+  }
+
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
@@ -740,6 +774,7 @@ public class ShadowAssetManager {
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
+
 
   /////////////////////////
 
@@ -1003,8 +1038,7 @@ public class ShadowAssetManager {
   @Nonnull private ResName getResName(int id) {
     ResName resName = resourceTable.getResName(id);
     if (resName == null) {
-      throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id)
-          + " in packages " + resourceTable);
+      throw new Resources.NotFoundException("Resource ID #0x" + Integer.toHexString(id));
     }
     return resName;
   }

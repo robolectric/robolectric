@@ -142,14 +142,8 @@ MULTIDEX_VERSION = "1.0.1"
 
 # Android Support test versions
 ANDROID_SUPPORT_TEST_GROUP_ID = "com.android.support.test"
-RUNNER_ARTIFACT_ID = "runner"
-RULES_ARTIFACT_ID = "rules"
 MONITOR_ARTIFACT_ID = "monitor"
 ANDROID_SUPPORT_TEST_VERSION = "1.0.2-alpha1"
-ESPRESSO_GROUP_ID = "com.android.support.test.espresso"
-INTENTS_ARTIFACT_ID = "espresso-intents"
-ESPRESSO_CORE_ARTIFACT_ID = "espresso-core"
-ESPRESSO_VERSION = "3.0.2-alpha1"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"
@@ -172,7 +166,7 @@ PLAY_SERVICES_BASEMENT = "play-services-basement"
 
 # Mavenize all dependencies
 
-install_stubs(27)
+install_stubs('P')
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_TRAILING_VERSION)
 
@@ -204,7 +198,3 @@ install_supportlib_from_gmaven(SUPPORT_FRAGMENT_ARTIFACT_ID)
 install_supportlib_from_gmaven('support-media-compat')
 
 install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, MONITOR_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)
-install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, RUNNER_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)
-install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, RULES_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)
-install_from_gmaven(ESPRESSO_GROUP_ID, INTENTS_ARTIFACT_ID, ESPRESSO_VERSION)
-install_from_gmaven(ESPRESSO_GROUP_ID, ESPRESSO_CORE_ARTIFACT_ID, ESPRESSO_VERSION)

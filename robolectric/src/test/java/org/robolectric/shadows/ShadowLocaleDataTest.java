@@ -79,6 +79,13 @@ public class ShadowLocaleDataTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void shouldSupportLocaleEn_US_perMillPostP() throws Exception {
+    LocaleData localeData = LocaleData.get(Locale.US);
+    assertThat(localeData.perMill).isEqualTo("‰");
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP_MR1)
   public void shouldSupportLocaleEn_US_percentPost22() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
