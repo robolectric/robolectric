@@ -327,8 +327,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     providers = ServiceLoader.load(ShadowProvider.class, sdkEnvironment.getRobolectricClassLoader());
 
     roboMethod.parallelUniverseInterface.setSdkConfig(sdkConfig);
-    perfStatsCollector.measure("reset Android state (before test)",
-        () -> resetStaticState());
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
     PackageResourceTable systemResourceTable = sdkEnvironment.getSystemResourceTable(getJarResolver());
