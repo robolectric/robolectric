@@ -33,7 +33,7 @@ public class ShadowDisplay {
    * @return the default display
    */
   public static Display getDefaultDisplay() {
-    WindowManager windowManager = (WindowManager) RuntimeEnvironment.systemContext
+    WindowManager windowManager = (WindowManager) RuntimeEnvironment.application
         .getSystemService(Context.WINDOW_SERVICE);
     return windowManager.getDefaultDisplay();
   }

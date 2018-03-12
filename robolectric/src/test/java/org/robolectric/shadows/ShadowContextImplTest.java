@@ -118,7 +118,6 @@ public class ShadowContextImplTest {
     PendingIntent intent = PendingIntent.getService(context, 0,
         new Intent().setClassName(RuntimeEnvironment.application, "ServiceIntent"),
         PendingIntent.FLAG_UPDATE_CURRENT);
-    ((TestApplication) context).getBaseContext().getApplicationContext();
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
