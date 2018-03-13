@@ -10,21 +10,22 @@ import android.app.KeyguardManager.KeyguardDismissCallback;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
   @RealObject private KeyguardManager realKeyguardManager;
 
-  private KeyguardManager.KeyguardLock keyguardLock =
+  private static KeyguardManager.KeyguardLock keyguardLock =
       Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
 
-  private boolean inRestrictedInputMode;
-  private boolean isKeyguardLocked;
-  private boolean isDeviceLocked;
-  private boolean isKeyguardSecure;
-  private boolean isDeviceSecure;
-  private KeyguardManager.KeyguardDismissCallback callback;
+  private static boolean inRestrictedInputMode;
+  private static boolean isKeyguardLocked;
+  private static boolean isDeviceLocked;
+  private static boolean isKeyguardSecure;
+  private static boolean isDeviceSecure;
+  private static KeyguardManager.KeyguardDismissCallback callback;
 
   /**
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
@@ -205,5 +206,19 @@ public class ShadowKeyguardManager {
     public boolean isEnabled() {
       return keyguardEnabled;
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    // Static because the state is Global but Context.getSystemService() returns a new instance
+    // on each call.
+    keyguardLock = Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
+
+    inRestrictedInputMode = false;
+    isKeyguardLocked = false;
+    isDeviceLocked = false;
+    isKeyguardSecure = false;
+    isDeviceSecure = false;
+    callback = null;
   }
 }

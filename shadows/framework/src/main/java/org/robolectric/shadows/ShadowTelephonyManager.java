@@ -10,6 +10,7 @@ import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
 import android.os.Build.VERSION;
+import android.os.PersistableBundle;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
@@ -296,5 +297,11 @@ public class ShadowTelephonyManager {
   /** Sets the value returned by {@link TelephonyManager#isSmsCapable()}. */
   public void setIsSmsCapable(boolean isSmsCapable) {
     this.isSmsCapable = isSmsCapable;
+  }
+
+  @Implementation
+  protected PersistableBundle getCarrierConfig() {
+    // Avoid NPE - no testing APIS yet.
+    return new PersistableBundle();
   }
 }

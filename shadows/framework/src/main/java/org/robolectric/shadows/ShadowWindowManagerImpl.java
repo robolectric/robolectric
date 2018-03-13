@@ -9,7 +9,9 @@ import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManagerImpl;
-import java.util.ArrayList;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -40,25 +42,29 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   @RealObject
   WindowManagerImpl realObject;
-  private List<View> views = new ArrayList<>();
+  private static Multimap<Display, View> views = ArrayListMultimap.create();
 
   @Implementation
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
-    views.add(view);
-    directlyOn(realObject, WindowManagerImpl.class, "addView",
+    views.put(realObject.getDefaultDisplay(), view);
+    // views.add(view);
+    directlyOn(
+        realObject,
+        WindowManagerImpl.class,
+        "addView",
         ClassParameter.from(View.class, view),
         ClassParameter.from(ViewGroup.LayoutParams.class, layoutParams));
   }
 
   @Implementation
   public void removeView(View view) {
-    views.remove(view);
+    views.remove(realObject.getDefaultDisplay(), view);
     directlyOn(realObject, WindowManagerImpl.class, "removeView",
         ClassParameter.from(View.class, view));
   }
 
   public List<View> getViews() {
-    return views;
+    return ImmutableList.copyOf(views.get(realObject.getDefaultDisplay()));
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
@@ -82,5 +88,6 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   @Resetter
   public static void reset() {
     defaultDisplayJB = null;
+    views.clear();
   }
 }
