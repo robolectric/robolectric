@@ -178,6 +178,13 @@ public class Robolectric {
      * @return This {@link org.robolectric.android.AttributeSetBuilder}.
      */
     AttributeSetBuilder setStyleAttribute(String value);
+
+    /**
+     * Build an {@link AttributeSet} with the antecedent attributes.
+     *
+     * @return A new {@link AttributeSet}.
+     */
+    AttributeSet build();
   }
 
   /**

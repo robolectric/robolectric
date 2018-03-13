@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGI;
@@ -12,10 +13,12 @@ import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
+import android.content.res.ApkAssets;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
@@ -257,6 +260,13 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
         ClassParameter.from(int.class, cookie),
         ClassParameter.from(String.class, fileName));
   }
+
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  public void setApkAssets(Object[] apkAssetsObjects, boolean invalidateCaches) {
+    throw new UnsupportedOperationException("implement me");
+  }
+  // END-INTERNAL
 
   @HiddenApi
   @Implementation
@@ -1703,8 +1713,7 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     applyThemeStyle((long)themePtr, styleRes, force);
   }
 
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     if (shouldDelegateToLegacyShadow(themePtr)) {
       ShadowAssetManager.applyThemeStyle(themePtr, styleRes, force);
@@ -1713,6 +1722,12 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     }
   }
 
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  protected void applyStyleToTheme(long themePtr, int resId, boolean force) {
+    throw new UnsupportedOperationException("implement me");
+  }
+  // END-INTERNAL
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -1726,8 +1741,7 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     }
   }
 
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
     if (shouldDelegateToLegacyShadow(destPtr)) {
       ShadowAssetManager.copyTheme(destPtr, sourcePtr);
@@ -1738,6 +1752,18 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     }
   }
 
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
+    if (shouldDelegateToLegacyShadow(destPtr)) {
+      ShadowAssetManager.nativeThemeCopy(destPtr, sourcePtr);
+    } else {
+      throw new UnsupportedOperationException("implement me");
+    }
+  }
+  // END-INTERNAL
+
+  // todo: huh?
   /*package*/@HiddenApi @Implementation public static final void clearTheme(long theme){
     throw new UnsupportedOperationException("not yet implemented");
   }
@@ -1981,6 +2007,13 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     return array;
   }
 
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = Build.VERSION_CODES.P)
+  protected int[] getResourceIntArray(int resId) {
+    throw new UnsupportedOperationException("implement me");
+  }
+  // END-INTERNAL
+
   /*package*/@HiddenApi @Implementation public final int[] getStyleAttributes(int themeRes){
     throw new UnsupportedOperationException("not yet implemented");
   }
@@ -2056,6 +2089,15 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
       return 0;
     }
     return am.getResources().getTableCount();
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  public static long nativeCreate() {
+    if (isLegacyAssetManager()) {
+      return ShadowAssetManager.nativeCreate();
+    } else {
+      return directlyOn(AssetManager.class, "nativeCreate");
+    }
   }
 
   synchronized private CppAssetManager assetManagerForJavaObject() {

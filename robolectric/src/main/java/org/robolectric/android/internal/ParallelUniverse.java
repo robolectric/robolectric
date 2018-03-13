@@ -122,7 +122,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ApplicationInfo applicationInfo = null;
     if (appManifest.getAndroidManifestFile() != null
         && appManifest.getAndroidManifestFile().exists()) {
-      if (!legacyResources || Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
+      if (!legacyResources
+          && Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
         // FsFile packageFile = appManifest.getAndroidManifestFile();
         // todo get elsewhere?
         FsFile packageFile = Fs.fromURL(getClass().getResource("/resources.ap_"));
@@ -151,6 +152,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
       String sourcePath = ReflectionHelpers.getField(parsedPackage, "mPath");
+      if (sourcePath == null) {
+        sourcePath = RuntimeEnvironment.getTempDirectory()
+            .createIfNotExists("sourceDir").toString();
+      }
       applicationInfo.publicSourceDir = sourcePath;
       applicationInfo.sourceDir = sourcePath;
     } else {

@@ -488,11 +488,8 @@ public class ShadowWrangler implements ClassHandler {
         Method tryAgainMethod = shadow.getClass()
             .getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes());
         if (!tryAgainMethod.equals(shadowMethod)) {
-          try {
-            return tryAgainMethod.invoke(shadow, params);
-          } catch (InvocationTargetException e1) {
-            throw e1.getCause();
-          }
+          tryAgainMethod.setAccessible(true);
+          return tryAgainMethod.invoke(shadow, params);
         } else {
           throw new IllegalArgumentException("attempted to invoke " + shadowMethod
               + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
