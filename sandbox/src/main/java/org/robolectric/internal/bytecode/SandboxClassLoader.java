@@ -124,10 +124,6 @@ public class SandboxClassLoader extends URLClassLoader {
         bytes = PerfStatsCollector.getInstance().measure("instrument class",
             () -> classInstrumentor.instrumentToBytes(mutableClass)
         );
-        File file = new File("/tmp/" + className + ".class");
-        try (FileOutputStream os = new FileOutputStream(file)) {
-          os.write(bytes);
-        }
       } else {
         bytes = origClassBytes;
       }

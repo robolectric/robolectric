@@ -316,6 +316,7 @@ public class Converter<T> {
     }
 
     protected int findValueFor(String key) {
+      key = (key == null) ? null : key.trim();
       String valueFor = attrData.getValueFor(key);
       if (valueFor == null) {
         // Maybe they have passed in the value directly, rather than the name.
