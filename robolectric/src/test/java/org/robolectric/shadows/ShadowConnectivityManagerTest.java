@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,11 +44,15 @@ public class ShadowConnectivityManagerTest {
 
   @Test
   public void getActiveNetworkInfo_shouldReturnTrueCorrectly() {
-    shadowOfActiveNetworkInfo.setConnectionStatus(true);
+    shadowOfActiveNetworkInfo.setConnectionStatus(NetworkInfo.State.CONNECTED);
     assertThat(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting()).isTrue();
-    assertTrue(connectivityManager.getActiveNetworkInfo().isConnected());
+    assertThat(connectivityManager.getActiveNetworkInfo().isConnected()).isTrue();
 
-    shadowOfActiveNetworkInfo.setConnectionStatus(false);
+    shadowOfActiveNetworkInfo.setConnectionStatus(NetworkInfo.State.CONNECTING);
+    assertThat(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting()).isTrue();
+    assertThat(connectivityManager.getActiveNetworkInfo().isConnected()).isFalse();
+
+    shadowOfActiveNetworkInfo.setConnectionStatus(NetworkInfo.State.DISCONNECTED);
     assertThat(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting()).isFalse();
     assertThat(connectivityManager.getActiveNetworkInfo().isConnected()).isFalse();
   }
@@ -75,8 +78,13 @@ public class ShadowConnectivityManagerTest {
   @Test @Config(minSdk = LOLLIPOP)
   public void getNetworkInfo_shouldReturnAddedNetwork() throws Exception {
     Network vpnNetwork = ShadowNetwork.newInstance(123);
-    NetworkInfo vpnNetworkInfo = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
-        ConnectivityManager.TYPE_VPN, 0, true, true);
+    NetworkInfo vpnNetworkInfo =
+        ShadowNetworkInfo.newInstance(
+            NetworkInfo.DetailedState.CONNECTED,
+            ConnectivityManager.TYPE_VPN,
+            0,
+            true,
+            NetworkInfo.State.CONNECTED);
     shadowConnectivityManager.addNetwork(vpnNetwork, vpnNetworkInfo);
 
     NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(vpnNetwork);
@@ -112,8 +120,13 @@ public class ShadowConnectivityManagerTest {
   public void setActiveNetworkInfo_shouldSetActiveNetworkInfo() throws Exception {
     shadowConnectivityManager.setActiveNetworkInfo(null);
     assertThat(connectivityManager.getActiveNetworkInfo()).isNull();
-    shadowConnectivityManager.setActiveNetworkInfo(ShadowNetworkInfo.newInstance(null,
-        ConnectivityManager.TYPE_MOBILE_HIPRI, TelephonyManager.NETWORK_TYPE_EDGE, true, false));
+    shadowConnectivityManager.setActiveNetworkInfo(
+        ShadowNetworkInfo.newInstance(
+            null,
+            ConnectivityManager.TYPE_MOBILE_HIPRI,
+            TelephonyManager.NETWORK_TYPE_EDGE,
+            true,
+            NetworkInfo.State.DISCONNECTED));
 
     NetworkInfo info = connectivityManager.getActiveNetworkInfo();
 
@@ -141,8 +154,13 @@ public class ShadowConnectivityManagerTest {
   public void setActiveNetworkInfo_shouldSetActiveNetwork() throws Exception {
     shadowConnectivityManager.setActiveNetworkInfo(null);
     assertThat(connectivityManager.getActiveNetworkInfo()).isNull();
-    shadowConnectivityManager.setActiveNetworkInfo(ShadowNetworkInfo.newInstance(null,
-        ConnectivityManager.TYPE_MOBILE_HIPRI, TelephonyManager.NETWORK_TYPE_EDGE, true, false));
+    shadowConnectivityManager.setActiveNetworkInfo(
+        ShadowNetworkInfo.newInstance(
+            null,
+            ConnectivityManager.TYPE_MOBILE_HIPRI,
+            TelephonyManager.NETWORK_TYPE_EDGE,
+            true,
+            NetworkInfo.State.DISCONNECTED));
 
     NetworkInfo info = connectivityManager.getActiveNetworkInfo();
 
@@ -190,8 +208,13 @@ public class ShadowConnectivityManagerTest {
 
     // Add a "VPN network".
     Network vpnNetwork = ShadowNetwork.newInstance(123);
-    NetworkInfo vpnNetworkInfo = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
-        ConnectivityManager.TYPE_VPN, 0, true, true);
+    NetworkInfo vpnNetworkInfo =
+        ShadowNetworkInfo.newInstance(
+            NetworkInfo.DetailedState.CONNECTED,
+            ConnectivityManager.TYPE_VPN,
+            0,
+            true,
+            NetworkInfo.State.CONNECTED);
     shadowConnectivityManager.addNetwork(vpnNetwork, vpnNetworkInfo);
 
     Network[] networks = connectivityManager.getAllNetworks();
