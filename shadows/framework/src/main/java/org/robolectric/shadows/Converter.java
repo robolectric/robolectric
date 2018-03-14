@@ -295,7 +295,11 @@ public class Converter<T> {
           flags |= findValueFor(key);
         }
       } catch (Resources.NotFoundException e) {
-        flags = Integer.decode(data);
+        try {
+          flags = Integer.decode(data);
+        } catch (NumberFormatException e1) {
+          return false;
+        }
       } catch (Exception e) {
         return false;
       }

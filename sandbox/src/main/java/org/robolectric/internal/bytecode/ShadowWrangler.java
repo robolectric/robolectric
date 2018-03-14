@@ -64,7 +64,6 @@ public class ShadowWrangler implements ClassHandler {
       ReflectionHelpers.defaultsFor(Implementation.class);
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-  private static final boolean STRIP_SHADOW_STACK_TRACES = true;
   private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
@@ -349,14 +348,15 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public <T extends Throwable> T stripStackTrace(T throwable) {
-    if (STRIP_SHADOW_STACK_TRACES) {
+    StackTraceElement[] elements = throwable.getStackTrace();
+    if (elements != null) {
       List<StackTraceElement> stackTrace = new ArrayList<>();
 
       String previousClassName = null;
       String previousMethodName = null;
       String previousFileName = null;
 
-      for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
+      for (StackTraceElement stackTraceElement : elements) {
         String methodName = stackTraceElement.getMethodName();
         String className = stackTraceElement.getClassName();
         String fileName = stackTraceElement.getFileName();

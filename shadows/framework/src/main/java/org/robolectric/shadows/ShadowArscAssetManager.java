@@ -487,17 +487,6 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     return (res) ? cookie.get() : 0;
   }
   
-  @HiddenApi @Implementation public final int addOverlayPathNative(String idmapPath) {
-    throw new UnsupportedOperationException("not yet implemented");
-  }
-
-  @HiddenApi @Implementation public final String[] getNonSystemLocales() {
-    throw new UnsupportedOperationException("not yet implemented");
-  }
-  @HiddenApi @Implementation public final Configuration[] getSizeConfigurations() {
-    throw new UnsupportedOperationException("not yet implemented");
-  }
-
   @HiddenApi
   @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
@@ -1664,10 +1653,6 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     return ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block));
   }
 
-  @HiddenApi @Implementation public final String getCookieName(int cookie) {
-    throw new UnsupportedOperationException("not yet implemented");
-  }
-
   @Implementation
   public final SparseArray<String> getAssignedPackageIdentifiers() {
     CppAssetManager am = assetManagerForJavaObject();
@@ -1680,18 +1665,6 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
       sparseArray.put(res.getBasePackageId(i), name);
     }
     return sparseArray;
-  }
-
-  @HiddenApi @Implementation public static final int getGlobalAssetCount(){
-    throw new UnsupportedOperationException("not yet implemented");
-  }
-
-  @HiddenApi @Implementation public static final String getAssetAllocations(){
-    throw new UnsupportedOperationException("not yet implemented");
-  }
-
-  @HiddenApi @Implementation public static final int getGlobalAssetManagerCount(){
-    throw new UnsupportedOperationException("not yet implemented");
   }
 
   @HiddenApi @Implementation public final long newTheme(){
@@ -1762,11 +1735,6 @@ public class ShadowArscAssetManager extends ShadowAssetManagerCommon {
     }
   }
   // END-INTERNAL
-
-  // todo: huh?
-  /*package*/@HiddenApi @Implementation public static final void clearTheme(long theme){
-    throw new UnsupportedOperationException("not yet implemented");
-  }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)

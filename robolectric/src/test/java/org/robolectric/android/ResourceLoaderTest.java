@@ -86,8 +86,4 @@ public class ResourceLoaderTest {
 
     assertThat(RuntimeEnvironment.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
   }
-
-  private static String getDefaultQualifiers() {
-    return "en-rUS-ldltr-sw320dp-w320dp-normal-notlong-notround-port-notnight-mdpi-finger-v" + Integer.toString(RuntimeEnvironment.getApiLevel());
-  }
 }

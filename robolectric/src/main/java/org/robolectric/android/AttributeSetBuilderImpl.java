@@ -189,6 +189,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
         AttrData attrData = (AttrData) attrTypeData.getData();
         String format = attrData.getFormat();
         String[] types = format.split("\\|");
+        // todo: do we need to Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE) here?
         for (String type : types) {
           if ("reference".equals(type)) continue; // already handled above
           Converter2 converter = Converter2.getConverterFor(attrData, type);
