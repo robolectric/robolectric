@@ -235,7 +235,6 @@ public class AndroidInterceptors {
           new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
           new MethodRef("java.lang.AutoCloseable", "*"),
           new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
-          new MethodRef("com.android.internal.policy.PolicyManager", "*"),
           new MethodRef("android.view.FallbackEventHandler", "*"),
           new MethodRef("android.view.IWindowSession", "*")
       );

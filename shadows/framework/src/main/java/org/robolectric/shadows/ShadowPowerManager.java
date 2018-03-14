@@ -21,6 +21,7 @@ public class ShadowPowerManager {
   private boolean isScreenOn = true;
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
+  private boolean isDeviceIdleMode = false;
   private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
   @Implementation
@@ -66,6 +67,19 @@ public class ShadowPowerManager {
 
   public void setIsWakeLockLevelSupported(int level, boolean supported) {
     supportedWakeLockLevels.put(level, supported);
+  }
+
+  /**
+   * @return `false` by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)}
+   */
+  @Implementation(minSdk = M)
+  protected boolean isDeviceIdleMode() {
+    return isDeviceIdleMode;
+  }
+
+  /** Sets the value returned by {@link #isDeviceIdleMode()}. */
+  public void setIsDeviceIdleMode(boolean isDeviceIdleMode) {
+    this.isDeviceIdleMode = isDeviceIdleMode;
   }
 
   /**
