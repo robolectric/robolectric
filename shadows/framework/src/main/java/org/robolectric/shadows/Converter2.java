@@ -57,7 +57,7 @@ public class Converter2<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       try {
-        typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
+        typedValue.type = ResourceHelper.getColorType(data);
         typedValue.data = ResourceHelper.getColor(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -74,7 +74,11 @@ public class Converter2<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       try {
-        typedValue.type = data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
+        if (data.startsWith("0x")) {
+          typedValue.type = TypedValue.TYPE_INT_HEX;
+        } else {
+          typedValue.type = TypedValue.TYPE_INT_DEC;
+        }
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -109,17 +113,12 @@ public class Converter2<T> {
 
       if ("true".equalsIgnoreCase(data)) {
         typedValue.data = 1;
+        return true;
       } else if ("false".equalsIgnoreCase(data)) {
         typedValue.data = 0;
-      } else {
-        try {
-          int intValue = Integer.parseInt(data);
-          typedValue.data = intValue == 0 ? 0 : 1;
-        } catch (NumberFormatException e) {
-          return false;
-        }
+        return true;
       }
-      return true;
+      return false;
     }
   }
 
