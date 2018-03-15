@@ -12,10 +12,13 @@ test_source_files := $(call find-files-in-subdirs, $(test_source_directory), "*T
 # Filter out tests that will not pass running under make.
 test_source_files := $(filter-out org/robolectric/internal/GradleManifestFactoryTest.java, $(test_source_files))
 
+# Build the command that honors the test class filter, if any.
+test_filter_command := $(if $(ROBOTEST_FILTER),grep -E "$(ROBOTEST_FILTER)",cat)
+
 # Convert the test source file paths into package names by removing ".java" extension and replacing "/" with "."
 test_class_names := $(subst /,., $(basename $(test_source_files)))
 # Remove whitespace and sort the tests in alphabetical order.
-test_class_names := $(sort $(shell echo '$(test_class_names)' | tr ' ' '\n'))
+test_class_names := $(sort $(shell echo '$(test_class_names)' | tr ' ' '\n' | $(test_filter_command)))
 
 include $(BUILD_SYSTEM)/base_rules.mk
 
@@ -50,7 +53,7 @@ copy_android_all_jars := $(call copy-many-files, $(copy_android_all_jar_pairs))
 
 # If debugging the tests was requested, set up the JVM parameters to enable it.
 debug_test_args :=
-ifdef debug_tests
+ifdef DEBUG_ROBOLECTRIC
     # The arguments to the JVM needed to debug the tests.
     # - server: wait for connection rather than connecting to a debugger
     # - transport: how to accept debugger connections (sockets)
