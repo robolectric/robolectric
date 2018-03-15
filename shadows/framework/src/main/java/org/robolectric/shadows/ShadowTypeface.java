@@ -99,7 +99,7 @@ public class ShadowTypeface {
   }
 
   @Implementation(minSdk = P)
-  public static void buildSystemFallback(String xmlPath, String fontDir,
+  protected static void buildSystemFallback(String xmlPath, String fontDir,
       ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
