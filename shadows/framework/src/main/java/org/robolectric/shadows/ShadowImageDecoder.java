@@ -21,7 +21,7 @@ public class ShadowImageDecoder {
   @RealObject private ImageDecoder realObject;
 
   @Implementation
-  public static ImageDecoder nCreate(long asset) {
+  public static ImageDecoder nCreate(long asset, ImageDecoder.Source source) {
     return ReflectionHelpers.callConstructor(ImageDecoder.class,
         ClassParameter.from(long.class, 1),
         ClassParameter.from(int.class, 0),
@@ -30,7 +30,7 @@ public class ShadowImageDecoder {
   }
 
   @Implementation
-  public static ImageDecoder nCreate(InputStream is, byte[] storage) {
+  public static ImageDecoder nCreate(InputStream is, byte[] storage, ImageDecoder.Source source) {
     final Point size = ImageUtil.getImageSizeFromStream(is);
     final int width = size == null ? 0 : size.x;
     final int height = size == null ? 0 : size.y;
