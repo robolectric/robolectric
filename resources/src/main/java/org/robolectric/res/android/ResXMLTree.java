@@ -24,11 +24,8 @@ import static org.robolectric.res.android.Util.isTruthy;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
-import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
@@ -73,6 +70,7 @@ public class ResXMLTree {
 
 //  ~ResXMLTree()
 //  {
+  @Override
   protected void finalize() {
     if (kDebugResXMLTree) {
       ALOGI("Destroying ResXMLTree in %s #%d\n", this, gCount.getAndDecrement()-1);

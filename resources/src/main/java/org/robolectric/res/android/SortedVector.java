@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.robolectric.res.android.AssetDir.FileInfo;
 
 // roughly transliterated from system/core/libutils/include/utils/SortedVector.h and
 // system/core/libutils/VectorImpl.cpp

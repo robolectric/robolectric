@@ -31,7 +31,6 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -930,7 +929,7 @@ public class ResTable {
       }
 
     } else if (ctype == RES_TABLE_LIBRARY_TYPE) {
-      if (group.dynamicRefTable.entries().size() == 0) {
+      if (group.dynamicRefTable.entries().isEmpty()) {
         throw new UnsupportedOperationException("libraries not supported yet");
 //        int err = group.dynamicRefTable.load(new ResTable_lib_header(chunk.myBuf(), chunk.myOffset());
 //        if (err != NO_ERROR) {
@@ -2463,7 +2462,7 @@ public class ResTable {
     // This is mainly used to keep track of the loaded packages
     // and to clean them up properly. Accessing resources happens from
     // the 'types' array.
-    List<Package> packages = new LinkedList<>();
+    List<Package> packages = new ArrayList<>();
 
     public final Map<Integer, List<Type>> types = new HashMap<>();
 

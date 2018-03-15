@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
 import org.robolectric.res.Fs;
@@ -444,8 +443,7 @@ public class CppAssetManager {
    */
   public Asset open(final String fileName, AccessMode mode) {
     synchronized (mLock) {
-
-      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+      LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
 
       String8 assetName = new String8(kAssetsRoot);
       assetName.appendPath(fileName);
@@ -475,9 +473,9 @@ public class CppAssetManager {
    */
   public Asset openNonAsset(final String fileName, AccessMode mode, Ref<Integer> outCookie) {
     synchronized (mLock) {
-//      AutoMutex _l(mLock);
+      //      AutoMutex _l(mLock);
 
-      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+      LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
 
       /*
        * For each top-level asset path, search for the asset.
@@ -506,7 +504,7 @@ public class CppAssetManager {
     final int which = cookie - 1;
 
     synchronized (mLock) {
-      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+      LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
 
       if (which < mAssetPaths.size()) {
         ALOGV("Looking for non-asset '%s' in '%s'\n", fileName,
@@ -681,7 +679,7 @@ public class CppAssetManager {
       }
 
       if (required) {
-        LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+        LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
       }
 
       mResources = new ResTable();
@@ -988,7 +986,7 @@ public class CppAssetManager {
       AssetDir pDir = null;
       Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
 
-      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+      LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
       Preconditions.checkNotNull(dirName);
 
       //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
@@ -1048,7 +1046,7 @@ public class CppAssetManager {
 //      AssetDir* pDir = null;
 //      SortedVector<AssetDir.FileInfo>* pMergedInfo = null;
 //  
-//      LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
+//      LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
 //      assert(dirName != null);
 //  
 //      //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
@@ -1176,7 +1174,7 @@ public class CppAssetManager {
       return null;
     }
 
-    pContents = new SortedVector<AssetDir.FileInfo>();
+    pContents = new SortedVector<>();
 
     for (File entry : dir.listFiles()) {
       if (entry == null) {
@@ -1244,7 +1242,7 @@ public class CppAssetManager {
     if (rootDir != null) {
       dirName = new String8(rootDir);
     }
-    ;
+
     dirName.appendPath(baseDirName);
 
     /*
@@ -1338,7 +1336,7 @@ public class CppAssetManager {
       /*
        * Add the set of unique directories.
        */
-    for (int i = 0; i < (int) dirs.size(); i++) {
+    for (int i = 0; i < dirs.size(); i++) {
       AssetDir.FileInfo info = new FileInfo();
       info.set(dirs.get(i), kFileTypeDirectory);
       info.setSourceName(
@@ -1388,7 +1386,7 @@ public class CppAssetManager {
     int mergeIdx, contIdx;
 
     SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
-    pNewSorted = new SortedVector<AssetDir.FileInfo>();
+    pNewSorted = new SortedVector<>();
     mergeMax = pMergedInfo.size();
     contMax = pContents.size();
     mergeIdx = contIdx = 0;
@@ -1612,6 +1610,7 @@ public class CppAssetManager {
      * Destructor.  Close any open archives.
      */
 //  ZipSet.~ZipSet(void)
+    @Override
     protected void finalize() {
       int N = mZipFile.size();
       for (int i = 0; i < N; i++) {

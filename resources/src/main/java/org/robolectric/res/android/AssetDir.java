@@ -50,7 +50,7 @@ public class AssetDir {
 
     FileInfo(String8 path) {      // useful for e.g. svect.indexOf
             mFileName = path;
-            mFileType = FileType.kFileTypeBlockDev.kFileTypeUnknown;
+            mFileType = FileType.kFileTypeUnknown;
     }
 
     FileInfo(FileInfo src) {

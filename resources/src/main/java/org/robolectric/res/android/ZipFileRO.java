@@ -33,6 +33,7 @@ public class ZipFileRO {
     }
 
     //    ~ZipEntryRO() {
+    @Override
     protected void finalize() {
 //      EndIteration(cookie);
     }
@@ -43,6 +44,7 @@ public class ZipFileRO {
   };
 
 //  ~ZipFileRO() {
+  @Override
   protected void finalize() {
     CloseArchive(mHandle);
 //    free(mFileName);

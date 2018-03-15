@@ -9,11 +9,8 @@ import static org.robolectric.res.android.Util.isTruthy;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /*
@@ -570,8 +567,13 @@ static Asset createFromCompressedMap(FileMap dataMap,
 //     virtual long seek(long offset, int whence);
 //     virtual void close(void);
 //     virtual final void* getBuffer(boolean wordAligned);
+
+    @Override
     public long getLength() { return mLength; }
+
+    @Override
     public long getRemainingLength() { return mLength-mOffset; }
+
 //     virtual int openFileDescriptor(long* outStart, long* outLength) final;
 //     virtual boolean isAllocated(void) final { return mBuf != null; }
 //
@@ -616,6 +618,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /*
      * Destructor.  Release resources.
      */
+    @Override
     protected void finalize() {
       close();
 
@@ -693,6 +696,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /*
      * Read a chunk of data.
      */
+    @Override
     public int read(byte[] buf, int bufOffset, int count) {
       int maxLen;
       int actual;
@@ -766,6 +770,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /*
      * Seek to a new position.
      */
+    @Override
     public long seek(long offset, int whence) {
       throw new UnsupportedOperationException();
       // long newPosn;
@@ -790,6 +795,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /*
      * Close the asset.
      */
+    @Override
     public void close() {
       throw new UnsupportedOperationException();
       // if (mMap != null) {
@@ -822,6 +828,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * level and we'd be using a different object, but we didn't, so we
      * deal with it here.
      */
+    @Override
     public final byte[] getBuffer(boolean wordAligned) {
       /* subsequent requests just use what we did previously */
       if (mBuf != null)
@@ -895,6 +902,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       }
     }
 
+    @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) {
       if (mMap != null) {
         String fname = mMap.getFileName();
@@ -995,9 +1003,16 @@ static Asset createFromCompressedMap(FileMap dataMap,
 //     virtual long seek(long offset, int whence);
 //     virtual void close(void);
 //     virtual final void* getBuffer(boolean wordAligned);
+
+    @Override
     public long getLength() { return mUncompressedLen; }
+
+    @Override
     public long getRemainingLength() { return mUncompressedLen-mOffset; }
+
+    @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) { return null; }
+
 //     virtual boolean isAllocated(void) final { return mBuf != null; }
 
     // private:
@@ -1054,6 +1069,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /*
      * Destructor.  Release resources.
      */
+    @Override
     protected void finalize() {
       close();
 
@@ -1166,6 +1182,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * expensive, because it requires plowing through a bunch of compressed
      * data.
      */
+    @Override
     public long seek(long offset, int whence) {
       throw new UnsupportedOperationException();
       // long newPosn;
@@ -1185,6 +1202,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /*
      * Close the asset.
      */
+    @Override
     public void close() {
        if (mMap != null) {
 //       delete mMap;
@@ -1209,6 +1227,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * The first time this is called, we expand the compressed data into a
      * buffer.
      */
+    @Override
     public byte[] getBuffer(boolean wordAligned) {
       return mBuf = mMap.getDataPtr();
       // unsigned String buf = null;

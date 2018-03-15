@@ -50,7 +50,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
   private static final int CLASS_RES_ID = Integer.MAX_VALUE - 1;
   private static final int ID_RES_ID = Integer.MAX_VALUE;
 
-  private static final Map<Integer, String> MAGIC_ATTRS = ImmutableMap.of(
+  private static final ImmutableMap<Integer, String> MAGIC_ATTRS = ImmutableMap.of(
       STYLE_RES_ID, "style",
       CLASS_RES_ID, "class",
       ID_RES_ID, "id"

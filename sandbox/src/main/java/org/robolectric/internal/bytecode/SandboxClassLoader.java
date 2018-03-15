@@ -7,7 +7,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
