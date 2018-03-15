@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.Resources;
 import android.util.TypedValue;
-import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.FsFile;
@@ -22,7 +20,6 @@ public class Converter<T> {
       case "enum":
         return new EnumConverter(attrData);
       case "flag":
-      case "flags": // because {@link ResourceTable#gFormatFlags} uses "flags"
         return new FlagConverter(attrData);
       case "boolean":
         return new FromBoolean();
@@ -88,7 +85,7 @@ public class Converter<T> {
   }
 
   public List<TypedResource> getItems(TypedResource typedResource) {
-    return new ArrayList<>();
+    throw cantDo("getItems");
   }
 
   public boolean fillTypedValue(T data, TypedValue typedValue) {
@@ -176,7 +173,7 @@ public class Converter<T> {
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
         if (data.startsWith("0x")) {
-          typedValue.type = data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
+          typedValue.type = TypedValue.TYPE_INT_HEX;
         } else {
           typedValue.type = TypedValue.TYPE_INT_DEC;
         }
@@ -267,11 +264,7 @@ public class Converter<T> {
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
         typedValue.type = TypedValue.TYPE_INT_HEX;
-        try {
-          typedValue.data = findValueFor(data);
-        } catch (Resources.NotFoundException e) {
-          typedValue.data = Integer.decode(data);
-        }
+        typedValue.data = findValueFor(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
         return true;
@@ -288,27 +281,20 @@ public class Converter<T> {
 
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
-      int flags = 0;
-
       try {
+        int flags = 0;
         for (String key : data.split("\\|")) {
           flags |= findValueFor(key);
         }
-      } catch (Resources.NotFoundException e) {
-        try {
-          flags = Integer.decode(data);
-        } catch (NumberFormatException e1) {
-          return false;
-        }
+
+        typedValue.type = TypedValue.TYPE_INT_HEX;
+        typedValue.data = flags;
+        typedValue.assetCookie = 0;
+        typedValue.string = null;
+        return true;
       } catch (Exception e) {
         return false;
       }
-
-      typedValue.type = TypedValue.TYPE_INT_HEX;
-      typedValue.data = flags;
-      typedValue.assetCookie = 0;
-      typedValue.string = null;
-      return true;
     }
   }
 
@@ -320,14 +306,13 @@ public class Converter<T> {
     }
 
     protected int findValueFor(String key) {
-      key = (key == null) ? null : key.trim();
       String valueFor = attrData.getValueFor(key);
       if (valueFor == null) {
         // Maybe they have passed in the value directly, rather than the name.
         if (attrData.isValue(key)) {
           valueFor = key;
         } else {
-          throw new Resources.NotFoundException("no value found for " + key);
+          throw new RuntimeException("no value found for " + key);
         }
       }
       return Util.parseInt(valueFor);

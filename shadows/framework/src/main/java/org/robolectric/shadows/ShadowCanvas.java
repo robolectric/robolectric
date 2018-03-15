@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -12,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -46,8 +47,7 @@ public class ShadowCanvas {
    * @return The textual representation of the appearance of the object.
    */
   public static String visualize(Canvas canvas) {
-    ShadowCanvas shadowCanvas = Shadow.extract(canvas);
-    return shadowCanvas.getDescription();
+    return shadowOf(canvas).getDescription();
   }
 
   @Implementation
@@ -56,13 +56,11 @@ public class ShadowCanvas {
   }
 
   public void appendDescription(String s) {
-    ShadowBitmap shadowBitmap = Shadow.extract(targetBitmap);
-    shadowBitmap.appendDescription(s);
+    shadowOf(targetBitmap).appendDescription(s);
   }
 
   public String getDescription() {
-    ShadowBitmap shadowBitmap = Shadow.extract(targetBitmap);
-    return shadowBitmap.getDescription();
+    return shadowOf(targetBitmap).getDescription();
   }
 
   @Implementation
@@ -154,8 +152,7 @@ public class ShadowCanvas {
   public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
     describeBitmap(bitmap, paint);
 
-    ShadowMatrix shadowMatrix = Shadow.extract(matrix);
-    appendDescription(" transformed by " + shadowMatrix.getDescription());
+    appendDescription(" transformed by " + shadowOf(matrix).getDescription());
   }
 
   @Implementation
@@ -163,8 +160,7 @@ public class ShadowCanvas {
     pathPaintEvents.add(new PathPaintHistoryEvent(new Path(path), new Paint(paint)));
 
     separateLines();
-    ShadowPath shadowPath = Shadow.extract(path);
-    appendDescription("Path " + shadowPath.getPoints().toString());
+    appendDescription("Path " + shadowOf(path).getPoints().toString());
   }
 
   @Implementation
@@ -199,8 +195,7 @@ public class ShadowCanvas {
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
-    appendDescription(shadowBitmap.getDescription());
+    appendDescription(shadowOf(bitmap).getDescription());
 
     if (paint != null) {
       ColorFilter colorFilter = paint.getColorFilter();
@@ -259,8 +254,7 @@ public class ShadowCanvas {
     rectPaintEvents.clear();
     linePaintEvents.clear();
     ovalPaintEvents.clear();
-    ShadowBitmap shadowBitmap = Shadow.extract(targetBitmap);
-    shadowBitmap.setDescription("");
+    shadowOf(targetBitmap).setDescription("");
   }
 
   public Paint getDrawnPaint() {

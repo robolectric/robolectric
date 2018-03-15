@@ -24,7 +24,7 @@ public class StaxDocumentLoader extends DocumentLoader {
   protected void loadResourceXmlFile(XmlContext xmlContext) {
     FsFile xmlFile = xmlContext.getXmlFile();
 
-    XMLStreamReader xmlStreamReader;
+    XMLStreamReader xmlStreamReader = null;
     try {
       xmlStreamReader = factory.createXMLStreamReader(xmlFile.getInputStream());
       doParse(xmlStreamReader, xmlContext);

@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,12 +16,11 @@ import android.widget.TextView;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 
 @Implements(Notification.class)
-@SuppressLint("NewApi")
 public class ShadowNotification {
 
   @RealObject
@@ -138,8 +136,7 @@ public class ShadowNotification {
     View subView = view.findViewById(getInternalResourceId(resourceName));
     if (subView == null) {
       ByteArrayOutputStream buf = new ByteArrayOutputStream();
-      ShadowView shadowView = Shadow.extract(view);
-      shadowView.dump(new PrintStream(buf), 4);
+      Shadows.shadowOf(view).dump(new PrintStream(buf), 4);
       throw new IllegalArgumentException("no id." + resourceName + " found in view:\n" + buf.toString());
     }
     return subView;

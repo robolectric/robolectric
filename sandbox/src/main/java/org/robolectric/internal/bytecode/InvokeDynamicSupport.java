@@ -112,7 +112,7 @@ public class InvokeDynamicSupport {
 
   private static MethodHandle bindInitCallSite(RoboCallSite site) {
     MethodHandle mh = RobolectricInternals.getShadowCreator(site.getTheClass());
-    return bindWithFallback(site, mh, BIND_INIT_CALL_SITE);
+    return bindWithFallback(mh, site, BIND_INIT_CALL_SITE);
   }
 
   private static MethodHandle bindCallSite(MethodCallSite site) throws IllegalAccessException {
@@ -121,19 +121,17 @@ public class InvokeDynamicSupport {
             site.isStatic());
 
     if (mh == null) {
-      // call original code
-      mh = site.getOriginal();
+      // Call original code and make sure to clean stack traces
+      mh = cleanStackTraces(site.getOriginal());
     } else if (mh == ShadowWrangler.DO_NOTHING) {
-      // no-op
       mh = dropArguments(mh, 0, site.type().parameterList());
     } else if (!site.isStatic()) {
-      // drop arg 0 (this) for static methods
       Class<?> shadowType = mh.type().parameterType(0);
       mh = filterArguments(mh, 0, GET_SHADOW.asType(methodType(shadowType, site.thisType())));
     }
 
     try {
-      return bindWithFallback(site, cleanStackTraces(mh), BIND_CALL_SITE);
+      return bindWithFallback(mh, site, BIND_CALL_SITE);
     } catch (Throwable t) {
       // The error that bubbles up is currently not very helpful so we print any error messages
       // here
@@ -143,8 +141,7 @@ public class InvokeDynamicSupport {
     }
   }
 
-  private static MethodHandle bindWithFallback(RoboCallSite site, MethodHandle mh,
-      MethodHandle fallback) {
+  private static MethodHandle bindWithFallback(MethodHandle mh, RoboCallSite site, MethodHandle fallback) {
     SwitchPoint switchPoint = getInvalidator(site.getTheClass());
     MethodType type = site.type();
 

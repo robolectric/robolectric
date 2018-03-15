@@ -14,6 +14,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
+import android.util.MutableBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

@@ -196,7 +196,7 @@ public class ShadowAlarmManagerTest {
     alarmManager.cancel(PendingIntent.getBroadcast(context, 0, new Intent("someAction"), 0));
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(0);
   }
-
+  
     @Test
   public void schedule_useRequestCodeToMatchExistingPendingIntents() throws Exception {
     Intent intent = new Intent("ACTION!");

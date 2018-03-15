@@ -67,7 +67,7 @@ public class ShadowActivityManager {
 
   /** Returns information seeded by {@link #setProcesses}. */
   @Implementation
-  protected static void getMyMemoryState(ActivityManager.RunningAppProcessInfo inState) {
+  public static void getMyMemoryState(ActivityManager.RunningAppProcessInfo inState) {
     fillInProcessInfo(inState);
     for (ActivityManager.RunningAppProcessInfo info : processes) {
       if (info.pid == Process.myPid()) {

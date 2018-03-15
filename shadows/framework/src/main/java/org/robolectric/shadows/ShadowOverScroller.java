@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.os.Looper;
 import android.widget.OverScroller;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 @Implements(OverScroller.class)
@@ -121,8 +121,7 @@ public class ShadowOverScroller {
   }
 
   private Scheduler getScheduler() {
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    return shadowLooper.getScheduler();
+    return Shadows.shadowOf(Looper.getMainLooper()).getScheduler();
   }
 
   private int deltaX() {

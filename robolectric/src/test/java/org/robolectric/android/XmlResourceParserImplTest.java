@@ -32,7 +32,7 @@ import org.xmlpull.v1.XmlPullParserException;
 @RunWith(RobolectricTestRunner.class)
 public class XmlResourceParserImplTest {
 
-  private static final String RES_AUTO_NS = "http://schemas.android.com/apk/res-auto";
+  private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
   private XmlResourceParser parser;
 
   @Before
@@ -304,15 +304,15 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttribute() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"bar\"/>");
+    forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
     XmlResourceParserImpl parserImpl = (XmlResourceParserImpl) parser;
-    assertThat(parserImpl.getAttribute(RES_AUTO_NS, "bar")).isEqualTo("bar");
+    assertThat(parserImpl.getAttribute(XMLNS_NS, "bar")).isEqualTo("bar");
   }
 
   @Test
   public void testGetAttributeNamespace() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"bar\"/>");
-    assertThat(parser.getAttributeNamespace(0)).isEqualTo(RES_AUTO_NS);
+    forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
+    assertThat(parser.getAttributeNamespace(0)).isEqualTo(XMLNS_NS);
   }
 
   @Test
@@ -406,8 +406,8 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeValueStringString() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"bar\"/>");
-    assertThat(parser.getAttributeValue(RES_AUTO_NS, "bar")).isEqualTo("bar");
+    forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
+    assertThat(parser.getAttributeValue(XMLNS_NS, "bar")).isEqualTo("bar");
   }
 
   @Test
@@ -534,18 +534,18 @@ public class XmlResourceParserImplTest {
   @Test
   public void testGetAttributeListValue_StringStringStringArrayInt() throws Exception {
     String[] options = {"foo", "bar"};
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"bar\"/>");
-    assertThat(parser.getAttributeListValue(RES_AUTO_NS, "bar", options, 0)).isEqualTo(1);
+    forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
+    assertThat(parser.getAttributeListValue(XMLNS_NS, "bar", options, 0)).isEqualTo(1);
 
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"unexpected\"/>");
-    assertThat(parser.getAttributeListValue(RES_AUTO_NS, "bar", options, 0)).isEqualTo(0);
+    forgeAndOpenDocument("<foo xmlns:bar=\"unexpected\"/>");
+    assertThat(parser.getAttributeListValue(XMLNS_NS, "bar", options, 0)).isEqualTo(0);
   }
 
   @Test
   public void testGetAttributeBooleanValue_StringStringBoolean() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"true\"/>");
-    assertThat(parser.getAttributeBooleanValue(RES_AUTO_NS, "bar", false)).isTrue();
-    assertThat(parser.getAttributeBooleanValue(RES_AUTO_NS, "foo", false)).isFalse();
+    forgeAndOpenDocument("<foo xmlns:bar=\"true\"/>");
+    assertThat(parser.getAttributeBooleanValue(XMLNS_NS, "bar", false)).isTrue();
+    assertThat(parser.getAttributeBooleanValue(XMLNS_NS, "foo", false)).isFalse();
   }
 
   @Test
@@ -568,22 +568,22 @@ public class XmlResourceParserImplTest {
     parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_attribute_resource_value);
     parseUntilNext(XmlResourceParser.START_TAG);
 
-    assertThat(parser.getAttributeResourceValue(RES_AUTO_NS, "bar", 42)).isEqualTo(R.layout.main);
-    assertThat(parser.getAttributeResourceValue(RES_AUTO_NS, "foo", 42)).isEqualTo(42);
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(R.layout.main);
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "foo", 42)).isEqualTo(42);
   }
 
   @Test
   public void testGetAttributeResourceValueWhenNotAResource() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"banana\"/>");
-    assertThat(parser.getAttributeResourceValue(RES_AUTO_NS, "bar", 42)).isEqualTo(42);
+    forgeAndOpenDocument("<foo xmlns:bar=\"banana\"/>");
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(42);
   }
 
   @Test
   public void testGetAttributeIntValue_StringStringInt() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"-12\"/>");
+    forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
 
-    assertThat(parser.getAttributeIntValue(RES_AUTO_NS, "bar", 0)).isEqualTo(-12);
-    assertThat(parser.getAttributeIntValue(RES_AUTO_NS, "foo", 0)).isEqualTo(0);
+    assertThat(parser.getAttributeIntValue(XMLNS_NS, "bar", 0)).isEqualTo(-12);
+    assertThat(parser.getAttributeIntValue(XMLNS_NS, "foo", 0)).isEqualTo(0);
   }
 
   @Test
@@ -600,16 +600,16 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeUnsignedIntValue_StringStringInt() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"12\"/>");
+    forgeAndOpenDocument("<foo xmlns:bar=\"12\"/>");
 
-    assertThat(parser.getAttributeUnsignedIntValue(RES_AUTO_NS, "bar", 0)).isEqualTo(12);
+    assertThat(parser.getAttributeUnsignedIntValue(XMLNS_NS, "bar", 0)).isEqualTo(12);
 
-    assertThat(parser.getAttributeUnsignedIntValue(RES_AUTO_NS, "foo", 0)).isEqualTo(0);
+    assertThat(parser.getAttributeUnsignedIntValue(XMLNS_NS, "foo", 0)).isEqualTo(0);
 
     // Negative unsigned int must be
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"-12\"/>");
+    forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
 
-    assertThat(parser.getAttributeUnsignedIntValue(RES_AUTO_NS, "bar", 0))
+    assertThat(parser.getAttributeUnsignedIntValue(XMLNS_NS, "bar", 0))
         .as("Getting a negative number as unsigned should return the default value.").isEqualTo(0);
   }
 
@@ -630,14 +630,14 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeFloatValue_StringStringFloat() throws Exception {
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"12.01\"/>");
+    forgeAndOpenDocument("<foo xmlns:bar=\"12.01\"/>");
 
-    assertThat(parser.getAttributeFloatValue(RES_AUTO_NS, "bar", 0.0f)).isEqualTo(12.01f);
+    assertThat(parser.getAttributeFloatValue(XMLNS_NS, "bar", 0.0f)).isEqualTo(12.01f);
 
-    assertThat(parser.getAttributeFloatValue(RES_AUTO_NS, "foo", 0.0f)).isEqualTo(0.0f);
+    assertThat(parser.getAttributeFloatValue(XMLNS_NS, "foo", 0.0f)).isEqualTo(0.0f);
 
     forgeAndOpenDocument("<foo bar=\"unexpected\"/>");
-    assertThat(parser.getAttributeFloatValue(RES_AUTO_NS, "bar", 0.0f)).isEqualTo(0.0f);
+    assertThat(parser.getAttributeFloatValue(XMLNS_NS, "bar", 0.0f)).isEqualTo(0.0f);
   }
 
   @Test
@@ -656,10 +656,10 @@ public class XmlResourceParserImplTest {
   @Test
   public void testGetAttributeListValue_IntStringArrayInt() throws Exception {
     String[] options = {"foo", "bar"};
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"bar\"/>");
+    forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
     assertThat(parser.getAttributeListValue(0, options, 0)).isEqualTo(1);
 
-    forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"unexpected\"/>");
+    forgeAndOpenDocument("<foo xmlns:bar=\"unexpected\"/>");
     assertThat(parser.getAttributeListValue(
         0, options, 0)).isEqualTo(0);
 

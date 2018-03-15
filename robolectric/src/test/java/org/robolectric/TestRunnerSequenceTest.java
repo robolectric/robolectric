@@ -42,7 +42,7 @@ public class TestRunnerSequenceTest {
   @Test public void shouldRunThingsInTheRightOrder() throws Exception {
     assertNoFailures(run(new Runner(SimpleTest.class)));
     assertThat(StateHolder.transcript).containsExactly(
-        "configureSandbox",
+        "configureShadows",
         "application.onCreate",
         "beforeTest",
         "application.beforeTest",
@@ -68,7 +68,7 @@ public class TestRunnerSequenceTest {
       }
     }));
     assertThat(StateHolder.transcript).containsExactly(
-        "configureSandbox",
+        "configureShadows",
         "application.onCreate",
         "beforeTest",
         "application.beforeTest",
@@ -153,9 +153,9 @@ public class TestRunnerSequenceTest {
       return MyTestLifecycle.class;
     }
 
-    @Override protected void configureSandbox(Sandbox sandbox, FrameworkMethod frameworkMethod) {
-      StateHolder.transcript.add("configureSandbox");
-      super.configureSandbox(sandbox, frameworkMethod);
+    @Override protected void configureShadows(FrameworkMethod frameworkMethod, Sandbox sandbox) {
+      StateHolder.transcript.add("configureShadows");
+      super.configureShadows(frameworkMethod, sandbox);
     }
   }
 

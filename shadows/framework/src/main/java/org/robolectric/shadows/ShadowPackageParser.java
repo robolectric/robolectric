@@ -46,10 +46,11 @@ public class ShadowPackageParser {
   private String mArchiveSourcePath;
 
   @RealObject PackageParser realObject;
-  private static final String MANIFEST_FILE = "AndroidManifest.xml";
+  private static String MANIFEST_FILE;
 
   /** Parses an AndroidManifest.xml file using the framework PackageParser. */
   public static Package callParsePackage(FsFile manifestFile) {
+    MANIFEST_FILE = manifestFile.getPath();
     PackageParser packageParser = new PackageParser();
 
     int flags = PackageParser.PARSE_IGNORE_PROCESSES;

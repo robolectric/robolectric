@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -94,7 +95,7 @@ public class ShadowMatrix {
   public void set(Matrix src) {
     reset();
     if (src != null) {
-      ShadowMatrix shadowMatrix = Shadow.extract(src);
+      ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
       preOps.addAll(shadowMatrix.preOps);
       postOps.addAll(shadowMatrix.postOps);
       setOps.putAll(shadowMatrix.setOps);

@@ -14,9 +14,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressWarnings({"UnusedDeclaration"})
-// ImageDecoder is in fact in SDK, but make it false for now so projects which compile against < P
-// still work
-@Implements(value = ImageDecoder.class, isInAndroidSdk = false, minSdk = Build.VERSION_CODES.P)
+@Implements(value = ImageDecoder.class, minSdk = Build.VERSION_CODES.P)
 public class ShadowImageDecoder {
 
   @RealObject private ImageDecoder realObject;

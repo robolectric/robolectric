@@ -1,5 +1,7 @@
 package org.robolectric.shadows.util;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Application;
 import android.content.Context;
 import org.robolectric.shadow.api.Shadow;
@@ -14,7 +16,7 @@ public abstract class AppSingletonizer<T> {
 
   synchronized public T getInstance(Context context) {
     Application applicationContext = (Application) context.getApplicationContext();
-    ShadowApplication shadowApplication = Shadow.extract(applicationContext);
+    ShadowApplication shadowApplication = (ShadowApplication) shadowOf(applicationContext);
     T instance = get(shadowApplication);
     if (instance == null) {
       instance = createInstance(applicationContext);

@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -44,10 +46,9 @@ public class ShadowDrawable {
       return null;
     }
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
-    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
-    shadowBitmapDrawable.createdFromInputStream = is;
-    shadowBitmapDrawable.drawableCreateFromStreamSource = srcName;
-    shadowBitmapDrawable.validate(); // start off not invalidated
+    shadowOf(drawable).createdFromInputStream = is;
+    shadowOf(drawable).drawableCreateFromStreamSource = srcName;
+    shadowOf(drawable).validate(); // start off not invalidated
     return drawable;
   }
 
@@ -86,20 +87,17 @@ public class ShadowDrawable {
   @Implementation
   public static Drawable createFromPath(String pathName) {
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
-    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
-    shadowBitmapDrawable.drawableCreateFromPath = pathName;
-    shadowBitmapDrawable.validate(); // start off not invalidated
+    shadowOf(drawable).drawableCreateFromPath = pathName;
+    shadowOf(drawable).validate(); // start off not invalidated
     return drawable;
   }
 
   public static Drawable createFromResourceId(int resourceId) {
     Bitmap bitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
-    shadowBitmap.createdFromResId = resourceId;
+    shadowOf(bitmap).createdFromResId = resourceId;
     BitmapDrawable drawable = new BitmapDrawable(bitmap);
-    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
-    shadowBitmapDrawable.validate(); // start off not invalidated
-    shadowBitmapDrawable.createdFromResId = resourceId;
+    shadowOf(drawable).validate(); // start off not invalidated
+    shadowOf(drawable).createdFromResId = resourceId;
     return drawable;
   }
 
@@ -147,7 +145,7 @@ public class ShadowDrawable {
     if (realDrawable == o) return true;
     if (o == null || realDrawable.getClass() != o.getClass()) return false;
 
-    ShadowDrawable that = Shadow.extract((Drawable) o);
+    ShadowDrawable that = shadowOf((Drawable) o);
 
     if (intrinsicHeight != that.intrinsicHeight) return false;
     if (intrinsicWidth != that.intrinsicWidth) return false;

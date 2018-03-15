@@ -2,11 +2,11 @@ package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
-import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,8 +67,7 @@ public class ShadowTypedArrayTest {
 
   @Test
   public void getFraction_shouldReturnDefaultValue() throws Exception {
-    assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f))
-        .isEqualTo(-1f);
+    assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f)).isEqualTo(-1f);
   }
 
   @Test
@@ -78,8 +77,7 @@ public class ShadowTypedArrayTest {
             .addAttribute(android.R.attr.width, "50%")
             .build(),
         new int[]{android.R.attr.width});
-    assertThat(typedArray.getFraction(0, 100, 1, -1))
-        .isEqualTo(50f);
+    assertThat(typedArray.getFraction(0, 100, 1, -1)).isEqualTo(50f);
   }
 
   @Test
@@ -113,10 +111,8 @@ public class ShadowTypedArrayTest {
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.keycode, "@array/greetings")
             .build(),
-        new int[]{android.R.attr.absListViewStyle});
-    CharSequence[] textArray = typedArray.getTextArray(0);
-    assertThat(textArray).isInstanceOf(CharSequence[].class);
-    assertThat(textArray).allMatch(Objects::isNull);
+        new int[]{R.attr.animalStyle});
+    assertNull(typedArray.getTextArray(0));
   }
 
   @Test
@@ -141,16 +137,16 @@ public class ShadowTypedArrayTest {
   @Test public void hasValue_withoutValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         null,
-        new int[]{R.attr.responses});
+        new int[]{R.attr.animalStyle});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 
   @Test public void hasValue_withNullValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
-            .addAttribute(R.attr.responses, AttributeResource.NULL_VALUE)
+            .addAttribute(R.attr.animalStyle, AttributeResource.NULL_VALUE)
             .build(),
-        new int[]{R.attr.responses});
+        new int[]{R.attr.animalStyle});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 

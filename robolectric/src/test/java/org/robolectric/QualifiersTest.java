@@ -10,7 +10,6 @@ import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
-import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,25 +42,8 @@ public class QualifiersTest {
   @Test
   @Config(qualifiers = "land")
   public void orientation() throws Exception {
-    assertThat(resources.getConfiguration().orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
-  }
-
-  @Config(qualifiers = "en")
-  @Test public void shouldBeEnglish() {
-    Locale locale = resources.getConfiguration().locale;
-    assertThat(locale.getLanguage()).isEqualTo("en");
-  }
-
-  @Config(qualifiers = "ja")
-  @Test public void shouldBeJapanese() {
-    Locale locale = resources.getConfiguration().locale;
-    assertThat(locale.getLanguage()).isEqualTo("ja");
-  }
-
-  @Config(qualifiers = "fr")
-  @Test public void shouldBeFrench() {
-    Locale locale = resources.getConfiguration().locale;
-    assertThat(locale.getLanguage()).isEqualTo("fr");
+    assertThat(Robolectric.setupActivity(Activity.class).getResources().getConfiguration().orientation)
+        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
   }
 
   @Test @Config(qualifiers = "fr")

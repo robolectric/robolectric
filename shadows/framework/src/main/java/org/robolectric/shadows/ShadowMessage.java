@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
@@ -10,15 +11,12 @@ import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
-import android.os.MessageQueue;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 
 @Implements(Message.class)
 public class ShadowMessage {
@@ -132,13 +130,5 @@ public class ShadowMessage {
       setStaticField(Message.class, "sPoolSize", 0);
       setStaticField(Message.class, "sPool", null);
     }
-  }
-
-  private static ShadowLooper shadowOf(Looper looper) {
-    return Shadow.extract(looper);
-  }
-
-  private static ShadowMessageQueue shadowOf(MessageQueue mq) {
-    return Shadow.extract(mq);
   }
 }

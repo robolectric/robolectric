@@ -2,14 +2,12 @@ package org.robolectric.res;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
 import static org.robolectric.util.TestUtil.sdkResources;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.android.ResTable_config;
 
 @RunWith(JUnit4.class)
@@ -18,7 +16,6 @@ public class StyleResourceLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    assumeTrue(RuntimeEnvironment.useLegacyResources());
     ResourcePath resourcePath = sdkResources(JELLY_BEAN);
     resourceTable = new ResourceTableFactory().newResourceTable("android", resourcePath);
   }

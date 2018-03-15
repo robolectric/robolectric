@@ -2,6 +2,8 @@ package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -12,12 +14,12 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build.VERSION;
 import android.os.Bundle;
+import android.os.Build;
+import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -40,8 +42,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       return this;
     }
 
-    ShadowActivity shadowActivity = Shadow.extract(component);
-    shadowActivity.callAttach(getIntent());
+    shadowOf(component).callAttach(getIntent());
     attached = true;
     return this;
   }
@@ -284,8 +285,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Restore theme in case it was set in the test manually.
           // This is not technically what happens but is purely to make this easier to use in
           // Robolectric.
-          ShadowContextThemeWrapper shadowContextThemeWrapper = Shadow.extract(component);
-          int theme = shadowContextThemeWrapper.callGetThemeResId();
+          int theme = shadowOf((ContextThemeWrapper) component).callGetThemeResId();
 
           // Setup controller for the new activity
           attached = false;
@@ -299,8 +299,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Set saved non config instance
           ReflectionHelpers.setField(
               recreatedActivity, "mLastNonConfigurationInstances", nonConfigInstance);
-          ShadowActivity shadowActivity = Shadow.extract(recreatedActivity);
-          shadowActivity.setLastNonConfigurationInstance(activityConfigInstance);
+          shadowOf(recreatedActivity).setLastNonConfigurationInstance(activityConfigInstance);
 
           // Create lifecycle
           ReflectionHelpers.callInstanceMethod(

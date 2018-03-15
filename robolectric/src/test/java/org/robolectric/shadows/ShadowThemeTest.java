@@ -3,19 +3,17 @@ package org.robolectric.shadows;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.AttributeSet;
-import android.util.Xml;
 import android.view.View;
 import android.widget.Button;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,20 +22,15 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
-import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowThemeTest {
+
   private Resources resources;
 
   @Before
   public void setUp() throws Exception {
     resources = RuntimeEnvironment.application.getResources();
-  }
-
-  @After
-  public void tearDown() {
-    ShadowLegacyAssetManager.strictErrors = false;
   }
 
   @Test public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() throws Exception {
@@ -101,38 +94,20 @@ public class ShadowThemeTest {
 
   @Test public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {
     Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_Robolectric_EmptyParent, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
+    theme.applyStyle(R.style.Theme_Robolectric_ImplicitChild, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string3}).getString(0))
+        .isEqualTo("string 3 from Theme.Robolectric.ImplicitChild");
   }
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
     Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.SimpleParent, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
-        .isEqualTo("parent string");
-  }
-
-  @Test public void applyStyle_shouldOverrideParentAttrs() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.SimpleChildWithOverride, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
-        .isEqualTo("parent string overridden by child");
-  }
-
-  @Test public void applyStyle_shouldOverrideImplicitParentAttrs() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.SimpleParent_ImplicitChild, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
-        .isEqualTo("parent string overridden by child");
-  }
-
-  @Test public void applyStyle_shouldInheritParentAttrs() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.SimpleChildWithAdditionalAttributes, true);
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.child_string}).getString(0))
-        .isEqualTo("child string");
-    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.parent_string}).getString(0))
-        .isEqualTo("parent string");
+    theme.applyStyle(R.style.Theme_AnotherTheme, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.AnotherTheme");
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string3}).getString(0))
+        .isEqualTo("string 3 from Theme.Robolectric");
   }
 
   @Test
@@ -152,55 +127,62 @@ public class ShadowThemeTest {
   @Test
   public void setTo_whenDestThemeIsModified_sourceThemeShouldNotMutate() throws Exception {
     Resources.Theme sourceTheme = resources.newTheme();
-    sourceTheme.applyStyle(R.style.StyleA, false);
+    sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
+    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
 
     Resources.Theme destTheme = resources.newTheme();
     destTheme.setTo(sourceTheme);
-    destTheme.applyStyle(R.style.StyleB, true);
+    destTheme.applyStyle(R.style.Theme_AnotherTheme, true);
 
-    assertThat(destTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style B");
     assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style A");
+        .isEqualTo("string 1 from Theme.Robolectric");
   }
 
   @Test
   public void setTo_whenSourceThemeIsModified_destThemeShouldNotMutate() throws Exception {
     Resources.Theme sourceTheme = resources.newTheme();
-    sourceTheme.applyStyle(R.style.StyleA, false);
+    sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
+    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
 
     Resources.Theme destTheme = resources.newTheme();
     destTheme.setTo(sourceTheme);
-    sourceTheme.applyStyle(R.style.StyleB, true);
+    sourceTheme.applyStyle(R.style.Theme_AnotherTheme, true);
 
     assertThat(destTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style A");
-    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style B");
+        .isEqualTo("string 1 from Theme.Robolectric");
   }
 
   @Test
   public void applyStyle_withForceFalse_shouldApplyButNotOverwriteExistingAttributeValues() throws Exception {
     Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleA, false);
+    theme.applyStyle(R.style.Theme_Robolectric, false);
     assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style A");
+        .isEqualTo("string 1 from Theme.Robolectric");
 
-    theme.applyStyle(R.style.StyleB, false);
+    theme.applyStyle(R.style.Theme_AnotherTheme, false);
     assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style A");
+        .isEqualTo("string 1 from Theme.Robolectric");
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string2}).getString(0))
+        .isEqualTo("string 2 from Theme.AnotherTheme");
   }
 
   @Test
   public void applyStyle_withForceTrue_shouldApplyAndOverwriteExistingAttributeValues() throws Exception {
     Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.StyleA, false);
+    theme.applyStyle(R.style.Theme_Robolectric, false);
     assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style A");
+        .isEqualTo("string 1 from Theme.Robolectric");
 
-    theme.applyStyle(R.style.StyleB, true);
+    theme.applyStyle(R.style.Theme_AnotherTheme, true);
     assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
-        .isEqualTo("string 1 from style B");
+        .isEqualTo("string 1 from Theme.AnotherTheme");
+
+    // force apply the original theme; values should be overwritten
+    theme.applyStyle(R.style.Theme_Robolectric, true);
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
   }
 
   @Test
@@ -210,29 +192,27 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReference").build(),
-        new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from YetAnotherStyle");
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReference").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(),
-        new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from YetAnotherStyle");
+        Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
   }
 
   @Test
-  public void xml_whenStyleSpecifiesAttr_obtainStyledAttribute_findsCorrectValue() throws Exception {
+  public void whenStyleSpecifiesAttrWithoutExplicitType_obtainStyledAttribute_findsCorrectValue() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
-    assertThat(theme.obtainStyledAttributes(getFirstElementAttrSet(R.xml.temp),
-        new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from YetAnotherStyle");
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReferenceWithoutExplicitType").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
 
-    assertThat(theme.obtainStyledAttributes(getFirstElementAttrSet(R.xml.temp_parent),
-        new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 2 from YetAnotherStyle");
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().setStyleAttribute("?styleReferenceWithoutExplicitType").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
   }
 
   @Test
@@ -262,7 +242,7 @@ public class ShadowThemeTest {
 
   @Test
   public void forStrict_whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_throwsException() throws Exception {
-    ShadowLegacyAssetManager.strictErrors = true;
+    shadowOf(resources.getAssets()).strictErrors = true;
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
@@ -270,7 +250,7 @@ public class ShadowThemeTest {
 
     try {
       theme.obtainStyledAttributes(
-          Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?org.robolectric:attr/noSuchAttr").build(),
+          Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/noSuchAttr").build(),
           new int[]{R.attr.string2}, 0, 0);
       fail();
     } catch (Exception e) {
@@ -306,21 +286,6 @@ public class ShadowThemeTest {
     TypedArray typedArray = resources.newTheme().obtainStyledAttributes(
         attributeSet, new int[]{android.R.attr.layout_height}, 0, 0);
     assertThat(typedArray.getDimensionPixelSize(0, -1)).isEqualTo(15);
-  }
-
-  @Test public void obtainStyledAttributes_shouldFindAttributeInDefaultStyle() throws Exception {
-    Theme theme = resources.newTheme();
-    TypedArray typedArray = theme.obtainStyledAttributes(R.style.StyleA, new int[]{R.attr.string1});
-    assertThat(typedArray.getString(0)).isEqualTo("string 1 from style A");
-  }
-
-  ////////////////////////////
-
-  private XmlResourceParser getFirstElementAttrSet(int resId) throws Exception {
-    XmlResourceParser xml = resources.getXml(resId);
-    assertThat(xml.next()).isEqualTo(XmlPullParser.START_DOCUMENT);
-    assertThat(xml.nextTag()).isEqualTo(XmlPullParser.START_TAG);
-    return (XmlResourceParser) Xml.asAttributeSet(xml);
   }
 
   public static class TestActivityWithAnotherTheme extends TestActivity {

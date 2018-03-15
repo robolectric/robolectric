@@ -13,11 +13,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -103,8 +103,7 @@ public class ShadowDialog {
   }
 
   public CharSequence getTitle() {
-    ShadowWindow shadowWindow = Shadow.extract(realDialog.getWindow());
-    return shadowWindow.getTitle();
+    return Shadows.shadowOf(realDialog.getWindow()).getTitle();
   }
 
   public void clickOnText(int textId) {
@@ -124,8 +123,7 @@ public class ShadowDialog {
   }
 
   private boolean clickOnText(View view, String text) {
-    ShadowView shadowView = Shadow.extract(view);
-    if (text.equals(shadowView.innerText())) {
+    if (text.equals(Shadows.shadowOf(view).innerText())) {
       view.performClick();
       return true;
     }

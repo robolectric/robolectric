@@ -12,7 +12,7 @@ public class ShadowMeasuredParagraph {
   private static int nativeCounter = 0;
 
   @Implementation
-  protected static long nInitBuilder() {
+  public static long nInitBuilder() {
     return ++nativeCounter;
   }
 }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.StyleableRes;
@@ -10,11 +11,11 @@ import android.util.TypedValue;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -41,19 +42,13 @@ public class ShadowTypedArray {
           ClassParameter.from(int.class, len));
     }
 
-    ShadowTypedArray shadowTypedArray = Shadow.extract(typedArray);
-    shadowTypedArray.stringData = stringData;
+    Shadows.shadowOf(typedArray).stringData = stringData;
     return typedArray;
   }
 
   @HiddenApi @Implementation
   public CharSequence loadStringValueAt(int index) {
-    if (ShadowAssetManager.useLegacy()) {
-      return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
-    } else {
-      return directlyOn(realTypedArray, TypedArray.class, "loadStringValueAt",
-          new ClassParameter(int.class, index));
-    }
+    return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
   }
 
   @Implementation
@@ -68,11 +63,7 @@ public class ShadowTypedArray {
 
   @Implementation
   public String getPositionDescription() {
-    if (ShadowAssetManager.useLegacy()) {
-      return positionDescription;
-    } else {
-      return directlyOn(realTypedArray, TypedArray.class, "getPositionDescription");
-    }
+    return positionDescription;
   }
 
   public static void dump(TypedArray typedArray) {
@@ -90,8 +81,7 @@ public class ShadowTypedArray {
         result.append(Strings.padEnd("Changing configurations ", 25, ' ')).append(data[index+ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS]).append(System.lineSeparator());
         result.append(Strings.padEnd("Style density: ", 25, ' ')).append(data[index+ShadowAssetManager.STYLE_DENSITY]).append(System.lineSeparator());
         if (type == TypedValue.TYPE_STRING) {
-          ShadowTypedArray shadowTypedArray = Shadow.extract(typedArray);
-          result.append(Strings.padEnd("Style value: ", 25, ' ')).append(shadowTypedArray.loadStringValueAt(index)).append(System.lineSeparator());
+          result.append(Strings.padEnd("Style value: ", 25, ' ')).append(shadowOf(typedArray).loadStringValueAt(index)).append(System.lineSeparator());
         }
       }
       result.append(System.lineSeparator());

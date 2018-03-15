@@ -189,15 +189,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  /**
-   * @deprecated Override {@link #configureSandbox(Sandbox, FrameworkMethod)} instead.
-   */
-  @Deprecated
   protected void configureShadows(FrameworkMethod method, Sandbox sandbox) {
-    configureSandbox(sandbox, method);
-  }
-
-  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
     ShadowMap.Builder builder = createShadowMap().newBuilder();
 
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
@@ -225,7 +217,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
         Sandbox sandbox = getSandbox(method);
 
-        // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
+        // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
         // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
         // not available once we install the Robolectric class loader.
         configureShadows(method, sandbox);

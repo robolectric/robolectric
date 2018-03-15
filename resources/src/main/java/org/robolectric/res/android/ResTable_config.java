@@ -52,7 +52,6 @@ import static org.robolectric.res.android.AConfiguration.ACONFIGURATION_WIDE_COL
 import static org.robolectric.res.android.LocaleData.localeDataCompareRegions;
 import static org.robolectric.res.android.LocaleData.localeDataComputeScript;
 import static org.robolectric.res.android.LocaleData.localeDataIsCloseToUsEnglish;
-import static org.robolectric.res.android.ResTable.kDebugTableSuperNoisy;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
@@ -82,6 +81,7 @@ import javax.annotation.Nonnull;
  * Changes from 8.0.0_r4 partially applied.
  */
 public class ResTable_config {
+  public static final boolean kDebugTableSuperNoisy = false;
 
   // The most specific locale can consist of:
   //

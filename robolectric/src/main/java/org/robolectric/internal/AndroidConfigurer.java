@@ -15,7 +15,6 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.shadow.api.ShadowFactory;
 
 public class AndroidConfigurer {
   public static void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
@@ -49,7 +48,6 @@ public class AndroidConfigurer {
         .doNotAcquireClass(AndroidManifest.class)
         .doNotAcquireClass(RobolectricTestRunner.class)
         .doNotAcquireClass(RobolectricTestRunner.HelperTestRunner.class)
-        .doNotAcquireClass(ShadowFactory.class)
         .doNotAcquireClass(ResourcePath.class)
         .doNotAcquireClass(ResourceTable.class)
         .doNotAcquireClass(XmlBlock.class);

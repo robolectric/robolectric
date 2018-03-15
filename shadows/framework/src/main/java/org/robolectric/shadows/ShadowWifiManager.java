@@ -9,14 +9,15 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.os.RemoteException;
 import android.util.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -195,8 +196,7 @@ public class ShadowWifiManager {
   }
 
   private WifiConfiguration makeCopy(WifiConfiguration config, int networkId) {
-    ShadowWifiConfiguration shadowWifiConfiguration = Shadow.extract(config);
-    WifiConfiguration copy = shadowWifiConfiguration.copy();
+    WifiConfiguration copy = Shadows.shadowOf(config).copy();
     copy.networkId = networkId;
     return copy;
   }

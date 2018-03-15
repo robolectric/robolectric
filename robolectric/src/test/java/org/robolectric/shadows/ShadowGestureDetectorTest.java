@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowGestureDetectorTest {
@@ -23,8 +24,7 @@ public class ShadowGestureDetectorTest {
   @Before
   public void setUp() throws Exception {
     detector = new GestureDetector(new TestOnGestureListener());
-    motionEvent =
-        new MotionEventBuilder().withAction(MotionEvent.ACTION_UP).withPointer(100, 30).build();
+    motionEvent = MotionEvent.obtain(-1, -1, MotionEvent.ACTION_UP, 100, 30, -1);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class ShadowGestureDetectorTest {
   public void canAnswerLastGestureDetector() throws Exception {
     GestureDetector newDetector = new GestureDetector(RuntimeEnvironment.application, new TestOnGestureListener());
     assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
-    newDetector.onTouchEvent(motionEvent);
+    newDetector.onTouchEvent(Shadow.newInstanceOf(MotionEvent.class));
     assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
   }
 

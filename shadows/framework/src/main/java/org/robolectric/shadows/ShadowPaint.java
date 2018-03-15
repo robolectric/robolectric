@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -47,7 +48,7 @@ public class ShadowPaint {
 
   @Implementation
   public void __constructor__(Paint otherPaint) {
-    ShadowPaint otherShadowPaint = Shadow.extract(otherPaint);
+    ShadowPaint otherShadowPaint = shadowOf(otherPaint);
     this.color = otherShadowPaint.color;
     this.style = otherShadowPaint.style;
     this.cap = otherShadowPaint.cap;

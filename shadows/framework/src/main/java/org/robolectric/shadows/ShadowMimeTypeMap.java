@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.webkit.MimeTypeMap;
 import java.util.HashMap;
 import java.util.Map;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -31,8 +32,7 @@ public class ShadowMimeTypeMap {
   @Resetter
   public static void reset() {
     if (singleton != null) {
-      ShadowMimeTypeMap shadowMimeTypeMap = Shadow.extract(getSingleton());
-      shadowMimeTypeMap.clearMappings();
+      Shadows.shadowOf(getSingleton()).clearMappings();
     }
   }
 

@@ -1,10 +1,6 @@
 package org.robolectric.util;
 
-import com.google.common.io.CharStreams;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
@@ -60,7 +56,18 @@ public abstract class TestUtil {
   }
 
   public static String readString(InputStream is) throws IOException {
-    return CharStreams.toString(new InputStreamReader(is, "UTF-8"));
+    Writer writer = new StringWriter();
+    char[] buffer = new char[1024];
+    try {
+      Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+      int n;
+      while ((n = reader.read(buffer)) != -1) {
+        writer.write(buffer, 0, n);
+      }
+    } finally {
+      is.close();
+    }
+    return writer.toString();
   }
 
   private static DependencyResolver getDependencyResolver() {

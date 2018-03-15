@@ -190,36 +190,31 @@ public class ImplementsValidator extends Validator {
     model.documentType(elem, elementUtils.getDocComment(elem), imports);
 
     for (Element memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
-      try {
-        ExecutableElement methodElement = (ExecutableElement) memberElement;
-        Implementation implementation = memberElement.getAnnotation(Implementation.class);
+      ExecutableElement methodElement = (ExecutableElement) memberElement;
+      Implementation implementation = memberElement.getAnnotation(Implementation.class);
 
-        DocumentedMethod documentedMethod = new DocumentedMethod(memberElement.toString());
-        for (Modifier modifier : memberElement.getModifiers()) {
-          documentedMethod.modifiers.add(modifier.toString());
-        }
-        documentedMethod.isImplementation = implementation != null;
-        if (implementation != null) {
-          documentedMethod.minSdk = sdkOrNull(implementation.minSdk());
-          documentedMethod.maxSdk = sdkOrNull(implementation.maxSdk());
-        }
-        for (VariableElement variableElement : methodElement.getParameters()) {
-          documentedMethod.params.add(variableElement.toString());
-        }
-        documentedMethod.returnType = methodElement.getReturnType().toString();
-        for (TypeMirror typeMirror : methodElement.getThrownTypes()) {
-          documentedMethod.exceptions.add(typeMirror.toString());
-        }
-        String docMd = elementUtils.getDocComment(methodElement);
-        if (docMd != null) {
-          documentedMethod.setDocumentation(docMd);
-        }
-
-        model.documentMethod(elem, documentedMethod);
-      } catch (Exception e) {
-        throw new RuntimeException(
-            "failed to capture javadoc for " + elem + "." + memberElement, e);
+      DocumentedMethod documentedMethod = new DocumentedMethod(memberElement.toString());
+      for (Modifier modifier : memberElement.getModifiers()) {
+        documentedMethod.modifiers.add(modifier.toString());
       }
+      documentedMethod.isImplementation = implementation != null;
+      if (implementation != null) {
+        documentedMethod.minSdk = sdkOrNull(implementation.minSdk());
+        documentedMethod.maxSdk = sdkOrNull(implementation.maxSdk());
+      }
+      for (VariableElement variableElement : methodElement.getParameters()) {
+        documentedMethod.params.add(variableElement.toString());
+      }
+      documentedMethod.returnType = methodElement.getReturnType().toString();
+      for (TypeMirror typeMirror : methodElement.getThrownTypes()) {
+        documentedMethod.exceptions.add(typeMirror.toString());
+      }
+      String docMd = elementUtils.getDocComment(methodElement);
+      if (docMd != null) {
+        documentedMethod.setDocumentation(docMd);
+      }
+
+      model.documentMethod(elem, documentedMethod);
     }
   }
 

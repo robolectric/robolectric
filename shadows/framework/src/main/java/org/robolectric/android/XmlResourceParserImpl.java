@@ -1,8 +1,5 @@
 package org.robolectric.android;
 
-import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
-import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
-
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import com.android.internal.util.XmlUtils;
@@ -69,7 +66,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     this.fileName = fileName;
     this.packageName = packageName;
     this.resourceTable = resourceTable;
-    this.applicationNamespace = ANDROID_RES_NS_PREFIX + applicationPackageName;
+    this.applicationNamespace = AttributeResource.ANDROID_RES_NS_PREFIX + applicationPackageName;
   }
 
   @Override
@@ -271,16 +268,14 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public String getAttributeNamespace(int index) {
     Node attr = getAttributeAt(index);
     if (attr == null) {
-      return "";
+      return null;
     }
     return maybeReplaceNamespace(attr.getNamespaceURI());
   }
 
   private String maybeReplaceNamespace(String namespace) {
-    if (namespace == null) {
-      return "";
-    } else if (namespace.equals(applicationNamespace)) {
-      return AttributeResource.RES_AUTO_NS_URI;
+    if (AttributeResource.RES_AUTO_NS_URI.equals(namespace)) {
+      return applicationNamespace;
     } else {
       return namespace;
     }
@@ -290,8 +285,10 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public String getAttributeName(int index) {
     try {
       Node attr = getAttributeAt(index);
-      String name = attr.getLocalName();
-      return name == null ? attr.getNodeName() : name;
+      String namespace = maybeReplaceNamespace(attr.getNamespaceURI());
+      return applicationNamespace.equals(namespace) ?
+        attr.getLocalName() :
+        attr.getNodeName();
     } catch (IndexOutOfBoundsException ex) {
       return null;
     }
@@ -326,9 +323,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public String qualify(String value) {
     if (value == null) return null;
     if (AttributeResource.isResourceReference(value)) {
-      return "@" + ResName.qualifyResourceName(value.trim().substring(1).replace("+", ""), packageName, "attr");
+      return "@" + ResName.qualifyResourceName(value.substring(1).replace("+", ""), packageName, "attr");
     } else if (AttributeResource.isStyleReference(value)) {
-      return "?" + ResName.qualifyResourceName(value.trim().substring(1), packageName, "attr");
+      return "?" + ResName.qualifyResourceName(value.substring(1), packageName, "attr");
     } else {
       return StringResources.processStringResources(value);
     }
@@ -596,13 +593,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
   @Override
   public int getAttributeNameResource(int index) {
-    String attributeNamespace = getAttributeNamespace(index);
-    if (attributeNamespace.equals(RES_AUTO_NS_URI)) {
-      attributeNamespace = packageName;
-    } else if (attributeNamespace.startsWith(ANDROID_RES_NS_PREFIX)) {
-      attributeNamespace = attributeNamespace.substring(ANDROID_RES_NS_PREFIX.length());
-    }
-    return getResourceId(getAttributeName(index), attributeNamespace, "attr");
+    return getResourceId(getAttributeName(index), packageName, "attr");
   }
 
   @Override

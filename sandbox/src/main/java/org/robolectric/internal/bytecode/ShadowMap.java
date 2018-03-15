@@ -199,8 +199,7 @@ public class ShadowMap {
         boolean callThroughByDefault, boolean inheritImplementationMethods,
         boolean looseSignatures) {
       addShadowInfo(new ShadowInfo(realClassName, shadowClassName,
-          callThroughByDefault, inheritImplementationMethods, looseSignatures, -1, -1,
-          null));
+          callThroughByDefault, inheritImplementationMethods, looseSignatures, -1, -1));
       return this;
     }
 

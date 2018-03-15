@@ -10,6 +10,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.junit.Assert;
 import org.junit.runner.Runner;
 import org.junit.runners.Parameterized;
@@ -19,7 +20,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.DeepCloner;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.bytecode.Sandbox;
+import org.robolectric.internal.SdkEnvironment;
 
 /**
  * A Parameterized test runner for Robolectric. Copied from the {@link Parameterized} class, then modified the custom
@@ -98,13 +99,15 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       validateOnlyOneConstructor(errors);
     }
 
+    @Nonnull
     @Override
-    protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
-      super.configureSandbox(sandbox, method);
+    protected SdkEnvironment getSandbox(FrameworkMethod method) {
+      SdkEnvironment sandbox = super.getSandbox(method);
 
-      // this needs to happen after the sandbox has been configured
       DeepCloner deepCloner = new DeepCloner(sandbox.getRobolectricClassLoader());
       parameters = deepCloner.clone(parameters);
+
+      return sandbox;
     }
 
     @Override

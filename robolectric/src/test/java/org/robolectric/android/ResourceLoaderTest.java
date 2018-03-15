@@ -1,8 +1,6 @@
 package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
-import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -12,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 import java.util.Locale;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -25,11 +22,6 @@ import org.robolectric.res.ResourceTable;
 
 @RunWith(RobolectricTestRunner.class)
 public class ResourceLoaderTest {
-
-  @Before
-  public void setUp() {
-    assumeTrue(useLegacy());
-  }
 
   @Test
   @Config(qualifiers="w0dp")

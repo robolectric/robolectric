@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
@@ -9,7 +11,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
@@ -36,15 +37,13 @@ public class ShadowToast {
   public static Toast makeText(Context context, CharSequence text, int duration) {
     Toast toast = new Toast(context);
     toast.setDuration(duration);
-    ShadowToast shadowToast = Shadow.extract(toast);
-    shadowToast.text = text.toString();
+    shadowOf(toast).text = text.toString();
     return toast;
   }
 
   @Implementation
   public void show() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    shadowApplication.getShownToasts().add(toast);
+    shadowOf(RuntimeEnvironment.application).getShownToasts().add(toast);
   }
 
   @Implementation
@@ -129,8 +128,7 @@ public class ShadowToast {
    * </pre>
    */
   public static void reset() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    shadowApplication.getShownToasts().clear();
+    shadowOf(RuntimeEnvironment.application).getShownToasts().clear();
   }
 
   /**
@@ -141,8 +139,7 @@ public class ShadowToast {
    *         or since {@link #reset()} has been called.
    */
   public static int shownToastCount() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    return shadowApplication.getShownToasts().size();
+    return shadowOf(RuntimeEnvironment.application).getShownToasts().size();
   }
 
   /**
@@ -154,8 +151,7 @@ public class ShadowToast {
    * @return whether the {@code Toast} was requested
    */
   public static boolean showedCustomToast(CharSequence message, int layoutResourceIdToCheckForMessage) {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    for (Toast toast : shadowApplication.getShownToasts()) {
+    for (Toast toast : shadowOf(RuntimeEnvironment.application).getShownToasts()) {
       String text = ((TextView) toast.getView().findViewById(layoutResourceIdToCheckForMessage)).getText().toString();
       if (text.equals(message.toString())) {
         return true;
@@ -171,10 +167,8 @@ public class ShadowToast {
    * @return whether the {@code Toast} was requested
    */
   public static boolean showedToast(CharSequence message) {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    for (Toast toast : shadowApplication.getShownToasts()) {
-      ShadowToast shadowToast = Shadow.extract(toast);
-      String text = shadowToast.text;
+    for (Toast toast : shadowOf(RuntimeEnvironment.application).getShownToasts()) {
+      String text = shadowOf(toast).text;
       if (text != null && text.equals(message.toString())) {
         return true;
       }
@@ -188,15 +182,8 @@ public class ShadowToast {
    * @return the text of the most recently shown {@code Toast}
    */
   public static String getTextOfLatestToast() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    List<Toast> shownToasts = shadowApplication.getShownToasts();
-    if (shownToasts.isEmpty()) {
-      return null;
-    } else {
-      Toast latestToast = shownToasts.get(shownToasts.size() - 1);
-      ShadowToast shadowToast = Shadow.extract(latestToast);
-      return shadowToast.text;
-    }
+    List<Toast> shownToasts = shadowOf(RuntimeEnvironment.application).getShownToasts();
+    return (shownToasts.size() == 0) ? null : shadowOf(shownToasts.get(shownToasts.size() - 1)).text;
   }
 
   /**
@@ -205,8 +192,7 @@ public class ShadowToast {
    * @return the most recently shown {@code Toast}
    */
   public static Toast getLatestToast() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    List<Toast> shownToasts = shadowApplication.getShownToasts();
+    List<Toast> shownToasts = shadowOf(RuntimeEnvironment.application).getShownToasts();
     return (shownToasts.size() == 0) ? null : shownToasts.get(shownToasts.size() - 1);
   }
 }
