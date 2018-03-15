@@ -295,7 +295,7 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                     case 'V': write('void'); break;
                 }
             }
-            "$methodNode.name(${args.toString()}): ${returnType.toString()}"
+            "$methodAccessString $methodNode.name(${args.toString()}): ${returnType.toString()}"
         }
 
         @Override
@@ -322,6 +322,24 @@ class CheckApiChangesPlugin implements Plugin<Project> {
         boolean isDeprecated() {
             containsAnnotation(classNode.visibleAnnotations, "Ljava/lang/Deprecated;") ||
                     containsAnnotation(methodNode.visibleAnnotations, "Ljava/lang/Deprecated;")
+        }
+
+        String getMethodAccessString() {
+            if (bitSet(methodNode.access, ACC_PROTECTED)) {
+                return "protected"
+            }
+            if (bitSet(methodNode.access, ACC_PUBLIC)) {
+                return "public"
+            }
+        }
+
+        String getClassAccessString() {
+            if (bitSet(classNode.access, ACC_PROTECTED)) {
+                return "protected"
+            }
+            if (bitSet(classNode.access, ACC_PUBLIC)) {
+                return "public"
+            }
         }
 
         boolean isVisible() {
