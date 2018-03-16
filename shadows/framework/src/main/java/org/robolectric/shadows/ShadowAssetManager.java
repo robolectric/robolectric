@@ -2,9 +2,13 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O_MR1;
+
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -18,6 +22,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+
 import com.google.common.collect.Ordering;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -65,9 +70,9 @@ import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(AssetManager.class)
 public class ShadowAssetManager {
@@ -220,12 +225,17 @@ public class ShadowAssetManager {
   @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+      invokeConstructor(AssetManager.class, realObject);
+    }
   }
 
   @Implementation
   public void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
   }
+
 
   public ResourceTable getResourceTable() {
     return resourceTable;
@@ -409,7 +419,7 @@ public class ShadowAssetManager {
     }
     return assetFiles.toArray(new String[assetFiles.size()]);
   }
- 
+
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
@@ -426,6 +436,19 @@ public class ShadowAssetManager {
       stream = typedResource.getFsFile().getInputStream();
     } else {
       stream = new ByteArrayInputStream(typedResource.getFsFile().getBytes());
+    }
+
+
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+      // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
+      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
+          from(AssetManager.class, realObject),
+          from(long.class, 0));
+
+      ShadowAssetInputStream sais = shadowOf(ais);
+      sais.setDelegate(stream);
+      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
+      stream = ais;
     }
 
 
@@ -479,6 +502,7 @@ public class ShadowAssetManager {
     return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
         packageName, resourceProvider);
   }
+
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
@@ -1048,5 +1072,4 @@ public class ShadowAssetManager {
   public static void reset() {
     ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
   }
-
 }

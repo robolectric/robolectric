@@ -121,9 +121,27 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
+  public void getMultilineLayoutResource_shouldResolveLayoutReferencesWithLineBreaks() {
+    // multiline_layout is a layout reference to activity_main layout.
+    TypedValue multilineLayoutValue = new TypedValue();
+    resources.getValue(R.layout.multiline_layout, multilineLayoutValue, true /* resolveRefs */);
+    TypedValue mainActivityLayoutValue = new TypedValue();
+    resources.getValue(R.layout.activity_main, mainActivityLayoutValue, false /* resolveRefs */);
+    assertThat(multilineLayoutValue.string).isEqualTo(mainActivityLayoutValue.string);
+  }
+
+  @Test
   public void getText_withHtml() throws Exception {
-    assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
+    assertThat(resources.getText(R.string.some_html, "value").toString()).isEqualTo("Hello, world");
+    // TODO: Raw resources have lost the tags early, but the following call should return a
+    // SpannedString
+    // assertThat(resources.getText(R.string.some_html)).isInstanceOf(SpannedString.class);
+  }
+
+  @Test
+  public void getText_plainString() throws Exception {
+    assertThat(resources.getText(R.string.hello, "value").toString()).isEqualTo("Hello");
+    assertThat(resources.getText(R.string.hello)).isInstanceOf(String.class);
   }
 
   @Test

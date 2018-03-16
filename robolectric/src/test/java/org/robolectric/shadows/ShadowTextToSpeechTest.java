@@ -76,6 +76,23 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
+  public void isStopped_shouldReturnTrueBeforeSpeak() throws Exception {
+    assertThat(shadowOf(textToSpeech).isStopped()).isTrue();
+  }
+
+  @Test
+  public void isStopped_shouldReturnTrueAfterStop() throws Exception {
+    textToSpeech.stop();
+    assertThat(shadowOf(textToSpeech).isStopped()).isTrue();
+  }
+
+  @Test
+  public void isStopped_shouldReturnFalseAfterSpeak() throws Exception {
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
+    assertThat(shadowOf(textToSpeech).isStopped()).isFalse();
+  }
+
+  @Test
   public void getQueueMode_shouldReturnMostRecentQueueMode() throws Exception {
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_ADD, null);
     assertThat(shadowOf(textToSpeech).getQueueMode()).isEqualTo(TextToSpeech.QUEUE_ADD);
