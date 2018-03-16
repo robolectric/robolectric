@@ -234,7 +234,7 @@ public class NativeInput {
     //       virtual int getType()  { return AINPUT_EVENT_TYPE_KEY; }
     //        int getAction()  { return mAction; }
     //        int getFlags()  { return mFlags; }
-    //        void setFlags(int flags) { mFlags = flags; }
+    //        void withFlags(int flags) { mFlags = flags; }
     //        int getKeyCode()  { return mKeyCode; }
     //        int getScanCode()  { return mScanCode; }
     //        int getMetaState()  { return mMetaState; }

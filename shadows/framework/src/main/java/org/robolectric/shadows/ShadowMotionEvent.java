@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_PRESSURE;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_SIZE;
@@ -35,17 +34,16 @@ import org.robolectric.util.ReflectionHelpers;
 /**
  * Shadow of MotionEvent.
  *
- * <p>
- *
- * <p>Original Android implementation stores motion events in a pool of native objects. All motion
- * event data is stored natively, and accessed via a series of static native methods following the
- * pattern nativeGetXXXX(mNativePtr, ...)
- *
- * <p>
+ * <p>The Android framework stores motion events in a pool of native objects. All motion event data
+ * is stored natively, and accessed via a series of static native methods following the pattern
+ * nativeGetXXXX(mNativePtr, ...)
  *
  * <p>This shadow mirrors this design, but has java equivalents of each native object. Most of the
  * contents of this class were transliterated from
  * frameworks/base/core/jni/android_view_MotionEvent.cpp
+ *
+ * <p>Tests should not reference this class directly. MotionEvents should be created via one of the
+ * MotionEvent.obtain methods or via MotionEventBuilder.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MotionEvent.class)
@@ -913,8 +911,8 @@ public class ShadowMotionEvent {
     checkState(
         nativePtr > 0,
         "MotionEvent has not been initialized. "
-            + "Ensure MotionEvent.obtain was used to create it, instead of creating it directly or via "
-            + "a Mocking framework");
+            + "Ensure MotionEvent.obtain was used to create it, instead of creating it directly "
+            + "or via a Mocking framework");
 
     return nativeMotionEventRegistry.getNativeObject(nativePtr);
   }
@@ -945,8 +943,8 @@ public class ShadowMotionEvent {
   // Testing API methods
 
   /**
-   * @deprecated use MotionEvent.obtain or MotionEvent.addBatch to create a MotionEvent with desired
-   *     data
+   * @deprecated use {@link MotionEvent#obtain} or {@link MotionEventBuilder} to create a
+   *     MotionEvent with desired data
    */
   @Deprecated
   public MotionEvent setPointer2(float pointer1X, float pointer1Y) {
@@ -970,16 +968,22 @@ public class ShadowMotionEvent {
     }
   }
 
-  /** @deprecated use MotionEvent.obtain to create a MotionEvent with desired data */
+  /**
+   * @deprecated use {@link MotionEvent#obtain} or {@link MotionEventBuilder#setPointerAction(int,
+   *     int)} to create a MotionEvent with desired data.
+   */
   @Deprecated
   public void setPointerIndex(int pointerIndex) {
     NativeInput.MotionEvent event = getNativeMotionEvent();
     // pointer index is stored in upper two bytes of action
     event.setAction(
-        event.getAction() | ((pointerIndex & 0xff) << AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT));
+        event.getAction() | ((pointerIndex & 0xff) << MotionEvent.ACTION_POINTER_INDEX_SHIFT));
   }
 
-  /** @deprecated use MotionEvent.obtain to create a MotionEvent with desired data */
+  /**
+   * @deprecated use {@link MotionEvent#obtain} or {@link MotionEventBuilder} to create a
+   *     MotionEvent with desired data
+   */
   @Deprecated
   public void setPointerIds(int index0PointerId, int index1PointerId) {
     NativeInput.MotionEvent event = getNativeMotionEvent();
