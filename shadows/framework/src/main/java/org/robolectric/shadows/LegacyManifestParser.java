@@ -471,8 +471,10 @@ public class LegacyManifestParser {
         return PermissionInfo.PROTECTION_DANGEROUS;
       case "signature":
         return PermissionInfo.PROTECTION_SIGNATURE;
+      case "signature|privileged":
+        return PermissionInfo.PROTECTION_SIGNATURE | PermissionInfo.PROTECTION_FLAG_PRIVILEGED;
       case "signatureOrSystem":
-        return PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
+      return PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
       default:
         throw new IllegalArgumentException("unknown protection level " + protectionLevel);
     }
