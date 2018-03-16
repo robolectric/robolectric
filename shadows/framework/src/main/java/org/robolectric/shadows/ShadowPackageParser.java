@@ -301,6 +301,9 @@ public class ShadowPackageParser {
 
       Signature[] signatures = null;
       Certificate[][] certificates = null;
+
+      PackageParser.SigningDetails signingDetails = null;
+
       if ((flags & PARSE_COLLECT_CERTIFICATES) != 0) {
         // TODO: factor signature related items out of Package object
         final Package tempPkg = ReflectionHelpers.newInstance(Package.class);
@@ -315,7 +318,10 @@ public class ShadowPackageParser {
         if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.O_MR1) {
           signatures = ReflectionHelpers.getField(tempPkg, "mSignatures");
           certificates = ReflectionHelpers.getField(tempPkg, "mCertificates");
+        } else {
+          signingDetails = tempPkg.mSigningDetails;
         }
+
       }
 
       final AttributeSet attrs = parser;
@@ -350,6 +356,14 @@ public class ShadowPackageParser {
             ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
             ReflectionHelpers.ClassParameter.from(Signature[].class, signatures),
             ReflectionHelpers.ClassParameter.from(Certificate[][].class, certificates));
+      } else {
+        return directlyOn(
+            PackageParser.class,
+            "parseApkLite",
+            ReflectionHelpers.ClassParameter.from(String.class, apkPath),
+            ReflectionHelpers.ClassParameter.from(XmlPullParser.class, parser),
+            ReflectionHelpers.ClassParameter.from(AttributeSet.class, attrs),
+            ReflectionHelpers.ClassParameter.from(PackageParser.SigningDetails.class, signingDetails));
       }
 
     } catch (Exception e) {
