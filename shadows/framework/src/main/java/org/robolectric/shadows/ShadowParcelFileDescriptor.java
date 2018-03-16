@@ -4,6 +4,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.annotation.SuppressLint;
 import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -12,12 +13,13 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(ParcelFileDescriptor.class)
+@SuppressLint("NewApi")
 public class ShadowParcelFileDescriptor {
   private static final String PIPE_TMP_DIR = "ShadowParcelFileDescriptor";
   private static final String PIPE_FILE_NAME = "pipe";
@@ -31,7 +33,8 @@ public class ShadowParcelFileDescriptor {
     invokeConstructor(ParcelFileDescriptor.class, realObject,
         from(ParcelFileDescriptor.class, wrapped));
     if (wrapped != null) {
-      this.file = Shadows.shadowOf(wrapped).file;
+      ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(wrapped);
+      this.file = shadowParcelFileDescriptor.file;
     }
   }
 
@@ -44,7 +47,9 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    Shadows.shadowOf(pfd).file = new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
+    ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
+    shadowParcelFileDescriptor.file = new RandomAccessFile(file,
+        mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
     return pfd;
   }
 

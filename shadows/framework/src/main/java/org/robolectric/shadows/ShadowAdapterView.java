@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.view.View;
@@ -10,6 +9,7 @@ import android.widget.FrameLayout;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -40,7 +40,8 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   public int findIndexOfItemContainingText(String targetText) {
     for (int i = 0; i < realAdapterView.getCount(); i++) {
       View childView = realAdapterView.getAdapter().getView(i, null, new FrameLayout(realAdapterView.getContext()));
-      String innerText = shadowOf(childView).innerText();
+      ShadowView shadowView = Shadow.extract(childView);
+      String innerText = shadowView.innerText();
       if (innerText.contains(targetText)) {
         return i;
       }

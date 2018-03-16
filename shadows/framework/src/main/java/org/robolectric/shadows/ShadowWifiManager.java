@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -195,7 +195,8 @@ public class ShadowWifiManager {
   }
 
   private WifiConfiguration makeCopy(WifiConfiguration config, int networkId) {
-    WifiConfiguration copy = Shadows.shadowOf(config).copy();
+    ShadowWifiConfiguration shadowWifiConfiguration = Shadow.extract(config);
+    WifiConfiguration copy = shadowWifiConfiguration.copy();
     copy.networkId = networkId;
     return copy;
   }

@@ -4,15 +4,12 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -66,6 +63,7 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowResources.ShadowTheme;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -718,7 +716,8 @@ public class ShadowAssetManager extends ShadowAssetManagerCommon {
   }
 
   private static NativeTheme getNativeTheme(Resources.Theme theme) {
-    return getNativeTheme(shadowOf(theme).getNativePtr());
+    ShadowTheme shadowTheme = Shadow.extract(theme);
+    return getNativeTheme(shadowTheme.getNativePtr());
   }
 
   private static NativeTheme getNativeTheme(long themePtr) {
@@ -976,7 +975,8 @@ public class ShadowAssetManager extends ShadowAssetManagerCommon {
 
     TypedArray typedArray = ShadowTypedArray.create(resources, attrs, data, indices, nextIndex, stringData);
     if (set != null) {
-      shadowOf(typedArray).positionDescription = set.getPositionDescription();
+      ShadowTypedArray shadowTypedArray = Shadow.extract(typedArray);
+      shadowTypedArray.positionDescription = set.getPositionDescription();
     }
     return typedArray;
   }

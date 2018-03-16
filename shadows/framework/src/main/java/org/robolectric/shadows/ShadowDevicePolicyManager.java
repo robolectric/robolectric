@@ -3,16 +3,15 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
-import android.os.UserManager;
 import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,9 +22,11 @@ import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 /** Shadow for {@link DevicePolicyManager} */
 @Implements(DevicePolicyManager.class)
+@SuppressLint("NewApi")
 public class ShadowDevicePolicyManager {
   /**
    * @see
@@ -154,8 +155,7 @@ public class ShadowDevicePolicyManager {
   }
 
   private ShadowUserManager getShadowUserManager() {
-    return shadowOf(
-        (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
+    return Shadow.extract(RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
   }
 
   /**

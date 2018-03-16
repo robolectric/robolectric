@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
@@ -506,7 +505,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   @Implementation
   public static MediaPlayer create(Context context, int resId) {
     MediaPlayer mp = new MediaPlayer();
-    ShadowMediaPlayer shadow = shadowOf(mp);
+    ShadowMediaPlayer shadow = Shadow.extract(mp);
     shadow.sourceResId = resId;
     try {
       shadow.setState(INITIALIZED);
@@ -1065,7 +1064,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * as defined by the current {@link MediaInfo} instance.
    * 
    * @return The duration (in ms) of the current simulated playback.
-   * @see addMediaInfo
+   * @see #addMediaInfo(DataSource, MediaInfo)
    */
   @Implementation
   public int getDuration() {

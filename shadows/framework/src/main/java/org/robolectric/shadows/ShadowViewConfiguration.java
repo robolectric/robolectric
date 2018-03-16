@@ -23,7 +23,6 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -88,7 +87,8 @@ public class ShadowViewConfiguration {
   @Implementation
   public static ViewConfiguration get(Context context) {
     ViewConfiguration viewConfiguration = Shadow.newInstanceOf(ViewConfiguration.class);
-    Shadows.shadowOf(viewConfiguration).setup(context);
+    ShadowViewConfiguration shadowViewConfiguration = Shadow.extract(viewConfiguration);
+    shadowViewConfiguration.setup(context);
     return viewConfiguration;
   }
 

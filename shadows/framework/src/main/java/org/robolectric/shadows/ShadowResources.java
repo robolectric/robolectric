@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 
@@ -330,11 +329,12 @@ public class ShadowResources {
   static void setCreatedFromResId(Resources resources, int id, Drawable drawable) {
     // todo: this kinda sucks, find some better way...
     if (drawable != null && Shadow.extract(drawable) instanceof ShadowDrawable) {
-      shadowOf(drawable).createdFromResId = id;
+      ShadowDrawable shadowDrawable = Shadow.extract(drawable);
+      shadowDrawable.createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
         if (bitmap != null  && Shadow.extract(bitmap) instanceof ShadowBitmap) {
-          ShadowBitmap shadowBitmap = shadowOf(bitmap);
+          ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
             shadowBitmap.setCreatedFromResId(id, resources.getResourceName(id));
           }
