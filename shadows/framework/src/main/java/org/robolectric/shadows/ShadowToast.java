@@ -190,8 +190,13 @@ public class ShadowToast {
   public static String getTextOfLatestToast() {
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
     List<Toast> shownToasts = shadowApplication.getShownToasts();
-    ShadowToast shadowToast = Shadow.extract(shownToasts.get(shownToasts.size() - 1));
-    return (shownToasts.size() == 0) ? null : shadowToast.text;
+    if (shownToasts.isEmpty()) {
+      return null;
+    } else {
+      Toast latestToast = shownToasts.get(shownToasts.size() - 1);
+      ShadowToast shadowToast = Shadow.extract(latestToast);
+      return shadowToast.text;
+    }
   }
 
   /**
