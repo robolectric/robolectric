@@ -46,7 +46,7 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowArscAssetManager;
+import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
@@ -219,7 +219,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       appResources.updateConfiguration(configuration, displayMetrics);
 
-      if (ShadowArscAssetManager.isLegacyAssetManager()) {
+      if (ShadowAssetManager.useLegacy()) {
         populateAssetPaths(appResources.getAssets(), appManifest);
       }
 

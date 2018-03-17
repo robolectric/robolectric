@@ -80,15 +80,6 @@ public class ImplementsValidator extends Validator {
     AnnotationValue av = RobolectricModel.getAnnotationValue(am, "value");
     AnnotationValue cv = RobolectricModel.getAnnotationValue(am, "className");
     AnnotationValue maxSdk = RobolectricModel.getAnnotationValue(am, "maxSdk");
-    AnnotationValue ignore = RobolectricModel.getAnnotationValue(am, "hackyTerribleIgnore");
-    try {
-      if (ignore != null && ignore.getValue() == Boolean.TRUE) {
-        return null;
-      }
-    } catch (Exception e) {
-      System.err.println("hacky");
-      e.printStackTrace();
-    }
 
     // This shadow doesn't apply to the current SDK. todo: check each SDK.
     if (maxSdk != null && RobolectricModel.intVisitor.visit(maxSdk) < MAX_SUPPORTED_ANDROID_SDK) {

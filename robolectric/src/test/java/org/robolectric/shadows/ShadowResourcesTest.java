@@ -3,14 +3,12 @@ package org.robolectric.shadows;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -129,7 +127,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
-    if (isLegacyAssetManager()) {
+    if (useLegacy()) {
       assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
     } else {
       assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNotNull();
@@ -255,7 +253,7 @@ public class ShadowResourcesTest {
   @Test
   public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() throws Exception {
     // TODO: investigate failure with binary resources
-    assumeTrue(isLegacyAssetManager());
+    assumeTrue(useLegacy());
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
@@ -278,7 +276,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void getXml_shouldHavePackageContextForReferenceResolution() throws Exception {
-    if (!isLegacyAssetManager()) {
+    if (!useLegacy()) {
       return;
     }
     XmlResourceParserImpl xmlResourceParser =

@@ -23,6 +23,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.ShadowFactory;
 import org.robolectric.util.Function;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
@@ -407,10 +408,16 @@ public class ShadowWrangler implements ClassHandler {
     } else {
       try {
         Class<?> shadowClass = loadClass(shadowInfo.shadowClassName, theClass.getClassLoader());
-        ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
-        return shadowMetadata.constructor.newInstance();
+        ShadowFactory shadowFactory = shadowInfo.getShadowFactory();
+        if (shadowFactory != null) {
+          return shadowFactory.newInstance();
+        } else {
+          ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
+          return shadowMetadata.constructor.newInstance();
+        }
       } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-        throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName + " for " + theClass, e);
+        throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName
+            + " for " + theClass, e);
       }
     }
   }

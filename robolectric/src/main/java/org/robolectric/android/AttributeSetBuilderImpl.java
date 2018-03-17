@@ -1,6 +1,5 @@
 package org.robolectric.android;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.res.android.ResourceTypes.ANDROID_NS;
 import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE;
@@ -41,7 +40,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.Converter2;
 import org.robolectric.shadows.ShadowArscAssetManager;
-import org.robolectric.shadows.ShadowAssetManager;
+import org.robolectric.shadows.ShadowLegacyAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -79,7 +78,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     public ArscResourceResolver(Context context) {
       this.context = context;
 
-      ShadowArscAssetManager shadowArscAssetManager = shadowOf(context.getAssets());
+      ShadowArscAssetManager shadowArscAssetManager = Shadow.extract(context.getAssets());
       this.resTable = shadowArscAssetManager.getCompileTimeResTable();
     }
 
@@ -125,7 +124,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     public void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
         TypedValue outValue) {
       arscParse(attrId, attrResName, attribute, outValue,
-          shadowOf(context.getResources().getAssets()));
+          Shadow.extract(context.getResources().getAssets()));
     }
 
     private void arscParse(Integer attrId, ResName attrResName, AttributeResource attribute,
@@ -183,7 +182,8 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     @Override
     public void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
         TypedValue outValue) {
-      ShadowAssetManager shadowAssetManager = Shadow.extract(context.getResources().getAssets());
+      ShadowLegacyAssetManager shadowAssetManager = Shadow
+          .extract(context.getResources().getAssets());
       TypedResource attrTypeData = shadowAssetManager.getAttrTypeData(attribute.resName);
       if (attrTypeData != null) {
         AttrData attrData = (AttrData) attrTypeData.getData();

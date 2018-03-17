@@ -37,7 +37,7 @@ public class ShadowThemeTest {
 
   @After
   public void tearDown() {
-    ShadowAssetManager.strictErrors = false;
+    ShadowLegacyAssetManager.strictErrors = false;
   }
 
   @Test public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() throws Exception {
@@ -262,7 +262,7 @@ public class ShadowThemeTest {
 
   @Test
   public void forStrict_whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_throwsException() throws Exception {
-    ShadowAssetManager.strictErrors = true;
+    ShadowLegacyAssetManager.strictErrors = true;
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);

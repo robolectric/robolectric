@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadows.ShadowAssetManager.commonShadowOf;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
@@ -58,7 +57,8 @@ public class ShadowTypeface {
 
   @Implementation
   public static Typeface createFromAsset(AssetManager mgr, String path) {
-    Collection<FsFile> assetDirs = commonShadowOf(mgr).getAllAssetDirs();
+    ShadowAssetManager shadowAssetManager = Shadow.extract(mgr);
+    Collection<FsFile> assetDirs = shadowAssetManager.getAllAssetDirs();
     for (FsFile assetDir : assetDirs) {
       // check if in zip file too?
       FsFile[] files = assetDir.listFiles(new StartsWith(path));

@@ -2,7 +2,7 @@ package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
-import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -28,7 +28,7 @@ public class ResourceLoaderTest {
 
   @Before
   public void setUp() {
-    assumeTrue(isLegacyAssetManager());
+    assumeTrue(useLegacy());
   }
 
   @Test

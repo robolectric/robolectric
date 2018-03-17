@@ -13,11 +13,12 @@ import org.robolectric.annotation.processing.RobolectricModel;
  * Validator that checks usages of {@link org.robolectric.annotation.Implementation}.
  */
 public class ImplementationValidator extends FoundOnImplementsValidator {
-  public static final Set<String> METHODS_ALLOWED_TO_BE_PUBLIC = ImmutableSet.of(
-      "toString",
-      "hashCode",
-      "equals"
-  );
+  public static final ImmutableSet<String> METHODS_ALLOWED_TO_BE_PUBLIC =
+      ImmutableSet.of(
+          "toString",
+          "hashCode",
+          "equals"
+      );
 
   public ImplementationValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, "org.robolectric.annotation.Implementation");

@@ -108,7 +108,7 @@ public class ShadowResources {
   }
 
   private boolean isLegacyAssetManager() {
-    return ShadowArscAssetManager.isLegacyAssetManager();
+    return ShadowAssetManager.useLegacy();
   }
 
   @Implementation
@@ -120,7 +120,7 @@ public class ShadowResources {
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
-      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
 
       TypedResource typedResource = shadowAssetManager.getResourceTable()
           .getValue(resId, shadowAssetManager.config);
@@ -149,7 +149,7 @@ public class ShadowResources {
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
-      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       ResourceTable resourceTable = shadowAssetManager.getResourceTable();
       InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
       if (inputStream == null) {
@@ -201,7 +201,7 @@ public class ShadowResources {
   @Implementation
   public TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
-      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
       if (typedArray != null) {
         return typedArray;
@@ -244,7 +244,7 @@ public class ShadowResources {
  @HiddenApi @Implementation
  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
    if (isLegacyAssetManager()) {
-     ShadowAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+     ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
      return shadowAssetManager.loadXmlResourceParser(resId, type);
    } else {
      return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
@@ -291,7 +291,7 @@ public class ShadowResources {
 
     @Implementation(maxSdk = M)
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      if (ShadowArscAssetManager.isLegacyAssetManager()) {
+      if (ShadowAssetManager.useLegacy()) {
         return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
       } else {
         return directlyOn(realTheme, Resources.Theme.class, "obtainStyledAttributes",
@@ -301,7 +301,7 @@ public class ShadowResources {
       }
     }
 
-    private ShadowAssetManager getShadowAssetManager() {
+    private ShadowLegacyAssetManager getShadowAssetManager() {
       return legacyShadowOf(getResources().getAssets());
     }
 

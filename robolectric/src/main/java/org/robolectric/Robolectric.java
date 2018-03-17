@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.annotation.IdRes;
 import android.app.Activity;
@@ -141,7 +141,7 @@ public class Robolectric {
    * Useful for testing {@link View} classes without the need for creating XML snippets.
    */
   public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
-    if (isLegacyAssetManager()) {
+    if (useLegacy()) {
       return new AttributeSetBuilderImpl(
           new LegacyResourceResolver(RuntimeEnvironment.application,
               RuntimeEnvironment.getCompileTimeResourceTable())) {};

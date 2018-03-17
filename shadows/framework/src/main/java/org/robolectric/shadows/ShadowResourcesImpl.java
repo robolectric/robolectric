@@ -83,7 +83,7 @@ public class ShadowResourcesImpl {
 
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
+    ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
 
     TypedResource typedResource = shadowAssetManager.getResourceTable().getValue(resId, shadowAssetManager.config);
     if (typedResource != null && typedResource instanceof PluralRules) {
@@ -105,7 +105,7 @@ public class ShadowResourcesImpl {
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
-      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
+      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
       ResourceTable resourceTable = shadowAssetManager.getResourceTable();
       InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
       if (inputStream == null) {
@@ -121,7 +121,7 @@ public class ShadowResourcesImpl {
 
   private boolean isLegacyAssetManager() {
     AssetManager assets = realResourcesImpl.getAssets();
-    return ShadowArscAssetManager.isLegacyAssetManager();
+    return ShadowAssetManager.useLegacy();
   }
 
   /**
@@ -157,9 +157,8 @@ public class ShadowResourcesImpl {
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
-    AssetManager assets = realResourcesImpl.getAssets();
-    if (ShadowArscAssetManager.isLegacyAssetManager()) {
-      ShadowAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
+    if (ShadowAssetManager.useLegacy()) {
+      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
       return shadowAssetManager.loadXmlResourceParser(resId, type);
     } else {
       return directlyOn(realResourcesImpl, ResourcesImpl.class, "loadXmlResourceParser",
@@ -170,8 +169,7 @@ public class ShadowResourcesImpl {
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-    AssetManager assets = realResourcesImpl.getAssets();
-    if (ShadowArscAssetManager.isLegacyAssetManager()) {
+    if (ShadowAssetManager.useLegacy()) {
       return loadXmlResourceParser(id, type);
     } else {
       return directlyOn(realResourcesImpl, ResourcesImpl.class, "loadXmlResourceParser",
@@ -190,7 +188,7 @@ public class ShadowResourcesImpl {
     public TypedArray obtainStyledAttributes(Resources.Theme wrapper, AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
       Resources resources = wrapper.getResources();
       AssetManager assets = resources.getAssets();
-      if (ShadowArscAssetManager.isLegacyAssetManager()) {
+      if (ShadowAssetManager.useLegacy()) {
         return legacyShadowOf(assets)
             .attrsToTypedArray(resources, set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
       } else {

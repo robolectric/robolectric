@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -31,7 +31,7 @@ public class DrawableResourceLoaderTest {
 
   @Before
   public void setup() throws Exception {
-    assumeTrue(isLegacyAssetManager());
+    assumeTrue(useLegacy());
     resources = RuntimeEnvironment.application.getResources();
   }
 

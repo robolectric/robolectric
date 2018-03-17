@@ -5,8 +5,8 @@ import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowArscAssetManager.isLegacyAssetManager;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -44,7 +44,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws Exception {
-    assumeTrue(!isLegacyAssetManager());
+    assumeTrue(!useLegacy());
     expectedException.expect(FileNotFoundException.class);
     expectedException.expectMessage("This file can not be opened as a file descriptor; it is probably compressed");
 
@@ -56,7 +56,7 @@ public class ShadowAssetManagerTest {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
 
     // expect different sizes in binary vs file resources
-    int expectedFileSize = isLegacyAssetManager() ? 6559 : 5138;
+    int expectedFileSize = useLegacy() ? 6559 : 5138;
     assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
@@ -64,7 +64,7 @@ public class ShadowAssetManagerTest {
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
     String fileName = "res/drawable-hdpi-v4/bottom_bar.png";
     int expectedFileSize = 231;
-    if (isLegacyAssetManager()) {
+    if (useLegacy()) {
       // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name;
       // retrieves the uncompressed, un-version-qualified file from raw-res/...
       fileName = "jar:res/drawable-hdpi/bottom_bar.png";
@@ -77,7 +77,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
-    assumeTrue(isLegacyAssetManager());
+    assumeTrue(useLegacy());
 
     expectedException.expect(IOException.class);
     expectedException.expectMessage(
@@ -88,7 +88,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
-    assumeTrue(isLegacyAssetManager());
+    assumeTrue(useLegacy());
 
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage("Resource ID #0xffffffff");
@@ -100,7 +100,7 @@ public class ShadowAssetManagerTest {
   @Test
   public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched()
       throws IOException {
-    if (!isLegacyAssetManager()) return;
+    if (!useLegacy()) return;
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage("Resource ID #0xffffffff");
 
@@ -111,7 +111,7 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
-    if (!isLegacyAssetManager()) return;
+    if (!useLegacy()) return;
 
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(8141);
@@ -120,7 +120,7 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
-    if (!isLegacyAssetManager()) return;
+    if (!useLegacy()) return;
 
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(23447);
@@ -176,7 +176,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void attrsToTypedArray_shouldAllowMockedAttributeSets() throws Exception {
-    if (!isLegacyAssetManager()) return;
+    if (!useLegacy()) return;
 
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
     when(mockAttributeSet.getAttributeCount()).thenReturn(1);
@@ -189,7 +189,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage()
-      throws Exception {if (!isLegacyAssetManager()) return;
+      throws Exception {if (!useLegacy()) return;
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage(
         "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +

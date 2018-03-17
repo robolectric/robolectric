@@ -151,10 +151,6 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("  public void reset() {");
     for (Map.Entry<TypeElement, ExecutableElement> entry : model.getResetters().entrySet()) {
       Implements annotation = entry.getKey().getAnnotation(Implements.class);
-      if (annotation.hackyTerribleIgnore()) {
-        continue;
-      }
-
       int minSdk = annotation.minSdk();
       int maxSdk = annotation.maxSdk();
       String ifClause;
