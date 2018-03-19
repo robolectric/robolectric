@@ -41,7 +41,7 @@ public abstract class ShadowAssetManager {
     return RuntimeEnvironment.useLegacyResources();
   }
 
-  static class Factory implements ShadowFactory<ShadowAssetManager> {
+  public static class Factory implements ShadowFactory<ShadowAssetManager> {
     @Override
     public ShadowAssetManager newInstance() {
       return useLegacy()

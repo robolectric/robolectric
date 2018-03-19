@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 
 import android.os.Build.VERSION_CODES;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.Ref;
@@ -17,7 +18,7 @@ public class ShadowXmlBlock {
   static final NativeObjRegistry<ResXMLParser> NATIVE_RES_XML_PARSERS = new NativeObjRegistry<>();
 
   @Implementation
-  public static long nativeCreate(byte[] bArray, int off, int len) {
+  public static Number nativeCreate(byte[] bArray, int off, int len) {
     if (bArray == null) {
       throw new NullPointerException();
     }
@@ -39,7 +40,7 @@ public class ShadowXmlBlock {
       throw new IllegalArgumentException();
     }
 
-    return NATIVE_RES_XML_TREES.getNativeObjectId(osb);
+    return RuntimeEnvironment.castNativePtr(NATIVE_RES_XML_TREES.getNativeObjectId(osb));
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)

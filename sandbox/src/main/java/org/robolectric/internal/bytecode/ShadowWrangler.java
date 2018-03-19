@@ -4,6 +4,7 @@ import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
+import static java.lang.invoke.MethodHandles.insertArguments;
 import static java.lang.invoke.MethodType.methodType;
 
 import java.lang.invoke.MethodHandle;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements.DefaultShadowFactory;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.ShadowFactory;
 import org.robolectric.util.Function;
@@ -51,12 +53,16 @@ public class ShadowWrangler implements ClassHandler {
   public static final Method CALL_REAL_CODE = null;
   public static final MethodHandle DO_NOTHING = constant(Void.class, null).asType(methodType(void.class));
   public static final Method DO_NOTHING_METHOD;
+  public static final MethodHandle SHADOW_FACTORY_NEW_METHOD;
 
   static {
     try {
       DO_NOTHING_METHOD = ShadowWrangler.class.getDeclaredMethod("doNothing");
       DO_NOTHING_METHOD.setAccessible(true);
-    } catch (NoSuchMethodException e) {
+
+      SHADOW_FACTORY_NEW_METHOD = MethodHandles.lookup().
+          findVirtual(ShadowFactory.class, "newInstance", methodType(Object.class));
+    } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
@@ -408,9 +414,9 @@ public class ShadowWrangler implements ClassHandler {
     } else {
       try {
         Class<?> shadowClass = loadClass(shadowInfo.shadowClassName, theClass.getClassLoader());
-        ShadowFactory shadowFactory = shadowInfo.getShadowFactory();
-        if (shadowFactory != null) {
-          return shadowFactory.newInstance();
+        Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
+        if (shadowFactoryClass != null) {
+          return manufactureFactory(shadowFactoryClass).newInstance();
         } else {
           ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
           return shadowMetadata.constructor.newInstance();
@@ -442,11 +448,39 @@ public class ShadowWrangler implements ClassHandler {
         MethodType setterType = mh.type().changeReturnType(void.class);
         mh = foldArguments(mh, setter.asType(setterType));
       }
-      mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
+
+      Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
+      if (shadowFactoryClass != null) {
+        // magic occurs...
+        ShadowFactory<?> shadowFactory = manufactureFactory(shadowFactoryClass);
+        MethodHandle newInstanceMH = LOOKUP
+            .findVirtual(ShadowFactory.class, "newInstance", methodType(Object.class))
+            .asType(methodType(shadowClass, ShadowFactory.class))
+            .bindTo(shadowFactory);
+        mh = foldArguments(mh, newInstanceMH);
+      } else {
+        mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
+      }
 
       return mh; // (instance)
-    } catch (IllegalAccessException | ClassNotFoundException e) {
+    } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
       throw new RuntimeException("Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
+    }
+  }
+
+  private static ShadowFactory<?> manufactureFactory(Class<? extends ShadowFactory> factoryClass) {
+    if (factoryClass == null || factoryClass.equals(DefaultShadowFactory.class)) {
+      return null;
+    } else {
+      try {
+        Constructor<? extends ShadowFactory> ctor = factoryClass.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        return ctor.newInstance();
+      } catch (InstantiationException | IllegalAccessException |
+          NoSuchMethodException | InvocationTargetException e) {
+        throw new RuntimeException(
+            "no public no-args constructor for " + factoryClass.getName(), e);
+      }
     }
   }
 

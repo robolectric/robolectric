@@ -20,11 +20,11 @@ public class ShadowInfo {
   public final boolean looseSignatures;
   private final int minSdk;
   private final int maxSdk;
-  private final ShadowFactory<?> factory;
+  private final Class<? extends ShadowFactory<?>> shadowFactoryClass;
 
   ShadowInfo(String shadowedClassName, String shadowClassName, boolean callThroughByDefault,
       boolean inheritImplementationMethods, boolean looseSignatures, int minSdk, int maxSdk,
-      ShadowFactory<?> factory) {
+      Class<? extends ShadowFactory<?>> shadowFactoryClass) {
     this.shadowedClassName = shadowedClassName;
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
@@ -32,7 +32,10 @@ public class ShadowInfo {
     this.looseSignatures = looseSignatures;
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
-    this.factory = factory;
+    this.shadowFactoryClass =
+        DefaultShadowFactory.class.equals(shadowFactoryClass)
+            ? null
+            : shadowFactoryClass;
   }
 
   ShadowInfo(String shadowedClassName, String shadowClassName, Implements annotation) {
@@ -43,23 +46,7 @@ public class ShadowInfo {
         annotation.looseSignatures(),
         annotation.minSdk(),
         annotation.maxSdk(),
-        manufactureFactory(annotation.factory()));
-  }
-
-  private static ShadowFactory<?> manufactureFactory(Class<? extends ShadowFactory> factoryClass) {
-    if (factoryClass == null || factoryClass.equals(DefaultShadowFactory.class)) {
-      return null;
-    } else {
-      try {
-        Constructor<? extends ShadowFactory> ctor = factoryClass.getDeclaredConstructor();
-        ctor.setAccessible(true);
-        return ctor.newInstance();
-      } catch (InstantiationException | IllegalAccessException |
-          NoSuchMethodException | InvocationTargetException e) {
-        throw new RuntimeException(
-            "no public no-args constructor for " + factoryClass.getName(), e);
-      }
-    }
+        annotation.factory());
   }
 
   public boolean supportsSdk(int sdkInt) {
@@ -70,8 +57,8 @@ public class ShadowInfo {
     return shadowedClassName.equals(clazz.getName());
   }
 
-  public ShadowFactory getShadowFactory() {
-    return factory;
+  public Class<? extends ShadowFactory<?>> getShadowFactoryClass() {
+    return shadowFactoryClass;
   }
 
   @Override
@@ -90,13 +77,13 @@ public class ShadowInfo {
         maxSdk == that.maxSdk &&
         Objects.equals(shadowedClassName, that.shadowedClassName) &&
         Objects.equals(shadowClassName, that.shadowClassName) &&
-        Objects.equals(factory, that.factory);
+        Objects.equals(shadowFactoryClass, that.shadowFactoryClass);
   }
 
   @Override
   public int hashCode() {
     return Objects
         .hash(shadowedClassName, shadowClassName, callThroughByDefault,
-            inheritImplementationMethods, looseSignatures, minSdk, maxSdk, factory);
+            inheritImplementationMethods, looseSignatures, minSdk, maxSdk, shadowFactoryClass);
   }
 }

@@ -20,7 +20,6 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.DeepCloner;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.Sandbox;
 
 /**
