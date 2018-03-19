@@ -79,5 +79,8 @@ public @interface Implements {
    */
   int maxSdk() default -1;
 
-  Class<? extends ShadowFactory> factory() default ShadowFactory.class;
+  Class<? extends ShadowFactory<?>> factory() default DefaultShadowFactory.class;
+
+  interface DefaultShadowFactory extends ShadowFactory<Void> {
+  }
 }

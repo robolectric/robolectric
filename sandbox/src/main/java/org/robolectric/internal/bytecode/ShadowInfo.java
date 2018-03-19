@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Implements.DefaultShadowFactory;
 import org.robolectric.shadow.api.ShadowFactory;
 
 public class ShadowInfo {
@@ -46,7 +47,7 @@ public class ShadowInfo {
   }
 
   private static ShadowFactory<?> manufactureFactory(Class<? extends ShadowFactory> factoryClass) {
-    if (factoryClass == null || factoryClass.equals(ShadowFactory.class)) {
+    if (factoryClass == null || factoryClass.equals(DefaultShadowFactory.class)) {
       return null;
     } else {
       try {
