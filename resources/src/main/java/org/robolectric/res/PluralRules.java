@@ -9,7 +9,7 @@ public class PluralRules extends TypedResource<List<Plural>> {
 
   public Plural find(int quantity) {
     for (Plural p : getData()) {
-      if (p.num == quantity) return p;
+      if (p.num == quantity && p.usedInEnglish) return p;
     }
     for (Plural p : getData()) {
       if (p.num == -1) return p;

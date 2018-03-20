@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.net.NetworkInfo;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -44,7 +43,7 @@ public class ShadowNetworkInfo {
       boolean isAvailable,
       NetworkInfo.State state) {
     NetworkInfo networkInfo = Shadow.newInstanceOf(NetworkInfo.class);
-    final ShadowNetworkInfo info = Shadows.shadowOf(networkInfo);
+    final ShadowNetworkInfo info = Shadow.extract(networkInfo);
     info.setConnectionType(type);
     info.setSubType(subType);
     info.setDetailedState(detailedState);

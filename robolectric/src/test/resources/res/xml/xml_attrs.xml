@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<whatever xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:width="1234px"
+    android:height="@android:dimen/app_icon_size"
+    android:scrollbarFadeDuration="1111"
+    android:title="Android Title"
+    app:title="App Title"
+    android:id="@android:id/text1"
+    style="@android:style/TextAppearance.Small"
+    class="none"
+    id="@android:id/text2"
+/>

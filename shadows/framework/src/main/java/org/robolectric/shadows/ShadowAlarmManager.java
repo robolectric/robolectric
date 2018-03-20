@@ -13,9 +13,9 @@ import android.content.Intent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlarmManager.class)
@@ -114,11 +114,11 @@ public class ShadowAlarmManager {
 
   @Implementation
   public void cancel(PendingIntent operation) {
-    ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(operation);
+    ShadowPendingIntent shadowPendingIntent = Shadow.extract(operation);
     final Intent toRemove = shadowPendingIntent.getSavedIntent();
     final int requestCode = shadowPendingIntent.getRequestCode();
     for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
-      ShadowPendingIntent scheduledShadowPendingIntent = Shadows.shadowOf(scheduledAlarm.operation);
+      ShadowPendingIntent scheduledShadowPendingIntent = Shadow.extract(scheduledAlarm.operation);
       final Intent scheduledIntent = scheduledShadowPendingIntent.getSavedIntent();
       final int scheduledRequestCode = scheduledShadowPendingIntent.getRequestCode();
       if (scheduledIntent.filterEquals(toRemove) && scheduledRequestCode == requestCode) {

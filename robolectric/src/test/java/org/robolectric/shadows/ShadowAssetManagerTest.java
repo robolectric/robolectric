@@ -1,16 +1,19 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
-import android.app.Activity;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.Before;
@@ -35,37 +38,58 @@ public class ShadowAssetManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    assetManager = Robolectric.buildActivity(Activity.class).create().get().getAssets();
     resources = RuntimeEnvironment.application.getResources();
+    assetManager = resources.getAssets();
+  }
+
+  @Test
+  public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws Exception {
+    assumeTrue(!useLegacy());
+    expectedException.expect(FileNotFoundException.class);
+    expectedException.expectMessage("This file can not be opened as a file descriptor; it is probably compressed");
+
+    assetManager.openFd("deflatedAsset.xml");
   }
 
   @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
-    assertThat(inputStream.available()).isEqualTo(6559);
+
+    // expect different sizes in binary vs file resources
+    int expectedFileSize = useLegacy() ? 6559 : 5138;
+    assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
-  @Test @Config(qualifiers = "hdpi")
+  @Test@Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
-    // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name
-    String fileName = "jar:res/drawable-hdpi/bottom_bar.png";
-    int expectedFileSize = 389;
+    String fileName = "res/drawable-hdpi-v4/bottom_bar.png";
+    int expectedFileSize = 231;
+    if (useLegacy()) {
+      // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name;
+      // retrieves the uncompressed, un-version-qualified file from raw-res/...
+      fileName = "jar:res/drawable-hdpi/bottom_bar.png";
+      expectedFileSize = 389;
+    }
 
     InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
-    assertThat(inputStream.available()).isEqualTo(expectedFileSize);
+    assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
   @Test
   public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
+    assumeTrue(useLegacy());
+
     expectedException.expect(IOException.class);
     expectedException.expectMessage(
-        "Unable to find resource for ./res/drawable/does_not_exist.png");
+        "./res/drawable/does_not_exist.png");
 
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
   }
 
   @Test
   public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
+    assumeTrue(useLegacy());
+
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage("Resource ID #0xffffffff");
 
@@ -76,6 +100,7 @@ public class ShadowAssetManagerTest {
   @Test
   public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched()
       throws IOException {
+    if (!useLegacy()) return;
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage("Resource ID #0xffffffff");
 
@@ -86,15 +111,19 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
+    if (!useLegacy()) return;
+
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
-    assertThat(inputStream.available()).isEqualTo(8141);
+    assertThat(countBytes(inputStream)).isEqualTo(8141);
   }
 
   @Test
   @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
+    if (!useLegacy()) return;
+
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
-    assertThat(inputStream.available()).isEqualTo(23447);
+    assertThat(countBytes(inputStream)).isEqualTo(23447);
   }
 
   // todo: port to ResourcesTest
@@ -147,6 +176,8 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void attrsToTypedArray_shouldAllowMockedAttributeSets() throws Exception {
+    if (!useLegacy()) return;
+
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
     when(mockAttributeSet.getAttributeCount()).thenReturn(1);
     when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
@@ -158,16 +189,16 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage()
-      throws Exception {
+      throws Exception {if (!useLegacy()) return;
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage(
         "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +
             "in theme with applied styles: [Style org.robolectric:Theme_Robolectric (and parents)]");
 
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_Robolectric, false);
+   Resources.Theme theme = resources.newTheme();
+   theme.applyStyle(R.style.Theme_Robolectric, false);
 
-    shadowOf(assetManager)
+    legacyShadowOf(assetManager)
         .attrsToTypedArray(
             resources,
             Robolectric.buildAttributeSet()
@@ -177,5 +208,16 @@ public class ShadowAssetManagerTest {
             0,
             shadowOf(theme).getNativePtr(),
             0);
+  }
+
+  ///////////////////////////////
+
+  private static int countBytes(InputStream i) throws IOException {
+    int count = 0;
+    while (i.read() != -1) {
+      count++;
+    }
+    i.close();
+    return count;
   }
 }

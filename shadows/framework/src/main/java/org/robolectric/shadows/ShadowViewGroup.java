@@ -9,10 +9,10 @@ import android.view.ViewGroup;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
 import java.io.PrintStream;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -27,14 +27,12 @@ public class ShadowViewGroup extends ShadowView {
 
   @Implementation
   public void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
-    Shadows.shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
-      @Override public void run() {
+    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.runPaused(() ->
         directlyOn(realViewGroup, ViewGroup.class, "addView",
             ClassParameter.from(View.class, child),
             ClassParameter.from(int.class, index),
-            ClassParameter.from(ViewGroup.LayoutParams.class, params));
-      }
-    });
+            ClassParameter.from(ViewGroup.LayoutParams.class, params)));
   }
 
   /**
@@ -43,19 +41,20 @@ public class ShadowViewGroup extends ShadowView {
    */
   @Override
   public String innerText() {
-    String innerText = "";
+    StringBuilder innerText = new StringBuilder();
     String delimiter = "";
 
     for (int i = 0; i < realViewGroup.getChildCount(); i++) {
       View child = realViewGroup.getChildAt(i);
-      String childText = Shadows.shadowOf(child).innerText();
+      ShadowView shadowView = Shadow.extract(child);
+      String childText = shadowView.innerText();
       if (childText.length() > 0) {
-        innerText += delimiter;
+        innerText.append(delimiter);
         delimiter = " ";
       }
-      innerText += childText;
+      innerText.append(childText);
     }
-    return innerText;
+    return innerText.toString();
   }
 
   /**
@@ -69,7 +68,8 @@ public class ShadowViewGroup extends ShadowView {
 
       for (int i = 0; i < realViewGroup.getChildCount(); i++) {
         View child = realViewGroup.getChildAt(i);
-        Shadows.shadowOf(child).dump(out, indent + 2);
+        ShadowView shadowChild = Shadow.extract(child);
+        shadowChild.dump(out, indent + 2);
       }
 
       dumpIndent(out, indent);
@@ -109,7 +109,10 @@ public class ShadowViewGroup extends ShadowView {
   }
 
   protected void removedChild(View child) {
-    if (isAttachedToWindow()) Shadows.shadowOf(child).callOnDetachedFromWindow();
+    if (isAttachedToWindow()) {
+      ShadowView shadowView = Shadow.extract(child);
+      shadowView.callOnDetachedFromWindow();
+    }
   }
 
   public MotionEvent getInterceptedTouchEvent() {

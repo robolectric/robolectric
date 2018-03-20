@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -17,6 +16,7 @@ import java.nio.ByteBuffer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -60,7 +60,8 @@ public class ShadowBitmap {
    * @return Textual representation of the appearance of the object.
    */
   public static String visualize(Bitmap bitmap) {
-    return shadowOf(bitmap).getDescription();
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    return shadowBitmap.getDescription();
   }
 
   /**
@@ -204,7 +205,7 @@ public class ShadowBitmap {
       throw new IllegalArgumentException("width and height must be > 0");
     }
     Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(scaledBitmap);
     shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
 
     shadowBitmap.width = width;
@@ -220,7 +221,7 @@ public class ShadowBitmap {
 
   @Implementation
   public static Bitmap createBitmap(Bitmap src) {
-    ShadowBitmap shadowBitmap = shadowOf(src);
+    ShadowBitmap shadowBitmap = Shadow.extract(src);
     shadowBitmap.appendDescription(" created from Bitmap object");
     return src;
   }
@@ -232,9 +233,10 @@ public class ShadowBitmap {
     }
 
     Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(scaledBitmap);
 
-    shadowBitmap.appendDescription(shadowOf(src).getDescription());
+    ShadowBitmap shadowSrcBitmap = Shadow.extract(src);
+    shadowBitmap.appendDescription(shadowSrcBitmap.getDescription());
     shadowBitmap.appendDescription(" scaled to " + dstWidth + " x " + dstHeight);
     if (filter) {
       shadowBitmap.appendDescription(" with filter " + filter);
@@ -255,9 +257,10 @@ public class ShadowBitmap {
     }
 
     Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
 
-    shadowBitmap.appendDescription(shadowOf(src).getDescription());
+    ShadowBitmap shadowSrcBitmap = Shadow.extract(src);
+    shadowBitmap.appendDescription(shadowSrcBitmap.getDescription());
     shadowBitmap.appendDescription(" at (" + x + "," + y);
     shadowBitmap.appendDescription(" with width " + width + " and height " + height);
 
@@ -291,13 +294,15 @@ public class ShadowBitmap {
     }
 
     Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+    ShadowBitmap shadowNewBitmap = Shadow.extract(newBitmap);
 
-    shadowBitmap.appendDescription(shadowOf(src).getDescription());
-    shadowBitmap.appendDescription(" at (" + x + "," + y + ")");
-    shadowBitmap.appendDescription(" with width " + width + " and height " + height);
+    ShadowBitmap shadowSrcBitmap = Shadow.extract(src);
+    shadowNewBitmap.appendDescription(shadowSrcBitmap.getDescription());
+    shadowNewBitmap.appendDescription(" at (" + x + "," + y + ")");
+    shadowNewBitmap.appendDescription(" with width " + width + " and height " + height);
     if (matrix != null) {
-      shadowBitmap.appendDescription(" using matrix " + shadowOf(matrix).getDescription());
+      ShadowMatrix shadowMatrix = Shadow.extract(matrix);
+      shadowNewBitmap.appendDescription(" using matrix " + shadowMatrix.getDescription());
 
       // Adjust width and height by using the matrix.
       RectF mappedRect = new RectF();
@@ -306,18 +311,18 @@ public class ShadowBitmap {
       height = Math.round(mappedRect.height());
     }
     if (filter) {
-      shadowBitmap.appendDescription(" with filter");
+      shadowNewBitmap.appendDescription(" with filter");
     }
 
-    shadowBitmap.createdFromBitmap = src;
-    shadowBitmap.createdFromX = x;
-    shadowBitmap.createdFromY = y;
-    shadowBitmap.createdFromWidth = width;
-    shadowBitmap.createdFromHeight = height;
-    shadowBitmap.createdFromMatrix = matrix;
-    shadowBitmap.createdFromFilter = filter;
-    shadowBitmap.width = width;
-    shadowBitmap.height = height;
+    shadowNewBitmap.createdFromBitmap = src;
+    shadowNewBitmap.createdFromX = x;
+    shadowNewBitmap.createdFromY = y;
+    shadowNewBitmap.createdFromWidth = width;
+    shadowNewBitmap.createdFromHeight = height;
+    shadowNewBitmap.createdFromMatrix = matrix;
+    shadowNewBitmap.createdFromFilter = filter;
+    shadowNewBitmap.width = width;
+    shadowNewBitmap.height = height;
     return newBitmap;
   }
 
@@ -328,7 +333,7 @@ public class ShadowBitmap {
     }
 
     Bitmap newBitmap = Bitmap.createBitmap(width, height, config);
-    ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
 
     shadowBitmap.setMutable(false);
     shadowBitmap.createdFromColors = colors;
@@ -412,7 +417,7 @@ public class ShadowBitmap {
   @Implementation
   public Bitmap copy(Bitmap.Config config, boolean isMutable) {
     Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
     shadowBitmap.createdFromBitmap = realBitmap;
     shadowBitmap.config = config;
     shadowBitmap.mutable = isMutable;

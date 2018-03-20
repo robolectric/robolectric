@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
@@ -19,6 +18,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.Logger;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -157,5 +157,9 @@ public class ShadowMessageQueue {
     } catch (IllegalStateException e) {
       Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
     }
+  }
+
+  private static ShadowMessage shadowOf(Message actual) {
+    return (ShadowMessage) Shadow.extract(actual);
   }
 }

@@ -244,9 +244,12 @@ public class ReflectionHelpers {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
 
-      Method declaredMethod = cl.getDeclaredMethod(methodName, classes);
-      declaredMethod.setAccessible(true);
-      return (R) declaredMethod.invoke(instance, values);
+      Method method = cl.getDeclaredMethod(methodName, classes);
+      method.setAccessible(true);
+      if (Modifier.isStatic(method.getModifiers())) {
+        throw new IllegalArgumentException(method + " is static");
+      }
+      return (R) method.invoke(instance, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
         throw (RuntimeException) e.getTargetException();
@@ -277,6 +280,9 @@ public class ReflectionHelpers {
 
       Method method = clazz.getDeclaredMethod(methodName, classes);
       method.setAccessible(true);
+      if (!Modifier.isStatic(method.getModifiers())) {
+        throw new IllegalArgumentException(method + " is not static");
+      }
       return (R) method.invoke(null, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {

@@ -1,6 +1,11 @@
 package org.robolectric.internal.bytecode;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Implements.DefaultShadowFactory;
+import org.robolectric.shadow.api.ShadowFactory;
 
 public class ShadowInfo {
 
@@ -15,9 +20,11 @@ public class ShadowInfo {
   public final boolean looseSignatures;
   private final int minSdk;
   private final int maxSdk;
+  private final Class<? extends ShadowFactory<?>> shadowFactoryClass;
 
   ShadowInfo(String shadowedClassName, String shadowClassName, boolean callThroughByDefault,
-      boolean inheritImplementationMethods, boolean looseSignatures, int minSdk, int maxSdk) {
+      boolean inheritImplementationMethods, boolean looseSignatures, int minSdk, int maxSdk,
+      Class<? extends ShadowFactory<?>> shadowFactoryClass) {
     this.shadowedClassName = shadowedClassName;
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
@@ -25,6 +32,10 @@ public class ShadowInfo {
     this.looseSignatures = looseSignatures;
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
+    this.shadowFactoryClass =
+        DefaultShadowFactory.class.equals(shadowFactoryClass)
+            ? null
+            : shadowFactoryClass;
   }
 
   ShadowInfo(String shadowedClassName, String shadowClassName, Implements annotation) {
@@ -34,7 +45,8 @@ public class ShadowInfo {
         annotation.inheritImplementationMethods(),
         annotation.looseSignatures(),
         annotation.minSdk(),
-        annotation.maxSdk());
+        annotation.maxSdk(),
+        annotation.factory());
   }
 
   public boolean supportsSdk(int sdkInt) {
@@ -45,30 +57,33 @@ public class ShadowInfo {
     return shadowedClassName.equals(clazz.getName());
   }
 
+  public Class<? extends ShadowFactory<?>> getShadowFactoryClass() {
+    return shadowFactoryClass;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     ShadowInfo that = (ShadowInfo) o;
-
-    if (callThroughByDefault != that.callThroughByDefault) return false;
-    if (inheritImplementationMethods != that.inheritImplementationMethods) return false;
-    if (looseSignatures != that.looseSignatures) return false;
-    if (minSdk != that.minSdk) return false;
-    if (maxSdk != that.maxSdk) return false;
-    return shadowClassName != null ? shadowClassName.equals(that.shadowClassName) : that.shadowClassName == null;
-
+    return callThroughByDefault == that.callThroughByDefault &&
+        inheritImplementationMethods == that.inheritImplementationMethods &&
+        looseSignatures == that.looseSignatures &&
+        minSdk == that.minSdk &&
+        maxSdk == that.maxSdk &&
+        Objects.equals(shadowedClassName, that.shadowedClassName) &&
+        Objects.equals(shadowClassName, that.shadowClassName) &&
+        Objects.equals(shadowFactoryClass, that.shadowFactoryClass);
   }
 
   @Override
   public int hashCode() {
-    int result = shadowClassName != null ? shadowClassName.hashCode() : 0;
-    result = 31 * result + (callThroughByDefault ? 1 : 0);
-    result = 31 * result + (inheritImplementationMethods ? 1 : 0);
-    result = 31 * result + (looseSignatures ? 1 : 0);
-    result = 31 * result + minSdk;
-    result = 31 * result + maxSdk;
-    return result;
+    return Objects
+        .hash(shadowedClassName, shadowClassName, callThroughByDefault,
+            inheritImplementationMethods, looseSignatures, minSdk, maxSdk, shadowFactoryClass);
   }
 }

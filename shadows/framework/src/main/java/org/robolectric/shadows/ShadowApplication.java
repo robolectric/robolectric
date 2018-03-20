@@ -4,7 +4,6 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.app.ActivityThread;
@@ -28,7 +27,6 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -46,7 +44,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -92,7 +89,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ListPopupWindow latestListPopupWindow;
 
   public static ShadowApplication getInstance() {
-    return RuntimeEnvironment.application == null ? null : shadowOf(RuntimeEnvironment.application);
+    return RuntimeEnvironment.application == null ? null : Shadow.extract(RuntimeEnvironment.application);
   }
 
   /**
@@ -109,8 +106,10 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public static void setDisplayMetricsDensity(float densityMultiplier) {
-    shadowOf(Resources.getSystem()).setDensity(densityMultiplier);
-    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(densityMultiplier);
+    ShadowResources shadowSystemResources = Shadow.extract(Resources.getSystem());
+    shadowSystemResources.setDensity(densityMultiplier);
+    ShadowResources shadowAppResources = Shadow.extract(RuntimeEnvironment.application.getResources());
+    shadowAppResources.setDensity(densityMultiplier);
   }
 
   /**
@@ -118,10 +117,12 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public static void setDefaultDisplay(Display display) {
-    shadowOf(Resources.getSystem()).setDisplay(display);
+    ShadowResources shadowSystemResources = Shadow.extract(Resources.getSystem());
+    shadowSystemResources.setDisplay(display);
     display.getMetrics(RuntimeEnvironment.application.getResources().getDisplayMetrics());
 
-    shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
+    ShadowResources shadowAppResources = Shadow.extract(RuntimeEnvironment.application.getResources());
+    shadowAppResources.setDisplay(display);
     display.getMetrics(Resources.getSystem().getDisplayMetrics());
   }
 
@@ -196,19 +197,17 @@ public class ShadowApplication extends ShadowContextWrapper {
       return false;
     }
     startedServices.add(new Intent.FilterComparison(intent));
-    shadowOf(Looper.getMainLooper()).post(new Runnable() {
-      @Override
-      public void run() {
-        final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
-        final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
-        if (serviceConnectionDataForIntent.containsKey(filterComparison)) {
-          serviceConnectionDataWrapper = serviceConnectionDataForIntent.get(filterComparison);
-        } else {
-          serviceConnectionDataWrapper = defaultServiceConnectionData;
-        }
-        serviceConnectionDataForServiceConnection.put(serviceConnection, serviceConnectionDataWrapper);
-        serviceConnection.onServiceConnected(serviceConnectionDataWrapper.componentNameForBindService, serviceConnectionDataWrapper.binderForBindService);
+    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.post(() -> {
+      final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
+      final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
+      if (serviceConnectionDataForIntent.containsKey(filterComparison)) {
+        serviceConnectionDataWrapper = serviceConnectionDataForIntent.get(filterComparison);
+      } else {
+        serviceConnectionDataWrapper = defaultServiceConnectionData;
       }
+      serviceConnectionDataForServiceConnection.put(serviceConnection, serviceConnectionDataWrapper);
+      serviceConnection.onServiceConnected(serviceConnectionDataWrapper.componentNameForBindService, serviceConnectionDataWrapper.binderForBindService);
     }, 0);
     return true;
   }
@@ -229,17 +228,15 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     unboundServiceConnections.add(serviceConnection);
     boundServiceConnections.remove(serviceConnection);
-    shadowOf(Looper.getMainLooper()).post(new Runnable() {
-      @Override
-      public void run() {
-        final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
-        if (serviceConnectionDataForServiceConnection.containsKey(serviceConnection)) {
-          serviceConnectionDataWrapper = serviceConnectionDataForServiceConnection.get(serviceConnection);
-        } else {
-          serviceConnectionDataWrapper = defaultServiceConnectionData;
-        }
-        serviceConnection.onServiceDisconnected(serviceConnectionDataWrapper.componentNameForBindService);
+    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.post(() -> {
+      final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
+      if (serviceConnectionDataForServiceConnection.containsKey(serviceConnection)) {
+        serviceConnectionDataWrapper = serviceConnectionDataForServiceConnection.get(serviceConnection);
+      } else {
+        serviceConnectionDataWrapper = defaultServiceConnectionData;
       }
+      serviceConnection.onServiceDisconnected(serviceConnectionDataWrapper.componentNameForBindService);
     }, 0);
   }
 
@@ -346,7 +343,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private void postIntent(Intent intent, Wrapper wrapper, final AtomicBoolean abort) {
     final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : getMainHandler();
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
-    final ShadowBroadcastReceiver shReceiver = Shadows.shadowOf(receiver);
+    final ShadowBroadcastReceiver shReceiver = Shadow.extract(receiver);
     final Intent broadcastIntent = intent;
     scheduler.post(new Runnable() {
       @Override
@@ -403,11 +400,10 @@ public class ShadowApplication extends ShadowContextWrapper {
                 broadcastResultHolder.resultExtras,
                 true /*ordered */);
         wrapper.broadcastReceiver.setPendingResult(result);
-        scheduler.post(new Runnable() {
-          @Override
-          public void run() {
-            Shadows.shadowOf(wrapper.broadcastReceiver).onReceive(realApplication, intent, abort);
-          }
+        scheduler.post(() -> {
+          ShadowBroadcastReceiver shadowBroadcastReceiver =
+              Shadow.extract(wrapper.broadcastReceiver);
+          shadowBroadcastReceiver.onReceive(realApplication, intent, abort);
         });
         return BroadcastResultHolder.transform(result);
       }
@@ -427,16 +423,11 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     private static ListenableFuture<BroadcastResultHolder> transform(BroadcastReceiver.PendingResult result) {
-      return Futures.transform(Shadows.shadowOf(result).getFuture(),
-              new Function<BroadcastReceiver.PendingResult, BroadcastResultHolder>() {
-
-                @Override
-                public BroadcastResultHolder apply(BroadcastReceiver.PendingResult pendingResult) {
-                  return new BroadcastResultHolder(pendingResult.getResultCode(),
-                          pendingResult.getResultData(),
-                          pendingResult.getResultExtras(false));
-                }
-              }, directExecutor());
+      ShadowBroadcastPendingResult shadowBroadcastPendingResult = Shadow.extract(result);
+      return Futures.transform(shadowBroadcastPendingResult.getFuture(),
+          pendingResult -> new BroadcastResultHolder(pendingResult.getResultCode(),
+                  pendingResult.getResultData(),
+                  pendingResult.getResultExtras(false)), directExecutor());
     }
   }
 
@@ -657,7 +648,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public void checkActivities(boolean checkActivities) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = shadowOf(activityThread.getInstrumentation());
+    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
     shadowInstrumentation.checkActivities(checkActivities);
   }
 

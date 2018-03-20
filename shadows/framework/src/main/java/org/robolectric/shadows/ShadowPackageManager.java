@@ -140,6 +140,7 @@ public class ShadowPackageManager {
 
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+
     if (applicationInfo.sourceDir == null) {
       applicationInfo.sourceDir =
           tempDirectory
@@ -147,6 +148,7 @@ public class ShadowPackageManager {
               .toAbsolutePath()
               .toString();
     }
+
     if (applicationInfo.dataDir == null) {
       applicationInfo.dataDir =
           tempDirectory
@@ -273,13 +275,14 @@ public class ShadowPackageManager {
     return state != null ? state.flags : 0;
   }
 
-  /** @deprecated - use {@link #addPackage(PackageInfo)} instead */
+  /** @deprecated Use {@link #addPackage(PackageInfo)} instead. */
   @Deprecated
   public void addPackage(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = packageName;
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
+
     applicationInfo.packageName = packageName;
     setUpPackageStorage(applicationInfo);
     packageInfo.applicationInfo = applicationInfo;

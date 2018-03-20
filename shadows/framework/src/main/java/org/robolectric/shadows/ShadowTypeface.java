@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 
+import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.graphics.FontFamily;
 import android.graphics.Typeface;
@@ -19,10 +19,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.FsFile;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(value = Typeface.class, looseSignatures = true)
+@SuppressLint("NewApi")
 public class ShadowTypeface {
   private static Map<Long, FontDesc> FONTS = new HashMap<>();
   private static long nextFontId = 1;
@@ -51,13 +53,15 @@ public class ShadowTypeface {
     if (family == null) {
       return createUnderlyingTypeface(null, style);
     } else {
-      return createUnderlyingTypeface(shadowOf(family).getFontDescription().getFamilyName(), style);
+      ShadowTypeface shadowTypeface = Shadow.extract(family);
+      return createUnderlyingTypeface(shadowTypeface.getFontDescription().getFamilyName(), style);
     }
   }
 
   @Implementation
   public static Typeface createFromAsset(AssetManager mgr, String path) {
-    Collection<FsFile> assetDirs = shadowOf(mgr).getAllAssetsDirectories();
+    ShadowAssetManager shadowAssetManager = Shadow.extract(mgr);
+    Collection<FsFile> assetDirs = shadowAssetManager.getAllAssetDirs();
     for (FsFile assetDir : assetDirs) {
       // check if in zip file too?
       FsFile[] files = assetDir.listFiles(new StartsWith(path));
@@ -67,7 +71,7 @@ public class ShadowTypeface {
       }
     }
 
-    throw new RuntimeException("Font not found at " + assetDirs);
+    throw new RuntimeException("Font asset not found " + path);
   }
 
   @Implementation

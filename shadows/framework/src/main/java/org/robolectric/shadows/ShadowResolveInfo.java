@@ -4,9 +4,9 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(ResolveInfo.class)
 public class ShadowResolveInfo {
@@ -40,7 +40,7 @@ public class ShadowResolveInfo {
     actInfo.name = activityName;
     resInfo.activityInfo = actInfo;
 
-    ShadowResolveInfo shResolve = Shadows.shadowOf(resInfo);
+    ShadowResolveInfo shResolve = Shadow.extract(resInfo);
     shResolve.setLabel(displayName);
     return resInfo;
   }

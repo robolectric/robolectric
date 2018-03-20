@@ -1,7 +1,7 @@
 package org.robolectric.annotation.processing.shadows;
 
-import org.robolectric.annotation.Implements;
 import com.example.objects.UniqueDummy;
+import org.robolectric.annotation.Implements;
 
 @Implements(UniqueDummy.class)
 public class ShadowUniqueDummy {

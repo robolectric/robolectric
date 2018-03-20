@@ -1,11 +1,9 @@
 package org.robolectric.annotation.processing.shadows;
 
+import java.util.Map;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
-
-import java.util.Map;
 
 /**
  * Robolectric Javadoc goes here!

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 import android.util.TypedValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;

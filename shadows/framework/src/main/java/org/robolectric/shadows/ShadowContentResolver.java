@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
+import android.annotation.SuppressLint;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -46,6 +46,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(ContentResolver.class)
+@SuppressLint("NewApi")
 public class ShadowContentResolver {
   private int nextDatabaseIdForInserts;
   private int nextDatabaseIdForUpdates = -1;
@@ -315,7 +316,8 @@ public class ShadowContentResolver {
             ContentProviderClient.class,
             new Class[] {ContentResolver.class, IContentProvider.class, boolean.class},
             new Object[] {realContentResolver, provider.getIContentProvider(), stable});
-    shadowOf(client).setContentProvider(provider);
+    ShadowContentProviderClient shadowContentProviderClient = Shadow.extract(client);
+    shadowContentProviderClient.setContentProvider(provider);
     return client;
   }
 

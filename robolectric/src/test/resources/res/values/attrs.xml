@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <declare-styleable name="CustomView">
+    <attr name="bar" format="string"/>
+
     <attr name="multiformat" format="integer|string|boolean"/>
 
     <attr name="itemType" format="enum">
@@ -53,21 +55,28 @@
   <attr name="string1" format="string"/>
   <attr name="string2" format="string"/>
   <attr name="string3" format="string"/>
+  <attr name="parent_string" format="string"/>
+  <attr name="child_string" format="string"/>
+  <attr name="child_string2" format="string"/>
   <attr name="parentStyleReference" format="reference"/>
   <attr name="styleNotSpecifiedInAnyTheme" format="reference"/>
+  <attr name="stringReference" format="reference"/>
+  <attr name="anAttribute" format="reference"/>
+  <attr name="attributeReferencingAnAttribute" format="reference"/>
+  <attr name="circularReference" format="reference"/>
+  <attr name="title" format="string"/>
 
   <declare-styleable name="CustomStateView">
     <attr name="stateFoo" format="boolean" />
   </declare-styleable>
 
   <declare-styleable name="Theme.AnotherTheme.Attributes">
-    <attr name="averageSheepWidth" format="reference"/>
-    <attr name="isSugary" format="reference"/>
-    <attr name="logoHeight" format="reference"/>
-    <attr name="logoWidth" format="reference"/>
+    <attr name="averageSheepWidth" format="reference|dimension"/>
+    <attr name="isSugary" format="reference|boolean"/>
+    <attr name="logoHeight" format="reference|dimension"/>
+    <attr name="logoWidth" format="dimension"/>
     <attr name="styleReference" format="reference"/>
-    <attr name="styleReferenceWithoutExplicitType" format="reference"/>
     <attr name="snail" format="reference"/>
-    <attr name="averageSheepWidth" format="reference"/>
+    <attr name="altTitle" format="reference|string"/>
   </declare-styleable>
 </resources>

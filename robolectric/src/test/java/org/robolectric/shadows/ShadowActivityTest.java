@@ -1039,4 +1039,7 @@ public class ShadowActivityTest {
       transcript.add("onActivityDestroyed");
     }
   }
+
+  public static class TestActivityWithAnotherTheme extends ShadowThemeTest.TestActivity {
+  }
 }

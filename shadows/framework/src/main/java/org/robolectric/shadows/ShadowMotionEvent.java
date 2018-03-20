@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import android.view.MotionEvent;
 import java.lang.reflect.Constructor;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MotionEvent.class)
@@ -28,7 +28,7 @@ public class ShadowMotionEvent {
       Constructor<MotionEvent> constructor = MotionEvent.class.getDeclaredConstructor();
       constructor.setAccessible(true);
       MotionEvent motionEvent = constructor.newInstance();
-      ShadowMotionEvent shadowMotionEvent = Shadows.shadowOf(motionEvent);
+      ShadowMotionEvent shadowMotionEvent = Shadow.extract(motionEvent);
       shadowMotionEvent.x[0] = x;
       shadowMotionEvent.y[0] = y;
       shadowMotionEvent.action = action;
