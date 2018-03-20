@@ -5,9 +5,9 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.NonNull;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.PendingIntent;
@@ -28,9 +28,11 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.RoboIntentSender;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(PendingIntent.class)
+@SuppressLint("NewApi")
 public class ShadowPendingIntent {
 
   private enum Type {ACTIVITY, BROADCAST, SERVICE}
@@ -114,7 +116,7 @@ public class ShadowPendingIntent {
     }
 
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = shadowOf(activityThread.getInstrumentation());
+    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
     if (isActivityIntent()) {
       for (Intent savedIntent : savedIntents) {
         shadowInstrumentation.execStartActivity(context, (IBinder)null, (IBinder)null, (Activity)null,
@@ -239,7 +241,7 @@ public class ShadowPendingIntent {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || realPendingIntent.getClass() != o.getClass()) return false;
-    ShadowPendingIntent that = shadowOf((PendingIntent) o);
+    ShadowPendingIntent that = Shadow.extract((PendingIntent) o);
 
     String packageName = savedContext == null ? null : savedContext.getPackageName();
     String thatPackageName = that.savedContext == null ? null : that.savedContext.getPackageName();
@@ -287,7 +289,8 @@ public class ShadowPendingIntent {
 
     // If requested, update the existing PendingIntent if one exists.
     if (pendingIntent != null && (flags & FLAG_UPDATE_CURRENT) != 0) {
-      Intent intent = shadowOf(pendingIntent).getSavedIntent();
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
+      Intent intent = shadowPendingIntent.getSavedIntent();
       Bundle extras = intent.getExtras();
       if (extras != null) {
         extras.clear();
@@ -298,15 +301,15 @@ public class ShadowPendingIntent {
 
     // If requested, cancel the existing PendingIntent if one exists.
     if (pendingIntent != null && (flags & FLAG_CANCEL_CURRENT) != 0) {
-      ShadowPendingIntent toCancel = shadowOf(pendingIntent);
-      toCancel.cancel();
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
+      shadowPendingIntent.cancel();
       pendingIntent = null;
     }
 
     // Build the PendingIntent if it does not exist.
     if (pendingIntent == null) {
       pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
-      ShadowPendingIntent shadowPendingIntent = shadowOf(pendingIntent);
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
       shadowPendingIntent.savedIntents = intents;
       shadowPendingIntent.type = type;
       shadowPendingIntent.savedContext = context;
@@ -322,7 +325,7 @@ public class ShadowPendingIntent {
   private static PendingIntent getCreatedIntentFor(Type type, Intent[] intents, int requestCode,
       int flags) {
     for (PendingIntent createdIntent : createdIntents) {
-      ShadowPendingIntent shadowPendingIntent = shadowOf(createdIntent);
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(createdIntent);
 
       if (isOneShot(shadowPendingIntent.flags) != isOneShot(flags)) {
         continue;

@@ -51,7 +51,7 @@ class ShadowsPlugin implements Plugin<Project> {
          * See https://discuss.gradle.org/t/gradle-not-compiles-with-solder-tooling-jar/7583/20
          */
         project.tasks.withType(JavaCompile) { options.fork = true }
-}
+    }
 
     static class ShadowsPluginExtension {
         String packageName

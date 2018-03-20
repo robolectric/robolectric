@@ -9,9 +9,11 @@ import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+
 
 public class RuntimeEnvironment {
   public static Context systemContext;
@@ -25,6 +27,10 @@ public class RuntimeEnvironment {
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
+  private static String androidFrameworkJar;
+  public static FsFile compileTimeSystemResourcesFile;
+
+  private static boolean useLegacyResources;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -196,5 +202,33 @@ public class RuntimeEnvironment {
 
   public static TempDirectory getTempDirectory() {
     return tempDirectory;
+  }
+
+  public static void setAndroidFrameworkJarPath(String localArtifactPath) {
+    RuntimeEnvironment.androidFrameworkJar = localArtifactPath;
+  }
+
+  public static String getAndroidFrameworkJarPath() {
+    return RuntimeEnvironment.androidFrameworkJar;
+  }
+
+  /**
+   * Internal only.
+   *
+   * @deprecated Do not use.
+   */
+  @Deprecated
+  public static boolean useLegacyResources() {
+    return useLegacyResources;
+  }
+
+  /**
+   * Internal only.
+   *
+   * @deprecated Do not use.
+   */
+  @Deprecated
+  public static void setUseLegacyResources(boolean useLegacyResources) {
+    RuntimeEnvironment.useLegacyResources = useLegacyResources;
   }
 }

@@ -10,6 +10,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Locale;
@@ -28,6 +30,8 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourcePath;
@@ -45,6 +49,18 @@ public class ParallelUniverseTest {
 
   private static Config getDefaultConfig() {
     return new Config.Builder().build();
+  }
+
+  private static class StubDependencyResolver implements DependencyResolver {
+
+    @Override
+    public URL getLocalArtifactUrl(DependencyJar dependency) {
+      try {
+        return new URL("file://foo.txt");
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Before
@@ -73,10 +89,13 @@ public class ParallelUniverseTest {
     pu.setUpApplicationState(
         method,
         appManifest,
+        new StubDependencyResolver(),
         defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
-        RuntimeEnvironment.getSystemResourceTable());
+        RuntimeEnvironment.getSystemResourceTable(),
+        null,
+        RuntimeEnvironment.useLegacyResources());
   }
 
   private AndroidManifest dummyManifest() {
@@ -131,8 +150,9 @@ public class ParallelUniverseTest {
           res.set(RuntimeEnvironment.isMainThread());
         });
     t.start();
-    t.join(1000);
+    t.join(0);
     assertThat(res.get()).isTrue();
+    assertThat(RuntimeEnvironment.isMainThread()).isFalse();
   }
 
   @Test
@@ -155,7 +175,7 @@ public class ParallelUniverseTest {
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     setUpApplicationState(c, dummyManifest());
     assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
+        .contains("large-notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test

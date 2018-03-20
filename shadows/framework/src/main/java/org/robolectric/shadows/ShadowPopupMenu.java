@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.widget.PopupMenu;
@@ -8,6 +7,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(PopupMenu.class)
 public class ShadowPopupMenu {
@@ -42,12 +42,13 @@ public class ShadowPopupMenu {
   }
 
   public static PopupMenu getLatestPopupMenu() {
-    ShadowPopupMenu popupMenu = shadowOf(RuntimeEnvironment.application).getLatestPopupMenu();
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowPopupMenu popupMenu = shadowApplication.getLatestPopupMenu();
     return popupMenu == null ? null : popupMenu.realPopupMenu;
   }
 
   public static void setLatestPopupMenu(ShadowPopupMenu latestPopupMenu) {
-    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
     if (shadowApplication != null) shadowApplication.setLatestPopupMenu(latestPopupMenu);
   }
 

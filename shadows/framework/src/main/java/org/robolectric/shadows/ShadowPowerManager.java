@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
@@ -99,7 +98,8 @@ public class ShadowPowerManager {
    * @return Most recent wake lock.
    */
   public static PowerManager.WakeLock getLatestWakeLock() {
-    return shadowOf(RuntimeEnvironment.application).getLatestWakeLock();
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    return shadowApplication.getLatestWakeLock();
   }
 
   @Implementation(minSdk = M)

@@ -36,13 +36,17 @@ import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
@@ -58,13 +62,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private SdkConfig sdkConfig;
 
   @Override
-  public void setUpApplicationState(
-      Method method,
-      AndroidManifest appManifest,
-      Config config,
-      ResourceTable compileTimeResourceTable,
+
+  public void setUpApplicationState(Method method, AndroidManifest appManifest,
+      DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
       ResourceTable appResourceTable,
-      ResourceTable systemResourceTable) {
+      ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile,
+      boolean legacyResources) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -76,6 +79,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(appResourceTable);
     RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
+    RuntimeEnvironment.compileTimeSystemResourcesFile = compileTimeSystemResourcesFile;
+    RuntimeEnvironment.setAndroidFrameworkJarPath(
+        jarResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
+    RuntimeEnvironment.setUseLegacyResources(legacyResources);
 
     if (!loggingInitialized) {
       ShadowLog.setupLogging();
@@ -95,8 +102,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
-        displayMetrics);
+    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(),configuration, displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
@@ -116,8 +122,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ApplicationInfo applicationInfo = null;
     if (appManifest.getAndroidManifestFile() != null
         && appManifest.getAndroidManifestFile().exists()) {
-      if (Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
-        parsedPackage = ShadowPackageParser.callParsePackage(appManifest.getAndroidManifestFile());
+      if (!legacyResources
+          && Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
+        // FsFile packageFile = appManifest.getAndroidManifestFile();
+        // todo get elsewhere?
+        FsFile packageFile = Fs.fromURL(getClass().getResource("/resources.ap_"));
+        parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
       } else {
         parsedPackage = LegacyManifestParser.createPackage(appManifest);
       }
@@ -139,6 +149,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
     // "-dataDir").toAbsolutePath().toString());
     setUpPackageStorage(applicationInfo);
+
+    if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
+      String sourcePath = ReflectionHelpers.getField(parsedPackage, "mPath");
+      if (sourcePath == null) {
+        sourcePath = RuntimeEnvironment.getTempDirectory()
+            .createIfNotExists("sourceDir").toString();
+      }
+      applicationInfo.publicSourceDir = sourcePath;
+      applicationInfo.sourceDir = sourcePath;
+    } else {
+      applicationInfo.publicSourceDir = parsedPackage.codePath;
+    }
 
     // Bit of a hack... Context.createPackageContext() is called before the application is created.
     // It calls through
@@ -200,7 +222,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, displayMetrics);
-      populateAssetPaths(appResources.getAssets(), appManifest);
+
+      if (ShadowAssetManager.useLegacy()) {
+        populateAssetPaths(appResources.getAssets(), appManifest);
+      }
 
       initInstrumentation(activityThread, applicationInfo);
 

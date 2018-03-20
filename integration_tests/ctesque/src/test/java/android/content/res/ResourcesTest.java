@@ -23,6 +23,8 @@ import static org.robolectric.R.color.test_ARGB8;
 import static org.robolectric.R.color.test_RGB8;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
@@ -541,7 +543,9 @@ public class ResourcesTest {
   @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
-    assertThat(resourceStream).isNotNull();
+    Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
+    assertThat(bitmap.getHeight()).isEqualTo(53);
+    assertThat(bitmap.getWidth()).isEqualTo(64);
   }
 
   @Test

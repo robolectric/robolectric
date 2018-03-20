@@ -1,13 +1,16 @@
 package org.robolectric.res;
 
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 public class AttributeResource {
+  public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
   public static final String NULL_VALUE = "@null";
   public static final String EMPTY_VALUE = "@empty";
+  public static final Pattern IS_RESOURCE_REFERENCE = Pattern.compile("^\\s*@");
 
   public final @Nonnull ResName resName;
   public final @Nonnull String value;
@@ -35,7 +38,7 @@ public class AttributeResource {
 
   public @Nonnull ResName getResourceReference() {
     if (!isResourceReference()) throw new RuntimeException("not a resource reference: " + this);
-    return ResName.qualifyResName(trimmedValue.substring(1).replace("+", ""), contextPackageName, "style");
+    return ResName.qualifyResName(deref(trimmedValue).replace("+", ""), contextPackageName, "style");
   }
 
   public boolean isStyleReference() {
@@ -65,12 +68,16 @@ public class AttributeResource {
   }
 
   public static boolean isResourceReference(String value) {
-    return value.startsWith("@") && !isNull(value);
+    return IS_RESOURCE_REFERENCE.matcher(value).find() && !isNull(value);
   }
 
   public static @Nonnull ResName getResourceReference(String value, String defPackage, String defType) {
     if (!isResourceReference(value)) throw new IllegalArgumentException("not a resource reference: " + value);
-    return ResName.qualifyResName(value.substring(1).replace("+", ""), defPackage, defType);
+    return ResName.qualifyResName(deref(value).replace("+", ""), defPackage, defType);
+  }
+
+  private static @Nonnull String deref(@Nonnull String value) {
+    return value.substring(value.indexOf('@') + 1);
   }
 
   public static boolean isStyleReference(String value) {

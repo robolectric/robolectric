@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BitmapRegionDecoder.class)
@@ -44,7 +44,7 @@ public class ShadowBitmapRegionDecoder {
   }
 
   private static BitmapRegionDecoder fillWidthAndHeight(BitmapRegionDecoder bitmapRegionDecoder, InputStream is) {
-    ShadowBitmapRegionDecoder shadowDecoder = shadowOf(bitmapRegionDecoder);
+    ShadowBitmapRegionDecoder shadowDecoder = Shadow.extract(bitmapRegionDecoder);
     Point imageSize = ImageUtil.getImageSizeFromStream(is);
     if (imageSize != null) {
       shadowDecoder.width = imageSize.x;
