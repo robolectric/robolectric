@@ -222,7 +222,7 @@ public class ShadowViewTest {
     shadowOf(view).checkedPerformClick();
   }
 
-  /* 
+  /*
    * This test will throw an exception because the accessibility checks depend on the  Android
    * Support Library. If the support library is included at some point, a single test from
    * AccessibilityUtilTest could be moved here to make sure the accessibility checking is run.

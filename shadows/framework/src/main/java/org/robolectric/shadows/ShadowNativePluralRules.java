@@ -11,14 +11,14 @@ import org.robolectric.annotation.Implements;
 public class ShadowNativePluralRules {
 
   @Implementation(minSdk = KITKAT)
-  public static int quantityForIntImpl(long address, int quantity) {
+  protected static int quantityForIntImpl(long address, int quantity) {
     // just return the mapping for english locale for now
     if (quantity == 1) return 1;
     else return 5 /* other */;
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)
-  public static int quantityForIntImpl(int address, int quantity) {
+  protected static int quantityForIntImpl(int address, int quantity) {
     return quantityForIntImpl((long)address, quantity);
 
   }

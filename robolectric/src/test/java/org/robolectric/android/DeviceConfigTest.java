@@ -9,11 +9,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.res.Qualifiers;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 26)
 public class DeviceConfigTest {
 
   private Configuration configuration;

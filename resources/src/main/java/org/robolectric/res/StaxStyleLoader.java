@@ -54,13 +54,8 @@ public class StaxStyleLoader extends StaxLoader {
       }
     }
 
-    String styleNameWithUnderscores = underscorize(name);
-    StyleData styleData = new StyleData(xmlContext.getPackageName(), styleNameWithUnderscores, underscorize(styleParent), attributeResources);
+    StyleData styleData = new StyleData(xmlContext.getPackageName(), name, styleParent, attributeResources);
 
     resourceTable.addResource("style", styleData.getName(), new TypedResource<>(styleData, resType, xmlContext));
-  }
-
-  private String underscorize(String s) {
-    return s == null ? null : s.replace('.', '_');
   }
 }

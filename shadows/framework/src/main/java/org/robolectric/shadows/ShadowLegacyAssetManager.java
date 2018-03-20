@@ -71,7 +71,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressLint("NewApi")
 public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
-  static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
+  public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
       Ordering.explicit(
           "reference",
           "color",
@@ -82,6 +82,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
           "float",
           "enum",
           "flag",
+          "flags",
           "string");
 
   static boolean strictErrors = false;
@@ -211,26 +212,26 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @Implementation
-  public void __constructor__() {
+  protected void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
   }
 
   @Override @Implementation
-  public void __constructor__(boolean isSystem) {
+  protected void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
   }
 
   @Override @HiddenApi @Implementation
-  public void init() {
+  protected void init() {
     // no op
   }
 
   @Override @HiddenApi @Implementation
-  public void init(boolean isSystem) {
+  protected void init(boolean isSystem) {
     // no op
   }
 
-  public ResourceTable getResourceTable() {
+  protected ResourceTable getResourceTable() {
     return resourceTable;
   }
 
@@ -247,7 +248,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public int getStringBlockCount() {
+  protected int getStringBlockCount() {
     return 0;
   }
 
@@ -326,7 +327,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public void ensureStringBlocks() {
+  protected Object ensureStringBlocks() {
+    return null;
   }
 
   @Override @Implementation
@@ -419,12 +421,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public long openAsset(String fileName, int mode) throws FileNotFoundException {
+  protected long openAsset(String fileName, int mode) throws FileNotFoundException {
     return 0;
   }
 
   @Override @HiddenApi @Implementation
-  public ParcelFileDescriptor openAssetFd(String fileName, long[] outOffsets) throws IOException {
+  protected ParcelFileDescriptor openAssetFd(String fileName, long[] outOffsets) throws IOException {
     return null;
   }
 
@@ -462,9 +464,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public long openNonAssetNative(int cookie, String fileName, int accessMode)
+  protected Number openNonAssetNative(int cookie, String fileName, int accessMode)
       throws FileNotFoundException {
-    return 0;
+    throw new IllegalStateException();
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {
@@ -480,18 +482,18 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @Override @HiddenApi @Implementation
   public final AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
-    throw new UnsupportedOperationException();
+    throw new IllegalStateException();
   }
 
   @Override @HiddenApi @Implementation
-  public ParcelFileDescriptor openNonAssetFdNative(int cookie, String fileName, long[] outOffsets)
+  protected ParcelFileDescriptor openNonAssetFdNative(int cookie, String fileName, long[] outOffsets)
       throws IOException {
-    return null;
+    throw new IllegalStateException();
   }
 
   @Override @HiddenApi @Implementation
-  public long openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
-    return 0;
+  protected Number openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
+    throw new IllegalStateException();
   }
 
   @Override @Implementation
@@ -504,36 +506,36 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public int readAssetChar(long asset) {
+  protected int readAssetChar(long asset) {
     return 0;
   }
 
   @Override @HiddenApi @Implementation
-  public int readAsset(long asset, byte[] bArray, int off, int len) throws IOException {
+  protected int readAsset(long asset, byte[] bArray, int off, int len) throws IOException {
     return 0;
   }
 
   @Override @HiddenApi @Implementation
-  public long seekAsset(long asset, long offset, int whence) {
+  protected long seekAsset(long asset, long offset, int whence) {
     return 0;
   }
 
   @Override @HiddenApi @Implementation
-  public long getAssetLength(long asset) {
+  protected long getAssetLength(long asset) {
     return 0;
   }
 
   @Override @HiddenApi @Implementation
-  public long getAssetRemainingLength(long assetHandle) {
+  protected long getAssetRemainingLength(long assetHandle) {
     return 0;
   }
 
   @Override @HiddenApi @Implementation
-  public void destroyAsset(long asset) {
+  protected void destroyAsset(long asset) {
     // no op
   }
 
-  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
+  protected XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     ResName resName = getResName(resId);
     ResName resolvedResName = resolveResName(resName, config);
     if (resolvedResName == null) {
@@ -563,7 +565,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public int addAssetPathNative(String path, boolean appAsLib) {
+  protected int addAssetPathNative(String path, boolean appAsLib) {
     return 0;
   }
 
@@ -655,17 +657,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public String[] getArrayStringResource(int arrayResId) {
+  protected String[] getArrayStringResource(int arrayResId) {
     return new String[0];
   }
 
   @Override @HiddenApi @Implementation
-  public int[] getArrayStringInfo(int arrayResId) {
+  protected int[] getArrayStringInfo(int arrayResId) {
     return new int[0];
   }
 
   @Override @HiddenApi @Implementation
-  public Number newTheme() {
+  protected Number newTheme() {
     return null;
   }
 
@@ -810,7 +812,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public void deleteTheme(long theme) {
+  protected void deleteTheme(long theme) {
     // no op
   }
 
@@ -829,14 +831,14 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(maxSdk = N_MR1)
-  public static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     // no-op
     return false;
   }
 
   @HiddenApi @Implementation
-  public static boolean resolveAttrs(long themeToken,
+  protected static boolean resolveAttrs(long themeToken,
       int defStyleAttr, int defStyleRes, int[] inValues,
       int[] attrs, int[] outValues, int[] outIndices) {
     // no-op
@@ -844,13 +846,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override
-  public boolean retrieveAttributes(long xmlParserToken, int[] attrs, int[] outValues,
+  protected boolean retrieveAttributes(long xmlParserToken, int[] attrs, int[] outValues,
       int[] outIndices) {
     return false;
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
-  public static int loadThemeAttributeValue(long themeHandle, int ident,
+  protected static int loadThemeAttributeValue(long themeHandle, int ident,
       TypedValue outValue, boolean resolve) {
     // no-op
     return 0;
@@ -885,7 +887,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return resolveResourceValue(value, config, resId);
   }
 
-  public ResName resolveResName(ResName resName, ResTable_config config) {
+  protected ResName resolveResName(ResName resName, ResTable_config config) {
     TypedResource value = resourceTable.getValue(resName, config);
     return resolveResource(value, config, resName);
   }
@@ -921,7 +923,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return value;
   }
 
-  public TypedResource resolveResourceValue(TypedResource value, ResTable_config config, int resId) {
+  protected TypedResource resolveResourceValue(TypedResource value, ResTable_config config, int resId) {
     ResName resName = getResName(resId);
     return resolveResourceValue(value, config, resName);
   }
@@ -982,16 +984,19 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, themeStyleSet);
-        if (attributeValue != null) {
-          if (attributeValue.isStyleReference()) {
-            resName = themeStyleSet.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
-          } else if (attributeValue.isResourceReference()) {
-            resName = attributeValue.getResourceReference();
-          }
-        }
+        // todo: this should be a style resId, not an attr
+        System.out.println("WARN: " + resName.getFullyQualifiedName() + " should be a style resId");
+        // AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, themeStyleSet);
+        // if (attributeValue != null) {
+        //   if (attributeValue.isStyleReference()) {
+        //     resName = themeStyleSet.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
+        //   } else if (attributeValue.isResourceReference()) {
+        //     resName = attributeValue.getResourceReference();
+        //   }
+        // }
+      } else if (resName.type.equals("style")) {
+        defStyleFromRes = resolveStyle(resName, themeStyleSet);
       }
-      defStyleFromRes = resolveStyle(resName, themeStyleSet);
     }
 
     AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, themeStyleSet);
@@ -1161,18 +1166,18 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @Implementation
-  public int getArraySize(int id) {
+  protected int getArraySize(int id) {
     return 0;
   }
 
   @Override @Implementation
-  public int retrieveArray(int id, int[] outValues) {
+  protected int retrieveArray(int id, int[] outValues) {
     return 0;
   }
 
   @Override @Implementation
-  public long getNativeStringBlock(int block) {
-    return 0;
+  protected Number getNativeStringBlock(int block) {
+    throw new IllegalStateException();
   }
 
   @Override @Implementation
@@ -1181,12 +1186,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @Implementation
-  public int loadResourceValue(int ident, short density, TypedValue outValue, boolean resolve) {
+  protected int loadResourceValue(int ident, short density, TypedValue outValue, boolean resolve) {
     return 0;
   }
 
   @Override @Implementation
-  public int loadResourceBagValue(int ident, int bagEntryId, TypedValue outValue, boolean resolve) {
+  protected int loadResourceBagValue(int ident, int bagEntryId, TypedValue outValue, boolean resolve) {
     return 0;
   }
 

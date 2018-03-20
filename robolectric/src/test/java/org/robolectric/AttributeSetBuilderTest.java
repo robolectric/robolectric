@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
@@ -335,12 +336,13 @@ public class AttributeSetBuilderTest {
 
   @Test
   public void getStyleAttribute_whenStyleIsBogus() throws Exception {
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@style/non_existent_style")
-        .build();
-
-    assertThat(roboAttributeSet.getStyleAttribute())
-        .isEqualTo(0);
+    assertThatThrownBy(() ->
+        Robolectric.buildAttributeSet()
+            .setStyleAttribute("@style/non_existent_style")
+            .build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "no such resource @style/non_existent_style while resolving value for style");
   }
 
   @Test
@@ -372,6 +374,32 @@ public class AttributeSetBuilderTest {
         roboAttributeSet.getAttributeNameResource(1),
         roboAttributeSet.getAttributeNameResource(2)
     )).containsExactly(android.R.attr.height, android.R.attr.width, R.attr.animalStyle);
+  }
+
+  @Test
+  public void whenAttrSetAttrSpecifiesUnknownStyle_throwsException() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.string2, "?org.robolectric:attr/noSuchAttr")
+          .build();
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no such attr ?org.robolectric:attr/noSuchAttr");
+      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
+    }
+  }
+
+  @Test
+  public void whenAttrSetAttrSpecifiesUnknownReference_throwsException() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.string2, "@org.robolectric:attr/noSuchRes")
+          .build();
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no such resource @org.robolectric:attr/noSuchRes");
+      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
+    }
   }
 
 }

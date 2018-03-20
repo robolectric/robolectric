@@ -6,6 +6,7 @@ import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE
 import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
 import static org.robolectric.res.android.ResourceTypes.ResTable_map.ATTR_TYPE;
+import static org.robolectric.shadows.ShadowLegacyAssetManager.ATTRIBUTE_TYPE_PRECIDENCE;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -15,9 +16,12 @@ import com.google.common.collect.ImmutableMap;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttrData.Pair;
 import org.robolectric.res.AttributeResource;
@@ -123,22 +127,25 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     @Override
     public void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
         TypedValue outValue) {
-      arscParse(attrId, attrResName, attribute, outValue,
-          Shadow.extract(context.getResources().getAssets()));
+      arscParse(attrId, attrResName, attribute, outValue);
     }
 
     private void arscParse(Integer attrId, ResName attrResName, AttributeResource attribute,
-        TypedValue outValue, ShadowArscAssetManager shadowArscAssetManager) {
-      String format = shadowArscAssetManager.getResourceBagText(attrId, ATTR_TYPE).toString();
-      Map<String, Integer> map = shadowArscAssetManager.getResourceBagValues(attrId);
+        TypedValue outValue) {
+      String format = ShadowArscAssetManager.getResourceBagValue(attrId, ATTR_TYPE, resTable);
+      Map<String, Integer> map = ShadowArscAssetManager.getResourceBagValues(attrId, resTable);
       ArrayList<Pair> pairs = new ArrayList<>();
       for (Entry<String, Integer> e : map.entrySet()) {
         pairs.add(new Pair(e.getKey(), Integer.toString(e.getValue())));
       }
 
       int formatFlags = Integer.parseInt(format);
-      flag_entry[] flags = org.robolectric.res.android.ResourceTable.gFormatFlags;
-      for (flag_entry flag : flags) {
+      TreeSet<flag_entry> sortedFlags = new TreeSet<>(
+          (a, b) -> ATTRIBUTE_TYPE_PRECIDENCE.compare(a.name, b.name));
+      Collections.addAll(sortedFlags,
+          org.robolectric.res.android.ResourceTable.gFormatFlags);
+
+      for (flag_entry flag : sortedFlags) {
         if ((formatFlags & flag.value) != 0) {
           if ("reference".equals(flag.name)) {
             continue;
@@ -176,7 +183,12 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
     @Override
     public Integer getIdentifier(String name, String type, String packageName) {
-      return resourceTable.getResourceId(new ResName(packageName, type, name));
+      Integer resourceId = resourceTable.getResourceId(new ResName(packageName, type, name));
+      if (resourceId == 0) {
+        resourceId = resourceTable.getResourceId(
+            new ResName(packageName, type, name.replace('.', '_')));
+      }
+      return resourceId;
     }
 
     @Override
@@ -189,7 +201,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
         AttrData attrData = (AttrData) attrTypeData.getData();
         String format = attrData.getFormat();
         String[] types = format.split("\\|");
-        // todo: do we need to Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE) here?
+        Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE);
         for (String type : types) {
           if ("reference".equals(type)) continue; // already handled above
           Converter2 converter = Converter2.getConverterFor(attrData, type);
@@ -284,34 +296,43 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           DataType type;
           int valueInt;
 
-          if (attrResName != null) {
+          if (value == null || AttributeResource.isNull(value)) {
+            type = DataType.NULL;
+            valueInt = TypedValue.DATA_NULL_EMPTY;
+          } else if (AttributeResource.isResourceReference(value)) {
+            ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
+            Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+            if (valueResId == 0) {
+              throw new IllegalArgumentException("no such resource " + value
+                  + " while resolving value for "
+                  + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
+            }
+            type = DataType.REFERENCE;
+            if (attrResName != null) {
+              value = "@" +  valueResId;
+            }
+            valueInt = valueResId;
+          } else if (AttributeResource.isStyleReference(value)) {
+            ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
+            Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+            if (valueResId == 0) {
+              throw new IllegalArgumentException("no such attr " + value
+                  + " while resolving value for "
+                  + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
+            }
+            type = DataType.ATTRIBUTE;
+            valueInt = valueResId;
+          } else if (attrResName == null) { // class, id, or style
+            type = DataType.STRING;
+            valueInt = resStringPoolWriter.string(value);
+          } else {
             TypedValue outValue = parse(attrId, attrResName, value, packageName);
-
             type = DataType.fromCode(outValue.type);
             value = (String) outValue.string;
-            if (type == DataType.STRING) {
+            if (type == DataType.STRING && outValue.data == 0) {
               valueInt = resStringPoolWriter.string(value);
             } else {
               valueInt = outValue.data;
-            }
-          } else {
-            // it's a style, class, or id attribute, so no attr resource id
-            if (value == null || AttributeResource.isNull(value)) {
-              type = DataType.NULL;
-              valueInt = TypedValue.DATA_NULL_EMPTY;
-            } else if (AttributeResource.isResourceReference(value)) {
-              ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
-              Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
-              type = DataType.REFERENCE;
-              valueInt = valueResId;
-            } else if (AttributeResource.isStyleReference(value)) {
-              ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
-              Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
-              type = DataType.ATTRIBUTE;
-              valueInt = valueResId;
-            } else {
-              type = DataType.STRING;
-              valueInt = resStringPoolWriter.string(value);
             }
           }
 

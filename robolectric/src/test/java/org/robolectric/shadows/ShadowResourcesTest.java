@@ -247,4 +247,10 @@ public class ShadowResourcesTest {
         (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
   }
+
+  @Test
+  public void getResourceEntryName_forStyle() throws Exception {
+    assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
+        .isEqualTo("TextAppearance.Small");
+  }
 }

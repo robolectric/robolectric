@@ -117,6 +117,15 @@ public class PackageResourceTable implements ResourceTable {
 
   void addResource(String type, String name, TypedResource value) {
     ResName resName = new ResName(packageName, type, name);
+
+    // compound style names were previously registered with underscores (TextAppearance_Small)
+    // because they came from R.style; re-register with dots.
+    ResName resNameWithUnderscores = new ResName(packageName, type, underscorize(name));
+    Integer oldId = resourceTable.inverse().get(resNameWithUnderscores);
+    if (oldId != null) {
+      resourceTable.forcePut(oldId, resName);
+    }
+
     Integer id = resourceTable.inverse().get(resName);
     if (id == null && isAndroidPackage(resName)) {
       id = androidResourceIdGenerator.generate(type, name);
@@ -130,5 +139,9 @@ public class PackageResourceTable implements ResourceTable {
 
   private boolean isAndroidPackage(ResName resName) {
     return "android".equals(resName.packageName);
+  }
+
+  private String underscorize(String s) {
+    return s == null ? null : s.replace('.', '_');
   }
 }

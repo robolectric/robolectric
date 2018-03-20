@@ -53,26 +53,23 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
+    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/an_image.png", 0);
 
     // expect different sizes in binary vs file resources
     int expectedFileSize = useLegacy() ? 6559 : 5138;
     assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
-  @Test@Config(qualifiers = "hdpi")
-  public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
-    String fileName = "res/drawable-hdpi-v4/bottom_bar.png";
-    int expectedFileSize = 231;
+  @Test
+  public void openNonAssetShouldOpenFileFromAndroidJar() throws IOException {
+    String fileName = "res/raw/fallbackring.ogg";
     if (useLegacy()) {
       // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name;
       // retrieves the uncompressed, un-version-qualified file from raw-res/...
-      fileName = "jar:res/drawable-hdpi/bottom_bar.png";
-      expectedFileSize = 389;
+      fileName = "jar:" + fileName;
     }
-
     InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
-    assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
+    assertThat(countBytes(inputStream)).isEqualTo(14611);
   }
 
   @Test
@@ -81,9 +78,9 @@ public class ShadowAssetManagerTest {
 
     expectedException.expect(IOException.class);
     expectedException.expectMessage(
-        "./res/drawable/does_not_exist.png");
+        "res/drawable/does_not_exist.png");
 
-    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
   }
 
   @Test
@@ -94,7 +91,7 @@ public class ShadowAssetManagerTest {
     expectedException.expectMessage("Resource ID #0xffffffff");
 
     resources.newTheme().applyStyle(-1, false);
-    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
   }
 
   @Test
@@ -105,7 +102,7 @@ public class ShadowAssetManagerTest {
     expectedException.expectMessage("Resource ID #0xffffffff");
 
     Resources.getSystem().newTheme().applyStyle(-1, false);
-    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
   }
 
   @Test
@@ -113,7 +110,7 @@ public class ShadowAssetManagerTest {
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
     if (!useLegacy()) return;
 
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(8141);
   }
 
@@ -122,7 +119,7 @@ public class ShadowAssetManagerTest {
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
     if (!useLegacy()) return;
 
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(23447);
   }
 
@@ -189,11 +186,12 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage()
-      throws Exception {if (!useLegacy()) return;
+      throws Exception {
+    if (!useLegacy()) return;
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage(
         "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +
-            "in theme with applied styles: [Style org.robolectric:Theme_Robolectric (and parents)]");
+            "in theme with applied styles: [Style org.robolectric:Theme.Robolectric (and parents)]");
 
    Resources.Theme theme = resources.newTheme();
    theme.applyStyle(R.style.Theme_Robolectric, false);

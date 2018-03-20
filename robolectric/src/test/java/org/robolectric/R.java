@@ -491,6 +491,7 @@ containing a value of this type.
         public static final int mapview=0x7f040017;
         public static final int media=0x7f040018;
         public static final int multi_orientation=0x7f040019;
+        public static final int multiline_layout=0x7f04002a;
         public static final int ordinal_scrollbar=0x7f04001a;
         public static final int outer=0x7f04001b;
         public static final int override_include=0x7f04001c;
@@ -534,7 +535,7 @@ containing a value of this type.
     Resources to validate examples from https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling
   
          */
-        public static final int bad_example=0x7f0f0024;
+        public static final int bad_example=0x7f0f0026;
         public static final int copy=0x7f0f0005;
         public static final int escaped_apostrophe=0x7f0f000e;
         public static final int escaped_quotes=0x7f0f000f;
@@ -543,6 +544,8 @@ containing a value of this type.
         public static final int howdy=0x7f0f0002;
         public static final int in_all_libs=0x7f0f0008;
         public static final int in_main_and_lib1=0x7f0f0009;
+        public static final int internal_newlines=0x7f0f0025;
+        public static final int internal_whitespace_blocks=0x7f0f0024;
         public static final int interpolate=0x7f0f000c;
         public static final int leading_and_trailing_new_lines=0x7f0f0010;
         public static final int minute_plural=0x7f0f0017;

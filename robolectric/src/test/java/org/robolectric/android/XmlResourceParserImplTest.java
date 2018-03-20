@@ -3,8 +3,10 @@ package org.robolectric.android;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import android.content.res.XmlResourceParser;
 import java.io.ByteArrayInputStream;
@@ -25,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -267,6 +270,8 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testIsWhitespace() throws Exception {
+    assumeTrue(RuntimeEnvironment.useLegacyResources());
+
     XmlResourceParserImpl parserImpl = (XmlResourceParserImpl) parser;
     assertThat(parserImpl.isWhitespace("bar")).isFalse();
     assertThat(parserImpl.isWhitespace(" ")).isTrue();
@@ -290,9 +295,11 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetName_atStart() throws Exception {
-    assertThat(parser.getName()).isEqualTo("");
+    assertThat(parser.getName()).isEqualTo(null);
     parseUntilNext(XmlResourceParser.START_DOCUMENT);
-    assertThat(parser.getName()).isEqualTo("");
+    assertThat(parser.getName()).isEqualTo(null);
+    parseUntilNext(XmlResourceParser.START_TAG);
+    assertThat(parser.getName()).isEqualTo("PreferenceScreen");
   }
 
   @Test
@@ -317,11 +324,14 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeName() throws Exception {
-    assertThat(parser.getAttributeName(0)).isNull();
+    assertThatThrownBy(() -> parser.getAttributeName(0))
+        .isInstanceOf(IndexOutOfBoundsException.class);
 
     forgeAndOpenDocument("<foo bar=\"bar\"/>");
     assertThat(parser.getAttributeName(0)).isEqualTo("bar");
-    assertThat(parser.getAttributeName(attributeIndexOutOfIndex())).isNull();
+
+    assertThatThrownBy(() -> parser.getAttributeName(attributeIndexOutOfIndex()))
+        .isInstanceOf(IndexOutOfBoundsException.class);
   }
 
   @Test
@@ -471,7 +481,7 @@ public class XmlResourceParserImplTest {
     assertThat(actualEvents).isEqualTo(expectedEvents);
   }
 
-  @Test
+  @Test @Config(sdk = 16)
   public void testRequire() throws Exception {
     parseUntilNext(XmlResourceParser.START_TAG);
     parser.require(XmlResourceParser.START_TAG,

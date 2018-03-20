@@ -56,7 +56,7 @@ public class ThemeTest {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
     TypedArray a =
-        theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
+        theme.obtainStyledAttributes(null, R.styleable.CustomView, R.attr.animalStyle, 0);
 
     int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
     assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
@@ -72,7 +72,7 @@ public class ThemeTest {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_ThirdTheme, true);
     TypedArray a =
-        theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
+        theme.obtainStyledAttributes(null, R.styleable.CustomView, R.attr.animalStyle, 0);
 
     int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
     assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
