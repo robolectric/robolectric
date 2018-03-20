@@ -284,35 +284,25 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           DataType type;
           int valueInt;
 
-          if (attrResName != null) {
+          // it's a style, class, or id attribute, so no attr resource id
+          if (value == null || AttributeResource.isNull(value)) {
+            type = DataType.NULL;
+            valueInt = TypedValue.DATA_NULL_EMPTY;
+          } else if (AttributeResource.isResourceReference(value)) {
+            ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
+            Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+            type = DataType.REFERENCE;
+            valueInt = valueResId;
+          } else if (AttributeResource.isStyleReference(value)) {
+            ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
+            Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+            type = DataType.ATTRIBUTE;
+            valueInt = valueResId;
+          } else {
             TypedValue outValue = parse(attrId, attrResName, value, packageName);
-
             type = DataType.fromCode(outValue.type);
             value = (String) outValue.string;
-            if (type == DataType.STRING) {
-              valueInt = resStringPoolWriter.string(value);
-            } else {
-              valueInt = outValue.data;
-            }
-          } else {
-            // it's a style, class, or id attribute, so no attr resource id
-            if (value == null || AttributeResource.isNull(value)) {
-              type = DataType.NULL;
-              valueInt = TypedValue.DATA_NULL_EMPTY;
-            } else if (AttributeResource.isResourceReference(value)) {
-              ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
-              Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
-              type = DataType.REFERENCE;
-              valueInt = valueResId;
-            } else if (AttributeResource.isStyleReference(value)) {
-              ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
-              Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
-              type = DataType.ATTRIBUTE;
-              valueInt = valueResId;
-            } else {
-              type = DataType.STRING;
-              valueInt = resStringPoolWriter.string(value);
-            }
+            valueInt = outValue.data;
           }
 
           Res_value resValue = new Res_value(type.code(), valueInt);

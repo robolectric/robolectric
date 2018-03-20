@@ -49,14 +49,15 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  public static long nativeGetStringBlock(long obj) {
+  public static Number nativeGetStringBlock(long obj) {
     ResXMLTree osb = NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);
 //      return 0;
 //    }
 
-    return ShadowStringBlock.getNativePointer(osb.getStrings());
+    return RuntimeEnvironment.castNativePtr(
+        ShadowStringBlock.getNativePointer(osb.getStrings()));
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)

@@ -462,9 +462,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public long openNonAssetNative(int cookie, String fileName, int accessMode)
+  public Number openNonAssetNative(int cookie, String fileName, int accessMode)
       throws FileNotFoundException {
-    return 0;
+    throw new IllegalStateException();
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {
@@ -480,18 +480,18 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @Override @HiddenApi @Implementation
   public final AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
-    throw new UnsupportedOperationException();
+    throw new IllegalStateException();
   }
 
   @Override @HiddenApi @Implementation
   public ParcelFileDescriptor openNonAssetFdNative(int cookie, String fileName, long[] outOffsets)
       throws IOException {
-    return null;
+    throw new IllegalStateException();
   }
 
   @Override @HiddenApi @Implementation
-  public long openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
-    return 0;
+  public Number openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
+    throw new IllegalStateException();
   }
 
   @Override @Implementation
@@ -1171,8 +1171,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @Implementation
-  public long getNativeStringBlock(int block) {
-    return 0;
+  public Number getNativeStringBlock(int block) {
+    throw new IllegalStateException();
   }
 
   @Override @Implementation

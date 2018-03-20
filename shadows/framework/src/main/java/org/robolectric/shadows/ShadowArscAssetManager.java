@@ -34,7 +34,6 @@ import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
@@ -65,8 +64,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
   private static final NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
 
-  @RealObject
-  private AssetManager realObject;
   private CppAssetManager cppAssetManager;
   private ResTable compileTimeResTable;
 
@@ -467,16 +464,16 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
 
   @Override @HiddenApi @Implementation
-  public final long openNonAssetNative(int cookie, String fileName,
+  public final Number openNonAssetNative(int cookie, String fileName,
       int accessMode) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return 0;
+      return RuntimeEnvironment.castNativePtr(0);
     }
     ALOGV("openNonAssetNative in %s (Java object %s)\n", am, AssetManager.class);
     String fileName8 = fileName;
     if (fileName8 == null) {
-      return -1;
+      return RuntimeEnvironment.castNativePtr(-1);
     }
     AccessMode mode = AccessMode.fromInt(accessMode);
     if (mode != Asset.AccessMode.ACCESS_UNKNOWN && mode != Asset.AccessMode.ACCESS_RANDOM
@@ -493,7 +490,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     // todo: something better than this [xw]
     a.onClose = () -> destroyAsset(assetId);
     //printf("Created Asset Stream: %p\n", a);
-    return assetId;
+    return RuntimeEnvironment.castNativePtr(assetId);
   }
 
   @Override @HiddenApi @Implementation
@@ -1462,13 +1459,14 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public long getNativeStringBlock(int block) {
+  public Number getNativeStringBlock(int block) {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return 0;
+      return RuntimeEnvironment.castNativePtr(0);
     }
 
-    return ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block));
+    return RuntimeEnvironment.castNativePtr(
+        ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block)));
   }
 
   @Override @Implementation
@@ -1489,10 +1487,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   public final Number newTheme() {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return 0;
+      return RuntimeEnvironment.castNativePtr(0);
     }
     ResTableTheme theme = new ResTableTheme(am.getResources());
-    return nativeThemeRegistry.getNativeObjectId(theme);
+    return RuntimeEnvironment.castNativePtr(nativeThemeRegistry.getNativeObjectId(theme));
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
@@ -1544,17 +1542,17 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //  int getThemeChangingConfigurations(long theme);
 
   @Override @HiddenApi @Implementation
-  public final long openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
+  public final Number openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return 0;
+      return RuntimeEnvironment.castNativePtr(0);
     }
 
     ALOGV("openXmlAsset in %s (Java object %s)\n", am, ShadowArscAssetManager.class);
 
     String fileName8 = fileName;
     if (fileName8 == null) {
-      return 0;
+      return RuntimeEnvironment.castNativePtr(0);
     }
 
     int assetCookie = cookie;
@@ -1582,7 +1580,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       throw new FileNotFoundException("Corrupt XML binary file");
     }
 
-    return ShadowXmlBlock.NATIVE_RES_XML_TREES.getNativeObjectId(block);
+    return RuntimeEnvironment.castNativePtr(
+        ShadowXmlBlock.NATIVE_RES_XML_TREES.getNativeObjectId(block));
   }
 
   @Override @HiddenApi @Implementation

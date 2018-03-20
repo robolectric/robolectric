@@ -242,7 +242,8 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/string1").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/string1").build(),
+        new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 1 from Theme.Robolectric");
   }
 

@@ -1751,7 +1751,7 @@ public class CppAssetManager {
             fsFile = Fs.newFile(asset_path.path.string());
             break;
           case kFileTypeRegular:
-            fsFile = Fs.newJarFile(new File(asset_path.path.string()));
+            fsFile = Fs.newFile(asset_path.path.string());
             break;
           default:
             throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "

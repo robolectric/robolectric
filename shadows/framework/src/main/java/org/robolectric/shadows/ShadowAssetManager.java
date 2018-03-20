@@ -55,7 +55,7 @@ public abstract class ShadowAssetManager {
   }
 
   @RealObject
-  AssetManager realObject;
+  protected AssetManager realObject;
 
   @Implementation
   abstract public void __constructor__();
@@ -123,7 +123,7 @@ public abstract class ShadowAssetManager {
       throws IOException;
 
   @HiddenApi @Implementation
-  abstract public long openNonAssetNative(int cookie, String fileName, int accessMode)
+  abstract public Number openNonAssetNative(int cookie, String fileName, int accessMode)
       throws FileNotFoundException;
 
   @HiddenApi @Implementation
@@ -135,7 +135,7 @@ public abstract class ShadowAssetManager {
       String fileName, long[] outOffsets) throws IOException;
 
   @HiddenApi @Implementation
-  abstract public long openXmlAssetNative(int cookie, String fileName)
+  abstract public Number openXmlAssetNative(int cookie, String fileName)
       throws FileNotFoundException;
 
   @Implementation
@@ -380,7 +380,7 @@ public abstract class ShadowAssetManager {
   abstract public int retrieveArray(int id, int[] outValues);
 
   @HiddenApi @Implementation
-  abstract public long getNativeStringBlock(int block);
+  abstract public Number getNativeStringBlock(int block);
 
   @Implementation
   abstract public SparseArray<String> getAssignedPackageIdentifiers();

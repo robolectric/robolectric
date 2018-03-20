@@ -24,6 +24,7 @@ public class DefaultManifestFactory implements ManifestFactory {
     FsFile resourcesDir = getFsFileFromPath(properties.getProperty("android_merged_resources"));
     FsFile assetsDir = getFsFileFromPath(properties.getProperty("android_merged_assets"));
     String packageName = properties.getProperty("android_custom_package");
+    FsFile apkFile = getFsFileFromPath(properties.getProperty("android_resource_apk"));
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
@@ -44,12 +45,13 @@ public class DefaultManifestFactory implements ManifestFactory {
       packageName = config.packageName();
     }
 
-    List<FsFile> libraryDirs = emptyList();
+    List<ManifestIdentifier> libraryDirs = emptyList();
     if (config.libraries().length > 0) {
       Logger.info("@Config(libraries) specified while using Build System API, ignoring");
     }
 
-    return new ManifestIdentifier(manifestFile, resourcesDir, assetsDir, packageName, libraryDirs);
+    return new ManifestIdentifier(packageName, manifestFile, resourcesDir, assetsDir, libraryDirs,
+        apkFile);
   }
 
   private FsFile resolveFile(String manifestConfig) {
