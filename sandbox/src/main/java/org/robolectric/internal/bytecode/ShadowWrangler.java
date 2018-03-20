@@ -4,7 +4,6 @@ import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
-import static java.lang.invoke.MethodHandles.insertArguments;
 import static java.lang.invoke.MethodType.methodType;
 
 import java.lang.invoke.MethodHandle;
@@ -416,7 +415,7 @@ public class ShadowWrangler implements ClassHandler {
         Class<?> shadowClass = loadClass(shadowInfo.shadowClassName, theClass.getClassLoader());
         Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
         if (shadowFactoryClass != null) {
-          return manufactureFactory(shadowFactoryClass).newInstance();
+          return manufactureFactory(shadowFactoryClass, theClass.getClassLoader()).newInstance();
         } else {
           ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
           return shadowMetadata.constructor.newInstance();
@@ -452,7 +451,8 @@ public class ShadowWrangler implements ClassHandler {
       Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
       if (shadowFactoryClass != null) {
         // magic occurs...
-        ShadowFactory<?> shadowFactory = manufactureFactory(shadowFactoryClass);
+        ShadowFactory<?> shadowFactory = manufactureFactory(shadowFactoryClass,
+            theClass.getClassLoader());
         MethodHandle newInstanceMH = LOOKUP
             .findVirtual(ShadowFactory.class, "newInstance", methodType(Object.class))
             .asType(methodType(shadowClass, ShadowFactory.class))
@@ -468,16 +468,27 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  private static ShadowFactory<?> manufactureFactory(Class<? extends ShadowFactory> factoryClass) {
-    if (factoryClass == null || factoryClass.equals(DefaultShadowFactory.class)) {
+  /**
+   * Create a ShadowFactory in the specified ClassLoader, or null.
+   */
+  private static ShadowFactory<?> manufactureFactory(Class<? extends ShadowFactory> factoryClass,
+      ClassLoader classLoader) {
+    if (factoryClass == null
+        || factoryClass.getName().equals(DefaultShadowFactory.class.getName())) {
       return null;
     } else {
       try {
-        Constructor<? extends ShadowFactory> ctor = factoryClass.getDeclaredConstructor();
+        Class<? extends ShadowFactory> factoryClassInCL =
+            Class.forName(factoryClass.getName(), true, classLoader)
+            .asSubclass(ShadowFactory.class);
+        Constructor<? extends ShadowFactory> ctor = factoryClassInCL.getDeclaredConstructor();
         ctor.setAccessible(true);
         return ctor.newInstance();
-      } catch (InstantiationException | IllegalAccessException |
-          NoSuchMethodException | InvocationTargetException e) {
+      } catch (InstantiationException
+          | IllegalAccessException
+          | NoSuchMethodException
+          | InvocationTargetException
+          | ClassNotFoundException e) {
         throw new RuntimeException(
             "no public no-args constructor for " + factoryClass.getName(), e);
       }

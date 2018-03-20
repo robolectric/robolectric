@@ -56,7 +56,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
   );
 
   private final ResourceResolver resourceResolver;
-  private Map<Integer, String> attrToValue = new TreeMap<>();
+  private final Map<Integer, String> attrToValue = new TreeMap<>();
 
   public interface ResourceResolver {
 
