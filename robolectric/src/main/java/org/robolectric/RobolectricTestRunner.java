@@ -252,7 +252,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     binary,
     both;
 
-    static final ResourcesMode DEFAULT = binary;
+    static final ResourcesMode DEFAULT = both;
 
     public boolean includeLegacy() {
       return this == legacy || this == both;
@@ -659,7 +659,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       //   latest supported SDK for focused test runs
       return super.getName()
           + (includeApiLevelInName ? "[" + sdkConfig.getApiLevel() + "]" : "")
-          + (!legacyResources ? "" : "")
+          + (!legacyResources ? "[binary]" : "")
           ;
     }
 

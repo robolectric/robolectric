@@ -291,11 +291,19 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           } else if (AttributeResource.isResourceReference(value)) {
             ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
             Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+            if (valueResId == 0) {
+              throw new IllegalArgumentException("no such resource " + value
+                  + " while resolving value for " + attrResName.getFullyQualifiedName());
+            }
             type = DataType.REFERENCE;
             valueInt = valueResId;
           } else if (AttributeResource.isStyleReference(value)) {
             ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
             Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+            if (valueResId == 0) {
+              throw new IllegalArgumentException("no such attr " + value
+                  + " while resolving value for " + attrResName.getFullyQualifiedName());
+            }
             type = DataType.ATTRIBUTE;
             valueInt = valueResId;
           } else {

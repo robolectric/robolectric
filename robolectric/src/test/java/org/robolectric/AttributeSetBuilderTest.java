@@ -374,4 +374,30 @@ public class AttributeSetBuilderTest {
     )).containsExactly(android.R.attr.height, android.R.attr.width, R.attr.animalStyle);
   }
 
+  @Test
+  public void whenAttrSetAttrSpecifiesUnknownStyle_throwsException() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.string2, "?org.robolectric:attr/noSuchAttr")
+          .build();
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no such attr ?org.robolectric:attr/noSuchAttr");
+      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
+    }
+  }
+
+  @Test
+  public void whenAttrSetAttrSpecifiesUnknownReference_throwsException() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.string2, "@org.robolectric:attr/noSuchRes")
+          .build();
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no such resource @org.robolectric:attr/noSuchRes");
+      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
+    }
+  }
+
 }

@@ -982,14 +982,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, themeStyleSet);
-        if (attributeValue != null) {
-          if (attributeValue.isStyleReference()) {
-            resName = themeStyleSet.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
-          } else if (attributeValue.isResourceReference()) {
-            resName = attributeValue.getResourceReference();
-          }
-        }
+        // todo: this should be a style resId, not an attr
+        throw new IllegalArgumentException(
+            resName.getFullyQualifiedName() + " should be a style resId");
+        // AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, themeStyleSet);
+        // if (attributeValue != null) {
+        //   if (attributeValue.isStyleReference()) {
+        //     resName = themeStyleSet.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
+        //   } else if (attributeValue.isResourceReference()) {
+        //     resName = attributeValue.getResourceReference();
+        //   }
+        // }
       }
       defStyleFromRes = resolveStyle(resName, themeStyleSet);
     }
