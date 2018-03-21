@@ -64,6 +64,9 @@ public class DefaultManifestFactory implements ManifestFactory {
   }
 
   private FsFile getFsFileFromPath(String property) {
+    if (property == null) {
+      return null;
+    }
     if (property.startsWith("jar")) {
       try {
         URL url = new URL(property);

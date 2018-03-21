@@ -252,7 +252,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     binary,
     both;
 
-    static final ResourcesMode DEFAULT = binary;
+    static final ResourcesMode DEFAULT = legacy;
 
     public boolean includeLegacy() {
       return this == legacy || this == both;
