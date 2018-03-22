@@ -284,7 +284,6 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
           DataType type;
           int valueInt;
 
-          // it's a style, class, or id attribute, so no attr resource id
           if (value == null || AttributeResource.isNull(value)) {
             type = DataType.NULL;
             valueInt = TypedValue.DATA_NULL_EMPTY;
@@ -293,19 +292,25 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
             Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
             if (valueResId == 0) {
               throw new IllegalArgumentException("no such resource " + value
-                  + " while resolving value for " + attrResName.getFullyQualifiedName());
+                  + " while resolving value for "
+                  + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
             }
             type = DataType.REFERENCE;
+            value = "@" +  valueResId;
             valueInt = valueResId;
           } else if (AttributeResource.isStyleReference(value)) {
             ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
             Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
             if (valueResId == 0) {
               throw new IllegalArgumentException("no such attr " + value
-                  + " while resolving value for " + attrResName.getFullyQualifiedName());
+                  + " while resolving value for "
+                  + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
             }
             type = DataType.ATTRIBUTE;
             valueInt = valueResId;
+          } else if (attrResName == null) { // class, id, or style
+            type = DataType.STRING;
+            valueInt = resStringPoolWriter.string(value);
           } else {
             TypedValue outValue = parse(attrId, attrResName, value, packageName);
             type = DataType.fromCode(outValue.type);

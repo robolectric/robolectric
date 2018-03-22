@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
@@ -335,12 +336,13 @@ public class AttributeSetBuilderTest {
 
   @Test
   public void getStyleAttribute_whenStyleIsBogus() throws Exception {
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@style/non_existent_style")
-        .build();
-
-    assertThat(roboAttributeSet.getStyleAttribute())
-        .isEqualTo(0);
+    assertThatThrownBy(() ->
+        Robolectric.buildAttributeSet()
+            .setStyleAttribute("@style/non_existent_style")
+            .build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "no such resource @style/non_existent_style while resolving value for style");
   }
 
   @Test
