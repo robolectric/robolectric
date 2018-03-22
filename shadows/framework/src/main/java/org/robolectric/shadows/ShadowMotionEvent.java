@@ -34,15 +34,15 @@ import org.robolectric.util.ReflectionHelpers;
 /**
  * Shadow of MotionEvent.
  *
- * <p>The Android framework stores motion events in a pool of native objects. All motion event data
+ * The Android framework stores motion events in a pool of native objects. All motion event data
  * is stored natively, and accessed via a series of static native methods following the pattern
  * nativeGetXXXX(mNativePtr, ...)
  *
- * <p>This shadow mirrors this design, but has java equivalents of each native object. Most of the
+ * This shadow mirrors this design, but has java equivalents of each native object. Most of the
  * contents of this class were transliterated from
  * frameworks/base/core/jni/android_view_MotionEvent.cpp
  *
- * <p>Tests should not reference this class directly. MotionEvents should be created via one of the
+ * Tests should not reference this class directly. MotionEvents should be created via one of the
  * MotionEvent.obtain methods or via MotionEventBuilder.
  */
 @SuppressWarnings({"UnusedDeclaration"})
