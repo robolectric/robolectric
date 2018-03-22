@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -38,11 +38,13 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
 
 @Implements(View.class)
+@SuppressLint("NewApi")
 public class ShadowView {
 
   @RealObject
@@ -74,7 +76,8 @@ public class ShadowView {
    * @throws RuntimeException if the preconditions are not met.
    */
   public static boolean clickOn(View view) {
-    return shadowOf(view).checkedPerformClick();
+    ShadowView shadowView = Shadow.extract(view);
+    return shadowView.checkedPerformClick();
   }
 
   /**
@@ -86,7 +89,8 @@ public class ShadowView {
   public static String visualize(View view) {
     Canvas canvas = new Canvas();
     view.draw(canvas);
-    return shadowOf(canvas).getDescription();
+    ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+    return shadowCanvas.getDescription();
   }
 
   /**
@@ -96,7 +100,8 @@ public class ShadowView {
    */
   @SuppressWarnings("UnusedDeclaration")
   public static void dump(View view) {
-    shadowOf(view).dump();
+    ShadowView shadowView = Shadow.extract(view);
+    shadowView.dump();
   }
 
   /**
@@ -107,7 +112,8 @@ public class ShadowView {
    */
   @SuppressWarnings("UnusedDeclaration")
   public static String innerText(View view) {
-    return shadowOf(view).innerText();
+    ShadowView shadowView = Shadow.extract(view);
+    return shadowView.innerText();
   }
 
   @Implementation
@@ -150,9 +156,12 @@ public class ShadowView {
   @Deprecated
   public int getBackgroundResourceId() {
     Drawable drawable = realView.getBackground();
-    return drawable instanceof BitmapDrawable
-        ? shadowOf(((BitmapDrawable) drawable).getBitmap()).getCreatedFromResId()
-        : -1;
+    if (drawable instanceof BitmapDrawable) {
+      ShadowBitmap shadowBitmap = Shadow.extract(((BitmapDrawable) drawable).getBitmap());
+      return shadowBitmap.getCreatedFromResId();
+    } else {
+      return -1;
+    }
   }
 
   /**
@@ -204,7 +213,8 @@ public class ShadowView {
   public void draw(android.graphics.Canvas canvas) {
     Drawable background = realView.getBackground();
     if (background != null) {
-      shadowOf(canvas).appendDescription("background:");
+      ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+      shadowCanvas.appendDescription("background:");
       background.draw(canvas);
     }
   }
@@ -419,7 +429,8 @@ public class ShadowView {
 
   @Implementation
   public void removeCallbacks(Runnable callback) {
-    shadowOf(Looper.getMainLooper()).getScheduler().remove(callback);
+    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.getScheduler().remove(callback);
   }
 
   @Implementation

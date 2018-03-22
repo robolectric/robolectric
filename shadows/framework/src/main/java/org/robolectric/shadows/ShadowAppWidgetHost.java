@@ -4,10 +4,10 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {
@@ -46,7 +46,8 @@ public class ShadowAppWidgetHost {
                     AppWidgetProviderInfo appWidget) {
     AppWidgetHostView hostView = new AppWidgetHostView(context);
     hostView.setAppWidget(appWidgetId, appWidget);
-    Shadows.shadowOf(hostView).setHost(realAppWidgetHost);
+    ShadowAppWidgetHostView shadowAppWidgetHostView = Shadow.extract(hostView);
+    shadowAppWidgetHostView.setHost(realAppWidgetHost);
     return hostView;
   }
 }

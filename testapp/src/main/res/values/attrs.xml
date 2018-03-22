@@ -37,6 +37,8 @@
 
     <attr name="someLayoutOne" format="reference" />
     <attr name="someLayoutTwo" format="reference" />
+
+    <attr name="bar" format="reference" />
   </declare-styleable>
 
   <attr name="gravity">

@@ -46,7 +46,7 @@ FRAMEWORKS_RAW_RES_DIR=${FRAMEWORKS_BASE_DIR}/core/res/
 ROBOLECTRIC_VERSION=${ANDROID_VERSION}-robolectric-${ROBOLECTRIC_SUB_VERSION}
 
 # Intermediate artifacts
-ANDROID_RES=android-res-${ANDROID_VERSION}.jar
+ANDROID_RES=android-res-${ANDROID_VERSION}.apk
 ANDROID_EXT=android-ext-${ANDROID_VERSION}.jar
 ANDROID_CLASSES=android-classes-${ANDROID_VERSION}.jar
 
@@ -247,6 +247,14 @@ build_signed_packages() {
 
     echo "Robolectric: Creating bundle for Sonatype upload..."
     cd ${OUT}; jar cf ${ANDROID_BUNDLE} *.jar *.pom *.asc
+}
+
+cp_android_all_jar() {
+  # function to use for android versions that support building the android all
+  # jar directly
+  # This will just copy the android all jar to the final name
+  src=${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/robolectric_android-all-stub_intermediates/classes-with-res.jar
+  cp $src ${OUT}/${ANDROID_ALL}
 }
 
 mavenize() {

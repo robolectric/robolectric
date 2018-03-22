@@ -11,10 +11,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(Camera.class)
 public class ShadowCamera {
@@ -49,7 +49,8 @@ public class ShadowCamera {
   public static Camera open() {
     lastOpenedCameraId = 0;
     Camera camera = newInstanceOf(Camera.class);
-    Shadows.shadowOf(camera).id = 0;
+    ShadowCamera shadowCamera = Shadow.extract(camera);
+    shadowCamera.id = 0;
     return camera;
   }
 
@@ -57,7 +58,8 @@ public class ShadowCamera {
   public static Camera open(int cameraId) {
     lastOpenedCameraId = cameraId;
     Camera camera = newInstanceOf(Camera.class);
-    Shadows.shadowOf(camera).id = cameraId;
+    ShadowCamera shadowCamera = Shadow.extract(camera);
+    shadowCamera.id = cameraId;
     return camera;
   }
 

@@ -2,4 +2,5 @@
 <resources>
   <item name="id_declared_in_item_tag" type="id"/>
   <item name="id_with_string_value" type="id">string value</item>
+  <item name="declared_id" type="id"/>
 </resources>

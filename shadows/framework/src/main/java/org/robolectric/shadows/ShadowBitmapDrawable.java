@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.graphics.Bitmap;
@@ -12,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -40,7 +40,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   public Drawable mutate() {
     Bitmap bitmap = realBitmapDrawable.getBitmap();
     BitmapDrawable real = ReflectionHelpers.callConstructor(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
-    ShadowBitmapDrawable shadow = shadowOf(real);
+    ShadowBitmapDrawable shadow = Shadow.extract(real);
     shadow.colorFilter = this.colorFilter;
     shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
     return real;
@@ -62,7 +62,8 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   @Deprecated
   @Override
   public int getCreatedFromResId() {
-    return shadowOf(realBitmapDrawable.getBitmap()).getCreatedFromResId();
+    ShadowBitmap shadowBitmap = Shadow.extract(realBitmapDrawable.getBitmap());
+    return shadowBitmap.getCreatedFromResId();
   }
 
   public String getSource() {

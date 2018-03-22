@@ -31,13 +31,7 @@ public class ShadowImpl implements IShadow {
 
   private <T> T createProxy(T shadowedObject, Class<T> clazz) {
     try {
-      if (InvokeDynamic.ENABLED) {
-        return PROXY_MAKER.createProxy(clazz, shadowedObject);
-      } else {
-        return ReflectionHelpers.callConstructor(clazz,
-            ReflectionHelpers.ClassParameter.fromComponentLists(new Class[] { DirectObjectMarker.class, clazz },
-                new Object[] { DirectObjectMarker.INSTANCE, shadowedObject }));
-      }
+      return PROXY_MAKER.createProxy(clazz, shadowedObject);
     } catch (Exception e) {
       throw new RuntimeException("error creating direct call proxy for " + clazz, e);
     }
