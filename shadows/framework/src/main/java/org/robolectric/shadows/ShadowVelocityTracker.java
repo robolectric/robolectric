@@ -50,9 +50,9 @@ public class ShadowVelocityTracker {
       throw new IllegalArgumentException("event must not be null");
     }
 
-    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
       clear();
-    } else if (event.getAction() != MotionEvent.ACTION_MOVE) {
+    } else if (event.getActionMasked() != MotionEvent.ACTION_MOVE) {
       // only listen for DOWN and MOVE events
       return;
     }

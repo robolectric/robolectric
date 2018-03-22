@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
@@ -14,9 +15,13 @@ public class NativeObjRegistry<T> {
   private long ids = INITIAL_ID;
   private BiMap<Long, T> nativeObjToIdMap = HashBiMap.create();
 
+  /**
+   * Retrieve the native id for given object. Assigns a new unique id to the object if not
+   * previously registered.
+   */
   public synchronized long getNativeObjectId(T o) {
-    Preconditions.checkNotNull(o);
-    Long nativeId  = nativeObjToIdMap.inverse().get(o);
+    checkNotNull(o);
+    Long nativeId = nativeObjToIdMap.inverse().get(o);
     if (nativeId == null) {
       nativeId = ids;
       nativeObjToIdMap.put(nativeId, o);
@@ -29,13 +34,25 @@ public class NativeObjRegistry<T> {
     nativeObjToIdMap.inverse().remove(removed);
   }
 
+  /** Retrieve the native object for given id. Throws if object with that id cannot be found */
   public synchronized T getNativeObject(long nativeId) {
-    return nativeObjToIdMap.get(nativeId);
+    T object = nativeObjToIdMap.get(nativeId);
+    return checkNotNull(
+        object,
+        String.format(
+            "Could not find object with nativeId: %d. Currently registered ids: %s",
+            nativeId, nativeObjToIdMap.keySet()));
   }
 
   /**
-   * WARNING -- dangerous! Call {@link #unregister(long)} instead!
+   * Similar to {@link #getNativeObject(long)} but returns null if object with given id cannot be
+   * found.
    */
+  public synchronized T peekNativeObject(long nativeId) {
+    return nativeObjToIdMap.get(nativeId);
+  }
+
+  /** WARNING -- dangerous! Call {@link #unregister(long)} instead! */
   public synchronized void clear() {
     ids = INITIAL_ID;
     nativeObjToIdMap.clear();
