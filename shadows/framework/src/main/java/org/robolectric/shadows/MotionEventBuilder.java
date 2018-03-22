@@ -12,9 +12,9 @@ import java.util.List;
 /**
  * A helper builder for creating {@link MotionEvent}'s.
  *
- * <p>Default values for unspecified attributes are 0 unless otherwise noted.
+ * Default values for unspecified attributes are 0 unless otherwise noted.
  *
- * <p>TODO: move this class to another package, since its not related to shadows
+ * TODO: move this class to another package, since its not related to shadows
  */
 public class MotionEventBuilder {
 

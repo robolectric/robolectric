@@ -39,8 +39,10 @@ import org.robolectric.util.ReflectionHelpers;
  * nativeGetXXXX(mNativePtr, ...)
  *
  * This shadow mirrors this design, but has java equivalents of each native object. Most of the
- * contents of this class were transliterated from
+ * contents of this class were transliterated from oreo-mr1 (SDK 27)
  * frameworks/base/core/jni/android_view_MotionEvent.cpp
+ *
+ * @see https://android.googlesource.com/platform/frameworks/base/+/oreo-mr1-release/core/jni/android_view_MotionEvent.cpp
  *
  * Tests should not reference this class directly. MotionEvents should be created via one of the
  * MotionEvent.obtain methods or via MotionEventBuilder.
@@ -58,7 +60,7 @@ public class ShadowMotionEvent {
 
   @Resetter
   public static void reset() {
-    // rely on MotionEvent finalizer to clear native objects
+    // rely on MotionEvent finalizer to clear native object instead of calling
     // nativeMotionEventRegistry.clear();
     ReflectionHelpers.setStaticField(MotionEvent.class, "gRecyclerTop", null);
     ReflectionHelpers.setStaticField(MotionEvent.class, "gSharedTempPointerCoords", null);

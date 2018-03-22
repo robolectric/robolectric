@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 /**
- * Java representation of framework native system headers Transliterated from oreo-mr1
+ * Java representation of framework native system headers Transliterated from oreo-mr1 (SDK 27)
  * frameworks/native/include/android/Input.h
+ *
+ * @see https://android.googlesource.com/platform/frameworks/native/+/oreo-mr1-release/include/android/input.h
  */
 public class NativeAndroidInput {
 
