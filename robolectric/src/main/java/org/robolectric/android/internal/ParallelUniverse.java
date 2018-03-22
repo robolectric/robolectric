@@ -40,7 +40,6 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
@@ -127,6 +126,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         // FsFile packageFile = appManifest.getAndroidManifestFile();
         // todo get elsewhere?
         FsFile packageFile = appManifest.getApkFile();
+        if (packageFile == null) {
+          throw new IllegalStateException("no apk file!");
+        }
         parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
       } else {
         parsedPackage = LegacyManifestParser.createPackage(appManifest);

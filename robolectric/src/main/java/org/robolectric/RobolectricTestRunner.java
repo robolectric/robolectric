@@ -253,6 +253,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     both;
 
     static final ResourcesMode DEFAULT = both;
+    // static final ResourcesMode DEFAULT = binary;
+    // static final ResourcesMode DEFAULT = legacy;
 
     public boolean includeLegacy() {
       return this == legacy || this == both;
@@ -298,7 +300,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return children;
   }
 
-  private ResourcesMode getResourcesMode() {
+  private static ResourcesMode getResourcesMode() {
     String resourcesMode = System.getProperty("robolectric.resources-mode");
     return resourcesMode == null ? ResourcesMode.DEFAULT : ResourcesMode.valueOf(resourcesMode);
   }
@@ -659,7 +661,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       //   latest supported SDK for focused test runs
       return super.getName()
           + (includeApiLevelInName ? "[" + sdkConfig.getApiLevel() + "]" : "")
-          + (!legacyResources ? "[binary]" : "")
+          + (!legacyResources && getResourcesMode() != ResourcesMode.binary ? "[binary]" : "")
           ;
     }
 

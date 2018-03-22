@@ -326,7 +326,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public void ensureStringBlocks() {
+  public Object ensureStringBlocks() {
+    return null;
   }
 
   @Override @Implementation
@@ -983,8 +984,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
         // todo: this should be a style resId, not an attr
-        throw new IllegalArgumentException(
-            resName.getFullyQualifiedName() + " should be a style resId");
+        System.out.println("WARN: " + resName.getFullyQualifiedName() + " should be a style resId");
         // AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, themeStyleSet);
         // if (attributeValue != null) {
         //   if (attributeValue.isStyleReference()) {
@@ -993,8 +993,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         //     resName = attributeValue.getResourceReference();
         //   }
         // }
+      } else if (resName.type.equals("style")) {
+        defStyleFromRes = resolveStyle(resName, themeStyleSet);
       }
-      defStyleFromRes = resolveStyle(resName, themeStyleSet);
     }
 
     AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, themeStyleSet);

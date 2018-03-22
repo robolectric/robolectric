@@ -315,7 +315,11 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
             TypedValue outValue = parse(attrId, attrResName, value, packageName);
             type = DataType.fromCode(outValue.type);
             value = (String) outValue.string;
-            valueInt = outValue.data;
+            if (type == DataType.STRING && outValue.data == 0) {
+              valueInt = resStringPoolWriter.string(value);
+            } else {
+              valueInt = outValue.data;
+            }
           }
 
           Res_value resValue = new Res_value(type.code(), valueInt);

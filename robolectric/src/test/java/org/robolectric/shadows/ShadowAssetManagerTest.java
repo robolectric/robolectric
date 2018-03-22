@@ -53,7 +53,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
+    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/an_image.png", 0);
 
     // expect different sizes in binary vs file resources
     int expectedFileSize = useLegacy() ? 6559 : 5138;
@@ -81,9 +81,9 @@ public class ShadowAssetManagerTest {
 
     expectedException.expect(IOException.class);
     expectedException.expectMessage(
-        "./res/drawable/does_not_exist.png");
+        "res/drawable/does_not_exist.png");
 
-    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
   }
 
   @Test
@@ -94,7 +94,7 @@ public class ShadowAssetManagerTest {
     expectedException.expectMessage("Resource ID #0xffffffff");
 
     resources.newTheme().applyStyle(-1, false);
-    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
   }
 
   @Test
@@ -105,7 +105,7 @@ public class ShadowAssetManagerTest {
     expectedException.expectMessage("Resource ID #0xffffffff");
 
     Resources.getSystem().newTheme().applyStyle(-1, false);
-    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
   }
 
   @Test
@@ -113,7 +113,7 @@ public class ShadowAssetManagerTest {
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
     if (!useLegacy()) return;
 
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(8141);
   }
 
@@ -122,7 +122,7 @@ public class ShadowAssetManagerTest {
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
     if (!useLegacy()) return;
 
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(23447);
   }
 

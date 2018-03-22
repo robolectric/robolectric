@@ -129,7 +129,7 @@ abstract public class Fs {
       private final String path;
 
       public JarFsFile(String path) {
-        this.path = path;
+        this.path = path.replaceAll("^/+", "");
       }
 
       @Override public boolean exists() {

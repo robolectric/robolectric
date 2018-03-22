@@ -97,7 +97,7 @@ public abstract class ShadowAssetManager {
   abstract public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs);
 
   @HiddenApi @Implementation
-  abstract public void ensureStringBlocks();
+  abstract public Object ensureStringBlocks();
 
   @Implementation
   abstract public InputStream open(String fileName) throws IOException;

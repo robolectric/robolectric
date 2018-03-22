@@ -23,6 +23,7 @@ import android.util.TypedValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
@@ -139,8 +141,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  public void ensureStringBlocks() {
-    directlyOn(realObject, AssetManager.class, "ensureStringBlocks");
+  public Object ensureStringBlocks() {
+    return directlyOn(realObject, AssetManager.class, "ensureStringBlocks");
   }
 
   @Override @Implementation
@@ -1872,7 +1874,11 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   Collection<FsFile> getAllAssetDirs() {
     ArrayList<FsFile> fsFiles = new ArrayList<>();
     for (AssetPath assetPath : cppAssetManager.getAssetPaths()) {
-      fsFiles.add(assetPath.file);
+      if (assetPath.file.isFile()) {
+        fsFiles.add(Fs.newJarFile(new File(assetPath.file.getPath())).join("assets"));
+      } else {
+        fsFiles.add(assetPath.file);
+      }
     }
     return fsFiles;
   }
