@@ -121,7 +121,7 @@ public class ShadowXmlBlock {
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
   public static int nativeGetNamespace(int state) {
-    return (int)nativeGetStringBlock((long)state);
+    return nativeGetNamespace((long)state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
