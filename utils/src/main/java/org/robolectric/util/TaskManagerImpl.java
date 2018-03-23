@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class TaskManagerImpl implements TaskManager {
 
   private final List<ScheduledRunnable> runnables = Collections.synchronizedList(new ArrayList<>());
+  private final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
   /**
-   * Add a runnable to the queue to be run after a delay.
+   * Add a runnable to the queue to be run at the specified time.
    */
   @Override
   public void post(Runnable runnable, long time) {
-      queueRunnableAndSort(runnable, time);
+    queueRunnableAndSort(runnable, time);
   }
 
   /**
@@ -25,7 +27,8 @@ public class TaskManagerImpl implements TaskManager {
    */
   @Override
   public void postAtFrontOfQueue(Runnable runnable) {
-      runnables.add(0, new ScheduledRunnable(runnable, 0));
+    runnables.add(0, new ScheduledRunnable(runnable, 0));
+    notifyListeners();
   }
 
   /**
@@ -66,7 +69,7 @@ public class TaskManagerImpl implements TaskManager {
    * Clear the queue of runnable tasks
    */
   @Override
-  public  void reset() {
+  public  void removeAll() {
     runnables.clear();
   }
 
@@ -88,10 +91,22 @@ public class TaskManagerImpl implements TaskManager {
     return runnables.get(0).scheduledTime;
   }
 
+  @Override
+  public void addListener(Listener listener) {
+    listeners.add(listener);
+  }
+
   private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
-    runnables.add(new ScheduledRunnable(runnable, scheduledTime));
     synchronized (runnables) {
+      runnables.add(new ScheduledRunnable(runnable, scheduledTime));
       Collections.sort(runnables);
+    }
+    notifyListeners();
+  }
+
+  private void notifyListeners() {
+    for (Listener listener : listeners) {
+      listener.newTaskPosted();
     }
   }
 

@@ -7,6 +7,7 @@ import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
@@ -51,7 +52,7 @@ public class Scheduler {
 
   private final static long START_TIME = 100;
   private volatile long currentTime = START_TIME;
-  private boolean isExecutingRunnable = false;
+  private AtomicBoolean isExecutingRunnable = new AtomicBoolean(false);
   private final Thread associatedThread = Thread.currentThread();
   private volatile IdleState idleState = UNPAUSED;
 
@@ -67,6 +68,24 @@ public class Scheduler {
 
   public void register(TaskManager taskManager) {
     this.taskManager = taskManager;
+    taskManager.addListener(new TaskManager.Listener() {
+      @Override
+      public void newTaskPosted() {
+        if (isExecutingRunnable.get()) {
+          return;
+        }
+
+        switch (idleState) {
+          case CONSTANT_IDLE:
+            advanceToLastPostedRunnable();
+            break;
+          case UNPAUSED:
+            advanceBy(0);
+            break;
+          default:
+        }
+      }
+    });
   }
 
   /**
@@ -183,13 +202,27 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public boolean advanceToLastPostedRunnable() {
+    boolean taskRun = false;
     while (true) {
-      long scheduledTime = taskManager.runNextTask();
+      long scheduledTime = runNextTask();
       if (scheduledTime < 0) {
         break;
       }
       currentTime = scheduledTime;
+      taskRun = true;
     }
+    return taskRun;
+  }
+
+  private long runNextTask() {
+    isExecutingRunnable.set(true);
+    long time = 0;
+    try {
+      time = taskManager.runNextTask();
+    } finally {
+      isExecutingRunnable.set(false);
+    }
+    return time;
   }
 
   /**
@@ -198,7 +231,7 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public boolean advanceToNextPostedRunnable() {
-    runOneTask();
+    return runOneTask();
   }
 
   /**
@@ -240,6 +273,7 @@ public class Scheduler {
       runOneTask();
       ++runCount;
     }
+    currentTime = endTime;
     return runCount > 0;
   }
 
@@ -249,12 +283,11 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public boolean runOneTask() {
-    long scheduledTime = taskManager.runNextTask();
-    if (scheduledTime > -1) {
+    long scheduledTime = taskManager.getScheduledTimeOfNextTask();
+    if (scheduledTime > currentTime) {
       currentTime = scheduledTime;
-      return true;
     }
-    return false;
+    return runNextTask() > -1;
   }
 
   /**
@@ -270,10 +303,10 @@ public class Scheduler {
    * Reset the internal state of the Scheduler.
    */
   public synchronized void reset() {
-    taskManager.reset();
+    taskManager.removeAll();
     idleState = UNPAUSED;
     currentTime = START_TIME;
-    isExecutingRunnable = false;
+    isExecutingRunnable.set(false);
   }
 
   /**

@@ -23,6 +23,7 @@ public class SchedulerTest {
   
   @Before
   public void setUp() throws Exception {
+    scheduler.register(new TaskManagerImpl());
     scheduler.pause();
     startTime = scheduler.getCurrentTime();
   }
@@ -507,22 +508,19 @@ public class SchedulerTest {
   }
 
   /**
-   * Scheduler that scheduler should not deadlock if a posted runnable itself tries to post.
-   * Although this looks a bit messy, this is not-uncommon for scenarios involving AsyncTasks,
+   * Verify that scheduler should not deadlock if a posted runnable tries to post on a background
+   * thread. This can happen in situations involving heavy use of AsyncTasks.
    */
   @Test
   public void reentrantPost() {
+    TestRunnable innerRunnable = new TestRunnable();
     scheduler.setIdleState(IdleState.UNPAUSED);
     scheduler.post(new Runnable() {
       @Override
       public void run() {
         Thread t = new Thread() {
           public void run() {
-            scheduler.post(new Runnable() {
-              @Override
-              public void run() {
-              }
-            });
+            scheduler.post(innerRunnable);
           }
         };
         t.start();
@@ -532,6 +530,7 @@ public class SchedulerTest {
         }
       }
     });
+    assertThat(innerRunnable.wasRun).isTrue();
   }
 
   private class AddToTranscript implements Runnable {

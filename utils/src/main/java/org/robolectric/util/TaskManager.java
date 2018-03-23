@@ -11,9 +11,15 @@ interface TaskManager {
 
   long runNextTask();
 
-  void reset();
+  void removeAll();
 
   int size();
 
   long getScheduledTimeOfNextTask();
+
+  void addListener(Listener listener);
+
+  interface Listener {
+    void newTaskPosted();
+  }
 }
