@@ -27,7 +27,6 @@ import org.robolectric.annotation.Config;
 import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = Build.VERSION_CODES.P)
 public class ShadowResourcesTest {
   private Resources resources;
 
@@ -247,5 +246,11 @@ public class ShadowResourcesTest {
     xmlResourceParser =
         (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
+  }
+
+  @Test
+  public void getResourceEntryName_forStyle() throws Exception {
+    assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
+        .isEqualTo("TextAppearance.Small");
   }
 }
