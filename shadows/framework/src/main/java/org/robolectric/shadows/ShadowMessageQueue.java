@@ -148,16 +148,16 @@ public class ShadowMessageQueue {
     }
   }
 
-  @Implementation
-  @HiddenApi
-  protected void removeSyncBarrier(int token) {
-    // TODO(b/74402484): workaround scheduler corruption of message queue
-    try {
-      directlyOn(realQueue, MessageQueue.class, "removeSyncBarrier", from(int.class, token));
-    } catch (IllegalStateException e) {
-      Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
-    }
-  }
+  // @Implementation
+  // @HiddenApi
+  // protected void removeSyncBarrier(int token) {
+  //   // TODO(b/74402484): workaround scheduler corruption of message queue
+  //   try {
+  //     directlyOn(realQueue, MessageQueue.class, "removeSyncBarrier", from(int.class, token));
+  //   } catch (IllegalStateException e) {
+  //     Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
+  //   }
+  // }
 
   private static ShadowMessage shadowOf(Message actual) {
     return (ShadowMessage) Shadow.extract(actual);

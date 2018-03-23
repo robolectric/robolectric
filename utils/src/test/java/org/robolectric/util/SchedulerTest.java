@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.util.Scheduler.IdleState;
 
 @RunWith(JUnit4.class)
 public class SchedulerTest {
@@ -503,6 +504,34 @@ public class SchedulerTest {
       t.start();
       t.join();
     }
+  }
+
+  /**
+   * Scheduler that scheduler should not deadlock if a posted runnable itself tries to post.
+   * Although this looks a bit messy, this is not-uncommon for scenarios involving AsyncTasks,
+   */
+  @Test
+  public void reentrantPost() {
+    scheduler.setIdleState(IdleState.UNPAUSED);
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        Thread t = new Thread() {
+          public void run() {
+            scheduler.post(new Runnable() {
+              @Override
+              public void run() {
+              }
+            });
+          }
+        };
+        t.start();
+        try {
+          t.join();
+        } catch (InterruptedException e) {
+        }
+      }
+    });
   }
 
   private class AddToTranscript implements Runnable {

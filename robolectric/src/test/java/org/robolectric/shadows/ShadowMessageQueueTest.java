@@ -18,14 +18,17 @@ import android.os.MessageQueue;
 import android.os.SystemClock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.Scheduler.IdleState;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowMessageQueueTest {
@@ -246,6 +249,31 @@ public class ShadowMessageQueueTest {
     assertThat(handler.handled).as("handled:after").containsExactly(testMessage);
   }
 
+  // repro case for b/74402484
+  @Test
+  public void queueCorruption() throws InterruptedException {
+    Robolectric.getForegroundThreadScheduler().setIdleState(IdleState.PAUSED);
+    ControllableRunnable controllableRunnable = new ControllableRunnable();
+    Robolectric.getForegroundThreadScheduler().post(controllableRunnable);
+
+    Message msg  = handler.obtainMessage(1234);
+
+    Thread t = new Thread() {
+      public void run() {
+        enqueueMessage(msg, 200);
+      }
+    };
+    t.start();
+    Thread.sleep(100);
+
+    removeMessages(handler, 1234, null);
+
+    int token = postSyncBarrier(queue);
+    controllableRunnable.release();
+    t.join();
+    removeSyncBarrier(queue, token);
+  }
+
   private static void removeSyncBarrier(MessageQueue queue, int token) {
     ReflectionHelpers.callInstanceMethod(
         MessageQueue.class, queue, "removeSyncBarrier", from(int.class, token));
@@ -260,6 +288,28 @@ public class ShadowMessageQueueTest {
           queue,
           "enqueueSyncBarrier",
           from(long.class, SystemClock.uptimeMillis()));
+    }
+  }
+
+  private static class ControllableRunnable implements Runnable {
+    private CountDownLatch startLatch = new CountDownLatch(1);
+    private CountDownLatch runLatch = new CountDownLatch(1);
+
+    @Override
+    public void run() {
+      startLatch.countDown();
+      try {
+        runLatch.await();
+      } catch (InterruptedException e) {
+      }
+    }
+
+    public void waitForStart() throws InterruptedException {
+      startLatch.await();
+    }
+
+    public void release() {
+      runLatch.countDown();
     }
   }
 }

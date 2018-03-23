@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class Scheduler {
 
+  private TaskManager taskManager;
+
   /**
    * Describes the current state of a {@link Scheduler}.
    */
@@ -64,6 +66,10 @@ public class Scheduler {
    */
   public IdleState getIdleState() {
     return idleState;
+  }
+
+  public void register(TaskManager taskManager) {
+    this.taskManager = taskManager;
   }
 
   /**
@@ -131,7 +137,7 @@ public class Scheduler {
    *
    * @param runnable    Runnable to add.
    */
-  public synchronized void post(Runnable runnable) {
+  public void post(Runnable runnable) {
     postDelayed(runnable, 0, TimeUnit.MILLISECONDS);
   }
 
@@ -141,20 +147,16 @@ public class Scheduler {
    * @param runnable    Runnable to add.
    * @param delayMillis Delay in millis.
    */
-  public synchronized void postDelayed(Runnable runnable, long delayMillis) {
+  public void postDelayed(Runnable runnable, long delayMillis) {
     postDelayed(runnable, delayMillis, TimeUnit.MILLISECONDS);
   }
 
   /**
    * Add a runnable to the queue to be run after a delay.
    */
-  public synchronized void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
+  public void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
     long delayMillis = unit.toMillis(delay);
-    if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      queueRunnableAndSort(runnable, currentTime + delayMillis);
-    } else {
-      runOrQueueRunnable(runnable, currentTime + delayMillis);
-    }
+    queueRunnableAndSort(runnable, currentTime + delayMillis);
   }
 
   /**
@@ -162,12 +164,8 @@ public class Scheduler {
    *
    * @param runnable  Runnable to add.
    */
-  public synchronized void postAtFrontOfQueue(Runnable runnable) {
-    if (isPaused() || Thread.currentThread() != associatedThread) {
-      runnables.add(0, new ScheduledRunnable(runnable, currentTime));
-    } else {
-      runOrQueueRunnable(runnable, currentTime);
-    }
+  public void postAtFrontOfQueue(Runnable runnable) {
+    taskManager.postAtFrontOfQueue(runnable);
   }
 
   /**
@@ -175,14 +173,8 @@ public class Scheduler {
    *
    * @param runnable  Runnable to remove.
    */
-  public synchronized void remove(Runnable runnable) {
-    ListIterator<ScheduledRunnable> iterator = runnables.listIterator();
-    while (iterator.hasNext()) {
-      ScheduledRunnable next = iterator.next();
-      if (next.runnable == runnable) {
-        iterator.remove();
-      }
-    }
+  public void remove(Runnable runnable) {
+    taskManager.remove(runnable);
   }
 
   /**
@@ -190,8 +182,8 @@ public class Scheduler {
    *
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceToLastPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(runnables.size() - 1).scheduledTime);
+  public boolean advanceToLastPostedRunnable() {
+    taskManager.advanceToLastPostedRunnable();
   }
 
   /**
@@ -199,8 +191,8 @@ public class Scheduler {
    *
    * @return  True if a runnable was executed.
    */
-  public synchronized boolean advanceToNextPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(0).scheduledTime);
+  public boolean advanceToNextPostedRunnable() {
+    taskManager.advanceToNextPostedRunnable();
   }
 
   /**
@@ -338,8 +330,10 @@ public class Scheduler {
   }
 
   private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
-    runnables.add(new ScheduledRunnable(runnable, scheduledTime));
-    Collections.sort(runnables);
+    taskManager.post(runnable, scheduledTime);
+
+    //runnables.add(new ScheduledRunnable(runnable, scheduledTime));
+
   }
 
   private class ScheduledRunnable implements Comparable<ScheduledRunnable> {
