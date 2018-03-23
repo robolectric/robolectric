@@ -61,7 +61,7 @@ public class ShadowAsyncTaskTest {
     assertThat(transcript).isEmpty();
 
     ShadowLooper.runUiThreadTasks();
-    assertThat(transcript).containsExactly("onCancelled");
+    assertThat(transcript).containsExactly("onCancelled null", "onCancelled");
   }
 
   @Test
@@ -192,6 +192,13 @@ public class ShadowAsyncTaskTest {
     @Override
     protected void onPostExecute(String s) {
       transcript.add("onPostExecute " + s);
+    }
+
+    @Override
+    protected void onCancelled(String result) {
+      transcript.add("onCancelled " + result);
+      // super should call onCancelled() without arguments
+      super.onCancelled(result);
     }
 
     @Override

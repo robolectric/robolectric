@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -99,7 +98,7 @@ public class ShadowBitmapFactory {
     byte[] ninePatchChunk = null;
 
     if (is instanceof AssetInputStream) {
-      ShadowAssetInputStream sais = Shadows.shadowOf((AssetInputStream) is);
+      ShadowAssetInputStream sais = Shadow.extract(is);
       is = sais.getDelegate();
       if (sais.isNinePatch()) {
         ninePatchChunk = new byte[0];

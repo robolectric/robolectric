@@ -4,6 +4,8 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.SuppressLint;
@@ -213,11 +215,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   @Override @Implementation
   public void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
+
   }
 
   @Override @Implementation
   public void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
+
   }
 
   @Override @HiddenApi @Implementation
@@ -566,6 +570,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   public int addAssetPathNative(String path, boolean appAsLib) {
     return 0;
   }
+
 
   private FsFile getFsFileFromPath(String property) {
     if (property.startsWith("jar")) {

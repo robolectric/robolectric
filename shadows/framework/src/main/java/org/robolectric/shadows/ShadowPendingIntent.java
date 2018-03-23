@@ -5,6 +5,8 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
@@ -35,7 +37,12 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressLint("NewApi")
 public class ShadowPendingIntent {
 
-  private enum Type {ACTIVITY, BROADCAST, SERVICE}
+  private enum Type {
+    ACTIVITY,
+    BROADCAST,
+    SERVICE,
+    FOREGROUND_SERVICE
+  }
 
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
 
@@ -86,6 +93,12 @@ public class ShadowPendingIntent {
     return create(context, new Intent[] {intent}, Type.SERVICE, requestCode, flags);
   }
 
+  @Implementation(minSdk = O)
+  protected static PendingIntent getForegroundService(
+      Context context, int requestCode, @NonNull Intent intent, int flags) {
+    return create(context, new Intent[] {intent}, Type.FOREGROUND_SERVICE, requestCode, flags);
+  }
+
   @Implementation
   @SuppressWarnings("ReferenceEquality")
   public void cancel() {
@@ -130,6 +143,10 @@ public class ShadowPendingIntent {
       for (Intent savedIntent : savedIntents) {
         context.startService(savedIntent);
       }
+    } else if (isForegroundServiceIntent()) {
+      for (Intent savedIntent : savedIntents) {
+        context.startForegroundService(savedIntent);
+      }
     }
 
     if (isOneShot(flags)) {
@@ -161,6 +178,11 @@ public class ShadowPendingIntent {
    */
   public boolean isServiceIntent() {
     return type == Type.SERVICE;
+  }
+
+  /** @return {@code true} iff sending this PendingIntent will start a foreground service */
+  public boolean isForegroundServiceIntent() {
+    return type == Type.FOREGROUND_SERVICE;
   }
 
   /**
