@@ -54,6 +54,8 @@ dependencies {
 }
 
 test {
+    systemProperty 'robolectric.resources-mode', 'both'
+
     if (project.hasProperty('maxParallelForks'))
         maxParallelForks = project.maxParallelForks as int
     if (project.hasProperty('forkEvery'))

@@ -252,9 +252,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     binary,
     both;
 
-    static final ResourcesMode DEFAULT = both;
-    // static final ResourcesMode DEFAULT = binary;
-    // static final ResourcesMode DEFAULT = legacy;
+    static final ResourcesMode DEFAULT = legacy;
+    static final ResourcesMode FROM_PROPERTIES = getFromProperties();
+
+    private static ResourcesMode getFromProperties() {
+      String resourcesMode = System.getProperty("robolectric.resources-mode");
+      return resourcesMode == null ? DEFAULT : valueOf(resourcesMode);
+    }
 
     public boolean includeLegacy() {
       return this == legacy || this == both;
@@ -267,7 +271,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   protected List<FrameworkMethod> getChildren() {
-    ResourcesMode resourcesMode = getResourcesMode();
+    ResourcesMode resourcesMode = ResourcesMode.FROM_PROPERTIES;
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
@@ -298,11 +302,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
     }
     return children;
-  }
-
-  private static ResourcesMode getResourcesMode() {
-    String resourcesMode = System.getProperty("robolectric.resources-mode");
-    return resourcesMode == null ? ResourcesMode.DEFAULT : ResourcesMode.valueOf(resourcesMode);
   }
 
   /**
@@ -664,8 +663,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       StringBuilder buf = new StringBuilder(super.getName());
 
       if (includeVariantMarkersInName) {
-        buf.append("[").append(sdkConfig.getApiLevel()).append("]")
-            .append("[").append(resourcesMode.name()).append("]");
+        buf.append("[").append(sdkConfig.getApiLevel()).append("]");
+
+        if (ResourcesMode.FROM_PROPERTIES == ResourcesMode.both) {
+          buf.append("[").append(resourcesMode.name()).append("]");
+        }
       }
 
       return buf.toString();
