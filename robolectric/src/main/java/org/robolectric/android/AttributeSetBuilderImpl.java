@@ -184,7 +184,12 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
     @Override
     public Integer getIdentifier(String name, String type, String packageName) {
-      return resourceTable.getResourceId(new ResName(packageName, type, name));
+      Integer resourceId = resourceTable.getResourceId(new ResName(packageName, type, name));
+      if (resourceId == 0) {
+        resourceId = resourceTable.getResourceId(
+            new ResName(packageName, type, name.replace('.', '_')));
+      }
+      return resourceId;
     }
 
     @Override
@@ -304,7 +309,9 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
                   + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
             }
             type = DataType.REFERENCE;
-            value = "@" +  valueResId;
+            if (attrResName != null) {
+              value = "@" +  valueResId;
+            }
             valueInt = valueResId;
           } else if (AttributeResource.isStyleReference(value)) {
             ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
