@@ -79,7 +79,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   //default values for bindService
   private ServiceConnectionDataWrapper defaultServiceConnectionData = new ServiceConnectionDataWrapper(null, null);
 
-  // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
+  // these are managed by the AppSingletonizer... kinda gross, sorry [xw]
   LayoutInflater layoutInflater;
   AppWidgetManager appWidgetManager;
   private List<String> unbindableActions = new ArrayList<>();

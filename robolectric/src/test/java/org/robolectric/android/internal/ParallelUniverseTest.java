@@ -30,8 +30,6 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.dependency.DependencyJar;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourcePath;
@@ -49,18 +47,6 @@ public class ParallelUniverseTest {
 
   private static Config getDefaultConfig() {
     return new Config.Builder().build();
-  }
-
-  private static class StubDependencyResolver implements DependencyResolver {
-
-    @Override
-    public URL getLocalArtifactUrl(DependencyJar dependency) {
-      try {
-        return new URL("file://foo.txt");
-      } catch (MalformedURLException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   @Before
@@ -82,14 +68,22 @@ public class ParallelUniverseTest {
   private void setUpApplicationState(Config defaultConfig, AndroidManifest appManifest) {
     // this is kinda nasty but needed to prevent double initialization from ParallelUniverse and RTR:
     ShadowDisplayManagerGlobal.reset();
+    String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
 
     ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     Method method = getDummyMethodForTest();
+    URL url;
+    try {
+      url = new URL("file:" + androidFrameworkJarPath);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+
     pu.setUpApplicationState(
         method,
         appManifest,
-        new StubDependencyResolver(),
+        dependency -> url,
         defaultConfig,
         sdkResourceProvider,
         routingResourceTable,
@@ -104,8 +98,6 @@ public class ParallelUniverseTest {
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
-    RuntimeEnvironment.setMasterScheduler(null);
-    setUpApplicationState(getDefaultConfig(), dummyManifest());
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isNotNull()
         .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
