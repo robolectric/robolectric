@@ -40,8 +40,8 @@ public class ResourceTable {
           + "The % suffix always means a percentage of the base size; the optional %p suffix provides a size relative to\n"
           + "some parent container."),
       new flag_entry("enum", ResTable_map.TYPE_ENUM, null),
-      new flag_entry("flags", ResTable_map.TYPE_FLAGS, null),
-      new flag_entry(null, 0, null)
+      new flag_entry("flags", ResTable_map.TYPE_FLAGS, null)
+      // new flag_entry(null, 0, null)
   };
 
 }

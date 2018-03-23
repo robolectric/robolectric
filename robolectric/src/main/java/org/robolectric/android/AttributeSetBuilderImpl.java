@@ -6,6 +6,7 @@ import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE
 import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
 import static org.robolectric.res.android.ResourceTypes.ResTable_map.ATTR_TYPE;
+import static org.robolectric.shadows.ShadowLegacyAssetManager.ATTRIBUTE_TYPE_PRECIDENCE;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -15,9 +16,12 @@ import com.google.common.collect.ImmutableMap;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttrData.Pair;
 import org.robolectric.res.AttributeResource;
@@ -137,8 +141,12 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
       }
 
       int formatFlags = Integer.parseInt(format);
-      flag_entry[] flags = org.robolectric.res.android.ResourceTable.gFormatFlags;
-      for (flag_entry flag : flags) {
+      TreeSet<flag_entry> sortedFlags = new TreeSet<>(
+          (a, b) -> ATTRIBUTE_TYPE_PRECIDENCE.compare(a.name, b.name));
+      Collections.addAll(sortedFlags,
+          org.robolectric.res.android.ResourceTable.gFormatFlags);
+
+      for (flag_entry flag : sortedFlags) {
         if ((formatFlags & flag.value) != 0) {
           if ("reference".equals(flag.name)) {
             continue;
@@ -189,7 +197,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
         AttrData attrData = (AttrData) attrTypeData.getData();
         String format = attrData.getFormat();
         String[] types = format.split("\\|");
-        // todo: do we need to Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE) here?
+        Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE);
         for (String type : types) {
           if ("reference".equals(type)) continue; // already handled above
           Converter2 converter = Converter2.getConverterFor(attrData, type);

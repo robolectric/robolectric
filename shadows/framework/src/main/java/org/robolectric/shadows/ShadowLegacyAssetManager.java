@@ -71,7 +71,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressLint("NewApi")
 public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
-  static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
+  public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
       Ordering.explicit(
           "reference",
           "color",
@@ -82,6 +82,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
           "float",
           "enum",
           "flag",
+          "flags",
           "string");
 
   static boolean strictErrors = false;
