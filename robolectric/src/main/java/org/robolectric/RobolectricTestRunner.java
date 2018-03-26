@@ -256,7 +256,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     static final ResourcesMode FROM_PROPERTIES = getFromProperties();
 
     private static ResourcesMode getFromProperties() {
-      String resourcesMode = System.getProperty("robolectric.resources-mode");
+      String resourcesMode = System.getProperty("robolectric.resourcesMode");
       return resourcesMode == null ? DEFAULT : valueOf(resourcesMode);
     }
 

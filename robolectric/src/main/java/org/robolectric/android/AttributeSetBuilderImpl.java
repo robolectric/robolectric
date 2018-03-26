@@ -127,14 +127,13 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     @Override
     public void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
         TypedValue outValue) {
-      arscParse(attrId, attrResName, attribute, outValue,
-          Shadow.extract(context.getResources().getAssets()));
+      arscParse(attrId, attrResName, attribute, outValue);
     }
 
     private void arscParse(Integer attrId, ResName attrResName, AttributeResource attribute,
-        TypedValue outValue, ShadowArscAssetManager shadowArscAssetManager) {
-      String format = shadowArscAssetManager.getResourceBagText(attrId, ATTR_TYPE).toString();
-      Map<String, Integer> map = shadowArscAssetManager.getResourceBagValues(attrId);
+        TypedValue outValue) {
+      String format = ShadowArscAssetManager.getResourceBagValue(attrId, ATTR_TYPE, resTable);
+      Map<String, Integer> map = ShadowArscAssetManager.getResourceBagValues(attrId, resTable);
       ArrayList<Pair> pairs = new ArrayList<>();
       for (Entry<String, Integer> e : map.entrySet()) {
         pairs.add(new Pair(e.getKey(), Integer.toString(e.getValue())));

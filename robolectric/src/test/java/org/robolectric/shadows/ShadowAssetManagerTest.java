@@ -186,11 +186,12 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage()
-      throws Exception {if (!useLegacy()) return;
+      throws Exception {
+    if (!useLegacy()) return;
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage(
         "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +
-            "in theme with applied styles: [Style org.robolectric:Theme_Robolectric (and parents)]");
+            "in theme with applied styles: [Style org.robolectric:Theme.Robolectric (and parents)]");
 
    Resources.Theme theme = resources.newTheme();
    theme.applyStyle(R.style.Theme_Robolectric, false);

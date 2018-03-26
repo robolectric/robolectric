@@ -648,10 +648,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return block;
   }
 
-  public Map<String, Integer> getResourceBagValues(int ident) {
-    CppAssetManager am = assetManagerForJavaObject();
-    final ResTable res = am.getResources();
-
+  public static Map<String, Integer> getResourceBagValues(int ident, ResTable res) {
     // Now lock down the resource object and start pulling stuff from it.
     res.lock();
 
@@ -689,12 +686,27 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       return 0;
     }
     final ResTable res = am.getResources();
+    return loadResourceBagValueInternal(ident, bagEntryId, outValue, resolve, res);
+  }
 
+  public static String getResourceBagValue(int ident, int bagEntryId, ResTable resTable) {
+    TypedValue outValue = new TypedValue();
+    int blockId = ShadowArscAssetManager
+        .loadResourceBagValueInternal(ident, bagEntryId, outValue, true, resTable);
+    if (outValue.type == TypedValue.TYPE_STRING) {
+      return resTable.getTableStringBlock(blockId).stringAt(outValue.data);
+    } else {
+      return outValue.coerceToString().toString();
+    }
+  }
+
+  private static int loadResourceBagValueInternal(int ident, int bagEntryId, TypedValue outValue,
+      boolean resolve, ResTable res) {
     // Now lock down the resource object and start pulling stuff from it.
     res.lock();
 
     int block = -1;
-    Ref<org.robolectric.res.android.ResourceTypes.Res_value> valueRef = new Ref<>(null);
+    Ref<Res_value> valueRef = new Ref<>(null);
     Ref<bag_entry[]> entryRef = new Ref<>(null);
     Ref<Integer> typeSpecFlags = new Ref<>(0);
     int entryCount = res.getBagLocked(ident, entryRef, typeSpecFlags);
