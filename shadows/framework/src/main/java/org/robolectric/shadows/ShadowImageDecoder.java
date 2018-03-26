@@ -24,8 +24,8 @@ public class ShadowImageDecoder {
   public static ImageDecoder nCreate(long asset, ImageDecoder.Source source) {
     return ReflectionHelpers.callConstructor(ImageDecoder.class,
         ClassParameter.from(long.class, 1),
-        ClassParameter.from(int.class, 0),
-        ClassParameter.from(int.class, 0),
+        ClassParameter.from(int.class, 10),
+        ClassParameter.from(int.class, 10),
         ClassParameter.from(boolean.class, false));
   }
 
