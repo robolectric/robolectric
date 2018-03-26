@@ -28,6 +28,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
@@ -90,17 +91,22 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void equalityOfRobolectricFrameworkMethod() throws Exception {
+    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithTwoMethods.class);
     Method method = TestWithTwoMethods.class.getMethod("first");
-    RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
+    RobolectricFrameworkMethod rfm16 = runner.new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
-    RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method,
+    RobolectricFrameworkMethod rfm17 = runner.new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class));
-    RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method,
+    RobolectricFrameworkMethod rfm16b = runner.new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
+    RobolectricFrameworkMethod rfm16c = runner.new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
+        ResourcesMode.binary);
 
     assertThat(rfm16).isEqualTo(rfm16);
     assertThat(rfm16).isNotEqualTo(rfm17);
     assertThat(rfm16).isEqualTo(rfm16b);
+    assertThat(rfm16).isNotEqualTo(rfm16c);
 
     assertThat(rfm16.hashCode()).isEqualTo((rfm16b.hashCode()));
   }
