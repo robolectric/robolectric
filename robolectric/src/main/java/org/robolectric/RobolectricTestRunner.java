@@ -75,6 +75,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private final ConfigMerger configMerger;
   private ServiceLoader<ShadowProvider> providers;
   private transient DependencyResolver dependencyResolver;
+  private final ResourcesMode resourcesMode = ResourcesMode.getFromProperties();
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
@@ -252,7 +253,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     both;
 
     static final ResourcesMode DEFAULT = legacy;
-    static final ResourcesMode FROM_PROPERTIES = getFromProperties();
 
     private static ResourcesMode getFromProperties() {
       String resourcesMode = System.getProperty("robolectric.resourcesMode");
@@ -270,7 +270,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   protected List<FrameworkMethod> getChildren() {
-    ResourcesMode resourcesMode = ResourcesMode.FROM_PROPERTIES;
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
@@ -590,7 +589,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  static class RobolectricFrameworkMethod extends FrameworkMethod {
+  class RobolectricFrameworkMethod extends FrameworkMethod {
     private final @Nonnull AndroidManifest appManifest;
     final @Nonnull SdkConfig sdkConfig;
     final @Nonnull Config config;
@@ -622,7 +621,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       if (includeVariantMarkersInName) {
         buf.append("[").append(sdkConfig.getApiLevel()).append("]");
 
-        if (ResourcesMode.FROM_PROPERTIES == ResourcesMode.both) {
+        if (RobolectricTestRunner.this.resourcesMode == ResourcesMode.both) {
           buf.append("[").append(resourcesMode.name()).append("]");
         }
       }
