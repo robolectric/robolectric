@@ -4,6 +4,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.IInstrumentationWatcher;
@@ -31,17 +32,20 @@ import java.lang.reflect.Method;
 import java.security.Security;
 import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
@@ -55,18 +59,16 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
+@SuppressLint("NewApi")
 public class ParallelUniverse implements ParallelUniverseInterface {
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
 
   @Override
-
-  public void setUpApplicationState(Method method, AndroidManifest appManifest,
-      DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
-      ResourceTable appResourceTable,
-      ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile,
-      boolean legacyResources) {
+  public void setUpApplicationState(ApkLoader apkLoader, Method method,
+      Config config, AndroidManifest appManifest, boolean legacyResources,
+      SdkEnvironment sdkEnvironment) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -75,23 +77,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
-    RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
-    RuntimeEnvironment.setAppResourceTable(appResourceTable);
-    RuntimeEnvironment.setSystemResourceTable(systemResourceTable);
-    RuntimeEnvironment.compileTimeSystemResourcesFile = compileTimeSystemResourcesFile;
-    RuntimeEnvironment.setAndroidFrameworkJarPath(
-        jarResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
     RuntimeEnvironment.setUseLegacyResources(legacyResources);
 
     if (!loggingInitialized) {
       ShadowLog.setupLogging();
       loggingInitialized = true;
-    }
-
-    try {
-      appManifest.initMetaData(appResourceTable);
-    } catch (RoboNotFoundException e1) {
-      throw new Resources.NotFoundException(e1.getMessage());
     }
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -116,28 +106,28 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    PackageParser.Package parsedPackage = null;
+    PackageParser.Package parsedPackage;
+    if (legacyResources) {
+      injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
 
-    ApplicationInfo applicationInfo = null;
-    if (appManifest.getAndroidManifestFile() != null
-        && appManifest.getAndroidManifestFile().exists()) {
-      if (!legacyResources
-          || Boolean.parseBoolean(System.getProperty("use_framework_manifest_parser", "false"))) {
-        // FsFile packageFile = appManifest.getAndroidManifestFile();
-        // todo get elsewhere?
-        FsFile packageFile = appManifest.getApkFile();
-        if (packageFile == null) {
-          throw new IllegalStateException("no apk file!");
-        }
-        parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
-      } else {
+      if (appManifest.getAndroidManifestFile() != null
+          && appManifest.getAndroidManifestFile().exists()) {
         parsedPackage = LegacyManifestParser.createPackage(appManifest);
+
+      } else {
+        parsedPackage = new PackageParser.Package("org.robolectric.default");
+        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
       }
+
     } else {
-      parsedPackage = new PackageParser.Package("org.robolectric.default");
-      parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+      RuntimeEnvironment.setAndroidFrameworkJarPath(
+          apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
+
+      FsFile packageFile = appManifest.getApkFile();
+      parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
     }
-    applicationInfo = parsedPackage.applicationInfo;
+
+    ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
     // Support overriding the package name specified in the Manifest.
     if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
@@ -234,6 +224,29 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
         application.onCreate();
       });
+    }
+  }
+
+  private void injectResourceStuffForLegacy(ApkLoader apkLoader, AndroidManifest appManifest,
+      SdkEnvironment sdkEnvironment) {
+    PackageResourceTable systemResourceTable = apkLoader.getSystemResourceTable(sdkEnvironment);
+    PackageResourceTable appResourceTable = apkLoader.getAppResourceTable(appManifest);
+    RoutingResourceTable combinedAppResourceTable = new RoutingResourceTable(appResourceTable,
+        systemResourceTable);
+
+    PackageResourceTable compileTimeSdkResourceTable = apkLoader.getCompileTimeSdkResourceTable();
+    ResourceTable combinedCompileTimeResourceTable = new RoutingResourceTable(appResourceTable,
+        compileTimeSdkResourceTable);
+
+    RuntimeEnvironment.setCompileTimeResourceTable(combinedCompileTimeResourceTable);
+    RuntimeEnvironment.setAppResourceTable(combinedAppResourceTable);
+    RuntimeEnvironment.setSystemResourceTable(new RoutingResourceTable(systemResourceTable));
+    RuntimeEnvironment.compileTimeSystemResourcesFile = apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
+
+    try {
+      appManifest.initMetaData(combinedAppResourceTable);
+    } catch (RoboNotFoundException e1) {
+      throw new Resources.NotFoundException(e1.getMessage());
     }
   }
 

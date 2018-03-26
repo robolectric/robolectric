@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.R;
+import org.robolectric.ApkLoader;
 import org.robolectric.RoboSettings;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -30,12 +30,10 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.ResourceTableFactory;
-import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 import org.robolectric.shadows.ShadowLooper;
@@ -70,8 +68,6 @@ public class ParallelUniverseTest {
     ShadowDisplayManagerGlobal.reset();
     String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
 
-    ResourceTable sdkResourceProvider = new ResourceTableFactory().newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
-    final RoutingResourceTable routingResourceTable = new RoutingResourceTable(new ResourceTableFactory().newResourceTable("org.robolectric", new ResourcePath(R.class, null, null)));
     Method method = getDummyMethodForTest();
     URL url;
     try {
@@ -81,15 +77,14 @@ public class ParallelUniverseTest {
     }
 
     pu.setUpApplicationState(
-        method,
-        appManifest,
-        dependency -> url,
-        defaultConfig,
-        sdkResourceProvider,
-        routingResourceTable,
-        RuntimeEnvironment.getSystemResourceTable(),
-        null,
-        RuntimeEnvironment.useLegacyResources());
+        new ApkLoader(null) {
+          @Override
+          public URL getArtifactUrl(DependencyJar dependency) {
+            return url;
+          }
+        }, method,
+        defaultConfig, appManifest,
+        RuntimeEnvironment.useLegacyResources(), null);
   }
 
   private AndroidManifest dummyManifest() {

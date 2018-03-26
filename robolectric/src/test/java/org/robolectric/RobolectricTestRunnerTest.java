@@ -34,10 +34,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 
@@ -132,11 +129,9 @@ public class RobolectricTestRunnerTest {
   public static class MyParallelUniverse extends ParallelUniverse {
 
     @Override
-    public void setUpApplicationState(Method method, AndroidManifest appManifest,
-        DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
-        ResourceTable appResourceTable,
-        ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile,
-        boolean legacyResources) {
+    public void setUpApplicationState(ApkLoader apkLoader, Method method,
+        Config config, AndroidManifest appManifest,
+        boolean legacyResources, SdkEnvironment environment) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }
