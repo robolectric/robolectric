@@ -6,7 +6,7 @@ jobs:
       - image: circleci/android:api-26-alpha
     resource_class: xlarge
     environment:
-      JVM_OPTS: -Xmx3172m
+      JVM_OPTS: -Xmx4096m
       GRADLE_MAX_PARALLEL_FORKS: 2
     steps:
       - checkout
