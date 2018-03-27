@@ -458,7 +458,7 @@ def robolectric_maven_dependencies():
     
     native.maven_jar(
         name = "xmlpull_xmlpull",
-         artifact = "xmlpull:xmlpull:1.1.3.1",
+        artifact = "xmlpull:xmlpull:1.1.3.1",
         sha1 = "2b8e230d2ab644e4ecaa94db7cdedbc40c805dfa",
         repository = "http://central.maven.org/maven2/",
     )
