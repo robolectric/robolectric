@@ -16,10 +16,10 @@ import org.robolectric.res.ResourceTableFactory;
 
 public class ApkLoader {
 
-  private static final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
-  private static PackageResourceTable compiletimeSdkResourceTable;
+  private final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
+  private PackageResourceTable compiletimeSdkResourceTable;
 
-  private DependencyResolver dependencyResolver;
+  private final DependencyResolver dependencyResolver;
 
   protected ApkLoader(DependencyResolver dependencyResolver) {
     this.dependencyResolver = dependencyResolver;
@@ -29,26 +29,25 @@ public class ApkLoader {
     return sdkEnvironment.getSystemResourceTable(dependencyResolver);
   }
 
-  public PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
-    synchronized (appResourceTableCache) {
-      PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
-      if (resourceTable == null) {
-        resourceTable = new ResourceMerger().buildResourceTable(appManifest);
+  synchronized public PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
+    PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
+    if (resourceTable == null) {
+      resourceTable = new ResourceMerger().buildResourceTable(appManifest);
 
-        appResourceTableCache.put(appManifest, resourceTable);
-      }
-      return resourceTable;
+      appResourceTableCache.put(appManifest, resourceTable);
     }
+    return resourceTable;
   }
 
   /**
-   * Returns the ResourceProvider for the compile time SDK.
+   * Returns the ResourceTable for the compile time SDK.
    */
   @Nonnull
-  public PackageResourceTable getCompileTimeSdkResourceTable() {
+  synchronized public PackageResourceTable getCompileTimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
       ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
-      compiletimeSdkResourceTable = resourceTableFactory.newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
+      compiletimeSdkResourceTable = resourceTableFactory
+          .newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
   }

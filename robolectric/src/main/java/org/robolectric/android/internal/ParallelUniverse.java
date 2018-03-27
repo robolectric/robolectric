@@ -91,7 +91,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(),configuration, displayMetrics);
+    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
+        displayMetrics);
 
     Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
@@ -221,9 +222,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       initInstrumentation(activityThread, applicationInfo);
 
-      PerfStatsCollector.getInstance().measure("application onCreate()", () -> {
-        application.onCreate();
-      });
+      PerfStatsCollector.getInstance()
+          .measure("application onCreate()", () -> application.onCreate());
     }
   }
 
@@ -235,13 +235,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         systemResourceTable);
 
     PackageResourceTable compileTimeSdkResourceTable = apkLoader.getCompileTimeSdkResourceTable();
-    ResourceTable combinedCompileTimeResourceTable = new RoutingResourceTable(appResourceTable,
-        compileTimeSdkResourceTable);
+    ResourceTable combinedCompileTimeResourceTable =
+        new RoutingResourceTable(appResourceTable, compileTimeSdkResourceTable);
 
     RuntimeEnvironment.setCompileTimeResourceTable(combinedCompileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(combinedAppResourceTable);
     RuntimeEnvironment.setSystemResourceTable(new RoutingResourceTable(systemResourceTable));
-    RuntimeEnvironment.compileTimeSystemResourcesFile = apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
+    RuntimeEnvironment.compileTimeSystemResourcesFile =
+        apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
 
     try {
       appManifest.initMetaData(combinedAppResourceTable);

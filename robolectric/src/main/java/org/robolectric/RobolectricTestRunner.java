@@ -55,13 +55,12 @@ import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
- * Installs a {@link SandboxClassLoader} and {@link ResourceTable} in order to
+ * Loads and runs a test in a {@link SandboxClassLoader} in order to
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends SandboxTestRunner {
@@ -82,8 +81,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
-   * and res directory by default. Use the {@link Config} annotation to configure.
+   * Creates a runner to run {@code testClass}. Use the {@link Config} annotation to configure.
    *
    * @param testClass the test class to be run
    * @throws InitializationError if junit says so
@@ -204,35 +202,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link Config}.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
-   *
-   * @param config the merged configuration for the test that's about to run -- todo
-   * @return an {@link InstrumentationConfiguration}
-   * @deprecated Override {@link #createClassLoaderConfig(FrameworkMethod)} instead
-   */
-  @Deprecated
-  @Nonnull
-  public InstrumentationConfiguration createClassLoaderConfig(Config config) {
-    FrameworkMethod method = ((MethodPassThrough) config).method;
-    Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
-    AndroidConfigurer.configure(builder, getInterceptors());
-    AndroidConfigurer.withConfig(builder, config);
-    return builder.build();
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
-    return createClassLoaderConfig(new Config.Builder(((RobolectricFrameworkMethod) method).config) {
-      @Override
-      public Config.Implementation build() {
-        return new MethodPassThrough(method, sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
-      }
-    }.build());
+    Builder builder = new Builder(super.createClassLoaderConfig(method));
+    AndroidConfigurer.configure(builder, getInterceptors());
+    AndroidConfigurer.withConfig(builder, ((RobolectricFrameworkMethod) method).config);
+    return builder.build();
   }
 
   /**
@@ -302,16 +279,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return children;
   }
 
-  /**
-   * @deprecated Override {@link #shouldIgnore(FrameworkMethod)} instead.
-   */
-  @Deprecated
-  protected boolean shouldIgnore(FrameworkMethod method, Config config) {
-    return method.getAnnotation(Ignore.class) != null;
-  }
-
   @Override protected boolean shouldIgnore(FrameworkMethod method) {
-    return shouldIgnore(method, ((RobolectricFrameworkMethod) method).config);
+    return method.getAnnotation(Ignore.class) != null;
   }
 
   @Override
