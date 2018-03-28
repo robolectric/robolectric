@@ -2,6 +2,9 @@ package org.robolectric.internal;
 
 import com.google.common.annotations.VisibleForTesting;
 import edu.emory.mathcs.backport.java.util.Collections;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -20,6 +23,26 @@ public class PluginLoader<T extends Plugin> {
 
   public PluginLoader(Class<T> pluginInterface) {
     this.pluginInterface = pluginInterface;
+  }
+
+  public T getPlugin() {
+    return (T) Proxy.newProxyInstance(pluginInterface.getClassLoader(),
+        new Class<?>[]{pluginInterface},
+        (o, method, args) -> invoke(t -> invokeMethod(method, args, t)));
+  }
+
+  private Object invokeMethod(Method method, Object[] args, T t) throws UnsuitablePluginException {
+    try {
+      return method.invoke(t, args);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      if (e.getCause() instanceof UnsuitablePluginException) {
+        throw ((UnsuitablePluginException) e.getCause());
+      } else {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   public <R> R invoke(Function<? super T, R> o) throws UnsuitablePluginException {

@@ -74,11 +74,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   private final SdkPicker sdkPicker;
 
-  private transient final PluginLoader<ManifestFactory> manifestFactoryPluginLoader =
-      new PluginLoader<>(ManifestFactory.class);
+  private transient final ManifestFactory manifestFactory =
+      new PluginLoader<>(ManifestFactory.class).getPlugin();
 
-  private transient final PluginLoader<ConfigMerger> configMergerPluginLoader =
-      new PluginLoader<>(ConfigMerger.class);
+  private transient final ConfigMerger configMerger =
+      new PluginLoader<>(ConfigMerger.class).getPlugin();
+
   private ServiceLoader<ShadowProvider> providers;
   private transient DependencyResolver dependencyResolver;
 
@@ -424,19 +425,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Deprecated
   protected ManifestFactory getManifestFactory(Config config) {
-    ManifestIdentifier manifestIdentifier = manifestFactoryPluginLoader
-        .invoke(manifestFactory -> manifestFactory.identify(config));
-    return new ManifestFactory() {
-      @Override
-      public ManifestIdentifier identify(Config config) {
-        return manifestIdentifier;
-      }
-
-      @Override
-      public float getPriority() {
-        return 0;
-      }
-    };
+    return manifestFactory;
   }
 
   protected AndroidManifest getAppManifest(Config config) {
@@ -485,8 +474,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @since 2.0
    */
   public Config getConfig(Method method) {
-    return configMergerPluginLoader.invoke(configMerger ->
-        configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig()));
+    return configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig());
   }
 
   /**
