@@ -93,15 +93,18 @@ public class RobolectricTestRunnerTest {
   public void equalityOfRobolectricFrameworkMethod() throws Exception {
     RobolectricTestRunner runner = new RobolectricTestRunner(TestWithTwoMethods.class);
     Method method = TestWithTwoMethods.class.getMethod("first");
-    RobolectricFrameworkMethod rfm16 = runner.new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
-    RobolectricFrameworkMethod rfm17 = runner.new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class));
-    RobolectricFrameworkMethod rfm16b = runner.new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
-    RobolectricFrameworkMethod rfm16c = runner.new RobolectricFrameworkMethod(method,
+    RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.binary);
+        ResourcesMode.legacy, ResourcesMode.legacy);
+    RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class),
+        ResourcesMode.legacy, ResourcesMode.legacy);
+    RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
+        ResourcesMode.legacy, ResourcesMode.legacy);
+    RobolectricFrameworkMethod rfm16c = new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
+        ResourcesMode.binary, ResourcesMode.legacy);
 
     assertThat(rfm16).isEqualTo(rfm16);
     assertThat(rfm16).isNotEqualTo(rfm17);
@@ -179,6 +182,11 @@ public class RobolectricTestRunnerTest {
     @Override
     protected SdkPicker createSdkPicker() {
       return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), new Properties());
+    }
+
+    @Override
+    ResourcesMode getResourcesMode() {
+      return ResourcesMode.legacy;
     }
   }
 }

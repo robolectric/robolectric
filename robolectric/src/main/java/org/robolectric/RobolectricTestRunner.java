@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import android.app.Application;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -74,7 +73,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private final ConfigMerger configMerger;
   private ServiceLoader<ShadowProvider> providers;
   private transient DependencyResolver dependencyResolver;
-  private final ResourcesMode resourcesMode = ResourcesMode.getFromProperties();
+  private final ResourcesMode resourcesMode = getResourcesMode();
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
@@ -259,12 +258,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           if (resourcesMode.includeLegacy()) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
-                    sdkConfig, config, ResourcesMode.legacy));
+                    sdkConfig, config, ResourcesMode.legacy,
+                    RobolectricTestRunner.this.resourcesMode));
           }
           if (resourcesMode.includeBinary() && appManifest.getApkFile().exists()) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
-                    sdkConfig, config, ResourcesMode.binary));
+                    sdkConfig, config, ResourcesMode.binary,
+                    RobolectricTestRunner.this.resourcesMode));
           }
         }
         if (last != null) {
@@ -517,14 +518,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
   }
 
-  @SuppressWarnings(value = {"ImmutableAnnotationChecker", "BadAnnotationImplementation"})
-  private static class MethodPassThrough extends Config.Implementation {
-    private final FrameworkMethod method;
-
-    private MethodPassThrough(FrameworkMethod method, int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
-      super(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
-      this.method = method;
-    }
+  @VisibleForTesting
+  ResourcesMode getResourcesMode() {
+    return ResourcesMode.getFromProperties();
   }
 
   public static class HelperTestRunner extends SandboxTestRunner.HelperTestRunner {
@@ -558,7 +554,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  class RobolectricFrameworkMethod extends FrameworkMethod {
+  static class RobolectricFrameworkMethod extends FrameworkMethod {
     private final @Nonnull AndroidManifest appManifest;
     final @Nonnull SdkConfig sdkConfig;
     final @Nonnull Config config;
@@ -566,19 +562,17 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     private boolean includeVariantMarkersInName = true;
     TestLifecycle testLifecycle;
     ParallelUniverseInterface parallelUniverseInterface;
+    private ResourcesMode defaultResourcesMode;
 
     RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest,
-        @Nonnull SdkConfig sdkConfig, @Nonnull Config config) {
-      this(method, appManifest, sdkConfig, config, ResourcesMode.legacy);
-    }
-
-    RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest,
-        @Nonnull SdkConfig sdkConfig, @Nonnull Config config, ResourcesMode resourcesMode) {
+        @Nonnull SdkConfig sdkConfig, @Nonnull Config config, ResourcesMode resourcesMode,
+        ResourcesMode defaultResourcesMode) {
       super(method);
       this.appManifest = appManifest;
       this.sdkConfig = sdkConfig;
       this.config = config;
       this.resourcesMode = resourcesMode;
+      this.defaultResourcesMode = defaultResourcesMode;
     }
 
     @Override
@@ -590,7 +584,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       if (includeVariantMarkersInName) {
         buf.append("[").append(sdkConfig.getApiLevel()).append("]");
 
-        if (RobolectricTestRunner.this.resourcesMode == ResourcesMode.both) {
+        if (defaultResourcesMode == ResourcesMode.both) {
           buf.append("[").append(resourcesMode.name()).append("]");
         }
       }

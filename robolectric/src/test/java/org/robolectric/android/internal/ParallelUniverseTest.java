@@ -9,9 +9,6 @@ import android.app.Application;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Locale;
@@ -21,78 +18,36 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.ApkLoader;
+import org.robolectric.BootstrapDeferringRobolectricTestRunner;
+import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapper;
+import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
 import org.robolectric.RoboSettings;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 import org.robolectric.shadows.ShadowLooper;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(BootstrapDeferringRobolectricTestRunner.class)
 public class ParallelUniverseTest {
 
+  @RoboInject BootstrapWrapper bootstrapWrapper;
   private ParallelUniverse pu;
-
-  private static Config getDefaultConfig() {
-    return new Config.Builder().build();
-  }
 
   @Before
   public void setUp() throws InitializationError {
-    pu = new ParallelUniverse();
-    pu.setSdkConfig(new SdkConfig(RuntimeEnvironment.getApiLevel()));
-  }
-
-  public void dummyMethodForTest() {}
-
-  private static Method getDummyMethodForTest() {
-    try {
-      return ParallelUniverseTest.class.getMethod("dummyMethodForTest");
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void setUpApplicationState(Config defaultConfig, AndroidManifest appManifest) {
-    // this is kinda nasty but needed to prevent double initialization from ParallelUniverse and RTR:
-    ShadowDisplayManagerGlobal.reset();
-    String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
-
-    Method method = getDummyMethodForTest();
-    URL url;
-    try {
-      url = new URL("file:" + androidFrameworkJarPath);
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-
-    pu.setUpApplicationState(
-        new ApkLoader(null) {
-          @Override
-          public URL getArtifactUrl(DependencyJar dependency) {
-            return url;
-          }
-        }, method,
-        defaultConfig, appManifest,
-        RuntimeEnvironment.useLegacyResources(), null);
-  }
-
-  private AndroidManifest dummyManifest() {
-    return new AndroidManifest(null, null, null, "package");
+    pu = (ParallelUniverse) bootstrapWrapper.hooksInterface;
   }
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
+    bootstrapWrapper.callSetUpApplicationState();
+
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isNotNull()
         .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
@@ -103,7 +58,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
     RoboSettings.setUseGlobalScheduler(true);
     try {
-      setUpApplicationState(getDefaultConfig(), dummyManifest());
+      bootstrapWrapper.callSetUpApplicationState();
       final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
       assertThat(shadowApplication.getBackgroundThreadScheduler())
           .isSameAs(shadowApplication.getForegroundThreadScheduler())
@@ -115,7 +70,7 @@ public class ParallelUniverseTest {
 
   @Test
   public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
-    setUpApplicationState(getDefaultConfig(), dummyManifest());
+    bootstrapWrapper.callSetUpApplicationState();
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     assertThat(shadowApplication.getBackgroundThreadScheduler())
         .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
@@ -124,7 +79,8 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsMainThread() {
     RuntimeEnvironment.setMainThread(new Thread());
-    setUpApplicationState(getDefaultConfig(), dummyManifest());
+    assertThat(RuntimeEnvironment.isMainThread()).isFalse();
+    bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();
   }
 
@@ -133,7 +89,7 @@ public class ParallelUniverseTest {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
         new Thread(() -> {
-          setUpApplicationState(getDefaultConfig(), ParallelUniverseTest.this.dummyManifest());
+          bootstrapWrapper.callSetUpApplicationState();
           res.set(RuntimeEnvironment.isMainThread());
         });
     t.start();
@@ -151,16 +107,16 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";
-    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    setUpApplicationState(c, dummyManifest());
+    bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
+    bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
-    setUpApplicationState(c, dummyManifest());
+    bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
+    bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers())
         .contains("large-notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
   }
@@ -175,7 +131,8 @@ public class ParallelUniverseTest {
   @Test
   public void testResourceNotFound() {
     try {
-      setUpApplicationState(getDefaultConfig(), new ThrowingManifest());
+      bootstrapWrapper.appManifest = new ThrowingManifest();
+      bootstrapWrapper.callSetUpApplicationState();
       fail("Expected to throw");
     } catch (Resources.NotFoundException expected) {
       // expected
@@ -196,6 +153,7 @@ public class ParallelUniverseTest {
 
   @Test @Config(qualifiers = "b+fr+Cyrl+UK")
   public void localeIsSet() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
     assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
     assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
     assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
@@ -203,12 +161,14 @@ public class ParallelUniverseTest {
 
   @Test @Config(qualifiers = "w123dp-h456dp")
   public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("land");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp").contains("-land-");
   }
 
   @Test @Config(qualifiers = "w100dp-h125dp")
   public void whenDimensAndSizeSpecified_setQualifiers_should() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+xlarge");
     Configuration configuration = Resources.getSystem().getConfiguration();
     assertThat(configuration.screenWidthDp).isEqualTo(ScreenSize.xlarge.width);
@@ -218,6 +178,7 @@ public class ParallelUniverseTest {
 
   @Test @Config(qualifiers = "w123dp-h456dp")
   public void whenPrefixedWithPlus_setQualifiers_shouldBeBasedOnPreviousConfig() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+w124dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
   }
