@@ -255,13 +255,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
-          if (resourcesMode.includeLegacy()) {
+          if (resourcesMode.includeLegacy() && appManifest.supportsLegacyResourcesMode()) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
                     sdkConfig, config, ResourcesMode.legacy,
                     RobolectricTestRunner.this.resourcesMode));
           }
-          if (resourcesMode.includeBinary() && appManifest.getApkFile().exists()) {
+          if (resourcesMode.includeBinary() && appManifest.supportsBinaryResourcesMode()) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
                     sdkConfig, config, ResourcesMode.binary,
@@ -418,10 +418,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
+  /** @deprecated Do not override; provide your own {@link ManifestFactory} instead. */
+  @Deprecated
   protected AndroidManifest getAppManifest(Config config) {
     ManifestFactory manifestFactory = getManifestFactory(config);
     ManifestIdentifier identifier = manifestFactory.identify(config);
 
+    return cachedCreateAppManifest(identifier);
+  }
+
+  private AndroidManifest cachedCreateAppManifest(ManifestIdentifier identifier) {
     synchronized (appManifestsCache) {
       AndroidManifest appManifest;
       appManifest = appManifestsCache.get(identifier);

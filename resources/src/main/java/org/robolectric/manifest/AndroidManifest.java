@@ -797,4 +797,16 @@ public class AndroidManifest {
   public FsFile getApkFile() {
     return apkFile;
   }
+
+  /** @deprecated Do not use. */
+  @Deprecated
+  public boolean supportsLegacyResourcesMode() {
+    return true;
+  }
+
+  /** @deprecated Do not use. */
+  @Deprecated
+  public boolean supportsBinaryResourcesMode() {
+    return apkFile != null && apkFile.exists();
+  }
 }
