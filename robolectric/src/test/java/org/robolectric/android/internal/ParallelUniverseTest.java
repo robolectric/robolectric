@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -130,8 +131,11 @@ public class ParallelUniverseTest {
 
   @Test
   public void testResourceNotFound() {
+    // not relevant for binary resources mode
+    assumeTrue(bootstrapWrapper.legacyResources);
+
     try {
-      bootstrapWrapper.appManifest = new ThrowingManifest();
+      bootstrapWrapper.appManifest = new ThrowingManifest(bootstrapWrapper.appManifest);
       bootstrapWrapper.callSetUpApplicationState();
       fail("Expected to throw");
     } catch (Resources.NotFoundException expected) {
@@ -141,8 +145,14 @@ public class ParallelUniverseTest {
 
   /** Can't use Mockito for classloader issues */
   static class ThrowingManifest extends AndroidManifest {
-    public ThrowingManifest() {
-      super(null, null, null);
+    public ThrowingManifest(AndroidManifest androidManifest) {
+      super(
+          androidManifest.getAndroidManifestFile(),
+          androidManifest.getResDirectory(),
+          androidManifest.getAssetsDirectory(),
+          androidManifest.getLibraryManifests(),
+          null,
+          androidManifest.getApkFile());
     }
 
     @Override
