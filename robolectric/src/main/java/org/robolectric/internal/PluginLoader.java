@@ -26,7 +26,8 @@ public class PluginLoader<T extends Plugin> {
     List<T> services = findServices();
 
     if (services.isEmpty()) {
-      throw new UnsuitablePluginException("no suitable plugins found for " + pluginInterface.getName());
+      throw new UnsuitablePluginException(
+          "no suitable plugins found for " + pluginInterface.getName());
     }
 
     for (T service : services) {
@@ -37,7 +38,8 @@ public class PluginLoader<T extends Plugin> {
       }
     }
 
-    throw new UnsuitablePluginException("no suitable plugin found for " + pluginInterface.getName());
+    throw new UnsuitablePluginException(
+        "no suitable plugin found for " + pluginInterface.getName());
   }
 
   synchronized private List<T> findServices() {

@@ -1,11 +1,13 @@
 package org.robolectric.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.Plugin.UnsuitablePluginException;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Builder;
@@ -14,6 +16,13 @@ import org.robolectric.res.FileFsFile;
 
 @RunWith(JUnit4.class)
 public class DefaultManifestFactoryTest {
+
+  @Test
+  public void whenBuildSystemApiPropertiesFileIsNotPresent_shouldIndicateUnsuitable() throws Exception {
+    DefaultManifestFactory manifestFactory = new DefaultManifestFactory(null);
+    assertThatThrownBy(() -> manifestFactory.identify(Builder.defaults().build()))
+        .isInstanceOf(UnsuitablePluginException.class);
+  }
 
   @Test
   public void identify() {

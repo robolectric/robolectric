@@ -3,16 +3,19 @@ package org.robolectric;
 import android.app.Application;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterators;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
@@ -157,26 +160,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdkConfig().getApiLevel(), getInterceptors());
-  }
-
-  /**
-   * Create a {@link DefaultConfigMerger} for calculating the {@link Config} tests.
-   *
-   * Alternate implementations may be provided using a ServiceLoader.
-   *
-   * @return a {@link DefaultConfigMerger}
-   * @since 3.2
-   */
-  @Nonnull
-  private ConfigMerger createConfigMerger() {
-    ServiceLoader<ConfigMerger> serviceLoader = ServiceLoader.load(ConfigMerger.class);
-    ConfigMerger merger;
-    if (serviceLoader != null && serviceLoader.iterator().hasNext()) {
-      merger = Iterators.getOnlyElement(serviceLoader.iterator());
-    } else {
-      merger = new DefaultConfigMerger();
-    }
-    return merger;
   }
 
   /**
@@ -454,27 +437,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         return 0;
       }
     };
-  }
-
-  Properties getBuildSystemApiProperties() {
-    InputStream resourceAsStream = getClass().getResourceAsStream("/com/android/tools/test_config.properties");
-    if (resourceAsStream == null) {
-      return null;
-    }
-
-    try {
-      Properties properties = new Properties();
-      properties.load(resourceAsStream);
-      return properties;
-    } catch (IOException e) {
-      return null;
-    } finally {
-      try {
-        resourceAsStream.close();
-      } catch (IOException e) {
-        // ignore
-      }
-    }
   }
 
   protected AndroidManifest getAppManifest(Config config) {

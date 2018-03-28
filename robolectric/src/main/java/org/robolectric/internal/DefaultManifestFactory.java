@@ -102,7 +102,7 @@ public class DefaultManifestFactory implements ManifestFactory {
       try {
         resourceAsStream.close();
       } catch (IOException e) {
-        throw new RuntimeException("couldn't close test_config.properties", e);
+        // ignore
       }
     }
   }
