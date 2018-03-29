@@ -84,6 +84,11 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
+  public boolean isEmpty() {
+    return runnables.isEmpty();
+  }
+
+  @Override
   public long getScheduledTimeOfNextTask() {
     if (size() < 1) {
       return -1;

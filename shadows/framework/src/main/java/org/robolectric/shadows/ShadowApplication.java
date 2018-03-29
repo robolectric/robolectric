@@ -51,6 +51,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.TaskManagerImpl;
 
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
@@ -64,7 +65,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<Wrapper> registeredReceivers = new ArrayList<>();
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
   private Handler mainHandler;
-  private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
+  private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler(new TaskManagerImpl());
   private List<android.widget.Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;

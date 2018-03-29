@@ -1,7 +1,7 @@
 package org.robolectric.util;
 
 
-interface TaskManager {
+public interface TaskManager {
 
   void post(Runnable runnable, long time);
 
@@ -14,6 +14,8 @@ interface TaskManager {
   void removeAll();
 
   int size();
+
+  boolean isEmpty();
 
   long getScheduledTimeOfNextTask();
 

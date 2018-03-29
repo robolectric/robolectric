@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Scheduler {
 
-  private TaskManager taskManager;
-
   /**
    * Describes the current state of a {@link Scheduler}.
    */
@@ -55,18 +53,9 @@ public class Scheduler {
   private AtomicBoolean isExecutingRunnable = new AtomicBoolean(false);
   private final Thread associatedThread = Thread.currentThread();
   private volatile IdleState idleState = UNPAUSED;
+  private final TaskManager taskManager;
 
-  /**
-   * Retrieves the current idling state of this <tt>Scheduler</tt>.
-   * @return The current idle state of this <tt>Scheduler</tt>.
-   * @see #setIdleState(IdleState)
-   * @see #isPaused()
-   */
-  public IdleState getIdleState() {
-    return idleState;
-  }
-
-  public void register(TaskManager taskManager) {
+  public Scheduler(TaskManager taskManager) {
     this.taskManager = taskManager;
     taskManager.addListener(new TaskManager.Listener() {
       @Override
@@ -86,6 +75,16 @@ public class Scheduler {
         }
       }
     });
+  }
+
+  /**
+   * Retrieves the current idling state of this <tt>Scheduler</tt>.
+   * @return The current idle state of this <tt>Scheduler</tt>.
+   * @see #setIdleState(IdleState)
+   * @see #isPaused()
+   */
+  public IdleState getIdleState() {
+    return idleState;
   }
 
   /**
@@ -263,7 +262,7 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public boolean advanceTo(long endTime) {
-    if (endTime - currentTime < 0 || size() < 1) {
+    if (endTime - currentTime < 0 || taskManager.isEmpty()) {
       currentTime = endTime;
       return false;
     }
@@ -334,6 +333,6 @@ public class Scheduler {
   }
 
   private boolean nextTaskIsScheduledBefore(long endingTime) {
-    return size() > 0 && taskManager.getScheduledTimeOfNextTask() <= endingTime;
+    return !taskManager.isEmpty() && taskManager.getScheduledTimeOfNextTask() <= endingTime;
   }
 }

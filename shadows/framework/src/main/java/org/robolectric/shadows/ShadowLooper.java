@@ -5,8 +5,11 @@ import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.MessageQueue;
+import android.util.Pair;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -19,6 +22,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.TaskManager;
+import org.robolectric.util.TaskManagerImpl;
 
 /**
  * Robolectric enqueues posted {@link Runnable}s to be run
@@ -330,7 +335,7 @@ public class ShadowLooper {
     if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
       shadowMessageQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
     } else {
-      shadowMessageQueue.setScheduler(new Scheduler());
+      shadowMessageQueue.setScheduler(new Scheduler(new TaskManagerImpl()));
     }
   }
 
@@ -369,5 +374,78 @@ public class ShadowLooper {
 
   private static ShadowMessageQueue shadowOf(MessageQueue mq) {
     return Shadow.extract(mq);
+  }
+
+  private TaskManager taskManager;
+
+  /**
+   * Robolectric internal - do not call
+   */
+  public synchronized TaskManager getTaskManager() {
+    if (taskManager == null) {
+      taskManager = new LooperTaskManager();
+    }
+    return taskManager;
+  }
+
+  // Implementation of Scheduler's TaskManager
+  // does as an inner class to hide these methods from public API
+  private class LooperTaskManager implements TaskManager {
+    private Handler handler = new Handler(realObject);
+    private ShadowMessageQueue shadowMessageQueue = shadowOf(realObject.getQueue());
+
+    @Override
+    public void post(Runnable runnable, long delayMillis) {
+      handler.postDelayed(runnable, delayMillis);
+    }
+
+    @Override
+    public void postAtFrontOfQueue(Runnable runnable) {
+      handler.postAtFrontOfQueue(runnable);
+    }
+
+    @Override
+    public void remove(Runnable runnable) {
+      handler.removeCallbacks(runnable);
+    }
+
+    @Override
+    public long runNextTask() {
+      Message message = shadowMessageQueue.getNextMessage();
+      if (message != null) {
+        message.getTarget().dispatchMessage(message);
+        return message.getWhen();
+      }
+      return -1;
+    }
+
+    @Override
+    public void removeAll() {
+      shadowMessageQueue.removeAll();
+    }
+
+    @Override
+    public int size() {
+      return shadowMessageQueue.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return shadowMessageQueue.peekNextMessage() == null;
+    }
+
+    @Override
+    public long getScheduledTimeOfNextTask() {
+      Message message = shadowMessageQueue.peekNextMessage();
+      if (message != null) {
+        return message.getWhen();
+      }
+      return -1;
+    }
+
+    @Override
+    public void addListener(Listener listener) {
+      shadowMessageQueue.addListener(listener);
+    }
   }
 }

@@ -13,13 +13,18 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.MessageQueue;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.TaskManager.Listener;
 
 /**
  * Robolectric puts {@link android.os.Message}s into the scheduler queue instead of sending
@@ -35,6 +40,7 @@ public class ShadowMessageQueue {
   private MessageQueue realQueue;
 
   private Scheduler scheduler;
+  private final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
   // Stub out the native peer - scheduling
   // is handled by the Scheduler class which is user-driven
@@ -66,10 +72,18 @@ public class ShadowMessageQueue {
     return false;
   }
 
+  /**
+   * @deprecated use ShadowApplication.get*Scheduler methods instead. Will be removed in a future Robolectric release
+   */
+  @Deprecated
   public Scheduler getScheduler() {
     return scheduler;
   }
 
+  /**
+   * @deprecated effectively unused. will be removed in a future Robolectric release
+   */
+  @Deprecated
   public void setScheduler(Scheduler scheduler) {
     this.scheduler = scheduler;
   }
@@ -78,6 +92,10 @@ public class ShadowMessageQueue {
     return getField(realQueue, "mMessages");
   }
 
+  /**
+   * @depecated will be removed in a future Robolectric release
+   */
+  @Deprecated
   public void setHead(Message msg) {
     setField(realQueue, "mMessages", msg);
   }
@@ -93,73 +111,90 @@ public class ShadowMessageQueue {
   public boolean enqueueMessage(final Message msg, long when) {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {
-      final Runnable callback = new Runnable() {
-        @Override
-        public void run() {
-          synchronized (realQueue) {
-            Message m = getHead();
-            if (m == null) {
-              return;
-            }
-
-            Message n = shadowOf(m).getNext();
-            if (m == msg) {
-              setHead(n);
-            } else {
-              while (n != null) {
-                if (n == msg) {
-                  n = shadowOf(n).getNext();
-                  shadowOf(m).setNext(n);
-                  break;
-                }
-                m = n;
-                n = shadowOf(m).getNext();
-              }
-            }
-          }
-          dispatchMessage(msg);
-        }
-      };
-      shadowOf(msg).setScheduledRunnable(callback);
-      if (when == 0) {
-        scheduler.postAtFrontOfQueue(callback);
-      } else {
-        scheduler.postDelayed(callback, when - scheduler.getCurrentTime());
-      }
+      notifyListeners();
     }
     return retval;
   }
 
-  private static void dispatchMessage(Message msg) {
-    final Handler target = msg.getTarget();
+  private static ShadowMessage shadowOf(Message actual) {
+    return (ShadowMessage) Shadow.extract(actual);
+  }
 
-    shadowOf(msg).setNext(null);
-    // If target is null it means the message has been removed
-    // from the queue prior to being dispatched by the scheduler.
-    if (target != null) {
-      callInstanceMethod(msg, "markInUse");
-      target.dispatchMessage(msg);
+  void addListener(Listener listener) {
+    listeners.add(listener);
+  }
 
-      if (getApiLevel() >= LOLLIPOP) {
-        callInstanceMethod(msg, "recycleUnchecked");
+  private void notifyListeners() {
+    for (Listener listener : listeners) {
+      listener.newTaskPosted();
+    }
+  }
+
+  Message peekNextMessage() {
+    synchronized (realQueue) {
+      Message msg = getHead();
+      if (msg != null && msg.getTarget() == null) {
+        // Stalled by a barrier.  Find the next asynchronous message in the queue.
+        do {
+          msg = shadowOf(msg).getNext();
+        } while (msg != null && !msg.isAsynchronous());
+      }
+      return msg;
+    }
+  }
+
+  Message getNextMessage() {
+    synchronized (realQueue) {
+      Message prevMsg = null;
+      Message msg = getHead();
+      if (msg != null && msg.getTarget() == null) {
+        // Stalled by a barrier.  Find the next asynchronous message in the queue.
+        do {
+          prevMsg = msg;
+          msg = shadowOf(msg).getNext();
+        } while (msg != null && !msg.isAsynchronous());
+      }
+      if (msg != null) {
+        // got a message, adjust queue
+        if (prevMsg != null) {
+          shadowOf(prevMsg).setNext(shadowOf(msg).getNext());
+        } else {
+          setHead(shadowOf(msg).getNext());
+        }
+        shadowOf(msg).setNext(null);
+        shadowOf(msg).setMarkInUse();
+      }
+      return msg;
+    }
+  }
+
+  void removeAll() {
+    synchronized (realQueue) {
+      if (RuntimeEnvironment.getApiLevel() > 17) {
+        ReflectionHelpers.callInstanceMethod(realQueue, "removeAllMessagesLocked");
       } else {
-        callInstanceMethod(msg, "recycle");
+        Message msg = getHead();
+        while (msg != null) {
+          Message next = shadowOf(msg).getNext();
+          msg.recycle();
+          msg = next;
+        }
       }
     }
   }
 
-  // @Implementation
-  // @HiddenApi
-  // protected void removeSyncBarrier(int token) {
-  //   // TODO(b/74402484): workaround scheduler corruption of message queue
-  //   try {
-  //     directlyOn(realQueue, MessageQueue.class, "removeSyncBarrier", from(int.class, token));
-  //   } catch (IllegalStateException e) {
-  //     Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
-  //   }
-  // }
-
-  private static ShadowMessage shadowOf(Message actual) {
-    return (ShadowMessage) Shadow.extract(actual);
+  int size() {
+    synchronized (realQueue) {
+      int count = 0;
+      Message msg = getHead();
+      while (msg != null) {
+        // ignore sync barriers
+        if (msg.getTarget() != null) {
+          count++;
+        }
+        msg = shadowOf(msg).getNext();
+      }
+      return count;
+    }
   }
 }

@@ -19,6 +19,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Message.class)
 public class ShadowMessage {
@@ -140,5 +141,9 @@ public class ShadowMessage {
 
   private static ShadowMessageQueue shadowOf(MessageQueue mq) {
     return Shadow.extract(mq);
+  }
+
+  void setMarkInUse() {
+    ReflectionHelpers.callInstanceMethod(realMessage, "markInUse");
   }
 }

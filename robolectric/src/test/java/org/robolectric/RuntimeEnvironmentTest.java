@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.TaskManagerImpl;
 
 @RunWith(JUnit4.class)
 public class RuntimeEnvironmentTest {
@@ -75,7 +76,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void getSetMasterScheduler() {
-    Scheduler s = new Scheduler();
+    Scheduler s = new Scheduler(new TaskManagerImpl());
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(RuntimeEnvironment.getMasterScheduler()).isSameAs(s);
   }

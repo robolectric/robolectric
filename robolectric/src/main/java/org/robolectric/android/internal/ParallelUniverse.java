@@ -73,7 +73,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
-    RuntimeEnvironment.setMasterScheduler(new Scheduler());
+
     RuntimeEnvironment.setMainThread(Thread.currentThread());
 
     RuntimeEnvironment.setCompileTimeResourceTable(compileTimeResourceTable);
@@ -113,6 +113,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
+    RuntimeEnvironment.setMasterScheduler(new Scheduler(ShadowLooper.getShadowMainLooper().getTaskManager()));
     ShadowLooper.getShadowMainLooper().resetScheduler();
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);

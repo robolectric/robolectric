@@ -80,7 +80,7 @@ public class ShadowHandlerTest {
     Looper looper2 = newLooper(true);
     ShadowLooper.pauseLooper(looper2);
     // Make sure looper has a different scheduler to the first
-    shadowOf(looper2.getQueue()).setScheduler(new Scheduler());
+    //shadowOf(looper2.getQueue()).setScheduler(new Scheduler(shadowOf(looper2).getTaskManager()));
 
     Handler handler1 = new Handler(looper1);
     handler1.post(new Say("first thing"));

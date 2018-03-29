@@ -246,7 +246,7 @@ public class ShadowLooperTest {
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
     shadowOf(mainLooper).quit = true;
     assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
-    Scheduler s = new Scheduler();
+    Scheduler s = new Scheduler(shadowOf(mainLooper).getTaskManager());
     RuntimeEnvironment.setMasterScheduler(s);
     ShadowLooper.resetThreadLoopers();
     Application application = new Application();
@@ -271,7 +271,7 @@ public class ShadowLooperTest {
   @Test
   public void reset_setsGlobalScheduler_forMainLooper_byDefault() {
     ShadowLooper sMainLooper = ShadowLooper.getShadowMainLooper();
-    Scheduler s = new Scheduler();
+    Scheduler s = new Scheduler(sMainLooper.getTaskManager());
     RuntimeEnvironment.setMasterScheduler(s);
     sMainLooper.reset();
     assertThat(sMainLooper.getScheduler()).isSameAs(s);
@@ -281,7 +281,7 @@ public class ShadowLooperTest {
   public void reset_setsGlobalScheduler_forMainLooper_withAdvancedScheduling() {
     setAdvancedScheduling();
     ShadowLooper sMainLooper = ShadowLooper.getShadowMainLooper();
-    Scheduler s = new Scheduler();
+    Scheduler s = new Scheduler(sMainLooper.getTaskManager());
     RuntimeEnvironment.setMasterScheduler(s);
     sMainLooper.reset();
     assertThat(sMainLooper.getScheduler()).isSameAs(s);
@@ -302,7 +302,7 @@ public class ShadowLooperTest {
   public void reset_setsSchedulerToMaster_forNonMainLooper_withAdvancedScheduling() {
     HandlerThread ht = getHandlerThread();
     ShadowLooper sLooper = shadowOf(ht.getLooper());
-    Scheduler s = new Scheduler();
+    Scheduler s = new Scheduler(sLooper.getTaskManager());
     RuntimeEnvironment.setMasterScheduler(s);
     setAdvancedScheduling();
     sLooper.reset();

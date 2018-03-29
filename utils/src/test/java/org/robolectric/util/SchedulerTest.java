@@ -16,14 +16,13 @@ import org.robolectric.util.Scheduler.IdleState;
 
 @RunWith(JUnit4.class)
 public class SchedulerTest {
-  private final Scheduler scheduler = new Scheduler();
+  private final Scheduler scheduler = new Scheduler(new TaskManagerImpl());
   private final List<String> transcript = new ArrayList<>();
 
   private long startTime;
   
   @Before
   public void setUp() throws Exception {
-    scheduler.register(new TaskManagerImpl());
     scheduler.pause();
     startTime = scheduler.getCurrentTime();
   }
