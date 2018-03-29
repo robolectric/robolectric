@@ -91,7 +91,6 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void equalityOfRobolectricFrameworkMethod() throws Exception {
-    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithTwoMethods.class);
     Method method = TestWithTwoMethods.class.getMethod("first");
     RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),

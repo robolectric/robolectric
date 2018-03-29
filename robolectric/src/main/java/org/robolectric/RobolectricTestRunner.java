@@ -235,21 +235,27 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   enum ResourcesMode {
     legacy,
     binary,
+    best,
     both;
 
-    static final ResourcesMode DEFAULT = legacy;
+    static final ResourcesMode DEFAULT = best;
 
     private static ResourcesMode getFromProperties() {
       String resourcesMode = System.getProperty("robolectric.resourcesMode");
       return resourcesMode == null ? DEFAULT : valueOf(resourcesMode);
     }
 
-    public boolean includeLegacy() {
-      return this == legacy || this == both;
+    boolean includeLegacy(AndroidManifest appManifest) {
+      return appManifest.supportsLegacyResourcesMode()
+          &&
+          (this == legacy
+              || (this == best && !appManifest.supportsBinaryResourcesMode())
+              || this == both);
     }
 
-    public boolean includeBinary() {
-      return this == binary || this == both;
+    boolean includeBinary(AndroidManifest appManifest) {
+      return appManifest.supportsBinaryResourcesMode()
+          && (this == binary || this == best || this == both);
     }
   }
 
@@ -264,13 +270,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
-          if (resourcesMode.includeLegacy() && appManifest.supportsLegacyResourcesMode()) {
+          if (resourcesMode.includeLegacy(appManifest)) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
                     sdkConfig, config, ResourcesMode.legacy,
                     RobolectricTestRunner.this.resourcesMode));
           }
-          if (resourcesMode.includeBinary() && appManifest.supportsBinaryResourcesMode()) {
+          if (resourcesMode.includeBinary(appManifest)) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
                     sdkConfig, config, ResourcesMode.binary,
