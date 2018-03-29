@@ -121,6 +121,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
 
     } else {
+      RuntimeEnvironment.compileTimeSystemResourcesFile =
+          apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
+
       RuntimeEnvironment.setAndroidFrameworkJarPath(
           apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
 
@@ -241,8 +244,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setCompileTimeResourceTable(combinedCompileTimeResourceTable);
     RuntimeEnvironment.setAppResourceTable(combinedAppResourceTable);
     RuntimeEnvironment.setSystemResourceTable(new RoutingResourceTable(systemResourceTable));
-    RuntimeEnvironment.compileTimeSystemResourcesFile =
-        apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
 
     try {
       appManifest.initMetaData(combinedAppResourceTable);

@@ -780,7 +780,9 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
     final ResTable res = theme.getResTable();
-    ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
+    ResXMLParser xmlParser = xmlParserToken == 0
+        ? null
+        : ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
     Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     Ref<Res_value> value = new Ref<>(new Res_value());
 
@@ -1419,7 +1421,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     int destOffset = 0;
     final Ref<Integer> typeSetFlags = new Ref<>(0);
-    while (destOffset < NV /*&& arrayEnt < endArrayEnt*/) {
+    while (destOffset < NV && destOffset < bagOff * STYLE_NUM_ENTRIES /*&& arrayEnt < endArrayEnt*/) {
       bag_entry curArrayEnt = arrayEnt.get()[destOffset / STYLE_NUM_ENTRIES];
 
       block = curArrayEnt.stringBlock;
