@@ -201,7 +201,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * {@inheritDoc}
+   * Create an {@link InstrumentationConfiguration} suitable for the provided
+   * {@link FrameworkMethod}.
+   *
+   * Adds configuration for Android using {@link AndroidConfigurer}.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide additional
+   * configuration.
+   *
+   * @param method the test method that's about to run
+   * @return an {@link InstrumentationConfiguration}
    */
   @Override @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
