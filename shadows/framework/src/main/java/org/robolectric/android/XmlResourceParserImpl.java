@@ -755,7 +755,12 @@ public class XmlResourceParserImpl implements XmlResourceParser {
       return 0;
     }
 
-    return getResourceId(attr, packageName, "style");
+    int style = getResourceId(attr, packageName, "style");
+    if (style == 0) {
+      // try again with underscores...
+      style = getResourceId(attr.replace('.', '_'), packageName, "style");
+    }
+    return style;
   }
 
   @Override

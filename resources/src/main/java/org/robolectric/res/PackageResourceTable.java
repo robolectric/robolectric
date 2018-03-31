@@ -141,7 +141,7 @@ public class PackageResourceTable implements ResourceTable {
     return "android".equals(resName.packageName);
   }
 
-  private String underscorize(String s) {
+  private static String underscorize(String s) {
     return s == null ? null : s.replace('.', '_');
   }
 }
