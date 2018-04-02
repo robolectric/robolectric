@@ -37,6 +37,14 @@ public class PackageResourceTable implements ResourceTable {
   @Override
   public Integer getResourceId(ResName resName) {
     Integer id = resourceTable.inverse().get(resName);
+    if (id == null && resName.name.contains(".")) {
+      // try again with underscores (in case we're looking in the compile-time resources, where
+      // we haven't read XML declarations and only know what the R.class tells us).
+      id =
+          resourceTable
+              .inverse()
+              .get(new ResName(resName.packageName, resName.type, underscorize(resName.name)));
+    }
     return id != null ? id : 0;
   }
 
