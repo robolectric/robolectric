@@ -1,5 +1,7 @@
 package org.robolectric.internal.bytecode;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implements.DefaultShadowFactory;

@@ -219,6 +219,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return directlyOn(realObject, AssetManager.class).openXmlResourceParser(cookie, fileName);
   }
 
+
   @Override @HiddenApi @Implementation
   public int addAssetPath(String path) {
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
@@ -1829,6 +1830,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
     return am.getResources().getTableCount();
   }
+
 
   synchronized private CppAssetManager assetManagerForJavaObject() {
     if (cppAssetManager == null) {

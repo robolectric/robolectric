@@ -33,6 +33,9 @@ public class ShadowAsyncTaskBridge<Params, Progress, Result> {
   }
 
   public void onCancelled() {
-    ReflectionHelpers.callInstanceMethod(asyncTask, "onCancelled");
+    // Assume the result is null since the result cannot be retrieved from the FutureTask if it is
+    // cancelled.
+    ReflectionHelpers.callInstanceMethod(
+        asyncTask, "onCancelled", ClassParameter.from(Object.class, null));
   }
 }

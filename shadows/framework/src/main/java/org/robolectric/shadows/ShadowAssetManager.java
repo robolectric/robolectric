@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
@@ -27,7 +28,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadow.api.ShadowFactory;
 import org.robolectric.shadows.ShadowAssetManager.Factory;
 
-@Implements(value = AssetManager.class, factory = Factory.class)
+@Implements(value = AssetManager.class, looseSignatures = true, factory = Factory.class)
 public abstract class ShadowAssetManager {
   static final int STYLE_NUM_ENTRIES = 6;
   static final int STYLE_TYPE = 0;
@@ -71,10 +72,11 @@ public abstract class ShadowAssetManager {
   @Implementation
   abstract protected void __constructor__(boolean isSystem);
 
+
   @HiddenApi @Implementation(maxSdk = VERSION_CODES.KITKAT)
   abstract protected void init();
 
- @HiddenApi @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
   abstract protected void init(boolean isSystem);
 
   @HiddenApi @Implementation
@@ -195,9 +197,9 @@ public abstract class ShadowAssetManager {
     destroyAsset((long) asset);
   }
 
+
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   abstract protected void destroyAsset(long asset);
-
 
   @HiddenApi @Implementation
   abstract public int addAssetPath(String path);
@@ -244,6 +246,7 @@ public abstract class ShadowAssetManager {
 
   @HiddenApi @Implementation
   abstract protected String[] getArrayStringResource(int arrayResId);
+
 
   @HiddenApi @Implementation
   abstract protected int[] getArrayStringInfo(int arrayResId);
@@ -292,6 +295,7 @@ public abstract class ShadowAssetManager {
     }
   }
 
+
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
     copyTheme((long) destPtr, (long) sourcePtr);
@@ -305,6 +309,7 @@ public abstract class ShadowAssetManager {
       ShadowArscAssetManager.copyTheme(destPtr, sourcePtr);
     }
   }
+
 
   @HiddenApi @Implementation(maxSdk = VERSION_CODES.LOLLIPOP)
   protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,

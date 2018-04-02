@@ -65,6 +65,7 @@ import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.TempDirectory;
 
 /** Creates a {@link PackageInfo} from a {@link AndroidManifest} */
 public class LegacyManifestParser {
