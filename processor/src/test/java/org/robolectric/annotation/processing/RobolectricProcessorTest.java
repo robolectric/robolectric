@@ -278,7 +278,6 @@ public class RobolectricProcessorTest {
             new JsonPrimitive("org.robolectric.Robolectric"),
             new JsonPrimitive("org.robolectric.annotation.Implementation"),
             new JsonPrimitive("org.robolectric.annotation.Implements"),
-            new JsonPrimitive("org.robolectric.annotation.Resetter"),
             new JsonPrimitive("java.util.Map"),
             new JsonPrimitive("org.robolectric.annotation.processing.shadows.DocumentedObjectShadow.SomeEnum")
         );

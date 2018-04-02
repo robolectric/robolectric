@@ -10,6 +10,7 @@ import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
 import android.os.Build.VERSION;
+import android.os.PersistableBundle;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
@@ -32,9 +33,9 @@ public class ShadowTelephonyManager {
 
   private String deviceId;
   private String groupIdLevel1;
-  private String networkOperatorName;
+  private String networkOperatorName = "";
   private String networkCountryIso;
-  private String networkOperator;
+  private String networkOperator = "";
   private String simOperator;
   private String simOperatorName;
   private boolean readPhoneStatePermission = true;
@@ -47,6 +48,7 @@ public class ShadowTelephonyManager {
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
   private String incomingPhoneNumber = null;
+  private boolean isSmsCapable = true;
 
   @Implementation
   public void listen(PhoneStateListener listener, int flags) {
@@ -282,5 +284,24 @@ public class ShadowTelephonyManager {
             return (phoneStateRegistrations.get(input) & flags) != 0;
           }
         });
+  }
+
+  /**
+   * @return `true` by default, or the value specified via {@link #setIsSmsCapable(boolean)}
+   */
+  @Implementation
+  protected boolean isSmsCapable() {
+    return isSmsCapable;
+  }
+
+  /** Sets the value returned by {@link TelephonyManager#isSmsCapable()}. */
+  public void setIsSmsCapable(boolean isSmsCapable) {
+    this.isSmsCapable = isSmsCapable;
+  }
+
+  @Implementation
+  protected PersistableBundle getCarrierConfig() {
+    // Avoid NPE - no testing APIS yet.
+    return new PersistableBundle();
   }
 }

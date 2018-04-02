@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.view.InputDevice;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -12,7 +11,8 @@ public class ShadowInputDevice {
 
   public static InputDevice makeInputDeviceNamed(String deviceName) {
     InputDevice inputDevice = Shadow.newInstanceOf(InputDevice.class);
-    Shadows.shadowOf(inputDevice).setDeviceName(deviceName);
+    ShadowInputDevice shadowInputDevice = Shadow.extract(inputDevice);
+    shadowInputDevice.setDeviceName(deviceName);
     return inputDevice;
   }
 

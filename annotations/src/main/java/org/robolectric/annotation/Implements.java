@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.robolectric.shadow.api.ShadowFactory;
 
 /**
  * Indicates that a class declaration is intended to shadow an Android class declaration.
@@ -47,10 +48,17 @@ public @interface Implements {
   boolean callThroughByDefault() default true;
 
   /**
-   * If true, Robolectric will invoke @Implementation methods from superclasses.
+   * If true, Robolectric will invoke `@Implementation` methods from superclasses regardless of
+   * what class the superclass `@Implement`s.
+   *
+   * This is inadvisable because Robolectric might pick an @Implementation method that's intended
+   * to implement a different class (e.g. an overridden method with the same signature from a
+   * superclass) than the one requested.
    *
    * @return True to invoke superclass methods.
+   * @deprecated Declare methods directly in your shadow class rather than relying on inheritance.
    */
+  @Deprecated
   boolean inheritImplementationMethods() default false;
 
   /**
@@ -70,4 +78,9 @@ public @interface Implements {
    * If specified, the shadow class will be applied only for this SDK or lesser.
    */
   int maxSdk() default -1;
+
+  Class<? extends ShadowFactory<?>> factory() default DefaultShadowFactory.class;
+
+  interface DefaultShadowFactory extends ShadowFactory<Void> {
+  }
 }

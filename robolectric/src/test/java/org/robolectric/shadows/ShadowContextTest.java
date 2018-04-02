@@ -172,7 +172,7 @@ public class ShadowContextTest {
   public void openFileOutput_shouldReturnAFileOutputStream() throws Exception {
     File file = new File("__test__");
     String fileContents = "blah";
-    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", -1)) {
+    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_PRIVATE)) {
       fileOutputStream.write(fileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {
@@ -263,18 +263,5 @@ public class ShadowContextTest {
     TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
-  }
-
-  @Test
-  public void whenStyleParentIsReference_obtainStyledAttributes_shouldResolveParent() throws Exception {
-    RuntimeEnvironment.application.setTheme(R.style.Theme_ThemeReferredToByParentAttrReference);
-
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@style/Theme.ThemeWithAttrReferenceAsParent")
-        .build();
-
-    TypedArray a = context.obtainStyledAttributes(roboAttributeSet, new int[] { R.attr.string1, R.attr.string2 });
-    assertThat(a.getString(0)).isEqualTo("string 1 from Theme.ThemeWithAttrReferenceAsParent");
-    assertThat(a.getString(1)).isEqualTo("string 2 from StyleReferredToByParentAttrReference");
   }
 }

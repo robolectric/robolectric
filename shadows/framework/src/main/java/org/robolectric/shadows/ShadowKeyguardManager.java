@@ -10,35 +10,36 @@ import android.app.KeyguardManager.KeyguardDismissCallback;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
   @RealObject private KeyguardManager realKeyguardManager;
 
-  private KeyguardManager.KeyguardLock keyguardLock =
+  private static KeyguardManager.KeyguardLock keyguardLock =
       Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
 
-  private boolean inRestrictedInputMode;
-  private boolean isKeyguardLocked;
-  private boolean isDeviceLocked;
-  private boolean isKeyguardSecure;
-  private boolean isDeviceSecure;
-  private KeyguardManager.KeyguardDismissCallback callback;
+  private static boolean inRestrictedInputMode;
+  private static boolean isKeyguardLocked;
+  private static boolean isDeviceLocked;
+  private static boolean isKeyguardSecure;
+  private static boolean isDeviceSecure;
+  private static KeyguardManager.KeyguardDismissCallback callback;
 
   /**
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
    * default.
    *
-   * @see #setinRestrictedInputMode(boolean)
+   * @see #setInRestrictedInputMode(boolean)
    */
   @Implementation
-  public boolean inKeyguardRestrictedInputMode() {
+  protected boolean inKeyguardRestrictedInputMode() {
     return inRestrictedInputMode;
   }
 
   @Implementation(minSdk = O)
-  public void requestDismissKeyguard(
+  protected void requestDismissKeyguard(
       Activity activity, KeyguardManager.KeyguardDismissCallback callback) {
     if (isKeyguardLocked) {
       if (this.callback != null) {
@@ -57,7 +58,7 @@ public class ShadowKeyguardManager {
    * @see #setKeyguardLocked(boolean)
    */
   @Implementation
-  public boolean isKeyguardLocked() {
+  protected boolean isKeyguardLocked() {
     return isKeyguardLocked;
   }
 
@@ -89,16 +90,27 @@ public class ShadowKeyguardManager {
    * @see ShadowKeyguardLock
    */
   @Implementation
-  public KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
+  protected KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
     return keyguardLock;
   }
 
   /**
-   * Sets the value to be returned by {@link #isKeyguardRestrictedInputMode()}.
+   * Sets the value to be returned by {@link KeyguardManager#inKeyguardRestrictedInputMode()}.
    *
-   * @see #isKeyguardRestrictedInputMode()
+   * @see KeyguardManager#inKeyguardRestrictedInputMode()
+   * @deprecated use {@link #setInRestrictedInputMode(boolean)} instead
    */
+  @Deprecated
   public void setinRestrictedInputMode(boolean restricted) {
+    inRestrictedInputMode = restricted;
+  }
+
+  /**
+   * Sets the value to be returned by {@link KeyguardManager#inKeyguardRestrictedInputMode()}.
+   *
+   * @see KeyguardManager#inKeyguardRestrictedInputMode()
+   */
+  public void setInRestrictedInputMode(boolean restricted) {
     inRestrictedInputMode = restricted;
   }
 
@@ -109,7 +121,7 @@ public class ShadowKeyguardManager {
    * @see #setIsKeyguardSecure(boolean)
    */
   @Implementation
-  public boolean isKeyguardSecure() {
+  protected boolean isKeyguardSecure() {
     return isKeyguardSecure;
   }
 
@@ -129,7 +141,7 @@ public class ShadowKeyguardManager {
    * @see #setIsDeviceSecure(boolean)
    */
   @Implementation(minSdk = M)
-  public boolean isDeviceSecure() {
+  protected boolean isDeviceSecure() {
     return isDeviceSecure;
   }
 
@@ -151,8 +163,12 @@ public class ShadowKeyguardManager {
     this.isDeviceLocked = isDeviceLocked;
   }
 
+  /**
+   * @return `false` by default, or the value passed to {@link #setIsDeviceLocked(boolean)}.
+   * @see #isDeviceLocked()
+   */
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public boolean isDeviceLocked() {
+  protected boolean isDeviceLocked() {
     return isDeviceLocked;
   }
 
@@ -167,7 +183,7 @@ public class ShadowKeyguardManager {
      * @see #isEnabled()
      */
     @Implementation
-    public void disableKeyguard() {
+    protected void disableKeyguard() {
       keyguardEnabled = false;
     }
 
@@ -177,7 +193,7 @@ public class ShadowKeyguardManager {
      * @see #isEnabled()
      */
     @Implementation
-    public void reenableKeyguard() {
+    protected void reenableKeyguard() {
       keyguardEnabled = true;
     }
 
@@ -190,5 +206,19 @@ public class ShadowKeyguardManager {
     public boolean isEnabled() {
       return keyguardEnabled;
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    // Static because the state is Global but Context.getSystemService() returns a new instance
+    // on each call.
+    keyguardLock = Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
+
+    inRestrictedInputMode = false;
+    isKeyguardLocked = false;
+    isDeviceLocked = false;
+    isKeyguardSecure = false;
+    isDeviceSecure = false;
+    callback = null;
   }
 }

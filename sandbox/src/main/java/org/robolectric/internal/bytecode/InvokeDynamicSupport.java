@@ -57,7 +57,7 @@ public class InvokeDynamicSupport {
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrap(MethodHandles.Lookup caller, String name, MethodType type,
       MethodHandle original) throws IllegalAccessException {
-    MethodCallSite site = new MethodCallSite(type, caller.lookupClass(), name, original, REGULAR);
+    MethodCallSite site = new MethodCallSite(caller.lookupClass(), type, name, original, REGULAR);
 
     bindCallSite(site);
 
@@ -67,7 +67,7 @@ public class InvokeDynamicSupport {
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapStatic(MethodHandles.Lookup caller, String name, MethodType type,
       MethodHandle original) throws IllegalAccessException {
-    MethodCallSite site = new MethodCallSite(type, caller.lookupClass(), name, original, STATIC);
+    MethodCallSite site = new MethodCallSite(caller.lookupClass(), type, name, original, STATIC);
 
     bindCallSite(site);
 
@@ -111,38 +111,41 @@ public class InvokeDynamicSupport {
   }
 
   private static MethodHandle bindInitCallSite(RoboCallSite site) {
-    MethodHandle mh = RobolectricInternals.getShadowCreator(site.getCaller());
-    return bindWithFallback(mh, site, BIND_INIT_CALL_SITE);
+    MethodHandle mh = RobolectricInternals.getShadowCreator(site.getTheClass());
+    return bindWithFallback(site, mh, BIND_INIT_CALL_SITE);
   }
 
   private static MethodHandle bindCallSite(MethodCallSite site) throws IllegalAccessException {
     MethodHandle mh =
-        RobolectricInternals.findShadowMethod(site.getCaller(), site.getName(), site.type(),
+        RobolectricInternals.findShadowMethodHandle(site.getTheClass(), site.getName(), site.type(),
             site.isStatic());
 
     if (mh == null) {
-      // Call original code and make sure to clean stack traces
-      mh = cleanStackTraces(site.getOriginal());
+      // call original code
+      mh = site.getOriginal();
     } else if (mh == ShadowWrangler.DO_NOTHING) {
+      // no-op
       mh = dropArguments(mh, 0, site.type().parameterList());
     } else if (!site.isStatic()) {
+      // drop arg 0 (this) for static methods
       Class<?> shadowType = mh.type().parameterType(0);
       mh = filterArguments(mh, 0, GET_SHADOW.asType(methodType(shadowType, site.thisType())));
     }
 
     try {
-      return bindWithFallback(mh, site, BIND_CALL_SITE);
+      return bindWithFallback(site, cleanStackTraces(mh), BIND_CALL_SITE);
     } catch (Throwable t) {
       // The error that bubbles up is currently not very helpful so we print any error messages
       // here
       t.printStackTrace();
-      System.err.println(site.getCaller());
+      System.err.println(site.getTheClass());
       throw t;
     }
   }
 
-  private static MethodHandle bindWithFallback(MethodHandle mh, RoboCallSite site, MethodHandle fallback) {
-    SwitchPoint switchPoint = getInvalidator(site.getCaller());
+  private static MethodHandle bindWithFallback(RoboCallSite site, MethodHandle mh,
+      MethodHandle fallback) {
+    SwitchPoint switchPoint = getInvalidator(site.getTheClass());
     MethodType type = site.type();
 
     MethodHandle boundFallback = foldArguments(exactInvoker(type), fallback.bindTo(site));

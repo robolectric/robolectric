@@ -2,7 +2,9 @@ package org.robolectric.internal;
 
 import java.lang.reflect.Method;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 
 public interface ParallelUniverseInterface {
@@ -10,10 +12,13 @@ public interface ParallelUniverseInterface {
   void setUpApplicationState(
       Method method,
       AndroidManifest appManifest,
+      DependencyResolver jarResolver,
       Config config,
-      ResourceTable compiletimeResourceTable,
+      ResourceTable compileTimeResourceTable,
       ResourceTable appResourceTable,
-      ResourceTable systemResourceTable);
+      ResourceTable systemResourceTable,
+      FsFile compileTimeSystemResourcesFile,
+      boolean legacyResources);
 
   Thread getMainThread();
 

@@ -1,0 +1,36 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.13"
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 27
+
+    android {
+        testOptions {
+            unitTests {
+                includeAndroidResources = true
+                // Temporarily turn off JVM verification as workaround. Should be removed once
+                // espresso 3.0.2-alpha2 is available.
+                all {
+                   jvmArgs '-noverify'
+                }
+            }
+        }
+    }
+
+}
+
+dependencies {
+    implementation project(":robolectric")
+    implementation "junit:junit:4.12"
+    implementation("com.android.support.test:runner:1.0.2-alpha1")
+
+    // Testing dependencies
+    testImplementation("com.android.support.test:runner:1.0.2-alpha1")
+    testImplementation("com.android.support.test:rules:1.0.2-alpha1")
+    testImplementation("com.android.support.test.espresso:espresso-intents:3.0.2-alpha1")
+    testImplementation("com.android.support.test.espresso:espresso-core:3.0.2-alpha1")
+    testImplementation("com.google.truth:truth:0.36")
+}

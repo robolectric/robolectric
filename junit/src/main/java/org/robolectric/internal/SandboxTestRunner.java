@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 
 import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +30,7 @@ import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.SandboxConfig;
+import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.util.PerfStatsCollector;
@@ -40,6 +40,13 @@ import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
+
+  private static final ShadowMap BASE_SHADOW_MAP;
+
+  static {
+    ServiceLoader<ShadowProvider> shadowProviders = ServiceLoader.load(ShadowProvider.class);
+    BASE_SHADOW_MAP = ShadowMap.createFromShadowProviders(shadowProviders);
+  }
 
   private final Interceptors interceptors;
   private final List<PerfStatsReporter> perfStatsReporters;
@@ -134,11 +141,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   @Nonnull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    URLClassLoader systemClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-    ClassLoader sandboxClassLoader = new SandboxClassLoader(systemClassLoader, instrumentationConfiguration);
-    Sandbox sandbox = new Sandbox(sandboxClassLoader);
-    configureShadows(method, sandbox);
-    return sandbox;
+    ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
+    return new Sandbox(sandboxClassLoader);
   }
 
   /**
@@ -165,8 +169,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
 
     for (Class<?> shadowClass : getExtraShadows(method)) {
-      ShadowMap.ShadowInfo shadowInfo = ShadowMap.getShadowInfo(shadowClass);
-      builder.addInstrumentedClass(shadowInfo.getShadowedClassName());
+      ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
+      builder.addInstrumentedClass(shadowInfo.shadowedClassName);
     }
 
     addInstrumentedPackages(method, builder);
@@ -190,7 +194,15 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  /**
+   * @deprecated Override {@link #configureSandbox(Sandbox, FrameworkMethod)} instead.
+   */
+  @Deprecated
   protected void configureShadows(FrameworkMethod method, Sandbox sandbox) {
+    configureSandbox(sandbox, method);
+  }
+
+  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
     ShadowMap.Builder builder = createShadowMap().newBuilder();
 
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
@@ -218,7 +230,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
         Sandbox sandbox = getSandbox(method);
 
-        // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
+        // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
         // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
         // not available once we install the Robolectric class loader.
         configureShadows(method, sandbox);
@@ -329,7 +341,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ShadowMap createShadowMap() {
-    return ShadowMap.EMPTY;
+    return BASE_SHADOW_MAP;
   }
 
   @Nonnull

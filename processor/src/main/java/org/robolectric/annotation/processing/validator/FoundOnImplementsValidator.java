@@ -6,6 +6,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
@@ -24,7 +25,19 @@ public abstract class FoundOnImplementsValidator extends Validator {
   @Override
   public void init(Element elem, Element p) {
     super.init(elem, p);
-    imp = model.getImplementsMirror(p);
+
+    do {
+      imp = model.getImplementsMirror(p);
+
+      // if not found, search on superclasses too...
+      if (imp == null) {
+        TypeMirror superclass = ((TypeElement) p).getSuperclass();
+        p = superclass == null ? null : types.asElement(superclass);
+      } else {
+        break;
+      }
+    } while (p != null);
+
     if (imp == null) {
       error('@' + annotationType.getSimpleName().toString() + " without @Implements");
     }

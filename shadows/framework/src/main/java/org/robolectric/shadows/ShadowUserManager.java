@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 
 import android.Manifest.permission;
 import android.content.Context;
@@ -20,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -32,16 +32,17 @@ public class ShadowUserManager {
 
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
+  private boolean isDemoUser = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
-  private int nextUserSerial = 0;
+  private long nextUserSerial = 0;
   private Map<UserHandle, UserState> userState = new HashMap<>();
   private Context context;
   private boolean enforcePermissions;
 
   @Implementation
-  public void __constructor__(Context context, IUserManager service) {
+  protected void __constructor__(Context context, IUserManager service) {
     this.context = context;
   }
 
@@ -49,22 +50,20 @@ public class ShadowUserManager {
     addUserProfile(Process.myUserHandle());
   }
 
-  public void enforcePermissionChecks(boolean enforcePermissions) {
-    this.enforcePermissions = enforcePermissions;
-  }
-
   /**
    * Compared to real Android, there is no check that the package name matches the application
    * package name and the method returns instantly.
+   *
+   * @see #setApplicationRestrictions(String, Bundle)
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getApplicationRestrictions(String packageName) {
+  protected Bundle getApplicationRestrictions(String packageName) {
     Bundle bundle = applicationRestrictions.get(packageName);
     return bundle != null ? bundle : new Bundle();
   }
 
   /**
-   * Setter for {@link #getApplicationRestrictions(String)}
+   * Sets the value returned by {@link UserManager#getApplicationRestrictions(String)}.
    */
   public void setApplicationRestrictions(String packageName, Bundle restrictions) {
     applicationRestrictions.put(packageName, restrictions);
@@ -72,18 +71,24 @@ public class ShadowUserManager {
 
   /**
    * Adds a profile associated for the user that the calling process is running on.
+   *
+   * The user is assigned an arbitrary unique serial number.
+   *
+   * @return the user's serial number
    */
-  public void addUserProfile(UserHandle userHandle) {
-    setSerialNumberForUser(userHandle, nextUserSerial++);
+  public long addUserProfile(UserHandle userHandle) {
+    long serialNumber = nextUserSerial++;
+    userProfiles.put(userHandle, serialNumber);
+    return serialNumber;
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public List<UserHandle> getUserProfiles(){
+  protected List<UserHandle> getUserProfiles() {
     return ImmutableList.copyOf(userProfiles.keySet());
   }
 
   @Implementation(minSdk = N)
-  public boolean isUserUnlocked() {
+  protected boolean isUserUnlocked() {
     return userUnlocked;
   }
 
@@ -94,8 +99,17 @@ public class ShadowUserManager {
     this.userUnlocked = userUnlocked;
   }
 
+  /**
+   * If permissions are enforced (see {@link #enforcePermissionChecks(boolean)}) and the application
+   * doesn't have the {@link android.Manifest.permission#MANAGE_USERS} permission, throws a
+   * {@link SecurityManager} exception.
+   *
+   * @return `false` by default, or the value specified via {@link #setManagedProfile(boolean)}
+   * @see #enforcePermissionChecks(boolean)
+   * @see #setManagedProfile(boolean)
+   */
   @Implementation(minSdk = LOLLIPOP)
-  public boolean isManagedProfile() {
+  protected boolean isManagedProfile() {
     if (enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException(
           "You need MANAGE_USERS permission to: check if specified user a " +
@@ -104,15 +118,19 @@ public class ShadowUserManager {
     return managedProfile;
   }
 
+  public void enforcePermissionChecks(boolean enforcePermissions) {
+    this.enforcePermissions = enforcePermissions;
+  }
+
   /**
-   * Setter for {@link UserManager#isManagedProfile()}
+   * Setter for {@link UserManager#isManagedProfile()}.
    */
   public void setManagedProfile(boolean managedProfile) {
     this.managedProfile = managedProfile;
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
+  protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
     Bundle bundle = userRestrictions.get(userHandle);
     return bundle != null && bundle.getBoolean(restrictionKey);
   }
@@ -132,7 +150,7 @@ public class ShadowUserManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Bundle getUserRestrictions(UserHandle userHandle) {
+  protected Bundle getUserRestrictions(UserHandle userHandle) {
     return getUserRestrictionsForUser(userHandle);
   }
 
@@ -145,25 +163,31 @@ public class ShadowUserManager {
     return bundle;
   }
 
+  /**
+   * @see #addUserProfile(UserHandle)
+   */
   @Implementation
-  public long getSerialNumberForUser(UserHandle userHandle) {
+  protected long getSerialNumberForUser(UserHandle userHandle) {
     Long result = userProfiles.get(userHandle);
     return result == null ? -1L : result;
   }
 
   /**
-   * @deprecated prefer {@link #addUserProfile()} to ensure consistency of profiles known to
-   * UserManager. Furthermore, calling this method for the current user, i.e:
-   * {@link Process.myUserHandle()} is no longer necessary as this user is always known to
-   * UserManager and has a preassigned serial number.
+   * @deprecated prefer {@link #addUserProfile(UserHandle)} to ensure consistency of profiles known
+   * to the {@link UserManager}. Furthermore, calling this method for the current user, i.e: {@link
+   * Process#myUserHandle()} is no longer necessary as this user is always known to UserManager and
+   * has a preassigned serial number.
    */
   @Deprecated
   public void setSerialNumberForUser(UserHandle userHandle, long serialNumber) {
     userProfiles.put(userHandle, serialNumber);
   }
 
+  /**
+   * @see #addUserProfile(UserHandle)
+   */
   @Implementation
-  public UserHandle getUserForSerialNumber(long serialNumber) {
+  protected UserHandle getUserForSerialNumber(long serialNumber) {
     return userProfiles.inverse().get(serialNumber);
   }
 
@@ -178,8 +202,27 @@ public class ShadowUserManager {
     //                + "to: check " + name);throw new SecurityException();
   }
 
+  /**
+   * @return `false` by default, or the value specified via {@link #setIsDemoUser(boolean)}
+   */
+  @Implementation(minSdk = N_MR1)
+  protected boolean isDemoUser() {
+    return isDemoUser;
+  }
+
+  /**
+   * Sets that the current user is a demo user; controls the return value of
+   * {@link UserManager#isDemoUser()}.
+   */
+  public void setIsDemoUser(boolean isDemoUser) {
+    this.isDemoUser = isDemoUser;
+  }
+
+  /**
+   * @see #setUserState(UserHandle, UserState)
+   */
   @Implementation
-  public boolean isUserRunning(UserHandle handle) {
+  protected boolean isUserRunning(UserHandle handle) {
     checkPermissions();
     UserState state = userState.get(handle);
 
@@ -192,8 +235,11 @@ public class ShadowUserManager {
     }
   }
 
+  /**
+   * @see #setUserState(UserHandle, UserState)
+   */
   @Implementation
-  public boolean isUserRunningOrStopping(UserHandle handle) {
+  protected boolean isUserRunningOrStopping(UserHandle handle) {
     checkPermissions();
     UserState state = userState.get(handle);
 
@@ -209,7 +255,7 @@ public class ShadowUserManager {
 
   /**
    * Describes the current state of the user. State can be set using
-   *  {@link UserManager#setUserState()}
+   * {@link #setUserState(UserHandle, UserState)}.
    */
   public enum UserState {
     // User is first coming up.
@@ -227,15 +273,18 @@ public class ShadowUserManager {
   }
 
   /**
-   * Sets the current state for a given user, see {@link #isUserRunning()}
-   * and {@link #isUserRunningOrStopping()}
+   * Sets the current state for a given user, see {@link UserManager#isUserRunning(UserHandle)}
+   * and {@link UserManager#isUserRunningOrStopping(UserHandle)}
    */
   public void setUserState(UserHandle handle, UserState state) {
     userState.put(handle, state);
   }
 
+  /**
+   * @return an empty list
+   */
   @Implementation
-  public List<UserInfo> getUsers() {
+  protected List<UserInfo> getUsers() {
     // Implement this - return empty list to avoid NPE from call to getUserCount()
     return ImmutableList.of();
   }

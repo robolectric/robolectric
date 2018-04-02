@@ -31,6 +31,8 @@ public class StaxValueLoader extends StaxLoader {
     String s = buf.toString();
     if (resType == ResType.CHAR_SEQUENCE) {
       s = StringResources.processStringResources(s);
+    } else {
+      s = s.trim();
     }
     resourceTable.addResource(attrType, name, new TypedResource<>(s, resType, xmlContext));
   }

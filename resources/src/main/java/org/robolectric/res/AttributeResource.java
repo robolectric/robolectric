@@ -1,16 +1,20 @@
 package org.robolectric.res;
 
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 public class AttributeResource {
+  public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
   public static final String NULL_VALUE = "@null";
   public static final String EMPTY_VALUE = "@empty";
+  public static final Pattern IS_RESOURCE_REFERENCE = Pattern.compile("^\\s*@");
 
   public final @Nonnull ResName resName;
   public final @Nonnull String value;
+  public final @Nonnull String trimmedValue;
   public final @Nonnull String contextPackageName;
   private final Integer referenceResId;
 
@@ -24,20 +28,21 @@ public class AttributeResource {
 
     this.resName = resName;
     this.value = value;
+    this.trimmedValue = value.trim();
     this.contextPackageName = contextPackageName;
   }
 
   public boolean isResourceReference() {
-    return isResourceReference(value);
+    return isResourceReference(trimmedValue);
   }
 
   public @Nonnull ResName getResourceReference() {
     if (!isResourceReference()) throw new RuntimeException("not a resource reference: " + this);
-    return ResName.qualifyResName(value.substring(1).replace("+", ""), contextPackageName, "style");
+    return ResName.qualifyResName(deref(trimmedValue).replace("+", ""), contextPackageName, "style");
   }
 
   public boolean isStyleReference() {
-    return isStyleReference(value);
+    return isStyleReference(trimmedValue);
   }
 
   public ResName getStyleReference() {
@@ -46,11 +51,11 @@ public class AttributeResource {
   }
 
   public boolean isNull() {
-    return NULL_VALUE.equals(value);
+    return NULL_VALUE.equals(trimmedValue);
   }
 
   public boolean isEmpty() {
-    return EMPTY_VALUE.equals(value);
+    return EMPTY_VALUE.equals(trimmedValue);
   }
 
   @Override
@@ -63,12 +68,16 @@ public class AttributeResource {
   }
 
   public static boolean isResourceReference(String value) {
-    return value.startsWith("@") && !isNull(value);
+    return IS_RESOURCE_REFERENCE.matcher(value).find() && !isNull(value);
   }
 
   public static @Nonnull ResName getResourceReference(String value, String defPackage, String defType) {
     if (!isResourceReference(value)) throw new IllegalArgumentException("not a resource reference: " + value);
-    return ResName.qualifyResName(value.substring(1).replace("+", ""), defPackage, defType);
+    return ResName.qualifyResName(deref(value).replace("+", ""), defPackage, defType);
+  }
+
+  private static @Nonnull String deref(@Nonnull String value) {
+    return value.substring(value.indexOf('@') + 1);
   }
 
   public static boolean isStyleReference(String value) {

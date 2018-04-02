@@ -58,6 +58,17 @@ public class AndroidManifestTest {
   }
 
   @Test
+  public void parseManifest_shouldReadPermissionGroups() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
+
+    assertThat(config.getPermissionGroups().keySet())
+        .contains("permission_group");
+    PermissionGroupItemData permissionGroupItemData = config.getPermissionGroups().get("permission_group");
+    assertThat(permissionGroupItemData.getName()).isEqualTo("permission_group");
+    assertThat(permissionGroupItemData.getDescription()).isEqualTo("@string/test_permission_description");
+  }
+
+  @Test
   public void parseManifest_shouldReadBroadcastReceivers() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
     assertThat(config.getBroadcastReceivers()).hasSize(8);
@@ -188,8 +199,11 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldReadTargetSdkVersionFromAndroidManifestOrDefaultToMin() throws Exception {
-    assertThat(newConfigWith("targetsdk42minsdk6.xml",
-        "android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"").getTargetSdkVersion())
+    assertThat(
+            newConfigWith(
+                    "targetsdk42minsdk6.xml",
+                    "android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"")
+                .getTargetSdkVersion())
         .isEqualTo(42);
     assertThat(newConfigWith("minsdk7.xml", "android:minSdkVersion=\"7\"").getTargetSdkVersion())
         .isEqualTo(7);
@@ -212,8 +226,10 @@ public class AndroidManifestTest {
    */
   @Test
   public void shouldReadTargetSDKVersionOPreview() throws Exception {
-    assertThat(newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"")
-        .getTargetSdkVersion()).isEqualTo(26);
+    assertThat(
+            newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"")
+                .getTargetSdkVersion())
+        .isEqualTo(26);
   }
 
   @Test
@@ -231,8 +247,8 @@ public class AndroidManifestTest {
   @Test
   @Config(manifest = "TestAndroidManifestWithAppMetaData.xml")
   public void shouldReturnApplicationMetaData() throws Exception {
-    Map<String, Object> meta = newConfig("TestAndroidManifestWithAppMetaData.xml")
-        .getApplicationMetaData();
+    Map<String, Object> meta =
+        newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
 
     Object metaValue = meta.get("org.robolectric.metaName1");
     assertThat(metaValue).isEqualTo("metaValue1");
@@ -283,16 +299,16 @@ public class AndroidManifestTest {
 
   @Test
   public void whenNullManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), "org.robolectric.lib1");
-    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.lib1.R.class);
-    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.lib1");
+    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), "org.robolectric");
+    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.R.class);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test
   public void whenMissingManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(resourceFile("none.xml"), resourceFile("res"), resourceFile("assets"), "org.robolectric.lib1");
-    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.lib1.R.class);
-    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.lib1");
+    AndroidManifest appManifest = new AndroidManifest(resourceFile("none.xml"), resourceFile("res"), resourceFile("assets"), "org.robolectric");
+    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.R.class);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test

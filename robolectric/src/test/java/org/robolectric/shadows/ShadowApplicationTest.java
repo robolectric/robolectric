@@ -6,6 +6,8 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -26,19 +28,26 @@ import android.content.IntentFilter;
 import android.content.RestrictionsManager;
 import android.content.ServiceConnection;
 import android.hardware.SystemSensorManager;
+import android.hardware.fingerprint.FingerprintManager;
 import android.media.session.MediaSessionManager;
+import android.net.nsd.NsdManager;
 import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserManager;
+import android.os.Vibrator;
 import android.print.PrintManager;
 import android.telephony.SubscriptionManager;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.CaptioningManager;
+import android.view.autofill.AutofillManager;
+import android.view.textclassifier.TextClassificationManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -46,11 +55,17 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.util.Scheduler;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowApplicationTest {
+
+  private Context context;
+
+  @Before
+  public void setUp() {
+    context = RuntimeEnvironment.application;
+  }
 
   @Test
   @Config(packageName = "override.package")
@@ -66,60 +81,106 @@ public class ShadowApplicationTest {
 
   @Test
   public void shouldProvideServices() throws Exception {
-    checkSystemService(Context.ACTIVITY_SERVICE, android.app.ActivityManager.class);
-    checkSystemService(Context.POWER_SERVICE, android.os.PowerManager.class);
-    checkSystemService(Context.ALARM_SERVICE, android.app.AlarmManager.class);
-    checkSystemService(Context.NOTIFICATION_SERVICE, android.app.NotificationManager.class);
-    checkSystemService(Context.KEYGUARD_SERVICE, android.app.KeyguardManager.class);
-    checkSystemService(Context.LOCATION_SERVICE, android.location.LocationManager.class);
-    checkSystemService(Context.SEARCH_SERVICE, android.app.SearchManager.class);
-    checkSystemService(Context.SENSOR_SERVICE, SystemSensorManager.class);
-    checkSystemService(Context.STORAGE_SERVICE, android.os.storage.StorageManager.class);
-    checkSystemService(Context.VIBRATOR_SERVICE, RoboVibrator.class);
-    checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
-    checkSystemService(Context.WIFI_SERVICE, android.net.wifi.WifiManager.class);
-    checkSystemService(Context.AUDIO_SERVICE, android.media.AudioManager.class);
-    checkSystemService(Context.TELEPHONY_SERVICE, android.telephony.TelephonyManager.class);
-    checkSystemService(Context.INPUT_METHOD_SERVICE, android.view.inputmethod.InputMethodManager.class);
-    checkSystemService(Context.UI_MODE_SERVICE, android.app.UiModeManager.class);
-    checkSystemService(Context.DOWNLOAD_SERVICE, android.app.DownloadManager.class);
-    checkSystemService(Context.DEVICE_POLICY_SERVICE, android.app.admin.DevicePolicyManager.class);
-    checkSystemService(Context.DROPBOX_SERVICE, android.os.DropBoxManager.class);
-    checkSystemService(Context.MEDIA_ROUTER_SERVICE, android.media.MediaRouter.class);
-    checkSystemService(Context.ACCESSIBILITY_SERVICE, android.view.accessibility.AccessibilityManager.class);
+    assertThat(context.getSystemService(Context.ACTIVITY_SERVICE))
+        .isInstanceOf(android.app.ActivityManager.class);
+    assertThat(context.getSystemService(Context.POWER_SERVICE))
+        .isInstanceOf(android.os.PowerManager.class);
+    assertThat(context.getSystemService(Context.ALARM_SERVICE))
+        .isInstanceOf(android.app.AlarmManager.class);
+    assertThat(context.getSystemService(Context.NOTIFICATION_SERVICE))
+        .isInstanceOf(android.app.NotificationManager.class);
+    assertThat(context.getSystemService(Context.KEYGUARD_SERVICE))
+        .isInstanceOf(android.app.KeyguardManager.class);
+    assertThat(context.getSystemService(Context.LOCATION_SERVICE))
+        .isInstanceOf(android.location.LocationManager.class);
+    assertThat(context.getSystemService(Context.SEARCH_SERVICE))
+        .isInstanceOf(android.app.SearchManager.class);
+    assertThat(context.getSystemService(Context.SENSOR_SERVICE))
+        .isInstanceOf(SystemSensorManager.class);
+    assertThat(context.getSystemService(Context.STORAGE_SERVICE))
+        .isInstanceOf(android.os.storage.StorageManager.class);
+    assertThat(context.getSystemService(Context.VIBRATOR_SERVICE)).isInstanceOf(Vibrator.class);
+    assertThat(context.getSystemService(Context.CONNECTIVITY_SERVICE))
+        .isInstanceOf(android.net.ConnectivityManager.class);
+    assertThat(context.getSystemService(Context.WIFI_SERVICE))
+        .isInstanceOf(android.net.wifi.WifiManager.class);
+    assertThat(context.getSystemService(Context.AUDIO_SERVICE))
+        .isInstanceOf(android.media.AudioManager.class);
+    assertThat(context.getSystemService(Context.TELEPHONY_SERVICE))
+        .isInstanceOf(android.telephony.TelephonyManager.class);
+    assertThat(context.getSystemService(Context.INPUT_METHOD_SERVICE))
+        .isInstanceOf(android.view.inputmethod.InputMethodManager.class);
+    assertThat(context.getSystemService(Context.UI_MODE_SERVICE))
+        .isInstanceOf(android.app.UiModeManager.class);
+    assertThat(context.getSystemService(Context.DOWNLOAD_SERVICE))
+        .isInstanceOf(android.app.DownloadManager.class);
+    assertThat(context.getSystemService(Context.DEVICE_POLICY_SERVICE))
+        .isInstanceOf(android.app.admin.DevicePolicyManager.class);
+    assertThat(context.getSystemService(Context.DROPBOX_SERVICE))
+        .isInstanceOf(android.os.DropBoxManager.class);
+    assertThat(context.getSystemService(Context.MEDIA_ROUTER_SERVICE))
+        .isInstanceOf(android.media.MediaRouter.class);
+    assertThat(context.getSystemService(Context.ACCESSIBILITY_SERVICE))
+        .isInstanceOf(AccessibilityManager.class);
+    assertThat(context.getSystemService(Context.NSD_SERVICE)).isInstanceOf(NsdManager.class);
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldProvideServicesIntroducedInJellyBeanMr1() throws Exception {
-    checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
-    checkSystemService(Context.USER_SERVICE, UserManager.class);
+    assertThat(context.getSystemService(Context.DISPLAY_SERVICE))
+        .isInstanceOf(android.hardware.display.DisplayManager.class);
+    assertThat(context.getSystemService(Context.USER_SERVICE)).isInstanceOf(UserManager.class);
   }
 
   @Test
   @Config(minSdk = KITKAT)
   public void shouldProvideServicesIntroducedInKitKat() throws Exception {
-    checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
-    checkSystemService(Context.CAPTIONING_SERVICE, CaptioningManager.class);
+    assertThat(context.getSystemService(Context.PRINT_SERVICE)).isInstanceOf(PrintManager.class);
+    assertThat(context.getSystemService(Context.CAPTIONING_SERVICE))
+        .isInstanceOf(CaptioningManager.class);
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void shouldProvideMediaSessionService() throws Exception {
-    checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
-    checkSystemService(Context.BATTERY_SERVICE, BatteryManager.class);
-    checkSystemService(Context.RESTRICTIONS_SERVICE, RestrictionsManager.class);
+  public void shouldProvideServicesIntroducedInLollipop() throws Exception {
+    assertThat(context.getSystemService(Context.MEDIA_SESSION_SERVICE))
+        .isInstanceOf(MediaSessionManager.class);
+    assertThat(context.getSystemService(Context.BATTERY_SERVICE))
+        .isInstanceOf(BatteryManager.class);
+    assertThat(context.getSystemService(Context.RESTRICTIONS_SERVICE))
+        .isInstanceOf(RestrictionsManager.class);
   }
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
   public void shouldProvideServicesIntroducedInLollipopMr1() throws Exception {
-    checkSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE, SubscriptionManager.class);
+    assertThat(context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE))
+        .isInstanceOf(SubscriptionManager.class);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void shouldProvideServicesIntroducedMarshmallow() throws Exception {
+    assertThat(context.getSystemService(Context.FINGERPRINT_SERVICE))
+        .isInstanceOf(FingerprintManager.class);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldProvideServicesIntroducedOreo() throws Exception {
+    // Context.AUTOFILL_MANAGER_SERVICE is marked @hide and this is the documented way to obtain this
+    // service.
+    AutofillManager autofillManager = RuntimeEnvironment.application.getSystemService(AutofillManager.class);
+    assertThat(autofillManager).isNotNull();
+
+    assertThat(context.getSystemService(Context.TEXT_CLASSIFICATION_SERVICE))
+        .isInstanceOf(TextClassificationManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
     Object systemService = RuntimeEnvironment.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
+    assertThat(systemService).isInstanceOf(LayoutInflater.class);
   }
 
   @Test
@@ -137,18 +198,6 @@ public class ShadowApplicationTest {
       @Override
       public void onTouchExplorationStateChanged(boolean enabled) { }
     };
-  }
-
-  private void checkSystemService(String name, Class expectedClass) {
-    Object systemService = RuntimeEnvironment.application.getSystemService(name);
-    assertThat(systemService).isInstanceOf(expectedClass);
-    assertThat(systemService).isSameAs(RuntimeEnvironment.application.getSystemService(name));
-  }
-
-  @Test
-  public void packageManager_shouldKnowPackageName() throws Exception {
-    assertThat(RuntimeEnvironment.application.getPackageManager().getApplicationInfo("org.robolectric", 0).packageName)
-        .isEqualTo("org.robolectric");
   }
 
   @Test
@@ -455,7 +504,7 @@ public class ShadowApplicationTest {
     String action = "com.does.not.exist.android.app.v2.mobile";
 
     try {
-      application.startActivity(new Intent(action));
+      application.startActivity(new Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
       fail("Expected startActivity to throw ActivityNotFoundException!");
     } catch (ActivityNotFoundException e) {
       assertThat(e.getMessage()).contains(action);

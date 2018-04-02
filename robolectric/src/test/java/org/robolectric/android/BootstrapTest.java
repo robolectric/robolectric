@@ -178,6 +178,7 @@ public class BootstrapTest {
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
+      // Setting Locale in > JB results in forcing layout direction to match locale
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
           + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
           + Build.VERSION.RESOURCES_SDK_INT);
@@ -220,7 +221,7 @@ public class BootstrapTest {
     assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_YES);
     assertThat(configuration.navigation).isEqualTo(NAVIGATION_DPAD);
   }
-  
+
   @Test
   public void applyQualifiers_longShouldMakeScreenTaller() throws Exception {
     Bootstrap.applyQualifiers("long",

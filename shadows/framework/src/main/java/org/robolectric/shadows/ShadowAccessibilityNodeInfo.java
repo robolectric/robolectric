@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -30,6 +29,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -183,7 +183,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
-    final ShadowAccessibilityNodeInfo shadowInfo = shadowOf(info);
+    final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
     final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
 
     sAllocationCount++;
@@ -203,7 +203,7 @@ public class ShadowAccessibilityNodeInfo {
     // non-shadow objects.
     final AccessibilityNodeInfo obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
-    final ShadowAccessibilityNodeInfo shadowObtained = shadowOf(obtainedInstance);
+    final ShadowAccessibilityNodeInfo shadowObtained = Shadow.extract(obtainedInstance);
 
     /*
      * We keep a separate list of actions for each object newly obtained
@@ -250,7 +250,7 @@ public class ShadowAccessibilityNodeInfo {
   public static boolean areThereUnrecycledNodes(boolean printUnrecycledNodesToSystemErr) {
     if (printUnrecycledNodesToSystemErr) {
       for (final StrictEqualityNodeWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityNodeInfo shadow = shadowOf(wrapper.mInfo);
+        final ShadowAccessibilityNodeInfo shadow = Shadow.extract(wrapper.mInfo);
 
         System.err.println(String.format(
             "Leaked contentDescription = %s. Stack trace:", shadow.getContentDescription()));
@@ -945,7 +945,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     final AccessibilityNodeInfo info = (AccessibilityNodeInfo) object;
-    final ShadowAccessibilityNodeInfo otherShadow = shadowOf(info);
+    final ShadowAccessibilityNodeInfo otherShadow = Shadow.extract(info);
 
     if (this.view != null) {
       return this.view == otherShadow.view;
@@ -978,7 +978,8 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     children.add(child);
-    (shadowOf(child)).parent = realAccessibilityNodeInfo;
+    ShadowAccessibilityNodeInfo shadowAccessibilityNodeInfo = Shadow.extract(child);
+    shadowAccessibilityNodeInfo.parent = realAccessibilityNodeInfo;
   }
 
   @Implementation
@@ -1030,7 +1031,7 @@ public class ShadowAccessibilityNodeInfo {
     // non-shadow objects.
     final AccessibilityNodeInfo newInfo =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
-    final ShadowAccessibilityNodeInfo newShadow = shadowOf(newInfo);
+    final ShadowAccessibilityNodeInfo newShadow = Shadow.extract(newInfo);
 
     newShadow.mOriginNodeId = mOriginNodeId;
     newShadow.boundsInScreen = new Rect(boundsInScreen);

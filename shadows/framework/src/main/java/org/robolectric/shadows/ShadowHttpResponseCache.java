@@ -9,9 +9,9 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = HttpResponseCache.class, callThroughByDefault = false)
@@ -30,7 +30,7 @@ public class ShadowHttpResponseCache {
   @Implementation
   public static HttpResponseCache install(File directory, long maxSize) {
     HttpResponseCache cache = newInstanceOf(HttpResponseCache.class);
-    ShadowHttpResponseCache shadowCache = Shadows.shadowOf(cache);
+    ShadowHttpResponseCache shadowCache = Shadow.extract(cache);
     shadowCache.originalObject = cache;
     shadowCache.directory = directory;
     shadowCache.maxSize = maxSize;

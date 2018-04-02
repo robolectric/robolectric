@@ -161,4 +161,14 @@ public class ShadowPowerManagerTest {
     shadowPowerManager.setIgnoringBatteryOptimizations(packageName, false);
     assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isFalse();
   }
+
+  @Test
+  @Config(minSdk = M)
+  public void isDeviceIdleMode_shouldGetAndSet() {
+    assertThat(powerManager.isDeviceIdleMode()).isFalse();
+    shadowPowerManager.setIsDeviceIdleMode(true);
+    assertThat(powerManager.isDeviceIdleMode()).isTrue();
+    shadowPowerManager.setIsDeviceIdleMode(false);
+    assertThat(powerManager.isDeviceIdleMode()).isFalse();
+  }
 }

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
@@ -13,10 +12,13 @@ import static org.robolectric.util.ReflectionHelpers.setField;
 import android.os.Handler;
 import android.os.Message;
 import android.os.MessageQueue;
+import java.util.ArrayList;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.Logger;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -55,28 +57,6 @@ public class ShadowMessageQueue {
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativePollOnce(int ptr, int timeoutMillis) {
-    nativePollOnce((long) ptr, timeoutMillis);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  public static void nativePollOnce(long ptr, int timeoutMillis) {
-    throw new AssertionError("Should not be called");
-  }
-
-  @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeWake(int ptr) {
-    nativeWake((long) ptr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWake(long ptr) {
-    throw new AssertionError("Should not be called");
-  }
-
-  @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
   public static boolean nativeIsIdling(int ptr) {
     return nativeIsIdling((long) ptr);
   }
@@ -104,6 +84,8 @@ public class ShadowMessageQueue {
 
   public void reset() {
     setHead(null);
+    setField(realQueue, "mIdleHandlers", new ArrayList<>());
+    setField(realQueue, "mNextBarrierToken", 0);
   }
 
   @Implementation
@@ -148,11 +130,6 @@ public class ShadowMessageQueue {
     return retval;
   }
 
-  @HiddenApi
-  @Implementation
-  public void removeSyncBarrier(int token) {
-  }
-
   private static void dispatchMessage(Message msg) {
     final Handler target = msg.getTarget();
 
@@ -169,5 +146,20 @@ public class ShadowMessageQueue {
         callInstanceMethod(msg, "recycle");
       }
     }
+  }
+
+  @Implementation
+  @HiddenApi
+  protected void removeSyncBarrier(int token) {
+    // TODO(b/74402484): workaround scheduler corruption of message queue
+    try {
+      directlyOn(realQueue, MessageQueue.class, "removeSyncBarrier", from(int.class, token));
+    } catch (IllegalStateException e) {
+      Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
+    }
+  }
+
+  private static ShadowMessage shadowOf(Message actual) {
+    return (ShadowMessage) Shadow.extract(actual);
   }
 }

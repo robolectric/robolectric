@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
@@ -21,6 +20,7 @@ public class ShadowPowerManager {
   private boolean isScreenOn = true;
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
+  private boolean isDeviceIdleMode = false;
   private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
   @Implementation
@@ -69,6 +69,19 @@ public class ShadowPowerManager {
   }
 
   /**
+   * @return `false` by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)}
+   */
+  @Implementation(minSdk = M)
+  protected boolean isDeviceIdleMode() {
+    return isDeviceIdleMode;
+  }
+
+  /** Sets the value returned by {@link #isDeviceIdleMode()}. */
+  public void setIsDeviceIdleMode(boolean isDeviceIdleMode) {
+    this.isDeviceIdleMode = isDeviceIdleMode;
+  }
+
+  /**
    * Discards the most recent {@code PowerManager.WakeLock}s
    */
   @Resetter
@@ -85,7 +98,8 @@ public class ShadowPowerManager {
    * @return Most recent wake lock.
    */
   public static PowerManager.WakeLock getLatestWakeLock() {
-    return shadowOf(RuntimeEnvironment.application).getLatestWakeLock();
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    return shadowApplication.getLatestWakeLock();
   }
 
   @Implementation(minSdk = M)

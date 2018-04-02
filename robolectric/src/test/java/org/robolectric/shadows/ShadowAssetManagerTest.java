@@ -1,29 +1,22 @@
 package org.robolectric.shadows;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.robolectric.R.color.test_ARGB8;
-import static org.robolectric.R.color.test_RGB8;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
-import android.app.Activity;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import com.google.common.io.CharStreams;
-import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,114 +38,60 @@ public class ShadowAssetManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    assetManager = Robolectric.buildActivity(Activity.class).create().get().getAssets();
     resources = RuntimeEnvironment.application.getResources();
-  }
-
-  @Test
-  public void assertGetAssetsNotNull() {
-    assertNotNull(assetManager);
-
-    assetManager = RuntimeEnvironment.application.getAssets();
-    assertNotNull(assetManager);
-
     assetManager = resources.getAssets();
-    assertNotNull(assetManager);
   }
 
   @Test
-  public void assetsPathListing() throws IOException {
-    assertThat(assetManager.list(""))
-        .containsExactlyInAnyOrder(
-            "assetsHome.txt",   // test/resources/assets
-            "docs",             // test/resources/assets
-            "myFont.ttf",       // test/resources/assets
-            "libFont.ttf",      // test/resources/lib1/assets
-            "file-in-lib2.txt", // test/resources/lib2/assets
-            "file-in-lib2.txt"  // test/resources/lib1/../lib2/assets (yes, weird)
-            );
+  public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws Exception {
+    assumeTrue(!useLegacy());
+    expectedException.expect(FileNotFoundException.class);
+    expectedException.expectMessage("This file can not be opened as a file descriptor; it is probably compressed");
 
-    assertThat(assetManager.list("docs"))
-        .contains("extra");
-
-    assertThat(assetManager.list("docs/extra"))
-        .contains("testing");
-
-    assertThat(assetManager.list("docs/extra/testing"))
-        .contains("hello.txt");
-
-    assertThat(assetManager.list("bogus-dir")).isEmpty();
-  }
-
-  @Test
-  public void open_shouldOpenFile() throws IOException {
-    final String contents =
-        CharStreams.toString(new InputStreamReader(assetManager.open("assetsHome.txt"), UTF_8));
-    assertThat(contents).isEqualTo("assetsHome!");
-  }
-
-  @Test
-  public void open_shouldOpenFileInLib() throws IOException {
-    final String contents =
-        CharStreams.toString(new InputStreamReader(assetManager.open("file-in-lib2.txt"), UTF_8));
-    assertThat(contents).isEqualTo("asset in lib 2");
-  }
-
-  @Test
-  public void open_withAccessMode_shouldOpenFile() throws IOException {
-    final String contents = CharStreams.toString(
-        new InputStreamReader(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER), UTF_8));
-    assertThat(contents).isEqualTo("assetsHome!");
-  }
-
-  @Test
-  public void openFd_shouldProvideFileDescriptorForAsset() throws Exception {
-    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("assetsHome.txt");
-    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
-        .isEqualTo("assetsHome!");
-    assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
-  }
-
-  @Test
-  public void openFd_shouldProvideFileDescriptorForAssetInLib() throws Exception {
-    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("file-in-lib2.txt");
-    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
-        .isEqualTo("asset in lib 2");
-    assertThat(assetFileDescriptor.getLength()).isEqualTo(14);
+    assetManager.openFd("deflatedAsset.xml");
   }
 
   @Test
   public void openNonAssetShouldOpenRealAssetFromResources() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/an_image.png", 0);
 
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(6559);
+    // expect different sizes in binary vs file resources
+    int expectedFileSize = useLegacy() ? 6559 : 5138;
+    assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
-  @Test @Config(qualifiers = "hdpi")
+  @Test@Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
-    // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name
-    String fileName = "jar:res/drawable-hdpi/bottom_bar.png";
-    int expectedFileSize = 389;
+    String fileName = "res/drawable-hdpi-v4/bottom_bar.png";
+    int expectedFileSize = 231;
+    if (useLegacy()) {
+      // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name;
+      // retrieves the uncompressed, un-version-qualified file from raw-res/...
+      fileName = "jar:res/drawable-hdpi/bottom_bar.png";
+      expectedFileSize = 389;
+    }
 
     InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
-    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(expectedFileSize);
+    assertThat(countBytes(inputStream)).isEqualTo(expectedFileSize);
   }
 
   @Test
   public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
+    assumeTrue(useLegacy());
+
     expectedException.expect(IOException.class);
     expectedException.expectMessage(
-        "Unable to find resource for ./res/drawable/does_not_exist.png");
+        "./res/drawable/does_not_exist.png");
 
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
   }
 
   @Test
   public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
+    assumeTrue(useLegacy());
+
     expectedException.expect(Resources.NotFoundException.class);
-    expectedException.expectMessage(
-        "Unable to find resource ID #0xffffffff in packages [android, org.robolectric]");
+    expectedException.expectMessage("Resource ID #0xffffffff");
 
     resources.newTheme().applyStyle(-1, false);
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
@@ -161,8 +100,9 @@ public class ShadowAssetManagerTest {
   @Test
   public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched()
       throws IOException {
+    if (!useLegacy()) return;
     expectedException.expect(Resources.NotFoundException.class);
-    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android]");
+    expectedException.expectMessage("Resource ID #0xffffffff");
 
     Resources.getSystem().newTheme().applyStyle(-1, false);
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
@@ -171,21 +111,22 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    if (!useLegacy()) return;
 
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(8141);
+    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    assertThat(countBytes(inputStream)).isEqualTo(8141);
   }
 
   @Test
   @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
-    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    if (!useLegacy()) return;
 
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(23447);
+    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+    assertThat(countBytes(inputStream)).isEqualTo(23447);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_integerDecimalValue() {
     AttributeSet attributeSet =
@@ -197,6 +138,7 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_DEC);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_integerHexValue() {
     AttributeSet attributeSet =
@@ -208,6 +150,7 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_stringValue() {
     AttributeSet attributeSet =
@@ -219,6 +162,7 @@ public class ShadowAssetManagerTest {
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
   }
 
+  // todo: port to ResourcesTest
   @Test
   public void multiFormatAttributes_booleanValue() {
     AttributeSet attributeSet =
@@ -232,6 +176,8 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void attrsToTypedArray_shouldAllowMockedAttributeSets() throws Exception {
+    if (!useLegacy()) return;
+
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
     when(mockAttributeSet.getAttributeCount()).thenReturn(1);
     when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
@@ -242,24 +188,17 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void forUntouchedThemes_copyTheme_shouldCopyNothing() throws Exception {
-    Resources.Theme theme1 = resources.newTheme();
-    Resources.Theme theme2 = resources.newTheme();
-    theme2.setTo(theme1);
-  }
-
-  @Test
   public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage()
-      throws Exception {
+      throws Exception {if (!useLegacy()) return;
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage(
         "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +
             "in theme with applied styles: [Style org.robolectric:Theme_Robolectric (and parents)]");
 
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_Robolectric, false);
+   Resources.Theme theme = resources.newTheme();
+   theme.applyStyle(R.style.Theme_Robolectric, false);
 
-    shadowOf(assetManager)
+    legacyShadowOf(assetManager)
         .attrsToTypedArray(
             resources,
             Robolectric.buildAttributeSet()
@@ -271,128 +210,14 @@ public class ShadowAssetManagerTest {
             0);
   }
 
-  @Test
-  public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id_declared_in_item_tag", "id", "org.robolectric"))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id/id_declared_in_item_tag", null, "org.robolectric"))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("org.robolectric:id_declared_in_item_tag", "id", null))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier(
-                    "org.robolectric:id/id_declared_in_item_tag", "other", "other"))
-        .isEqualTo(R.id.id_declared_in_item_tag);
-  }
+  ///////////////////////////////
 
-  @Test
-  public void whenPackageIsUnknown_getResourceIdentifier_shouldReturnZero() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("whatever", "id", "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id/whatever", null, "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:whatever", "id", null))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
-        .isEqualTo(0);
-
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("whatever", "drawable", "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("drawable/whatever", null, "some.unknown.package"))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:whatever", "drawable", null))
-        .isEqualTo(0);
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
-        .isEqualTo(0);
-  }
-
-  @Test
-  @Ignore(
-      "currently ids are always automatically assigned a value; to fix this we'd need to check "
-      + "layouts for +@id/___, which is expensive")
-  public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero()
-      throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier(
-                    "org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))
-        .isEqualTo(0);
-  }
-
-  @Test
-  public void
-      whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout()
-          throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("id_declared_in_layout", "id", "org.robolectric"))
-        .isEqualTo(R.id.id_declared_in_layout);
-  }
-
-  @Test
-  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturn0() throws Exception {
-    assertThat(
-            shadowOf(assetManager)
-                .getResourceIdentifier("fictitiousDrawable", "drawable", "org.robolectric"))
-        .isEqualTo(0);
-  }
-
-  @Test
-  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturnId() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("an_image", "drawable", "org.robolectric"))
-        .isEqualTo(R.drawable.an_image);
-  }
-
-  @Test
-  public void whenResourceIsXml_getResourceIdentifier_shouldReturnId() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("preferences", "xml", "org.robolectric"))
-        .isEqualTo(R.xml.preferences);
-  }
-
-  @Test
-  public void whenResourceIsRaw_getResourceIdentifier_shouldReturnId() throws Exception {
-    assertThat(
-            shadowOf(assetManager).getResourceIdentifier("raw_resource", "raw", "org.robolectric"))
-        .isEqualTo(R.raw.raw_resource);
-  }
-
-  @Test
-  public void getResourceValue_colorARGB8() {
-    TypedValue outValue = new TypedValue();
-    resources.getValue(test_ARGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
-    assertThat(Color.blue(outValue.data)).isEqualTo(2);
-  }
-
-  @Test
-  public void getResourceValue_colorRGB8() {
-    TypedValue outValue = new TypedValue();
-    resources.getValue(test_RGB8, outValue, false);
-    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
-    assertThat(Color.blue(outValue.data)).isEqualTo(4);
+  private static int countBytes(InputStream i) throws IOException {
+    int count = 0;
+    while (i.read() != -1) {
+      count++;
+    }
+    i.close();
+    return count;
   }
 }

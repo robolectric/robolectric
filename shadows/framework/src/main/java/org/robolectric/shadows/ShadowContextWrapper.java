@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
+import android.app.ActivityThread;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import java.util.List;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {
@@ -13,23 +16,27 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Delegates to the application to consume and return the next {@code Intent} on the
-   * started activities stack.
+   * Consumes the most recent {@code Intent} started by {@link
+   * ContextWrapper#startActivity(android.content.Intent)} and returns it.
    *
-   * @return the next started {@code Intent} for an activity
+   * @return the most recently started {@code Intent}
    */
   public Intent getNextStartedActivity() {
-    return ShadowApplication.getInstance().getNextStartedActivity();
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
+    return shadowInstrumentation.getNextStartedActivity();
   }
 
   /**
-   * Delegates to the application to return (without consuming) the next {@code Intent} on
-   * the started activities stack.
+   * Returns the most recent {@code Intent} started by {@link
+   * ContextWrapper#startActivity(android.content.Intent)} without consuming it.
    *
-   * @return the next started {@code Intent} for an activity
+   * @return the most recently started {@code Intent}
    */
   public Intent peekNextStartedActivity() {
-    return ShadowApplication.getInstance().peekNextStartedActivity();
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
+    return shadowInstrumentation.peekNextStartedActivity();
   }
 
   /**

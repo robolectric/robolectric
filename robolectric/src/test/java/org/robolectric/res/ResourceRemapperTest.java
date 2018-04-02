@@ -19,25 +19,22 @@ public class ResourceRemapperTest {
 
   @Test
   public void testRemap() {
-    ResourceRemapper remapper = new ResourceRemapper(org.robolectric.R.class);
-    remapper.remapRClass(org.robolectric.lib1.R.class);
-    remapper.remapRClass(org.robolectric.lib2.R.class);
-    remapper.remapRClass(org.robolectric.lib3.R.class);
+    ResourceRemapper remapper = new ResourceRemapper(ApplicationRClass.class);
+    remapper.remapRClass(SecondClass.class);
+    remapper.remapRClass(ThirdClass.class);
 
     // Resource identifiers that are common across libraries should be remapped to the same value.
-    assertThat(org.robolectric.R.string.in_all_libs).isEqualTo(org.robolectric.lib1.R.string.in_all_libs);
-    assertThat(org.robolectric.R.string.in_all_libs).isEqualTo(org.robolectric.lib2.R.string.in_all_libs);
-    assertThat(org.robolectric.R.string.in_all_libs).isEqualTo(org.robolectric.lib3.R.string.in_all_libs);
+    assertThat(ApplicationRClass.string.string_one).isEqualTo(SecondClass.string.string_one);
+    assertThat(ApplicationRClass.string.string_one).isEqualTo(ThirdClass.string.string_one);
 
     // Resource identifiers that clash across two libraries should be remapped to different values.
-    assertThat(org.robolectric.lib1.R.id.lib1_button)
-        .isNotEqualTo(org.robolectric.lib2.R.id.lib2_button);
+    assertThat(SecondClass.id.id_clash)
+        .isNotEqualTo(ThirdClass.id.another_id_clash);
 
     // Styleable arrays of values should be updated to match the remapped values.
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.lib1.R.styleable.SomeStyleable);
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.lib2.R.styleable.SomeStyleable);
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.lib3.R.styleable.SomeStyleable);
-    assertThat(org.robolectric.R.styleable.SomeStyleable).containsExactly(org.robolectric.R.attr.offsetX, org.robolectric.R.attr.offsetY);
+    assertThat(ThirdClass.styleable.SomeStyleable).containsExactly(ApplicationRClass.styleable.SomeStyleable);
+    assertThat(SecondClass.styleable.SomeStyleable).containsExactly(ApplicationRClass.styleable.SomeStyleable);
+    assertThat(ApplicationRClass.styleable.SomeStyleable).containsExactly(ApplicationRClass.attr.attr_one, ApplicationRClass.attr.attr_two);
   }
 
   @Test
@@ -75,9 +72,24 @@ public class ResourceRemapperTest {
       public static final int string_one = 0x7f010001;
       public static final int string_two = 0x7f010002;
     }
+
+    public static final class attr {
+      public static int attr_one = 0x7f010008;
+      public static int attr_two = 0x7f010009;
+    }
+
+    public static final class styleable {
+      public static final int[] SomeStyleable = new int[]{ApplicationRClass.attr.attr_one, ApplicationRClass.attr.attr_two};
+      public static final int SomeStyleable_offsetX = 0;
+      public static final int SomeStyleable_offsetY = 1;
+    }
   }
 
   public static final class SecondClass {
+    public static final class id {
+      public static int id_clash = 0x7f010001;
+    }
+
     public static final class integer {
       public static int integer_one = 0x7f010001;
       public static int integer_two = 0x7f010002;
@@ -88,12 +100,41 @@ public class ResourceRemapperTest {
       public static int string_three = 0x7f020002;
     }
 
+    public static final class attr {
+      public static int attr_one = 0x7f010001;
+      public static int attr_two = 0x7f010002;
+    }
+
+    public static final class styleable {
+      public static final int[] SomeStyleable = new int[]{SecondClass.attr.attr_one, SecondClass.attr.attr_two};
+      public static final int SomeStyleable_offsetX = 0;
+      public static final int SomeStyleable_offsetY = 1;
+    }
   }
 
   public static final class ThirdClass {
+    public static final class id {
+      public static int another_id_clash = 0x7f010001;
+    }
+
     public static final class raw {
       public static int raw_one = 0x7f010001;
       public static int raw_two = 0x7f010002;
+    }
+
+    public static final class string {
+      public static int string_one = 0x7f020009;
+    }
+
+    public static final class attr {
+      public static int attr_one = 0x7f010003;
+      public static int attr_two = 0x7f010004;
+    }
+
+    public static final class styleable {
+      public static final int[] SomeStyleable = new int[]{ThirdClass.attr.attr_one, ThirdClass.attr.attr_two};
+      public static final int SomeStyleable_offsetX = 0;
+      public static final int SomeStyleable_offsetY = 1;
     }
   }
 

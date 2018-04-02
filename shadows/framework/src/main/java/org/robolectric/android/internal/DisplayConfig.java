@@ -25,12 +25,11 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
-import android.util.ArraySet;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
 import java.util.Arrays;
-import libcore.util.Objects;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 
 /**
@@ -174,7 +173,7 @@ public final class DisplayConfig {
   /**
    * The supported modes of this display.
    */
-  public Display.Mode[] supportedModes = Display.Mode.EMPTY_ARRAY;
+  public Display.Mode[] supportedModes = new Display.Mode[0];
 
   /** The active color mode. */
   public int colorMode;
@@ -325,8 +324,8 @@ public final class DisplayConfig {
         && layerStack == other.layerStack
         && flags == other.flags
         && type == other.type
-        && Objects.equal(address, other.address)
-        && Objects.equal(uniqueId, other.uniqueId)
+        && Objects.equals(address, other.address)
+        && Objects.equals(uniqueId, other.uniqueId)
         && appWidth == other.appWidth
         && appHeight == other.appHeight
         && smallestNominalAppWidth == other.smallestNominalAppWidth
@@ -344,7 +343,7 @@ public final class DisplayConfig {
         && defaultModeId == other.defaultModeId
         && colorMode == other.colorMode
         && Arrays.equals(supportedColorModes, other.supportedColorModes)
-        && Objects.equal(hdrCapabilities, other.hdrCapabilities)
+        && Objects.equals(hdrCapabilities, other.hdrCapabilities)
         && logicalDensityDpi == other.logicalDensityDpi
         && physicalXDpi == other.physicalXDpi
         && physicalYDpi == other.physicalYDpi
@@ -352,7 +351,7 @@ public final class DisplayConfig {
         && presentationDeadlineNanos == other.presentationDeadlineNanos
         && state == other.state
         && ownerUid == other.ownerUid
-        && Objects.equal(ownerPackageName, other.ownerPackageName)
+        && Objects.equals(ownerPackageName, other.ownerPackageName)
         && removeMode == other.removeMode;
   }
 

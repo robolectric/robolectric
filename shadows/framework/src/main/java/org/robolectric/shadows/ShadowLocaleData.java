@@ -92,7 +92,14 @@ public class ShadowLocaleData {
       ReflectionHelpers.setField(localeData, "percent", '%');
     }
 
-    localeData.perMill = 0x2030;
+    if (getApiLevel() >= android.os.Build.VERSION_CODES.P) {
+      // P uses a String
+      localeData.perMill = "‰";
+    } else {
+      // Up to P was a char
+      ReflectionHelpers.setField(localeData, "perMill", '‰');
+    }
+
     localeData.monetarySeparator = '.';
 
     if (getApiLevel() >= LOLLIPOP) {

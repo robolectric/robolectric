@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Build;
 import android.util.Pair;
 import java.util.ArrayList;
@@ -220,15 +222,68 @@ public class ShadowWifiManagerTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void shouldThrowRuntimeExceptionIfLockisUnderlocked() throws Exception {
+  public void shouldThrowRuntimeExceptionIfWifiLockisUnderlocked() throws Exception {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.release();
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void shouldThrowUnsupportedOperationIfLockisOverlocked() throws Exception {
+  public void shouldThrowUnsupportedOperationIfWifiLockisOverlocked() throws Exception {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
-    for (int i=0; i<ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) lock.acquire();
+    for (int i = 0; i < ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) {
+      lock.acquire();
+    }
+  }
+
+  @Test
+  public void shouldCreateMulticastLock() throws Exception {
+    assertThat(wifiManager.createMulticastLock("TAG")).isNotNull();
+  }
+
+  @Test
+  public void shouldAcquireAndReleaseMulticastLockRefCounted() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    lock.acquire();
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+    lock.release();
+    assertThat(lock.isHeld()).isTrue();
+    lock.release();
+    assertThat(lock.isHeld()).isFalse();
+  }
+
+  @Test
+  public void shouldAcquireAndReleaseMulticastLockNonRefCounted() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    lock.setReferenceCounted(false);
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+    lock.release();
+    assertThat(lock.isHeld()).isFalse();
+  }
+
+  @Test
+  public void shouldThrowRuntimeExceptionIfMulticastLockisUnderlocked() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    try{
+      lock.release();
+      fail("Expected exception");
+    } catch (RuntimeException expected) {};
+  }
+
+  @Test
+  public void shouldThrowUnsupportedOperationIfMulticastLockisOverlocked() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    try {
+      for (int i = 0; i < ShadowWifiManager.ShadowMulticastLock.MAX_ACTIVE_LOCKS; i++) {
+        lock.acquire();
+      }
+      fail("Expected exception");
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
   }
 
   @Test

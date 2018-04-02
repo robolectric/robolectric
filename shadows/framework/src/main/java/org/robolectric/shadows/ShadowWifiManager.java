@@ -8,14 +8,15 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.util.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -194,7 +195,8 @@ public class ShadowWifiManager {
   }
 
   private WifiConfiguration makeCopy(WifiConfiguration config, int networkId) {
-    WifiConfiguration copy = Shadows.shadowOf(config).copy();
+    ShadowWifiConfiguration shadowWifiConfiguration = Shadow.extract(config);
+    WifiConfiguration copy = shadowWifiConfiguration.copy();
     copy.networkId = networkId;
     return copy;
   }
@@ -232,6 +234,42 @@ public class ShadowWifiManager {
     @Implementation
     public void setReferenceCounted(boolean refCounted) {
       this.refCounted = refCounted;
+    }
+  }
+
+  @Implements(MulticastLock.class)
+  public static class ShadowMulticastLock {
+    private int refCount;
+    private boolean refCounted = true;
+    private boolean locked;
+    static final int MAX_ACTIVE_LOCKS = 50;
+
+    @Implementation
+    protected void acquire() {
+      if (refCounted) {
+        if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+      } else {
+        locked = true;
+      }
+    }
+
+    @Implementation
+    protected synchronized void release() {
+      if (refCounted) {
+        if (--refCount < 0) throw new RuntimeException("WifiLock under-locked");
+      } else {
+        locked = false;
+      }
+    }
+
+    @Implementation
+    protected void setReferenceCounted(boolean refCounted) {
+      this.refCounted = refCounted;
+    }
+
+    @Implementation
+    protected synchronized boolean isHeld() {
+      return refCounted ? refCount > 0 : locked;
     }
   }
 }

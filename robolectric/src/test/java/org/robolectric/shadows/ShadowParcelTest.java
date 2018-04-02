@@ -221,6 +221,25 @@ public class ShadowParcelTest {
   }
 
   @Test
+  public void testWriteAndReadByteArray() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[bytes.length];
+    parcel.readByteArray(actualBytes);
+    assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWriteAndReadByteArray_badLength() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[0];
+    parcel.readByteArray(actualBytes);
+  }
+
+  @Test
   public void testReadWriteMultipleInts() {
     for (int i = 0; i < 10; ++i) {
       parcel.writeInt(i);
@@ -390,6 +409,42 @@ public class ShadowParcelTest {
 
     assertEquals(1, rehydrated.size());
     assertEquals(23, rehydrated.get(0).contents);
+  }
+
+  @Test
+  public void testParcelableWithPackageProtected() throws Exception {
+    TestParcelablePackage normal = new TestParcelablePackage(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelablePackage rehydrated = parcel.readParcelable(TestParcelablePackage.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
+  public void testParcelableWithBase() throws Exception {
+    TestParcelableImpl normal = new TestParcelableImpl(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelableImpl rehydrated = parcel.readParcelable(TestParcelableImpl.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
+  public void testParcelableWithPublicClass() throws Exception {
+    TestParcelable normal = new TestParcelable(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelable rehydrated = parcel.readParcelable(TestParcelable.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
   }
 
   @Test

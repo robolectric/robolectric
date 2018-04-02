@@ -1,0 +1,25 @@
+<resources>
+  <color name="foreground">@color/grey42</color>
+
+  <color name="clear">#00000001</color>
+  <color name="white">#FFFFFF</color>
+  <color name="black">#000000</color>
+  <color name="blue">#0000ff</color>
+  <color name="grey42">#f5f5f5</color>
+  <color name="color_with_alpha">#802C76AD</color>
+
+  <color name="background">@color/grey42</color>
+
+  <color name="android_namespaced_black">@android:color/black</color>
+
+  <color name="android_namespaced_transparent">@android:color/transparent</color>
+
+  <color name="list_separator">#111111</color>
+
+  <color name="typed_array_orange">#FF5C00</color>
+
+  <color name="test_ARGB4">#0001</color>
+  <color name="test_ARGB8">#00000002</color>
+  <color name="test_RGB4">#00f</color>
+  <color name="test_RGB8">#000004</color>
+</resources>

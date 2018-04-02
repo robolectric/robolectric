@@ -244,9 +244,12 @@ public class ReflectionHelpers {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
 
-      Method declaredMethod = cl.getDeclaredMethod(methodName, classes);
-      declaredMethod.setAccessible(true);
-      return (R) declaredMethod.invoke(instance, values);
+      Method method = cl.getDeclaredMethod(methodName, classes);
+      method.setAccessible(true);
+      if (Modifier.isStatic(method.getModifiers())) {
+        throw new IllegalArgumentException(method + " is static");
+      }
+      return (R) method.invoke(instance, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
         throw (RuntimeException) e.getTargetException();
@@ -277,6 +280,9 @@ public class ReflectionHelpers {
 
       Method method = clazz.getDeclaredMethod(methodName, classes);
       method.setAccessible(true);
+      if (!Modifier.isStatic(method.getModifiers())) {
+        throw new IllegalArgumentException(method + " is not static");
+      }
       return (R) method.invoke(null, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
@@ -286,6 +292,8 @@ public class ReflectionHelpers {
         throw (Error) e.getTargetException();
       }
       throw new RuntimeException(e.getTargetException());
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException("no such method " + clazz + "." + methodName, e);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -370,12 +378,20 @@ public class ReflectionHelpers {
     }
   }
 
-  private static void makeFieldVeryAccessible(Field field) throws NoSuchFieldException, IllegalAccessException {
+  private static void makeFieldVeryAccessible(Field field) {
     field.setAccessible(true);
 
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+    try {
+      Field modifiersField = Field.class.getDeclaredField("modifiers");
+      modifiersField.setAccessible(true);
+      try {
+        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    } catch (NoSuchFieldException e) {
+      // ignore missing fields
+    }
   }
 
   public static Object defaultValueForType(String returnType) {

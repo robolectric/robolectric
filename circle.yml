@@ -24,6 +24,7 @@ jobs:
           name: Download Dependencies
           command: |
             sdkmanager --install 'platforms;android-27'
+            sdkmanager --install 'platforms;android-P'
             ./scripts/install-dependencies.rb
             ./gradlew prefetchDependencies
       - save_cache:
@@ -31,6 +32,7 @@ jobs:
             - ~/.gradle
             - ~/.m2
             - /opt/android/sdk/platforms/android-27
+            - /opt/android/sdk/platforms/android-P
           key: cache-{{ checksum ".cache-hash" }}
       - run:
           name: Build and Test

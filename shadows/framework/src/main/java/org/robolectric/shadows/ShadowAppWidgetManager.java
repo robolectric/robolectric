@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.util.ArrayList;
@@ -13,11 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.util.AppSingletonizer;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -38,7 +39,8 @@ public class ShadowAppWidgetManager {
     @Override
     protected AppWidgetManager createInstance(Application applicationContext) {
       AppWidgetManager appWidgetManager = super.createInstance(applicationContext);
-      Shadows.shadowOf(appWidgetManager).context = applicationContext;
+      ShadowAppWidgetManager shadowAppWidgetManager = Shadow.extract(appWidgetManager);
+      shadowAppWidgetManager.context = applicationContext;
       return appWidgetManager;
     }
   };
@@ -212,7 +214,7 @@ public class ShadowAppWidgetManager {
   }
 
   private View createWidgetView(int widgetLayoutId) {
-    return new RoboLayoutInflater(RuntimeEnvironment.application).inflate(widgetLayoutId, null);
+    return LayoutInflater.from(RuntimeEnvironment.application).inflate(widgetLayoutId, null);
   }
 
   /**

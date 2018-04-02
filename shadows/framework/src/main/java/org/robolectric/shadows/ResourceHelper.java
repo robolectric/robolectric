@@ -19,18 +19,26 @@ package org.robolectric.shadows;
 import android.util.TypedValue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.ResName;
 
 /**
  * Helper class to provide various conversion method used in handling android resources.
  */
 public final class ResourceHelper {
 
-  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
+  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]*(?:\\.[0-9]+)?)(.*)");
   private final static float[] sFloatOut = new float[1];
 
   private final static TypedValue mValue = new TypedValue();
+
+  private final static Class<?> androidInternalR;
+
+  static {
+    try {
+      androidInternalR = Class.forName("com.android.internal.R$id");
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * Returns the color value represented by the given string value
@@ -109,7 +117,11 @@ public final class ResourceHelper {
   }
 
   public static int getInternalResourceId(String idName) {
-    return RuntimeEnvironment.getSystemResourceTable().getResourceId(new ResName("android", "id", idName));
+    try {
+      return (int) androidInternalR.getField(idName).get(null);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // ------- TypedValue stuff

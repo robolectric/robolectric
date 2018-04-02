@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <item name="mipmap_reference" type="mipmap">@mipmap/robolectric</item>
+  <item name="mipmap_reference_xml" type="mipmap">@mipmap/robolectric_xml</item>
+</resources>

@@ -9,6 +9,7 @@ import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -149,5 +150,12 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setCallState(CALL_STATE_OFFHOOK, "911");
     assertEquals(CALL_STATE_OFFHOOK, telephonyManager.getCallState());
     verify(listener).onCallStateChanged(CALL_STATE_OFFHOOK, null);
+  }
+
+  @Test
+  public void isSmsCapable() {
+    assertThat(telephonyManager.isSmsCapable()).isTrue();
+    shadowTelephonyManager.setIsSmsCapable(false);
+    assertThat(telephonyManager.isSmsCapable()).isFalse();
   }
 }

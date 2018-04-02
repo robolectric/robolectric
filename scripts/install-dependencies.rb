@@ -142,7 +142,6 @@ MULTIDEX_VERSION = "1.0.1"
 
 # Android Support test versions
 ANDROID_SUPPORT_TEST_GROUP_ID = "com.android.support.test"
-RUNNER_ARTIFACT_ID = "runner"
 MONITOR_ARTIFACT_ID = "monitor"
 ANDROID_SUPPORT_TEST_VERSION = "1.0.2-alpha1"
 
@@ -167,7 +166,7 @@ PLAY_SERVICES_BASEMENT = "play-services-basement"
 
 # Mavenize all dependencies
 
-install_stubs(27)
+install_stubs('27')
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_TRAILING_VERSION)
 
@@ -199,4 +198,3 @@ install_supportlib_from_gmaven(SUPPORT_FRAGMENT_ARTIFACT_ID)
 install_supportlib_from_gmaven('support-media-compat')
 
 install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, MONITOR_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)
-install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, RUNNER_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)

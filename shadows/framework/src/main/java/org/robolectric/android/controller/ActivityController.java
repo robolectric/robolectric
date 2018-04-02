@@ -1,7 +1,8 @@
 package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.Shadows.shadowOf;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -12,10 +13,13 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build.VERSION;
 import android.os.Bundle;
-import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -38,7 +42,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
       return this;
     }
 
-    shadowOf(component).callAttach(getIntent());
+    ShadowActivity shadowActivity = Shadow.extract(component);
+    shadowActivity.callAttach(getIntent());
     attached = true;
     return this;
   }
@@ -66,7 +71,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> restart() {
-    invokeWhilePaused("performRestart");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performRestart");
+    }
+    else {
+      invokeWhilePaused("performRestart", from(boolean.class, true));
+    }
     return this;
   }
 
@@ -86,7 +96,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> resume() {
-    invokeWhilePaused("performResume");
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performResume");
+    }
+    else {
+      invokeWhilePaused("performResume", from(boolean.class, true));
+    }
     return this;
   }
 
@@ -114,6 +129,15 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return this;
   }
 
+  public ActivityController<T> windowFocusChanged(boolean hasFocus) {
+    ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
+
+    ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
+        from(boolean.class, hasFocus), /* hasFocus */
+        from(boolean.class, false) /* inTouchMode */);
+    return this;
+  }
+
   public ActivityController<T> userLeaving() {
     invokeWhilePaused("performUserLeaving");
     return this;
@@ -132,7 +156,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
   public ActivityController<T> stop() {
     if (RuntimeEnvironment.getApiLevel() <= M) {
       invokeWhilePaused("performStop");
-    } else {
+    }
+    else {
       invokeWhilePaused("performStop", from(boolean.class, true));
     }
     return this;
@@ -240,11 +265,11 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           if (RuntimeEnvironment.getApiLevel() <= M) {
             ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
-          } else {
-            ReflectionHelpers.callInstanceMethod(
-                Activity.class, component, "performStop", from(boolean.class, true));
           }
-
+          else {
+            ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop",
+                from(boolean.class, true));
+          }
           // This is the true and complete retained state, including loaders and retained
           // fragments.
           final Object nonConfigInstance =
@@ -261,7 +286,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Restore theme in case it was set in the test manually.
           // This is not technically what happens but is purely to make this easier to use in
           // Robolectric.
-          int theme = shadowOf((ContextThemeWrapper) component).callGetThemeResId();
+          ShadowContextThemeWrapper shadowContextThemeWrapper = Shadow.extract(component);
+          int theme = shadowContextThemeWrapper.callGetThemeResId();
 
           // Setup controller for the new activity
           attached = false;
@@ -275,12 +301,13 @@ public class ActivityController<T extends Activity> extends ComponentController<
           // Set saved non config instance
           ReflectionHelpers.setField(
               recreatedActivity, "mLastNonConfigurationInstances", nonConfigInstance);
-          shadowOf(recreatedActivity).setLastNonConfigurationInstance(activityConfigInstance);
+          ShadowActivity shadowActivity = Shadow.extract(recreatedActivity);
+          shadowActivity.setLastNonConfigurationInstance(activityConfigInstance);
 
           // Create lifecycle
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performStart");
           ReflectionHelpers.callInstanceMethod(
               Activity.class,
               recreatedActivity,
@@ -288,7 +315,13 @@ public class ActivityController<T extends Activity> extends ComponentController<
               from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(
               Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
-          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume");
+          }
+          else {
+            ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "performResume",
+                from(boolean.class, true));
+          }
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onPostResume");
           // TODO: Call visible() too.
         }

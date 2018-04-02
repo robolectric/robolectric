@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <fraction name="half">50%</fraction>
+    <fraction name="half_of_parent">50%p</fraction>
+    <item name="quarter_as_item" type="fraction">25%</item>
+    <item name="quarter_of_parent_as_item" type="fraction">25%p</item>
+    <fraction name="fifth">20%</fraction>
+    <fraction name="fifth_as_reference">@fraction/fifth</fraction>
+    <fraction name="fifth_of_parent">20%p</fraction>
+    <fraction name="fifth_of_parent_as_reference">@fraction/fifth_of_parent</fraction>
+</resources>

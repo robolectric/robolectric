@@ -29,11 +29,11 @@ public class ProxyMaker {
   }
 
   private final MethodMapper methodMapper;
-  private final ClassValue<Factory> factories;
+  private final ClassValueMap<Factory> factories;
 
   public ProxyMaker(MethodMapper methodMapper) {
     this.methodMapper = methodMapper;
-    factories = new ClassValue<Factory>() {
+    factories = new ClassValueMap<Factory>() {
       @Override protected Factory computeValue(Class<?> type) {
         return createProxyFactory(type);
       }

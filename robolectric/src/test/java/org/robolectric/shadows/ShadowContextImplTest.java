@@ -20,8 +20,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestApplication;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContextImplTest {
@@ -88,9 +88,14 @@ public class ShadowContextImplTest {
 
   @Test
   public void startIntentSender_activityIntent() throws IntentSender.SendIntentException {
-    PendingIntent intent = PendingIntent.getActivity(context, 0,
-        new Intent().setClassName(RuntimeEnvironment.application, "ActivityIntent"),
-        PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent intent =
+        PendingIntent.getActivity(
+            context,
+            0,
+            new Intent()
+                .setClassName(RuntimeEnvironment.application, "ActivityIntent")
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_UPDATE_CURRENT);
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
@@ -113,7 +118,6 @@ public class ShadowContextImplTest {
     PendingIntent intent = PendingIntent.getService(context, 0,
         new Intent().setClassName(RuntimeEnvironment.application, "ServiceIntent"),
         PendingIntent.FLAG_UPDATE_CURRENT);
-    ((TestApplication) context).getBaseContext().getApplicationContext();
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 

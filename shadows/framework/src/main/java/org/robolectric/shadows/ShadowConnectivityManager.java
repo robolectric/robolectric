@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.net.ConnectivityManager;
+import android.net.ConnectivityManager.OnNetworkActiveListener;
 import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
@@ -12,10 +13,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
@@ -33,6 +34,9 @@ public class ShadowConnectivityManager {
   private final Map<Integer, Network> netIdToNetwork = new HashMap<>();
   private final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
   private Network processBoundNetwork;
+  private boolean defaultNetworkActive;
+  private HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
+      new HashSet<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -51,6 +55,7 @@ public class ShadowConnectivityManager {
       netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
       netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
     }
+    defaultNetworkActive = true;
   }
 
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
@@ -77,14 +82,31 @@ public class ShadowConnectivityManager {
     return activeNetworkInfo;
   }
 
+  /**
+   * @see #setActiveNetworkInfo(NetworkInfo)
+   * @see #setNetworkInfo(int, NetworkInfo)
+   */
   @Implementation(minSdk = M)
   public Network getActiveNetwork() {
-    return netIdToNetwork.get(getActiveNetworkInfo().getType());
+    if (defaultNetworkActive) {
+      return netIdToNetwork.get(getActiveNetworkInfo().getType());
+    }
+    return null;
   }
 
+  /**
+   * @see #setActiveNetworkInfo(NetworkInfo)
+   * @see #setNetworkInfo(int, NetworkInfo)
+   */
   @Implementation
   public NetworkInfo[] getAllNetworkInfo() {
-    return networkTypeToNetworkInfo.values().toArray(new NetworkInfo[networkTypeToNetworkInfo.size()]);
+    // todo(xian): is `defaultNetworkActive` really relevant here?
+    if (defaultNetworkActive) {
+      return networkTypeToNetworkInfo
+          .values()
+          .toArray(new NetworkInfo[networkTypeToNetworkInfo.size()]);
+    }
+    return null;
   }
 
   @Implementation
@@ -94,7 +116,7 @@ public class ShadowConnectivityManager {
 
   @Implementation(minSdk = LOLLIPOP)
   public NetworkInfo getNetworkInfo(Network network) {
-    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    ShadowNetwork shadowNetwork = Shadow.extract(network);
     return netIdToNetworkInfo.get(shadowNetwork.getNetId());
   }
 
@@ -119,14 +141,16 @@ public class ShadowConnectivityManager {
   }
 
   /**
-   * Count {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
+   * Counts {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
    * Other types will be considered unmetered.
    *
-   * @return True if the active network is metered.
+   * @return `true` if the active network is metered, otherwise `false`.
+   * @see #setActiveNetworkInfo(NetworkInfo)
+   * @see #setDefaultNetworkActive(boolean)
    */
   @Implementation
   public boolean isActiveNetworkMetered() {
-    if (activeNetworkInfo != null) {
+    if (defaultNetworkActive && activeNetworkInfo != null) {
       return activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
     } else {
       return false;
@@ -180,7 +204,7 @@ public class ShadowConnectivityManager {
    * @param networkInfo The network info paired with the {@link android.net.Network}.
    */
   public void addNetwork(Network network, NetworkInfo networkInfo) {
-    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    ShadowNetwork shadowNetwork = Shadow.extract(network);
     int netId = shadowNetwork.getNetId();
     netIdToNetwork.put(netId, network);
     netIdToNetworkInfo.put(netId, networkInfo);
@@ -191,7 +215,7 @@ public class ShadowConnectivityManager {
    * @param network The network.
    */
   public void removeNetwork(Network network) {
-    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    ShadowNetwork shadowNetwork = Shadow.extract(network);
     int netId = shadowNetwork.getNetId();
     netIdToNetwork.remove(netId);
     netIdToNetworkInfo.remove(netId);
@@ -203,5 +227,54 @@ public class ShadowConnectivityManager {
   public void clearAllNetworks() {
     netIdToNetwork.clear();
     netIdToNetworkInfo.clear();
+  }
+
+  /**
+   * Sets the active state of the default network.
+   *
+   * By default this is true and affects the result of {@link
+   * ConnectivityManager#isActiveNetworkMetered()}, {@link
+   * ConnectivityManager#isDefaultNetworkActive()}, {@link ConnectivityManager#getActiveNetwork()}
+   * and {@link ConnectivityManager#getAllNetworkInfo()}.
+   *
+   * Calling this method with {@code true} after any listeners have been registered with {@link
+   * ConnectivityManager#addDefaultNetworkActiveListener(OnNetworkActiveListener)} will result in
+   * those listeners being fired.
+   *
+   * @param isActive The active state of the default network.
+   */
+  public void setDefaultNetworkActive(boolean isActive) {
+    defaultNetworkActive = isActive;
+    if (defaultNetworkActive) {
+      for (ConnectivityManager.OnNetworkActiveListener l : onNetworkActiveListeners) {
+        if (l != null) {
+          l.onNetworkActive();
+        }
+      }
+    }
+  }
+
+  /**
+   * @return `true` by default, or the value specifed via {@link #setDefaultNetworkActive(boolean)}
+   * @see #setDefaultNetworkActive(boolean)
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected boolean isDefaultNetworkActive() {
+    return defaultNetworkActive;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void addDefaultNetworkActiveListener(final ConnectivityManager.OnNetworkActiveListener l) {
+    onNetworkActiveListeners.add(l);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void removeDefaultNetworkActiveListener(ConnectivityManager.OnNetworkActiveListener l) {
+    if (l == null) {
+      throw new IllegalArgumentException("Invalid OnNetworkActiveListener");
+    }
+    if (onNetworkActiveListeners.contains(l)) {
+      onNetworkActiveListeners.remove(l);
+    }
   }
 }
