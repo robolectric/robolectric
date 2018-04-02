@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.robolectric.UsesSdk;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
@@ -27,7 +28,7 @@ import org.w3c.dom.NodeList;
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
  * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
  */
-public class AndroidManifest {
+public class AndroidManifest implements UsesSdk {
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
@@ -576,7 +577,7 @@ public class AndroidManifest {
    * Returns the minimum Android SDK version that this package expects to be runnable on, as
    * specified in the manifest.
    *
-   * <p>Note that if `targetSdkVersion` isn't set, this value changes the behavior of some Android
+   * Note that if `targetSdkVersion` isn't set, this value changes the behavior of some Android
    * code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
    *
    * @return the minimum SDK version, or Jelly Bean (16) by default
@@ -590,10 +591,10 @@ public class AndroidManifest {
    * Returns the Android SDK version that this package prefers to be run on, as specified in the
    * manifest.
    *
-   * <p>Note that this value changes the behavior of some Android code (notably {@link
+   * Note that this value changes the behavior of some Android code (notably {@link
    * android.content.SharedPreferences}) to emulate old bugs.
    *
-   * @return the minimum SDK version, or Jelly Bean (16) by default
+   * @return the target SDK version, or Jelly Bean (16) by default
    */
   public int getTargetSdkVersion() {
     parseAndroidManifest();

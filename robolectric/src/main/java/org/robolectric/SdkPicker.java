@@ -44,12 +44,27 @@ public class SdkPicker {
    *
    * @param config a {@link Config} specifying one or more SDKs
    * @param appManifest the {@link AndroidManifest} for the test
-   * @return the list of {@link SdkConfig}s.
+   * @return the list of candidate {@link SdkConfig}s.
    * @since 3.2
+   * @deprecated override {@link #selectSdks(Config, UsesSdk)} instead.
    */
+  @Deprecated
   @Nonnull
   public List<SdkConfig> selectSdks(Config config, AndroidManifest appManifest) {
-    Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, appManifest));
+    return selectSdks(config, (UsesSdk) appManifest);
+  }
+
+  /**
+   * Enumerate the SDKs to be used for this test.
+   *
+   * @param config a {@link Config} specifying one or more SDKs
+   * @param usesSdk SDK usage info for the package
+   * @return the list of candidate {@link SdkConfig}s.
+   * @since 3.9
+   */
+  @Nonnull
+  public List<SdkConfig> selectSdks(Config config, UsesSdk usesSdk) {
+    Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, usesSdk));
     Set<SdkConfig> enabledSdks = enumerateEnabledSdks();
     if (enabledSdks != null) {
       sdks = Sets.intersection(sdks, enabledSdks);
@@ -71,10 +86,10 @@ public class SdkPicker {
     }
   }
 
-  protected Set<SdkConfig> configuredSdks(Config config, AndroidManifest appManifest) {
-    int appMinSdk = Math.max(appManifest.getMinSdkVersion(), minSupportedSdk.getApiLevel());
-    int appTargetSdk = Math.max(appManifest.getTargetSdkVersion(), minSupportedSdk.getApiLevel());
-    Integer appMaxSdk = appManifest.getMaxSdkVersion();
+  protected Set<SdkConfig> configuredSdks(Config config, UsesSdk usesSdk) {
+    int appMinSdk = Math.max(usesSdk.getMinSdkVersion(), minSupportedSdk.getApiLevel());
+    int appTargetSdk = Math.max(usesSdk.getTargetSdkVersion(), minSupportedSdk.getApiLevel());
+    Integer appMaxSdk = usesSdk.getMaxSdkVersion();
     if (appMaxSdk == null) {
       appMaxSdk = maxSupportedSdk.getApiLevel();
     }
