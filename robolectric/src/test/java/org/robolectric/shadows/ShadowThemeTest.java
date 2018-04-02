@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
 
 import android.app.Activity;
