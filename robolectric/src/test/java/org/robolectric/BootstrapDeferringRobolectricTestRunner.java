@@ -17,6 +17,9 @@ import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
 
+/**
+ * Test runner which prevents full initialization (bootstrap) of the Android process at test setup.
+ */
 public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunner {
 
   private static BootstrapWrapper bootstrapWrapper;

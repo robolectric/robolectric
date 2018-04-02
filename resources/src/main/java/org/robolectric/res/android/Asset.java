@@ -877,7 +877,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
             // fseek(mFp, oldPosn, SEEK_SET);
             mFp.seek(oldPosn);
           } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
           }
         }
 

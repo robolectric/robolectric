@@ -481,7 +481,7 @@ public class XmlResourceParserImplTest {
     assertThat(actualEvents).isEqualTo(expectedEvents);
   }
 
-  @Test @Config(sdk = 16)
+  @Test
   public void testRequire() throws Exception {
     parseUntilNext(XmlResourceParser.START_TAG);
     parser.require(XmlResourceParser.START_TAG,

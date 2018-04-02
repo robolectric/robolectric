@@ -14,6 +14,9 @@ import org.robolectric.res.ResourceMerger;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTableFactory;
 
+/**
+ * Mediates loading of "APKs" in legacy mode.
+ */
 public class ApkLoader {
 
   private final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();

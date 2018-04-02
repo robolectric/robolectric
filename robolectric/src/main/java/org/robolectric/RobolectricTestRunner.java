@@ -457,7 +457,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Internal use only.
+   * @deprecated Do not use.
    */
+  @Deprecated
   @VisibleForTesting
   public static AndroidManifest createAndroidManifest(ManifestIdentifier manifestIdentifier) {
     List<ManifestIdentifier> libraries = manifestIdentifier.getLibraries();
@@ -580,10 +582,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final @Nonnull SdkConfig sdkConfig;
     final @Nonnull Config config;
     final ResourcesMode resourcesMode;
+    private final ResourcesMode defaultResourcesMode;
+
     private boolean includeVariantMarkersInName = true;
     TestLifecycle testLifecycle;
     ParallelUniverseInterface parallelUniverseInterface;
-    private ResourcesMode defaultResourcesMode;
 
     RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest,
         @Nonnull SdkConfig sdkConfig, @Nonnull Config config, ResourcesMode resourcesMode,

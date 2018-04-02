@@ -41,6 +41,7 @@ import android.util.Xml;
 import com.google.common.collect.Range;
 import java.io.File;
 import java.io.InputStream;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -1017,6 +1018,14 @@ public class ResourcesTest {
     assertThat(outValue.type).isEqualTo(TYPE_INT_COLOR_RGB8);
     assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
+
+  @Test
+  public void getResourceEntryName_forStyle() throws Exception {
+    Assertions.assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
+        .isEqualTo("TextAppearance.Small");
+  }
+
+  ///////////////////
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
