@@ -41,7 +41,6 @@ import android.util.Xml;
 import com.google.common.collect.Range;
 import java.io.File;
 import java.io.InputStream;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
